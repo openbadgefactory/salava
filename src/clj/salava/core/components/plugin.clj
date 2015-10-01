@@ -24,7 +24,7 @@
       (assoc this :routes ["" route-map])))
 
   (stop [this]
-    (assoc this :enabled nil)))
+    (assoc this :routes nil)))
 
 
 (defn create []

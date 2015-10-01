@@ -1,6 +1,5 @@
 (ns salava.core.handler
-  (:require [ring.middleware.resource :refer [wrap-resource]]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+  (:require [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [ring.middleware.webjars :refer [wrap-webjars]]
@@ -21,6 +20,5 @@
       (wrap-webjars)))
 
 (defn handler [config routes] (-> routes
-                           bidi.bidi/compile-route
-                           bidi.ring/make-handler
-                           (wrap-middlewares config)))
+                                  bidi.ring/make-handler
+                                  (wrap-middlewares config)))
