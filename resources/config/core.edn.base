@@ -1,0 +1,23 @@
+{:site-name "Open Badge Passport"
+
+ :asset-version nil
+
+ :plugins [:badge
+           :page
+           :gallery
+           :user
+           :file]
+
+ :datasource {:adapter "mysql"
+              :username "salava"
+              :password "salava"
+              :database-name "salava"
+              :server-name   "localhost"}
+
+ :session {:name "salava-session"
+           :root "/"
+           :secret "1234567890123456"
+           :secure false
+           :max-age 28800}
+
+ :http {:host "localhost" :port 5000}}
