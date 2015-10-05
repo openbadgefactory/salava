@@ -1,8 +1,8 @@
 (defproject salava "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "MIT"
-            :url "http://opensource.org/licenses/MIT"}
+  :url "http://salava.org"
+  :license {:name "Apache 2.0"
+            :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.7.0"]
 
                  [com.stuartsierra/component "0.3.0"]
