@@ -1,8 +1,8 @@
 (ns salava.user.routes
-  (:require [salava.core.layout :as layout]))
+  (:require [compojure.api.sweet :refer :all]
+            [salava.core.layout :as layout]))
 
-
-(defn routes [ctx]
-  (let [get-main {:get (partial layout/main (assoc-in ctx [:active-plugin] "user"))}]
-    {"/user" [["/login/"   get-main]
-              ["/account/" get-main]]}))
+(defroutes* route-def
+  (context* "/user" []
+            (layout/main "/login/")
+            (layout/main "/account/")))

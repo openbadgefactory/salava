@@ -1,13 +1,11 @@
 (ns salava.badge.routes
-  (:require [salava.core.layout :as layout]))
+  (:require [compojure.api.sweet :refer :all]
+            [salava.core.layout :as layout]))
 
-
-(defn routes [ctx]
-  (let [get-main {:get (partial layout/main (assoc-in ctx [:active-plugin] "badge"))}]
-    {"/badge" [["/"            get-main]
-               [["/show/" :id] get-main]
-               ["/import/" get-main]
-               ["/upload/" get-main]
-               ["/export/" get-main]
-               ["/stats/"  get-main]]}))
-
+(defroutes* route-def
+  (context* "/badge" []
+            (layout/main "/")
+            (layout/main "/show/:id")
+            (layout/main "/import/")
+            (layout/main "/upload/")
+            (layout/main "/stats/")))

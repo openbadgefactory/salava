@@ -1,5 +1,6 @@
 (ns salava.core.layout
-  (:require [clojure.java.io :as io]
+  (:require [compojure.api.sweet :refer :all]
+            [clojure.java.io :as io]
             [clojure.data.json :as json]
             [ring.util.response :as r]
             [hiccup.page :refer [html5 include-css include-js]]))
@@ -28,8 +29,7 @@
 
 
 (defn context-js [ctx]
-  (let [all-plugins (get-in ctx [:config :core :plugins])
-        ctx-out {:plugins {:all all-plugins :active (:active-plugin ctx)}}]
+  (let [ctx-out {:plugins {:all (get-in ctx [:config :core :plugins])}}]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 
@@ -50,7 +50,13 @@
      (apply include-js (js-list ctx))]))
 
 
-(defn main [ctx req]
+(defn main-response [ctx]
   (-> (r/response (main-view ctx))
       (r/header "Content-type" "text/html; charset=\"UTF-8\"")))
+
+(defn main [path]
+  (GET* path []
+        :components [context]
+        (main-response context)))
+
 

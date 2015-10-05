@@ -7,7 +7,7 @@
   component/Lifecycle
 
   (start [this]
-    (assoc this :handler (salava.core.handler/handler (:core config) (:routes plugin))))
+    (assoc this :handler (salava.core.handler/handler (:context plugin) (:routes plugin))))
 
   (stop [this]
     this))

@@ -9,6 +9,7 @@
                  [org.clojure/tools.nrepl "0.2.11"]
 
                  ; Database
+                 [org.clojure/java.jdbc "0.4.2"]
                  [hikari-cp "1.3.1"]
                  [mysql/mysql-connector-java "5.1.36"]
                  [yesql "0.5.0"]
@@ -21,14 +22,17 @@
                  [ring/ring-devel "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
                  [ring-webjars "0.1.1"]
-                 [bidi "1.21.0"]
+                 [compojure "1.4.0"]
+                 [metosin/compojure-api "0.23.1"]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
                  [clj-time "0.11.0"]
+                 [prismatic/schema "0.4.4"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.122"]
                  [reagent "0.5.1"]
+                 [bidi "1.21.0"]
 
                  [org.webjars/jquery "2.1.4"]
                  [org.webjars/bootstrap "3.3.5"]

@@ -1,12 +1,11 @@
 (ns salava.gallery.routes
-  (:require [salava.core.layout :as layout]))
+  (:require [compojure.api.sweet :refer :all]
+            [salava.core.layout :as layout]))
 
-
-(defn routes [ctx]
-  (let [get-main {:get (partial layout/main (assoc-in ctx [:active-plugin] "gallery"))}]
-    {"/gallery" [["/"          get-main]
-                 ["/badges/"   get-main]
-                 ["/pages/"    get-main]
-                 ["/profiles/" get-main]
-                 ["/getbadge/" get-main]]}))
-
+(defroutes* route-def
+  (context* "/gallery" []
+            (layout/main "/")
+            (layout/main "/badges/")
+            (layout/main "/pages/")
+            (layout/main "/profiles/")
+            (layout/main "/getbadge/")))

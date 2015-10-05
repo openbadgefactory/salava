@@ -1,8 +1,7 @@
 (ns salava.file.routes
-  (:require [salava.core.layout :as layout]))
+  (:require [compojure.api.sweet :refer :all]
+            [salava.core.layout :as layout]))
 
-
-(defn routes [ctx]
-  (let [get-main {:get (partial layout/main (assoc-in ctx [:active-plugin] "file"))}]
-    {"/pages" [["/files/" get-main]]}))
-
+(defroutes* route-def
+  (context* "/pages" []
+            (layout/main "/files/")))
