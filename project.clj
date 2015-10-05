@@ -57,18 +57,23 @@
                                   [reloaded.repl "0.2.0"]]
                    :plugins [[lein-pdo "0.1.1"]
                              [lein-cljsbuild "1.0.5"]
-                             [deraen/lein-less4j "0.2.1"]
+                             [lein-scss "0.2.2"]
                              [lein-figwheel "0.2.7" :exclusions [org.clojure/clojurescript]]]
                    :resource-paths ["target/generated"]}
              :uberjar {:resource-paths  ["target/adv"]
-                       :less  {:compression true
-                               :target-path "target/adv/public/css"}
                        :main  salava.main
                        :aot   [salava.main]}}
 
-  :less {:source-paths  ["src/less"]
-         :target-path   "target/generated/public/css"
-         :source-map    true}
+  :scss  {:builds
+          {:dev {:source-dir "src/scss"
+                   :dest-dir   "target/generated/public/css"
+                   :executable "sassc"
+                   :args       ["-m" "-l" "-I" "src/scss" "-t" "nested"]}
+           :adv {:source-dir "src/scss"
+                 :dest-dir   "target/adv/public/css"
+                 :executable "sassc"
+                 :args       ["-I" "src/scss/" "-t" "compressed"]}}}
+
 
   :figwheel {:http-server-root  "public"
              :server-port       3449
@@ -96,8 +101,8 @@
   :auto-clean        false
   :min-lein-version  "2.5.2"
 
-  :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["less4j" "auto"]]]
-            "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["less4j" "once"] "uberjar"]
+  :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
+            "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
             "joplin-migrate"  ["run" "-m" "salava.core.migrator/migrate"]
             "joplin-rollback" ["run" "-m" "salava.core.migrator/rollback"]

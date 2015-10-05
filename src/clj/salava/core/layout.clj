@@ -7,7 +7,8 @@
 
 (def asset-css
   ["/assets/bootstrap/css/bootstrap.min.css"
-   "/assets/bootstrap/css/bootstrap-theme.min.css"])
+   "/assets/bootstrap/css/bootstrap-theme.min.css"
+   "/assets/font-awesome/css/font-awesome.min.css"])
 
 (def asset-js
   ["/assets/jquery/jquery.min.js"
