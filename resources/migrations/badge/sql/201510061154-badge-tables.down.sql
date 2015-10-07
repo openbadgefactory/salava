@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS `badge_content_alignment`;
+--;;
+DROP TABLE IF EXISTS `badge_content_tag`;
+--;;
+DROP TABLE IF EXISTS `badge_content`;
+--;;
+DROP TABLE IF EXISTS `issuer_content`;
+--;;
+DROP TABLE IF EXISTS `badge_tag`;
+--;;
+DROP TABLE IF EXISTS `badge`;

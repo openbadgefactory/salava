@@ -1,0 +1,117 @@
+(
+ {
+  :table "badge"
+  :data {
+         :user_id 1
+         :email "admin@example.com"
+         :assertion_url "http://example.com/assertion-1.json"
+         :assertion_jws nil
+         :assertion_json "{\"uid\":\"e0d524c88cc2df8ea9ce00cf72f4586ecbf13eb8\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-1.json\",\"verify\":{\"url\":\"http://example.com/assertion-1.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494262\"}"
+         :badge_url "http://example.com/badge-1.json"
+         :issuer_url "http://example.com/issuer-1.json"
+         :criteria_url "http://example.com/criteria-1.json"
+         :badge_content_id "ef6ad66644885431772a135340673c036acce415d6f7877b58b0bf03a08e83e3"
+         :issuer_content_id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"
+         :issued_on 1428494262
+         :expires_on nil
+         :evidence_url nil
+         :status "pending"
+         :visibility "private"
+         :show_recipient_name 1
+         :rating nil
+         :ctime 1438954261
+         :mtime 1438954261
+         :deleted 0
+         :revoked 0
+         }
+  }
+
+ {
+  :table "badge_content"
+  :data {
+         :id "ef6ad66644885431772a135340673c036acce415d6f7877b58b0bf03a08e83e3"
+         :name "Open Badge Passport - Member"
+         :description "This Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage."
+         :image_file "file/e/4/3/c/e43c48360a8a0a6b75caf225d2fab021b3812dc5032b158fa834ae658a3d9b04.png"
+
+         :criteria_html "<!DOCTYPE html> <html> <head> <title>Open Badge Factory</title> <link href=\"https://fonts.googleapis.com/css?family=Quicksand:400,300,700|Source+Sans+Pro:400,200,700\" rel=\"stylesheet\" type=\"text/css\"><style type=\"text/css\"> html { background: url(\"https://openbadgefactory.com/image/ui/BG_texture.png\") repeat; } body { background-color: white; font-family: \"Source Sans Pro\",  sans-serif; color: #333; margin: 75px auto; width: 800px; border: 1px solid #ccc; padding: 10px; border-radius: 3px; box-shadow: 4px 4px 10px 2px rgba(80, 80, 80, 0.4); } </style> <link href=\"http://example.com/criteria-1.md\" rel=\"alternate\" type=\"text/x-markdown\"> </head><body> <p>This Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage. </p> <p>Open Badge Passport is a free service developed by Discendum, where the user can save / store the Open Badges they’ve earned. The user can share their Open Badges to other users inside the service as well as outside the service to different social media services. Open Badge Passport has also a tool with which the user can create miniportfolio pages consisting of their Open Badges and other content and publish those pages to other users as well as to the internet. </p> <p><strong>Helpful links</strong></p> <p><a href=\"https://openbadgepassport.com/en/about\">More information about Open Badge Passport </a></p> <p><a href=\"http://openbadges.org\">More information about the Open Badges -concept</a></p> <p><a href=\"https://openbadgepassport.com/en/user/register\">Create your own Open Badge Passport account</a></p> <div style=\"width:100%; position:fixed; left:0; bottom:0; background:white; text-align:center\"><a href=\"https://openbadgefactory.com\" target=\"_blank\"><img src=\"https://openbadgefactory.com/image/verified_issuedby_45.png\"></a></div></body></html>"
+
+         :criteria_markdown "This Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage.
+
+Open Badge Passport is a free service developed by Discendum, where the user can save / store the Open Badges they’ve earned. The user can share their Open Badges to other users inside the service as well as outside the service to different social media services. Open Badge Passport has also a tool with which the user can create miniportfolio pages consisting of their Open Badges and other content and publish those pages to other users as well as to the internet.
+
+**Helpful links**
+
+[More information about Open Badge Passport ](https://openbadgepassport.com/en/about)
+
+[More information about the Open Badges -concept](http://openbadges.org)
+
+[Create your own Open Badge Passport account](https://openbadgepassport.com/en/user/register)"
+         }
+  }
+ {
+  :table "issuer_content"
+  :data {
+         :id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"
+         :name "Discendum Oy"
+         :url "http://www.discendum.com"
+         :description "Discendum Oy"
+         :image_file nil
+         :email "info@discendum.com"
+         :revocation_list_url nil
+         }
+  }
+
+ {
+  :table "badge"
+  :data {
+         :user_id 1
+         :email "admin@example.com"
+         :assertion_url "http://example.com/assertion-2.json"
+         :assertion_jws nil
+         :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-2.json\",\"verify\":{\"url\":\"http://example.com/assertion-2.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+         :badge_url "http://example.com/badge-2.json"
+         :issuer_url "http://example.com/issuer-2.json"
+         :criteria_url "http://example.com/criteria-2.json"
+         :badge_content_id "97a581a4912aaa57b53e4a84f7122da5d0592812aa98fe40300abad71a843c3"
+         :issuer_content_id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"
+         :issued_on 1428494739
+         :expires_on nil
+         :evidence_url nil
+         :status "pending"
+         :visibility "private"
+         :show_recipient_name 1
+         :rating nil
+         :ctime 1438954262
+         :mtime 1438954262
+         :deleted 0
+         :revoked 0
+         }
+  }
+
+ {
+  :table "badge_content"
+  :data {
+        :id "97a581a4912aaa57b53e4a84f7122da5d0592812aa98fe40300abad71a843c3"
+        :name "Open Badge Passport - Jäsen"
+        :description "Merkki on myönnetty henkilölle, joka on ottanut Open Badge Passport -palvelun käyttöön."
+        :image_file "file/9/b/0/4/9b0410a9d026a0271570f723ad54ed402f239d178213dc50195e16bc0ef6ce5a.png"
+
+        :criteria_html "<!DOCTYPE html> <html> <head> <title>Open Badge Factory</title> <link href=\"https://fonts.googleapis.com/css?family=Quicksand:400,300,700|Source+Sans+Pro:400,200,700\" rel=\"stylesheet\" type=\"text/css\"><style type=\"text/css\"> html { background: url(\"https://openbadgefactory.com/image/ui/BG_texture.png\") repeat; } body { background-color: white; font-family: \"Source Sans Pro\",  sans-serif; color: #333; margin: 75px auto; width: 800px; border: 1px solid #ccc; padding: 10px; border-radius: 3px; box-shadow: 4px 4px 10px 2px rgba(80, 80, 80, 0.4); } </style> <link href=\"http://example.com/criteria-2.md\" rel=\"alternate\" type=\"text/x-markdown\"> </head><body> <p>Tämä merkki on myönnetty henkilölle, joka on ottanut Open Badge Passport -palvelun käyttöön. </p> <p>Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käyttäjä voi tallentaa ansaitsemansa Open Badges -osaamismerkit. Palvelussa käyttäjä voi jakaa merkkejä sekä palvelun sisällä muille käyttäjille että palvelun ulkopuolelle sosiaalisen median eri palveluihin. Lisäksi palvelusta löytyy työkalu, jolla käyttäjä voi luoda merkeistä ja muista sisällöistä miniportfoliosivuja, joita voi julkaista muille käyttäjille ja internetiin. </p> <p><strong>Hyödylliset linkit</strong></p> <p><a href=\"http://openbadgepassport.com\">Open Badge Passport </a></p> <p><a href=\"https://openbadgepassport.com/fi/about\">Lisätietoa Open Badge Passport -palvelusta</a> </p> <p><a href=\"https://openbadgepassport.com/fi/user/register\">Luo oma Open Badge Passport -tunnus</a></p> <p><a href=\"http://openbadges.org/\">Lisätietoja Open Badges -konseptista</a></p> <div style=\"width:100%; position:fixed; left:0; bottom:0; background:white; text-align:center\"><a href=\"https://openbadgefactory.com\" target=\"_blank\"><img src=\"https://openbadgefactory.com/image/verified_issuedby_45.png\"></a></div></body></html>"
+
+        :criteria_markdown "Tämä merkki on myönnetty henkilölle, joka on ottanut Open Badge Passport -palvelun käyttöön.
+
+Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käyttäjä voi tallentaa ansaitsemansa Open Badges -osaamismerkit. Palvelussa käyttäjä voi jakaa merkkejä sekä palvelun sisällä muille käyttäjille että palvelun ulkopuolelle sosiaalisen median eri palveluihin. Lisäksi palvelusta löytyy työkalu, jolla käyttäjä voi luoda merkeistä ja muista sisällöistä miniportfoliosivuja, joita voi julkaista muille käyttäjille ja internetiin.
+
+**Hyödylliset linkit**
+
+[Open Badge Passport ](http://openbadgepassport.com)
+
+[Lisätietoa Open Badge Passport -palvelusta](https://openbadgepassport.com/fi/about) 
+
+[Luo oma Open Badge Passport -tunnus](https://openbadgepassport.com/fi/user/register)
+
+[Lisätietoja Open Badges -konseptista](http://openbadges.org/)"
+        }
+ }
+)

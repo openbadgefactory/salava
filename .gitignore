@@ -10,6 +10,7 @@ pom.xml.asc
 .hgignore
 .hg/
 /resources/config/*.edn
+/resources/public/file
 tags
 *~
 *#

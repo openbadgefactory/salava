@@ -1,6 +1,7 @@
 (ns salava.core.migrator
-  (:require [joplin.repl :as joplin]
-            [joplin.jdbc.database]
+  (:require [migratus.core :as migratus]
+            [migratus.database :refer [find-migrations parse-migration-id]]
+            [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
             [salava.core.util :as util]))
@@ -8,21 +9,28 @@
 
 (def config (-> (io/resource "config/core.edn") slurp read-string))
 
-(def plugins (conj (:plugins config) :core))
+(def plugins (cons :core (:plugins config)))
 
-(defn to-jdbc-uri [ds]
-  (str "jdbc:" (:adapter ds "mysql") "://"
-       (:server-name ds "localhost")  "/" (:database-name ds "salava")
-       "?user=" (:username ds "salava") "&password=" (:password ds "salava")))
+(def ds (:datasource config))
+
+(def jdbc-uri (str "jdbc:" (:adapter ds "mysql") "://"
+                   (:server-name ds "localhost")  "/" (:database-name ds "salava")
+                   "?user=" (:username ds "salava") "&password=" (:password ds "salava")))
+
+(def schema-table "schema_migrations")
+
+;;;
+
+(defn migration-dir [plugin]
+  (str "migrations/" (name plugin) "/sql"))
+
+(defn seed-dir [plugin]
+  (str "migrations/" (name plugin) "/seed"))
 
 
-(defn seed-data [plugin]
-  (-> (io/resource (str "migrators/" (name plugin) "/seed/data.edn")) slurp read-string))
-
-
-(defn seed-insert [plugin db-uri]
-  (doseq [seed (seed-data plugin)]
-    (jdbc/insert! {:connection-uri db-uri} (:table seed) (:data seed))))
+(defn seed-insert [data-file]
+  (doseq [seed (-> data-file slurp read-string)]
+    (jdbc/insert! jdbc-uri (:table seed) (:data seed))))
 
 
 (defn copy-file [source-path dest-path]
@@ -30,47 +38,80 @@
     (io/make-parents dest-path)
     (io/copy (io/file source-path) (io/file dest-path))))
 
+
 (defn seed-copy [plugin]
-  (doseq [source-file (-> (io/resource (str "migrators/" plugin "/seed/public")) io/as-file file-seq rest)]
-     (copy-file source-file (str "resources/public/" (util/public-path source-file)))))
+  (when-let [data-dir (io/resource (str (seed-dir plugin) "/public"))]
+    (doseq [source-file (-> data-dir io/as-file file-seq rest)]
+      (copy-file source-file (str "resources/public/" (util/public-path source-file))))))
 
 
-(defn seed-run [plugin target & args]
-  (do
-    (seed-insert plugin (get-in target [:db :url]))
+
+(defn migratus-config [plugin]
+  {:store :database
+   :db    jdbc-uri
+   :migration-dir (migration-dir plugin)
+   :migration-table-name schema-table})
+
+
+(defn applied-migrations
+  ([]
+   (try
+     (map :id (jdbc/query jdbc-uri [(str "SELECT id from " schema-table " ORDER BY id ASC")]))
+     (catch Exception e)))
+
+  ([plugin]
+   (let [applied (applied-migrations)
+        available (->> (migration-dir plugin) find-migrations keys (map str) set)]
+    (filter available (map str applied)))))
+
+
+(defn run-down [plugin applied]
+  (doseq [id applied]
+    (migratus/down (migratus-config plugin) (parse-migration-id id))))
+
+
+(defn run-seed [plugin]
+  (when-let [data-file (io/resource (str (seed-dir plugin) "/data.edn"))]
+    (log/info "running seed functions for plugin" (name plugin))
+    (seed-insert data-file)
     (seed-copy plugin)))
 
 
+(defn run-reset [plugin]
+  (let [applied (reverse (applied-migrations plugin))]
+    (do
+      (log/info "running reset functions for plugin" (name plugin))
+      (run-down plugin applied)
+      (migratus/migrate (migratus-config plugin))
+      (run-seed plugin))))
+
 ;;;
-
-(defn joplin-config [plugin]
-  {:migrators    {:sql-mig
-                  (str "resources/migrators/" (name plugin) "/sql")}
-   :seeds        {:sql-seed
-                  (partial seed-run plugin)}
-   :databases    {:sql
-                  {:type :jdbc, :url (to-jdbc-uri (:datasource config))}}
-   :environments {:default
-                  [{:db :sql, :migrator :sql-mig, :seed :sql-seed}]}})
-
 
 
 (defn migrate [& args]
   (doseq [plugin (or args plugins)]
-    (joplin/migrate (joplin-config plugin) :default :sql))
+    (log/info "running migrations for plugin" (name plugin))
+    (migratus/migrate (migratus-config plugin)))
   (System/exit 0))
 
-(defn rollback [& args]
-  (doseq [plugin (or args plugins)]
-    (joplin/rollback (joplin-config plugin) :default :sql))
+(defn rollback [plugin]
+  (when-let [id (last (applied-migrations plugin))]
+    (log/info "rolling back latest migration for plugin" (name plugin))
+    (run-down plugin [id]))
+  (System/exit 0))
+
+(defn remove-plugin [plugin]
+  (log/info "rolling back all migrations for plugin" (name plugin))
+  (let [applied (reverse (applied-migrations plugin))]
+    (run-down plugin applied))
   (System/exit 0))
 
 (defn seed [& args]
   (doseq [plugin (or args plugins)]
-    (joplin/seed (joplin-config plugin) :default :sql))
+    (run-seed plugin))
   (System/exit 0))
 
 (defn reset [& args]
   (doseq [plugin (or args plugins)]
-    (joplin/reset (joplin-config plugin) :default :sql))
+    (run-reset plugin))
   (System/exit 0))

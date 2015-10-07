@@ -13,8 +13,7 @@
                  [hikari-cp "1.3.1"]
                  [mysql/mysql-connector-java "5.1.36"]
                  [yesql "0.5.0"]
-                 [joplin.core "0.3.3"]
-                 [joplin.jdbc "0.3.3"]
+                 [migratus "0.8.6"]
 
                  ; Server side
                  [http-kit "2.1.19"]
@@ -104,7 +103,8 @@
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
-            "joplin-migrate"  ["run" "-m" "salava.core.migrator/migrate"]
-            "joplin-rollback" ["run" "-m" "salava.core.migrator/rollback"]
-            "joplin-seed"     ["run" "-m" "salava.core.migrator/seed"]
-            "joplin-reset"    ["run" "-m" "salava.core.migrator/reset"]})
+            "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
+            "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
+            "migrator-remove" ["run" "-m" "salava.core.migrator/remove-plugin"]
+            "migrator-seed"   ["run" "-m" "salava.core.migrator/seed"]
+            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]})
