@@ -54,7 +54,7 @@
 
 (defmacro main [path]
   `(GET* ~path []
-         :no-doc false
+         :no-doc true
          :summary "Main HTML layout"
          :components [~'context]
          (-> (main-view ~'context)
