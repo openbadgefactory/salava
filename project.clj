@@ -12,8 +12,8 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [hikari-cp "1.3.1"]
                  [mysql/mysql-connector-java "5.1.36"]
-                 [yesql "0.5.0"]
-                 [migratus "0.8.6"]
+                 [yesql "0.5.1"]
+                 [migratus "0.8.7"]
 
                  ; Server side
                  [http-kit "2.1.19"]
