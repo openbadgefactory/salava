@@ -4,12 +4,13 @@
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
+            [salava.registry]
             [salava.core.util :as util]))
 
 
 (def config (-> (io/resource "config/core.edn") slurp read-string))
 
-(def plugins (cons :core (:plugins config)))
+(def plugins (cons :core (:plugins salava.registry/enabled)))
 
 (def ds (:datasource config))
 
