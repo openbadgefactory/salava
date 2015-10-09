@@ -1,14 +1,14 @@
 (ns salava.core.handler
   (:require [compojure.api.sweet :refer :all]
-            [com.stuartsierra.component :as component]
+            [salava.registry]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [ring.middleware.webjars :refer [wrap-webjars]]))
 
 
-(defn wrap-middlewares [context routes]
-  (let [config (get-in context [:config :core])]
+(defn wrap-middlewares [ctx routes]
+  (let [config (get-in ctx [:config :core])]
     (-> routes
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
@@ -22,10 +22,6 @@
         (wrap-webjars))))
 
 
-(defn handler [context route-coll]
-  (let [route-def (apply routes route-coll)]
-    (api {:components {:context context}}
-         (swagger-docs {:info  {:title "OBP API"
-                                :description "Open Badge Passport API"}})
-         (swagger-ui "/swagger-ui" :validator-url nil)
-         (wrap-middlewares context route-def))))
+(defn handler [ctx]
+  (let [route-fn (:routes salava.registry/enabled)]
+    (wrap-middlewares ctx (route-fn ctx))))

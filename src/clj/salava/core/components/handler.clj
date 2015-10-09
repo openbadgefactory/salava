@@ -1,16 +1,19 @@
 (ns salava.core.components.handler
   (:require [com.stuartsierra.component :as component]
+            [salava.core.helper :refer [dump]]
             [salava.core.handler]))
 
 
-(defrecord Handler [config plugin handler]
+(defrecord Handler [config db handler]
   component/Lifecycle
 
   (start [this]
-    (assoc this :handler (salava.core.handler/handler (:context plugin) (:routes plugin))))
+    (let [context {:config (:config config)
+                   :db     (:datasource db)}]
+      (assoc this :handler (salava.core.handler/handler context))))
 
   (stop [this]
-    this))
+    (assoc this :handler nil)))
 
 
 (defn create []

@@ -2,12 +2,6 @@
 
  :asset-version nil
 
- :plugins [:badge
-           :page
-           :gallery
-           :user
-           :file]
-
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"

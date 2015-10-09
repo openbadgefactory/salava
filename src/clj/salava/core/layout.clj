@@ -1,8 +1,9 @@
 (ns salava.core.layout
   (:require [compojure.api.sweet :refer :all]
+            [ring.util.http-response :refer [ok content-type]]
             [clojure.java.io :as io]
             [clojure.data.json :as json]
-            [ring.util.response :as r]
+            [salava.core.helper :refer [dump]]
             [hiccup.page :refer [html5 include-css include-js]]))
 
 (def asset-css
@@ -51,13 +52,12 @@
      (apply include-js (js-list ctx))]))
 
 
-(defn main-response [ctx]
-  (-> (r/response (main-view ctx))
-      (r/header "Content-type" "text/html; charset=\"UTF-8\"")))
-
-(defn main [path]
-  (GET* path []
-        :components [context]
-        (main-response context)))
-
+(defmacro main [path]
+  `(GET* ~path []
+         :no-doc false
+         :summary "Main HTML layout"
+         :components [~'context]
+         (-> (main-view ~'context)
+             (ok)
+             (content-type "text/html; charset=\"UTF-8\""))))
 

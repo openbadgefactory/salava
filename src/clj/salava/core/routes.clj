@@ -1,14 +1,11 @@
 (ns salava.core.routes
   (:require [compojure.api.sweet :refer :all]
-            [salava.core.layout :as layout]
-            [ring.util.response :as r]))
+            [ring.util.http-response :refer :all]
+            [salava.core.layout :as layout]))
 
-
-(def not-found (constantly (-> (r/response "404 Not Found")
-                               (r/status 404)
-                               (r/header "Content-type" "text/plain; charset=\"UTF-8\""))))
-
+;(macroexpand  '(layout/main "/"))
 
 (defroutes* route-def
   (layout/main "/")
-  (ANY* "*" [] not-found))
+  ;(GET* "/" [] :components [context] (ok context))
+  (ANY* "*" [] (not-found "404 Not found")))
