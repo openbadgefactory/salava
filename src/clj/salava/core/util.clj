@@ -3,6 +3,9 @@
             [clojure.string :as str]))
 
 
+(defn get-db [ctx]
+  {:connection {:datasource (:db ctx)}})
+
 (defn hex-digest [algo string]
   (let [digest (.digest (java.security.MessageDigest/getInstance algo) (.getBytes string))]
     (.toString (new java.math.BigInteger 1 digest) 16)))

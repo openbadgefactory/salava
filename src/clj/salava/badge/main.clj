@@ -3,12 +3,9 @@
             [clojure.string :refer [blank?]]
             [salava.core.time :refer [unix-time]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [map-sha256]]))
+            [salava.core.util :refer [get-db map-sha256]]))
 
 (defqueries "sql/badge/main.sql")
-
-(defn get-db [ctx]
-  {:connection {:datasource (:db ctx)}})
 
 (defn map-badges-tags [badges tags]
   (map (fn [b]
