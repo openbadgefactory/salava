@@ -1,32 +1,98 @@
 (ns salava.core.i18n
   (:require [clojure.tools.logging :as log]
+            [clojurewerkz.propertied.properties :refer [properties->map map->properties]]
             [clojure.java.io :as io]
+            [salava.registry]
+            [salava.core.helper :refer [dump]]
             [salava.core.util :as util]))
 
 
 (def config (-> (io/resource "config/core.edn") slurp read-string))
 
-(def plugins (cons :core (:plugins config)))
+(def plugins (cons :core (:plugins salava.registry/enabled)))
 
 (def languages (:languages config))
 
-(def dict-file (io/resource "i18n/dict.clj"))
+(def default-lang :en)
+
+(def lang-pairs (mapcat (fn [l] (map (fn [p] [l p]) plugins)) languages))
+
+(def dict-file "resources/i18n/dict.clj")
+
 
 ;;;
+
+
+(defn prop-read [filename]
+  (with-open [r (io/reader filename :encoding "UTF-8")]
+    (doto (java.util.Properties.)
+      (.load r))))
+
+
+(defn prop-write [filename prop]
+  (with-open [w (io/writer filename :encoding "UTF-8")]
+      (.store prop w nil)))
+
 
 (defn prop-file [lang plugin]
-  (io/resource (str "i18n/" lang "/" (name plugin) ".properties")))
+  (str "resources/i18n/" (name lang) "/" (name plugin) ".properties"))
+
+(defn existing [file]
+  (when (.exists (io/file file))
+    file))
 
 
+(defn load-prop-file [lang plugin]
+  (some-> (prop-file lang plugin)
+          (existing)
+          (prop-read)
+          (properties->map true)))
 
 
-;;;
+(defn save-prop-file [lang plugin data]
+  (let [out-file (prop-file lang plugin)]
+    (do
+      (io/make-parents out-file)
+      (prop-write out-file (map->properties data)))))
 
 
-(defn dict-to-prop [& args]
-  (log/info "converting dictionary map to properties")
+(defn save-dict-file [dict]
+  (log/info "writing dict.clj file")
+  (with-open [w (io/writer dict-file :encoding "UTF-8")]
+    (.write w (pr-str dict)))
+  dict)
+
+
+(defn props-to-dict []
+  (log/info "reading .properties files")
+  (reduce (fn [coll [lang plugin]]
+            (assoc-in coll [lang plugin] (load-prop-file lang plugin))) {} lang-pairs))
+
+
+(defn dict-to-props [dict]
+  (log/info "writing .properties files")
+  (doseq [[lang plugin] lang-pairs]
+    (save-prop-file lang plugin (get-in dict [lang plugin]))))
+
+
+(defn combine-dicts [source target]
+  (into (sorted-map)
+        (reduce (fn [coll k]
+                  (assoc coll k (or (k coll) (k source)))) target (keys source))))
+
+
+(defn add-default-vals [dict]
+  (log/info "merging new keys from default language")
+  (reduce (fn [coll [lang plugin]]
+            (assoc-in coll [lang plugin]
+                      (combine-dicts (get-in coll [default-lang plugin]) (get-in coll [lang plugin]))))
+          dict lang-pairs))
+
+
+(defn translate [& args]
+  (-> (props-to-dict)
+      (add-default-vals)
+      (save-dict-file)
+      (dict-to-props))
   (System/exit 0))
 
-(defn prop-to-dict [& args]
-  (log/info "parsing properties files to dictionary map")
-  (System/exit 0))

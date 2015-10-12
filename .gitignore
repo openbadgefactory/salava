@@ -11,6 +11,7 @@ pom.xml.asc
 .hg/
 /resources/config/*.edn
 /resources/public/file
+/resources/i18n/dict.clj
 tags
 *~
 *#

@@ -2,6 +2,8 @@
 
  :asset-version nil
 
+ :languages [:en :fi]
+
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"

@@ -27,6 +27,7 @@
                  [org.clojure/data.json "0.2.6"]
                  [clj-time "0.11.0"]
                  [prismatic/schema "0.4.4"]
+                 [clojurewerkz/propertied "1.2.0"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.122"]
@@ -102,6 +103,8 @@
 
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
+
+            "translate"       ["run" "-m" "salava.core.i18n/translate"]
 
             "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
             "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
