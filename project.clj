@@ -106,7 +106,7 @@
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
-            "translate"       ["run" "-m" "salava.core.i18n/translate"]
+            "translate"       ["run" "-m" "salava.core.translator/translate"]
 
             "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
             "rollback"        ["run" "-m" "salava.core.migrator/rollback"]

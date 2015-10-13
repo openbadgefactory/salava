@@ -1,4 +1,4 @@
-(ns salava.core.i18n
+(ns salava.core.translator
   (:require [clojure.tools.logging :as log]
             [clojurewerkz.propertied.properties :refer [properties->map map->properties]]
             [clojure.java.io :as io]
