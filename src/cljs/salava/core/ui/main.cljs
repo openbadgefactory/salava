@@ -1,7 +1,10 @@
 (ns salava.core.ui.main
   (:require [reagent.core :as reagent]
+            [reagent.session :as session]
             [salava.resolver]
             [salava.core.ui.dispatch :as d]))
+
+(session/put! :lang :en)
 
 (defn get-ctx []
    (let [core-ctx (aget js/window "salavaCoreCtx")]

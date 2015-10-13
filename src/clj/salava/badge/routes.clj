@@ -9,9 +9,9 @@
 (defroutes* route-def
   (context* "/badge" []
             (layout/main "/")
-            (layout/main "/import/")
-            (layout/main "/upload/")
-            (layout/main "/stats/"))
+            (layout/main "/import")
+            (layout/main "/upload")
+            (layout/main "/stats"))
 
   (context* "/obfv1/badge" []
             (GET* "/:userid" []

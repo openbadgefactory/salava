@@ -5,7 +5,7 @@
 (defroutes* route-def
   (context* "/gallery" []
             (layout/main "/")
-            (layout/main "/badges/")
-            (layout/main "/pages/")
-            (layout/main "/profiles/")
-            (layout/main "/getbadge/")))
+            (layout/main "/badges")
+            (layout/main "/pages")
+            (layout/main "/profiles")
+            (layout/main "/getbadge")))

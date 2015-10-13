@@ -6,10 +6,24 @@
             [ring.middleware.session.cookie :refer [cookie-store]]
             [ring.middleware.webjars :refer [wrap-webjars]]))
 
+(defn ignore-trailing-slash
+  "Modifies the request uri before calling the handler.
+  Removes a single trailing slash from the end of the uri if present.
+
+  Useful for handling optional trailing slashes until Compojure's route matching syntax supports regex.
+  Adapted from http://stackoverflow.com/questions/8380468/compojure-regex-for-matching-a-trailing-slash"
+  [handler]
+  (fn  [request]
+    (let [uri (:uri request)]
+      (handler (assoc request :uri (if (and (not (= "/" uri))
+                                            (.endsWith uri "/"))
+                                     (subs uri 0 (dec (count uri)))
+                                     uri))))))
 
 (defn wrap-middlewares [ctx routes]
   (let [config (get-in ctx [:config :core])]
     (-> routes
+        (ignore-trailing-slash)
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
                            (assoc-in [:session] false)))

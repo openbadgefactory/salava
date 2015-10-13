@@ -1,8 +1,7 @@
 (ns salava.core.ui.dispatch
-  (:import [goog.history Html5History EventType])
   (:require [reagent.core :as reagent :refer [atom]]
             [bidi.bidi :as b :include-macros true]
-            [goog.events]
+            [pushy.core :as pushy]
             [clojure.string :as str]
             [salava.core.common :as common]
             [salava.core.ui.layout :as layout]
@@ -10,23 +9,18 @@
 
 
 (defn get-token []
-  (str js/window.location.pathname js/window.location.search))
+  (let [uri js/window.location.pathname]
+    (str (if (and (not (= "/" uri)) (.endsWith uri "/"))
+           (subs uri 0 (dec (count uri)))
+           uri)
+         js/window.location.search)))
+
 
 (defonce current-path (atom (get-token)))
 
-(defonce history (doto (Html5History.)
-                   (.setPathPrefix
-                     (str js/window.location.protocol "//" js/window.location.host))
-                   (goog.events/listen EventType.NAVIGATE
-                                       #(reset! current-path (get-token)))
-                   (.setUseFragment false)
-                   (.setEnabled     true)))
+(defonce history (pushy/pushy #(reset! current-path (get-token)) (constantly true)))
 
-(defn navigate! [target e]
-  (when (Html5History.isSupported)
-    (.preventDefault e)
-    (js/window.scrollTo 0 0)
-    (.setToken history target)))
+(pushy/start! history)
 
 
 ;;;
@@ -60,7 +54,7 @@
 
 (defn filtered-navi-list [navi key-list]
   (let [map-fn (fn [[tr nv]]
-                 (assoc nv :target tr :on-click (partial navigate! tr)))]
+                 (assoc nv :target tr))]
     (sort-by :weight (map map-fn (select-keys navi key-list)))))
 
 (defn top-navi-list [navi]
@@ -90,5 +84,3 @@
           heading (current-heading @current-path headings)
           content  (handler route-params)]
       (layout/default top-navi sub-navi heading content)))))
-
-

@@ -4,5 +4,5 @@
 
 (defroutes* route-def
   (context* "/user" []
-            (layout/main "/login/")
-            (layout/main "/account/")))
+            (layout/main "/login")
+            (layout/main "/account")))

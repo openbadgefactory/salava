@@ -1,11 +1,11 @@
 (ns salava.gallery.ui.routes)
 
 (defn ^:export routes [context]
-  {"/gallery" [["/"          (constantly [:p "Badge gallery"])]
-               ["/badges/"   (constantly [:p "Badge gallery"])]
-               ["/pages/"    (constantly [:p "Page gallery"])]
-               ["/profiles/" (constantly [:p "User gallery"])]
-               ["/getbadge/" (constantly [:p "Apply for a badge"])]]})
+  {"/gallery" [[""         (constantly [:p "Badge gallery"])]
+               ["/badges"   (constantly [:p "Badge gallery"])]
+               ["/pages"    (constantly [:p "Page gallery"])]
+               ["/profiles" (constantly [:p "User gallery"])]
+               ["/getbadge" (constantly [:p "Apply for a badge"])]]})
 
 (defn ^:export navi [context]
   {"/gallery/"          {:weight 40 :title "Gallery"}

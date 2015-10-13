@@ -32,7 +32,10 @@
                  ; Client side
                  [org.clojure/clojurescript "1.7.122"]
                  [reagent "0.5.1"]
+                 [reagent-utils "0.1.5"]
                  [bidi "1.21.0"]
+                 [kibu/pushy "0.3.6"]
+                 [com.taoensso/tower "3.1.0-beta3"]
 
                  [org.webjars/jquery "2.1.4"]
                  [org.webjars/bootstrap "3.3.5"]
@@ -104,7 +107,7 @@
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
-            "translate"       ["run" "-m" "salava.core.i18n/translate"]
+            "translate"       ["run" "-m" "salava.core.translator/translate"]
 
             "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
             "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
