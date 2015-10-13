@@ -35,7 +35,9 @@
 
 
 (defn prop-file [lang plugin]
-  (str "resources/i18n/" (name lang) "/" (name plugin) ".properties"))
+  (if (nil? lang)
+    (str "resources/i18n/" (name plugin) ".properties")
+    (str "resources/i18n/" (name lang) "/" (name plugin) "_" (name lang) ".properties")))
 
 (defn existing [file]
   (when (.exists (io/file file))
@@ -56,10 +58,10 @@
       (prop-write out-file (map->properties data)))))
 
 
-(defn save-dict-file [dict]
+(defn save-dict-file [dict dev-mode]
   (log/info "writing dict.clj file")
   (with-open [w (io/writer dict-file :encoding "UTF-8")]
-    (.write w (pr-str dict)))
+    (.write w (pr-str (assoc dict :dev-mode? dev-mode :fallback-locale default-lang))))
   dict)
 
 
@@ -72,7 +74,8 @@
 (defn dict-to-props [dict]
   (log/info "writing .properties files")
   (doseq [[lang plugin] lang-pairs]
-    (save-prop-file lang plugin (get-in dict [lang plugin]))))
+    (when (keys (get-in dict [lang plugin]))
+      (save-prop-file lang plugin (get-in dict [lang plugin])))))
 
 
 (defn combine-dicts [source target]
@@ -92,7 +95,7 @@
 (defn translate [& args]
   (-> (props-to-dict)
       (add-default-vals)
-      (save-dict-file)
+      (save-dict-file false)
       (dict-to-props))
   (System/exit 0))
 
