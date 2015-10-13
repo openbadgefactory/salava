@@ -1,7 +1,7 @@
 (ns salava.core.ui.layout)
 
-(defn navi-link [{:keys [target title on-click]}]
-  [:a {:href target :onClick on-click} title])
+(defn navi-link [{:keys [target title]}]
+  [:a {:href target} title])
 
 
 (defn top-navi [items]

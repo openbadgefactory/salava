@@ -34,6 +34,7 @@
                  [reagent "0.5.1"]
                  [reagent-utils "0.1.5"]
                  [bidi "1.21.0"]
+                 [kibu/pushy "0.3.6"]
                  [com.taoensso/tower "3.1.0-beta3"]
 
                  [org.webjars/jquery "2.1.4"]
