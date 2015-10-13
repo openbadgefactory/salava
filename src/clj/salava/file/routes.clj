@@ -4,4 +4,4 @@
 
 (defroutes* route-def
   (context* "/pages" []
-            (layout/main "/files/")))
+            (layout/main "/files")))

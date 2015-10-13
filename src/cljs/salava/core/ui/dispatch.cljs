@@ -9,7 +9,12 @@
 
 
 (defn get-token []
-  (str js/window.location.pathname js/window.location.search))
+  (let [uri js/window.location.pathname]
+    (str (if (and (not (= "/" uri)) (.endsWith uri "/"))
+           (subs uri 0 (dec (count uri)))
+           uri)
+         js/window.location.search)))
+
 
 (defonce current-path (atom (get-token)))
 
