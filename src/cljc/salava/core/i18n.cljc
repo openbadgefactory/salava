@@ -15,6 +15,8 @@
 (def translation (tower/make-t tconfig)) ; create translation fn
 
 (defn t [key]
-  (let [lang #?(:clj "en"
-                :cljs (session/get :lang))]
-    (translation lang key)))
+  (let [lang #?(:clj "en" :cljs (session/get :lang))
+        out-str (translation lang key)]
+    (if-not (= out-str "")
+      out-str
+      (str "[" key "]"))))
