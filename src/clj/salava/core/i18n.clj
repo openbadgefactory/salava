@@ -61,7 +61,7 @@
 (defn save-dict-file [dict dev-mode]
   (log/info "writing dict.clj file")
   (with-open [w (io/writer dict-file :encoding "UTF-8")]
-    (.write w (pr-str (assoc dict :dev-mode? dev-mode :fallback-locale default-lang))))
+    (.write w (pr-str dict)))
   dict)
 
 
