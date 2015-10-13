@@ -5,3 +5,5 @@
 
 (defn ^:export navi [context]
   {"/pages/files/" {:weight 35 :title "Files"}})
+
+(defn ^:export heading [context] {})

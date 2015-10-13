@@ -46,6 +46,10 @@
   (let [navi-coll  (apply common/deep-merge (map #(resolve-plugin "navi" % ctx) plugins))]
     (common/deep-merge navi-coll (resolve-plugin "navi" "core" ctx))))
 
+(defn collect-headings [plugins ctx]
+  (let [heading-coll (apply common/deep-merge (map #(resolve-plugin "heading" % ctx) plugins))]
+    (common/deep-merge heading-coll (resolve-plugin "heading" "core" ctx))))
+
 
 ;;;
 
@@ -67,21 +71,24 @@
   (let [parent-filter #(and (not= (str "/" parent "/") %) (= parent (navi-parent %)))
         key-list (filter parent-filter (keys navi))]
     (when parent
-      
       (js/console.log (pr-str key-list))
       (filtered-navi-list navi key-list))))
 
+(defn current-heading [parent headings]
+  (str (get headings parent)))
 ;;;
 
 (defn main-view [ctx]
   (let [plugins    (get-in ctx [:plugins :all])
         routes     (collect-routes plugins ctx)
-        navi-items (collect-navi plugins ctx)]
+        navi-items (collect-navi plugins ctx)
+        headings   (collect-headings plugins ctx)]
   (fn []
     (let [{:keys [handler route-params]} (b/match-route routes @current-path)
           top-navi (atom (top-navi-list navi-items))
           sub-navi (atom (sub-navi-list (navi-parent @current-path) navi-items))
+          heading (current-heading @current-path headings)
           content  (handler route-params)]
-      (layout/default top-navi sub-navi content)))))
+      (layout/default top-navi sub-navi heading content)))))
 
 

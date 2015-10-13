@@ -39,10 +39,14 @@
      ^{:key (:target i)} [:li (navi-link i)])] )
 
 
-(defn default [top-items sub-items content]
+(defn default [top-items sub-items heading content]
   [:div
    [:header {:id "navbar"}
     (top-navi top-items)]
+   (if-not (empty? heading)
+     [:div {:class "title-row"}
+      [:div {:class "container"}
+       [:h2 heading]]])
    [:div {:class "container main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
