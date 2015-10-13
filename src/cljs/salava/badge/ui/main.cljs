@@ -1,0 +1,73 @@
+(ns salava.badge.ui.main
+  (:require [reagent.core :as reagent :refer [atom]]
+            [reagent.session :as session]
+            [clojure.set :as set :refer [intersection]]
+            [clojure.walk :as walk :refer [keywordize-keys]]
+            [ajax.core :as ajax]
+            [salava.core.ui.helper :as h :refer [unique-values]]
+            [salava.core.ui.grid :as g]
+            [salava.core.i18n :as i18n :refer [t]]))
+
+(defn visibility-select-values []
+  [{:value "all" :title (t :badge/all)}
+   {:value "public"  :title (t :badge/public)}
+   {:value "shared"  :title (t :badge/shared)}
+   {:value "private" :title (t :badge/private)}])
+
+(defn order-radio-values []
+  [{:value "mtime" :id "radio-date" :label (t :badge/by-date)}
+   {:value "name" :id "radio-name" :label (t :badge/by-name)}])
+
+(defn badge-grid-form [state]
+  [:div {:class "form-horizontal"}
+   [g/grid-search-field (t :badge/search) "badgesearch" (t :badge/search-by-name) :search state]
+   [g/grid-select (t :badge/show) "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons (t :badge/tags) (unique-values :tags (:data @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (t :badge/order-by) "order" (order-radio-values) :order state]])
+
+(defn badge-visible? [element state]
+  (if (and
+        (or (= (:visibility @state) "all")
+            (= (:visibility @state) (:visibility element)))
+        (or (> (count
+                 (intersection
+                   (into #{} (:tags-selected @state))
+                   (into #{} (:tags element)))
+                 )
+               0)
+            (= (:tags-all @state)
+               true))
+        (or (empty? (:search @state))
+            (not= (.indexOf
+                    (.toLowerCase (:name element))
+                    (.toLowerCase (:search @state)))
+                  -1)))
+    true false))
+
+(defn badge-grid [state]
+  [:div {:class "row"
+         :id "grid"}
+   (doall (let [badges (:data @state)
+                order (:order @state)]
+            (for [element-data (sort-by (keyword order) badges)]
+              (if (badge-visible? element-data state)
+                (g/badge-grid-element element-data)))))])
+
+(defn init-my-badges [state]
+  (ajax/GET
+    (str (session/get :apihost) "/obpv1/badge/1")
+    {:handler (fn [x]
+                (let [data (map keywordize-keys x)]
+                  (swap! state assoc :data data)))}))
+
+(defn my-badges []
+  (let [state (atom {:data []
+                     :visibility "all"
+                     :order ""
+                     :tags-all true
+                     :tags-selected []})]
+    (init-my-badges state)
+    (fn []
+      [:div {:class "badge-grid"}
+       [badge-grid-form state]
+       [badge-grid state]])))

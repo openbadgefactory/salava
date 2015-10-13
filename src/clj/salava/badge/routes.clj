@@ -9,11 +9,12 @@
 (defroutes* route-def
   (context* "/badge" []
             (layout/main "/")
+            (layout/main "/info/:id")
             (layout/main "/import")
             (layout/main "/upload")
             (layout/main "/stats"))
 
-  (context* "/obfv1/badge" []
+  (context* "/obpv1/badge" []
             (GET* "/:userid" []
                   :return [schemas/BadgeContent]
                   :path-params [userid :- Long]

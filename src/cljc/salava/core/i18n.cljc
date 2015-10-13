@@ -10,6 +10,7 @@
            :dev-mode? true
            :dictionary "i18n/dict.clj"}
      :cljs {:fallback-locale :en
+            :dev-mode? true
             :compiled-dictionary (tower-macros/dict-compile* "i18n/dict.clj")}))
 
 (def translation (tower/make-t tconfig)) ; create translation fn

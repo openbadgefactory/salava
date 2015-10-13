@@ -1,12 +1,14 @@
 (ns salava.badge.ui.routes
-  (:require [salava.core.i18n :as i18n :refer [t]]))
+  (:require [salava.badge.ui.main :as main]
+            [salava.badge.ui.info :as info]
+            [salava.core.i18n :as i18n :refer [t]]))
 
-(defn show-badge [{:keys [badge-id]}]
-  [:p "Got badge id " badge-id])
+(defn foo [params]
+  (info/init params))
 
 (defn ^:export routes [context]
-  {"/badge" [[""       (constantly [:p (t :badge/Mybadges)])]
-             [["/show" :badge-id] show-badge]
+  {"/badge" [[""       (main/my-badges)]
+             [["/info/" :badge-id] foo]
              ["/import" (constantly [:p (t :badge/Importbadges)])]
              ["/upload" (constantly [:p (t :badge/Uploadbadges)])]
              ["/export" (constantly [:p (t :badge/Exportbadges)])]
