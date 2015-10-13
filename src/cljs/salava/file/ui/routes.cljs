@@ -4,4 +4,6 @@
   {"/pages" [["/files" (constantly [:p "My files"])]]})
 
 (defn ^:export navi [context]
-  {"/pages/files" {:weight 35 :title "Files"}})
+  {"/pages/files/" {:weight 35 :title "Files"}})
+
+(defn ^:export heading [context] {})

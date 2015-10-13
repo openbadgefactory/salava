@@ -7,4 +7,9 @@
 
 (defn ^:export navi [context]
   {"/pages/"         {:weight 30 :title "Pages"}
-   "/pages/mypages" {:weight 31 :title "My pages"}})
+   "/pages/mypages/" {:weight 31 :title "My pages"}})
+
+(defn ^:export heading [context]
+  {"/pages/" "Pages / My pages"
+   "/pages/mypages/" "Pages / My pages"
+   "/pages/files/" "Pages / My files"})

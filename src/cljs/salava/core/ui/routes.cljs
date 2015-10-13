@@ -10,3 +10,6 @@
 
 
 (defn ^:export navi [context] {})
+
+
+(defn ^:export heading [context] {})
