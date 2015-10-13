@@ -5,12 +5,12 @@
   [:p "Got badge id " badge-id])
 
 (defn ^:export routes [context]
-  {"/badge" [["/"        (constantly [:p (t :badge/mybadges)])]
+  {"/badge" [["/"        (constantly [:p (t :badge/Mybadges)])]
              [["/show/" :badge-id] show-badge]
-             ["/import/" (constantly [:p (t :badge/importbadges)])]
-             ["/upload/" (constantly [:p (t :badge/uploadbadges)])]
-             ["/export/" (constantly [:p (t :badge/exportbadges)])]
-             ["/stats/"  (constantly [:p (t :badge/badgestats)])]]})
+             ["/import/" (constantly [:p (t :badge/Importbadges)])]
+             ["/upload/" (constantly [:p (t :badge/Uploadbadges)])]
+             ["/export/" (constantly [:p (t :badge/Exportbadges)])]
+             ["/stats/"  (constantly [:p (t :badge/Badgestats)])]]})
 
 
 (defn ^:export navi [context]
