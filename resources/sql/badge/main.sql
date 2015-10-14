@@ -38,17 +38,17 @@ SELECT COUNT(id) AS count FROM badge WHERE assertion_url = :assertion_url AND us
 -- check if user owns badge
 SELECT COUNT(id) AS count FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id
 
---name: replace-save-badge-content!
+--name: replace-badge-content!
 --save content of the badge
 REPLACE INTO badge_content (id, name, description, image_file, criteria_html, criteria_markdown)
        VALUES (:id, :name, :description, :image_file, :criteria_html, :criteria_markdown)
 
---name: insert-save-badge<!
+--name: insert-badge<!
 --save badge
 INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked)
        VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, 'pending', 'private', 0, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0)
 
---name: select-get-badge
+--name: select-badge
 --get badge by id
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact, u.id, u.first_name, u.last_name FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
@@ -56,7 +56,7 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
        JOIN user AS u ON (u.id = badge.user_id)
        WHERE badge.id = :id
 
---name: replace-save-badge-tag!
+--name: replace-badge-tag!
 REPLACE INTO badge_tag (badge_id, tag)
        VALUES (:badge_id, :tag)
 

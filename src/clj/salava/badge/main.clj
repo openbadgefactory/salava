@@ -15,21 +15,21 @@
                                tags))))
        badges))
 
-(defn userbadges
+(defn user-badges-all
   "Returns all the badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-all {:user_id userid} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_id (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
-(defn userbadges-export
+(defn user-badges-to-export
   "Returns valid badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-valid {:user_id userid} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_id (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
-(defn userbadges-pending
+(defn user-badges-pending
   "Returns pending badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-pending {:user_id userid} (get-db ctx))
@@ -56,10 +56,10 @@
                     (into {:result-set-fn first}
                           (get-db ctx)))))))
 
-(defn badge
+(defn get-badge
   "Get badge by id"
   [ctx badge-id]
-  (select-get-badge {:id badge-id}
+  (select-badge {:id badge-id}
              (into {:result-set-fn first}
                    (get-db ctx))))
 
@@ -73,7 +73,7 @@
                     :criteria_markdown (get-in assertion [:badge :criteria_markdown])}
         badge-content-sha256 (map-sha256 badge-data)
         data (assoc badge-data :id badge-content-sha256)]
-    (replace-save-badge-content! data (get-db ctx))
+    (replace-badge-content! data (get-db ctx))
     badge-content-sha256))
 
 
@@ -101,14 +101,14 @@
               :mtime (unix-time)
               :deleted 0
               :revoked 0}]
-    (insert-save-badge<! data (get-db ctx))))
+    (insert-badge<! data (get-db ctx))))
 
 (defn save-badge-tags
   "Save tags associated to badge"
   [ctx tags badge-id]
   (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
     (doall (for [tag valid-tags]
-             (replace-save-badge-tag! {:badge_id badge-id :tag tag}
+             (replace-badge-tag! {:badge_id badge-id :tag tag}
                               (get-db ctx))))))
 (defn set-visibility
   "Set badge visibility"

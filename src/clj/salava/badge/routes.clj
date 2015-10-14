@@ -20,13 +20,13 @@
                   :path-params [userid :- Long]
                   :summary "Get the badges of a specified user"
                   :components [context]
-                  (ok (b/userbadges context userid)))
+                  (ok (b/user-badges-all context userid)))
             (GET* "/info/:badgeid" []
                   ;:return schemas/BadgeContent
                   :path-params [badgeid :- Long]
                   :summary "Get badge"
                   :components [context]
-                  (ok (b/badge context badgeid)))
+                  (ok (b/get-badge context badgeid)))
             (POST* "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public")]
@@ -38,4 +38,11 @@
                    :body-params [show-recipient-name :- (s/enum false true)]
                    :summary "Set recipient name visibility"
                    :components [context]
-                   (ok (b/toggle-show-recipient-name context badgeid show-recipient-name)))))
+                   (ok (b/toggle-show-recipient-name context badgeid show-recipient-name)))
+            (GET* "/export/:userid" []
+                  :return [schemas/BadgeContent]
+                  :path-params [userid :- Long]
+                  :summary "Get the badges of a specified user for export"
+                  :components [context]
+                  (ok (b/user-badges-to-export context userid)))))
+                  (ok (b/user-badges-to-export context userid)))))
