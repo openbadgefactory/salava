@@ -1,10 +1,11 @@
-(ns salava.badge.ui.main
+(ns salava.badge.ui.my
   (:require [reagent.core :as reagent :refer [atom]]
             [reagent.session :as session]
             [clojure.set :as set :refer [intersection]]
             [clojure.walk :as walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values]]
+            [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :as i18n :refer [t]]))
 
@@ -53,21 +54,21 @@
               (if (badge-visible? element-data state)
                 (g/badge-grid-element element-data)))))])
 
-(defn init-my-badges [state]
-  (ajax/GET
-    (str (session/get :apihost) "/obpv1/badge/1")
-    {:handler (fn [x]
-                (let [data (map keywordize-keys x)]
-                  (swap! state assoc :data data)))}))
 
-(defn my-badges []
+(defn handler [site-navi params]
   (let [state (atom {:data []
                      :visibility "all"
                      :order ""
                      :tags-all true
-                     :tags-selected []})]
-    (init-my-badges state)
+                     :tags-selected []})
+        init-data  #(ajax/GET
+                      (str (session/get :apihost) "/obpv1/badge/1")
+                      {:handler (fn [x]
+                                  (let [data (map keywordize-keys x)]
+                                    (swap! state assoc :data data)))})]
+    (init-data)
     (fn []
-      [:div {:class "badge-grid"}
-       [badge-grid-form state]
-       [badge-grid state]])))
+      (layout/default site-navi
+        [:div {:class "badge-grid"}
+         [badge-grid-form state]
+         [badge-grid state]]))))

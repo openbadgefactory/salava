@@ -1,18 +1,21 @@
 (ns salava.badge.ui.routes
-  (:require [salava.badge.ui.main :as main]
+  (:require [salava.core.ui.layout :as layout]
+            [salava.badge.ui.my :as my]
             [salava.badge.ui.info :as info]
             [salava.core.i18n :as i18n :refer [t]]))
 
-(defn foo [params]
-  (info/init params))
+(defn placeholder [content]
+  (fn [site-navi params]
+    #(layout/default site-navi content)))
+
 
 (defn ^:export routes [context]
-  {"/badge" [[""       (main/my-badges)]
-             [["/info/" :badge-id] foo]
-             ["/import" (constantly [:p (t :badge/Importbadges)])]
-             ["/upload" (constantly [:p (t :badge/Uploadbadges)])]
-             ["/export" (constantly [:p (t :badge/Exportbadges)])]
-             ["/stats"  (constantly [:p (t :badge/Badgestats)])]]})
+  {"/badge" [[""                   my/handler]
+             [["/info/" :badge-id] info/handler]
+             ["/import"  (placeholder [:p (t :badge/Importbadges)])]
+             ["/upload"  (placeholder [:p (t :badge/Uploadbadges)])]
+             ["/export"  (placeholder [:p (t :badge/Exportbadges)])]
+             ["/stats"   (placeholder [:p (t :badge/Badgestats)])]]})
 
 (defn ^:export navi [context]
   {"/badge/"       {:weight 20 :title (t :badge/Badges)}

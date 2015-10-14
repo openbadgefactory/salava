@@ -1,8 +1,13 @@
-(ns salava.page.ui.routes)
+(ns salava.page.ui.routes 
+  (:require [salava.core.ui.layout :as layout]))
+
+(defn placeholder [content]
+  (fn [site-navi params]
+    #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/pages" [[""         (constantly [:p "My pages"])]
-             ["/mypages" (constantly [:p "My pages"])]]})
+  {"/pages" [[""         (placeholder [:p "My pages"])]
+             ["/mypages" (placeholder [:p "My pages"])]]})
 
 
 (defn ^:export navi [context]

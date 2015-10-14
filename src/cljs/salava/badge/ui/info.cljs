@@ -1,6 +1,7 @@
 (ns salava.badge.ui.info
   (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
+            [salava.core.ui.layout :as layout]
             [clojure.walk :refer [keywordize-keys]]
             [ajax.core :refer [GET POST]]
             [salava.core.i18n :refer [t]]))
@@ -25,17 +26,9 @@
        :handler (fn []
                   (swap! state assoc :show_recipient_name new-value))})))
 
-(defn init [params]
-  (let [id (:badge-id params)
-        state (atom {})
-        init-data (fn []
-                    (GET
-                      (str (session/get :apihost) "/obpv1/badge/info/" id)
-                      {:handler (fn [data]
-                                  (reset! state (keywordize-keys data)))}))]
-    (init-data)
-    (fn []
-      [:div {:class ""}
+
+(defn content [state]
+  [:div {:class ""}
          [:div.row
           [:div.col-sm-4
            [:input {:type "checkbox"
@@ -76,7 +69,18 @@
              [:h2 (t :badges/criteria)]
              [:a {:href (:criteria_url @state)
                   :target "_blank"}
-              (t :badges/open-criteria-page)]]]]]
-         ]
-      )))
+              (t :badges/open-criteria-page)]]]]]])
+
+
+(defn handler [site-navi params]
+  (let [id (:badge-id params)
+        state (atom {})
+        init-data (fn []
+                    (GET
+                      (str (session/get :apihost) "/obpv1/badge/info/" id)
+                      {:handler (fn [data]
+                                  (reset! state (keywordize-keys data)))}))]
+    (init-data)
+    (fn []
+      (layout/default site-navi (content state)))))
 

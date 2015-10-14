@@ -2,28 +2,18 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [bidi.bidi :as b :include-macros true]
             [pushy.core :as pushy]
-            [clojure.string :as str]
+            [reagent.session :as session]
             [salava.core.common :as common]
-            [salava.core.ui.layout :as layout]
-            ))
+            [salava.core.helper :refer [dump]]
+            [salava.resolver]
+            [salava.core.ui.helper :refer [current-path]]))
+
+(session/put! :lang :en)
 
 
-(defn get-token []
-  (let [uri js/window.location.pathname]
-    (str (if (and (not (= "/" uri)) (.endsWith uri "/"))
-           (subs uri 0 (dec (count uri)))
-           uri)
-         js/window.location.search)))
-
-
-(defonce current-path (atom (get-token)))
-
-(defonce history (pushy/pushy #(reset! current-path (get-token)) (constantly true)))
-
-(pushy/start! history)
-
-
-;;;
+(defn get-ctx []
+   (let [core-ctx (aget js/window "salavaCoreCtx")]
+     (js->clj (core-ctx) :keywordize-keys true)))
 
 
 (defn resolve-plugin [kind plugin ctx]
@@ -40,47 +30,36 @@
   (let [navi-coll  (apply common/deep-merge (map #(resolve-plugin "navi" % ctx) plugins))]
     (common/deep-merge navi-coll (resolve-plugin "navi" "core" ctx))))
 
+
 (defn collect-headings [plugins ctx]
   (let [heading-coll (apply common/deep-merge (map #(resolve-plugin "heading" % ctx) plugins))]
     (common/deep-merge heading-coll (resolve-plugin "heading" "core" ctx))))
 
 
+(defn collect-site-navi []
+  (let [ctx (get-ctx)
+        plugins (get-in ctx [:plugins :all])]
+    {:plugins    plugins
+     :routes     (collect-routes plugins ctx)
+     :navi-items (collect-navi plugins ctx)
+     :headings   (collect-headings plugins ctx)}))
+
+(def site-navi (collect-site-navi))
+
+
 ;;;
 
+(defonce current-route (atom (b/match-route (:routes site-navi) (current-path))))
 
-(defn navi-parent [path]
-  (let [sections (str/split path #"/")]
-      (second sections)))
+(defn set-route! [route]
+  (reset! current-route route))
 
-(defn filtered-navi-list [navi key-list]
-  (let [map-fn (fn [[tr nv]]
-                 (assoc nv :target tr))]
-    (sort-by :weight (map map-fn (select-keys navi key-list)))))
-
-(defn top-navi-list [navi]
-  (let [key-list (filter #(<= (count (str/split % #"/")) 2) (keys navi))]
-    (filtered-navi-list navi key-list)))
-
-(defn sub-navi-list [parent navi]
-  (let [parent-filter #(and (not= (str "/" parent "/") %) (= parent (navi-parent %)))
-        key-list (filter parent-filter (keys navi))]
-    (when parent
-      (js/console.log (pr-str key-list))
-      (filtered-navi-list navi key-list))))
-
-(defn current-heading [parent headings]
-  (str (get headings parent)))
-;;;
-
-(defn main-view [ctx]
-  (let [plugins    (get-in ctx [:plugins :all])
-        routes     (collect-routes plugins ctx)
-        navi-items (collect-navi plugins ctx)
-        headings   (collect-headings plugins ctx)]
+(defn main-view []
   (fn []
-    (let [{:keys [handler route-params]} (b/match-route routes @current-path)
-          top-navi (atom (top-navi-list navi-items))
-          sub-navi (atom (sub-navi-list (navi-parent @current-path) navi-items))
-          heading (current-heading @current-path headings)
-          content  (handler route-params)]
-      (layout/default top-navi sub-navi heading content)))))
+    (let [{:keys [handler route-params]} @current-route]
+      [ (handler site-navi route-params) ])))
+
+(defonce history (pushy/pushy set-route! (partial b/match-route (:routes site-navi))))
+
+(pushy/start! history)
+

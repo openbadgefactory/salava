@@ -1,8 +1,14 @@
-(ns salava.user.ui.routes)
+(ns salava.user.ui.routes
+  (:require [salava.core.ui.layout :as layout]))
+
+
+(defn placeholder [content]
+  (fn [site-navi params]
+    #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/user" [["/login"   (constantly [:p "Login page"])]
-            ["/account" (constantly [:p "IMy account"])]]})
+  {"/user" [["/login"   (placeholder [:p "Login page"])]
+            ["/account" (placeholder [:p "IMy account"])]]})
 
 
 (defn ^:export navi [context] {})
