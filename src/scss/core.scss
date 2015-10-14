@@ -2,7 +2,9 @@ $background: #f9f9f9;
 $main-color: #7f7179;
 
 $grey-link: #afa2a9;
+$dark-grey-link: #7b7076;
 $orange-link: #f59f48;
+$dark-orange-link: #ea7d45;
 
 @mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {
     -webkit-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
@@ -101,6 +103,11 @@ ul.navbar-nav {
             }
         }
     }
+    li.active {
+        a {
+            color: $dark-grey-link;
+        }
+    }
 }
 
 .logo-main {
@@ -139,8 +146,14 @@ ul.side-links {
             color: $orange-link;
         }
     }
+    li.active {
+        a {
+            color: $dark-orange-link;
+        }
+    }
 }
 
 .main-container {
     margin-top: 15px;
 }
+

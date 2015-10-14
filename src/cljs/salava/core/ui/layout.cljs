@@ -9,7 +9,7 @@
 
 (defn filtered-navi-list [navi key-list]
   (let [map-fn (fn [[tr nv]]
-                 (assoc nv :target tr))]
+                 (assoc nv :target tr :active (= tr (current-path))))]
     (sort-by :weight (map map-fn (select-keys navi key-list)))))
 
 (defn top-navi-list [navi]
@@ -17,7 +17,7 @@
     (filtered-navi-list navi key-list)))
 
 (defn sub-navi-list [parent navi]
-  (let [parent-filter #(and (not= (str "/" parent "/") %) (= parent (navi-parent %)))
+  (let [parent-filter #(and (not= (str "/" parent) %) (= parent (navi-parent %)))
         key-list (filter parent-filter (keys navi))]
     (when parent
       (filtered-navi-list navi key-list))))
@@ -26,8 +26,9 @@
   (str (get headings parent)))
 
 
-(defn navi-link [{:keys [target title]}]
-  [:a {:href target} title])
+(defn navi-link [{:keys [target title active]}]
+  [:li {:class (when active "active")}
+   [:a {:href target} title]])
 
 
 (defn top-navi [site-navi]
@@ -48,7 +49,7 @@
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (for [i items]
-          ^{:key (:target i)} [:li (navi-link i)])]
+          ^{:key (:target i)} (navi-link i))]
        [:div {:id "main-header-right"
               :class "nav navbar-nav navbar-right"}
         [:ul {:id "secondary-menu-links"
@@ -67,7 +68,7 @@
        ^{:key (:target i)} [:li (navi-link i)])]) )
 
 (defn breadcrumb [site-navi]
-  [:h2 (current-heading (navi-parent (current-path)) (:headings site-navi))])
+  [:h2 (get-in site-navi [:navi-items (current-path) :breadcrumb])])
 
 
 (defn default-0 [top-items sub-items heading content]

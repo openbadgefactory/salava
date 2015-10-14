@@ -31,18 +31,12 @@
     (common/deep-merge navi-coll (resolve-plugin "navi" "core" ctx))))
 
 
-(defn collect-headings [plugins ctx]
-  (let [heading-coll (apply common/deep-merge (map #(resolve-plugin "heading" % ctx) plugins))]
-    (common/deep-merge heading-coll (resolve-plugin "heading" "core" ctx))))
-
-
 (defn collect-site-navi []
   (let [ctx (get-ctx)
         plugins (get-in ctx [:plugins :all])]
     {:plugins    plugins
      :routes     (collect-routes plugins ctx)
-     :navi-items (collect-navi plugins ctx)
-     :headings   (collect-headings plugins ctx)}))
+     :navi-items (collect-navi plugins ctx)}))
 
 (def site-navi (collect-site-navi))
 

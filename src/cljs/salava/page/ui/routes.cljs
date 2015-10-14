@@ -1,5 +1,6 @@
 (ns salava.page.ui.routes 
-  (:require [salava.core.ui.layout :as layout]))
+  (:require [salava.core.ui.layout :as layout]
+            [salava.core.i18n :as i18n :refer [t]]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -11,10 +12,6 @@
 
 
 (defn ^:export navi [context]
-  {"/pages/"         {:weight 30 :title "Pages"}
-   "/pages/mypages/" {:weight 31 :title "My pages"}})
+  {"/pages"         {:weight 30 :title "Pages"    :breadcrumb (str (t :page/pages) " / ")}
+   "/pages/mypages" {:weight 31 :title "My pages" :breadcrumb (str (t :page/pages) " / " (t :page/mypages))}})
 
-(defn ^:export heading [context]
-  {"/pages/" "Pages / My pages"
-   "/pages/mypages/" "Pages / My pages"
-   "/pages/files/" "Pages / My files"})

@@ -1,5 +1,6 @@
 (ns salava.user.ui.routes
-  (:require [salava.core.ui.layout :as layout]))
+  (:require [salava.core.ui.layout :as layout]
+            [salava.core.i18n :as i18n :refer [t]]))
 
 
 (defn placeholder [content]
@@ -8,9 +9,8 @@
 
 (defn ^:export routes [context]
   {"/user" [["/login"   (placeholder [:p "Login page"])]
-            ["/account" (placeholder [:p "IMy account"])]]})
+            ["/account" (placeholder [:p "My account"])]]})
 
 
 (defn ^:export navi [context] {})
 
-(defn ^:export heading [context] {})
