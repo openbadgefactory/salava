@@ -42,9 +42,9 @@
 (s/defschema BadgeToImport {:status  (s/enum "ok" "invalid")
                             :message (s/maybe s/Str)
                             :key     s/Str
-                            :badge   {:name        s/Str
-                                      :description (s/maybe s/Str)
-                                      :image_file  (s/maybe s/Str)}})
+                            :name        s/Str
+                            :description (s/maybe s/Str)
+                            :image_file  (s/maybe s/Str)})
 
 (s/defschema Import {:status (s/enum "success" "error")
                      :badges [BadgeToImport]

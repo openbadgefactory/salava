@@ -108,7 +108,7 @@
   (let [expires (Integer. (re-find #"\d+" (get-in badge [:assertion :expires])))
         expired? (and (not= expires 0)
                       (< expires (unix-time)))
-        exists? false                                            ;(b/user-owns-badge? ctx (:assertion badge) user-id)
+        exists? (b/user-owns-badge? ctx (:assertion badge) user-id)
         error (get-in badge [:assertion :error])]
     {:status (if (or expired? exists? error)
                "invalid"
@@ -118,9 +118,9 @@
                 expired? "Badge is expired"
                 error error
                 :else "Save this badge")
-     :badge {:name        (get-in badge [:assertion :badge :name])
-             :description (get-in badge [:assertion :badge :description])
-             :image_file  (get-in badge [:assertion :badge :image])}
+     :name        (get-in badge [:assertion :badge :name])
+     :description (get-in badge [:assertion :badge :description])
+     :image_file  (get-in badge [:assertion :badge :image])
      :key (map-sha256 (get-in badge [:assertion_key]))}))
 
 
@@ -141,10 +141,11 @@
     (let [badge-id (b/save-badge-from-assertion! ctx badge user-id)
           tags (list (:_group_name badge))]
       (if (and tags
-               (pos? badge-id))
+               badge-id)
         (b/save-badge-tags! ctx tags badge-id))
       {:id badge-id})
     (catch Object _
+      (println _)
       {:id nil})))
 
 (defn do-import [ctx user-id keys]
