@@ -1,12 +1,13 @@
-(ns salava.core.ui.routes)
+(ns salava.core.ui.routes
+  (:require [salava.core.ui.layout :as layout]))
 
-(def not-found
-  (fn [] [:p "404 Not Found"]))
-
+(defn placeholder [content]
+  (fn [site-navi params]
+    #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/" [["" (constantly [:p "Home page"])]
-        [true not-found]]})
+  {"/" [[""   (placeholder (constantly [:p "Home page"]))]
+        [true (placeholder (constantly [:p "404 Not Found"]))]]})
 
 
 (defn ^:export navi [context] {})

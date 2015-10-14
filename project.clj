@@ -57,8 +57,10 @@
   :test-paths ["test/clj" "test/cljs" "test/cljc"]
   :profiles {:dev {:source-paths ["src/dev-clj"]
                    :dependencies [[figwheel "0.4.0" :exclusions [org.clojure/clojurescript]]
+                                  [com.cemerick/piggieback "0.2.1"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [reloaded.repl "0.2.0"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :plugins [[lein-pdo "0.1.1"]
                              [lein-cljsbuild "1.0.5"]
                              [lein-scss "0.2.2"]

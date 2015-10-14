@@ -1,11 +1,16 @@
-(ns salava.gallery.ui.routes)
+(ns salava.gallery.ui.routes
+   (:require [salava.core.ui.layout :as layout]))
+
+(defn placeholder [content]
+  (fn [site-navi params]
+    #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/gallery" [[""         (constantly [:p "Badge gallery"])]
-               ["/badges"   (constantly [:p "Badge gallery"])]
-               ["/pages"    (constantly [:p "Page gallery"])]
-               ["/profiles" (constantly [:p "User gallery"])]
-               ["/getbadge" (constantly [:p "Apply for a badge"])]]})
+  {"/gallery" [[""          (placeholder [:p "Badge gallery"])]
+               ["/badges"   (placeholder [:p "Badge gallery"])]
+               ["/pages"    (placeholder [:p "Page gallery"])]
+               ["/profiles" (placeholder [:p "User gallery"])]
+               ["/getbadge" (placeholder [:p "Apply for a badge"])]]})
 
 (defn ^:export navi [context]
   {"/gallery/"          {:weight 40 :title "Gallery"}
