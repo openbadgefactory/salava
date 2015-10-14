@@ -1,9 +1,10 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
             [clojure.string :refer [blank?]]
+            [slingshot.slingshot :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db map-sha256]]))
+            [salava.core.util :refer [get-db map-sha256 file-from-url]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -63,7 +64,7 @@
              (into {:result-set-fn first}
                    (get-db ctx))))
 
-(defn save-badge-content
+(defn save-badge-content!
   "Save badge content"
   [ctx assertion image-file]
   (let [badge-data {:name (get-in assertion [:badge :name])
@@ -77,7 +78,7 @@
     badge-content-sha256))
 
 
-(defn save-badge
+(defn save-badge!
   "Save user's badge"
   [ctx user-id badge badge-content-id issuer-content-id]
   (let [data {:user_id user-id
@@ -103,21 +104,52 @@
               :revoked 0}]
     (insert-badge<! data (get-db ctx))))
 
-(defn save-badge-tags
+(defn save-issuer-content!
+  "Save issuer-data"
+  [ctx assertion image-file]
+  (let [issuer-data {:name (get-in assertion [:badge :issuer :name])
+                     :description (get-in assertion [:badge :issuer :description])
+                     :url (get-in assertion [:badge :issuer :url])
+                     :image_file image-file
+                     :email (get-in assertion [:badge :issuer :email])
+                     :revocation_list_url (get-in assertion [:badge :issuer :revocationList])}
+        issuer-content-sha256 (map-sha256 issuer-data)
+        data (assoc issuer-data :id issuer-content-sha256)]
+    (replace-issuer-content! data (get-db ctx))
+    issuer-content-sha256))
+
+(defn save-badge-from-assertion!
+  [ctx badge user-id]
+  (try+
+    (let [assertion (:assertion badge)
+          badge-image-path (file-from-url (get-in assertion [:badge :image]))
+          badge-content-id (save-badge-content! ctx assertion badge-image-path)
+          issuer-image (get-in assertion [:badge :issuer :image])
+          issuer-image-path (if issuer-image
+                              (file-from-url issuer-image))
+          issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
+          exists?  (user-owns-badge? ctx (:assertion badge) user-id)
+          badge-id (if-not exists?
+                     (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id)))]
+      badge-id)
+    (catch Object _
+      (throw+ "Error while saving badge"))))
+
+(defn save-badge-tags!
   "Save tags associated to badge"
   [ctx tags badge-id]
   (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
     (doall (for [tag valid-tags]
              (replace-badge-tag! {:badge_id badge-id :tag tag}
                               (get-db ctx))))))
-(defn set-visibility
+(defn set-visibility!
   "Set badge visibility"
   [ctx badgeid visibility]
   (update-visibility! {:id badgeid
                       :visibility visibility}
                      (get-db ctx)))
 
-(defn toggle-show-recipient-name
+(defn toggle-show-recipient-name!
   "Toggle recipient name visibility"
   [ctx badgeid show-recipient-name]
   (update-show-recipient-name! {:id badgeid

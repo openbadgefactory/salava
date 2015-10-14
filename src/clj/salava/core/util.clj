@@ -1,6 +1,8 @@
 (ns salava.core.util
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [slingshot.slingshot :refer :all]
+            [clj-http.client :as client]))
 
 
 (defn get-db [ctx]
@@ -38,4 +40,37 @@
     (apply str (concat (list "file/")
                        (interpose "/" (take 4 (char-array checksum)))
                        (list "/" checksum "." extension)))))
+
+(defn fetch-file-content [url]
+  "Fetch file content from url"
+  (try+
+    (:body
+      (client/get url {:as :byte-array}))
+    (catch Object _
+      (throw+ (str "Error fetching file from: " url)))))
+
+(defn trim-path [path]
+  (if (re-find #"\?" path)
+    (subs path 0 (.lastIndexOf path "?"))
+    path))
+
+(defn file-from-url
+  ([url] (file-from-url url nil))
+  ([url filename]
+   (if (re-find #"https?" (str url))
+     (let [content (fetch-file-content url)
+           path (public-path url)
+           fname (or filename
+                     (trim-path path))
+           fullpath (or filename
+                        (str "resources/public/" fname))]
+       (try+
+         (do
+           (io/make-parents fullpath)
+           (with-open [w (io/output-stream fullpath)]
+             (.write w content))
+           fname)
+         (catch Object _
+           (throw+ "Error copying file"))))
+     (throw+ "Error in file url"))))
 

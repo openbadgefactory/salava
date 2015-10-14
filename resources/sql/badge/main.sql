@@ -60,6 +60,11 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 REPLACE INTO badge_tag (badge_id, tag)
        VALUES (:badge_id, :tag)
 
+-- name: replace-issuer-content!
+-- save issuer, replace if issuer exists already
+REPLACE INTO issuer_content (id,name,url,description,image_file,email,revocation_list_url)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url);
+
 --name: update-visibility!
 --change badge visibility
 UPDATE badge SET visibility = :visibility WHERE id = :id

@@ -29,6 +29,11 @@
                  [prismatic/schema "0.4.4"]
                  [clojurewerkz/propertied "1.2.0"]
 
+                 [clj-http "2.0.0"]
+                 [enlive "1.1.6"]
+                 [markdown-clj "0.9.74"]
+                 [ar.com.hjg/pngj "2.1.0"]
+
                  ; Client side
                  [org.clojure/clojurescript "1.7.122"]
                  [reagent "0.5.1"]
