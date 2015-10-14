@@ -48,4 +48,5 @@
 
 (s/defschema Import {:status (s/enum "success" "error")
                      :badges [BadgeToImport]
-                     :message (s/maybe s/Str)})
+                     :error  (s/maybe s/Str)})
+

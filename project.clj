@@ -42,6 +42,7 @@
                  [kibu/pushy "0.3.6"]
                  [com.taoensso/tower "3.1.0-beta3"]
                  [cljs-ajax "0.3.14"]
+                 [org.clojars.frozenlock/reagent-modals "0.2.3"]
 
                  [org.webjars/jquery "2.1.4"]
                  [org.webjars/bootstrap "3.3.5"]

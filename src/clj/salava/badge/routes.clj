@@ -4,7 +4,7 @@
             [schema.core :as s]
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
-            [salava.badge.import :as i]
+            [salava.badge.importer :as i]
             [salava.core.layout :as layout]))
 
 (defroutes* route-def

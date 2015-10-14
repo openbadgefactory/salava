@@ -1,4 +1,4 @@
-(ns salava.badge.import
+(ns salava.badge.importer
   (:require [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
             [salava.badge.main :as b]
@@ -130,11 +130,11 @@
           badges (fetch-all-user-badges backpack-emails)]
       {:status "success"
        :badges (map #(badge-to-import ctx user-id %) badges)
-       :message ""})
+       :error nil})
     (catch Object _
       {:status "error"
        :badges []
-       :message _})))
+       :error _})))
 
 (defn save-badge-data! [ctx user-id badge]
   (try+
