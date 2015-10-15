@@ -89,7 +89,8 @@
 
 (defn export-badges [state]
   (let [badges-to-export (:badges-selected @state)
-        assertion-urls (map :assertion_url (filter (fn [b] (boolean (some #(= % (:id b)) badges-to-export))) (:data @state)))]
+        assertion-urls (map :assertion_url (filter (fn [b] (and (some #(= % (:id b)) badges-to-export)
+                                                                (badge-visible? b state))) (:data @state)))]
     (if-not (empty? badges-to-export)
       (.issue js/OpenBadges (clj->js assertion-urls)))))
 

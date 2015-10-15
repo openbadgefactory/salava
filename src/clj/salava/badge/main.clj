@@ -27,7 +27,7 @@
 (defn user-badges-to-export
   "Returns valid badges of a given user"
   [ctx userid]
-  (let [badges (select-user-badges-valid {:user_id userid} (get-db ctx))
+  (let [badges (select-user-badges-to-export {:user_id userid} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_id (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 

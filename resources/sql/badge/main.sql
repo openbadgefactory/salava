@@ -5,15 +5,10 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        WHERE user_id = :user_id
 
--- name: select-user-badges-valid
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
-       JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE user_id = :user_id
-
 -- name: select-user-badges-to-export
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, email, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE user_id = :user_id AND status != 'pending' AND assertion_url IS NOT NULL
+       WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL
 
 -- name: select-user-badges-pending
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
