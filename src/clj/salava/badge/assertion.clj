@@ -7,6 +7,7 @@
             [markdown.core :as md]
             [salava.core.util :refer [hex-digest]]
             [salava.core.time :refer [iso8601-to-unix-time]] ;cljc
+            [salava.core.i18n :refer [t]]                    ;cljc
             [salava.badge.png :as p]))
 
 (defn fetch-json-data [url]
@@ -17,7 +18,7 @@
          :url         url
          :as          :json}))
     (catch Object _
-      {:error (str "Error fetching json" url)})))
+      {:error (t :badge/Errorfetchingjson)})))
 
 (defn copy-to-file [output-file url]
   (with-open [in (io/input-stream url)
@@ -34,7 +35,7 @@
       assertion)
     (catch Object _
       ;TODO: log an error
-      {:error (str "Failed to fetch signed badge assertion from " image-url)})))
+      {:error (str (t :badge/Failedfetchsigned)  " " image-url)})))
 
 (defn get-criteria-markdown [criteria-url]
   "Get criteria markdown."

@@ -1,6 +1,7 @@
 (ns salava.badge.routes
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
+            [ring.swagger.upload :as upload]
             [schema.core :as s]
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
@@ -54,8 +55,16 @@
                   (ok (i/badges-to-import context userid)))
             (POST* "/import_selected/:userid" []
                    ;:return {:errors (s/maybe s/Str)
-                   :path-params [userid :- s/Int]
+                   :path-params [userid :- Long]
                    :body-params [keys :- [s/Str]]
                    :summary "Import selected badges from Mozilla Backpack"
                    :components [context]
-                   (ok (i/do-import context userid keys)))))
+                   (ok (i/do-import context userid keys)))
+            (POST* "/upload/:userid" []
+                   :return schemas/Upload
+                   :path-params [userid :- Long]
+                   :multipart-params [file :- upload/TempFileUpload]
+                   :middlewares [upload/wrap-multipart-params]
+                   :summary "Upload badge PNG-file"
+                   :components [context]
+                   (ok (i/upload-badge context file userid)))))

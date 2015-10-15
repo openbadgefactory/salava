@@ -50,3 +50,6 @@
                      :badges [BadgeToImport]
                      :error  (s/maybe s/Str)})
 
+(s/defschema Upload {:status (s/enum "success" "error")
+                     :message s/Str
+                     :reason (s/maybe s/Str)})

@@ -12,6 +12,6 @@
 
 
 (defn ^:export navi [context]
-  {"/pages"         {:weight 30 :title "Pages"    :breadcrumb (str (t :page/pages) " / ")}
-   "/pages/mypages" {:weight 31 :title "My pages" :breadcrumb (str (t :page/pages) " / " (t :page/mypages))}})
+  {"/pages"         {:weight 30 :title (t :page/Pages)    :breadcrumb (str (t :page/Pages) " / ")}
+   "/pages/mypages" {:weight 31 :title (t :page/Mypages)  :breadcrumb (str (t :page/Pages) " / " (t :page/Mypages))}})
 

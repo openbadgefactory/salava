@@ -3,6 +3,7 @@
             [clojure.string :refer [blank?]]
             [slingshot.slingshot :refer :all]
             [salava.core.time :refer [unix-time]]
+            [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db map-sha256 file-from-url]]))
 
@@ -127,13 +128,10 @@
           issuer-image (get-in assertion [:badge :issuer :image])
           issuer-image-path (if issuer-image
                               (file-from-url issuer-image))
-          issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
-          exists?  (user-owns-badge? ctx (:assertion badge) user-id)
-          badge-id (if-not exists?
-                     (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id)))]
-      badge-id)
-    (catch Object _
-      (throw+ "Error while saving badge"))))
+          issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)]
+      (if (user-owns-badge? ctx (:assertion badge) user-id)
+        (throw+ (t :badge/Alreadyowned)))
+      (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id)))))
 
 (defn save-badge-tags!
   "Save tags associated to badge"

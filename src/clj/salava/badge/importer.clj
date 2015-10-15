@@ -5,9 +5,10 @@
             [salava.core.util :refer [map-sha256 file-from-url]]
             [salava.core.time :refer [unix-time]]
             [salava.core.helper :refer [dump]]
+            [salava.core.i18n :refer [t]]
             [salava.user.main :as u]
             [salava.badge.assertion :as a]
-            ))
+            [salava.badge.png :as p]))
 
 (def api-root-url "https://backpack.openbadges.org/displayer")
 
@@ -24,10 +25,10 @@
           :form-params post-params}))
      (catch [:status 404] {:keys [request-time headers body]}
        (if (= path "/convert/email")
-         (throw+ "Backpack userId not found")
-         (throw+ "Backpack data not found")))
+         (throw+ (t :badge/Backpacknotfound))
+         (throw+ (t :badge/Errorconnecting))))
      (catch Object _
-       (throw+ "Error connecting to backpack")))))
+       (throw+ (t :badge/Errorconnecting))))))
 
 
 (defn get-badge-type [badge]
@@ -47,7 +48,7 @@
     "hosted" [(:assertion badge) (:assertion badge)]
     "signed" [(a/fetch-signed-badge-assertion (:imageUrl badge)) (:imageUrl badge)]
     "hostedUrl" [(:hostedUrl badge) (:hostedUrl badge)]
-    [{:error "Invalid assertion"} nil]))
+    [{:error (t :badge/Invalidassertion)} nil]))
 
 
 (defn add-assertion-and-key [badge]
@@ -95,7 +96,7 @@
 
 (defn fetch-all-user-badges [backpack-emails]
   (if (empty? backpack-emails)
-    (throw+ "User does not have any email addresses"))
+    (throw+ (t :badge/Noemails)))
   (loop [badges []
          emails backpack-emails]
     (if (empty? emails)
@@ -110,18 +111,18 @@
                       (< expires (unix-time)))
         exists? (b/user-owns-badge? ctx (:assertion badge) user-id)
         error (get-in badge [:assertion :error])]
-    {:status (if (or expired? exists? error)
-               "invalid"
-               "ok")
-     :message (cond
-                exists? "You own this badge already"
-                expired? "Badge is expired"
-                error error
-                :else "Save this badge")
+    {:status      (if (or expired? exists? error)
+                    "invalid"
+                    "ok")
+     :message     (cond
+                    exists? (t :badge/Alreadyowned)
+                    expired? (t :badge/Badgeisexpired)
+                    error error
+                    :else (t :badge/Savethisbadge))
      :name        (get-in badge [:assertion :badge :name])
      :description (get-in badge [:assertion :badge :description])
      :image_file  (get-in badge [:assertion :badge :image])
-     :key (map-sha256 (get-in badge [:assertion_key]))}))
+     :key         (map-sha256 (get-in badge [:assertion_key]))}))
 
 
 (defn badges-to-import [ctx user-id]
@@ -159,8 +160,8 @@
                                    (some #(= (:key b) %) keys)) badges-with-keys)
           saved-badges (for [b badges-to-save]
                          (save-badge-data! ctx user-id b))]
-      {:status "success"
-       :message "Badges saved"
+      {:status      "success"
+       :message     (t :badge/Badgessaved)
        :saved-count (->> saved-badges
                          (filter #(nil? (:id %)))
                          count)
@@ -169,3 +170,17 @@
                          count)})
     (catch Object _
       {:status "error" :message _})))
+
+(defn upload-badge [ctx uploaded-file user-id]
+  (try+
+    (if-not (= (:content-type uploaded-file) "image/png")
+      (throw+ (t :badge/Invalidfiletype)))
+    (let [assertion-url (p/get-assertion-from-png (:tempfile uploaded-file))
+          assertion (a/create-assertion assertion-url {})
+          email (u/primary-email ctx user-id)
+          data {:assertion assertion
+                :_email email}
+          badge-id (b/save-badge-from-assertion! ctx data user-id)]
+      {:status "success" :message (t :badge/Badgeuploaded) :reason (t :badge/Badgeuploaded)})
+    (catch Object _
+      {:status "error" :message (t :badge/Errorwhileuploading) :reason _})))

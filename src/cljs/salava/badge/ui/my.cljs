@@ -10,21 +10,21 @@
             [salava.core.i18n :as i18n :refer [t]]))
 
 (defn visibility-select-values []
-  [{:value "all" :title (t :badge/all)}
-   {:value "public"  :title (t :badge/public)}
-   {:value "shared"  :title (t :badge/shared)}
-   {:value "private" :title (t :badge/private)}])
+  [{:value "all" :title (t :badge/All)}
+   {:value "public"  :title (t :badge/Public)}
+   {:value "shared"  :title (t :badge/Shared)}
+   {:value "private" :title (t :badge/Private)}])
 
 (defn order-radio-values []
-  [{:value "mtime" :id "radio-date" :label (t :badge/by-date)}
-   {:value "name" :id "radio-name" :label (t :badge/by-name)}])
+  [{:value "mtime" :id "radio-date" :label (t :badge/Bydate)}
+   {:value "name" :id "radio-name" :label (t :badge/Byname)}])
 
 (defn badge-grid-form [state]
   [:div {:class "form-horizontal"}
-   [g/grid-search-field (t :badge/search) "badgesearch" (t :badge/search-by-name) :search state]
-   [g/grid-select (t :badge/show) "select-visibility" :visibility (visibility-select-values) state]
-   [g/grid-buttons (t :badge/tags) (unique-values :tags (:data @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (t :badge/order-by) "order" (order-radio-values) :order state]])
+   [g/grid-search-field (t :badge/Search) "badgesearch" (t :badge/Searchbyname) :search state]
+   [g/grid-select (t :badge/Show) "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons (t :badge/Tags) (unique-values :tags (:data @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (t :badge/Orderby) "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (if (and

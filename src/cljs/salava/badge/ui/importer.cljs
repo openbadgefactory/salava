@@ -19,9 +19,9 @@
               }
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title (t :badge/badges-were-saved)]]
+    [:h4.modal-title (t :badge/Badgessaved)]]
    [:div.modal-body
-    [:p (t :badge/badges-were-saved-successfully)]]
+    [:p (t :badge/Badgessavedsuccessfully)]]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-default btn-primary"
@@ -37,7 +37,7 @@
        (map #(:key %))))
 
 (defn fetch-badges [state]
-  (swap! state assoc :ajax-message (t :badge/fetchingbadges))
+  (swap! state assoc :ajax-message (t :badge/Fetchingbadges))
   (ajax/GET
     (str (session/get :apihost) "/obpv1/badge/import/1")
     {:finally (fn []
@@ -49,7 +49,7 @@
                   (swap! state assoc :ok-badges (ok-badge-keys (:badges data)))))}))
 
 (defn import-badges [state]
-  (swap! state assoc :ajax-message (t :badge/savingbadges))
+  (swap! state assoc :ajax-message (t :badge/Savingbadges))
   (ajax/POST
     (str (session/get :apihost) "/obpv1/badge/import_selected/1")
     {:params  {:keys (:badges-selected @state)}
@@ -100,7 +100,7 @@
                                 (remove-badge-selection key state)
                                 (add-badge-selection key state)))}]
          [:label {:for input-id}
-         (t :badge/savebadge)]]
+         (t :badge/Savebadge)]]
         [:div message])]))
 
 (defn badge-grid [state]
@@ -110,7 +110,7 @@
 
 (defn content [state]
   [:div {:class "import-badges"}
-   [:h2 (t :badge/import)]
+   [:h2 (t :badge/Import)]
    [:div.import-button
     (if (:ajax-message @state)
       [:h3 (:ajax-message @state)])
@@ -118,20 +118,20 @@
       [:button {:class "btn btn-default btn-primary"
                 :on-click #(fetch-badges state)
                 :disabled (:ajax-message @state)}
-       (t :badge/importfrom)]
+       (t :badge/Importfrom)]
 
       (if (pos? (count (:ok-badges @state)))
         [:div
          [:button {:class    "btn btn-default btn-primary"
                    :on-click #(toggle-select-all state)}
           (if (:all-selected @state)
-            (t :badge/clearall)
-            (t :badge/selectall))]
+            (t :badge/Clearall)
+            (t :badge/Selectall))]
          [:button {:class    "btn btn-default btn-primary"
                    :on-click #(import-badges state)
                    :disabled (or (:ajax-message @state)
                                  (= (count (:badges-selected @state)) 0))}
-          (t :badge/saveselected)]]))]
+          (t :badge/Saveselected)]]))]
    (if-not (nil? (:error @state))
      [:div {:class "alert alert-warning"} (:error @state)])
    [badge-grid state]])
