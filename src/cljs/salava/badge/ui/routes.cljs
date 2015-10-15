@@ -3,6 +3,7 @@
             [salava.badge.ui.my :as my]
             [salava.badge.ui.info :as info]
             [salava.badge.ui.importer :as imp]
+            [salava.badge.ui.exporter :as exp]
             [salava.badge.ui.upload :as up]
             [salava.core.i18n :as i18n :refer [t]]))
 
@@ -16,7 +17,7 @@
              [["/info/" :badge-id] info/handler]
              ["/import"  imp/handler]
              ["/upload"  up/handler]
-             ["/export"  (placeholder [:p (t :badge/Exportbadges)])]
+             ["/export"  exp/handler]
              ["/stats"   (placeholder [:p (t :badge/Badgestats)])]]})
 
 (defn ^:export navi [context]

@@ -82,27 +82,27 @@
 (defn save-badge!
   "Save user's badge"
   [ctx user-id badge badge-content-id issuer-content-id]
-  (let [data {:user_id user-id
-              :email (get-in badge [:_email])
-              :assertion_url (get-in badge [:assertion :verify :url])
-              :assertion_jws (get-in badge [:assertion :assertion_jws])
-              :assertion_json (get-in badge [:assertion :assertion_json])
-              :badge_url (get-in badge [:assertion :badge :badge_url])
-              :issuer_url (get-in badge [:assertion :badge :issuer_url])
-              :criteria_url (get-in badge [:assertion :badge :criteria_url])
-              :badge_content_id badge-content-id
-              :issuer_content_id issuer-content-id
-              :issued_on (get-in badge [:assertion :issuedOn])
-              :expires_on (get-in badge [:assertion :expires])
-              :evidence_url (get-in badge [:assertion :evidence])
-              :status "pending"
-              :visibility "private"
+  (let [data {:user_id             user-id
+              :email               (get-in badge [:_email])
+              :assertion_url       (get-in badge [:assertion :verify :url])
+              :assertion_jws       (get-in badge [:assertion :assertion_jws])
+              :assertion_json      (get-in badge [:assertion :assertion_json])
+              :badge_url           (get-in badge [:assertion :badge :badge_url])
+              :issuer_url          (get-in badge [:assertion :badge :issuer_url])
+              :criteria_url        (get-in badge [:assertion :badge :criteria_url])
+              :badge_content_id    badge-content-id
+              :issuer_content_id   issuer-content-id
+              :issued_on           (get-in badge [:assertion :issuedOn])
+              :expires_on          (get-in badge [:assertion :expires])
+              :evidence_url        (get-in badge [:assertion :evidence])
+              :status              (get-in badge [:_status] "pending")
+              :visibility          "private"
               :show_recipient_name 0
-              :rating 0
-              :ctime (unix-time)
-              :mtime (unix-time)
-              :deleted 0
-              :revoked 0}]
+              :rating              0
+              :ctime               (unix-time)
+              :mtime               (unix-time)
+              :deleted             0
+              :revoked             0}]
     (insert-badge<! data (get-db ctx))))
 
 (defn save-issuer-content!

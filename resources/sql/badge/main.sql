@@ -46,7 +46,7 @@ REPLACE INTO badge_content (id, name, description, image_file, criteria_html, cr
 --name: insert-badge<!
 --save badge
 INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked)
-       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, 'pending', 'private', 0, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0)
+       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0)
 
 --name: select-badge
 --get badge by id

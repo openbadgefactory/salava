@@ -73,7 +73,8 @@
         badges (:badges response)]
     (->> badges
          (map #(assoc % :_group_name (:name group)
-                        :_email email)))))
+                        :_email email
+                        :_status "accepted")))))
 
 
 (defn fetch-badges-from-groups
@@ -141,12 +142,10 @@
   (try+
     (let [badge-id (b/save-badge-from-assertion! ctx badge user-id)
           tags (list (:_group_name badge))]
-      (if (and tags
-               badge-id)
+      (if (and tags badge-id)
         (b/save-badge-tags! ctx tags badge-id))
       {:id badge-id})
     (catch Object _
-      (println _)
       {:id nil})))
 
 (defn do-import [ctx user-id keys]

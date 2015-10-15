@@ -54,21 +54,24 @@
               (if (badge-visible? element-data state)
                 (g/badge-grid-element element-data)))))])
 
+(defn content [state]
+  [:div {:class "badge-grid"}
+   [badge-grid-form state]
+   [badge-grid state]])
+
+(defn init-data [state]
+  (ajax/GET
+    "/obpv1/badge/1"
+    {:handler (fn [x]
+                (let [data (map keywordize-keys x)]
+                  (swap! state assoc :data data)))}))
 
 (defn handler [site-navi params]
   (let [state (atom {:data []
                      :visibility "all"
                      :order ""
                      :tags-all true
-                     :tags-selected []})
-        init-data  #(ajax/GET
-                      (str (session/get :apihost) "/obpv1/badge/1")
-                      {:handler (fn [x]
-                                  (let [data (map keywordize-keys x)]
-                                    (swap! state assoc :data data)))})]
-    (init-data)
+                     :tags-selected []})]
+    (init-data state)
     (fn []
-      (layout/default site-navi
-        [:div {:class "badge-grid"}
-         [badge-grid-form state]
-         [badge-grid state]]))))
+      (layout/default site-navi (content state)))))

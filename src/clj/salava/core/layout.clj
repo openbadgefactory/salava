@@ -50,7 +50,8 @@
      "<!--[if lt IE 10]>"
      (include-js "/assets/es5-shim/es5-shim.js" "/assets/es5-shim/es5-sham.js")
      "<![endif]-->"
-     (apply include-js (js-list ctx))]))
+     (apply include-js (js-list ctx))
+     (include-js "https://backpack.openbadges.org/issuer.js")]))
 
 
 (defmacro main [path]
