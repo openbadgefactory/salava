@@ -33,6 +33,7 @@
                            :issued_on (s/maybe s/Int)
                            :expires_on (s/maybe s/Int)
                            :visibility (s/maybe (s/enum "private" "internal" "public"))
+                           :status (s/maybe (s/enum "pending" "accepted" "declined"))
                            :mtime s/Int
                            :badge_content_id (s/maybe s/Str)
                            (s/optional-key :email) s/Str

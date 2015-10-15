@@ -1,7 +1,7 @@
 
 -- name: select-user-badges-all
 -- get user's badges
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        WHERE user_id = :user_id
 
@@ -32,11 +32,11 @@ SELECT badge_id, tag FROM badge_tag WHERE badge_id IN (:badge_id)
 
 -- name: select-user-owns-hosted-badge
 -- check if user owns badge
-SELECT COUNT(id) AS count FROM badge WHERE assertion_url = :assertion_url AND user_id = :user_id
+SELECT COUNT(id) AS count FROM badge WHERE assertion_url = :assertion_url AND user_id = :user_id AND status != "declined" AND deleted = 0
 
 -- name: select-user-owns-signed-badge
 -- check if user owns badge
-SELECT COUNT(id) AS count FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id
+SELECT COUNT(id) AS count FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id AND status != "declined" AND deleted = 0
 
 --name: replace-badge-content!
 --save content of the badge
@@ -68,6 +68,10 @@ REPLACE INTO issuer_content (id,name,url,description,image_file,email,revocation
 --name: update-visibility!
 --change badge visibility
 UPDATE badge SET visibility = :visibility WHERE id = :id
+
+--name: update-status!
+--change badge status
+UPDATE badge SET status = :status WHERE id = :id
 
 --name: update-show-recipient-name!
 --show/hide recipient name

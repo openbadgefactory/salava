@@ -9,7 +9,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
-(defn import-modal []
+(defn import-modal [{:keys [status message saved-count error-count]}]
   [:div
    [:div.modal-header
     [:button {:type "button"
@@ -18,10 +18,14 @@
               :aria-label "OK"
               }
      [:span {:aria-hidden "true"
-             :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title (t :badge/Badgessaved)]]
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
-    [:p (t :badge/Badgessavedsuccessfully)]]
+    (if (= status "success")
+      [:div {:class "alert alert-success"}
+       [:p message]
+       [:p (t :badge/Savedcount) ": " saved-count]]
+      [:div {:class "alert alert-warning"}
+       message])]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-default btn-primary"
@@ -55,9 +59,9 @@
     {:params  {:keys (:badges-selected @state)}
      :finally (fn []
                 (ajax-stop state))
-     :handler (fn []
-                (m/modal! (import-modal)
-                          {:hide #(.replace js/window.location "/")}))}))
+     :handler (fn [data]
+                (m/modal! (import-modal (keywordize-keys data))
+                          {:hide #(.replace js/window.location "/badge")}))}))
 
 (defn remove-badge-selection [key state]
   (swap! state assoc :badges-selected
@@ -110,6 +114,7 @@
 
 (defn content [state]
   [:div {:class "import-badges"}
+   [m/modal-window]
    [:h2 (t :badge/Import)]
    [:div.import-button
     (if (:ajax-message @state)

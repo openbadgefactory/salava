@@ -162,10 +162,10 @@
       {:status      "success"
        :message     (t :badge/Badgessaved)
        :saved-count (->> saved-badges
-                         (filter #(nil? (:id %)))
+                         (filter #(:id %))
                          count)
        :error-count (->> saved-badges
-                         (filter #(:id %))
+                         (filter #(nil?(:id %)))
                          count)})
     (catch Object _
       {:status "error" :message _})))

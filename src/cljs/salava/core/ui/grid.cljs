@@ -1,6 +1,6 @@
 (ns salava.core.ui.grid
-  (:require [reagent.core :as reagent :refer [atom]]
-            [salava.core.i18n :as i18n :refer [t]]))
+  (:require [reagent.core :refer [atom]]
+            [salava.core.i18n :refer [t]]))
 
 (defn grid-buttons [title buttons key all-key state]
   [:div.form-group

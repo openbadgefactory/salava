@@ -28,7 +28,7 @@
 
 
 (defn content [state]
-  [:div {:class ""}
+  [:div {:class "badge-info"}
    [:div.row
     [:div.col-sm-4
      [:input {:type "checkbox"

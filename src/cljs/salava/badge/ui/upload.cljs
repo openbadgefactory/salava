@@ -40,7 +40,9 @@
       {:body    form-data
        :handler (fn [data]
                   (let [data-kws (keywordize-keys data)]
-                    (m/modal! (upload-modal data-kws))))})))
+                    (m/modal! (upload-modal data-kws)
+                              (if (= (:status data-kws) "success")
+                                {:hide #(.replace js/window.location "/badge")}))))})))
 
 (defn content []
   [:section {:class "col-sm-9 col-md-10"}

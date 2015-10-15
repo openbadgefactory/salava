@@ -39,6 +39,13 @@
                    :components [context]
                    (ok (str (b/set-visibility! context badgeid visibility))))
 
+            (POST* "/set_status/:badgeid" []
+                   :path-params [badgeid :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")]
+                   :summary "Set badge status"
+                   :components [context]
+                   (ok (str (b/set-status! context badgeid status))))
+
             (POST* "/toggle_recipient_name/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [show-recipient-name :- (s/enum false true)]

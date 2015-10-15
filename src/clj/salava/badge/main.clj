@@ -147,6 +147,13 @@
                       :visibility visibility}
                      (get-db ctx)))
 
+(defn set-status!
+  "Set badge status"
+  [ctx badgeid status]
+  (update-status! {:id badgeid
+                   :status status}
+                  (get-db ctx)))
+
 (defn toggle-show-recipient-name!
   "Toggle recipient name visibility"
   [ctx badgeid show-recipient-name]
