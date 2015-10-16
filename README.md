@@ -1,6 +1,6 @@
 # salava
 
-## Open Badge Passport community edition.
+## Open Badge Passport community edition
 
 [Open Badges](http://openbadges.org/) is an open standard developed by the
 Mozilla Foundation to recognize, validate and demonstrate learning that
