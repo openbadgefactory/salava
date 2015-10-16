@@ -20,11 +20,12 @@
    {:value "name" :id "radio-name" :label (t :badge/Byname)}])
 
 (defn badge-grid-form [state]
-  [:div {:class "form-horizontal"}
-   [g/grid-search-field (t :badge/Search) "badgesearch" (t :badge/Searchbyname) :search state]
-   [g/grid-select (t :badge/Show) "select-visibility" :visibility (visibility-select-values) state]
-   [g/grid-buttons (t :badge/Tags) (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (t :badge/Orderby) "order" (order-radio-values) :order state]])
+  [:div {:id "grid-filter"
+         :class "form-horizontal"}
+   [g/grid-search-field (str (t :badge/Search) ":") "badgesearch" (t :badge/Searchbyname) :search state]
+   [g/grid-select (str (t :badge/Show) ":") "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons (str (t :badge/Tags) ":") (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (str (t :badge/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (if (and
@@ -46,13 +47,13 @@
     true false))
 
 (defn badge-grid [state]
-  [:div {:class "row"
-         :id "grid"}
-   (doall (let [badges (:badges @state)
-                order (:order @state)]
-            (for [element-data (sort-by (keyword order) badges)]
-              (if (badge-visible? element-data state)
-                (g/badge-grid-element element-data)))))])
+  (let [badges (:badges @state)
+        order (:order @state)]
+    (into [:div {:class "row"
+                 :id    "grid"}]
+          (for [element-data (sort-by (keyword order) badges)]
+            (if (badge-visible? element-data state)
+              (g/badge-grid-element element-data))))))
 
 (defn update-status [id new-status state]
   (ajax/POST
@@ -78,22 +79,22 @@
           name]
          [:div
           description]]]]]
-     [:div.row
+     [:div {:class "row button-row"}
       [:div.col-md-12
-       [:button {:class "btn btn-default btc-accept"
+       [:button {:class "btn btn-default btn-primary"
                  :on-click #(update-status id "accepted" state)}
-        (t :badge/Accept)]
-       [:button {:class "btn btn-default btc-decline"
+        (t :badge/Acceptbadge)]
+       [:button {:class "btn btn-default btn-decline"
                  :on-click #(update-status id "declined" state)}
-        (t :badge/Decline)]]]]]])
+        (t :badge/Declinebadge)]]]]]])
 
 (defn badges-pending [state]
-  [:div
-   (for [badge (:pending @state)]
-     (badge-pending badge state))])
+  (into [:div {:id "pending-badges"}]
+        (for [badge (:pending @state)]
+          (badge-pending badge state))))
 
 (defn content [state]
-  [:div {:class "badge-grid"}
+  [:div {:class "my-badges"}
    [badges-pending state]
    [badge-grid-form state]
    [badge-grid state]])

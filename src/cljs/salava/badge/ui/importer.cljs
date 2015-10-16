@@ -83,34 +83,38 @@
   (let [{:keys [image_file name key description status message]} element-data
         checked? (some #(= key %) (:badges-selected @state))
         input-id (str "input-" key)]
-    [:div {:class "col-xs-6 col-sm-4 grid-container"
+    [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key key}
-     [:div.media
-      (if image_file
-        [:div.media-left
-         [:img {:src (if-not (re-find #"http" image_file)
-                       (str "/" image_file)
-                       image_file)}]])
-      [:div.media-body
-       name]]
-
-      (if (= status "ok")
-        [:div
-         [:input {:type "checkbox"
-                 :checked checked?
-                 :id input-id
-                 :on-change (fn []
-                              (if checked?
-                                (remove-badge-selection key state)
-                                (add-badge-selection key state)))}]
-         [:label {:for input-id}
-         (t :badge/Savebadge)]]
-        [:div message])]))
+     [:div {:class "media grid-container"}
+      [:div.media-content
+       (if image_file
+         [:div.media-left
+          [:img {:src (if-not (re-find #"http" image_file)
+                        (str "/" image_file)
+                        image_file)}]])
+       [:div.media-body
+        [:div.media-heading
+         name]
+        [:div.badge-description description]]]
+      [:div {:class "media-bottom"}
+       (if (= status "ok")
+         [:div
+          [:input {:type "checkbox"
+                   :checked checked?
+                   :id input-id
+                   :on-change (fn []
+                                (if checked?
+                                  (remove-badge-selection key state)
+                                  (add-badge-selection key state)))}]
+          [:label {:for input-id}
+           (t :badge/Savebadge)]]
+         [:div message])]]]))
 
 (defn badge-grid [state]
-  [:div
-   (for [badge (:badges @state)]
-     (import-grid-element badge state))])
+  (into [:div {:class "row"
+               :id "grid"}]
+        (for [badge (:badges @state)]
+          (import-grid-element badge state))))
 
 (defn content [state]
   [:div {:class "import-badges"}

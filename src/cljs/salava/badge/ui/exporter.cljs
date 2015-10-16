@@ -24,12 +24,13 @@
    {:value "name" :id "radio-name" :label (t :badge/Byname)}])
 
 (defn badge-grid-form [state]
-  [:div {:class "form-horizontal"}
+  [:div {:id "grid-filter"
+         :class "form-horizontal"}
    [g/grid-select (t :badge/Email) "select-email" :email-selected (email-options state) state]
    [g/grid-search-field (t :badge/Search) "badgesearch" (t :badge/Searchbyname) :search state]
    [g/grid-select (t :badge/Show) "select-visibility" :visibility (visibility-options) state]
    [g/grid-buttons (t :badge/Tags) (unique-values :tags (:data @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (t :badge/Orderby) "order" (order-radio-values) :order state]])
+   [g/grid-radio-buttons (t :badge/Order) "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (if (and
@@ -52,31 +53,44 @@
     true false))
 
 (defn grid-element [element-data state]
-  [:div {:class "col-xs-6 col-sm-4 grid-container"
-         :key (:name element-data)}
-   [:div.media
-    (if (:image_file element-data)
-      [:div.media-left
-       [:img {:src (str "/" (:image_file element-data))}]])
-    [:div.media-body
-     [:div [:a {:href (str "/badge/info/" (:id element-data))} (:name element-data)]]]]
-   (let [input-id (str "check_" (:id element-data))
-         id (:id element-data)
-         checked? (boolean (some #(= id %) (:badges-selected @state)))]
-     [:div
-      [:input {:type "checkbox"
-               :id input-id
-               :on-change (fn []
-                            (if checked?
-                              (swap! state assoc :badges-selected
-                                     (remove
-                                       #(= % id)
-                                       (:badges-selected @state)))
-                              (swap! state assoc :badges-selected
-                                     (conj (:badges-selected @state) id))))
-               :checked checked?}]
-      [:label {:for input-id}
-       (t :badge/Exporttobackpack)]])])
+  (let [{:keys [id image_file name description visibility]} element-data]
+    [:div {:class "col-xs-12 col-sm-6 col-md-4"
+           :key id}
+     [:div {:class "media grid-container"}
+      [:div.media-content
+       (if image_file
+         [:div.media-left
+          [:img {:src (if-not (re-find #"http" image_file)
+                        (str "/" image_file)
+                        image_file)}]])
+       [:div.media-body
+        [:div.media-heading
+         [:a.badge-link {:href (str "/badge/info/" id)}
+          name]]
+        [:div.visibility-icon
+         (case visibility
+           "private" [:i {:class "fa fa-lock"}]
+           "internal" [:i {:class "fa fa-group"}]
+           "public" [:i {:class "fa fa-globe"}]
+           nil)]
+        [:div.badge-description description]]]
+      [:div {:class "media-bottom"}
+       (let [input-id (str "check_" id)
+             checked? (boolean (some #(= id %) (:badges-selected @state)))]
+         [:div
+          [:input {:type "checkbox"
+                   :id input-id
+                   :on-change (fn []
+                                (if checked?
+                                  (swap! state assoc :badges-selected
+                                         (remove
+                                           #(= % id)
+                                           (:badges-selected @state)))
+                                  (swap! state assoc :badges-selected
+                                         (conj (:badges-selected @state) id))))
+                   :checked checked?}]
+          [:label {:for input-id}
+           (t :badge/Exporttobackpack)]])]]]))
 
 (defn badge-grid [state]
   [:div {:class "row"

@@ -27,7 +27,8 @@
 
 
 (defn navi-link [{:keys [target title active]}]
-  [:li {:class (when active "active")}
+  [:li {:class (when active "active")
+        :key target}
    [:a {:href target} title]])
 
 
@@ -49,13 +50,17 @@
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (for [i items]
-          ^{:key (:target i)} (navi-link i))]
+          (navi-link i))]
        [:div {:id "main-header-right"
               :class "nav navbar-nav navbar-right"}
         [:ul {:id "secondary-menu-links"
               :class "clearfix"}
-         [:li [:a {:href "#"} "My account"]]
-         [:li [:a {:href "#"} "Log out"]]]
+         [:li [:a {:href "#"}
+               [:i {:class "fa fa-caret-right"}]
+               "My account"]]
+         [:li [:a {:href "#"}
+               [:i {:class "fa fa-caret-right"}]
+               "Log out"]]]
         [:div.userpic
          [:a {:href "#"}
           [:img {:src "/img/user.png"}]]]]]]]))
@@ -65,7 +70,7 @@
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi))]
     [:ul {:class "side-links"}
      (for [i items]
-       ^{:key (:target i)} [:li (navi-link i)])]) )
+       (navi-link i))]))
 
 (defn breadcrumb [site-navi]
   [:h2 (get-in site-navi [:navi-items (current-path) :breadcrumb])])
@@ -94,6 +99,6 @@
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
     [:div {:class "row"}
-     [:div {:class "col-md-3"} (sidebar site-navi)]
-     [:div {:class "col-md-9"} content]]]])
+     [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
+     [:div {:class "col-md-10 col-sm-9"} content]]]])
 
