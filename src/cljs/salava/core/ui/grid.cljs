@@ -8,7 +8,7 @@
    [:div.col-sm-10
     [:div.buttons
      (let [all-checked? (= ((keyword all-key) @state) true)]
-       [:button {:class (str "btn btn-default " (if all-checked? "btn-primary"))
+       [:button {:class (str "btn btn-default " (if all-checked? "btn-active"))
                  :id "btn-all"
                  :on-click (fn []
                              (swap! state assoc (keyword key) [])
@@ -19,7 +19,7 @@
        (for [button buttons]
          (let [value button
                checked? (boolean (some #(= value %) ((keyword key) @state)))]
-                [:button {:class (str "btn btn-default " (if checked? "btn-primary"))
+                [:button {:class (str "btn btn-default " (if checked? "btn-active"))
                           :key value
                           :on-click (fn []
                                       (let []
@@ -77,15 +77,33 @@
        (:label button)])]])
 
 (defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name]} element-data]
-    [:div {:class "col-xs-6 col-sm-4 grid-container"
+  (let [{:keys [id image_file name description visibility]} element-data]
+    [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
-     [:div.media
-      (if image_file
-        [:div.media-left
-         [:img {:src (if-not (re-find #"http" image_file)
-                       (str "/" image_file)
-                       image_file)}]])
-      [:div.media-body
-       [:a {:href (str "/badge/info/" id)}
-        name]]]]))
+     [:div {:class "media grid-container"}
+      [:div.media-content
+       (if image_file
+         [:div.media-left
+          [:img {:src (if-not (re-find #"http" image_file)
+                        (str "/" image_file)
+                        image_file)}]])
+       [:div.media-body
+        [:div.media-heading
+         [:a.badge-link {:href (str "/badge/info/" id)}
+          name]]
+        [:div.visibility-icon
+         (case visibility
+           "private" [:i {:class "fa fa-lock"}]
+           "internal" [:i {:class "fa fa-group"}]
+           "public" [:i {:class "fa fa-globe"}]
+           nil)]
+        [:div.badge-description description]]]
+      [:div {:class "media-bottom"}
+       [:a {:class "bottom-link"
+            :href (str "/badge/info/" id)}
+        [:i {:class "fa fa-share-alt"}]
+        [:span (t :badge/Share)]]
+       [:a {:class "bottom-link pull-right"
+            :href "#"}
+        [:i {:class "fa fa-cog"}]
+        [:span (t :badge/Settings)]]]]]))
