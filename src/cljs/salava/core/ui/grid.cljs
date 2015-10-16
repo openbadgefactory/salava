@@ -93,9 +93,12 @@
           name]]
         [:div.visibility-icon
          (case visibility
-           "private" [:i {:class "fa fa-lock"}]
-           "internal" [:i {:class "fa fa-group"}]
-           "public" [:i {:class "fa fa-globe"}]
+           "private" [:i {:class "fa fa-lock"
+                          :title (t :badge/Private)}]
+           "internal" [:i {:class "fa fa-group"
+                           :title (t :badge/Shared)}]
+           "public" [:i {:class "fa fa-globe"
+                         :title (t :badge/Public)}]
            nil)]
         [:div.badge-description description]]]
       [:div {:class "media-bottom"}

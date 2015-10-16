@@ -20,17 +20,17 @@
    {:value "private" :title (t :badge/Private)}])
 
 (defn order-radio-values []
-  [{:value "mtime" :id "radio-date" :label (t :badge/Bydate)}
-   {:value "name" :id "radio-name" :label (t :badge/Byname)}])
+  [{:value "mtime" :id "radio-date" :label (t :badge/bydate)}
+   {:value "name" :id "radio-name" :label (t :badge/byname)}])
 
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-select (t :badge/Email) "select-email" :email-selected (email-options state) state]
-   [g/grid-search-field (t :badge/Search) "badgesearch" (t :badge/Searchbyname) :search state]
-   [g/grid-select (t :badge/Show) "select-visibility" :visibility (visibility-options) state]
-   [g/grid-buttons (t :badge/Tags) (unique-values :tags (:data @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (t :badge/Order) "order" (order-radio-values) :order state]])
+   [g/grid-select (str (t :badge/Email) ":") "select-email" :email-selected (email-options state) state]
+   [g/grid-search-field (str (t :badge/Search) ":") "badgesearch" (t :badge/Searchbyname) :search state]
+   [g/grid-select (str (t :badge/Show) ":") "select-visibility" :visibility (visibility-options) state]
+   [g/grid-buttons (str (t :badge/Tags) ":") (unique-values :tags (:data @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (str (t :badge/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (if (and
@@ -113,8 +113,9 @@
    [:h2 (t :badge/Exportordownload)]
    [badge-grid-form state]
    [:div.export-button
-    [:button {:class "btn btn-default btn-primary"
-              :on-click #(export-badges state)}
+    [:button {:class    "btn btn-default btn-primary"
+              :on-click #(export-badges state)
+              :disabled (= 0 (count (:badges-selected @state)))}
      (t :badge/Exportselected)]]
    [badge-grid state]])
 

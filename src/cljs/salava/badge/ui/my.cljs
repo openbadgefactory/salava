@@ -16,8 +16,8 @@
    {:value "private" :title (t :badge/Private)}])
 
 (defn order-radio-values []
-  [{:value "mtime" :id "radio-date" :label (t :badge/Bydate)}
-   {:value "name" :id "radio-name" :label (t :badge/Byname)}])
+  [{:value "mtime" :id "radio-date" :label (t :badge/bydate)}
+   {:value "name" :id "radio-name" :label (t :badge/byname)}])
 
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"

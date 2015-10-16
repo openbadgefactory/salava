@@ -100,5 +100,5 @@
    [:div {:class "container main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
-     [:div {:class "col-md-10 col-sm-9"} content]]]])
+     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]])
 

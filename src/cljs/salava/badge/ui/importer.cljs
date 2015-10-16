@@ -117,7 +117,7 @@
 (defn content [state]
   [:div {:class "import-badges"}
    [m/modal-window]
-   [:h2 (t :badge/Import)]
+   [:h2 (t :badge/Importfrom)]
    [:div.import-button
     (if (:ajax-message @state)
       [:div.ajax-message

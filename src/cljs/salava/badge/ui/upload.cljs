@@ -45,7 +45,7 @@
                                 {:hide #(.replace js/window.location "/badge")}))))})))
 
 (defn content []
-  [:section {:class "col-sm-9 col-md-10"}
+  [:div {:class "badge-upload"}
    [m/modal-window]
    [:h2 (t :badge/Uploadbadgesfrom)]
    [:form {:id "form"}
