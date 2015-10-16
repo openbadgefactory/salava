@@ -155,9 +155,21 @@ button {
     width: 90px;
 }
 
-.badge-image img {
-  display: inline-block;
-  max-width: 100%;
-  height: auto;
-  padding: 4px;
+.badge-image {
+    text-align: center;
+    img {
+        display: inline-block;
+        max-width: 100%;
+        height: auto;
+        padding: 4px;
+    }
+}
+
+.ajax-message {
+    i.fa {
+        font-size: 20px;
+    }
+    span {
+        padding-left: 5px;
+    }
 }

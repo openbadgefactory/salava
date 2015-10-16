@@ -20,12 +20,10 @@
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
-    (if (= status "success")
-      [:div {:class "alert alert-success"}
-       [:p message]
-       [:p (t :badge/Savedcount) ": " saved-count]]
-      [:div {:class "alert alert-warning"}
-       message])]
+    [:div {:class (str "alert " (if (= status "success")
+                                  "alert-success"
+                                  "alert-warning"))}
+       message]]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-default btn-primary"
@@ -122,7 +120,9 @@
    [:h2 (t :badge/Import)]
    [:div.import-button
     (if (:ajax-message @state)
-      [:h3 (:ajax-message @state)])
+      [:div.ajax-message
+       [:i {:class "fa fa-cog fa-spin fa-2x "}]
+       [:span (:ajax-message @state)]])
     (if-not (pos? (count (:badges @state)))
       [:button {:class "btn btn-default btn-primary"
                 :on-click #(fetch-badges state)
