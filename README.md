@@ -1,32 +1,74 @@
 # salava
 
-FIXME: description
+## Open Badge Passport community edition.
 
-## Installation
+[Open Badges](http://openbadges.org/) is an open standard developed by the
+Mozilla Foundation to recognize, validate and demonstrate learning that
+happens anywhere. Open Badges are digital credentials, created and issued by
+organizations such as schools, vocational organizations, companies and
+employers for their students, members, staff, clients or partners.
 
-Download from http://example.com/FIXME.
+[Open Badge Passport](https://openbadgepassport.com/) is a platform for badge
+earners to easily receive, save and organize their Open Badges and share them
+on social media such as LinkedIn, Twitter and Facebook. Salava (this project)
+is the open source implementation of the currently running
+proof-of-concept. Our first goal is to have the same feature set and then
+build on that.
 
-## Usage
+Quickest way to see what this project is about is to
+[create an account](https://openbadgepassport.com/en/user/register)
+in Open badge Passport (it's free) and play around with that.
 
-FIXME: explanation
 
-    $ java -jar salava-0.1.0-standalone.jar [args]
+## Quick start
 
-## Options
+The project is still in its early stages and not really suitable for any real
+use. Still, you can try it out.
 
-FIXME: listing of options this app accepts.
+The code is known to work with Ubuntu Linux, Oracle Java 8 and MariaDb 10. We use
+[Leiningen](http://leiningen.org/) as dependency manager. For building scss files you need a sass
+compiler, such as [sassc](https://github.com/sass/sassc).
 
-## Examples
+Start the installation with creating your config file:
 
-...
+    $ cp resources/config/core.edn.base resources/config/core.edn
 
-### Bugs
+Edit the file and add your db settings etc. (Don't forget to create the
+database as well). After that:
 
-...
+    # Initialize your db and insert some sample data
+    $ lein migrator-reset
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+    # Build translation files
+    $ lein translate
+
+    # Start figwheel, cljsbuild and scss compiler
+    $ lein develop
+
+    # (in another terminal)
+
+    # Start application server
+    $ lein repl
+    # ...
+    user=> (go)
+
+
+
+## TODO
+
+- User accounts, login, OAuth
+- Badge sharing
+- User content pages
+- Themes
+- Badge/Page Gallery
+- Full text search
+- File uploads
+- User groups
+- Statistics
+- Admin tools
+- Tests
+
+
 
 ## License
 
