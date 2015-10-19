@@ -3,22 +3,22 @@
 -- get user's badges
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE user_id = :user_id
+       WHERE user_id = :user_id AND deleted = 0
 
 -- name: select-user-badges-to-export
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, email, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL
+       WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL AND deleted = 0
 
 -- name: select-user-badges-pending
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE user_id = :user_id AND status = 'pending'
+       WHERE user_id = :user_id AND status = 'pending' AND deleted = 0
 
 -- name: select-public-badges
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE visibility = 'public' OR visibility = 'shared'
+       WHERE visibility = 'public' OR visibility = 'shared' AND deleted = 0
        ORDER BY ctime DESC
 
 -- name: select-taglist
@@ -55,6 +55,9 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 REPLACE INTO badge_tag (badge_id, tag)
        VALUES (:badge_id, :tag)
 
+--name: delete-badge-tags!
+DELETE FROM badge_tag WHERE badge_id = :badge_id
+
 -- name: replace-issuer-content!
 -- save issuer, replace if issuer exists already
 REPLACE INTO issuer_content (id,name,url,description,image_file,email,revocation_list_url)
@@ -71,3 +74,17 @@ UPDATE badge SET status = :status WHERE id = :id
 --name: update-show-recipient-name!
 --show/hide recipient name
 UPDATE badge SET show_recipient_name = :show_recipient_name WHERE id = :id
+
+--name: select-badge-settings
+--get badge settings
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, criteria_html, evidence_url, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact FROM badge
+       JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
+       JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
+       WHERE badge.id = :id
+
+--name: update-badge-settings!
+--update badge settings
+UPDATE badge SET visibility = :visibility, rating = :rating, evidence_url = :evidence_url WHERE id = :id
+
+--name: update-badge-set-deleted!
+UPDATE badge SET deleted = 1, visibility = "private" WHERE id = :id

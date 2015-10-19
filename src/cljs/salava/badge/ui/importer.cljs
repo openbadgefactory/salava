@@ -4,7 +4,6 @@
             [reagent-modals.modals :as m]
             [clojure.walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
-            [salava.core.ui.grid :refer [badge-grid-element]]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))

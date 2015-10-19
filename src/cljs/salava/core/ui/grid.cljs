@@ -75,38 +75,3 @@
                 :on-change (fn [x]
                              (swap! state assoc key (-> x .-target .-value)))}]
        (:label button)])]])
-
-(defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description visibility]} element-data]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:img {:src (if-not (re-find #"http" image_file)
-                        (str "/" image_file)
-                        image_file)}]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.badge-link {:href (str "/badge/info/" id)}
-          name]]
-        [:div.visibility-icon
-         (case visibility
-           "private" [:i {:class "fa fa-lock"
-                          :title (t :badge/Private)}]
-           "internal" [:i {:class "fa fa-group"
-                           :title (t :badge/Shared)}]
-           "public" [:i {:class "fa fa-globe"
-                         :title (t :badge/Public)}]
-           nil)]
-        [:div.badge-description description]]]
-      [:div {:class "media-bottom"}
-       [:a {:class "bottom-link"
-            :href (str "/badge/info/" id)}
-        [:i {:class "fa fa-share-alt"}]
-        [:span (t :badge/Share)]]
-       [:a {:class "bottom-link pull-right"
-            :href "#"}
-        [:i {:class "fa fa-cog"}]
-        [:span (t :badge/Settings)]]]]]))

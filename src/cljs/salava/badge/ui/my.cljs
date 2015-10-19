@@ -1,12 +1,14 @@
 (ns salava.badge.ui.my
-  (:require [reagent.core :as reagent :refer [atom]]
+  (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
+            [reagent-modals.modals :as m]
             [clojure.set :as set :refer [intersection]]
             [clojure.walk :as walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
+            [salava.badge.ui.settings :as s]
             [salava.core.i18n :as i18n :refer [t]]))
 
 (defn visibility-select-values []
@@ -34,8 +36,7 @@
         (or (> (count
                  (intersection
                    (into #{} (:tags-selected @state))
-                   (into #{} (:tags element)))
-                 )
+                   (into #{} (:tags element))))
                0)
             (= (:tags-all @state)
                true))
@@ -46,6 +47,57 @@
                   -1)))
     true false))
 
+(defn show-settings-dialog [badge-id state]
+  (ajax/GET
+    (str "/obpv1/badge/settings/" badge-id)
+    {:handler (fn [data]
+                (let [data-with-kws (keywordize-keys data)]
+                  (swap! state assoc :badge-settings (hash-map :id badge-id
+                                                               :visibility (:visibility data-with-kws)
+                                                               :tags (:tags data-with-kws)
+                                                               :evidence-url (:evidence_url data-with-kws)
+                                                               :rating (:rating data-with-kws)
+                                                               :new-tag ""
+                                                               ::confirm-delete false))
+                  (m/modal! [s/settings-modal data-with-kws state]
+                            {:size :lg})))}))
+
+(defn badge-grid-element [element-data state]
+  (let [{:keys [id image_file name description visibility]} element-data]
+    [:div {:class "col-xs-12 col-sm-6 col-md-4"
+           :key id}
+     [:div {:class "media grid-container"}
+      [:div.media-content
+       (if image_file
+         [:div.media-left
+          [:img {:src (if-not (re-find #"http" image_file)
+                        (str "/" image_file)
+                        image_file)}]])
+       [:div.media-body
+        [:div.media-heading
+         [:a.badge-link {:href (str "/badge/info/" id)}
+          name]]
+        [:div.visibility-icon
+         (case visibility
+           "private" [:i {:class "fa fa-lock"
+                          :title (t :badge/Private)}]
+           "internal" [:i {:class "fa fa-group"
+                           :title (t :badge/Shared)}]
+           "public" [:i {:class "fa fa-globe"
+                         :title (t :badge/Public)}]
+           nil)]
+        [:div.badge-description description]]]
+      [:div {:class "media-bottom"}
+       [:a {:class "bottom-link"
+            :href (str "/badge/info/" id)}
+        [:i {:class "fa fa-share-alt"}]
+        [:span (t :badge/Share)]]
+       [:a {:class "bottom-link pull-right"
+            :href "#"
+            :on-click #(show-settings-dialog id state)}
+        [:i {:class "fa fa-cog"}]
+        [:span (t :badge/Settings)]]]]]))
+
 (defn badge-grid [state]
   (let [badges (:badges @state)
         order (:order @state)]
@@ -53,7 +105,7 @@
                  :id    "grid"}]
           (for [element-data (sort-by (keyword order) badges)]
             (if (badge-visible? element-data state)
-              (g/badge-grid-element element-data))))))
+              (badge-grid-element element-data state))))))
 
 (defn update-status [id new-status state]
   (ajax/POST
@@ -95,6 +147,7 @@
 
 (defn content [state]
   [:div {:class "my-badges"}
+   [m/modal-window]
    [badges-pending state]
    [badge-grid-form state]
    [badge-grid state]])
@@ -107,7 +160,7 @@
                   (swap! state assoc :badges (filter #(= "accepted" (:status %)) data))
                   (swap! state assoc :pending (filter #(= "pending" (:status %)) data))))}))
 
-(defn handler [site-navi params]
+(defn handler [site-navi]
   (let [state (atom {:badges []
                      :pending []
                      :visibility "all"

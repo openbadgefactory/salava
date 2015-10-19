@@ -82,4 +82,27 @@
                    :middlewares [upload/wrap-multipart-params]
                    :summary "Upload badge PNG-file"
                    :components [context]
-                   (ok (i/upload-badge context file userid)))))
+                   (ok (i/upload-badge context file userid)))
+
+            (GET* "/settings/:badgeid" []
+                  ;return schemas/badgeContent
+                  :path-params [badgeid :- Long]
+                  :summary "Get badge settings"
+                  :components [context]
+                  (ok (b/badge-settings context badgeid)))
+
+            (POST* "/save_settings/:badgeid" []
+                   :path-params [badgeid :- Long]
+                   :body-params [visibility :- (s/enum "private" "public" "internal")
+                                 evidence-url :- (s/maybe s/Str)
+                                 rating :- (s/enum 0 1 2 3 4 5)
+                                 tags :- (s/maybe [s/Str])]
+                   :summary "Save badge settings"
+                   :components [context]
+                   (ok (b/save-badge-settings! context badgeid visibility evidence-url rating tags)))
+
+            (DELETE* "/:badgeid" []
+                     :path-params [badgeid :- Long]
+                     :summary "Delete badge"
+                     :components [context]
+                     (ok (str (b/delete-badge! context badgeid))))))

@@ -1,5 +1,6 @@
 button {
-    margin: 0 2px;
+    display: inline-block;
+    margin: 0 2px 2px 2px;
 }
 
 #pending-badges {
@@ -53,7 +54,7 @@ button {
         text-align: left;
     }
     button {
-        margin: 0 3px 0 0;
+        margin: 0 3px 3px 0;
         padding: 6px 12px;
         background: none;
         background-color: #aea1aa;
@@ -171,5 +172,58 @@ button {
     }
     span {
         padding-left: 5px;
+    }
+}
+
+.modal-left {
+    text-align: center;
+}
+
+.select-rating {
+    width: 60px;
+}
+
+.delete-buttons {
+    margin-top: 20px;
+}
+
+#badge-settings {
+    .badge-content {
+        label {
+            margin-right: 5px;
+            color: #83a04b;
+        }
+    }
+    .settings-content {
+        label {
+            margin-left: 2px;
+            font-weight: normal;
+            margin-right: 20px;
+        }
+    }
+    .sub-heading {
+        font-weight: bold;
+        color: #7f7179;
+        font-size: 15px;
+    }
+    .labels {
+        margin-bottom: 3px;
+        .label {
+            margin-right: 3px;
+            font-size: 12px;
+            background-color: #f5f5f5;
+            color: #555555;
+            border: 1px solid #bbbbbb;
+            a.remove-tag {
+                font-size: 16px;
+                cursor: pointer;
+                text-decoration: none;
+                margin-left: 4px;
+                color: #bbbbbb;
+                &:hover {
+                    color: #888888;
+                }
+            }
+        }
     }
 }

@@ -11,3 +11,8 @@
            :cljs (.parse js/Date str))
         1000))
 
+(defn date-from-unix-time [time]
+  #?(:cljs
+    (let [date (js/Date. time)]
+      (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date)))))
+

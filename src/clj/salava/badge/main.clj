@@ -9,12 +9,11 @@
 
 (defqueries "sql/badge/main.sql")
 
+(defn assoc-badge-tags [badge tags]
+  (assoc badge :tags (map :tag (filter #(= (:badge_id %) (:id badge))
+                                       tags))))
 (defn map-badges-tags [badges tags]
-  (map (fn [b]
-         (assoc b :tags
-                  (map :tag
-                       (filter #(= (:badge_id %) (:id b))
-                               tags))))
+  (map (fn [b] (assoc-badge-tags b tags))
        badges))
 
 (defn user-badges-all
@@ -134,9 +133,10 @@
       (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id)))))
 
 (defn save-badge-tags!
-  "Save tags associated to badge"
+  "Save tags associated to badge. Delete existing tags."
   [ctx tags badge-id]
   (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
+    (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
     (doall (for [tag valid-tags]
              (replace-badge-tag! {:badge_id badge-id :tag tag}
                               (get-db ctx))))))
@@ -160,6 +160,31 @@
   (update-show-recipient-name! {:id badgeid
                        :show_recipient_name show-recipient-name}
                       (get-db ctx)))
+
+(defn badge-settings
+  "Get badge settings"
+  [ctx badge-id]
+  (let [badge (select-badge-settings {:id badge-id}
+                                     (into {:result-set-fn first}
+                                           (get-db ctx)))
+        tags (select-taglist {:badge_id [badge-id]} (get-db ctx))]
+    (assoc-badge-tags badge tags)))
+
+(defn save-badge-settings!
+  "Update badge setings"
+  [ctx badge-id visibility evidence-url rating tags]
+  (let [data {:id badge-id
+              :visibility visibility
+              :evidence_url evidence-url
+              :rating rating}]
+    (update-badge-settings! data (get-db ctx))
+    (save-badge-tags! ctx tags badge-id)))
+
+(defn delete-badge!
+  "Set badge deleted and delete tags"
+  [ctx badge-id]
+  (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
+  (update-badge-set-deleted! {:id badge-id} (get-db ctx)))
 
 (defn search-gallery-badges
   "Search badges from gallery"
