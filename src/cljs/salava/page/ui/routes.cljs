@@ -1,17 +1,13 @@
 (ns salava.page.ui.routes 
   (:require [salava.core.ui.layout :as layout]
-            [salava.core.i18n :as i18n :refer [t]]))
-
-(defn placeholder [content]
-  (fn [site-navi params]
-    #(layout/default site-navi content)))
+            [salava.core.i18n :as i18n :refer [t]]
+            [salava.page.ui.my :as my]))
 
 (defn ^:export routes [context]
-  {"/pages" [[""         (placeholder [:p "My pages"])]
-             ["/mypages" (placeholder [:p "My pages"])]]})
-
+  {"/page" [[""         my/handler]
+             ["/mypages" my/handler]]})
 
 (defn ^:export navi [context]
-  {"/pages"         {:weight 30 :title (t :page/Pages)    :breadcrumb (str (t :page/Pages) " / ")}
-   "/pages/mypages" {:weight 31 :title (t :page/Mypages)  :breadcrumb (str (t :page/Pages) " / " (t :page/Mypages))}})
+  {"/page"         {:weight 30 :title (t :page/Pages)    :breadcrumb (str (t :page/Pages) " / " (t :page/Mypages))}
+   "/page/mypages" {:weight 31 :title (t :page/Mypages)  :breadcrumb (str (t :page/Pages) " / " (t :page/Mypages))}})
 

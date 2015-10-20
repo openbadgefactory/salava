@@ -1,8 +1,24 @@
 (ns salava.page.routes
   (:require [compojure.api.sweet :refer :all]
-            [salava.core.layout :as layout]))
+            [ring.util.http-response :refer :all]
+            [salava.core.layout :as layout]
+            [salava.page.main :as p]))
 
 (defroutes* route-def
-  (context* "/pages" []
-                   (layout/main "/")
-                   (layout/main "/mypages")))
+  (context* "/page" []
+            (layout/main "/")
+            (layout/main "/mypages"))
+
+  (context* "/obpv1/page" []
+            (GET* "/:userid" []
+                  ;:return [schema/Page]
+                  :path-params [userid :- Long]
+                  :summary "Get user pages"
+                  :components [context]
+                  (ok (p/user-pages-all context userid)))
+            (POST* "/create" []
+                   ;:return schema/Page
+                   :body-params [userid :- Long]
+                   :summary "Create a new empty page"
+                   :components [context]
+                   (ok (str (p/create-empty-page! context userid))))))

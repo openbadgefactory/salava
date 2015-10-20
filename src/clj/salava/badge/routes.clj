@@ -11,6 +11,7 @@
 (defroutes* route-def
   (context* "/badge" []
             (layout/main "/")
+            (layout/main "/mybadges")
             (layout/main "/info/:id")
             (layout/main "/import")
             (layout/main "/export")

@@ -14,7 +14,7 @@
                              (swap! state assoc (keyword key) [])
                              (swap! state assoc (keyword all-key) true))
                  }
-        (t :badge/All)])
+        (t :core/All)])
      (doall
        (for [button buttons]
          (let [value button

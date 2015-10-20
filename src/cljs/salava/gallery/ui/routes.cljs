@@ -14,7 +14,7 @@
                ["/getbadge" (placeholder [:p "Apply for a badge"])]]})
 
 (defn ^:export navi [context]
-  {"/gallery"          {:weight 40 :title (t :gallery/Gallery)          :breadcrumb (str (t :gallery/Gallery) " / " ) }
+  {"/gallery"          {:weight 40 :title (t :gallery/Gallery)          :breadcrumb (str (t :gallery/Gallery) " / " (t :gallery/Sharedbadges))}
    "/gallery/badges"   {:weight 41 :title (t :gallery/Sharedbadges)     :breadcrumb (str (t :gallery/Gallery) " / " (t :gallery/Sharedbadges))}
    "/gallery/pages"    {:weight 42 :title (t :gallery/Sharedpages)      :breadcrumb (str (t :gallery/Gallery) " / " (t :gallery/Sharedpages))}
    "/gallery/profiles" {:weight 43 :title (t :gallery/Sharedprofiles)   :breadcrumb (str (t :gallery/Gallery) " / " (t :gallery/Sharedprofiles))}

@@ -1,7 +1,11 @@
 (ns salava.core.ui.helper)
 
 (defn unique-values [key data]
-  (distinct (flatten (map (keyword key) data))))
+  (->> data
+       (map (keyword key))
+       (filter some?)
+       flatten
+       distinct))
 
 (defn current-path []
   (let [uri js/window.location.pathname]

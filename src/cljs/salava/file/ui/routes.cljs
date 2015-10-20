@@ -8,8 +8,8 @@
     #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/pages" [["/files" (placeholder [:p "My files"])]]})
+  {"/page" [["/files" (placeholder [:p "My files"])]]})
 
 (defn ^:export navi [context]
-  {"/pages/files" {:weight 35 :title "Files" :breadcrumb (str (t :page/Pages) " / " (t :file/Files))}})
+  {"/page/files" {:weight 35 :title "Files" :breadcrumb (str (t :page/Pages) " / " (t :file/Files))}})
 

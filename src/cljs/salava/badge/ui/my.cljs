@@ -12,22 +12,22 @@
             [salava.core.i18n :as i18n :refer [t]]))
 
 (defn visibility-select-values []
-  [{:value "all" :title (t :badge/All)}
-   {:value "public"  :title (t :badge/Public)}
-   {:value "shared"  :title (t :badge/Shared)}
-   {:value "private" :title (t :badge/Private)}])
+  [{:value "all" :title (t :core/All)}
+   {:value "public"  :title (t :core/Public)}
+   {:value "shared"  :title (t :core/Shared)}
+   {:value "private" :title (t :core/Private)}])
 
 (defn order-radio-values []
-  [{:value "mtime" :id "radio-date" :label (t :badge/bydate)}
-   {:value "name" :id "radio-name" :label (t :badge/byname)}])
+  [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
+   {:value "name" :id "radio-name" :label (t :core/byname)}])
 
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-search-field (str (t :badge/Search) ":") "badgesearch" (t :badge/Searchbyname) :search state]
-   [g/grid-select (str (t :badge/Show) ":") "select-visibility" :visibility (visibility-select-values) state]
-   [g/grid-buttons (str (t :badge/Tags) ":") (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (str (t :badge/Order) ":") "order" (order-radio-values) :order state]])
+   [g/grid-search-field (str (t :core/Search) ":") "badgesearch" (t :core/Searchbyname) :search state]
+   [g/grid-select (str (t :core/Show) ":") "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons (str (t :core/Tags) ":") (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (if (and
@@ -58,7 +58,7 @@
                                                                :evidence-url (:evidence_url data-with-kws)
                                                                :rating (:rating data-with-kws)
                                                                :new-tag ""
-                                                               ::confirm-delete false))
+                                                               ))
                   (m/modal! [s/settings-modal data-with-kws state]
                             {:size :lg})))}))
 
@@ -70,12 +70,10 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (if-not (re-find #"http" image_file)
-                        (str "/" image_file)
-                        image_file)}]])
+          [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.badge-link {:href (str "/badge/info/" id)}
+         [:a.heading-link {:href (str "/badge/info/" id)}
           name]]
         [:div.visibility-icon
          (case visibility
@@ -86,7 +84,7 @@
            "public" [:i {:class "fa fa-globe"
                          :title (t :badge/Public)}]
            nil)]
-        [:div.badge-description description]]]
+        [:div.media-description description]]]
       [:div {:class "media-bottom"}
        [:a {:class "bottom-link"
             :href (str "/badge/info/" id)}
@@ -109,7 +107,7 @@
 
 (defn update-status [id new-status state]
   (ajax/POST
-    (str "obpv1/badge/set_status/" id)
+    (str "/obpv1/badge/set_status/" id)
     {:params  {:status new-status}
      :handler (fn []
                 (let [badge (first (filter #(= id (:id %)) (:pending @state)))]
@@ -125,7 +123,7 @@
       [:div.col-md-12
        [:div.media
         [:div.pull-left
-         [:img.badge-image {:src image_file}]]
+         [:img.badge-image {:src (str "/" image_file)}]]
         [:div.media-body
          [:h4.media-heading
           name]

@@ -1,0 +1,11 @@
+(
+  {
+   :table "page"
+   :data {
+          :user_id 1
+          :name "Sample page"
+          :description "This is a sample page."
+          :visibility "private"
+          :ctime 1445335094
+          :mtime 1445335094
+          }})
