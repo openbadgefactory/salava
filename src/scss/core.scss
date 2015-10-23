@@ -23,6 +23,52 @@ body {
     color: $main-color;
 }
 
+.btn {
+    margin-right: 3px;
+    background: none;
+    background-color: #aea1aa;
+    color: #ffffff;
+    font-family: 'Open Sans';
+    box-shadow: 0px 2px #969696;
+    border-radius: 4px;
+    border: 1px solid #aca3a8;
+    font-size: 13px;
+    font-weight: normal;
+    &:focus {
+        outline: none;
+    }
+}
+
+.btn-active, .btn:hover {
+    color: #ffffff;
+    background-color: #463c44;
+    border-color: #443f43;
+    box-shadow: 0px 2px #030102;
+}
+
+.btn-primary {
+    background-color: #587ab3;
+    border-color: #45649f;
+    box-shadow: 0px 2px #d8d8d8;
+    &:hover {
+        background-color: #3e5c97;
+        border-color: #424a7d;
+        box-shadow: 0px 2px #d8d8d8;
+    }
+}
+
+.btn-warning {
+    background-color: #ea8241;
+    border-color: #d08a4f;
+    box-shadow: 0px 2px #d8d8d8;
+    &:hover {
+        background-color: #df6519;
+        border-color: #d08a4f;
+        box-shadow: 0px 2px #d8d8d8;
+    }
+
+}
+
 header#navbar {
     background: url(/img/header_pic.png) no-repeat #ffffff;
     background-position: top center;
@@ -165,7 +211,7 @@ ul.side-links {
 }
 
 #content {
-    h2 {
+    h2.uppercase-header {
         line-height: 30px;
         font: 300 28px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
@@ -251,10 +297,10 @@ ul.side-links {
                 overflow-y: hidden;
 
                 a.heading-link {
-                    color: $grid-link;
+                    color: #f59f48;
                     text-decoration: none;
                     &:hover {
-                        color: $grid-link-hover;
+                        color: #ea7d45;
                     }
                 }
             }

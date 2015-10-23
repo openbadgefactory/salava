@@ -24,7 +24,7 @@
      reason]]
    [:div.modal-footer
     [:button {:type "button"
-              :class "btn btn-default btn-primary"
+              :class "btn btn-primary"
               :data-dismiss "modal"}
      "OK"]]])
 
@@ -47,7 +47,7 @@
 (defn content []
   [:div {:class "badge-upload"}
    [m/modal-window]
-   [:h2 (t :badge/Uploadbadgesfrom)]
+   [:h2.uppercase-header (t :badge/Uploadbadgesfrom)]
    [:form {:id "form"}
     [:input {:type "file"
              :name "file"

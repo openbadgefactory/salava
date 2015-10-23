@@ -25,7 +25,7 @@
        message]]
    [:div.modal-footer
     [:button {:type "button"
-              :class "btn btn-default btn-primary"
+              :class "btn btn-primary"
               :data-dismiss "modal"}
      "OK"]]])
 
@@ -116,26 +116,26 @@
 (defn content [state]
   [:div {:class "import-badges"}
    [m/modal-window]
-   [:h2 (t :badge/Importfrom)]
+   [:h2.uppercase-header (t :badge/Importfrom)]
    [:div.import-button
     (if (:ajax-message @state)
       [:div.ajax-message
        [:i {:class "fa fa-cog fa-spin fa-2x "}]
        [:span (:ajax-message @state)]])
     (if-not (pos? (count (:badges @state)))
-      [:button {:class "btn btn-default btn-primary"
+      [:button {:class "btn btn-primary"
                 :on-click #(fetch-badges state)
                 :disabled (:ajax-message @state)}
        (t :badge/Importfrom)]
 
       (if (pos? (count (:ok-badges @state)))
         [:div
-         [:button {:class    "btn btn-default btn-primary"
+         [:button {:class    "btn btn-primary"
                    :on-click #(toggle-select-all state)}
           (if (:all-selected @state)
             (t :badge/Clearall)
             (t :badge/Selectall))]
-         [:button {:class    "btn btn-default btn-primary"
+         [:button {:class    "btn btn-primary"
                    :on-click #(import-badges state)
                    :disabled (or (:ajax-message @state)
                                  (= (count (:badges-selected @state)) 0))}

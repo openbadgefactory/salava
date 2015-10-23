@@ -4,7 +4,8 @@
             [salava.core.ui.layout :as layout]
             [clojure.walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.badge.ui.helper :as bh]))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -55,17 +56,13 @@
      [:div.row
       [:div {:class "col-md-12 badge-info"}
        [:h1 (:name @state)]
-       [:div.issuer
-        [:label
-         (str (t :badge/Issuedby) ": ")]
-        [:a {:href (:issuer_url @state)
-             :target "_blank"} (:issuer_name @state)] " / " [:a {:href (str "mailto:" (:issuer_contact @state))} (:issuer_contact @state)]]
+       (bh/issuer-label-and-link (:issuer_name @state) (:issuer_url @state) (:issuer_contact @state))
        (if (:show_recipient_name @state)
          [:div
           (str (t :badge/Recipient) ": " (:first_name @state) " " (:last_name @state))])
        [:div
         (:description @state)]
-       [:h2 (t :badge/Criteria)]
+       [:h2.uppercase-header (t :badge/Criteria)]
        [:a {:href (:criteria_url @state)
             :target "_blank"}
         (t :badge/Opencriteriapage)]]]]]])

@@ -110,10 +110,10 @@
 
 (defn content [state]
   [:div {:class "export-badges"}
-   [:h2 (t :badge/Exportordownload)]
+   [:h2.uppercase-header (t :badge/Exportordownload)]
    [badge-grid-form state]
    [:div.export-button
-    [:button {:class    "btn btn-default btn-primary"
+    [:button {:class    "btn btn-primary"
               :on-click #(export-badges state)
               :disabled (= 0 (count (:badges-selected @state)))}
      (t :badge/Exportselected)]]

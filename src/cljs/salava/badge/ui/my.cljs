@@ -131,10 +131,10 @@
           description]]]]]
      [:div {:class "row button-row"}
       [:div.col-md-12
-       [:button {:class "btn btn-default btn-primary"
+       [:button {:class "btn btn-primary"
                  :on-click #(update-status id "accepted" state)}
         (t :badge/Acceptbadge)]
-       [:button {:class "btn btn-default btn-decline"
+       [:button {:class "btn btn-warning"
                  :on-click #(update-status id "declined" state)}
         (t :badge/Declinebadge)]]]]]])
 

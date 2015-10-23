@@ -2,7 +2,8 @@
   (:require [ajax.core :as ajax]
             [clojure.string :refer [trim lower-case]]
             [salava.core.i18n :refer [t]]
-            [salava.core.time :refer [date-from-unix-time]]))
+
+            [salava.badge.ui.helper :as bh]))
 
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
@@ -58,22 +59,15 @@
        [:div {:class "col-md-9 badge-content"}
         [:div.row
          [:div {:class "col-md-12 badge-info"}
-          [:h2 name]
+          [:h2.uppercase-header name]
           (if (> issued_on 0)
             [:div.issued_on
              [:label (str (t :badge/Issuedon) ":")]
              [:span (date-from-unix-time (* 1000 issued_on))]])
-          [:div.issuer
-           [:label (str (t :badge/Issuedby) ":")]
-           [:a {:href issuer_url
-                :target "_blank"} issuer_name]
-           (if-not (empty? issuer_contact)
-             [:span
-              " / " [:a {:href (str "mailto:" issuer_contact)} issuer_contact]])]
+          (bh/issuer-label-and-link issuer_name issuer_url issuer_contact)
           [:div.row
            [:div.col-md-12
-            description]]
-          ]]]]
+            description]]]]]]
       [:div {:class "row modal-form"}
        [:div {:class "col-md-3 modal-left"}
         [:div.delete-buttons
@@ -167,7 +161,7 @@
          ]]]]
      [:div.modal-footer
       [:button {:type         "button"
-                :class        "btn btn-default btn-primary"
+                :class        "btn btn-primary"
                 :data-dismiss "modal"
                 :on-click     #(save-settings state)}
        (t :badge/Save)]]]))
