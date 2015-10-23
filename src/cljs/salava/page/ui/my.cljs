@@ -43,7 +43,7 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (str "/page/info/" id)}
+         [:a.heading-link {:href (str "/page/view/" id)}
           name]]
         [:div.visibility-icon
          (case visibility

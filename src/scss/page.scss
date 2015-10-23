@@ -1,3 +1,105 @@
 #grid .page-create-date {
     color: #9dbe5f;
 }
+
+.page-content {
+    h1.main-title, .author {
+        text-align: center;
+    }
+    h1.main-title {
+        font-size: 45px;
+    }
+    .panel-left {
+        background-position: top left;
+        padding-left: 78px;
+        background-repeat: repeat-y;
+        @media (max-width: 767px) {
+            padding-left: 20px;
+        }
+    }
+    .panel-right {
+        background-position: top right;
+        padding-right: 78px;
+        background-repeat: repeat-y;
+        @media (max-width: 767px) {
+            padding-right: 20px;
+        }
+    }
+    .panel-content {
+        background-color: #ffffff;
+        padding: 0 15px;
+    }
+}
+
+#page-edit {
+    .buttons-right {
+        text-align: right;
+    }
+    #title-and-description {
+        margin: 35px 0;
+    }
+    #page-blocks {
+        margin-top: 25px;
+        .block {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            box-shadow: 0px 4px 0px #ececec;
+            margin-bottom: 20px;
+        }
+        .block-move {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 25px;
+
+        }
+        .block-content {
+            .block-remove {
+                text-align: right;
+                span.remove-button {
+                    display: inline-block;
+                    padding: 6px 8px;
+                    background-color: #ea8241;
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    cursor: pointer;
+                    line-height: 1;
+                }
+            }
+            .form-group:last-of-type {
+                margin-bottom: 0;
+            }
+            border-left: 1px solid #cccccc;
+            margin-left: 25px;
+            padding: 10px 25px;
+
+            .badge-select {
+                margin-bottom: 15px;
+            }
+            .badge-image {
+                padding-right: 40px;
+                text-align: right;
+                img {
+                    width: 70px;
+                }
+            }
+        }
+    }
+}
+
+#theme-10 {
+    font-family: "Halant";
+    color: #000000;
+    .panel-left {
+        background-image: url('/img/themes/10/colours_left_side.png');
+    }
+    .panel-right {
+        background-image: url('/img/themes/10/colours_right_side.png');
+    }
+    a {
+        color:#085760;
+        font-weight: 400;
+    }
+}
