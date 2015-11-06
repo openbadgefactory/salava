@@ -13,3 +13,9 @@
            (subs uri 0 (dec (count uri)))
            uri)
          js/window.location.search)))
+
+(defn base-url []
+  (str (.-location.protocol js/window) "//" (.-location.host js/window)))
+
+(defn navigate-to [url]
+  (set! (.-location.href js/window) url))

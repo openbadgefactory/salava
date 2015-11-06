@@ -43,6 +43,7 @@
                  [com.taoensso/tower "3.1.0-beta3"]
                  [cljs-ajax "0.5.0"]
                  [org.clojars.frozenlock/reagent-modals "0.2.3"]
+                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
 
                  [org.webjars/jquery "2.1.4"]
                  [org.webjars/bootstrap "3.3.5"]

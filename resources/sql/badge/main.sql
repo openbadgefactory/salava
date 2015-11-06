@@ -23,7 +23,7 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 
 -- name: select-taglist
 -- get tags by list of badge content ids
-SELECT badge_id, tag FROM badge_tag WHERE badge_id IN (:badge_id)
+SELECT badge_id, tag FROM badge_tag WHERE badge_id IN (:badge_ids)
 
 -- name: select-user-owns-hosted-badge
 -- check if user owns badge
@@ -88,3 +88,12 @@ UPDATE badge SET visibility = :visibility, rating = :rating, evidence_url = :evi
 
 --name: update-badge-set-deleted!
 UPDATE badge SET deleted = 1, visibility = "private" WHERE id = :id
+
+--name: select-badges-images-names
+SELECT b.id, bc.name, bc.image_file FROM badge AS b JOIN badge_content AS bc ON b.badge_content_id = bc.id WHERE b.id IN (:ids)
+
+--name: select-badges-by-tag-and-owner
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, bt.tag FROM badge
+       JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
+       JOIN badge_tag AS bt ON bt.badge_id = badge.id
+       WHERE user_id = :user_id AND deleted = 0 AND bt.tag = :badge_tag

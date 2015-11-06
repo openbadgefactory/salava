@@ -1,7 +1,9 @@
 (ns salava.page.ui.helper
   (:require [markdown.core :refer [md->html]]
             [salava.core.i18n :refer [t]]
-            [salava.badge.ui.helper :as bh]))
+            [salava.badge.ui.helper :as bh]
+            [salava.core.time :refer [date-from-unix-time]]
+            [salava.core.helper :refer [dump]]))
 
 (defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_name issuer_url issuer_email]} ]
   [:div {:class "row badge-block"}
@@ -44,3 +46,78 @@
      "h1" [:h1 content]
      "h2" [:h2 content]
      nil)])
+
+(defn tag-block [{:keys [tag badges format sort]}]
+  [:div.tag-block
+   [:div (t :page/Tag) ": " tag]
+   (let [sorted-badges (case sort
+                         "name" (sort-by :name < badges)
+                         "modified" (sort-by :mtime > badges)
+                         badges)]
+     (for [badge sorted-badges]
+       (if (= format "short")
+         [:a.small-badge-image {:href (str "/badge/info/" (:id badge))
+                                :key (:id badge)}
+          [:img {:src (str "/" (:image_file badge))
+                 :title (:name badge)}]]
+         (badge-block (assoc badge :format "long")))))])
+
+(defn view-page [page]
+  (let [{:keys [id name description mtime first_name last_name blocks theme]} page]
+    [:div {:id    (str "theme-" (or theme 0))
+           :class "page-content"}
+     [:div.panel
+      [:div.panel-left
+       [:div.panel-right
+        [:div.panel-content
+         [:div.row
+          [:div {:class "col-md-12 page-mtime"}
+           (date-from-unix-time (* 1000 mtime))]]
+         [:div.row
+          [:div {:class "col-md-12 page-title"}
+           [:h1 name]]]
+         [:div.row
+          [:div {:class "col-md-12 page-summary"}
+           description]]
+         [:div.row
+          [:div {:class "col-md-12 page-author"}
+           [:a {:href "#"}
+            (str first_name " " last_name)]]]
+         (into [:div.page-blocks]
+               (for [block blocks]
+                 (case (:type block)
+                   "badge" (badge-block block)
+                   "html" (html-block block)
+                   "file" (file-block block)
+                   "heading" (heading-block block)
+                   "tag" (tag-block block)
+                   nil)))]]]]]))
+
+(defn edit-page-header [header]
+  [:div.row
+   [:div.col-sm-12
+    [:h1 header]]])
+
+(defn edit-page-buttons [id target]
+  [:div {:class "row"
+         :id "buttons"}
+   [:div.col-xs-8
+    [:a {:class (str "btn" (if (= target :content) " btn-active"))
+         :href (str "/page/edit/" id)}
+     (str "1." (t :page/Content))]
+    [:a {:class (str "btn" (if (= target :theme) " btn-active"))
+         :href (str "/page/edit_theme/" id)}
+     (str "2." (t :page/Theme))]
+    [:a {:class (str "btn" (if (= target :settings) " btn-active"))
+         :href (str "/page/settings/" id)}
+     (str "3." (t :page/Settings))]
+    [:a {:class (str "btn" (if (= target :preview) " btn-active"))
+         :href (str "/page/preview/" id)}
+     (str "4." (t :page/Preview))]]
+   [:div {:class "col-xs-4"
+          :id "buttons-right"}
+    [:a {:class "btn btn-primary"
+         :href (str "/page/view/" id)}
+     (t :page/View)]
+    [:a {:class "btn btn-warning"}
+     (t :page/Delete)]]])

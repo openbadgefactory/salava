@@ -99,24 +99,4 @@ button {
         color: #7f7179;
         font-size: 15px;
     }
-    .labels {
-        margin-bottom: 3px;
-        .label {
-            margin-right: 3px;
-            font-size: 12px;
-            background-color: #f5f5f5;
-            color: #555555;
-            border: 1px solid #bbbbbb;
-            a.remove-tag {
-                font-size: 16px;
-                cursor: pointer;
-                text-decoration: none;
-                margin-left: 4px;
-                color: #bbbbbb;
-                &:hover {
-                    color: #888888;
-                }
-            }
-        }
-    }
 }

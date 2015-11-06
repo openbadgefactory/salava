@@ -1,27 +1,13 @@
 (ns salava.badge.ui.settings
-  (:require [ajax.core :as ajax]
-            [clojure.string :refer [trim lower-case]]
+  (:require [reagent.core :refer [cursor]]
+            [ajax.core :as ajax]
             [salava.core.i18n :refer [t]]
-
+            [salava.core.time :refer [date-from-unix-time]]
+            [salava.core.ui.tag :as tag]
             [salava.badge.ui.helper :as bh]))
 
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
-
-(defn add-tag [state]
-  (let [tags (get-in @state [:badge-settings :tags])
-        new-tag (-> (get-in @state [:badge-settings :new-tag])
-                    trim)
-        tag-exists? (some #(= (lower-case new-tag)
-                          (lower-case %)) tags)]
-    (when (and (not (empty? new-tag))
-               (not tag-exists?))
-      (swap! state assoc-in [:badge-settings :tags] (conj (vec tags) new-tag))
-      (swap! state assoc-in [:badge-settings :new-tag] ""))))
-
-(defn remove-tag [tag state]
-  (let [tags (get-in @state [:badge-settings :tags])]
-    (swap! state assoc-in [:badge-settings :tags] (remove #(= % tag) tags))))
 
 (defn delete-badge [id]
   (ajax/DELETE
@@ -122,22 +108,11 @@
           [:div {:class "col-md-12 sub-heading"}
            (t :badge/Tags)]]
          [:div {:class "row"}
-          [:div {:class "col-md-12 labels"}
-           (for [tag (get-in @state [:badge-settings :tags])]
-             [:span {:class "label label-default"}
-              tag
-              [:a {:class "remove-tag"
-                   :dangerouslySetInnerHTML {:__html "&times;"}
-                   :on-click #(remove-tag tag state)}]])]]
+          [:div {:class "col-md-12"}
+           [tag/tags (cursor state [:badge-settings :tags])]]]
          [:div {:class "form-group"}
           [:div {:class "col-md-12"}
-           [:input {:type        "text"
-                    :class       "form-control"
-                    :placeholder (t :badge/Typetag)
-                    :value       (get-in @state [:badge-settings :new-tag])
-                    :on-change   #(swap! state assoc-in [:badge-settings :new-tag] (-> % .-target .-value))
-                    :on-key-down #(if (= (.-which %) 13)
-                                   (add-tag state))}]]]
+           [tag/new-tag-input (cursor state [:badge-settings :tags]) (cursor state [:badge-settings :new-tag])]]]
          [:div {:class "row"}
           [:div {:class "col-md-12 sub-heading"}
            (t :badge/Evidenceurl)]]

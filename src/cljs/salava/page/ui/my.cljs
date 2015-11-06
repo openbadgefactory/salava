@@ -1,13 +1,14 @@
 (ns salava.page.ui.my
   (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
-            [clojure.walk :as walk :refer [keywordize-keys]]
-            [clojure.set :as set :refer [intersection]]
+            [clojure.walk :refer [keywordize-keys]]
+            [clojure.set :refer [intersection]]
             [ajax.core :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.i18n :as i18n :refer [t]]
+            [salava.core.i18n :refer [t]]
+            [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]))
 
 (defn visibility-select-values []
@@ -24,8 +25,8 @@
   (ajax/POST
     "/obpv1/page/create"
     {:params {:userid 1}
-     :handler (fn []
-                (.reload js/window.location))}))
+     :handler (fn [id]
+                (navigate-to (str "/page/edit/" id)))}))
 
 (defn page-grid-form [state]
   [:div {:id "grid-filter"
@@ -36,7 +37,7 @@
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn page-grid-element [element-data state]
-  (let [{:keys [id name visibility]} element-data]
+  (let [{:keys [id name visibility ctime badges]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -56,7 +57,11 @@
            nil)]
         [:div.media-description
          [:div.page-create-date
-          "testtest"]]]]
+          (date-from-unix-time (* 1000 ctime) "minutes")]
+         (into [:div.page-badges]
+               (for [badge badges]
+                 [:img {:title (:name badge)
+                        :src (str "/" (:image_file badge))}]))]]]
       [:div {:class "media-bottom"}
        [:a {:class "bottom-link"
             :href (str "/page/edit/" id)}

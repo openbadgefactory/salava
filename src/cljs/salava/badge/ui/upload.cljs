@@ -5,6 +5,7 @@
             [clojure.walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.i18n :refer [t]]))
 
 (defn upload-modal [{:keys [status message reason]}]
@@ -42,7 +43,7 @@
                   (let [data-kws (keywordize-keys data)]
                     (m/modal! (upload-modal data-kws)
                               (if (= (:status data-kws) "success")
-                                {:hide #(.replace js/window.location "/badge")}))))})))
+                                {:hide #(navigate-to "/badge")}))))})))
 
 (defn content []
   [:div {:class "badge-upload"}
