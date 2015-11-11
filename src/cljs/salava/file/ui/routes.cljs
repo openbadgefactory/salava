@@ -11,5 +11,5 @@
   {"/page" [["/files" (placeholder [:p "My files"])]]})
 
 (defn ^:export navi [context]
-  {"/page/files" {:weight 35 :title "Files" :breadcrumb (str (t :page/Pages) " / " (t :file/Files))}})
+  {"/page/files" {:weight 35 :title "Files" :breadcrumb (t :page/Pages " / "  :file/Files)}})
 
