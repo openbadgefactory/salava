@@ -34,7 +34,7 @@
 
 (defn i18n-update [ctx lang plugin key value]
   (let [lang-ok   (some #(= lang   %1) (get-in ctx [:config :core :languages]))
-        plugin-ok (some #(= plugin %1) (get-in ctx [:config :core :plugins]))
+        plugin-ok (some #(= plugin %1) (cons :core (get-in ctx [:config :core :plugins])))
         dict      (assoc-in (get-dict) [lang plugin key] value)]
     (when (and lang-ok plugin-ok)
       (save-dict dict)
