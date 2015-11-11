@@ -32,15 +32,18 @@
       (.setLastModified (System/currentTimeMillis))))
 
 
+(def update-guard (Object.))
+
 (defn i18n-update [ctx lang plugin key value]
-  (let [lang-ok   (some #(= lang   %1) (get-in ctx [:config :core :languages]))
-        plugin-ok (some #(= plugin %1) (cons :core (get-in ctx [:config :core :plugins])))
-        dict      (assoc-in (get-dict) [lang plugin key] value)]
-    (when (and lang-ok plugin-ok)
-      (save-dict dict)
-      (save-prop-file (get-in dict [lang plugin]) lang plugin)
-      (touch-i18n)
-      "ok")))
+  (locking update-guard
+    (let [lang-ok   (some #(= lang   %1) (get-in ctx [:config :core :languages]))
+          plugin-ok (some #(= plugin %1) (cons :core (get-in ctx [:config :core :plugins])))
+          dict      (assoc-in (get-dict) [lang plugin key] value)]
+      (when (and lang-ok plugin-ok)
+        (save-dict dict)
+        (save-prop-file (get-in dict [lang plugin]) lang plugin)
+        (touch-i18n)
+        "ok"))))
 
 
 
