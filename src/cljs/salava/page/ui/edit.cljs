@@ -25,7 +25,7 @@
        [:select {:class "form-control"
                  :value badge-id
                  :on-change #(select-badge block-atom @badges (js/parseInt (.-target.value %)))}
-        [:option {:value 0} (str "-" (t :page/none) "-")]
+        [:option {:value 0} (t "-" :page/none "-")]
         (for [badge @badges]
           [:option {:value (:id badge)}
            (:name badge)])]]
@@ -113,17 +113,17 @@
     [:div {:id "page-edit"}
      [:div.row
       [:div.col-sm-12
-       [:h1 (str (t :page/Editpage) ": " name)]]]
+       [:h1 (t :page/Editpage ": " name)]]]
      [:div.row
       [:div.col-xs-8
        [:a {:class "btn btn-active"}
-        (str "1." (t :page/Content))]
+        (t "1." :page/Content)]
        [:a {:class "btn"}
-        (str "2." (t :page/Theme))]
+        (t "2." :page/Theme)]
        [:a {:class "btn"}
-        (str "." (t :page/Settings))]
+        (t "." :page/Settings)]
        [:a {:class "btn"}
-        (str "4." (t :page/Preview))]]
+        (t "4." :page/Preview)]]
       [:div {:class "col-xs-4 buttons-right"}
        [:a {:class "btn btn-primary"}
         (t :page/View)]
