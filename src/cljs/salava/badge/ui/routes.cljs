@@ -22,10 +22,10 @@
              ["/stats"   (placeholder [:p (t :badge/Badgestats)])]]})
 
 (defn ^:export navi [context]
-  {"/badge"          {:weight 20 :title (t :badge/Badges) :breadcrumb  (str (t :badge/Badges) " / " (t :badge/Mybadges))}
-   "/badge/mybadges" {:weight 20 :title (t :badge/Mybadges) :breadcrumb (str (t :badge/Badges) " / " (t :badge/Mybadges))}
-   "/badge/import"   {:weight 21 :title (t :badge/Import) :breadcrumb  (str (t :badge/Badges) " / " (t :badge/Import))}
-   "/badge/upload"   {:weight 22 :title (t :badge/Upload) :breadcrumb  (str (t :badge/Badges) " / " (t :badge/Upload))}
-   "/badge/export"   {:weight 23 :title (t :badge/Export) :breadcrumb  (str (t :badge/Badges) " / " (t :badge/Export))}
-   "/badge/stats"    {:weight 24 :title (t :badge/Stats)  :breadcrumb  (str (t :badge/Badges) " / " (t :badge/Stats))}})
+  {"/badge"          {:weight 20 :title (t :badge/Badges) :breadcrumb   (t :badge/Badges " / " :badge/Mybadges)}
+   "/badge/mybadges" {:weight 20 :title (t :badge/Mybadges) :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
+   "/badge/import"   {:weight 21 :title (t :badge/Import) :breadcrumb   (t :badge/Badges " / "  :badge/Import)}
+   "/badge/upload"   {:weight 22 :title (t :badge/Upload) :breadcrumb   (t :badge/Badges " / "  :badge/Upload)}
+   "/badge/export"   {:weight 23 :title (t :badge/Export) :breadcrumb   (t :badge/Badges " / "  :badge/Export)}
+   "/badge/stats"    {:weight 24 :title (t :badge/Stats)  :breadcrumb   (t :badge/Badges " / " :badge/Stats)}})
 
