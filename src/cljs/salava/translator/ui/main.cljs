@@ -29,4 +29,6 @@
 
 
 (defn get-editable[get-t lang keylist]
-  (vec (cons :span (mapv (map-editable get-t lang) keylist))))
+  (let [elements (mapv (map-editable get-t lang) keylist)]
+    (with-meta (vec (cons :span elements))
+               {:content (apply str (map last elements))})))
