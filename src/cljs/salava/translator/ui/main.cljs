@@ -14,7 +14,7 @@
 
 
 (defn show-prompt [e lang key value]
-  (do (send-new lang key (js/prompt key value))
+  (do (send-new lang key (js/prompt (str lang " " key) value))
       (.preventDefault e)))
 
 
