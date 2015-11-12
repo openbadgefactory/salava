@@ -3,19 +3,19 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.page.ui.my :as my]
             [salava.page.ui.edit :as edit]
-            [salava.page.ui.view :as view]))
-
-(defn placeholder [content]
-  (fn [site-navi params]
-    #(layout/default site-navi content)))
+            [salava.page.ui.view :as view]
+            [salava.page.ui.theme :as theme]
+            [salava.page.ui.settings :as settings]
+            [salava.page.ui.preview :as preview]))
 
 (defn ^:export routes [context]
   {"/page" [[""                  my/handler]
             ["/mypages"          my/handler]
             [["/view/" :page-id] view/handler]
             [["/edit/" :page-id] edit/handler]
-            [["/edit_skin/" :page-id] (placeholder [:p (t :page/Editpageskin)])]
-            [["/settings/" :page-id] (placeholder [:p (t :page/Pagesettings)])]]})
+            [["/edit_theme/" :page-id] theme/handler]
+            [["/settings/" :page-id] settings/handler]
+            [["/preview/" :page-id] preview/handler]]})
 
 (defn ^:export navi [context]
   {"/page"         {:weight 30 :title (t :page/Pages)   :breadcrumb (t :page/Pages " / " :page/Mypages)}

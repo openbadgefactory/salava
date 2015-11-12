@@ -20,21 +20,21 @@
   "Returns all the badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-all {:user_id userid} (get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_id (map :id badges)} (get-db ctx)))]
+        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn user-badges-to-export
   "Returns valid badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-to-export {:user_id userid} (get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_id (map :id badges)} (get-db ctx)))]
+        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-pending {:user_id userid} (get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:id (map :badge_content_id badges)} (get-db ctx)))]
+        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :badge_content_id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn gallery-badges
@@ -167,7 +167,7 @@
   (let [badge (select-badge-settings {:id badge-id}
                                      (into {:result-set-fn first}
                                            (get-db ctx)))
-        tags (select-taglist {:badge_id [badge-id]} (get-db ctx))]
+        tags (select-taglist {:badge_ids [badge-id]} (get-db ctx))]
     (assoc-badge-tags badge tags)))
 
 (defn save-badge-settings!
@@ -185,6 +185,18 @@
   [ctx badge-id]
   (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
   (update-badge-set-deleted! {:id badge-id} (get-db ctx)))
+
+(defn badges-images-names
+  "Get badge images and names. Return a map."
+  [ctx badge-ids]
+  (let [badges (select-badges-images-names {:ids badge-ids} (get-db ctx))]
+    (reduce #(assoc %1 (str (:id %2)) (dissoc %2 :id)) {} badges)))
+
+(defn badges-by-tag-and-owner
+  "Get badges by list of tag names and owner's user-id"
+  [ctx tag user-id]
+  (select-badges-by-tag-and-owner {:badge_tag tag
+                                    :user_id user-id} (get-db ctx)))
 
 (defn search-gallery-badges
   "Search badges from gallery"

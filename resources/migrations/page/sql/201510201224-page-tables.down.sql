@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS `page_tag`;
 --;;
+DROP TABLE IF EXISTS `page_block_tag`;
+--;;
 DROP TABLE IF EXISTS `page_block_html`;
 --;;
 DROP TABLE IF EXISTS `page_block_heading`;

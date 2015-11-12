@@ -5,6 +5,7 @@
             [clojure.walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
@@ -58,7 +59,7 @@
                 (ajax-stop state))
      :handler (fn [data]
                 (m/modal! (import-modal (keywordize-keys data))
-                          {:hide #(.replace js/window.location "/badge")}))}))
+                          {:hide #(navigate-to "/badge")}))}))
 
 (defn remove-badge-selection [key state]
   (swap! state assoc :badges-selected
