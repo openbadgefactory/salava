@@ -89,7 +89,7 @@
        [:select {:class "form-control"
                  :value tag
                  :on-change #(select-tag block-atom @tags (.-target.value %))}
-        [:option {:value ""} (str "-" (t :page/none) "-")]
+        [:option {:value ""} (t "-" :page/none "-")]
         (for [tag @tags]
           [:option {:value tag :key tag} tag])]]
       [:div.badge-select
@@ -242,7 +242,7 @@
 (defn content [state]
   (let [{:keys [id name description blocks]} (:page @state)]
     [:div {:id "page-edit"}
-     [ph/edit-page-header (str (t :page/Editpage) ": " name)]
+     [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content]
      [page-form state]]))
 
