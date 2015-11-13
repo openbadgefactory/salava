@@ -56,7 +56,8 @@
                                             (s/optional-key :badge_id) (s/maybe Long)
                                             (s/optional-key :format)   (s/enum "short" "long")
                                             (s/optional-key :tag)      (s/maybe s/Str)
-                                            (s/optional-key :sort)     (s/enum "name" "modified")}]]
+                                            (s/optional-key :sort)     (s/enum "name" "modified")
+                                            (s/optional-key :files)    (s/maybe [Long])}]]
                   :components [context]
                   (ok (p/save-page-content! context id name description blocks)))
 
@@ -89,4 +90,10 @@
                    :summary "Save page settings"
                    :components [context]
                    (ok (p/save-page-settings! context pageid tags visibility password)))
+
+            (DELETE* "/:pageid" []
+                     :path-params [pageid :- Long]
+                     :summary "Delete page"
+                     :components [context]
+                     (ok (str (p/delete-page-by-id! context pageid))))
             ))

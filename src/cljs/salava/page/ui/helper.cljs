@@ -1,9 +1,40 @@
 (ns salava.page.ui.helper
-  (:require [markdown.core :refer [md->html]]
+  (:require [reagent-modals.modals :as m]
+            [markdown.core :refer [md->html]]
+            [ajax.core :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [salava.file.icons :refer [file-icon]]))
+
+(defn delete-page [id]
+  (ajax/DELETE
+    (str "/obpv1/page/" id)
+    {:handler (fn []
+                (.replace js/window.location "/page"))}))
+
+(defn delete-page-modal [page-id]
+  [:div
+   [:div.modal-header
+    [:button {:type "button"
+              :class "close"
+              :data-dismiss "modal"
+              :aria-label "OK"}
+     [:span {:aria-hidden "true"
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+   [:div.modal-body
+    [:div {:class (str "alert alert-warning")}
+    (t :page/Deleteconfirm)]]
+   [:div.modal-footer
+    [:button {:type "button"
+              :class "btn btn-primary"
+              :data-dismiss "modal"}
+     (t :page/Cancel)]
+    [:button {:type "button"
+              :class "btn btn-warning"
+              :on-click #(delete-page page-id)}
+     (t :page/Delete)]]])
 
 (defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_name issuer_url issuer_email]} ]
   [:div {:class "row badge-block"}
@@ -36,9 +67,18 @@
   [:div.html-block
    {:dangerouslySetInnerHTML {:__html content}}])
 
-(defn file-block [block]
+(defn file-block [{:keys [files]}]
   [:div.file-block
-   "TODO: fixme"])
+   [:div.row
+    [:div.col-md-12
+     [:label.files-label
+      (t :page/Attachments) ": "]
+     (for [file files]
+       [:span.attachment
+        [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
+        [:a.file-link {:href (str "/" (:path file))
+                       :target "_blank"}
+         (:name file)]])]]])
 
 (defn heading-block [{:keys [size content]}]
   [:div.heading-block
@@ -49,7 +89,8 @@
 
 (defn tag-block [{:keys [tag badges format sort]}]
   [:div.tag-block
-   [:div (t :page/Tag) ": " tag]
+   [:div
+    [:label (str (t :page/Tag) ":")] (str " " tag)]
    (let [sorted-badges (case sort
                          "name" (sort-by :name < badges)
                          "modified" (sort-by :mtime > badges)
@@ -119,5 +160,7 @@
     [:a {:class "btn btn-primary"
          :href (str "/page/view/" id)}
      (t :page/View)]
-    [:a {:class "btn btn-warning"}
-     (t :page/Delete)]]])
+    [:a {:class "btn btn-warning"
+         :on-click #(m/modal! (delete-page-modal id))}
+     (t :page/Delete)]]
+   [m/modal-window]])

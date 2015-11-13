@@ -49,11 +49,13 @@
         [:div.visibility-icon
          (case visibility
            "private" [:i {:class "fa fa-lock"
-                          :title (t :badge/Private)}]
+                          :title (t :page/Private)}]
+           "password" [:i {:class "fa fa-lock"
+                          :title (t :page/Passwordprotected)}]
            "internal" [:i {:class "fa fa-group"
-                           :title (t :badge/Shared)}]
+                           :title (t :page/Forregistered)}]
            "public" [:i {:class "fa fa-globe"
-                         :title (t :badge/Public)}]
+                         :title (t :page/Public)}]
            nil)]
         [:div.media-description
          [:div.page-create-date

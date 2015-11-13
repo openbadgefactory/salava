@@ -1,0 +1,13 @@
+(
+  {
+   :table "user_file"
+   :data {
+          :user_id 1
+          :name "Sample file"
+          :path "file/9/c/e/b/9ceb14cf3186fbe1ca2424e8bcd7abdccb79f29ebe1b7870f29035fb30cbdd93.txt"
+          :mime_type "text/plain"
+          :size 9
+          :ctime 1447072243
+          :mtime 1447072243}
+  }
+)

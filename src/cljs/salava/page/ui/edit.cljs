@@ -8,19 +8,20 @@
             [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.page.ui.helper :as ph]))
+            [salava.page.ui.helper :as ph]
+            [salava.file.icons :refer [file-icon]]))
 
-(defn block-key []
+(defn random-key []
   (-> (make-random-uuid)
       (uuid-string)))
 
-(defn block-specific-values [{:keys [type content badge tag format sort]}]
+(defn block-specific-values [{:keys [type content badge tag format sort files]}]
   (case type
     "heading" {:type "heading" :size "h1" :content content}
     "sub-heading" {:type "heading" :size "h2":content content}
     "badge" {:format (:format badge "short") :badge_id (:id badge 0)}
     "html" {:content content}
-    "file" {}
+    "file" {:files (map :id files)}
     "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
     nil))
 
@@ -31,7 +32,6 @@
         (merge (block-specific-values block)))))
 
 (defn save-page [{:keys [id name description blocks]} redirect-url]
-  (dump redirect-url)
   (ajax/POST
     (str "/obpv1/page/save_content/" id)
     {:params {:name name
@@ -51,6 +51,14 @@
 (defn select-tag [block-atom tags value]
   (let [tag (some #(if (= % value) %) tags)]
     (update-block-value block-atom :tag tag)))
+
+(defn select-file [block-atom files id]
+  (let [file (some #(if (= (:id %) id) %) files)]
+    (if file
+      (update-block-value block-atom :files (conj (vec (:files @block-atom)) (assoc file :key (random-key)))))))
+
+(defn remove-file [files-atom file]
+  (reset! files-atom (vec (remove #(= % file) @files-atom))))
 
 (defn edit-block-badges [block-atom badges]
   (let [badge-id (get-in @block-atom [:badge :id] 0)
@@ -107,9 +115,31 @@
      [:div {:class "col-xs-4 badge-image"}
       (if tagged-badges
         (for [badge tagged-badges]
-          [:img {:src (str "/" (:image_file badge))}]))]]))
+          [:img {:src (str "/" (:image_file badge))
+                 :key (:name badge)}]))]]))
 
-(defn edit-block-files [block-atom])
+(defn edit-block-files [block-atom files]
+  [:div
+   (for [file (:files @block-atom)]
+     [:div.row
+      [:div.col-xs-6
+       [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
+       [:a {:href (str "/" (:path file))
+            :target "_blank"}
+        (:name file)]]
+      [:div.col-xs-6
+       [:span {:class "remove-file-icon"
+               :on-click #(remove-file (cursor block-atom [:files]) file)}
+        [:i {:class "fa fa-close"}]]]])
+   [:div.form-group
+    [:div.col-xs-12
+     [:div.file-select
+      [:select {:class "form-control"
+                :value ""
+                :on-change #(select-file block-atom @files (js/parseInt (.-target.value %)))}
+       [:option {:value ""} (str "-" (t :page/none) "-")]
+       (for [file @files]
+         [:option {:value (:id file) :key (:id file)} (:name file)])]]]]])
 
 (defn edit-block-text [block-atom]
   (let [content (:content @block-atom)]
@@ -134,12 +164,12 @@
       [:option {:value "badge"} (t :page/Badge)]
       [:option {:value "tag"} (t :page/Badgegroup)]
       [:option {:value "html"} (t :page/Html)]
-      [:option {:value "file"} (t :page/File)]]]))
+      [:option {:value "file"} (t :page/Files)]]]))
 
 (defn create-new-block
   ([blocks] (create-new-block blocks (count @blocks)))
   ([blocks index]
-   (let [new-block {:type "heading" :key (block-key)}
+   (let [new-block {:type "heading" :key (random-key)}
          [before-blocks after-blocks] (split-at index @blocks)]
      (reset! blocks (vec (concat before-blocks [new-block] after-blocks))))))
 
@@ -154,11 +184,11 @@
       (swap! blocks assoc old-position (nth @blocks new-position)
              new-position (nth @blocks old-position)))))
 
-(defn block [block-atom index blocks badges tags]
+(defn block [block-atom index blocks badges tags files]
   (let [{:keys [type]} @block-atom
         first? (= 0 index)
         last? (= (dec (count @blocks)) index)]
-    [:div
+    [:div {:key index}
      [:div.add-block-after
       [:button {:class    "btn btn-success"
                 :on-click #(do
@@ -186,15 +216,15 @@
          ("heading" "sub-heading" "html") (edit-block-text block-atom)
          ("badge") (edit-block-badges block-atom badges)
          ("tag") (edit-block-badge-groups block-atom tags badges)
-         ("file") (edit-block-files block-atom)
+         ("file") (edit-block-files block-atom files)
          nil)]]
      ]))
 
-(defn page-blocks [blocks badges tags]
+(defn page-blocks [blocks badges tags files]
   [:div
    (into [:div {:id "page-blocks"}]
          (for [index (range (count @blocks))]
-           (block (cursor blocks [index]) index blocks badges tags)))
+           (block (cursor blocks [index]) index blocks badges tags files)))
    [:div.add-block-after
     [:button {:class    "btn btn-success"
               :on-click #(do
@@ -230,7 +260,7 @@
    [:div {:id "title-and-description"}
     [page-title (cursor state [:page :name])]
     [page-description (cursor state [:page :description])]]
-   [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags])]
+   [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
    [:div.row
     [:div.col-md-12
      [:button {:class    "btn btn-primary"
@@ -251,7 +281,7 @@
     (str "/obpv1/page/edit/" id)
     {:handler (fn [data]
                 (let [data-with-kws (keywordize-keys data)
-                      data-with-uuids (assoc-in data-with-kws [:page :blocks] (vec (map #(assoc % :key (block-key))
+                      data-with-uuids (assoc-in data-with-kws [:page :blocks] (vec (map #(assoc % :key (random-key))
                                                                                     (get-in data-with-kws [:page :blocks]))))]
                   (reset! state data-with-uuids)))}))
 

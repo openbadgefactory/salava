@@ -22,12 +22,18 @@ CREATE TABLE `page_block_badge` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 --;;
-CREATE TABLE `page_block_file` (
+CREATE TABLE `page_block_files` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `page_id` bigint(20) unsigned NOT NULL,
-  `file_id` bigint(20) unsigned DEFAULT NULL,
   `block_order` tinyint(3) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+--;;
+CREATE TABLE `page_block_files_has_file` (
+  `block_id` bigint(20) unsigned NOT NULL,
+  `file_id` bigint(20) unsigned NOT NULL,
+  `file_order` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`block_id`,`file_id`,`file_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 --;;
 CREATE TABLE `page_block_heading` (

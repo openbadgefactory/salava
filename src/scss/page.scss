@@ -138,6 +138,11 @@
     }
 }
 
+.remove-file-icon {
+    color: #ea8241;
+    cursor: pointer;
+}
+
 .page-panel {
     padding: 20px;
     border-color: #dddddd;
@@ -294,4 +299,14 @@
     .panel-right {
         background-image: url('/img/themes/lego_right.png');
     }
+}
+
+.file-block {
+    .attachment {
+        margin-left: 15px;
+    }
+}
+
+.page-file-icon {
+    margin-right: 3px;
 }

@@ -6,7 +6,8 @@
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db]]
             [salava.badge.main :as b]
-            [salava.page.themes :refer [valid-theme-id]]))
+            [salava.page.themes :refer [valid-theme-id]]
+            [salava.file.db :as f]))
 
 (defqueries "sql/page/main.sql")
 
@@ -36,9 +37,13 @@
         owner-id (page-owner ctx page-id)]
     (map #(assoc % :badges (b/badges-by-tag-and-owner ctx (:tag %) owner-id)) blocks)))
 
+(defn file-blocks [ctx page-id]
+  (let [blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
+    (map #(assoc % :files (select-files-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
+
 (defn page-blocks [ctx page-id]
   (let [badge-blocks (select-pages-badge-blocks {:page_id page-id} (get-db ctx))
-        file-blocks (select-pages-file-blocks {:page_id page-id} (get-db ctx))
+        file-blocks (file-blocks ctx page-id)
         heading-blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
@@ -66,7 +71,7 @@
 (defn page-blocks-for-edit [ctx page-id]
   (let [badge-blocks (badge-blocks-for-edit ctx page-id)
         heading-blocks (heading-blocks-for-edit ctx page-id)
-        file-blocks (select-pages-file-blocks {:page_id page-id} (get-db ctx))
+        file-blocks (file-blocks ctx page-id)
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (select-pages-tag-blocks {:page_id page-id} (get-db ctx))
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
@@ -82,23 +87,32 @@
         blocks (page-blocks-for-edit ctx page-id)
         owner (:user_id page)
         badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
+        files (map #(select-keys % [:id :name :path :mime_type :size]) (f/user-files-all ctx owner))
         tags (distinct (flatten (map :tags badges)))]
-    {:page (assoc page :blocks blocks) :badges badges :tags tags}))
-
-(defn delete-blocks! [ctx page-id]
-  (delete-heading-blocks! {:page_id page-id} (get-db ctx))
-  (delete-badge-blocks! {:page_id page-id} (get-db ctx))
-  (delete-html-blocks! {:page_id page-id} (get-db ctx))
-  (delete-file-blocks! {:page_id page-id} (get-db ctx))
-  (delete-tag-blocks! {:page_id page-id} (get-db ctx)))
+    {:page (assoc page :blocks blocks) :badges badges :tags tags :files files}))
 
 (defn delete-block! [ctx block]
   (case (:type block)
     "heading" (delete-heading-block! block (get-db ctx))
     "badge" (delete-badge-block! block (get-db ctx))
     "html" (delete-html-block! block (get-db ctx))
-    "file" (delete-file-block! block (get-db ctx))
+    "file" (do
+             (delete-files-block! block (get-db ctx))
+             (delete-files-block-files! {:block_id (:id block)} (get-db ctx)))
     "tag" (delete-tag-block! block (get-db ctx))))
+
+(defn save-files-block-content [ctx block]
+  (delete-files-block-files! {:block_id (:id block)} (get-db ctx))
+  (doseq [[file-id index] (map list (:files block) (range (count (:files block))))]
+    (insert-files-block-file! {:block_id (:id block) :file_id file-id :file_order index} (get-db ctx))))
+
+(defn update-files-block-and-content! [ctx block]
+  (update-files-block! block (get-db ctx))
+  (save-files-block-content ctx block))
+
+(defn create-files-block! [ctx block]
+  (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
+    (save-files-block-content ctx (assoc block :id block-id))))
 
 (defn save-page-content! [ctx page-id name description blocks]
   (let [page-owner-id (page-owner ctx page-id)
@@ -124,8 +138,8 @@
                    (update-html-block! block (get-db ctx))
                    (insert-html-block! block (get-db ctx)))
           "file" (if id
-                   (update-file-block! block (get-db ctx))
-                   (insert-file-block! block (get-db ctx)))
+                   (update-files-block-and-content! ctx block)
+                   (create-files-block! ctx block))
           "tag" (if id
                   (update-tag-block! block (get-db ctx))
                   (insert-tag-block! block (get-db ctx))))))
@@ -154,3 +168,21 @@
   (let [password (if (= visibility "password") pword "")]
     (update-page-visibility-and-password! {:id page-id :visibility visibility :password password} (get-db ctx))
     (save-page-tags! ctx page-id tags)))
+
+(defn remove-files-blocks-and-content! [ctx page-id]
+  (let [file-blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
+    (doseq [file-block file-blocks]
+      (delete-files-block-files! {:block_id (:id file-block)} (get-db ctx)))
+    (delete-files-blocks! {:page_id page-id} (get-db ctx))))
+
+(defn delete-blocks! [ctx page-id]
+  (delete-heading-blocks! {:page_id page-id} (get-db ctx))
+  (delete-badge-blocks! {:page_id page-id} (get-db ctx))
+  (delete-html-blocks! {:page_id page-id} (get-db ctx))
+  (remove-files-blocks-and-content! ctx page-id)
+  (delete-tag-blocks! {:page_id page-id} (get-db ctx)))
+
+(defn delete-page-by-id! [ctx page-id]
+  (delete-blocks! ctx page-id)
+  (delete-page-tags! {:page_id page-id} (get-db ctx))
+  (delete-page! {:id page-id} (get-db ctx)))

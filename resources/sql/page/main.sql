@@ -26,8 +26,8 @@ SELECT pb.id, "badge" AS type, page_id, block_order, pb.badge_id, format, b.issu
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE page_id = :page_id
 
--- name: select-pages-file-blocks
-SELECT id, "file" AS type, page_id, block_order, file_id FROM page_block_file
+-- name: select-pages-files-blocks
+SELECT id, "file" AS type, page_id, block_order FROM page_block_files
        WHERE page_id = :page_id
 
 -- name: select-pages-heading-blocks
@@ -46,6 +46,13 @@ SELECT id, "tag" AS type, page_id, block_order, tag, format, sort FROM page_bloc
 --fetch page's owner
 SELECT user_id FROM page WHERE id = :id
 
+--name: select-files-block-content
+--get files in file block
+SELECT f.id, f.name, f.path, f.size, f.mime_type, pb.file_order FROM user_file AS f
+       JOIN page_block_files_has_file AS pb ON pb.file_id = f.id
+       WHERE pb.block_id = :block_id
+       ORDER BY pb.file_order
+
 --name: update-page-name-description!
 --update name and description of the page
 UPDATE page SET name = :name, description = :description WHERE id = :id
@@ -59,8 +66,8 @@ DELETE FROM page_block_badge WHERE page_id = :page_id
 --name: delete-html-blocks!
 DELETE FROM page_block_html WHERE page_id = :page_id
 
---name: delete-file-blocks!
-DELETE FROM page_block_file WHERE page_id = :page_id
+--name: delete-files-blocks!
+DELETE FROM page_block_files WHERE page_id = :page_id
 
 --name: delete-tag-blocks!
 DELETE FROM page_block_tag WHERE page_id = :page_id
@@ -74,12 +81,14 @@ DELETE FROM page_block_badge WHERE id = :id
 --name: delete-html-block!
 DELETE FROM page_block_html WHERE id = :id
 
---name: delete-file-block!
-DELETE FROM page_block_file WHERE id = :id
+--name: delete-files-block!
+DELETE FROM page_block_files WHERE id = :id
 
 --name: delete-tag-block!
 DELETE FROM page_block_tag WHERE id = :id
 
+--name: delete-files-block-files!
+DELETE FROM page_block_files_has_file WHERE block_id = :block_id
 
 --name: update-heading-block!
 UPDATE page_block_heading SET size = :size, content = :content, block_order = :block_order WHERE id = :id AND page_id = :page_id
@@ -99,17 +108,20 @@ UPDATE page_block_html SET content = :content, block_order = :block_order WHERE 
 --name: insert-html-block!
 INSERT INTO page_block_html (page_id, content, block_order) values (:page_id, :content, :block_order)
 
---name: update-file-block!
-UPDATE page_block_file SET file_id = :file_id, block_order = :block_order WHERE id = :id AND page_id = :page_id
+--name: update-files-block!
+UPDATE page_block_files SET block_order = :block_order WHERE id = :id AND page_id = :page_id
 
---name: insert-file-block!
-INSERT INTO page_block_file (page_id, file_id, block_order) values (:page_id, :file_id, :block_order)
+--name: insert-files-block<!
+INSERT INTO page_block_files (page_id, block_order) VALUES (:page_id, :block_order)
+
+--name: insert-files-block-file!
+INSERT INTO page_block_files_has_file (block_id, file_id, file_order) VALUES (:block_id, :file_id, :file_order)
 
 --name: update-tag-block!
 UPDATE page_block_tag SET tag = :tag, format = :format, sort = :sort, block_order = :block_order WHERE id = :id AND page_id = :page_id
 
 --name: insert-tag-block!
-INSERT INTO page_block_tag (page_id, tag, format, sort, block_order) values (:page_id, :tag, :format, :sort, :block_order)
+INSERT INTO page_block_tag (page_id, tag, format, sort, block_order) VALUES (:page_id, :tag, :format, :sort, :block_order)
 
 --name: update-page-theme!
 UPDATE page SET theme = :theme WHERE id = :id
@@ -123,5 +135,8 @@ REPLACE INTO page_tag (page_id, tag)
 
 --name: delete-page-tags!
 DELETE FROM page_tag WHERE page_id = :page_id
+
+--name: delete-page!
+DELETE FROM page WHERE id = :id
 
 

@@ -31,15 +31,18 @@
   [coll]
   (hex-digest "SHA-256" (apply str (flat-coll coll))))
 
+(defn file-extension [filename]
+  (last (str/split (str filename) #"\.")))
 
-(defn public-path [filename]
+(defn public-path
   "Calculate checksum for file and use it as a filename under public dir"
-  (let [content (slurp filename)
-        checksum (hex-digest "SHA-256" content)
-        extension (last (str/split (str filename) #"\."))]
-    (apply str (concat (list "file/")
-                       (interpose "/" (take 4 (char-array checksum)))
-                       (list "/" checksum "." extension)))))
+  ([filename] (public-path filename (file-extension filename)))
+  ([filename extension]
+   (let [content (slurp filename)
+         checksum (hex-digest "SHA-256" content)]
+     (apply str (concat (list "file/")
+                        (interpose "/" (take 4 (char-array checksum)))
+                        (list "/" checksum "." extension))))))
 
 (defn fetch-file-content [url]
   "Fetch file content from url"
