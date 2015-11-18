@@ -16,7 +16,8 @@
 
 (def jdbc-uri (str "jdbc:" (:adapter ds "mysql") "://"
                    (:server-name ds "localhost")  "/" (:database-name ds "salava")
-                   "?user=" (:username ds "salava") "&password=" (:password ds "salava")))
+                   "?user=" (:username ds "salava") (if (not-empty (:password ds)) (str "&password=" (:password ds)))))
+
 
 (def schema-table "schema_migrations")
 

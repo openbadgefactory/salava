@@ -23,7 +23,7 @@
         new-value (not (:show_recipient_name @state))]
     (ajax/POST
       (str "/obpv1/badge/toggle_recipient_name/" id)
-      {:params {:show-recipient-name new-value}
+      {:params {:show_recipient_name new-value}
        :handler (fn []
                   (swap! state assoc :show_recipient_name new-value))})))
 

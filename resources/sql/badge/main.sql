@@ -45,7 +45,7 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact, u.id, u.first_name, u.last_name FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact, u.id, u.first_name, u.last_name FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        JOIN user AS u ON (u.id = badge.user_id)

@@ -6,7 +6,9 @@ DROP TABLE IF EXISTS `page_block_html`;
 --;;
 DROP TABLE IF EXISTS `page_block_heading`;
 --;;
-DROP TABLE IF EXISTS `page_block_file`;
+DROP TABLE IF EXISTS `page_block_files_has_file`
+--;;
+DROP TABLE IF EXISTS `page_block_files`;
 --;;
 DROP TABLE IF EXISTS `page_block_badge`;
 --;;

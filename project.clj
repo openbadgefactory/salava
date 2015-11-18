@@ -58,6 +58,8 @@
                  [org.slf4j/jcl-over-slf4j "1.7.12"]      ; JCL to SLF4J
                  [org.slf4j/log4j-over-slf4j "1.7.12"]    ; Log4j to SLF4J
 
+                 ; Testing
+                 [midje "1.8.2"]
                  ]
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
@@ -71,7 +73,8 @@
                    :plugins [[lein-pdo "0.1.1"]
                              [lein-cljsbuild "1.0.5"]
                              [lein-scss "0.2.2"]
-                             [lein-figwheel "0.2.7" :exclusions [org.clojure/clojurescript]]]
+                             [lein-figwheel "0.2.7" :exclusions [org.clojure/clojurescript]]
+                             [lein-midje "3.1.3"]]
                    :resource-paths ["target/generated"]}
              :uberjar {:resource-paths  ["target/adv"]
                        :main  salava.main
@@ -117,10 +120,12 @@
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar" ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
-            "translate"       ["run" "-m" "salava.core.translator/translate"]
+            "translate"            ["run" "-m" "salava.core.translator/translate"]
 
-            "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
-            "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
-            "migrator-remove" ["run" "-m" "salava.core.migrator/remove-plugin"]
-            "migrator-seed"   ["run" "-m" "salava.core.migrator/seed"]
-            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]})
+            "migrate"              ["run" "-m" "salava.core.migrator/migrate"]
+            "rollback"             ["run" "-m" "salava.core.migrator/rollback"]
+            "migrator-remove"      ["run" "-m" "salava.core.migrator/remove-plugin"]
+            "migrator-seed"        ["run" "-m" "salava.core.migrator/seed"]
+            "migrator-reset"       ["run" "-m" "salava.core.migrator/reset"]
+
+            "run-tests"            ["do" ["clean"] ["migrator-reset"] ["midje"]]})
