@@ -3,6 +3,8 @@
 
 (def default-theme-id 0)
 
+(def default-border-id 1)
+
 (def themes
   ; List of available page themes.
 
@@ -35,7 +37,38 @@
    {:id 12 :name (t :page/Scripttheme)}
    {:id 13 :name (t :page/Legoextremetheme)}])
 
+(def borders
+ [{:id 0 :style "none" :width 0 :color "#ffffff"}
+  {:id 1 :style "solid" :width 1 :color "#dddddd"}
+  {:id 2 :style "dashed" :width 1 :color "#dddddd"}
+  {:id 3 :style "dotted" :width 1 :color "#dddddd"}
+  {:id 4 :style "solid" :width 1 :color "#999999"}
+  {:id 5 :style "dashed" :width 1 :color "#999999"}
+  {:id 6 :style "dotted" :width 1 :color "#999999"}
+  {:id 7 :style "solid" :width 1 :color "#333333"}
+  {:id 8 :style "dashed" :width 1 :color "#333333"}
+  {:id 9 :style "dotted" :width 1 :color "#333333"}
+  {:id 10 :style "solid" :width 2 :color "#dddddd"}
+  {:id 11 :style "dashed" :width 2 :color "#dddddd"}
+  {:id 12 :style "dotted" :width 2 :color "#dddddd"}
+  {:id 13 :style "solid" :width 2 :color "#999999"}
+  {:id 14 :style "dashed" :width 2 :color "#999999"}
+  {:id 15 :style "dotted" :width 2 :color "#999999"}
+  {:id 16 :style "solid" :width 2 :color "#333333"}
+  {:id 17 :style "dashed" :width 2 :color "#333333"}
+  {:id 18 :style "dotted" :width 2 :color "#333333"}])
+
 (defn valid-theme-id [theme-id]
  (if (some #(= theme-id (:id %)) themes)
   theme-id
   default-theme-id))
+
+(defn valid-border-id [border-id]
+ (if (some #(= border-id (:id %)) borders)
+  border-id
+  default-border-id))
+
+(defn border-attributes [border-id]
+ (->> borders
+      (filter #(= border-id (:id %)))
+      first))

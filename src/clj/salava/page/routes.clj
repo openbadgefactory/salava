@@ -70,10 +70,12 @@
 
             (POST* "/save_theme/:pageid" []
                    :path-params [pageid :- Long]
-                   :body-params [theme :- Long]
+                   :body-params [theme :- Long
+                                 border :- Long
+                                 padding :- Long]
                    :summary "Save page theme"
                    :components [context]
-                   (ok (str (p/set-theme context pageid theme))))
+                   (ok (str (p/set-theme context pageid theme border padding))))
 
             (GET* "/settings/:pageid" []
                   ;:return schema/Page

@@ -105,7 +105,7 @@
          (badge-block (assoc badge :format "long")))))])
 
 (defn view-page [page]
-  (let [{:keys [id name description mtime first_name last_name blocks theme]} page]
+  (let [{:keys [id name description mtime first_name last_name blocks theme border padding]} page]
     [:div {:id    (str "theme-" (or theme 0))
            :class "page-content"}
      [:div.panel
@@ -127,13 +127,19 @@
             (str first_name " " last_name)]]]
          (into [:div.page-blocks]
                (for [block blocks]
-                 (case (:type block)
-                   "badge" (badge-block block)
-                   "html" (html-block block)
-                   "file" (file-block block)
-                   "heading" (heading-block block)
-                   "tag" (tag-block block)
-                   nil)))]]]]]))
+                 [:div {:class "block-wrapper"
+                        :style {:border-top-width (:width border)
+                                :border-top-style (:style border)
+                                :border-top-color (:color border)
+                                :padding-top (str padding "px")
+                                :margin-top (str padding "px")}}
+                  (case (:type block)
+                    "badge" (badge-block block)
+                    "html" (html-block block)
+                    "file" (file-block block)
+                    "heading" (heading-block block)
+                    "tag" (tag-block block)
+                    nil)]))]]]]]))
 
 (defn edit-page-header [header]
   [:div.row

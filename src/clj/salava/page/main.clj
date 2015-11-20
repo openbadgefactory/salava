@@ -6,7 +6,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db]]
             [salava.badge.main :as b]
-            [salava.page.themes :refer [valid-theme-id]]
+            [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
             [salava.file.db :as f]))
 
 (defqueries "sql/page/main.sql")
@@ -80,7 +80,8 @@
 (defn page-with-blocks [ctx page-id]
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
         blocks (page-blocks ctx page-id)]
-    (assoc page :blocks blocks)))
+    (assoc page :blocks blocks
+                :border (border-attributes (:border page)))))
 
 (defn page-for-edit [ctx page-id]
   (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
@@ -147,8 +148,8 @@
       (if-not (some #(= (:id old-block) (:id %)) blocks)
         (delete-block! ctx old-block)))))
 
-(defn set-theme [ctx page-id theme-id]
-  (update-page-theme! {:id page-id :theme (valid-theme-id theme-id)} (get-db ctx)))
+(defn set-theme [ctx page-id theme-id border-id padding]
+  (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx)))
 
 (defn page-settings [ctx page-id]
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))]
