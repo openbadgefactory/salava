@@ -19,5 +19,5 @@ DELETE FROM page_block_files_has_file WHERE file_id = :file_id
 --name: delete-file-tags!
 DELETE FROM user_file_tag WHERE file_id = :file_id
 
---name: insert-file!
+--name: insert-file<!
 INSERT INTO user_file (user_id, name, path, mime_type, size, ctime, mtime) VALUES (:user_id, :name, :path, :mime_type, :size, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())

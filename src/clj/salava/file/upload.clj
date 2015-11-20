@@ -3,6 +3,7 @@
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [public-path file-extension]]
             [salava.core.i18n :refer [t]]
+            [salava.core.time :refer [unix-time]]
             [salava.file.db :as f]))
 
 (defn upload-file [ctx user-id file]
@@ -16,18 +17,24 @@
           extension (file-extension filename)
           path (public-path tempfile extension)
           full-path (str "resources/public/" path)
-          file-data {:name filename
-                :path path
-                :size size
-                :mime_type content-type}]
+          insert-data {:name filename
+                     :path path
+                     :size size
+                     :mime_type content-type
+                     :tags []}]
+
       (if-not (some #(= % content-type) mime-types)
         (throw+ (str (t :file/Filetype) " " content-type " " (t :file/isnotallowed))))
       (if (> size max-size)
         (throw+ (str (t :file/Filetoobig) " " (t :file/Maxfilesize) ": " (quot max-size (* 1024 1024)) "MB")))
+
       (io/make-parents full-path)
       (io/copy tempfile  (io/file full-path))
-      (f/save-file! ctx user-id file-data)
-      {:status "success" :message (t :file/Fileuploaded) :reason (t :file/Fileuploaded)})
+      (let [file-id (f/save-file! ctx user-id insert-data)
+            file-data (assoc insert-data :id file-id
+                                         :ctime (unix-time)
+                                         :mtime (unix-time))]
+        {:status "success" :message (t :file/Fileuploaded) :reason (t :file/Fileuploaded) :data file-data}))
     (catch Object _
       {:status "error" :message (t :file/Errorwhileuploading) :reason _})
     (finally

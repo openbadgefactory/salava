@@ -269,6 +269,7 @@ ul.side-links {
 
     #add-element {
         text-align: center;
+        position: relative;
 
         #add-element-icon {
             font-size: 70px;
@@ -290,6 +291,7 @@ ul.side-links {
         -webkit-box-shadow: 0px 4px 0px #dcdcdc;
         padding: 10px;
         margin-bottom: 20px;
+        margin-top: 0;
         line-height: 1.4;
 
         .media-left {

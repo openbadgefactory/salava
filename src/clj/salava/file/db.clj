@@ -25,7 +25,7 @@
 (defn save-file!
   "Save file info to database"
   [ctx user-id data]
-  (insert-file! (assoc data :user_id user-id) (get-db ctx)))
+  (:generated_key (insert-file<! (assoc data :user_id user-id) (get-db ctx))))
 
 (defn remove-file! [ctx file-id]
   (try+
