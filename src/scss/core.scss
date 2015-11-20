@@ -3,11 +3,11 @@ $main-color: #7f7179;
 
 $grey-link: #afa2a9;
 $dark-grey-link: #7b7076;
-$orange-link: #f59f48;
-$dark-orange-link: #ea7d45;
+$green-link: #89a338;
+$light-green-link: #A5C24C;
 
-$grid-link: #f59f48;
-$grid-link-hover: #ea7d45;
+$grid-link: #2a6496;
+$grid-link-hover: #2a6496;
 
 @mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {
     -webkit-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
@@ -100,10 +100,10 @@ nav.navbar {
 }
 
 button.navbar-toggle {
-    border: 1px solid $orange-link;
+    border: 1px solid $green-link;
     margin: 8px 0;
     .icon-bar {
-        background-color: $orange-link;
+        background-color: $green-link;
     }
     &:hover {
         border-color: $grey-link;
@@ -141,7 +141,7 @@ ul#secondary-menu-links {
             color: #7d7077;
             text-decoration: none;
             i.fa {
-                color: #f59f48;
+                color: #89a338;
                 padding-right: 10px;
             }
         }
@@ -196,7 +196,8 @@ ul.navbar-nav {
 }
 
 .title-row {
-    background-color: #9dbe5f;
+    background-color: #666666;
+    border-bottom: 5px solid #d7e8a2;
     color: #ffffff;
     @include inner-shadow(0px, 7px, 7px, -4px, 0.2);
     h2 {
@@ -211,12 +212,12 @@ ul.side-links {
     li {
         a {
             @extend %navi-link;
-            color: $orange-link;
+            color: $green-link;
         }
     }
     li.active {
         a {
-            color: $dark-orange-link;
+            color: $light-green-link;
         }
     }
 }
@@ -313,10 +314,10 @@ ul.side-links {
                 overflow-y: hidden;
 
                 a.heading-link {
-                    color: #f59f48;
+                    color: $grid-link;
                     text-decoration: none;
                     &:hover {
-                        color: #ea7d45;
+                        color: $grid-link-hover;
                     }
                 }
             }
