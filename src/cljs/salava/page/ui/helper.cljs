@@ -65,7 +65,8 @@
 
 (defn html-block [{:keys [content]}]
   [:div.html-block
-   {:dangerouslySetInnerHTML {:__html content}}])
+   {:dangerouslySetInnerHTML {:__html (md->html content)}}])
+
 
 (defn file-block [{:keys [files]}]
   [:div.file-block

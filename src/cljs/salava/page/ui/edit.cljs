@@ -1,5 +1,5 @@
 (ns salava.page.ui.edit
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [atom cursor create-class]]
             [reagent.session :as session]
             [clojure.walk :as walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
@@ -14,6 +14,13 @@
 (defn random-key []
   (-> (make-random-uuid)
       (uuid-string)))
+
+(def simplemde-toolbar
+  (array "bold" "italic" "strikethrough" "|"
+         "heading-1" "heading-2" "heading-3" "|"
+         "quote" "unordered-list" "ordered-list" "|"
+         "link" "image" "horizontal-rule" "|"
+         "preview" "side-by-side" "fullscreen"))
 
 (defn block-specific-values [{:keys [type content badge tag format sort files]}]
   (case type
@@ -120,17 +127,18 @@
 
 (defn edit-block-files [block-atom files]
   [:div
-   (for [file (:files @block-atom)]
-     [:div.row
-      [:div.col-xs-6
-       [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-       [:a {:href (str "/" (:path file))
-            :target "_blank"}
-        (:name file)]]
-      [:div.col-xs-6
-       [:span {:class "remove-file-icon"
-               :on-click #(remove-file (cursor block-atom [:files]) file)}
-        [:i {:class "fa fa-close"}]]]])
+   [:div.edit-block-files
+    (for [file (:files @block-atom)]
+      [:div.row
+       [:div.col-xs-6
+        [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
+        [:a {:href (str "/" (:path file))
+             :target "_blank"}
+         (:name file)]]
+       [:div.col-xs-6
+        [:span {:class "remove-file-icon"
+                :on-click #(remove-file (cursor block-atom [:files]) file)}
+         [:i {:class "fa fa-close"}]]]])]
    [:div.form-group
     [:div.col-xs-12
      [:div.file-select
@@ -145,10 +153,26 @@
   (let [content (:content @block-atom)]
     [:div.form-group
      [:div.col-md-12
-      [:input {:class "form-control"
-               :type "text"
-               :value content
-               :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
+      [:input {:class     "form-control"
+              :type      "text"
+              :value     content
+              :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
+
+(defn init-editor [block-atom element-id]
+  (let [editor (js/SimpleMDE. (js-obj "element" (.getElementById js/document element-id)
+                                      "toolbar" simplemde-toolbar))]
+    (.value editor (get @block-atom :content ""))
+    (.codemirror.on editor "change" (fn []
+                                      (update-block-value block-atom :content (.value editor))))))
+
+(defn edit-block-html [block-atom]
+  (let [element-id (str "editor_" (:key @block-atom))]
+    (create-class {:component-did-mount #(init-editor block-atom element-id)
+                   :reagent-render       (fn []
+                                          [:div.form-group
+                                           [:div.col-md-12
+                                            [:textarea {:class "form-control"
+                                                        :id    element-id}]]])})))
 
 (defn remove-block [blocks block-atom]
   (reset! blocks (vec (remove #(= % @block-atom) @blocks))))
@@ -213,10 +237,11 @@
          [:span {:class "remove-button"}
           [:i {:class "fa fa-close"}]]]]
        (case type
-         ("heading" "sub-heading" "html") (edit-block-text block-atom)
-         ("badge") (edit-block-badges block-atom badges)
-         ("tag") (edit-block-badge-groups block-atom tags badges)
-         ("file") (edit-block-files block-atom files)
+         ("heading" "sub-heading") [edit-block-text block-atom]
+         ("badge") [edit-block-badges block-atom badges]
+         ("tag") [edit-block-badge-groups block-atom tags badges]
+         ("file") [edit-block-files block-atom files]
+         ("html") [edit-block-html block-atom]
          nil)]]
      ]))
 
@@ -293,6 +318,7 @@
                             :id id}
                      :badges []
                      :tags []})]
+
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
