@@ -7,5 +7,13 @@
           :description "This is a sample page."
           :visibility "private"
           :ctime 1445335094
-          :mtime 1445335094
-          }})
+          :mtime 1445335094}}
+  {
+   :table "page"
+   :data {
+          :user_id 1
+          :name "Another page"
+          :description "This page is going to deleted."
+          :visibility "private"
+          :ctime 1448531849
+          :mtime 1448531849}})
