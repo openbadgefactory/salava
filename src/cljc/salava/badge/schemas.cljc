@@ -4,16 +4,22 @@
              ]))
 
 (s/defschema Badge {:id s/Int
+                    :name s/Str
+                    :description (s/maybe s/Str)
                     :user_id (s/maybe s/Int)
                     :email s/Str
                     :assertion_url (s/maybe s/Str)
                     :assertion_jws (s/maybe s/Str)
                     :assertion_json (s/maybe s/Str)
                     :badge_url (s/maybe s/Str)
-                    :issuer_url (s/maybe s/Str)
                     :criteria_url (s/maybe s/Str)
+                    :criteria_markdown (s/maybe s/Str)
                     :badge_content_id (s/maybe s/Str)
+                    :image_file (s/maybe s/Str)
                     :issuer_content_id (s/maybe s/Str)
+                    :issuer_email (s/maybe s/Str)
+                    :issuer_name (s/maybe s/Str)
+                    :issuer_url (s/maybe s/Str)
                     :issued_on (s/maybe s/Int)
                     :expires_on (s/maybe s/Int)
                     :evidence_url (s/maybe s/Str)
@@ -24,7 +30,8 @@
                     :ctime s/Int
                     :mtime s/Int
                     :deleted (s/maybe s/Bool)
-                    :revoked (s/maybe s/Bool)})
+                    :revoked (s/maybe s/Bool)
+                    :tag (s/maybe s/Str)})
 
 (s/defschema BadgeContent {:id s/Int
                            :name (s/maybe s/Str)

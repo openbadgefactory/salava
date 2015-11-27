@@ -4,7 +4,8 @@
             [salava.core.layout :as layout]
             [salava.page.main :as p]
             [salava.page.themes :refer [themes]]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [salava.page.schemas :as schemas]))
 
 (defroutes* route-def
   (context* "/page" []
@@ -18,48 +19,38 @@
 
   (context* "/obpv1/page" []
             (GET* "/:userid" []
-                  ;:return [schema/Page]
+                  :return [schemas/Page]
                   :path-params [userid :- Long]
                   :summary "Get user pages"
                   :components [context]
                   (ok (p/user-pages-all context userid)))
 
             (POST* "/create" []
-                   ;:return schema/Page
+                   :return s/Str
                    :body-params [userid :- Long]
                    :summary "Create a new empty page"
                    :components [context]
                    (ok (str (p/create-empty-page! context userid))))
 
             (GET* "/view/:pageid" []
-                  ;:return schema/Page
+                  :return schemas/ViewPage
                   :path-params [pageid :- Long]
                   :summary "View page"
                   :components [context]
                   (ok (p/page-with-blocks context pageid)))
 
             (GET* "/edit/:pageid" []
-                  ;:return schema/Page
+                  :return schemas/EditPageContent
                   :path-params [pageid :- Long]
                   :summary "Edit page"
                   :components [context]
                   (ok (p/page-for-edit context pageid)))
 
             (POST* "/save_content/:id" []
-                  :path-params [id :- Long]
-                  :body-params [name :- s/Str
-                                description :- (s/maybe s/Str)
-                                blocks :- [{:type                      (s/enum "heading" "badge" "html" "file" "tag")
-                                            (s/optional-key :id)       Long
-                                            (s/optional-key :content)  (s/maybe s/Str)
-                                            (s/optional-key :size)     (s/enum "h1" "h2")
-                                            (s/optional-key :badge_id) (s/maybe Long)
-                                            (s/optional-key :format)   (s/enum "short" "long")
-                                            (s/optional-key :tag)      (s/maybe s/Str)
-                                            (s/optional-key :sort)     (s/enum "name" "modified")
-                                            (s/optional-key :files)    (s/maybe [Long])}]]
-                  :components [context]
-                  (ok (p/save-page-content! context id name description blocks)))
+                   :path-params [id :- Long]
+                   :body [page-content schemas/SavePageContent]
+                   :components [context]
+                   (ok (p/save-page-content! context id page-content)))
 
             (GET* "/edit_theme/:pageid" []
                   ;:return schema/Page

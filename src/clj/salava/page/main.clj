@@ -115,10 +115,15 @@
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
     (save-files-block-content ctx (assoc block :id block-id))))
 
-(defn save-page-content! [ctx page-id name description blocks]
-  (let [page-owner-id (page-owner ctx page-id)
+(defn save-page-content! [ctx page-id page-content]
+  (let [{:keys [name description blocks]} page-content
+        page-owner-id (page-owner ctx page-id)
+        user-files (if (some #(= "file" (:type %)) blocks)
+                     (f/user-files-all ctx page-owner-id))
+        file-ids (map :id user-files)
         user-badges (if (some #(= "badge" (:type %)) blocks)
                       (b/user-badges-all ctx page-owner-id))
+        badge-ids (map :id user-badges)
         page-blocks (page-blocks ctx page-id)]
     (update-page-name-description! {:id page-id :name name :description description} (get-db ctx))
     (doseq [block-index (range (count blocks))]
@@ -131,16 +136,20 @@
           "heading" (if id
                       (update-heading-block! block (get-db ctx))
                       (insert-heading-block! block (get-db ctx)))
-          "badge" (when (some #(= (:id %) (:badge_id block)) user-badges)
+          "badge" (when (some #(= % (:badge_id block)) badge-ids)
                     (if id
                       (update-badge-block! block (get-db ctx))
                       (insert-badge-block! block (get-db ctx))))
           "html" (if id
                    (update-html-block! block (get-db ctx))
                    (insert-html-block! block (get-db ctx)))
-          "file" (if id
-                   (update-files-block-and-content! ctx block)
-                   (create-files-block! ctx block))
+          "file" (when (= (->> (:files block)
+                               (filter (fn [x] (some #(= x %) file-ids)))
+                               count)
+                          (count (:files block)))
+                   (if id
+                     (update-files-block-and-content! ctx block)
+                     (create-files-block! ctx block)))
           "tag" (if id
                   (update-tag-block! block (get-db ctx))
                   (insert-tag-block! block (get-db ctx))))))

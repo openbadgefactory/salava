@@ -1,6 +1,6 @@
 
 -- name: select-user-pages
--- get user's badges
+-- get user's pages
 SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime, GROUP_CONCAT(pb.badge_id) AS badges, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
@@ -20,26 +20,26 @@ SELECT p.id, name, description, theme, border, padding, visibility, password, vi
        GROUP BY p.id
 
 -- name: select-pages-badge-blocks
-SELECT pb.id, "badge" AS type, page_id, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, bc.criteria_markdown, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_email FROM page_block_badge AS pb
+SELECT pb.id, "badge" AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, bc.criteria_markdown, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_email FROM page_block_badge AS pb
        JOIN badge AS b ON pb.badge_id = b.id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE page_id = :page_id
 
 -- name: select-pages-files-blocks
-SELECT id, "file" AS type, page_id, block_order FROM page_block_files
+SELECT id, "file" AS type, block_order FROM page_block_files
        WHERE page_id = :page_id
 
 -- name: select-pages-heading-blocks
-SELECT id, "heading" AS type, page_id, block_order, size, content  FROM page_block_heading
+SELECT id, "heading" AS type, block_order, size, content  FROM page_block_heading
        WHERE page_id = :page_id
 
 -- name: select-pages-html-blocks
-SELECT id, "html" AS type, page_id, block_order, content FROM page_block_html
+SELECT id, "html" AS type, block_order, content FROM page_block_html
        WHERE page_id = :page_id
 
 -- name: select-pages-tag-blocks
-SELECT id, "tag" AS type, page_id, block_order, tag, format, sort FROM page_block_tag
+SELECT id, "tag" AS type, block_order, tag, format, sort FROM page_block_tag
        WHERE page_id = :page_id
 
 --name: select-page-owner
