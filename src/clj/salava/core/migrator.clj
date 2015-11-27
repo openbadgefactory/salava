@@ -7,16 +7,21 @@
             [salava.registry]
             [salava.core.util :as util]))
 
-
 (def config (-> (io/resource "config/core.edn") slurp read-string))
 
 (def plugins (cons :core (:plugins salava.registry/enabled)))
 
-(def ds (:datasource config))
+(def datasource (:datasource config))
 
-(def jdbc-uri (str "jdbc:" (:adapter ds "mysql") "://"
-                   (:server-name ds "localhost")  "/" (:database-name ds "salava")
-                   "?user=" (:username ds "salava") (if (not-empty (:password ds)) (str "&password=" (:password ds)))))
+(def test-datasource (:test-datasource config))
+
+(defn jdbc-uri [test-mode?]
+  (let [source (if-not (or (= test-mode? "false") (= test-mode? false))
+                 test-datasource
+                 datasource)]
+    (str "jdbc:" (:adapter source "mysql") "://"
+         (:server-name source "localhost")  "/" (:database-name source)
+         "?user=" (:username source) (if (not-empty (:password source)) (str "&password=" (:password source))))))
 
 
 (def schema-table "schema_migrations")
@@ -30,9 +35,9 @@
   (str "migrations/" (name plugin) "/seed"))
 
 
-(defn seed-insert [data-file]
+(defn seed-insert [test-mode? data-file]
   (doseq [seed (-> data-file slurp read-string)]
-    (jdbc/insert! jdbc-uri (:table seed) (:data seed))))
+    (jdbc/insert! (jdbc-uri test-mode?) (:table seed) (:data seed))))
 
 
 (defn copy-file [source-path dest-path]
@@ -47,73 +52,72 @@
       (copy-file source-file (str "resources/public/" (util/public-path source-file))))))
 
 
-
-(defn migratus-config [plugin]
-  {:store :database
-   :db    jdbc-uri
-   :migration-dir (migration-dir plugin)
+(defn migratus-config [test-mode? plugin]
+  {:store                :database
+   :db                   (jdbc-uri test-mode?)
+   :migration-dir        (migration-dir plugin)
    :migration-table-name schema-table})
 
 
 (defn applied-migrations
-  ([]
+  ([test-mode?]
    (try
-     (map :id (jdbc/query jdbc-uri [(str "SELECT id from " schema-table " ORDER BY id ASC")]))
+     (map :id (jdbc/query (jdbc-uri test-mode?) [(str "SELECT id from " schema-table " ORDER BY id ASC")]))
      (catch Exception e)))
 
-  ([plugin]
-   (let [applied (applied-migrations)
+  ([test-mode? plugin]
+   (let [applied (applied-migrations test-mode?)
         available (->> (migration-dir plugin) find-migrations keys (map str) set)]
     (filter available (map str applied)))))
 
 
-(defn run-down [plugin applied]
+(defn run-down [test-mode? plugin applied]
   (doseq [id applied]
-    (migratus/down (migratus-config plugin) (parse-migration-id id))))
+    (migratus/down (migratus-config test-mode? plugin) (parse-migration-id id))))
 
 
-(defn run-seed [plugin]
+(defn run-seed [test-mode? plugin]
   (when-let [data-file (io/resource (str (seed-dir plugin) "/data.edn"))]
     (log/info "running seed functions for plugin" (name plugin))
-    (seed-insert data-file)
+    (seed-insert test-mode? data-file)
     (seed-copy plugin)))
 
 
-(defn run-reset [plugin]
-  (let [applied (reverse (applied-migrations plugin))]
+(defn run-reset [test-mode? plugin]
+  (let [applied (reverse (applied-migrations test-mode? plugin))]
     (do
       (log/info "running reset functions for plugin" (name plugin))
-      (run-down plugin applied)
-      (migratus/migrate (migratus-config plugin))
-      (run-seed plugin))))
+      (run-down test-mode? plugin applied)
+      (migratus/migrate (migratus-config test-mode? plugin))
+      (run-seed test-mode? plugin))))
 
 ;;;
 
 
-(defn migrate [& args]
+(defn migrate [test-mode? & args]
   (doseq [plugin (or args plugins)]
     (log/info "running migrations for plugin" (name plugin))
-    (migratus/migrate (migratus-config plugin)))
+    (migratus/migrate (migratus-config test-mode? plugin)))
   (System/exit 0))
 
-(defn rollback [plugin]
+(defn rollback [test-mode? plugin]
   (when-let [id (last (applied-migrations plugin))]
     (log/info "rolling back latest migration for plugin" (name plugin))
-    (run-down plugin [id]))
+    (run-down test-mode? plugin [id]))
   (System/exit 0))
 
-(defn remove-plugin [plugin]
+(defn remove-plugin [test-mode? plugin]
   (log/info "rolling back all migrations for plugin" (name plugin))
   (let [applied (reverse (applied-migrations plugin))]
-    (run-down plugin applied))
+    (run-down test-mode? plugin applied))
   (System/exit 0))
 
-(defn seed [& args]
+(defn seed [test-mode? & args]
   (doseq [plugin (or args plugins)]
-    (run-seed plugin))
+    (run-seed test-mode? plugin))
   (System/exit 0))
 
-(defn reset [& args]
+(defn reset [test-mode? & args]
   (doseq [plugin (or args plugins)]
-    (run-reset plugin))
+    (run-reset test-mode? plugin))
   (System/exit 0))
