@@ -9,11 +9,13 @@
 (def asset-css
   ["/assets/bootstrap/css/bootstrap.min.css"
    "/assets/bootstrap/css/bootstrap-theme.min.css"
-   "/assets/font-awesome/css/font-awesome.min.css"])
+   "/assets/font-awesome/css/font-awesome.min.css"
+   "/css/simplemde.min.css"])
 
 (def asset-js
   ["/assets/jquery/jquery.min.js"
-   "/assets/bootstrap/js/bootstrap.min.js"])
+   "/assets/bootstrap/js/bootstrap.min.js"
+   "/js/simplemde.min.js"])
 
 
 (defn with-version [ctx resource-name]

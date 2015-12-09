@@ -1,0 +1,1 @@
+ALTER TABLE `page` DROP `border`, DROP `padding`;

@@ -138,6 +138,11 @@
     }
 }
 
+.remove-file-icon {
+    color: #ea8241;
+    cursor: pointer;
+}
+
 .page-panel {
     padding: 20px;
     border-color: #dddddd;
@@ -148,6 +153,23 @@
 .add-block-after {
     margin-bottom: 15px;
     text-align: center;
+}
+
+.select-border-wrapper {
+    float: left;
+    width: 40px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #eeeeee;
+    border-radius: 5px;
+    padding-top : 20px;
+    padding-bottom : 20px;
+}
+
+.select-border-wrapper.selected {
+    border-color: #66afe9;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
 }
 
 #theme-0 {
@@ -294,4 +316,20 @@
     .panel-right {
         background-image: url('/img/themes/lego_right.png');
     }
+}
+
+.file-block {
+    .attachment {
+        margin-left: 15px;
+    }
+}
+
+.html-block {
+    ul {
+        margin: 0;
+    }
+}
+
+.page-file-icon {
+    margin-right: 3px;
 }

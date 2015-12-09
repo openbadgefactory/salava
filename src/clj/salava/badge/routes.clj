@@ -49,10 +49,10 @@
 
             (POST* "/toggle_recipient_name/:badgeid" []
                    :path-params [badgeid :- Long]
-                   :body-params [show-recipient-name :- (s/enum false true)]
+                   :body-params [show_recipient_name :- (s/enum false true)]
                    :summary "Set recipient name visibility"
                    :components [context]
-                   (ok (str (b/toggle-show-recipient-name! context badgeid show-recipient-name))))
+                   (ok (str (b/toggle-show-recipient-name! context badgeid show_recipient_name))))
 
             (GET* "/export/:userid" []
                   :return [schemas/BadgeContent]

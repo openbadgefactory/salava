@@ -189,8 +189,9 @@
 (defn badges-images-names
   "Get badge images and names. Return a map."
   [ctx badge-ids]
-  (let [badges (select-badges-images-names {:ids badge-ids} (get-db ctx))]
-    (reduce #(assoc %1 (str (:id %2)) (dissoc %2 :id)) {} badges)))
+  (if-not (empty? badge-ids)
+    (let [badges (select-badges-images-names {:ids badge-ids} (get-db ctx))]
+      (reduce #(assoc %1 (str (:id %2)) (dissoc %2 :id)) {} badges))))
 
 (defn badges-by-tag-and-owner
   "Get badges by list of tag names and owner's user-id"

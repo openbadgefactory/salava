@@ -10,6 +10,12 @@
               :database-name "salava"
               :server-name   "localhost"}
 
+ :test-datasource {:adapter "mysql"
+                   :username "salava"
+                   :password "salava"
+                   :database-name "salava_test"
+                   :server-name   "localhost"}
+
  :session {:name "salava-session"
            :root "/"
            :secret "1234567890123456"

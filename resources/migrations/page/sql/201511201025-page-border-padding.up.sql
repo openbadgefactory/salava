@@ -1,0 +1,2 @@
+ALTER TABLE `page` ADD COLUMN `border` TINYINT(3) UNSIGNED DEFAULT 0 AFTER `theme`,
+                   ADD COLUMN `padding` TINYINT(3) UNSIGNED DEFAULT 0 AFTER `border`;

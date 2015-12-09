@@ -1,7 +1,7 @@
 
 -- name: select-user-pages
--- get user's badges
-SELECT p.id, name, description, theme, visibility, password, visible_after, visible_before, ctime, mtime, GROUP_CONCAT(pb.badge_id) AS badges, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
+-- get user's pages
+SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime, GROUP_CONCAT(pb.badge_id) AS badges, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
        WHERE user_id = :user_id
@@ -13,38 +13,45 @@ INSERT INTO page (user_id, name, visibility, ctime, mtime) VALUES (:user_id, :na
 
 -- name: select-page
 -- get page
-SELECT p.id, name, description, theme, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
+SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
        JOIN user AS u ON u.id = p.user_id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
        WHERE p.id = :id
        GROUP BY p.id
 
 -- name: select-pages-badge-blocks
-SELECT pb.id, "badge" AS type, page_id, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, bc.criteria_markdown, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_email FROM page_block_badge AS pb
+SELECT pb.id, "badge" AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, bc.criteria_markdown, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_email FROM page_block_badge AS pb
        JOIN badge AS b ON pb.badge_id = b.id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE page_id = :page_id
 
--- name: select-pages-file-blocks
-SELECT id, "file" AS type, page_id, block_order, file_id FROM page_block_file
+-- name: select-pages-files-blocks
+SELECT id, "file" AS type, block_order FROM page_block_files
        WHERE page_id = :page_id
 
 -- name: select-pages-heading-blocks
-SELECT id, "heading" AS type, page_id, block_order, size, content  FROM page_block_heading
+SELECT id, "heading" AS type, block_order, size, content  FROM page_block_heading
        WHERE page_id = :page_id
 
 -- name: select-pages-html-blocks
-SELECT id, "html" AS type, page_id, block_order, content FROM page_block_html
+SELECT id, "html" AS type, block_order, content FROM page_block_html
        WHERE page_id = :page_id
 
 -- name: select-pages-tag-blocks
-SELECT id, "tag" AS type, page_id, block_order, tag, format, sort FROM page_block_tag
+SELECT id, "tag" AS type, block_order, tag, format, sort FROM page_block_tag
        WHERE page_id = :page_id
 
 --name: select-page-owner
 --fetch page's owner
 SELECT user_id FROM page WHERE id = :id
+
+--name: select-files-block-content
+--get files in file block
+SELECT f.id, f.name, f.path, f.size, f.mime_type, pb.file_order FROM user_file AS f
+       JOIN page_block_files_has_file AS pb ON pb.file_id = f.id
+       WHERE pb.block_id = :block_id
+       ORDER BY pb.file_order
 
 --name: update-page-name-description!
 --update name and description of the page
@@ -59,8 +66,8 @@ DELETE FROM page_block_badge WHERE page_id = :page_id
 --name: delete-html-blocks!
 DELETE FROM page_block_html WHERE page_id = :page_id
 
---name: delete-file-blocks!
-DELETE FROM page_block_file WHERE page_id = :page_id
+--name: delete-files-blocks!
+DELETE FROM page_block_files WHERE page_id = :page_id
 
 --name: delete-tag-blocks!
 DELETE FROM page_block_tag WHERE page_id = :page_id
@@ -74,12 +81,14 @@ DELETE FROM page_block_badge WHERE id = :id
 --name: delete-html-block!
 DELETE FROM page_block_html WHERE id = :id
 
---name: delete-file-block!
-DELETE FROM page_block_file WHERE id = :id
+--name: delete-files-block!
+DELETE FROM page_block_files WHERE id = :id
 
 --name: delete-tag-block!
 DELETE FROM page_block_tag WHERE id = :id
 
+--name: delete-files-block-files!
+DELETE FROM page_block_files_has_file WHERE block_id = :block_id
 
 --name: update-heading-block!
 UPDATE page_block_heading SET size = :size, content = :content, block_order = :block_order WHERE id = :id AND page_id = :page_id
@@ -99,20 +108,23 @@ UPDATE page_block_html SET content = :content, block_order = :block_order WHERE 
 --name: insert-html-block!
 INSERT INTO page_block_html (page_id, content, block_order) values (:page_id, :content, :block_order)
 
---name: update-file-block!
-UPDATE page_block_file SET file_id = :file_id, block_order = :block_order WHERE id = :id AND page_id = :page_id
+--name: update-files-block!
+UPDATE page_block_files SET block_order = :block_order WHERE id = :id AND page_id = :page_id
 
---name: insert-file-block!
-INSERT INTO page_block_file (page_id, file_id, block_order) values (:page_id, :file_id, :block_order)
+--name: insert-files-block<!
+INSERT INTO page_block_files (page_id, block_order) VALUES (:page_id, :block_order)
+
+--name: insert-files-block-file!
+INSERT INTO page_block_files_has_file (block_id, file_id, file_order) VALUES (:block_id, :file_id, :file_order)
 
 --name: update-tag-block!
 UPDATE page_block_tag SET tag = :tag, format = :format, sort = :sort, block_order = :block_order WHERE id = :id AND page_id = :page_id
 
 --name: insert-tag-block!
-INSERT INTO page_block_tag (page_id, tag, format, sort, block_order) values (:page_id, :tag, :format, :sort, :block_order)
+INSERT INTO page_block_tag (page_id, tag, format, sort, block_order) VALUES (:page_id, :tag, :format, :sort, :block_order)
 
 --name: update-page-theme!
-UPDATE page SET theme = :theme WHERE id = :id
+UPDATE page SET theme = :theme, border = :border, padding = :padding WHERE id = :id
 
 --name: update-page-visibility-and-password!
 UPDATE page SET visibility = :visibility, password = :password WHERE id = :id
@@ -123,5 +135,8 @@ REPLACE INTO page_tag (page_id, tag)
 
 --name: delete-page-tags!
 DELETE FROM page_tag WHERE page_id = :page_id
+
+--name: delete-page!
+DELETE FROM page WHERE id = :id
 
 

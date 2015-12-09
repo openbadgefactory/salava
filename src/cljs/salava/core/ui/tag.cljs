@@ -23,12 +23,15 @@
            :on-key-down #(if (= (.-which %) 13)
                           (add-tag tags-atom new-tag-atom))}])
 
-(defn tags [tags-atom]
-  (into [:div.tag-labels]
-        (for [tag @tags-atom]
-          [:span {:class "label label-default"}
-           tag
-           [:a {:class "remove-tag"
-                :dangerouslySetInnerHTML {:__html "&times;"}
-                :on-click #(remove-tag tags-atom tag)}]])))
+(defn tags
+  ([tags-atom] (tags tags-atom true))
+  ([tags-atom show-remove-link?]
+   (into [:div.tag-labels]
+         (for [tag @tags-atom]
+           [:span {:class "label label-default"}
+            tag
+            (if show-remove-link?
+              [:a {:class "remove-tag"
+                   :dangerouslySetInnerHTML {:__html "&times;"}
+                   :on-click #(remove-tag tags-atom tag)}])]))))
 
