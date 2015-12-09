@@ -57,7 +57,7 @@
   (let [page (:page @state)
         {:keys [id name]} page]
     [:div {:id "page-edit-theme"}
-     [ph/edit-page-header (str (t :page/Choosetheme) ": " name)]
+     [ph/edit-page-header (t :page/Choosetheme ": " name)]
      [ph/edit-page-buttons id :theme]
      [:div {:class "panel page-panel" :id "theme-panel"}
       [:form.form-horizontal

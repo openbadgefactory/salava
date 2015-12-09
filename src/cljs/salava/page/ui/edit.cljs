@@ -145,7 +145,7 @@
       [:select {:class "form-control"
                 :value ""
                 :on-change #(select-file block-atom @files (js/parseInt (.-target.value %)))}
-       [:option {:value ""} (str "-" (t :page/none) "-")]
+       [:option {:value ""} (t "-" :page/none "-")]
        (for [file @files]
          [:option {:value (:id file) :key (:id file)} (:name file)])]]]]])
 

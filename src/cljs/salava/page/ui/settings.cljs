@@ -25,7 +25,7 @@
         new-tag-atom (cursor state [:new-tag])
         password-atom (cursor state [:page :password])]
     [:div {:id "page-settings"}
-     [ph/edit-page-header (str (t :page/Settings) ": " name)]
+     [ph/edit-page-header (t :page/Settings ": " name)]
      [ph/edit-page-buttons id :settings]
      [:div {:class "panel page-panel" :id "settings-panel"}
       [:div.form-group

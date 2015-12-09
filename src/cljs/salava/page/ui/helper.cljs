@@ -91,7 +91,7 @@
 (defn tag-block [{:keys [tag badges format sort]}]
   [:div.tag-block
    [:div
-    [:label (str (t :page/Tag) ":")] (str " " tag)]
+    [:label (t :page/Tag ":")] (str " " tag)]
    (let [sorted-badges (case sort
                          "name" (sort-by :name < badges)
                          "modified" (sort-by :mtime > badges)
@@ -152,16 +152,16 @@
    [:div.col-xs-8
     [:a {:class (str "btn" (if (= target :content) " btn-active"))
          :href (str "/page/edit/" id)}
-     (str "1." (t :page/Content))]
+     (t "1." :page/Content)]
     [:a {:class (str "btn" (if (= target :theme) " btn-active"))
          :href (str "/page/edit_theme/" id)}
-     (str "2." (t :page/Theme))]
+     (t "2." :page/Theme)]
     [:a {:class (str "btn" (if (= target :settings) " btn-active"))
          :href (str "/page/settings/" id)}
-     (str "3." (t :page/Settings))]
+     (t "3." :page/Settings)]
     [:a {:class (str "btn" (if (= target :preview) " btn-active"))
          :href (str "/page/preview/" id)}
-     (str "4." (t :page/Preview))]]
+     (t "4." :page/Preview)]]
    [:div {:class "col-xs-4"
           :id "buttons-right"}
     [:a {:class "btn btn-primary"
