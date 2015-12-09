@@ -58,15 +58,12 @@ database as well). After that:
 
 - User accounts, login, OAuth
 - Badge sharing
-- User content pages
-- Themes
 - Badge/Page Gallery
 - Full text search
-- File uploads
 - User groups
 - Statistics
 - Admin tools
-- Tests
+- More tests
 
 
 
