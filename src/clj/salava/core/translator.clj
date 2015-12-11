@@ -98,11 +98,16 @@
                       (combine-dicts (get-in coll [default-lang plugin]) (get-in coll [lang plugin]))))
           dict lang-pairs))
 
+(defn touch-i18n [_]
+  (-> (io/resource "salava/core/i18n.cljc")
+      (io/file)
+      (.setLastModified (System/currentTimeMillis))))
 
 (defn translate [& args]
   (-> (props-to-dict)
       (add-default-vals)
       (save-dict-file false)
-      (dict-to-props))
+      (dict-to-props)
+      (touch-i18n))
   (System/exit 0))
 
