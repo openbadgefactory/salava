@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojurewerkz.propertied.properties :refer [properties->map map->properties]]
             [clojure.java.io :as io]
+            [clojure.data]
             [salava.registry]
             [salava.core.helper :refer [dump]]
             [salava.core.util :as util]))
@@ -51,9 +52,15 @@
           (properties->map true)))
 
 
+(defn prop-data-changed? [lang plugin new-data]
+  (let [old-data (load-prop-file lang plugin)
+        df (clojure.data/diff old-data new-data)]
+    (not (and (nil? (first df)) (nil? (second df))))))
+
+
 (defn save-prop-file [lang plugin data]
   (let [out-file (prop-file lang plugin)]
-    (do
+    (when (prop-data-changed? lang plugin data)
       (io/make-parents out-file)
       (prop-write out-file (map->properties data)))))
 
