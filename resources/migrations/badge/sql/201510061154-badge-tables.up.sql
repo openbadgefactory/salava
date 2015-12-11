@@ -9,6 +9,7 @@ CREATE TABLE `badge` (
   `issuer_url` varchar(500) DEFAULT NULL,
   `creator_url` varchar(500) DEFAULT NULL,
   `criteria_url` varchar(500) DEFAULT NULL,
+  `criteria_content_id` varchar(255) DEFAULT NULL,
   `badge_content_id` varchar(255) DEFAULT NULL,
   `issuer_content_id` varchar(255) DEFAULT NULL,
   `creator_content_id` varchar(255) DEFAULT NULL,
@@ -31,8 +32,6 @@ CREATE TABLE `badge_content` (
   `name` text,
   `description` text,
   `image_file` varchar(255) DEFAULT NULL,
-  `criteria_markdown` mediumtext,
-  `criteria_html` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 --;;
@@ -64,5 +63,12 @@ CREATE TABLE `issuer_content` (
   `image_file` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `revocation_list_url` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+--;;
+CREATE TABLE `criteria_content` (
+  `id` varchar(255) NOT NULL,
+  `html_content` mediumtext,
+  `markdown_content` mediumtext,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
