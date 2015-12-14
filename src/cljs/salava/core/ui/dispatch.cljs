@@ -5,7 +5,9 @@
             [reagent.session :as session]
             [salava.core.common :as common]
             [salava.core.helper :refer [dump]]
-            [salava.resolver]
+            [salava.registry]
+            [salava.translator.ui.routes]
+            [salava.core.ui.routes]
             [salava.core.ui.helper :refer [current-path]]))
 
 (defn get-ctx []
