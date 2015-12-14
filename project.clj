@@ -5,15 +5,18 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.7.0"]
 
-                 [com.stuartsierra/component "0.3.0"]
-                 [org.clojure/tools.nrepl "0.2.11"]
+                 [com.stuartsierra/component "0.3.1"]
+                 [org.clojure/tools.nrepl "0.2.12"]
+
+                 ; Google Core Libraries for Java
+                 [com.google.guava/guava "19.0"]
 
                  ; Database
                  [org.clojure/java.jdbc "0.4.2"]
-                 [hikari-cp "1.3.1"]
-                 [mysql/mysql-connector-java "5.1.36"]
+                 [hikari-cp "1.4.0"]
+                 [mysql/mysql-connector-java "5.1.38"]
                  [yesql "0.5.1"]
-                 [migratus "0.8.7"]
+                 [migratus "0.8.8"]
 
                  ; Server side
                  [http-kit "2.1.19"]
@@ -22,41 +25,41 @@
                  [ring/ring-defaults "0.1.5"]
                  [ring-webjars "0.1.1"]
                  [compojure "1.4.0"]
-                 [metosin/compojure-api "0.23.1"]
+                 [metosin/compojure-api "0.24.2"]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
                  [clj-time "0.11.0"]
-                 [prismatic/schema "0.4.4"]
+                 [prismatic/schema "1.0.4"]
                  [clojurewerkz/propertied "1.2.0"]
 
                  [clj-http "2.0.0"]
                  [enlive "1.1.6"]
-                 [markdown-clj "0.9.74"]
+                 [markdown-clj "0.9.82"]
                  [ar.com.hjg/pngj "2.1.0"]
 
                  ; Client side
-                 [org.clojure/clojurescript "1.7.122"]
+                 [org.clojure/clojurescript "1.7.170"]
                  [reagent "0.5.1"]
                  [reagent-utils "0.1.5"]
-                 [bidi "1.21.0"]
+                 [bidi "1.23.1"]
                  [kibu/pushy "0.3.6"]
                  [com.taoensso/tower "3.1.0-beta3"]
-                 [cljs-ajax "0.5.0"]
+                 [cljs-ajax "0.5.2"]
                  [org.clojars.frozenlock/reagent-modals "0.2.3"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
 
                  [org.webjars/jquery "2.1.4"]
-                 [org.webjars/bootstrap "3.3.5"]
-                 [org.webjars/font-awesome "4.4.0"]
-                 [org.webjars/es5-shim "4.0.6"]
+                 [org.webjars/bootstrap "3.3.6"]
+                 [org.webjars/font-awesome "4.5.0"]
+                 [org.webjars/es5-shim "4.1.14"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
                  [org.clojure/tools.logging "0.3.1"]
                  [ch.qos.logback/logback-classic "1.1.3"]
-                 [org.slf4j/slf4j-api "1.7.12"]
-                 [org.slf4j/jul-to-slf4j "1.7.12"]        ; JUL to SLF4J
-                 [org.slf4j/jcl-over-slf4j "1.7.12"]      ; JCL to SLF4J
-                 [org.slf4j/log4j-over-slf4j "1.7.12"]    ; Log4j to SLF4J
+                 [org.slf4j/slf4j-api "1.7.13"]
+                 [org.slf4j/jul-to-slf4j "1.7.13"]        ; JUL to SLF4J
+                 [org.slf4j/jcl-over-slf4j "1.7.13"]      ; JCL to SLF4J
+                 [org.slf4j/log4j-over-slf4j "1.7.13"]    ; Log4j to SLF4J
 
                  ; Testing
                  [midje "1.8.2"]
@@ -65,23 +68,23 @@
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :test-paths ["test/clj" "test/cljs" "test/cljc"]
   :profiles {:dev {:source-paths ["src/dev-clj"]
-                   :dependencies [[figwheel "0.4.0" :exclusions [org.clojure/clojurescript]]
+                   :dependencies [[figwheel "0.5.0-2"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [reloaded.repl "0.2.0"]]
+                                  [reloaded.repl "0.2.1"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :plugins [[lein-pdo "0.1.1"]
-                             [lein-cljsbuild "1.0.5"]
+                             [lein-cljsbuild "1.1.1"]
                              [lein-scss "0.2.2"]
-                             [lein-figwheel "0.2.7" :exclusions [org.clojure/clojurescript]]]
+                             [lein-figwheel "0.5.0-2"]]
                    :resource-paths ["target/generated"]}
              :test {:source-paths ["src/test-clj"]
                     :dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                   [reloaded.repl "0.2.0"]]
+                                   [reloaded.repl "0.2.1"]]
                     :plugins [[lein-midje "3.1.3"]]}
              :uberjar {:resource-paths  ["target/adv"]
-                       :main  salava.main
-                       :aot   [salava.main]}}
+                       :main  salava.core.main
+                       :aot   [salava.core.main]}}
 
   :scss  {:builds
           {:dev {:source-dir "src/scss"
@@ -118,7 +121,7 @@
 
   :uberjar-name      "salava.jar"
   :auto-clean        false
-  :min-lein-version  "2.5.2"
+  :min-lein-version  "2.5.3"
 
   :aliases {"develop"         ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar"         ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
