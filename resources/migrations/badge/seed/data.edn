@@ -113,5 +113,32 @@ Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käytt
 
 [Lisätietoja Open Badges -konseptista](http://openbadges.org/)"
         }
- }
+  }
+
+  {
+   :table "badge"
+   :data {
+          :user_id 2
+          :email "user@example.com"
+          :assertion_url "http://example.com/assertion-3.json"
+          :assertion_jws nil
+          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-2.json\",\"verify\":{\"url\":\"http://example.com/assertion-3.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+          :badge_url "http://example.com/badge-2.json"
+          :issuer_url "http://example.com/issuer-2.json"
+          :criteria_url "http://example.com/criteria-2.json"
+          :badge_content_id "97a581a4912aaa57b53e4a84f7122da5d0592812aa98fe40300abad71a843c3"
+          :issuer_content_id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"
+          :issued_on 1440172372
+          :expires_on nil
+          :evidence_url nil
+          :status "accepted"
+          :visibility "public"
+          :show_recipient_name 1
+          :rating nil
+          :ctime 1450172372
+          :mtime 1450172372
+          :deleted 0
+          :revoked 0
+          }
+   }
 )

@@ -37,11 +37,6 @@
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :badge_content_id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
-(defn gallery-badges
-  "Returns badges visible in gallery"
-  [ctx]
-  (select-public-badges {} (get-db ctx)))
-
 (defn user-owns-badge?
   "Check if user owns badge"
   [ctx assertion user-id]
@@ -198,9 +193,5 @@
   [ctx tag user-id]
   (select-badges-by-tag-and-owner {:badge_tag tag
                                     :user_id user-id} (get-db ctx)))
-
-(defn search-gallery-badges
-  "Search badges from gallery"
-  [country user-name badge-name issuer-name])
 
 

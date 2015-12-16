@@ -1,14 +1,17 @@
 (ns salava.gallery.ui.routes
    (:require [salava.core.ui.layout :as layout]
-            [salava.core.i18n :as i18n :refer [t]]))
+             [salava.core.i18n :as i18n :refer [t]]
+             [salava.gallery.ui.badges :as b]
+             [salava.gallery.ui.pages :as p]))
 
 (defn placeholder [content]
   (fn [site-navi params]
     #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/gallery" [[""          (placeholder [:p "Badge gallery"])]
-               ["/badges"   (placeholder [:p "Badge gallery"])]
+  {"/gallery" [[""          b/handler]
+               ["/badges"   b/handler]
+               [["/badges/" :user-id] b/handler]
                ["/pages"    (placeholder [:p "Page gallery"])]
                ["/profiles" (placeholder [:p "User gallery"])]
                ["/getbadge" (placeholder [:p "Apply for a badge"])]]})

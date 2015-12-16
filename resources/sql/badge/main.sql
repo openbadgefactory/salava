@@ -11,15 +11,9 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
        WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL AND deleted = 0
 
 -- name: select-user-badges-pending
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        WHERE user_id = :user_id AND status = 'pending' AND deleted = 0
-
--- name: select-public-badges
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, email, assertion_url FROM badge
-       JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE visibility = 'public' OR visibility = 'shared' AND deleted = 0
-       ORDER BY ctime DESC
 
 -- name: select-taglist
 -- get tags by list of badge content ids

@@ -35,16 +35,16 @@
 
 (defn grid-search-field [title field-name placeholder key state]
   [:div.form-group
-   [:label {:class "control-label col-sm-2" :for "grid-search"} title]
+   [:label {:class "control-label col-sm-2" :for (str "grid-search-" field-name)} title]
    [:div.col-sm-10
-    [:input {:class (str field-name " form-control")
-             :id "grid-search"
-             :type "text"
-             :name field-name
+    [:input {:class       (str field-name " form-control")
+             :id          (str "grid-search-" field-name)
+             :type        "text"
+             :name        field-name
              :placeholder placeholder
-             :value ((keyword key) @state)
-             :on-change  (fn [x]
-                           (swap! state assoc key (-> x .-target .-value)))}]]])
+             :value       ((keyword key) @state)
+             :on-change   (fn [x]
+                            (swap! state assoc key (-> x .-target .-value)))}]]])
 
 (defn grid-select [title id key options state]
   [:div.form-group
