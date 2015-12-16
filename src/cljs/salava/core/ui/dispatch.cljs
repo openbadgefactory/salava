@@ -5,15 +5,22 @@
             [reagent.session :as session]
             [salava.core.common :as common]
             [salava.core.helper :refer [dump]]
-            [salava.resolver]
+            [salava.registry]
+            [salava.translator.ui.routes]
+            [salava.core.ui.routes]
             [salava.core.ui.helper :refer [current-path]]))
-
-(session/put! :lang :en)
-
 
 (defn get-ctx []
    (let [core-ctx (aget js/window "salavaCoreCtx")]
      (js->clj (core-ctx) :keywordize-keys true)))
+
+(def ctx (get-ctx))
+
+(session/put! :lang :en)
+
+(session/put! :i18n-editable (some #(= "translator" %1) (get-in ctx [:plugins :all])))
+
+;;;
 
 
 (defn resolve-plugin [kind plugin ctx]
@@ -32,13 +39,13 @@
 
 
 (defn collect-site-navi []
-  (let [ctx (get-ctx)
-        plugins (get-in ctx [:plugins :all])]
+  (let [plugins (get-in ctx [:plugins :all])]
     {:plugins    plugins
      :routes     (collect-routes plugins ctx)
      :navi-items (collect-navi plugins ctx)}))
 
 (def site-navi (collect-site-navi))
+
 
 
 ;;;

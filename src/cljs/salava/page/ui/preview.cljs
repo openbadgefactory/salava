@@ -12,7 +12,7 @@
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-preview"}
-     [ph/edit-page-header (str (t :page/Preview) ": " name)]
+     [ph/edit-page-header (t :page/Preview ": " name) ]
      [ph/edit-page-buttons id :preview]
      [ph/view-page (:page @state)]]))
 

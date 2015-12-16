@@ -21,16 +21,21 @@ SELECT badge_id, tag FROM badge_tag WHERE badge_id IN (:badge_ids)
 
 -- name: select-user-owns-hosted-badge
 -- check if user owns badge
-SELECT COUNT(id) AS count FROM badge WHERE assertion_url = :assertion_url AND user_id = :user_id AND status != "declined" AND deleted = 0
+SELECT COUNT(id) AS count FROM badge WHERE assertion_url = :assertion_url AND user_id = :user_id AND status != 'declined' AND deleted = 0
 
 -- name: select-user-owns-signed-badge
 -- check if user owns badge
-SELECT COUNT(id) AS count FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id AND status != "declined" AND deleted = 0
+SELECT COUNT(id) AS count FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id AND status != 'declined' AND deleted = 0
 
 --name: replace-badge-content!
 --save content of the badge
-REPLACE INTO badge_content (id, name, description, image_file, criteria_html, criteria_markdown)
-       VALUES (:id, :name, :description, :image_file, :criteria_html, :criteria_markdown)
+REPLACE INTO badge_content (id, name, description, image_file)
+       VALUES (:id, :name, :description, :image_file)
+
+--name: replace-criteria-content!
+--save criteria content of the badge
+REPLACE INTO criteria_content (id, html_content, markdown_content)
+       VALUES (:id, :html_content, :markdown_content)
 
 --name: insert-badge<!
 --save badge
@@ -71,9 +76,10 @@ UPDATE badge SET show_recipient_name = :show_recipient_name WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, criteria_html, evidence_url, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
+       JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
        WHERE badge.id = :id
 
 --name: update-badge-settings!
@@ -81,7 +87,7 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 UPDATE badge SET visibility = :visibility, rating = :rating, evidence_url = :evidence_url WHERE id = :id
 
 --name: update-badge-set-deleted!
-UPDATE badge SET deleted = 1, visibility = "private" WHERE id = :id
+UPDATE badge SET deleted = 1, visibility = 'private' WHERE id = :id
 
 --name: select-badges-images-names
 SELECT b.id, bc.name, bc.image_file FROM badge AS b JOIN badge_content AS bc ON b.badge_content_id = bc.id WHERE b.id IN (:ids)

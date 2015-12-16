@@ -6,8 +6,8 @@ for all of the client-facing features of the service. Salava core is a thin
 layer which ties everything together but has very little business logic of its
 own.
 
-We prefer convention over configuration. Enabled plugins are defined in core
-config and are automatically discoverable by their names.
+We prefer convention over configuration. Enabled plugins are defined in
+src/cljc/regirstry.cljc and are discoverable by their names.
 
 Dependencies between plugins should be limited. When writing plugins,
 modifications to shared code must be avoided unless absolutely

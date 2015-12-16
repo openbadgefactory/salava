@@ -31,10 +31,10 @@
 (defn page-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-search-field (str (t :core/Search) ":") "pagesearch" (t :core/Searchbyname) :search state]
-   [g/grid-select (str (t :core/Show) ":") "select-visibility" :visibility (visibility-select-values) state]
-   [g/grid-buttons (str (t :core/Tags) ":") (unique-values :tags (:pages @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
+   [g/grid-search-field  (t :core/Search ":") "pagesearch" (t :core/Searchbyname) :search state]
+   [g/grid-select        (t :core/Show ":")  "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons       (t :core/Tags ":") (unique-values :tags (:pages @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
 (defn page-grid-element [element-data state]
   (let [{:keys [id name visibility ctime badges]} element-data]

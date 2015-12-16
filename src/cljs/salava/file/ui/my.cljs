@@ -109,7 +109,7 @@
 (defn file-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-buttons (str (t :core/Tags) ":") (unique-values :tags (:files @state)) :tags-selected :tags-all state]])
+   [g/grid-buttons (t :core/Tags ":") (unique-values :tags (:files @state)) :tags-selected :tags-all state]])
 
 (defn file-grid-element [file-atom new-tag-atom files-atom]
   (let [{:keys [id name path mime_type ctime]} @file-atom

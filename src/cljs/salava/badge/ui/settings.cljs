@@ -48,7 +48,7 @@
           [:h2.uppercase-header name]
           (if (> issued_on 0)
             [:div.issued_on
-             [:label (str (t :badge/Issuedon) ":")]
+             [:label (t :badge/Issuedon ":")]
              [:span (date-from-unix-time (* 1000 issued_on))]])
           (bh/issuer-label-and-link issuer_name issuer_url issuer_contact)
           [:div.row

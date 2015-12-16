@@ -11,6 +11,7 @@
             [salava.badge.ui.settings :as s]
             [salava.core.i18n :as i18n :refer [t]]))
 
+
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
    {:value "public"  :title (t :core/Public)}
@@ -24,10 +25,10 @@
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-search-field (str (t :core/Search) ":") "badgesearch" (t :core/Searchbyname) :search state]
-   [g/grid-select (str (t :core/Show) ":") "select-visibility" :visibility (visibility-select-values) state]
-   [g/grid-buttons (str (t :core/Tags) ":") (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
-   [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
+   [g/grid-search-field (t :core/Search ":")  "badgesearch" (t :core/Searchbyname) :search state]
+   [g/grid-select (t :core/Show ":")  "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons (t :core/Tags ":")  (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (if (and

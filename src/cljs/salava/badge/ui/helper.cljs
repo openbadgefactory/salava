@@ -5,12 +5,12 @@
 (defn issued-on [issued]
   (when (> issued 0)
     [:div.issued-on
-     [:label (str (t :badge/Issuedon) ":")]
+     [:label (t :badge/Issuedon ":")]
      [:span (date-from-unix-time (* 1000 issued))]]))
 
 (defn issuer-label-and-link [name url email]
   [:div.issuer
-   [:label (str (t :badge/Issuedby) ": ")]
+   [:label (t :badge/Issuedby ": ")]
    [:a {:target "_blank" :href url} name]
    (if email
      [:span " / " [:a {:href (str "mailto:" email)} email]])])

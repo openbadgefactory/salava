@@ -77,7 +77,7 @@
        [:select {:class "form-control"
                  :value badge-id
                  :on-change #(select-badge block-atom @badges (js/parseInt (.-target.value %)))}
-        [:option {:value 0} (str "-" (t :page/none) "-")]
+        [:option {:value 0} (t "-" :page/none "-")]
         (for [badge @badges]
           [:option {:value (:id badge)
                     :key (:id badge)}
@@ -104,7 +104,7 @@
        [:select {:class "form-control"
                  :value tag
                  :on-change #(select-tag block-atom @tags (.-target.value %))}
-        [:option {:value ""} (str "-" (t :page/none) "-")]
+        [:option {:value ""} (t "-" :page/none "-")]
         (for [tag @tags]
           [:option {:value tag :key tag} tag])]]
       [:div.badge-select
@@ -145,7 +145,7 @@
       [:select {:class "form-control"
                 :value ""
                 :on-change #(select-file block-atom @files (js/parseInt (.-target.value %)))}
-       [:option {:value ""} (str "-" (t :page/none) "-")]
+       [:option {:value ""} (t "-" :page/none "-")]
        (for [file @files]
          [:option {:value (:id file) :key (:id file)} (:name file)])]]]]])
 
@@ -297,7 +297,7 @@
 (defn content [state]
   (let [{:keys [id name description blocks]} (:page @state)]
     [:div {:id "page-edit"}
-     [ph/edit-page-header (str (t :page/Editpage) ": " name)]
+     [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content]
      [page-form state]]))
 

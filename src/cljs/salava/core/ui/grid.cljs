@@ -41,7 +41,7 @@
              :id          (str "grid-search-" field-name)
              :type        "text"
              :name        field-name
-             :placeholder placeholder
+             :placeholder (:content (meta placeholder) placeholder)
              :value       ((keyword key) @state)
              :on-change   (fn [x]
                             (swap! state assoc key (-> x .-target .-value)))}]]])

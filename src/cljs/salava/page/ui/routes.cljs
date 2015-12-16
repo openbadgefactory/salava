@@ -18,6 +18,6 @@
             [["/preview/" :page-id] preview/handler]]})
 
 (defn ^:export navi [context]
-  {"/page"         {:weight 30 :title (t :page/Pages)    :breadcrumb (str (t :page/Pages) " / " (t :page/Mypages))}
-   "/page/mypages" {:weight 31 :title (t :page/Mypages)  :breadcrumb (str (t :page/Pages) " / " (t :page/Mypages))}})
+  {"/page"         {:weight 30 :title (t :page/Pages)   :breadcrumb (t :page/Pages " / " :page/Mypages)}
+   "/page/mypages" {:weight 31 :title (t :page/Mypages) :breadcrumb (t :page/Pages " / " :page/Mypages)}})
 

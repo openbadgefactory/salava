@@ -64,18 +64,27 @@
   [ctx assertion image-file]
   (let [badge-data {:name (get-in assertion [:badge :name])
                     :description (get-in assertion [:badge :description])
-                    :image_file image-file
-                    :criteria_html (get-in assertion [:badge :criteria_html])
-                    :criteria_markdown (get-in assertion [:badge :criteria_markdown])}
+                    :image_file image-file}
         badge-content-sha256 (map-sha256 badge-data)
         data (assoc badge-data :id badge-content-sha256)]
     (replace-badge-content! data (get-db ctx))
     badge-content-sha256))
 
 
+(defn save-criteria-content!
+  "Save badge criteria content"
+  [ctx assertion]
+  (let [criteria-data {:html_content (get-in assertion [:badge :criteria_html])
+                       :markdown_content (get-in assertion [:badge :criteria_markdown])}
+        criteria-content-sha256 (map-sha256 criteria-data)
+        data (assoc criteria-data :id criteria-content-sha256)]
+    (replace-criteria-content! data (get-db ctx))
+    criteria-content-sha256))
+
+
 (defn save-badge!
   "Save user's badge"
-  [ctx user-id badge badge-content-id issuer-content-id]
+  [ctx user-id badge badge-content-id issuer-content-id criteria-content-id]
   (let [data {:user_id             user-id
               :email               (get-in badge [:_email])
               :assertion_url       (get-in badge [:assertion :verify :url])
@@ -84,6 +93,7 @@
               :badge_url           (get-in badge [:assertion :badge :badge_url])
               :issuer_url          (get-in badge [:assertion :badge :issuer_url])
               :criteria_url        (get-in badge [:assertion :badge :criteria_url])
+              :criteria_content_id criteria-content-id
               :badge_content_id    badge-content-id
               :issuer_content_id   issuer-content-id
               :issued_on           (get-in badge [:assertion :issuedOn])
@@ -122,10 +132,11 @@
           issuer-image (get-in assertion [:badge :issuer :image])
           issuer-image-path (if issuer-image
                               (file-from-url issuer-image))
-          issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)]
+          issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
+          criteria-content-id (save-criteria-content! ctx assertion)]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
         (throw+ (t :badge/Alreadyowned)))
-      (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id)))))
+      (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id criteria-content-id)))))
 
 (defn save-badge-tags!
   "Save tags associated to badge. Delete existing tags."

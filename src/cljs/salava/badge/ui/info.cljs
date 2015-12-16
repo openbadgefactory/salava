@@ -59,7 +59,7 @@
        (bh/issuer-label-and-link (:issuer_name @state) (:issuer_url @state) (:issuer_contact @state))
        (if (:show_recipient_name @state)
          [:div
-          (str (t :badge/Recipient) ": " (:first_name @state) " " (:last_name @state))])
+          (t :badge/Recipient ": " (:first_name @state) " " (:last_name @state))])
        [:div
         (:description @state)]
        [:h2.uppercase-header (t :badge/Criteria)]

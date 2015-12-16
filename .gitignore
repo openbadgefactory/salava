@@ -18,3 +18,4 @@ tags
 .#*
 .idea
 *.iml
+figwheel_server.log
