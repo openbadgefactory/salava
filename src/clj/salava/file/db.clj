@@ -29,8 +29,11 @@
 
 (defn remove-file! [ctx file-id]
   (try+
-    (let [file (select-file-count-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))]
-      (if (= (:usage file) 1)
+    (let [file (select-file-count-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))
+          usage (:usage file)]
+      (if (= usage 0)
+        (throw+ "File not found"))
+      (if (= usage 1)
         (delete-file (str "resources/public/" (:path file))))
       (delete-file! {:id file-id} (get-db ctx))
       (delete-files-block-file! {:file_id file-id} (get-db ctx))

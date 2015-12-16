@@ -5,7 +5,8 @@
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.file.db :as f]
-            [salava.file.upload :as u]))
+            [salava.file.upload :as u]
+            [salava.file.schemas :as schemas]))
 
 (defroutes* route-def
   (context* "/page" []
@@ -15,7 +16,7 @@
 
   (context* "/obpv1/file" []
             (GET* "/:userid" []
-                  ;:return TODO
+                  :return [schemas/File]
                   :path-params [userid :- Long]
                   :summary "Get user's all files"
                   :components [context]
@@ -28,7 +29,7 @@
                      (ok (f/remove-file! context fileid)))
 
             (POST* "/upload/:userid" []
-                   ;:return schemas/Upload
+                   :return schemas/Upload
                    :path-params [userid :- Long]
                    :multipart-params [file :- upload/TempFileUpload]
                    :middlewares [upload/wrap-multipart-params]

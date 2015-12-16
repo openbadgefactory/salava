@@ -1,6 +1,7 @@
 (ns salava.file.upload
   (:require [clojure.java.io :as io]
             [slingshot.slingshot :refer :all]
+            [pantomime.mime :refer [mime-type-of]]
             [salava.core.util :refer [public-path file-extension]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -8,23 +9,24 @@
 
 (defn upload-file [ctx user-id file]
   (try+
-    (let [{:keys [size filename tempfile content-type]} file
+    (let [{:keys [size filename tempfile]} file
           mime-types (-> ctx
                          (get-in [:config :file :allowed-file-types])
                          vals
                          distinct)
           max-size (get-in ctx [:config :file :max-size] 100000000)
           extension (file-extension filename)
+          mime-type (mime-type-of tempfile)
           path (public-path tempfile extension)
           full-path (str "resources/public/" path)
           insert-data {:name filename
                      :path path
                      :size size
-                     :mime_type content-type
+                     :mime_type mime-type
                      :tags []}]
 
-      (if-not (some #(= % content-type) mime-types)
-        (throw+ (str (t :file/Filetype) " " content-type " " (t :file/isnotallowed))))
+      (if-not (some #(= % mime-type) mime-types)
+        (throw+ (str (t :file/Filetype) " " mime-type " " (t :file/isnotallowed))))
       (if (> size max-size)
         (throw+ (str (t :file/Filetoobig) " " (t :file/Maxfilesize) ": " (quot max-size (* 1024 1024)) "MB")))
 

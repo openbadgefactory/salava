@@ -33,6 +33,7 @@
                  [enlive "1.1.6"]
                  [markdown-clj "0.9.74"]
                  [ar.com.hjg/pngj "2.1.0"]
+                 [com.novemberain/pantomime "2.7.0"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.122"]
