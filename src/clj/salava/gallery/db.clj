@@ -7,11 +7,13 @@
 
 (defqueries "sql/gallery/queries.sql")
 
-(defn public-badges-by-user [ctx user-id]
+(defn public-badges-by-user
+  "Return user's public badges"
+  [ctx user-id]
   (select-users-public-badges {:user_id user-id} (get-db ctx)))
 
 (defn public-badges
-  "Returns badges visible in gallery"
+  "Return badges visible in gallery. Badges can be searched by country ID, badge name, issuer name or recipient's first or last name"
   [ctx country badge-name issuer-name recipient-name]
   (let [where ""
         params []
@@ -31,7 +33,9 @@
                     JOIN badge_content AS bc ON b.badge_content_id = bc.id
                     JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
                     LEFT JOIN user AS u ON b.user_id = u.id
-                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) AND b.visibility = 'public'GROUP BY bc.id
+                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) AND b.visibility = 'public' "
+                   where
+                   " GROUP BY bc.id
                     ORDER BY b.ctime DESC
                     LIMIT 100")]
     (jdbc/with-db-connection
@@ -39,16 +43,17 @@
       (jdbc/query conn (into [query] params)))))
 
 (defn user-country
-  "Get user's country"
+  "Return user's country id"
   [ctx user-id]
   (select-user-country {:id user-id} (into {:row-fn :country :result-set-fn first} (get-db ctx))))
 
 (defn all-badge-countries [ctx]
+  "Return all countries which users have public badges"
   (let [country-keys (select-badge-countries {} (into {:row-fn :country} (get-db ctx)))]
     (select-keys all-countries country-keys)))
 
 (defn badge-countries
-  ""
+  "Return user's country id and list of all countries which users have public badges"
   [ctx user-id]
   (let [current-country (user-country ctx user-id)
         countries (merge (all-badge-countries ctx) (select-keys all-countries [current-country]))]
