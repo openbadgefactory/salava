@@ -16,6 +16,6 @@
 
        (let [{:keys [status body]} (test-api-request :get (str "/page/view/99"))]
          (fact "page does not exist"
-               status => 200
-               body => {:border nil :blocks []})))
+               status => 500
+               body => "{\"errors\":{\"description\":\"missing-required-key\",\"tags\":\"missing-required-key\",\"first_name\":\"missing-required-key\",\"password\":\"missing-required-key\",\"name\":\"missing-required-key\",\"visible_before\":\"missing-required-key\",\"visible_after\":\"missing-required-key\",\"theme\":\"missing-required-key\",\"ctime\":\"missing-required-key\",\"id\":\"missing-required-key\",\"padding\":\"missing-required-key\",\"last_name\":\"missing-required-key\",\"user_id\":\"missing-required-key\",\"border\":\"(not (map? nil))\",\"visibility\":\"missing-required-key\",\"mtime\":\"missing-required-key\"}}")))
 

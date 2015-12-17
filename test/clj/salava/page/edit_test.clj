@@ -17,10 +17,14 @@
             {:type "tag" :tag "Some tag" :format "long" :sort "name"}]})
 
 (facts "about opening a page for editing"
-       (let [{:keys [status body]} (test-api-request :get (str "/page/edit/" page-id))]
+       (let [{:keys [status body]} (test-api-request :get (str "/page/edit/" page-id))
+             blocks (-> body :page :blocks)]
          (fact "page can be opened for editing and it has valid attributes"
                status => 200
                (keys (:page body)) => (just [:id :user_id :name :description :blocks] :in-any-order))
+         (fact "page has five blocks"
+               (count blocks) => 5
+               (map :type blocks) => ["sub-heading" "badge" "file" "html" "tag"])
          (let [user-badges (:body  (test-api-request :get (str "/badge/" user-id)))]
            (fact "user badges are loaded"
                  (map :id (:badges body)) => (just (map :id user-badges) :in-any-order))
@@ -36,7 +40,7 @@
              (:status (test-api-request :post (str "/page/save_content") sample-page-content)) => 404
              (let [{:keys [body status]} (test-api-request :post (str "/page/save_content/not-integer") sample-page-content)]
                status => 400
-               body => "{\"errors\":{\"id\":\"(not (instance? java.lang.Long \\\"not-integer\\\"))\"}}"))
+               body => "{\"errors\":{\"pageid\":\"(not (integer? \\\"not-integer\\\"))\"}}"))
        (fact "page title, desctiption and blocks are required"
              (let [{:keys [body status]} (test-api-request :post (str "/page/save_content/" page-id) {})]
                status => 400
@@ -52,7 +56,7 @@
        (fact "block type must be valid"
              (let [{:keys [body status]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "not-valid"}]))]
                status => 400
-               body => "{\"errors\":{\"blocks\":[\"(not (matches-some-condition? {:type \\\"not-valid\\\"}))\"]}}")
+               body => "{\"errors\":{\"blocks\":[\"(not (some-matching-condition? {:type \\\"not-valid\\\"}))\"]}}")
              (:status (test-api-request :post (str "/page/save_content/" page-id) sample-page-content)) => 200)
        (fact "existing blocks can be editied"
              (let [blocks (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks)
@@ -77,10 +81,10 @@
        (fact "saving a badge block requires a badge-id and valid format (if user doesn't own the badge, block won't be saved)"
              (let [{:keys [status body]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "badge"}]))]
                status => 400
-               body =>  "{\"errors\":{\"blocks\":[{\"badge_id\":\"missing-required-key\",\"format\":\"missing-required-key\"}]}}")
+               body =>  "{\"errors\":{\"blocks\":[{\"format\":\"missing-required-key\",\"badge_id\":\"missing-required-key\"}]}}")
              (let [{:keys [status body]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "badge" :format "not-valid" :badge_id "not-valid"}]))]
                status => 400
-               body =>   "{\"errors\":{\"blocks\":[{\"badge_id\":\"(not (integer? \\\"not-valid\\\"))\",\"format\":\"(not (#{\\\"long\\\" \\\"short\\\"} \\\"not-valid\\\"))\"}]}}")
+               body =>   "{\"errors\":{\"blocks\":[{\"format\":\"(not (#{\\\"long\\\" \\\"short\\\"} \\\"not-valid\\\"))\",\"badge_id\":\"(not (integer? \\\"not-valid\\\"))\"}]}}")
              (let [{:keys [status]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "badge" :format "long" :badge_id 99}]))]
                status => 200
                (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks count) => 0)

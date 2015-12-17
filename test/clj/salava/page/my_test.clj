@@ -29,7 +29,7 @@
                body => "{\"errors\":{\"userid\":\"missing-required-key\",\"not_valid_parameter\":\"disallowed-key\"}}")
              (let [{:keys [status body]} (test-api-request :post "/page/create" {:userid "not integer"})]
                status => 400
-               body => "{\"errors\":{\"userid\":\"(not (instance? java.lang.Long \\\"not integer\\\"))\"}}"))
+               body => "{\"errors\":{\"userid\":\"(not (integer? \\\"not integer\\\"))\"}}"))
        (let [{:keys [status body]} (test-api-request :post "/page/create" {:userid user-id})
             new-page-id (Integer/parseInt body)]
          (fact "page was created successfully"
@@ -49,7 +49,7 @@
              (:status (test-api-request :delete (str "/page/"))) => 404
              (let [{:keys [status body]} (test-api-request :delete (str "/page/not-integer"))]
                status => 400
-               body => "{\"errors\":{\"pageid\":\"(not (instance? java.lang.Long \\\"not-integer\\\"))\"}}"))
+               body => "{\"errors\":{\"pageid\":\"(not (integer? \\\"not-integer\\\"))\"}}"))
        (fact "page was deleted successfully"
              (let [{:keys [status body]} (test-api-request :delete (str "/page/" page-to-be-deleted))]
                status => 200

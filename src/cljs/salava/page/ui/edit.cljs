@@ -26,7 +26,7 @@
   (case type
     "heading" {:type "heading" :size "h1" :content content}
     "sub-heading" {:type "heading" :size "h2":content content}
-    "badge" {:format (:format badge "short") :badge_id (:id badge 0)}
+    "badge" {:format format :badge_id (:id badge 0)}
     "html" {:content content}
     "file" {:files (map :id files)}
     "tag" {:tag tag :format (or format "short") :sort (or sort "name")}

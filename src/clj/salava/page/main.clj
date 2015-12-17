@@ -1,5 +1,5 @@
 (ns salava.page.main
-  (:require [clojure.string :refer [split blank?]]
+  (:require [clojure.string :refer [split blank? trim]]
             [yesql.core :refer [defqueries]]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
@@ -55,6 +55,7 @@
     (map #(hash-map :id (:id %)
                     :type (:type %)
                     :block_order (:block_order %)
+                    :format (:format %)
                     :badge {:id (:badge_id %)
                             :name (:name %)
                             :image_file (:image_file %)}) blocks)))
@@ -157,7 +158,7 @@
       (if-not (some #(= (:id old-block) (:id %)) blocks)
         (delete-block! ctx old-block)))))
 
-(defn set-theme [ctx page-id theme-id border-id padding]
+(defn set-theme! [ctx page-id theme-id border-id padding]
   (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx)))
 
 (defn page-settings [ctx page-id]
@@ -175,8 +176,12 @@
                                  (get-db ctx))))))
 
 (defn save-page-settings! [ctx page-id tags visibility pword]
-  (let [password (if (= visibility "password") pword "")]
-    (update-page-visibility-and-password! {:id page-id :visibility visibility :password password} (get-db ctx))
+  (let [password (if (= visibility "password") (trim pword) "")
+        page-visibility (if (and (= visibility "password")
+                            (empty? password))
+                          "private"
+                          visibility)]
+    (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
     (save-page-tags! ctx page-id tags)))
 
 (defn remove-files-blocks-and-content! [ctx page-id]

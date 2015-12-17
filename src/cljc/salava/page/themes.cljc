@@ -3,7 +3,7 @@
 
 (def default-theme-id 0)
 
-(def default-border-id 1)
+(def default-border-id 0)
 
 (def themes
   ; List of available page themes.

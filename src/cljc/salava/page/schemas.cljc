@@ -2,7 +2,8 @@
   (:require [schema.core :as s
              :include-macros true ;; cljs only
              ]
-            [salava.badge.schemas :refer [Badge]]))
+            [salava.badge.schemas :refer [Badge]]
+            [salava.file.schemas :refer [File]]))
 
 (def page
   {:id             s/Int
@@ -19,101 +20,89 @@
    :border         (s/maybe s/Int)
    :visibility     (s/enum "private" "password" "internal" "public")})
 
-(def edit-page-content-block
-  {:type                      (s/enum "heading" "sub-heading" "badge" "html" "file" "tag")
-   :block_order               s/Int
-   :id                        s/Int
-   (s/optional-key :content)  (s/maybe s/Str)
-   (s/optional-key :size)     (s/enum "h1" "h2")
-   (s/optional-key :badge_id) (s/maybe s/Int)
-   (s/optional-key :format)   (s/enum "short" "long")
-   (s/optional-key :tag)      (s/maybe s/Str)
-   (s/optional-key :sort)     (s/enum "name" "modified")
-   (s/optional-key :files)    [{:id s/Int
-                                :name s/Str
-                                :path s/Str
-                                :size s/Int
-                                :mime_type s/Str
-                                :file_order s/Int}]
-   (s/optional-key :badge)    (select-keys Badge [:id :name :image_file])})
+(s/defschema PageFile (-> File
+                          (dissoc :ctime :mtime :tags)
+                          (assoc :file_order s/Int)))
 
 (s/defschema Page (assoc page :badges (s/maybe [(select-keys Badge [:name :image_file])])))
+
+(s/defschema PageSettings (assoc page :user_id s/Int
+                                      :first_name s/Str
+                                      :last_name s/Str))
+
+(s/defschema HeadingBlock {:type    (s/eq "heading")
+                           :size    (s/enum "h1" "h2")
+                           :content (s/maybe s/Str)})
+
+(s/defschema BadgeBlock {:type     (s/eq "badge")
+                         :format   (s/enum "short" "long")
+                         :badge_id (s/maybe s/Int)})
+
+(s/defschema HtmlBlock {:type     (s/eq "html")
+                        :content (s/maybe s/Str)})
+
+(s/defschema FileBlock {:type     (s/eq "file")
+                        :files (s/maybe [PageFile])})
+
+(s/defschema TagBlock {:type        (s/eq "tag")
+                       :tag         (s/maybe (s/constrained s/Str #(and (>= (count %) 1)
+                                                                        (<= (count %) 255))))
+                       :format      (s/enum "short" "long")
+                       :sort        (s/enum "name" "modified")})
 
 (s/defschema ViewPage (assoc page :user_id s/Int
                                   :first_name s/Str
                                   :last_name s/Str
                                   :border {:id s/Int :style s/Str :width s/Int :color s/Str}
-                                  :blocks [(s/conditional #(= (:type %) "heading") {:type    (s/eq "heading")
-                                                                                    :id s/Int
-                                                                                    :block_order s/Int
-                                                                                    :size    (s/enum "h1" "h2")
-                                                                                    :content (s/maybe s/Str)}
+                                  :tags (s/maybe s/Str)
+                                  :blocks [(s/conditional #(= (:type %) "heading") (assoc HeadingBlock :id s/Int
+                                                                                                       :block_order s/Int)
                                                           #(= (:type %) "badge") (merge
-                                                                                   {:type     (s/eq "badge")
-                                                                                    :id s/Int
-                                                                                    :block_order s/Int
-                                                                                    :format   (s/enum "short" "long")
-                                                                                    :badge_id (s/maybe s/Int)}
+                                                                                   (assoc BadgeBlock :id s/Int
+                                                                                                     :block_order s/Int)
                                                                                    (select-keys Badge [:name :criteria_markdown :criteria_url :description :image_file :issued_on :issuer_email :issuer_name :issuer_url]))
-                                                          #(= (:type %) "html") {:type     (s/eq "html")
-                                                                                 :id s/Int
-                                                                                 :block_order s/Int
-                                                                                 :content (s/maybe s/Str)}
-                                                          #(= (:type %) "file") {:type     (s/eq "file")
-                                                                                 :id s/Int
-                                                                                 :block_order s/Int
-                                                                                 :files (s/maybe [{:file_order s/Int
-                                                                                                   :id s/Int
-                                                                                                   :mime_type s/Str
-                                                                                                   :name s/Str
-                                                                                                   :path s/Str
-                                                                                                   :size s/Int}])}
-                                                          #(= (:type %) "tag") {:type        (s/eq "tag")
-                                                                                :id          s/Int
-                                                                                :block_order s/Int
-                                                                                :tag         (s/maybe s/Str)
-                                                                                :format      (s/enum "short" "long")
-                                                                                :sort        (s/enum "name" "modified")
-                                                                                :badges      [(select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :tag])]})]))
+                                                          #(= (:type %) "html") (assoc HtmlBlock :id s/Int
+                                                                                                 :block_order
+                                                                                                 s/Int)
+                                                          #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
+                                                          #(= (:type %) "tag") (assoc TagBlock :id s/Int
+                                                                                               :block_order s/Int
+                                                                                               :badges [(select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :tag])]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int
                                        :name        s/Str
                                        :description (s/maybe s/Str)
-                                       :blocks      [edit-page-content-block]}
+                                       :blocks      [(s/conditional #(= (:type %) "heading") (-> HeadingBlock
+                                                                                                 (assoc :id s/Int :block_order s/Int)
+                                                                                                 (dissoc :size))
+                                                                    #(= (:type %) "sub-heading") (-> HeadingBlock
+                                                                                                     (assoc :id s/Int :block_order s/Int :type (s/eq "sub-heading"))
+                                                                                                     (dissoc :size))
+                                                                    #(= (:type %) "badge") (-> BadgeBlock
+                                                                                               (assoc :id s/Int
+                                                                                                      :block_order s/Int
+                                                                                                      :badge (select-keys Badge [:id :name :image_file]))
+                                                                                               (dissoc :badge_id))
+                                                                    #(= (:type %) "html") (assoc HtmlBlock :id s/Int
+                                                                                                           :block_order
+                                                                                                           s/Int)
+                                                                    #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
+                                                                    #(= (:type %) "tag") (assoc TagBlock :id s/Int
+                                                                                                         :block_order s/Int))]}
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file s/Str
                                         :tags       (s/maybe [s/Str])}]
                               :tags   (s/maybe [s/Str])
-                              :files  [{:id        s/Int
-                                        :name      s/Str
-                                        :path      s/Str
-                                        :mime_type s/Str
-                                        :size      s/Int}]})
+                              :files  [(dissoc PageFile :file_order)]})
 
-(s/defschema SavePageContent {:name           (s/both s/Str
-                                                      (s/pred #(>= (count %) 1))
-                                                      (s/pred #(<= (count %) 255)))
-                              :description    (s/maybe s/Str)
-                              :blocks         [(s/conditional #(= (:type %) "heading") {:type    (s/eq "heading")
-                                                                                        (s/optional-key :id) s/Int
-                                                                                        :size    (s/enum "h1" "h2")
-                                                                                        :content (s/maybe s/Str)}
-                                                              #(= (:type %) "badge") {:type     (s/eq "badge")
-                                                                                      (s/optional-key :id) s/Int
-                                                                                      :badge_id (s/maybe s/Int)
-                                                                                      :format   (s/enum "short" "long")}
-                                                              #(= (:type %) "html") {:type     (s/eq "html")
-                                                                                     (s/optional-key :id) s/Int
-                                                                                     :content (s/maybe s/Str)}
-                                                              #(= (:type %) "file") {:type     (s/eq "file")
-                                                                                     (s/optional-key :id) s/Int
-                                                                                     :files (s/maybe [Long])}
-                                                              #(= (:type %) "tag") {:type     (s/eq "tag")
-                                                                                    (s/optional-key :id) s/Int
-                                                                                    :tag (s/maybe (s/both s/Str
-                                                                                                           (s/pred #(>= (count %) 1))
-                                                                                                           (s/pred #(<= (count %) 255))))
-                                                                                    :format (s/enum "short" "long")
-                                                                                    :sort (s/enum "name" "modified")})]})
+(s/defschema SavePageContent {:name        (s/constrained s/Str #(and (>= (count %) 1)
+                                                                      (<= (count %) 255)))
+                              :description (s/maybe s/Str)
+                              :blocks      [(s/conditional #(= (:type %) "heading") (assoc HeadingBlock (s/optional-key :id) s/Int)
+                                                           #(= (:type %) "badge") (assoc BadgeBlock (s/optional-key :id) s/Int)
+                                                           #(= (:type %) "html") (assoc HtmlBlock (s/optional-key :id) s/Int)
+                                                           #(= (:type %) "file") (assoc FileBlock (s/optional-key :id) s/Int
+                                                                                                  :files (s/maybe [s/Int]))
+                                                           #(= (:type %) "tag") (assoc TagBlock (s/optional-key :id) s/Int))]})

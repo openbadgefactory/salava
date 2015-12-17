@@ -20,72 +20,74 @@
   (context* "/obpv1/page" []
             (GET* "/:userid" []
                   :return [schemas/Page]
-                  :path-params [userid :- Long]
+                  :path-params [userid :- s/Int]
                   :summary "Get user pages"
                   :components [context]
                   (ok (p/user-pages-all context userid)))
 
             (POST* "/create" []
                    :return s/Str
-                   :body-params [userid :- Long]
+                   :body-params [userid :- s/Int]
                    :summary "Create a new empty page"
                    :components [context]
                    (ok (str (p/create-empty-page! context userid))))
 
             (GET* "/view/:pageid" []
                   :return schemas/ViewPage
-                  :path-params [pageid :- Long]
+                  :path-params [pageid :- s/Int]
                   :summary "View page"
                   :components [context]
                   (ok (p/page-with-blocks context pageid)))
 
             (GET* "/edit/:pageid" []
                   :return schemas/EditPageContent
-                  :path-params [pageid :- Long]
+                  :path-params [pageid :- s/Int]
                   :summary "Edit page"
                   :components [context]
                   (ok (p/page-for-edit context pageid)))
 
-            (POST* "/save_content/:id" []
-                   :path-params [id :- Long]
+            (POST* "/save_content/:pageid" []
+                   :path-params [pageid :- s/Int]
                    :body [page-content schemas/SavePageContent]
                    :components [context]
-                   (ok (p/save-page-content! context id page-content)))
+                   (ok (p/save-page-content! context pageid page-content)))
 
             (GET* "/edit_theme/:pageid" []
-                  ;:return schema/Page
-                  :path-params [pageid :- Long]
+                  :return schemas/ViewPage
+                  :path-params [pageid :- s/Int]
                   :summary "Edit page theme"
                   :components [context]
                   (ok (p/page-with-blocks context pageid)))
 
             (POST* "/save_theme/:pageid" []
-                   :path-params [pageid :- Long]
-                   :body-params [theme :- Long
-                                 border :- Long
-                                 padding :- Long]
+                   :return s/Str
+                   :path-params [pageid :- s/Int]
+                   :body-params [theme :- s/Int
+                                 border :- s/Int
+                                 padding :- (s/constrained s/Int #(and (>= % 0) (<= % 50)))]
                    :summary "Save page theme"
                    :components [context]
-                   (ok (str (p/set-theme context pageid theme border padding))))
+                   (ok (str (p/set-theme! context pageid theme border padding))))
 
             (GET* "/settings/:pageid" []
-                  ;:return schema/Page
-                  :path-params [pageid :- Long]
+                  :return schemas/PageSettings
+                  :path-params [pageid :- s/Int]
                   :summary "Edit page settings"
                   :components [context]
                   (ok (p/page-settings context pageid)))
 
             (POST* "/save_settings/:pageid" []
-                   :path-params [pageid :- Long]
+                   :path-params [pageid :- s/Int]
                    :body-params [tags :- [s/Str]
                                  visibility :- (s/enum "public" "password" "internal" "private")
-                                 password :- (s/maybe s/Str)]
+                                 password :- (s/constrained s/Str #(and (>= (count %) 0)
+                                                                        (<= (count %) 255)))]
                    :summary "Save page settings"
                    :components [context]
                    (ok (p/save-page-settings! context pageid tags visibility password)))
 
             (DELETE* "/:pageid" []
-                     :path-params [pageid :- Long]
+                     :path-params [pageid :- s/Int]
                      :summary "Delete page"
                      :components [context]
                      (ok (str (p/delete-page-by-id! context pageid))))
