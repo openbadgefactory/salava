@@ -27,6 +27,13 @@
          }
   }
 
+  {
+   :table "badge_tag"
+   :data {:badge_id 1
+          :tag "Tag"
+          }
+   }
+
  {
   :table "badge_content"
   :data {
@@ -125,5 +132,32 @@ Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käytt
 
 [Lisätietoja Open Badges -konseptista](http://openbadges.org/)"
   }
+ }
+ {
+  :table "badge"
+  :data {
+         :user_id 2
+         :email "user@example.com"
+         :assertion_url "http://example.com/assertion-3.json"
+         :assertion_jws nil
+         :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-3.json\",\"verify\":{\"url\":\"http://example.com/assertion-3.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+         :badge_url "http://example.com/badge-3.json"
+         :issuer_url "http://example.com/issuer-3.json"
+         :criteria_url "http://example.com/criteria-3.json"
+         :criteria_content_id "4b612901a0ad11b864ee8d4c96f2f86bf33804fd7b03eea179bd3a344cc222bc"
+         :badge_content_id "3f1f860d58483ceaa5a22e75ab6a18d93ec9a6a6b5f2274f539ee0c0777a5900"
+         :issuer_content_id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"
+         :issued_on 1440213959
+         :expires_on nil
+         :evidence_url nil
+         :status "accepted"
+         :visibility "public"
+         :show_recipient_name 1
+         :rating nil
+         :ctime 1450343848
+         :mtime 1450343848
+         :deleted 0
+         :revoked 0
+         }
  }
 )

@@ -1,17 +1,41 @@
 (
-  {
-   :table "page"
-   :data {
-          :user_id 1
+  {:table "page"
+   :data {:user_id 1
           :name "Sample page"
           :description "This is a sample page."
           :visibility "private"
           :ctime 1445335094
           :mtime 1445335094}}
-  {
-   :table "page"
-   :data {
-          :user_id 1
+  {:table "page_block_heading"
+   :data {:page_id 1
+          :size "h2"
+          :content "Title"
+          :block_order 0}}
+  {:table "page_block_badge"
+   :data {:page_id 1
+          :badge_id 1
+          :format "long"
+          :block_order 1}}
+  {:table "page_block_files"
+   :data {:page_id 1
+          :block_order 2}}
+  {:table "page_block_files_has_file"
+   :data {:block_id 1
+          :file_id 1
+          :file_order 0}}
+  {:table "page_block_html"
+   :data {:page_id 1
+          :content "Here is some content"
+          :block_order 3}}
+  {:table "page_block_tag"
+   :data {:page_id 1
+          :tag "Tag"
+          :format "short"
+          :sort "name"
+          :block_order 4}}
+
+  {:table "page"
+   :data {:user_id 1
           :name "Another page"
           :description "This page is going to deleted."
           :visibility "private"
