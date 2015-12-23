@@ -37,7 +37,7 @@
    [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
 (defn page-grid-element [element-data state]
-  (let [{:keys [id name visibility ctime badges]} element-data]
+  (let [{:keys [id name visibility mtime badges]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -59,7 +59,7 @@
            nil)]
         [:div.media-description
          [:div.page-create-date
-          (date-from-unix-time (* 1000 ctime) "minutes")]
+          (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
@@ -94,7 +94,10 @@
 
 (defn page-grid [state]
   (let [pages (:pages @state)
-        order (:order @state)]
+        order (keyword (:order @state))
+        pages (if (= order :mtime)
+                (sort-by order > pages)
+                (sort-by order pages))]
     [:div {:class "row"
            :id    "grid"}
      [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -111,7 +114,7 @@
                :on-click #(create-page)}
            (t :page/Addpage)]]]]]]
      (doall
-       (for [element-data (sort-by (keyword order) pages)]
+       (for [element-data pages]
          (if (page-visible? element-data state)
            (page-grid-element element-data state))))]))
 

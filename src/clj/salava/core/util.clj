@@ -75,4 +75,4 @@
            fname)
          (catch Object _
            (throw+ "Error copying file"))))
-     (throw+ "Error in file url"))))
+     (throw+ "Error in file url: " url))))

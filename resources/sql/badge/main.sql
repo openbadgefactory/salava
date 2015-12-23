@@ -40,7 +40,7 @@ REPLACE INTO criteria_content (id, html_content, markdown_content)
 --name: insert-badge<!
 --save badge
 INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked)
-       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0)
+       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0)
 
 --name: select-badge
 --get badge by id
@@ -79,7 +79,7 @@ UPDATE badge SET show_recipient_name = :show_recipient_name WHERE id = :id
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
-       JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
+       LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
        WHERE badge.id = :id
 
 --name: update-badge-settings!

@@ -96,7 +96,7 @@
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public" "internal")
                                  evidence-url :- (s/maybe s/Str)
-                                 rating :- (s/enum 0 1 2 3 4 5)
+                                 rating :- (s/maybe (s/enum 0.5 1 1.5 2 2.5 3 3.5 4 5.4 5))
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
                    :components [context]

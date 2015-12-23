@@ -80,8 +80,8 @@
                    :path-params [pageid :- s/Int]
                    :body-params [tags :- [s/Str]
                                  visibility :- (s/enum "public" "password" "internal" "private")
-                                 password :- (s/constrained s/Str #(and (>= (count %) 0)
-                                                                        (<= (count %) 255)))]
+                                 password :- (s/maybe (s/constrained s/Str #(and (>= (count %) 0)
+                                                                         (<= (count %) 255))))]
                    :summary "Save page settings"
                    :components [context]
                    (ok (p/save-page-settings! context pageid tags visibility password)))
