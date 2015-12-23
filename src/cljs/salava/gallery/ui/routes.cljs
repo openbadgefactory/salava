@@ -12,7 +12,8 @@
   {"/gallery" [[""          b/handler]
                ["/badges"   b/handler]
                [["/badges/" :user-id] b/handler]
-               ["/pages"    (placeholder [:p "Page gallery"])]
+               ["/pages"    p/handler]
+               [["/pages/" :user-id] p/handler]
                ["/profiles" (placeholder [:p "User gallery"])]
                ["/getbadge" (placeholder [:p "Apply for a badge"])]]})
 

@@ -11,19 +11,24 @@
 
 (defqueries "sql/page/main.sql")
 
+(defn page-badges [ctx pages-coll]
+  ""
+  (let [badge-ids (->> pages-coll
+                       (reduce #(concat %1 (split (or (:badges %2) "") #",")) [])
+                       (filter not-empty)
+                       distinct)
+        badges-by-id (b/badges-images-names ctx badge-ids)]
+    (map (fn [page]
+           (assoc page :badges (if (:badges page)
+                                 (map #(get badges-by-id %) (split (:badges page) #",")))))
+         pages-coll)))
+
 (defn user-pages-all [ctx user-id]
   "Get all user pages"
   (let [pages (select-user-pages {:user_id user-id} (get-db ctx))
-        all-badge-ids (->> pages
-                           (reduce #(concat %1 (split (or (:badges %2) "") #",")) [])
-                           (filter not-empty)
-                           distinct)
-        badges-by-id (b/badges-images-names ctx all-badge-ids)]
-    (map #(assoc % :badges (if (:badges %)
-                             (map (fn [b] (get badges-by-id b))
-                                  (split (:badges %) #",")))
-                   :tags (if (:tags %) (split (get % :tags "") #",") []))
-         pages)))
+        pages-with-badges (page-badges ctx pages)]
+    (map #(assoc % :tags (if (:tags %) (split (get % :tags "") #",") []))
+         pages-with-badges)))
 
 (defn create-empty-page! [ctx user-id]
   (:generated_key (insert-empty-page<! {:user_id user-id

@@ -1,15 +1,29 @@
 (ns salava.gallery.ui.badges
   (:require [reagent.core :refer [atom cursor]]
+            [reagent-modals.modals :as m]
             [ajax.core :as ajax]
             [clojure.walk :refer [keywordize-keys]]
             [clojure.string :refer [trim]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
+            [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             [salava.core.helper :refer [dump]]))
 
+(defn open-modal [badge-content-id]
+  (ajax/GET
+    (str "/obpv1/gallery/public_badge_content/" badge-content-id)
+    :handler (fn [data]
+               (let [data-with-kws (keywordize-keys data)]
+                 (m/modal! [badge-content-modal data-with-kws] {:size :lg})))))
+
+(defn ajax-stop [ajax-message-atom]
+  (reset! ajax-message-atom nil))
+
 (defn fetch-badges [state]
-  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name]} @state]
+  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name]} @state
+        ajax-message-atom (cursor state [:ajax-message])]
+    (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (ajax/POST
       (str "/obpv1/gallery/badges/" user-id)
       {:params  {:country   (trim country-selected)
@@ -19,7 +33,16 @@
        :handler (fn [data]
                   (let [data-with-kws (keywordize-keys data)
                         badges (:badges data-with-kws)]
-                    (swap! state assoc :badges badges)))})))
+                    (swap! state assoc :badges badges)))
+       :finally (fn []
+                  (ajax-stop ajax-message-atom))})))
+
+(defn search-timer [state]
+  (let [timer-atom (cursor state [:timer])]
+    (if @timer-atom
+      (js/clearTimeout @timer-atom))
+    (reset! timer-atom (js/setTimeout (fn []
+                                        (fetch-badges state)) 500))))
 
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
@@ -34,7 +57,7 @@
                :value       @search-atom
                :on-change   #(do
                               (reset! search-atom (.-target.value %))
-                              (fetch-badges state))}]]]))
+                              (search-timer state))}]]]))
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
@@ -48,6 +71,7 @@
                 :on-change #(do
                              (reset! country-atom (.-target.value %))
                              (fetch-badges state))}
+       [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
                    :key country-key} country-name])]]]))
@@ -88,14 +112,16 @@
           [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (str "/badge/info/" id)}
+         [:a.heading-link {:on-click #(open-modal id)}
           name]]
         [:div.media-issuer
          [:a {:href issuer_url
               :target "_blank"} issuer_name]]
         (if recipients
           [:div.media-recipients
-           recipients " " (t :gallery/recipients)])
+           recipients " " (if (= recipients 1)
+                            (t :gallery/recipient)
+                            (t :gallery/recipients))])
         [:div.media-description description]]]]]))
 
 (defn gallery-grid [state]
@@ -110,9 +136,14 @@
             (badge-grid-element element-data)))))
 
 (defn content [state]
-  [:div {:id "gallery-badges"}
+  [:div {:id "badge-gallery"}
+   [m/modal-window]
    [gallery-grid-form state]
-   [gallery-grid state]])
+   (if (:ajax-message @state)
+     [:div.ajax-message
+      [:i {:class "fa fa-cog fa-spin fa-2x "}]
+      [:span (:ajax-message @state)]]
+     [gallery-grid state])])
 
 (defn init-data [state user-id]
   (ajax/POST
@@ -123,21 +154,24 @@
               :recipient ""}
      :handler (fn [data]
                 (let [data-with-kws (keywordize-keys data)
-                      {:keys [badges countries country]} data-with-kws]
+                      {:keys [badges countries user-country]} data-with-kws]
                   (swap! state assoc :badges badges
                                      :countries countries
-                                     :country-selected country)))}))
+                                     :country-selected user-country)))}))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
                      :badges []
+                     :countries []
                      :country-selected "Finland"
                      :advanced-search false
                      :badge-name ""
                      :recipient-name ""
                      :issuer-name ""
-                     :order "name"})]
+                     :order "name"
+                     :timer nil
+                     :ajax-message nil})]
     (init-data state user-id)
     (fn []
       (layout/default site-navi (content state)))))

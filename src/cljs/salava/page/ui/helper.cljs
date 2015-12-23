@@ -141,6 +141,20 @@
                     "tag" (tag-block block)
                     nil)]))]]]]]))
 
+(defn view-page-modal [page]
+  [:div {:id "badge-content"}
+   [:div.modal-body
+    [:div.row
+     [:div.col-md-12
+      [:button {:type         "button"
+                :class        "close"
+                :data-dismiss "modal"
+                :aria-label   "OK"
+                }
+       [:span {:aria-hidden             "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
+   [view-page page]])
+
 (defn edit-page-header [header]
   [:div.row
    [:div.col-sm-12
