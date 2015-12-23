@@ -28,7 +28,7 @@
       (if-not (some #(= % mime-type) mime-types)
         (throw+ (str (t :file/Filetype) " " mime-type " " (t :file/isnotallowed))))
       (if (> size max-size)
-        (throw+ (str (t :file/Filetoobig) " " (t :file/Maxfilesize) ": " (quot max-size (* 1024 1024)) "MB")))
+        (throw+ (str (t :file/Filetoobig) ". " (t :file/Maxfilesize) ": " (quot max-size (* 1024 1024)) "MB")))
 
       (io/make-parents full-path)
       (io/copy tempfile  (io/file full-path))

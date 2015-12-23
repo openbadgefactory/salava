@@ -13,7 +13,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]))
 
-(defn upload-modal [{:keys [status message reason]}]
+(defn upload-modal [status title message]
   [:div
    [:div.modal-header
     [:button {:type "button"
@@ -22,17 +22,22 @@
               :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title message]]
+    [:h4.modal-title title]]
    [:div.modal-body
-    [:div {:class (str "alert " (if (= status "error")
-                                  "alert-warning"
-                                  "alert-success"))}
-     reason]]
-   [:div.modal-footer
-    [:button {:type "button"
-              :class "btn btn-primary"
-              :data-dismiss "modal"}
-     "OK"]]])
+    (if status
+      [:div {:class (str "alert " (if (= status "error")
+                                    "alert-warning"
+                                    "alert-success"))}
+       message]
+      [:div
+       [:i {:class "fa fa-cog fa-spin fa-2x"}]
+       [:span " " message]])]
+   (if status
+     [:div.modal-footer
+      [:button {:type "button"
+                :class "btn btn-primary"
+                :data-dismiss "modal"}
+       "OK"]])])
 
 (defn send-file [files-atom]
   (let [file (-> (.querySelector js/document "input")
@@ -41,6 +46,7 @@
         form-data (doto
                     (js/FormData.)
                     (.append "file" file (.-name file)))]
+    (m/modal! (upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
       "/obpv1/file/upload/1"
       {:body    form-data
@@ -48,7 +54,8 @@
                   (let [data-kws (keywordize-keys data)]
                     (if (= (:status data-kws) "success")
                       (reset! files-atom (conj @files-atom (:data data-kws))))
-                      (m/modal! (upload-modal data-kws))))})))
+                    (m/modal! (upload-modal (:status data-kws) (:message data-kws) (:reason data-kws)))
+                    ))})))
 
 (defn delete-file [id files-atom]
   (ajax/DELETE
