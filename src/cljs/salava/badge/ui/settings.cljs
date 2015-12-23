@@ -4,6 +4,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
+            [salava.core.ui.rate-it :as r]
             [salava.badge.ui.helper :as bh]))
 
 (defn set-visibility [visibility state]
@@ -21,7 +22,7 @@
       (str "/obpv1/badge/save_settings/" id)
       {:params  {:visibility   visibility
                  :tags         tags
-                 :rating       (or rating 0)
+                 :rating       rating
                  :evidence-url evidence-url}
        :handler (fn []
                   (.reload js/window.location))})))
@@ -125,18 +126,16 @@
          [:div {:class "row"}
           [:div {:class "col-md-12 sub-heading"}
            (t :badge/Rating)]]
-         [:div {:class "form-group"}
-          [:div {:class "col-md-12"}
-           [:select {:class "form-control select-rating"
-                     :value (get-in @state [:badge-settings :rating])
-                     :on-change #(swap! state assoc-in [:badge-settings :rating] (-> % .-target .-value (js/parseInt)))}
-            [:option {:value 0} "-"]
-            (for [rating (range 1 6)]
-              [:option {:value rating} rating])]]]
-         ]]]]
+         [:div.row
+          [:div.col-md-12
+           [r/rate-it (get-in @state [:badge-settings :rating]) (cursor state [:badge-settings :rating])]
+           ]]]]]]
      [:div.modal-footer
       [:button {:type         "button"
                 :class        "btn btn-primary"
                 :data-dismiss "modal"
                 :on-click     #(save-settings state)}
        (t :badge/Save)]]]))
+
+(def old-rating
+  )

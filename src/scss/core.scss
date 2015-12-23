@@ -316,6 +316,7 @@ ul.side-links {
                 overflow-y: hidden;
 
                 a.heading-link {
+                    cursor: pointer;
                     color: $grid-link;
                     text-decoration: none;
                     &:hover {
@@ -327,6 +328,9 @@ ul.side-links {
                 font-size: 12px;
                 text-overflow: ellipsis;
                 height: 75px;
+            }
+            .media-content {
+                font-size: 12px;
             }
         }
 
@@ -384,4 +388,10 @@ ul.side-links {
             }
         }
     }
+}
+
+
+/* custom rateit jquery-plugin styles */
+.rateit .rateit-selected {
+    background-position: left -32px;
 }
