@@ -19,6 +19,7 @@
             (layout/main "/stats"))
 
   (context* "/obpv1/badge" []
+            :tags  ["badge"]
             (GET* "/:userid" []
                   :return [schemas/BadgeContent]
                   :path-params [userid :- Long]

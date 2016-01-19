@@ -15,6 +15,7 @@
             (layout/main "/upload"))
 
   (context* "/obpv1/file" []
+            :tags ["file"]
             (GET* "/:userid" []
                   :return [schemas/File]
                   :path-params [userid :- Long]
