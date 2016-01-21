@@ -57,12 +57,10 @@
      (include-js "https://backpack.openbadges.org/issuer.js")]))
 
 
-(defmacro main [path]
-  `(GET* ~path []
+(defn main [ctx path]
+  `(GET ~path []
          :no-doc true
          :summary "Main HTML layout"
-         :components [~'context]
-         (-> (main-view ~'context)
+         (-> (main-view ~ctx)
              (ok)
              (content-type "text/html; charset=\"UTF-8\""))))
-

@@ -3,6 +3,6 @@
             [compojure.route :as route]
             [salava.core.layout :as layout]))
 
-(defroutes* route-def
-  (layout/main "/")
+(defn route-def [ctx]
+  (layout/main ctx "/")
   (route/not-found "404 Not found"))

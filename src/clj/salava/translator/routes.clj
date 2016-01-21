@@ -47,15 +47,14 @@
 
 
 
-(defroutes* route-def
-  (context* "/obpv1/translator" []
-            :tags ["translator"]
-            (POST* "/:lang/:plugin/:key" []
-                  :summary "Update translation string"
-                  :path-params [lang :- s/Str
-                                plugin :- s/Str
-                                key :- s/Str]
-                  :body-params [value :- s/Str]
-                  :components [context]
-                  (ok (i18n-update context (keyword lang) (keyword plugin) (keyword key) value)))))
-
+(defn route-def [ctx]
+  (routes
+    (context "/obpv1/translator" []
+             :tags ["translator"]
+             (POST "/:lang/:plugin/:key" []
+                   :summary "Update translation string"
+                   :path-params [lang :- s/Str
+                                 plugin :- s/Str
+                                 key :- s/Str]
+                   :body-params [value :- s/Str]
+                   (ok (i18n-update ctx (keyword lang) (keyword plugin) (keyword key) value))))))

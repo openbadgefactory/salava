@@ -7,89 +7,79 @@
             [schema.core :as s]
             [salava.page.schemas :as schemas]))
 
-(defroutes* route-def
-  (context* "/page" []
-            (layout/main "/")
-            (layout/main "/mypages")
-            (layout/main "/view/:id")
-            (layout/main "/edit/:id")
-            (layout/main "/edit_theme/:id")
-            (layout/main "/settings/:id")
-            (layout/main "/preview/:id"))
+(defn route-def [ctx]
+  (routes
+    (context "/page" []
+             (layout/main ctx "/")
+             (layout/main ctx "/mypages")
+             (layout/main ctx "/view/:id")
+             (layout/main ctx "/edit/:id")
+             (layout/main ctx "/edit_theme/:id")
+             (layout/main ctx "/settings/:id")
+             (layout/main ctx "/preview/:id"))
 
-  (context* "/obpv1/page" []
-            :tags ["page"]
-            (GET* "/:userid" []
+    (context "/obpv1/page" []
+             :tags ["page"]
+             (GET "/:userid" []
                   :return [schemas/Page]
                   :path-params [userid :- s/Int]
                   :summary "Get user pages"
-                  :components [context]
-                  (ok (p/user-pages-all context userid)))
+                  (ok (p/user-pages-all ctx userid)))
 
-            (POST* "/create" []
+             (POST "/create" []
                    :return s/Str
                    :body-params [userid :- s/Int]
                    :summary "Create a new empty page"
-                   :components [context]
-                   (ok (str (p/create-empty-page! context userid))))
+                   (ok (str (p/create-empty-page! ctx userid))))
 
-            (GET* "/view/:pageid" []
+             (GET "/view/:pageid" []
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
                   :summary "View page"
-                  :components [context]
-                  (ok (p/page-with-blocks context pageid)))
+                  (ok (p/page-with-blocks ctx pageid)))
 
-            (GET* "/edit/:pageid" []
+             (GET "/edit/:pageid" []
                   :return schemas/EditPageContent
                   :path-params [pageid :- s/Int]
                   :summary "Edit page"
-                  :components [context]
-                  (ok (p/page-for-edit context pageid)))
+                  (ok (p/page-for-edit ctx pageid)))
 
-            (POST* "/save_content/:pageid" []
+             (POST "/save_content/:pageid" []
                    :path-params [pageid :- s/Int]
                    :body [page-content schemas/SavePageContent]
-                   :components [context]
-                   (ok (p/save-page-content! context pageid page-content)))
+                   (ok (p/save-page-content! ctx pageid page-content)))
 
-            (GET* "/edit_theme/:pageid" []
+             (GET "/edit_theme/:pageid" []
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
                   :summary "Edit page theme"
-                  :components [context]
-                  (ok (p/page-with-blocks context pageid)))
+                  (ok (p/page-with-blocks ctx pageid)))
 
-            (POST* "/save_theme/:pageid" []
+             (POST "/save_theme/:pageid" []
                    :return s/Str
                    :path-params [pageid :- s/Int]
                    :body-params [theme :- s/Int
                                  border :- s/Int
                                  padding :- (s/constrained s/Int #(and (>= % 0) (<= % 50)))]
                    :summary "Save page theme"
-                   :components [context]
-                   (ok (str (p/set-theme! context pageid theme border padding))))
+                   (ok (str (p/set-theme! ctx pageid theme border padding))))
 
-            (GET* "/settings/:pageid" []
+             (GET "/settings/:pageid" []
                   :return schemas/PageSettings
                   :path-params [pageid :- s/Int]
                   :summary "Edit page settings"
-                  :components [context]
-                  (ok (p/page-settings context pageid)))
+                  (ok (p/page-settings ctx pageid)))
 
-            (POST* "/save_settings/:pageid" []
+             (POST "/save_settings/:pageid" []
                    :path-params [pageid :- s/Int]
                    :body-params [tags :- [s/Str]
                                  visibility :- (s/enum "public" "password" "internal" "private")
                                  password :- (s/maybe (s/constrained s/Str #(and (>= (count %) 0)
-                                                                         (<= (count %) 255))))]
+                                                                                 (<= (count %) 255))))]
                    :summary "Save page settings"
-                   :components [context]
-                   (ok (p/save-page-settings! context pageid tags visibility password)))
+                   (ok (p/save-page-settings! ctx pageid tags visibility password)))
 
-            (DELETE* "/:pageid" []
+             (DELETE "/:pageid" []
                      :path-params [pageid :- s/Int]
                      :summary "Delete page"
-                     :components [context]
-                     (ok (str (p/delete-page-by-id! context pageid))))
-            ))
+                     (ok (str (p/delete-page-by-id! ctx pageid)))))))

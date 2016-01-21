@@ -2,7 +2,8 @@
   (:require [compojure.api.sweet :refer :all]
             [salava.core.layout :as layout]))
 
-(defroutes* route-def
-  (context* "/user" []
-            (layout/main "/login")
-            (layout/main "/account")))
+(defn route-def [ctx]
+  (routes
+    (context "/user" []
+             (layout/main ctx "/login")
+             (layout/main ctx "/account"))))

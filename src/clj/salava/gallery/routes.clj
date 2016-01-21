@@ -5,39 +5,38 @@
             [salava.core.layout :as layout]
             [salava.gallery.db :as g]))
 
-(defroutes* route-def
-  (context* "/gallery" []
-            (layout/main "/")
-            (layout/main "/badges")
-            (layout/main "/badges/:user-id")
-            (layout/main "/pages")
-            (layout/main "/pages/:user-id")
-            (layout/main "/profiles")
-            (layout/main "/getbadge"))
+(defn route-def [ctx]
+  (routes
+    (context "/gallery" []
+             (layout/main ctx "/")
+             (layout/main ctx "/badges")
+             (layout/main ctx "/badges/:user-id")
+             (layout/main ctx "/pages")
+             (layout/main ctx "/pages/:user-id")
+             (layout/main ctx "/profiles")
+             (layout/main ctx "/getbadge"))
 
-  (context* "/obpv1/gallery" []
-            :tags ["gallery"]
-            (POST* "/badges" []
+    (context "/obpv1/gallery" []
+             :tags ["gallery"]
+             (POST "/badges" []
                    ;:return [}
                    :body-params [country :- (s/maybe s/Str)
                                  badge :- (s/maybe s/Str)
                                  issuer :- (s/maybe s/Str)
                                  recipient :- (s/maybe s/Str)]
-                   :components [context]
                    :summary "Get public badges"
-                   (let [countries (g/badge-countries context 1) ;TODO set current user id
+                   (let [countries (g/badge-countries ctx 1) ;TODO set current user id
                          current-country (if (empty? country)
                                            (:user-country countries)
                                            country)]
-                     (ok (into {:badges (g/public-badges context current-country badge issuer recipient)} countries))))
-            (POST* "/badges/:userid" []
+                     (ok (into {:badges (g/public-badges ctx current-country badge issuer recipient)} countries))))
+             (POST "/badges/:userid" []
                    ;:return []
                    :path-params [userid :- s/Int]
-                   :components [context]
                    :summary "Get user's public badges."
-                   (ok (hash-map :badges (g/public-badges-by-user context userid))))
+                   (ok (hash-map :badges (g/public-badges-by-user ctx userid))))
 
-            (GET* "/public_badge_content/:badge-content-id" []
+             (GET "/public_badge_content/:badge-content-id" []
                   :return {:badge        {:name           s/Str
                                           :image_file     (s/maybe s/Str)
                                           :description    (s/maybe s/Str)
@@ -54,24 +53,20 @@
                                                     :last_name s/Str}])
                            :private_user_count (s/maybe s/Int)}
                   :path-params [badge-content-id :- (s/constrained s/Str #(= (count %) 64))]
-                  :components [context]
                   :summary "Get public badge data"
-                  (ok (g/public-badge-content context badge-content-id 1))) ;TODO set current user id
+                  (ok (g/public-badge-content ctx badge-content-id 1))) ;TODO set current user id
 
-            (POST* "/pages" []
+             (POST "/pages" []
                    :body-params [country :- (s/maybe s/Str)
                                  owner :- (s/maybe s/Str)]
-                   :components [context]
                    :summary "Get public pages"
-                   (let [countries (g/page-countries context 1) ;TODO set current user id
+                   (let [countries (g/page-countries ctx 1) ;TODO set current user id
                          current-country (if (empty? country)
                                            (:user-country countries)
                                            country)]
-                     (ok (into {:pages (g/public-pages context current-country owner)} countries))))
+                     (ok (into {:pages (g/public-pages ctx current-country owner)} countries))))
 
-            (POST* "/pages/:userid" []
+             (POST "/pages/:userid" []
                    :path-params [userid :- s/Int]
-                   :components [context]
                    :summary "Get user's public badges."
-                   (ok (hash-map :pages (g/public-pages-by-user context userid))))
-            ))
+                   (ok (hash-map :pages (g/public-pages-by-user ctx userid)))))))
