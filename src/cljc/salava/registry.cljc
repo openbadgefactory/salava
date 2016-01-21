@@ -1,5 +1,7 @@
 (ns salava.registry
    (:require
+     ; SERVER SIDE
+     #?@(:clj [[salava.core.helper]])
      ; CLIENT SIDE
      ; List all your clojurescript route files here:
      #?@(:cljs [[salava.badge.ui.routes]
