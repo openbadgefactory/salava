@@ -14,9 +14,8 @@
   component/Lifecycle
 
   (start [this]
-    (let [enabled (:plugins salava.registry/enabled) 
-          core-conf (assoc (load-config :core) :plugins enabled)
-          config (reduce #(assoc %1 %2 (load-config %2)) {} enabled)]
+    (let [core-conf (load-config :core)
+          config (reduce #(assoc %1 %2 (load-config %2)) {} (:plugins core-conf))]
 
     (assoc this :config (assoc config :core core-conf))))
 

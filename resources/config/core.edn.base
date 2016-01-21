@@ -3,6 +3,8 @@
  :asset-version nil
 
  :languages [:en :fi]
+ 
+ :plugins [:badge :page :gallery :file :user]
 
  :datasource {:adapter "mysql"
               :username "salava"
