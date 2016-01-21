@@ -58,9 +58,9 @@
 
 
 (defn main [ctx path]
-  `(GET ~path []
+  (GET path []
          :no-doc true
          :summary "Main HTML layout"
-         (-> (main-view ~ctx)
+         (-> (main-view ctx)
              (ok)
              (content-type "text/html; charset=\"UTF-8\""))))
