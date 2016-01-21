@@ -20,6 +20,7 @@
             (layout/main "/preview/:id"))
 
   (context* "/obpv1/page" []
+            :tags ["page"]
             (GET* "/:userid" []
                   :return [schemas/Page]
                   :path-params [userid :- s/Int]

@@ -18,6 +18,7 @@
             (layout/main "/getbadge"))
 
   (context* "/obpv1/gallery" []
+            :tags ["gallery"]
             (POST* "/badges" []
                    ;:return [}
                    :body-params [country :- (s/maybe s/Str)

@@ -49,6 +49,7 @@
 
 (defroutes* route-def
   (context* "/obpv1/translator" []
+            :tags ["translator"]
             (POST* "/:lang/:plugin/:key" []
                   :summary "Update translation string"
                   :path-params [lang :- s/Str

@@ -69,7 +69,7 @@ database as well). After that:
 
 ## License
 
-Copyright (c) 2015 Discendum Oy and contributors.
+Copyright (c) 2015-2016 Discendum Oy and contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
