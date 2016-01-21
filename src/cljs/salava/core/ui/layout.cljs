@@ -1,7 +1,9 @@
 (ns salava.core.ui.layout
   (:require [clojure.string :as str]
+            [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [current-path]]))
+            [salava.core.ui.helper :refer [current-path navigate-to]]
+            [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
   (let [sections (str/split path #"/")]
@@ -25,45 +27,56 @@
 (defn current-heading [parent headings]
   (str (get headings parent)))
 
+(defn logout []
+  (ajax/POST
+    "/obpv1/user/logout"
+    {:handler (fn []
+                (navigate-to "/user/login"))}))
 
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
         :key target}
    [:a {:href target} title]])
 
+(defn top-navi-header []
+  [:div {:class "navbar-header"}
+   [:a {:class "logo pull-left"
+        :href  "/"
+        :title "Open Badge Passport"}
+    [:img {:src   "/img/logo.png"
+           :class "logo-main"}]
+    [:img {:src "/img/logo_icon.png" :class "logo-icon"}]]
+   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+    [:span {:class "icon-bar"}]
+    [:span {:class "icon-bar"}]
+    [:span {:class "icon-bar"}]]])
+
+(defn top-navi-right []
+  [:div {:id "main-header-right"
+         :class "nav navbar-nav navbar-right"}
+   [:ul {:id "secondary-menu-links"
+         :class "clearfix"}
+    [:li [:a {:href "#"}
+          [:i {:class "fa fa-caret-right"}]
+          "My account"]]
+    [:li [:a {:href "#"
+              :on-click #(logout)}
+          [:i {:class "fa fa-caret-right"}]
+          "Log out"]]]
+   [:div.userpic
+    [:a {:href "#"}
+     [:img {:src "/img/user.png"}]]]])
 
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
      [:div {:class "container-fluid"}
-      [:div {:class "navbar-header"}
-       [:a {:class "logo pull-left"
-            :href  "/"
-            :title "Open Badge Passport"}
-        [:img {:src   "/img/logo.png"
-               :class "logo-main"}]
-        [:img {:src "/img/logo_icon.png" :class "logo-icon"}]]
-       [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
-        [:span {:class "icon-bar"}]
-        [:span {:class "icon-bar"}]
-        [:span {:class "icon-bar"}]]]
+      (top-navi-header)
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (for [i items]
           (navi-link i))]
-       [:div {:id "main-header-right"
-              :class "nav navbar-nav navbar-right"}
-        [:ul {:id "secondary-menu-links"
-              :class "clearfix"}
-         [:li [:a {:href "#"}
-               [:i {:class "fa fa-caret-right"}]
-               "My account"]]
-         [:li [:a {:href "#"}
-               [:i {:class "fa fa-caret-right"}]
-               "Log out"]]]
-        [:div.userpic
-         [:a {:href "#"}
-          [:img {:src "/img/user.png"}]]]]]]]))
+       (top-navi-right)]]]))
 
 
 (defn sidebar [site-navi]
@@ -101,4 +114,23 @@
     [:div {:class "row"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]])
+
+(defn top-navi-landing []
+  [:nav {:class "navbar"}
+   [:div {:class "container-fluid"}
+    (top-navi-header)
+    [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
+     [:ul {:class "nav navbar-nav"}]
+     [:div {:id "main-header-right"
+            :class "nav navbar-nav navbar-right"}
+      [:a {:class "btn btn-warning"
+           :href "/user/login"}
+       (t :user/Login)]]]]])
+
+(defn landing-page [content]
+  [:div
+   [:header {:id "navbar"}
+    (top-navi-landing)]
+   [:div {:class "container main-container"}
+    content]])
 

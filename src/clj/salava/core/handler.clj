@@ -1,6 +1,6 @@
 (ns salava.core.handler
   (:require [compojure.api.sweet :refer :all]
-            [salava.core.helper :refer [dump]]
+            [salava.core.session :refer [wrap-app-session]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.cookie :refer [cookie-store]]
@@ -38,12 +38,7 @@
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
                            (assoc-in [:session] false)))
-        (wrap-session {:store (cookie-store {:key (get-in config [:session :secret])})
-                       :root  (get-in config [:session :root])
-                       :cookie-name  (get-in config [:session :name])
-                       :cookie-attrs {:http-only true
-                                      :secure    (get-in config [:session :secure])
-                                      :max-age   (get-in config [:session :max-age])}})
+        (wrap-app-session config)
         (wrap-webjars))))
 
 

@@ -6,7 +6,7 @@
             [salava.core.time :refer [unix-time]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]
-            [salava.user.main :as u]
+            [salava.user.db :as u]
             [salava.badge.assertion :as a]
             [salava.badge.png :as p]))
 

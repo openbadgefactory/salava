@@ -5,7 +5,9 @@
             [salava.page.main :as p]
             [salava.page.themes :refer [themes]]
             [schema.core :as s]
-            [salava.page.schemas :as schemas]))
+            [salava.page.schemas :as schemas]
+            [salava.core.access :as access]
+            salava.core.restructure))
 
 (defn route-def [ctx]
   (routes
@@ -24,18 +26,21 @@
                   :return [schemas/Page]
                   :path-params [userid :- s/Int]
                   :summary "Get user pages"
+                  :auth-rules access/authenticated
                   (ok (p/user-pages-all ctx userid)))
 
              (POST "/create" []
                    :return s/Str
                    :body-params [userid :- s/Int]
                    :summary "Create a new empty page"
+                   :auth-rules access/authenticated
                    (ok (str (p/create-empty-page! ctx userid))))
 
              (GET "/view/:pageid" []
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
                   :summary "View page"
+                  :auth-rules access/authenticated
                   (ok (p/page-with-blocks ctx pageid)))
 
              (GET "/edit/:pageid" []
@@ -47,12 +52,14 @@
              (POST "/save_content/:pageid" []
                    :path-params [pageid :- s/Int]
                    :body [page-content schemas/SavePageContent]
+                   :auth-rules access/authenticated
                    (ok (p/save-page-content! ctx pageid page-content)))
 
              (GET "/edit_theme/:pageid" []
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
                   :summary "Edit page theme"
+                  :auth-rules access/authenticated
                   (ok (p/page-with-blocks ctx pageid)))
 
              (POST "/save_theme/:pageid" []
@@ -62,12 +69,14 @@
                                  border :- s/Int
                                  padding :- (s/constrained s/Int #(and (>= % 0) (<= % 50)))]
                    :summary "Save page theme"
+                   :auth-rules access/authenticated
                    (ok (str (p/set-theme! ctx pageid theme border padding))))
 
              (GET "/settings/:pageid" []
                   :return schemas/PageSettings
                   :path-params [pageid :- s/Int]
                   :summary "Edit page settings"
+                  :auth-rules access/authenticated
                   (ok (p/page-settings ctx pageid)))
 
              (POST "/save_settings/:pageid" []
@@ -77,9 +86,11 @@
                                  password :- (s/maybe (s/constrained s/Str #(and (>= (count %) 0)
                                                                                  (<= (count %) 255))))]
                    :summary "Save page settings"
+                   :auth-rules access/authenticated
                    (ok (p/save-page-settings! ctx pageid tags visibility password)))
 
              (DELETE "/:pageid" []
                      :path-params [pageid :- s/Int]
                      :summary "Delete page"
+                     :auth-rules access/authenticated
                      (ok (str (p/delete-page-by-id! ctx pageid)))))))

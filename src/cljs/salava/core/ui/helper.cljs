@@ -1,4 +1,6 @@
-(ns salava.core.ui.helper)
+(ns salava.core.ui.helper
+  (:require [schema.core :as s]
+            [ajax.core :as ajax]))
 
 (defn unique-values [key data]
   (->> data
@@ -19,3 +21,9 @@
 
 (defn navigate-to [url]
   (set! (.-location.href js/window) url))
+
+(defn input-valid? [schema input]
+  (try
+    (s/validate schema input)
+    (catch js/Error e
+      false)))

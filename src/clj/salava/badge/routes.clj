@@ -6,7 +6,9 @@
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
             [salava.badge.importer :as i]
-            [salava.core.layout :as layout]))
+            [salava.core.layout :as layout]
+            [salava.core.access :as access]
+            salava.core.restructure))
 
 (defn route-def [ctx]
   (routes
@@ -25,24 +27,28 @@
                   :return [schemas/BadgeContent]
                   :path-params [userid :- Long]
                   :summary "Get the badges of a specified user"
+                  :auth-rules access/authenticated
                   (ok (b/user-badges-all ctx userid)))
 
              (GET "/info/:badgeid" []
                   ;:return schemas/BadgeContent
                   :path-params [badgeid :- Long]
                   :summary "Get badge"
+                  :auth-rules access/authenticated
                   (ok (b/get-badge ctx badgeid)))
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public")]
                    :summary "Set badge visibility"
+                   :auth-rules access/authenticated
                    (ok (str (b/set-visibility! ctx badgeid visibility))))
 
              (POST "/set_status/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [status :- (s/enum "accepted" "declined")]
                    :summary "Set badge status"
+                   :auth-rules access/authenticated
                    (ok (str (b/set-status! ctx badgeid status))))
 
              (POST "/toggle_recipient_name/:badgeid" []
@@ -55,12 +61,14 @@
                   :return [schemas/BadgeContent]
                   :path-params [userid :- Long]
                   :summary "Get the badges of a specified user for export"
+                  :auth-rules access/authenticated
                   (ok (b/user-badges-to-export ctx userid)))
 
              (GET "/import/:userid" []
                   :return schemas/Import
                   :path-params [userid :- Long]
                   :summary "Fetch badges from Mozilla Backpack to import"
+                  :auth-rules access/authenticated
                   (ok (i/badges-to-import ctx userid)))
 
              (POST "/import_selected/:userid" []
@@ -68,6 +76,7 @@
                    :path-params [userid :- Long]
                    :body-params [keys :- [s/Str]]
                    :summary "Import selected badges from Mozilla Backpack"
+                   :auth-rules access/authenticated
                    (ok (i/do-import ctx userid keys)))
 
              (POST "/upload/:userid" []
@@ -76,12 +85,14 @@
                    :multipart-params [file :- upload/TempFileUpload]
                    :middlewares [upload/wrap-multipart-params]
                    :summary "Upload badge PNG-file"
+                   :auth-rules access/authenticated
                    (ok (i/upload-badge ctx file userid)))
 
              (GET "/settings/:badgeid" []
                   ;return schemas/badgeContent
                   :path-params [badgeid :- Long]
                   :summary "Get badge settings"
+                  :auth-rules access/authenticated
                   (ok (b/badge-settings ctx badgeid)))
 
              (POST "/save_settings/:badgeid" []
@@ -91,9 +102,11 @@
                                  rating :- (s/maybe (s/enum 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5))
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
+                   :auth-rules access/authenticated
                    (ok (b/save-badge-settings! ctx badgeid visibility evidence-url rating tags)))
 
              (DELETE "/:badgeid" []
                      :path-params [badgeid :- Long]
                      :summary "Delete badge"
+                     :auth-rules access/authenticated
                      (ok (str (b/delete-badge! ctx badgeid)))))))
