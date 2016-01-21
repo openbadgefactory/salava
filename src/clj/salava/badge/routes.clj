@@ -6,7 +6,9 @@
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
             [salava.badge.importer :as i]
-            [salava.core.layout :as layout]))
+            [salava.core.layout :as layout]
+            [salava.core.access :as access]
+            salava.core.restructure))
 
 (defroutes* route-def
   (context* "/badge" []
@@ -24,6 +26,7 @@
                   :path-params [userid :- Long]
                   :summary "Get the badges of a specified user"
                   :components [context]
+                  :auth-rules access/authenticated
                   (ok (b/user-badges-all context userid)))
 
             (GET* "/info/:badgeid" []
@@ -31,6 +34,7 @@
                   :path-params [badgeid :- Long]
                   :summary "Get badge"
                   :components [context]
+                  :auth-rules access/authenticated
                   (ok (b/get-badge context badgeid)))
 
             (POST* "/set_visibility/:badgeid" []
@@ -38,6 +42,7 @@
                    :body-params [visibility :- (s/enum "private" "public")]
                    :summary "Set badge visibility"
                    :components [context]
+                   :auth-rules access/authenticated
                    (ok (str (b/set-visibility! context badgeid visibility))))
 
             (POST* "/set_status/:badgeid" []
@@ -45,6 +50,7 @@
                    :body-params [status :- (s/enum "accepted" "declined")]
                    :summary "Set badge status"
                    :components [context]
+                   :auth-rules access/authenticated
                    (ok (str (b/set-status! context badgeid status))))
 
             (POST* "/toggle_recipient_name/:badgeid" []
@@ -59,6 +65,7 @@
                   :path-params [userid :- Long]
                   :summary "Get the badges of a specified user for export"
                   :components [context]
+                  :auth-rules access/authenticated
                   (ok (b/user-badges-to-export context userid)))
 
             (GET* "/import/:userid" []
@@ -66,6 +73,7 @@
                   :path-params [userid :- Long]
                   :summary "Fetch badges from Mozilla Backpack to import"
                   :components [context]
+                  :auth-rules access/authenticated
                   (ok (i/badges-to-import context userid)))
 
             (POST* "/import_selected/:userid" []
@@ -74,6 +82,7 @@
                    :body-params [keys :- [s/Str]]
                    :summary "Import selected badges from Mozilla Backpack"
                    :components [context]
+                   :auth-rules access/authenticated
                    (ok (i/do-import context userid keys)))
 
             (POST* "/upload/:userid" []
@@ -83,6 +92,7 @@
                    :middlewares [upload/wrap-multipart-params]
                    :summary "Upload badge PNG-file"
                    :components [context]
+                   :auth-rules access/authenticated
                    (ok (i/upload-badge context file userid)))
 
             (GET* "/settings/:badgeid" []
@@ -90,6 +100,7 @@
                   :path-params [badgeid :- Long]
                   :summary "Get badge settings"
                   :components [context]
+                  :auth-rules access/authenticated
                   (ok (b/badge-settings context badgeid)))
 
             (POST* "/save_settings/:badgeid" []
@@ -100,10 +111,7 @@
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
                    :components [context]
+                   :auth-rules access/authenticated
                    (ok (b/save-badge-settings! context badgeid visibility evidence-url rating tags)))
 
-            (DELETE* "/:badgeid" []
-                     :path-params [badgeid :- Long]
-                     :summary "Delete badge"
-                     :components [context]
-                     (ok (str (b/delete-badge! context badgeid))))))
+            ))

@@ -36,7 +36,7 @@
                  [enlive "1.1.6"]
                  [markdown-clj "0.9.82"]
                  [ar.com.hjg/pngj "2.1.0"]
-                 [com.novemberain/pantomime "2.7.0"]
+                 [com.novemberain/pantomime "2.7.0" :exclusions [org.bouncycastle/bcprov-jdk15on]]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.170"]
@@ -64,6 +64,10 @@
 
                  ; Testing
                  [midje "1.8.2"]
+
+                 ; Auth
+                 [buddy "0.9.0"]
+
                  ]
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
