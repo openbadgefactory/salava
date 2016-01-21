@@ -115,4 +115,9 @@
                    :auth-rules access/authenticated
                    (ok (b/save-badge-settings! context badgeid visibility evidence-url rating tags)))
 
-            ))
+            (DELETE* "/:badgeid" []
+                     :path-params [badgeid :- Long]
+                     :summary "Delete badge"
+                     :components [context]
+                     :auth-rules access/authenticated
+                     (ok (str (b/delete-badge! context badgeid))))))
