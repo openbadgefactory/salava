@@ -3,21 +3,17 @@ CREATE TABLE `user` (
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
   `role` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
   `last_login` bigint(20) unsigned,
-  `is_active` boolean NOT NULL DEFAULT 0,
   `pass` varchar(255) DEFAULT NULL,
-  `activationid` varchar(255),
-  `uuid` varchar(255) NOT NULL,
   `language` varchar(255) DEFAULT 'en',
   `country` varchar(255),
   `profile_visibility` enum('internal','public') DEFAULT 'internal',
   `ctime` bigint(20) unsigned NOT NULL,
   `mtime` bigint(20) unsigned NOT NULL,
+  `activation_code` varchar(255),
+  `activated` boolean NOT NULL DEFAULT 0,
   `deleted` boolean DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`email`),
-  UNIQUE KEY (`activationid`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;

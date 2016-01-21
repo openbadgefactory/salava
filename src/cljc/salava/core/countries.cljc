@@ -240,3 +240,10 @@
    "YU" "Yugoslavia"
    "ZM" "Zambia"
    "ZW" "Zimbabwe"})
+
+(def all-countries-sorted
+ (into (sorted-map-by
+        (fn [key1 key2]
+         (compare (get all-countries key1)
+                  (get all-countries key2))))
+       all-countries))
