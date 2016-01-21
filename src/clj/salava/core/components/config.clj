@@ -1,7 +1,6 @@
 (ns salava.core.components.config
   (:require [com.stuartsierra.component :as component]
-            [clojure.java.io :as io]
-            [salava.registry]))
+            [clojure.java.io :as io]))
 
 
 (defn load-config [plugin]

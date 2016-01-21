@@ -2,7 +2,6 @@
   (:require [reloaded.repl :refer [system init start stop go reset]]
             [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
             [salava.core.migrator :refer [run-reset]]
-            [salava.registry]
             [midje.repl :refer [load-facts]]))
 
 (set-refresh-dirs "./src")
@@ -18,7 +17,7 @@
 (set-opts)
 
 (defn migration-reset []
-  (let [plugins (cons :core (:plugins salava.registry/enabled))]
+  (let [plugins (cons :core [:badge :page :gallery :file :user])] ;TODO load from config
     (doseq [plugin plugins]
       (run-reset true plugin))))
 

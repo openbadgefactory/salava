@@ -3,14 +3,13 @@
             [clojurewerkz.propertied.properties :refer [properties->map map->properties]]
             [clojure.java.io :as io]
             [clojure.data]
-            [salava.registry]
             [salava.core.helper :refer [dump]]
             [salava.core.util :as util]))
 
 
 (def config (-> (io/resource "config/core.edn") slurp read-string))
 
-(def plugins (cons :core (:plugins salava.registry/enabled)))
+(def plugins (cons :core (:plugins config)))
 
 (def languages (:languages config))
 
