@@ -121,7 +121,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/badge/export/1"
+    "/obpv1/badge/export"
     {:handler (fn [data]
                 (let [data-kws (map keywordize-keys data)]
                   (swap! state assoc :data data-kws)

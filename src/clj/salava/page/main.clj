@@ -1,6 +1,7 @@
 (ns salava.page.main
   (:require [clojure.string :refer [split blank? trim]]
             [yesql.core :refer [defqueries]]
+            [slingshot.slingshot :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -10,6 +11,12 @@
             [salava.file.db :as f]))
 
 (defqueries "sql/page/main.sql")
+
+(defn page-owner?
+  "Check if user owns page"
+  [ctx page-id user-id]
+  (let [owner (select-page-owner {:id page-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+    (= owner user-id)))
 
 (defn page-badges [ctx pages-coll]
   ""
@@ -121,50 +128,57 @@
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
     (save-files-block-content ctx (assoc block :id block-id))))
 
-(defn save-page-content! [ctx page-id page-content]
-  (let [{:keys [name description blocks]} page-content
-        page-owner-id (page-owner ctx page-id)
-        user-files (if (some #(= "file" (:type %)) blocks)
-                     (f/user-files-all ctx page-owner-id))
-        file-ids (map :id user-files)
-        user-badges (if (some #(= "badge" (:type %)) blocks)
-                      (b/user-badges-all ctx page-owner-id))
-        badge-ids (map :id user-badges)
-        page-blocks (page-blocks ctx page-id)]
-    (update-page-name-description! {:id page-id :name name :description description} (get-db ctx))
-    (doseq [block-index (range (count blocks))]
-      (let [block (-> (nth blocks block-index)
-                      (assoc :page_id page-id
-                             :block_order block-index))
-            id (and (:id block)
-                    (some #(= (:id %) (:id block)) page-blocks))]
-        (case (:type block)
-          "heading" (if id
-                      (update-heading-block! block (get-db ctx))
-                      (insert-heading-block! block (get-db ctx)))
-          "badge" (when (some #(= % (:badge_id block)) badge-ids)
-                    (if id
-                      (update-badge-block! block (get-db ctx))
-                      (insert-badge-block! block (get-db ctx))))
-          "html" (if id
-                   (update-html-block! block (get-db ctx))
-                   (insert-html-block! block (get-db ctx)))
-          "file" (when (= (->> (:files block)
-                               (filter (fn [x] (some #(= x %) file-ids)))
-                               count)
-                          (count (:files block)))
-                   (if id
-                     (update-files-block-and-content! ctx block)
-                     (create-files-block! ctx block)))
-          "tag" (if id
-                  (update-tag-block! block (get-db ctx))
-                  (insert-tag-block! block (get-db ctx))))))
-    (doseq [old-block page-blocks]
-      (if-not (some #(= (:id old-block) (:id %)) blocks)
-        (delete-block! ctx old-block)))))
+(defn save-page-content! [ctx page-id page-content user-id]
+  (try+
+    (if-not (page-owner? ctx page-id user-id)
+      (throw+ "Page is not owned by current user"))
+    (let [{:keys [name description blocks]} page-content
+          page-owner-id (page-owner ctx page-id)
+          user-files (if (some #(= "file" (:type %)) blocks)
+                       (f/user-files-all ctx page-owner-id))
+          file-ids (map :id user-files)
+          user-badges (if (some #(= "badge" (:type %)) blocks)
+                        (b/user-badges-all ctx page-owner-id))
+          badge-ids (map :id user-badges)
+          page-blocks (page-blocks ctx page-id)]
+      (update-page-name-description! {:id page-id :name name :description description} (get-db ctx))
+      (doseq [block-index (range (count blocks))]
+        (let [block (-> (nth blocks block-index)
+                        (assoc :page_id page-id
+                               :block_order block-index))
+              id (and (:id block)
+                      (some #(= (:id %) (:id block)) page-blocks))]
+          (case (:type block)
+            "heading" (if id
+                        (update-heading-block! block (get-db ctx))
+                        (insert-heading-block! block (get-db ctx)))
+            "badge" (when (some #(= % (:badge_id block)) badge-ids)
+                      (if id
+                        (update-badge-block! block (get-db ctx))
+                        (insert-badge-block! block (get-db ctx))))
+            "html" (if id
+                     (update-html-block! block (get-db ctx))
+                     (insert-html-block! block (get-db ctx)))
+            "file" (when (= (->> (:files block)
+                                 (filter (fn [x] (some #(= x %) file-ids)))
+                                 count)
+                            (count (:files block)))
+                     (if id
+                       (update-files-block-and-content! ctx block)
+                       (create-files-block! ctx block)))
+            "tag" (if id
+                    (update-tag-block! block (get-db ctx))
+                    (insert-tag-block! block (get-db ctx))))))
+      (doseq [old-block page-blocks]
+        (if-not (some #(= (:id old-block) (:id %)) blocks)
+          (delete-block! ctx old-block)))
+      {:status "success" :message (t :page/Pagesavedsuccesfully)})
+    (catch Object _
+      {:status "error" :message (t :page/Errorwhilesavingpage)})))
 
-(defn set-theme! [ctx page-id theme-id border-id padding]
-  (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx)))
+(defn set-theme! [ctx page-id theme-id border-id padding user-id]
+  (if (page-owner? ctx page-id user-id)
+    (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx))))
 
 (defn page-settings [ctx page-id]
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))]
@@ -180,14 +194,15 @@
              (replace-page-tag! {:page_id page-id :tag tag}
                                  (get-db ctx))))))
 
-(defn save-page-settings! [ctx page-id tags visibility pword]
-  (let [password (if (= visibility "password") (trim pword) "")
-        page-visibility (if (and (= visibility "password")
-                            (empty? password))
-                          "private"
-                          visibility)]
-    (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
-    (save-page-tags! ctx page-id tags)))
+(defn save-page-settings! [ctx page-id tags visibility pword user-id]
+  (if (page-owner? ctx page-id user-id)
+    (let [password (if (= visibility "password") (trim pword) "")
+          page-visibility (if (and (= visibility "password")
+                                   (empty? password))
+                            "private"
+                            visibility)]
+      (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
+      (save-page-tags! ctx page-id tags))))
 
 (defn remove-files-blocks-and-content! [ctx page-id]
   (let [file-blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
@@ -202,7 +217,8 @@
   (remove-files-blocks-and-content! ctx page-id)
   (delete-tag-blocks! {:page_id page-id} (get-db ctx)))
 
-(defn delete-page-by-id! [ctx page-id]
-  (delete-blocks! ctx page-id)
-  (delete-page-tags! {:page_id page-id} (get-db ctx))
-  (delete-page! {:id page-id} (get-db ctx)))
+(defn delete-page-by-id! [ctx page-id user-id]
+  (when (page-owner? ctx page-id user-id)
+    (delete-blocks! ctx page-id)
+    (delete-page-tags! {:page_id page-id} (get-db ctx))
+    (delete-page! {:id page-id} (get-db ctx))))

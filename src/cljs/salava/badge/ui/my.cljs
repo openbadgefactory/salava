@@ -5,7 +5,7 @@
             [clojure.set :as set :refer [intersection]]
             [clojure.walk :as walk :refer [keywordize-keys]]
             [ajax.core :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.badge.ui.settings :as s]
@@ -153,7 +153,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/badge/1"
+    "/obpv1/badge"
     {:handler (fn [x]
                 (let [data (map keywordize-keys x)]
                   (swap! state assoc :badges (filter #(= "accepted" (:status %)) data))

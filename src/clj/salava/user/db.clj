@@ -43,8 +43,6 @@
   (if-not (= password verify-password)
     {:status "error" :message (t :user/Passwordmissmatch)}
     (let [{:keys [activation_code activated]} (select-activation-code-and-status {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-      (println code)
-      (println activation_code)
       (if activated
         {:status "error" :message (t :user/Accountalreadyactivated)}
         (if-not (= activation_code code)
@@ -61,5 +59,5 @@
     (if (and id
              activated
              (hashers/check plain-password pass))
-      {:status "success" :user-id id :fullname (str first_name " " last_name)}
+      {:status "success" :id id :fullname (str first_name " " last_name)}
       {:status "error" :message (t :user/Loginfailed)})))

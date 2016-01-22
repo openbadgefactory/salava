@@ -16,6 +16,10 @@
   (map (fn [b] (assoc-badge-tags b tags))
        badges))
 
+(defn badge-owner? [ctx badge-id user-id]
+  (let [owner (select-badge-owner {:id badge-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+    (= owner user-id)))
+
 (defn user-badges-all
   "Returns all the badges of a given user"
   [ctx userid]
@@ -130,7 +134,7 @@
           badge-image-path (file-from-url (get-in assertion [:badge :image]))
           badge-content-id (save-badge-content! ctx assertion badge-image-path)
           issuer-image (get-in assertion [:badge :issuer :image])
-          issuer-image-path (if issuer-image
+          issuer-image-path (if-not (empty? issuer-image)
                               (file-from-url issuer-image))
           issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
           criteria-content-id (save-criteria-content! ctx assertion)]
@@ -148,24 +152,27 @@
                               (get-db ctx))))))
 (defn set-visibility!
   "Set badge visibility"
-  [ctx badgeid visibility]
-  (update-visibility! {:id badgeid
-                      :visibility visibility}
-                     (get-db ctx)))
+  [ctx badge-id visibility user-id]
+  (if (badge-owner? ctx badge-id user-id)
+    (update-visibility! {:id badge-id
+                         :visibility visibility}
+                        (get-db ctx))))
 
 (defn set-status!
   "Set badge status"
-  [ctx badgeid status]
-  (update-status! {:id badgeid
-                   :status status}
-                  (get-db ctx)))
+  [ctx badge-id status user-id]
+  (if (badge-owner? ctx badge-id user-id)
+    (update-status! {:id badge-id
+                     :status status}
+                    (get-db ctx))))
 
 (defn toggle-show-recipient-name!
   "Toggle recipient name visibility"
-  [ctx badgeid show-recipient-name]
-  (update-show-recipient-name! {:id badgeid
-                       :show_recipient_name show-recipient-name}
-                      (get-db ctx)))
+  [ctx badge-id show-recipient-name user-id]
+  (if (badge-owner? ctx badge-id user-id)
+    (update-show-recipient-name! {:id badge-id
+                                  :show_recipient_name show-recipient-name}
+                                 (get-db ctx))))
 
 (defn badge-settings
   "Get badge settings"
@@ -178,19 +185,21 @@
 
 (defn save-badge-settings!
   "Update badge setings"
-  [ctx badge-id visibility evidence-url rating tags]
-  (let [data {:id badge-id
-              :visibility visibility
-              :evidence_url evidence-url
-              :rating rating}]
-    (update-badge-settings! data (get-db ctx))
-    (save-badge-tags! ctx tags badge-id)))
+  [ctx badge-id user-id visibility evidence-url rating tags]
+  (if (badge-owner? ctx badge-id user-id)
+    (let [data {:id          badge-id
+               :visibility   visibility
+               :evidence_url evidence-url
+               :rating       rating}]
+     (update-badge-settings! data (get-db ctx))
+     (save-badge-tags! ctx tags badge-id))))
 
 (defn delete-badge!
   "Set badge deleted and delete tags"
-  [ctx badge-id]
-  (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
-  (update-badge-set-deleted! {:id badge-id} (get-db ctx)))
+  [ctx badge-id user-id]
+  (when (badge-owner? ctx badge-id user-id)
+    (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
+    (update-badge-set-deleted! {:id badge-id} (get-db ctx))))
 
 (defn badges-images-names
   "Get badge images and names. Return a map."

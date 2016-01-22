@@ -22,19 +22,19 @@
 
     (context "/obpv1/page" []
              :tags ["page"]
-             (GET "/:userid" []
+             (GET "/" []
                   :return [schemas/Page]
-                  :path-params [userid :- s/Int]
                   :summary "Get user pages"
                   :auth-rules access/authenticated
-                  (ok (p/user-pages-all ctx userid)))
+                  :current-user current-user
+                  (ok (p/user-pages-all ctx (:id current-user))))
 
              (POST "/create" []
                    :return s/Str
-                   :body-params [userid :- s/Int]
                    :summary "Create a new empty page"
                    :auth-rules access/authenticated
-                   (ok (str (p/create-empty-page! ctx userid))))
+                   :current-user current-user
+                   (ok (str (p/create-empty-page! ctx (:id current-user)))))
 
              (GET "/view/:pageid" []
                   :return schemas/ViewPage
@@ -50,10 +50,13 @@
                   (ok (p/page-for-edit ctx pageid)))
 
              (POST "/save_content/:pageid" []
+                   :return {:status (s/enum "error" "success")
+                            :message (s/maybe s/Str)}
                    :path-params [pageid :- s/Int]
                    :body [page-content schemas/SavePageContent]
                    :auth-rules access/authenticated
-                   (ok (p/save-page-content! ctx pageid page-content)))
+                   :current-user current-user
+                   (ok (p/save-page-content! ctx pageid page-content (:id current-user))))
 
              (GET "/edit_theme/:pageid" []
                   :return schemas/ViewPage
@@ -70,7 +73,8 @@
                                  padding :- (s/constrained s/Int #(and (>= % 0) (<= % 50)))]
                    :summary "Save page theme"
                    :auth-rules access/authenticated
-                   (ok (str (p/set-theme! ctx pageid theme border padding))))
+                   :current-user current-user
+                   (ok (str (p/set-theme! ctx pageid theme border padding (:id current-user)))))
 
              (GET "/settings/:pageid" []
                   :return schemas/PageSettings
@@ -87,10 +91,12 @@
                                                                                  (<= (count %) 255))))]
                    :summary "Save page settings"
                    :auth-rules access/authenticated
-                   (ok (p/save-page-settings! ctx pageid tags visibility password)))
+                   :current-user current-user
+                   (ok (p/save-page-settings! ctx pageid tags visibility password (:id current-user))))
 
              (DELETE "/:pageid" []
                      :path-params [pageid :- s/Int]
                      :summary "Delete page"
                      :auth-rules access/authenticated
-                     (ok (str (p/delete-page-by-id! ctx pageid)))))))
+                     :current-user current-user
+                     (ok (str (p/delete-page-by-id! ctx pageid (:id current-user))))))))

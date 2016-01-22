@@ -97,3 +97,8 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN badge_tag AS bt ON bt.badge_id = badge.id
        WHERE user_id = :user_id AND deleted = 0 AND bt.tag = :badge_tag
+
+--name: select-badge-owner
+--get badge owner's user_id
+SELECT user_id FROM badge WHERE id = :id
+

@@ -23,12 +23,12 @@
 
     (context "/obpv1/badge" []
              :tags  ["badge"]
-             (GET "/:userid" []
+             (GET "/" []
                   :return [schemas/BadgeContent]
-                  :path-params [userid :- Long]
-                  :summary "Get the badges of a specified user"
+                  :summary "Get the badges of a current user"
                   :auth-rules access/authenticated
-                  (ok (b/user-badges-all ctx userid)))
+                  :current-user current-user
+                  (ok (b/user-badges-all ctx (:id current-user))))
 
              (GET "/info/:badgeid" []
                   ;:return schemas/BadgeContent
@@ -42,51 +42,55 @@
                    :body-params [visibility :- (s/enum "private" "public")]
                    :summary "Set badge visibility"
                    :auth-rules access/authenticated
-                   (ok (str (b/set-visibility! ctx badgeid visibility))))
+                   :current-user current-user
+                   (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user)))))
 
              (POST "/set_status/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [status :- (s/enum "accepted" "declined")]
                    :summary "Set badge status"
                    :auth-rules access/authenticated
-                   (ok (str (b/set-status! ctx badgeid status))))
+                   :current-user current-user
+                   (ok (str (b/set-status! ctx badgeid status (:id current-user)))))
 
              (POST "/toggle_recipient_name/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [show_recipient_name :- (s/enum false true)]
                    :summary "Set recipient name visibility"
-                   (ok (str (b/toggle-show-recipient-name! ctx badgeid show_recipient_name))))
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (str (b/toggle-show-recipient-name! ctx badgeid show_recipient_name (:id current-user)))))
 
-             (GET "/export/:userid" []
+             (GET "/export" []
                   :return [schemas/BadgeContent]
-                  :path-params [userid :- Long]
                   :summary "Get the badges of a specified user for export"
                   :auth-rules access/authenticated
-                  (ok (b/user-badges-to-export ctx userid)))
+                  :current-user current-user
+                  (ok (b/user-badges-to-export ctx (:id current-user))))
 
-             (GET "/import/:userid" []
+             (GET "/import" []
                   :return schemas/Import
-                  :path-params [userid :- Long]
                   :summary "Fetch badges from Mozilla Backpack to import"
                   :auth-rules access/authenticated
-                  (ok (i/badges-to-import ctx userid)))
+                  :current-user current-user
+                  (ok (i/badges-to-import ctx (:id current-user))))
 
-             (POST "/import_selected/:userid" []
+             (POST "/import_selected" []
                    ;:return {:errors (s/maybe s/Str)
-                   :path-params [userid :- Long]
                    :body-params [keys :- [s/Str]]
                    :summary "Import selected badges from Mozilla Backpack"
                    :auth-rules access/authenticated
-                   (ok (i/do-import ctx userid keys)))
+                   :current-user current-user
+                   (ok (i/do-import ctx (:id current-user) keys)))
 
-             (POST "/upload/:userid" []
+             (POST "/upload" []
                    :return schemas/Upload
-                   :path-params [userid :- Long]
                    :multipart-params [file :- upload/TempFileUpload]
                    :middlewares [upload/wrap-multipart-params]
                    :summary "Upload badge PNG-file"
                    :auth-rules access/authenticated
-                   (ok (i/upload-badge ctx file userid)))
+                   :current-user current-user
+                   (ok (i/upload-badge ctx file (:id current-user))))
 
              (GET "/settings/:badgeid" []
                   ;return schemas/badgeContent
@@ -103,10 +107,12 @@
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
                    :auth-rules access/authenticated
-                   (ok (b/save-badge-settings! ctx badgeid visibility evidence-url rating tags)))
+                   :current-user current-user
+                   (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
 
              (DELETE "/:badgeid" []
                      :path-params [badgeid :- Long]
                      :summary "Delete badge"
                      :auth-rules access/authenticated
-                     (ok (str (b/delete-badge! ctx badgeid)))))))
+                     :current-user current-user
+                     (ok (str (b/delete-badge! ctx badgeid (:id current-user))))))))

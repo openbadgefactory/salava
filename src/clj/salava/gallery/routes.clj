@@ -28,7 +28,8 @@
                                  recipient :- (s/maybe s/Str)]
                    :summary "Get public badges"
                    :auth-rules access/authenticated
-                   (let [countries (g/badge-countries ctx 1) ;TODO set current user id
+                   :current-user current-user
+                   (let [countries (g/badge-countries ctx (:id current-user))
                          current-country (if (empty? country)
                                            (:user-country countries)
                                            country)]
@@ -59,13 +60,16 @@
                   :path-params [badge-content-id :- (s/constrained s/Str #(= (count %) 64))]
                   :summary "Get public badge data"
                   :auth-rules access/authenticated
-                  (ok (g/public-badge-content ctx badge-content-id 1))) ;TODO set current user id
+                  :current-user current-user
+                  (ok (g/public-badge-content ctx badge-content-id (:id current-user))))
 
              (POST "/pages" []
                    :body-params [country :- (s/maybe s/Str)
                                  owner :- (s/maybe s/Str)]
                    :summary "Get public pages"
-                   (let [countries (g/page-countries ctx 1) ;TODO set current user id
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (let [countries (g/page-countries ctx (:id current-user))
                          current-country (if (empty? country)
                                            (:user-country countries)
                                            country)]
@@ -73,7 +77,6 @@
 
              (POST "/pages/:userid" []
                    :path-params [userid :- s/Int]
-                   :components [context]
-                   :summary "Get user's public badges."
+                   :summary "Get user's public pages."
                    :auth-rules access/authenticated
                    (ok (hash-map :pages (g/public-pages-by-user ctx userid)))))))

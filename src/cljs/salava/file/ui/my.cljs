@@ -48,7 +48,7 @@
                     (.append "file" file (.-name file)))]
     (m/modal! (upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
-      "/obpv1/file/upload/1"
+      "/obpv1/file/upload"
       {:body    form-data
        :handler (fn [data]
                   (let [data-kws (keywordize-keys data)]
@@ -191,7 +191,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/file/1"
+    "/obpv1/file"
     {:handler (fn [data]
                 (let [data-with-kws (map keywordize-keys data)]
                   (swap! state assoc :files (vec data-with-kws))))}))

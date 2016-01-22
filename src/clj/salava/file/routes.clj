@@ -20,31 +20,33 @@
 
     (context "/obpv1/file" []
              :tags ["file"]
-             (GET "/:userid" []
+             (GET "/" []
                   :return [schemas/File]
-                  :path-params [userid :- Long]
                   :summary "Get user's all files"
                   :auth-rules access/authenticated
-                  (ok (f/user-files-all ctx userid)))
+                  :current-user current-user
+                  (ok (f/user-files-all ctx (:id current-user))))
 
              (DELETE "/:fileid" []
                      :path-params [fileid :- Long]
                      :summary "Delete file by id"
                      :auth-rules access/authenticated
-                     (ok (f/remove-file! ctx fileid)))
+                     :current-user current-user
+                     (ok (f/remove-file! ctx fileid (:id current-user))))
 
-             (POST "/upload/:userid" []
+             (POST "/upload" []
                    :return schemas/Upload
-                   :path-params [userid :- Long]
                    :multipart-params [file :- upload/TempFileUpload]
                    :middlewares [upload/wrap-multipart-params]
-                   :summary "Upload badge PNG-file"
+                   :summary "Reveive file upload"
                    :auth-rules access/authenticated
-                   (ok (u/upload-file ctx userid file)))
+                   :current-user current-user
+                   (ok (u/upload-file ctx (:id current-user) file)))
 
              (POST "/save_tags/:fileid" []
                    :path-params [fileid :- Long]
                    :body-params [tags :- [s/Str]]
                    :summary "Save file tags"
                    :auth-rules access/authenticated
-                   (ok (str (f/save-file-tags! ctx fileid tags)))))))
+                   :current-user current-user
+                   (ok (str (f/save-file-tags! ctx fileid (:id current-user) tags)))))))

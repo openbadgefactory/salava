@@ -13,24 +13,31 @@
   (let [files (select-user-files {:user_id user-id} (get-db ctx))]
     (map #(assoc % :tags (if (:tags %) (split (get % :tags "") #",") [])) files)))
 
+(defn file-owner? [ctx file-id user-id]
+  (let [owner (select-file-owner {:id file-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+    (= owner user-id)))
+
 (defn save-file-tags!
   "Save tags associated to file. Delete existing tags."
-  [ctx file-id tags]
-  (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
-    (delete-file-tags! {:file_id file-id} (get-db ctx))
-    (doall (for [tag valid-tags]
-             (replace-file-tag! {:file_id file-id :tag tag}
-                                (get-db ctx))))))
+  [ctx file-id user-id tags]
+  (if (file-owner? ctx file-id user-id)
+    (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
+      (delete-file-tags! {:file_id file-id} (get-db ctx))
+      (doall (for [tag valid-tags]
+               (replace-file-tag! {:file_id file-id :tag tag}
+                                  (get-db ctx)))))))
 
 (defn save-file!
   "Save file info to database"
   [ctx user-id data]
   (:generated_key (insert-file<! (assoc data :user_id user-id) (get-db ctx))))
 
-(defn remove-file! [ctx file-id]
+(defn remove-file! [ctx file-id user-id]
   (try+
-    (let [file (select-file-count-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))
+    (let [file (select-file-owner-count-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))
           usage (:usage file)]
+      (if-not (= (:owner file) user-id)
+        (throw+ "Current user is not owner of the file"))
       (if (= usage 0)
         (throw+ "File not found"))
       (if (= usage 1)
@@ -39,4 +46,5 @@
       (delete-files-block-file! {:file_id file-id} (get-db ctx))
       {:status "success" :message (t :file/Filedeleted) :reason (t :file/Filedeleted)})
     (catch Object _
+      (println _)
       {:status "error" :message (t :file/Errorwhiledeleting) :reason (t :file/Errorwhiledeleting)})))

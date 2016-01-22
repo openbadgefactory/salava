@@ -37,7 +37,7 @@
                     (js/FormData.)
                     (.append "file" file (.-name file)))]
     (ajax/POST
-      "/obpv1/badge/upload/1"
+      "/obpv1/badge/upload"
       {:body    form-data
        :handler (fn [data]
                   (let [data-kws (keywordize-keys data)]

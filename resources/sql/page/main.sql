@@ -140,4 +140,6 @@ DELETE FROM page_tag WHERE page_id = :page_id
 --name: delete-page!
 DELETE FROM page WHERE id = :id
 
-
+--name: select-page-owner
+--get page owner's user-id
+SELECT user_id FROM page WHERE id = :id

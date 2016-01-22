@@ -41,7 +41,7 @@
 (defn fetch-badges [state]
   (swap! state assoc :ajax-message (t :badge/Fetchingbadges))
   (ajax/GET
-    (str (session/get :apihost) "/obpv1/badge/import/1")
+    (str (session/get :apihost) "/obpv1/badge/import")
     {:finally (fn []
                 (ajax-stop state))
      :handler (fn [x]
@@ -53,7 +53,7 @@
 (defn import-badges [state]
   (swap! state assoc :ajax-message (t :badge/Savingbadges))
   (ajax/POST
-    (str (session/get :apihost) "/obpv1/badge/import_selected/1")
+    (str (session/get :apihost) "/obpv1/badge/import_selected")
     {:params  {:keys (:badges-selected @state)}
      :finally (fn []
                 (ajax-stop state))

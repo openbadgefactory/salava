@@ -7,8 +7,12 @@ SELECT id, name, path, mime_type, size, ctime, mtime, GROUP_CONCAT(ft.tag) AS ta
 REPLACE INTO user_file_tag (file_id, tag)
        VALUES (:file_id, :tag)
 
---name: select-file-count-and-path
-SELECT count(id) AS 'usage', path FROM user_file WHERE path = (SELECT path FROM user_file WHERE id = :id)
+--name: select-file-owner
+--get file owner's user-id
+SELECT user_id FROM user_file WHERE id = :id
+
+--name: select-file-owner-count-and-path
+SELECT user_id AS owner, count(id) AS 'usage', path FROM user_file WHERE path = (SELECT path FROM user_file WHERE id = :id)
 
 --name: delete-file!
 DELETE FROM user_file WHERE id = :id

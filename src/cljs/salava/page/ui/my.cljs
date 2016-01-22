@@ -125,7 +125,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/page/1"
+    "/obpv1/page"
     {:handler (fn [data]
                 (let [data-with-kws (map keywordize-keys data)]
                   (swap! state assoc :pages data-with-kws)))}))
