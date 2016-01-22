@@ -2,7 +2,6 @@
   (:require [buddy.auth :refer [authenticated?]]))
 
 (defn authenticated [req]
-  (println req)
   (authenticated? req))
 
 (defn admin [req]
