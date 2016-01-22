@@ -17,6 +17,7 @@
              (layout/main ctx "/activate/:userid/:timestamp/:code"))
 
     (context "/obpv1/user" []
+      :tags ["user"]
       (POST "/login" []
             ;:return ""
             :body [login-content schemas/LoginUser]
