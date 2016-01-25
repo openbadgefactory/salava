@@ -1,0 +1,4143 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Salava REST API</title>
+    <style type="text/css">
+      body { 
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+
+h1	{
+	font-size: 25px;
+}
+h2	{
+	font-size: 20px;
+}
+h3	{
+	font-size: 16px;
+	font-weight: bold;
+}
+hr	{
+	height: 1px;
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+	display: none;
+}
+
+.app-desc {
+  clear: both;
+  margin-left: 20px;
+}
+.param-name {
+  width: 100%;
+}
+.license-info {
+  margin-left: 20px;
+}
+
+.license-url {
+  margin-left: 20px;
+}
+
+.model {
+  margin: 0 0 0px 20px;
+}
+
+.method {
+  margin-left: 20px;
+}
+
+.method-notes	{
+	margin: 10px 0 20px 0;
+	font-size: 90%;
+	color: #555;
+}
+
+pre {
+  padding: 10px;
+  margin-bottom: 2px;
+}
+
+.http-method {
+ text-transform: uppercase;
+}
+
+pre.get {
+  background-color: #0f6ab4;
+}
+
+pre.post {
+  background-color: #10a54a;
+}
+
+pre.put {
+  background-color: #c5862b;
+}
+
+pre.delete {
+  background-color: #a41e22;
+}
+
+.huge	{
+	color: #fff;
+}
+
+pre.example {
+  background-color: #f3f3f3;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+code {
+  white-space: pre;
+}
+
+.nickname {
+  font-weight: bold;
+}
+
+.method-path {
+  font-size: 1.5em;
+  background-color: #0f6ab4;
+}
+
+.up {
+  float:right;
+}
+
+.parameter {
+  width: 500px;
+}
+
+.param {
+  width: 500px;
+  padding: 10px 0 0 20px;
+  font-weight: bold;
+}
+
+.param-desc {
+  width: 700px;
+  padding: 0 0 0 20px;
+  color: #777;
+}
+
+.param-type {
+  font-style: italic;
+}
+
+.param-enum-header {
+width: 700px;
+padding: 0 0 0 60px;
+color: #777;
+font-weight: bold;
+}
+
+.param-enum {
+width: 700px;
+padding: 0 0 0 80px;
+color: #777;
+font-style: italic;
+}
+
+.field-label {
+  padding: 0;
+  margin: 0;
+  clear: both;
+}
+
+.field-items	{
+	padding: 0 0 15px 0;
+	margin-bottom: 15px;
+}
+
+.return-type {
+  clear: both;
+  padding-bottom: 10px;
+}
+
+.param-header {
+  font-weight: bold;
+}
+
+.method-tags {
+  text-align: right;
+}
+
+.method-tag {
+  background: none repeat scroll 0% 0% #24A600;
+  border-radius: 3px;
+  padding: 2px 10px;
+  margin: 2px;
+  color: #FFF;
+  display: inline-block;
+  text-decoration: none;
+}
+    </style>
+  </head>
+  <body>
+  <h1>Salava REST API</h1>
+    <div class="app-desc"></div>
+    <div class="app-desc">More information: <a href="http://salava.org">http://salava.org</a></div>
+    <div class="app-desc">Contact Info: <a href="contact@openbadgepassport.com">contact@openbadgepassport.com</a></div>
+    <div class="app-desc">Version: 0.1.0</div>
+    <div class="license-info">Apache 2.0</div>
+    <div class="license-url">http://www.apache.org/licenses/LICENSE-2.0</div>
+  <h2>Access</h2>
+  
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  
+  <h2>Table of Contents </h2>
+  <div class="method-summary"></div>
+  
+  <ol>
+  
+  
+  
+  <li><a href="#obpv1BadgeGet"><code><span class="http-method">get</span> /obpv1/badge</code></a></li>
+  
+  <li><a href="#obpv1BadgeExportGet"><code><span class="http-method">get</span> /obpv1/badge/export</code></a></li>
+  
+  <li><a href="#obpv1BadgeImportGet"><code><span class="http-method">get</span> /obpv1/badge/import</code></a></li>
+  
+  <li><a href="#obpv1BadgeImportSelectedPost"><code><span class="http-method">post</span> /obpv1/badge/import_selected</code></a></li>
+  
+  <li><a href="#obpv1BadgeInfoBadgeidGet"><code><span class="http-method">get</span> /obpv1/badge/info/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1BadgeSaveSettingsBadgeidPost"><code><span class="http-method">post</span> /obpv1/badge/save_settings/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1BadgeSetStatusBadgeidPost"><code><span class="http-method">post</span> /obpv1/badge/set_status/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1BadgeSetVisibilityBadgeidPost"><code><span class="http-method">post</span> /obpv1/badge/set_visibility/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1BadgeSettingsBadgeidGet"><code><span class="http-method">get</span> /obpv1/badge/settings/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1BadgeToggleRecipientNameBadgeidPost"><code><span class="http-method">post</span> /obpv1/badge/toggle_recipient_name/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1BadgeUploadPost"><code><span class="http-method">post</span> /obpv1/badge/upload</code></a></li>
+  
+  <li><a href="#obpv1BadgeBadgeidDelete"><code><span class="http-method">delete</span> /obpv1/badge/{badgeid}</code></a></li>
+  
+  <li><a href="#obpv1FileGet"><code><span class="http-method">get</span> /obpv1/file</code></a></li>
+  
+  <li><a href="#obpv1FileSaveTagsFileidPost"><code><span class="http-method">post</span> /obpv1/file/save_tags/{fileid}</code></a></li>
+  
+  <li><a href="#obpv1FileUploadPost"><code><span class="http-method">post</span> /obpv1/file/upload</code></a></li>
+  
+  <li><a href="#obpv1FileFileidDelete"><code><span class="http-method">delete</span> /obpv1/file/{fileid}</code></a></li>
+  
+  <li><a href="#obpv1GalleryBadgesPost"><code><span class="http-method">post</span> /obpv1/gallery/badges</code></a></li>
+  
+  <li><a href="#obpv1GalleryBadgesUseridPost"><code><span class="http-method">post</span> /obpv1/gallery/badges/{userid}</code></a></li>
+  
+  <li><a href="#obpv1GalleryPagesPost"><code><span class="http-method">post</span> /obpv1/gallery/pages</code></a></li>
+  
+  <li><a href="#obpv1GalleryPagesUseridPost"><code><span class="http-method">post</span> /obpv1/gallery/pages/{userid}</code></a></li>
+  
+  <li><a href="#obpv1GalleryPublicBadgeContentBadgeContentIdGet"><code><span class="http-method">get</span> /obpv1/gallery/public_badge_content/{badge-content-id}</code></a></li>
+  
+  <li><a href="#obpv1PageGet"><code><span class="http-method">get</span> /obpv1/page</code></a></li>
+  
+  <li><a href="#obpv1PageCreatePost"><code><span class="http-method">post</span> /obpv1/page/create</code></a></li>
+  
+  <li><a href="#obpv1PageEditPageidGet"><code><span class="http-method">get</span> /obpv1/page/edit/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PageEditThemePageidGet"><code><span class="http-method">get</span> /obpv1/page/edit_theme/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PageSaveContentPageidPost"><code><span class="http-method">post</span> /obpv1/page/save_content/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PageSaveSettingsPageidPost"><code><span class="http-method">post</span> /obpv1/page/save_settings/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PageSaveThemePageidPost"><code><span class="http-method">post</span> /obpv1/page/save_theme/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PageSettingsPageidGet"><code><span class="http-method">get</span> /obpv1/page/settings/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PageViewPageidGet"><code><span class="http-method">get</span> /obpv1/page/view/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1PagePageidDelete"><code><span class="http-method">delete</span> /obpv1/page/{pageid}</code></a></li>
+  
+  <li><a href="#obpv1UserActivatePost"><code><span class="http-method">post</span> /obpv1/user/activate</code></a></li>
+  
+  <li><a href="#obpv1UserLoginPost"><code><span class="http-method">post</span> /obpv1/user/login</code></a></li>
+  
+  <li><a href="#obpv1UserLogoutPost"><code><span class="http-method">post</span> /obpv1/user/logout</code></a></li>
+  
+  <li><a href="#obpv1UserRegisterPost"><code><span class="http-method">post</span> /obpv1/user/register</code></a></li>
+  
+  
+  
+  </ol>
+  
+
+  
+  
+  
+  
+  <div class="method"><a name="obpv1BadgeGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/badge</code></pre></div>
+    <div class="method-summary">Get the badges of a current user (<span class="nickname">obpv1BadgeGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[BadgeContent]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeExportGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/badge/export</code></pre></div>
+    <div class="method-summary">Get the badges of a specified user for export (<span class="nickname">obpv1BadgeExportGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[BadgeContent]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeImportGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/badge/import</code></pre></div>
+    <div class="method-summary">Fetch badges from Mozilla Backpack to import (<span class="nickname">obpv1BadgeImportGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Import</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeImportSelectedPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/badge/import_selected</code></pre></div>
+    <div class="method-summary">Import selected badges from Mozilla Backpack (<span class="nickname">obpv1BadgeImportSelectedPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44639 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeInfoBadgeidGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/badge/info/{badgeid}</code></pre></div>
+    <div class="method-summary">Get badge (<span class="nickname">obpv1BadgeInfoBadgeidGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeSaveSettingsBadgeidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/badge/save_settings/{badgeid}</code></pre></div>
+    <div class="method-summary">Save badge settings (<span class="nickname">obpv1BadgeSaveSettingsBadgeidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44640 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeSetStatusBadgeidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/badge/set_status/{badgeid}</code></pre></div>
+    <div class="method-summary">Set badge status (<span class="nickname">obpv1BadgeSetStatusBadgeidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44637 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeSetVisibilityBadgeidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/badge/set_visibility/{badgeid}</code></pre></div>
+    <div class="method-summary">Set badge visibility (<span class="nickname">obpv1BadgeSetVisibilityBadgeidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44636 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeSettingsBadgeidGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/badge/settings/{badgeid}</code></pre></div>
+    <div class="method-summary">Get badge settings (<span class="nickname">obpv1BadgeSettingsBadgeidGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeToggleRecipientNameBadgeidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/badge/toggle_recipient_name/{badgeid}</code></pre></div>
+    <div class="method-summary">Set recipient name visibility (<span class="nickname">obpv1BadgeToggleRecipientNameBadgeidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44638 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeUploadPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/badge/upload</code></pre></div>
+    <div class="method-summary">Upload badge PNG-file (<span class="nickname">obpv1BadgeUploadPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>multipart/form-data</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Form parameters</h3>
+    <div class="field-items">
+      <div class="param">file (required)</div>
+
+      <div class="param-desc"><span class="param-type">Form Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Upload</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1BadgeBadgeidDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /obpv1/badge/{badgeid}</code></pre></div>
+    <div class="method-summary">Delete badge (<span class="nickname">obpv1BadgeBadgeidDelete</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1FileGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/file</code></pre></div>
+    <div class="method-summary">Get user&#39;s all files (<span class="nickname">obpv1FileGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[File]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1FileSaveTagsFileidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/file/save_tags/{fileid}</code></pre></div>
+    <div class="method-summary">Save file tags (<span class="nickname">obpv1FileSaveTagsFileidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">fileid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44645 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1FileUploadPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/file/upload</code></pre></div>
+    <div class="method-summary">Reveive file upload (<span class="nickname">obpv1FileUploadPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>multipart/form-data</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Form parameters</h3>
+    <div class="field-items">
+      <div class="param">file (required)</div>
+
+      <div class="param-desc"><span class="param-type">Form Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Upload</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1FileFileidDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /obpv1/file/{fileid}</code></pre></div>
+    <div class="method-summary">Delete file by id (<span class="nickname">obpv1FileFileidDelete</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">fileid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1GalleryBadgesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/gallery/badges</code></pre></div>
+    <div class="method-summary">Get public badges (<span class="nickname">obpv1GalleryBadgesPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44643 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1GalleryBadgesUseridPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/gallery/badges/{userid}</code></pre></div>
+    <div class="method-summary">Get user&#39;s public badges. (<span class="nickname">obpv1GalleryBadgesUseridPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">userid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1GalleryPagesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/gallery/pages</code></pre></div>
+    <div class="method-summary">Get public pages (<span class="nickname">obpv1GalleryPagesPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44644 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1GalleryPagesUseridPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/gallery/pages/{userid}</code></pre></div>
+    <div class="method-summary">Get user&#39;s public pages. (<span class="nickname">obpv1GalleryPagesUseridPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">userid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1GalleryPublicBadgeContentBadgeContentIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/gallery/public_badge_content/{badge-content-id}</code></pre></div>
+    <div class="method-summary">Get public badge data (<span class="nickname">obpv1GalleryPublicBadgeContentBadgeContentIdGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">badgeContentId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Response44652</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/page</code></pre></div>
+    <div class="method-summary">Get user pages (<span class="nickname">obpv1PageGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[Page]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageCreatePost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/page/create</code></pre></div>
+    <div class="method-summary">Create a new empty page (<span class="nickname">obpv1PageCreatePost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">String</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageEditPageidGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/page/edit/{pageid}</code></pre></div>
+    <div class="method-summary">Edit page (<span class="nickname">obpv1PageEditPageidGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">EditPageContent</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageEditThemePageidGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/page/edit_theme/{pageid}</code></pre></div>
+    <div class="method-summary">Edit page theme (<span class="nickname">obpv1PageEditThemePageidGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">ViewPage</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageSaveContentPageidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/page/save_content/{pageid}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">obpv1PageSaveContentPageidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">savePageContent (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Response44650</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageSaveSettingsPageidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/page/save_settings/{pageid}</code></pre></div>
+    <div class="method-summary">Save page settings (<span class="nickname">obpv1PageSaveSettingsPageidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44642 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageSaveThemePageidPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/page/save_theme/{pageid}</code></pre></div>
+    <div class="method-summary">Save page theme (<span class="nickname">obpv1PageSaveThemePageidPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body44641 (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">String</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageSettingsPageidGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/page/settings/{pageid}</code></pre></div>
+    <div class="method-summary">Edit page settings (<span class="nickname">obpv1PageSettingsPageidGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">PageSettings</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PageViewPageidGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /obpv1/page/view/{pageid}</code></pre></div>
+    <div class="method-summary">View page (<span class="nickname">obpv1PageViewPageidGet</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">ViewPage</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1PagePageidDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /obpv1/page/{pageid}</code></pre></div>
+    <div class="method-summary">Delete page (<span class="nickname">obpv1PagePageidDelete</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">pageid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1UserActivatePost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/user/activate</code></pre></div>
+    <div class="method-summary">Set password and activate user account (<span class="nickname">obpv1UserActivatePost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">activateUser (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Response44655</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1UserLoginPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/user/login</code></pre></div>
+    <div class="method-summary">User logs in (<span class="nickname">obpv1UserLoginPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">loginUser (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1UserLogoutPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/user/logout</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">obpv1UserLogoutPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="obpv1UserRegisterPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /obpv1/user/register</code></pre></div>
+    <div class="method-summary">Create new user account (<span class="nickname">obpv1UserRegisterPost</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">registerUser (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Response44654</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+      <li><code>application/x-yaml</code></li>
+    
+      <li><code>application/edn</code></li>
+    
+      <li><code>application/transit+json</code></li>
+    
+      <li><code>application/transit+msgpack</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  
+  
+  
+
+  <div class="up"><a href="#__Models">Up</a></div>
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h2>Table of Contents</h2>
+  <ol>
+  
+  
+    <li><a href="#ActivateUser"><code>ActivateUser</code></a></li>
+  
+  
+  
+    <li><a href="#Badge"><code>Badge</code></a></li>
+  
+  
+  
+    <li><a href="#BadgeBlock"><code>BadgeBlock</code></a></li>
+  
+  
+  
+    <li><a href="#BadgeContent"><code>BadgeContent</code></a></li>
+  
+  
+  
+    <li><a href="#BadgeToImport"><code>BadgeToImport</code></a></li>
+  
+  
+  
+    <li><a href="#Body44636"><code>Body44636</code></a></li>
+  
+  
+  
+    <li><a href="#Body44637"><code>Body44637</code></a></li>
+  
+  
+  
+    <li><a href="#Body44638"><code>Body44638</code></a></li>
+  
+  
+  
+    <li><a href="#Body44639"><code>Body44639</code></a></li>
+  
+  
+  
+    <li><a href="#Body44640"><code>Body44640</code></a></li>
+  
+  
+  
+    <li><a href="#Body44641"><code>Body44641</code></a></li>
+  
+  
+  
+    <li><a href="#Body44642"><code>Body44642</code></a></li>
+  
+  
+  
+    <li><a href="#Body44643"><code>Body44643</code></a></li>
+  
+  
+  
+    <li><a href="#Body44644"><code>Body44644</code></a></li>
+  
+  
+  
+    <li><a href="#Body44645"><code>Body44645</code></a></li>
+  
+  
+  
+    <li><a href="#EditPageContent"><code>EditPageContent</code></a></li>
+  
+  
+  
+    <li><a href="#EditPageContentBadges"><code>EditPageContentBadges</code></a></li>
+  
+  
+  
+    <li><a href="#EditPageContentPage"><code>EditPageContentPage</code></a></li>
+  
+  
+  
+    <li><a href="#File"><code>File</code></a></li>
+  
+  
+  
+    <li><a href="#FileBlock"><code>FileBlock</code></a></li>
+  
+  
+  
+    <li><a href="#HeadingBlock"><code>HeadingBlock</code></a></li>
+  
+  
+  
+    <li><a href="#HtmlBlock"><code>HtmlBlock</code></a></li>
+  
+  
+  
+    <li><a href="#Import"><code>Import</code></a></li>
+  
+  
+  
+    <li><a href="#LoginUser"><code>LoginUser</code></a></li>
+  
+  
+  
+    <li><a href="#Page"><code>Page</code></a></li>
+  
+  
+  
+    <li><a href="#PageFile"><code>PageFile</code></a></li>
+  
+  
+  
+    <li><a href="#PageSettings"><code>PageSettings</code></a></li>
+  
+  
+  
+    <li><a href="#RegisterUser"><code>RegisterUser</code></a></li>
+  
+  
+  
+    <li><a href="#Response44650"><code>Response44650</code></a></li>
+  
+  
+  
+    <li><a href="#Response44652"><code>Response44652</code></a></li>
+  
+  
+  
+    <li><a href="#Response44652Badge"><code>Response44652Badge</code></a></li>
+  
+  
+  
+    <li><a href="#Response44652PublicUsers"><code>Response44652PublicUsers</code></a></li>
+  
+  
+  
+    <li><a href="#Response44654"><code>Response44654</code></a></li>
+  
+  
+  
+    <li><a href="#Response44655"><code>Response44655</code></a></li>
+  
+  
+  
+    <li><a href="#SavePageContent"><code>SavePageContent</code></a></li>
+  
+  
+  
+    <li><a href="#TagBlock"><code>TagBlock</code></a></li>
+  
+  
+  
+    <li><a href="#Upload"><code>Upload</code></a></li>
+  
+  
+  
+    <li><a href="#ViewPage"><code>ViewPage</code></a></li>
+  
+  
+  
+    <li><a href="#ViewPageBorder"><code>ViewPageBorder</code></a></li>
+  
+  
+  </ol>
+
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ActivateUser">ActivateUser</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">code </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">user_id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">password_verify </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Badge">Badge</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">image_file </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="BadgeBlock">BadgeBlock</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">format </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">long</div><div class="param-enum">short</div>
+      
+      <div class="param">badge_id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="BadgeContent">BadgeContent</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">image_file </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">expires_on </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">issued_on </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">declined</div><div class="param-enum">accepted</div><div class="param-enum">pending</div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">badge_content_id </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">assertion_url </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">internal</div><div class="param-enum">private</div><div class="param-enum">public</div>
+      
+      <div class="param">mtime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="BadgeToImport">BadgeToImport</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">invalid</div><div class="param-enum">ok</div>
+      
+      <div class="param">message </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">key </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">image_file </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44636">Body44636</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">private</div><div class="param-enum">public</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44637">Body44637</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">declined</div><div class="param-enum">accepted</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44638">Body44638</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">show_recipient_name </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44639">Body44639</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">keys </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44640">Body44640</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      <div class="param">rating </div><div class="param-desc"><span class="param-type">Double</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">0.5</div><div class="param-enum">4.5</div><div class="param-enum">2.5</div><div class="param-enum">1.5</div><div class="param-enum">3.5</div><div class="param-enum">1.0</div><div class="param-enum">4.0</div><div class="param-enum">3.0</div><div class="param-enum">2.0</div><div class="param-enum">5.0</div>
+      
+      <div class="param">evidence-url </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">internal</div><div class="param-enum">private</div><div class="param-enum">public</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44641">Body44641</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">padding </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">border </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">theme </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44642">Body44642</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">internal</div><div class="param-enum">private</div><div class="param-enum">password</div><div class="param-enum">public</div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44643">Body44643</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">recipient </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">issuer </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">badge </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">country </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44644">Body44644</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">owner </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">country </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Body44645">Body44645</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EditPageContent">EditPageContent</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">page </div><div class="param-desc"><span class="param-type">EditPageContentPage</span> </div>
+      
+      <div class="param">badges </div><div class="param-desc"><span class="param-type">array[EditPageContentBadges]</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      <div class="param">files </div><div class="param-desc"><span class="param-type">array[PageFile]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EditPageContentBadges">EditPageContentBadges</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">image_file </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="EditPageContentPage">EditPageContentPage</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">user_id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">blocks </div><div class="param-desc"><span class="param-type">array[null]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="File">File</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">path </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">mime_type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">size </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">ctime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">mtime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="FileBlock">FileBlock</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">files </div><div class="param-desc"><span class="param-type">array[Long]</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="HeadingBlock">HeadingBlock</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">size </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">h2</div><div class="param-enum">h1</div>
+      
+      <div class="param">content </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="HtmlBlock">HtmlBlock</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">content </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Import">Import</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">success</div><div class="param-enum">error</div>
+      
+      <div class="param">badges </div><div class="param-desc"><span class="param-type">array[BadgeToImport]</span> </div>
+      
+      <div class="param">error </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="LoginUser">LoginUser</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Page">Page</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">visible_before </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">visible_after </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">theme </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">ctime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">badges </div><div class="param-desc"><span class="param-type">array[Badge]</span> </div>
+      
+      <div class="param">padding </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">border </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">internal</div><div class="param-enum">private</div><div class="param-enum">password</div><div class="param-enum">public</div>
+      
+      <div class="param">mtime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="PageFile">PageFile</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">path </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">mime_type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">size </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">file_order </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="PageSettings">PageSettings</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      <div class="param">first_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">visible_before </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">visible_after </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">theme </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">ctime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">padding </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">last_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">user_id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">border </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">internal</div><div class="param-enum">private</div><div class="param-enum">password</div><div class="param-enum">public</div>
+      
+      <div class="param">mtime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="RegisterUser">RegisterUser</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">first_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">last_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">country </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">CR</div><div class="param-enum">TG</div><div class="param-enum">TJ</div><div class="param-enum">ZA</div><div class="param-enum">PE</div><div class="param-enum">UK</div><div class="param-enum">LC</div><div class="param-enum">CH</div><div class="param-enum">RU</div><div class="param-enum">MP</div><div class="param-enum">CK</div><div class="param-enum">SI</div><div class="param-enum">AU</div><div class="param-enum">KR</div><div class="param-enum">IT</div><div class="param-enum">TP</div><div class="param-enum">FI</div><div class="param-enum">GF</div><div class="param-enum">SC</div><div class="param-enum">TT</div><div class="param-enum">TK</div><div class="param-enum">MY</div><div class="param-enum">SY</div><div class="param-enum">MN</div><div class="param-enum">TF</div><div class="param-enum">KP</div><div class="param-enum">AM</div><div class="param-enum">DZ</div><div class="param-enum">UY</div><div class="param-enum">TD</div><div class="param-enum">DJ</div><div class="param-enum">BI</div><div class="param-enum">MK</div><div class="param-enum">MU</div><div class="param-enum">LI</div><div class="param-enum">NU</div><div class="param-enum">GR</div><div class="param-enum">GY</div><div class="param-enum">CG</div><div class="param-enum">NF</div><div class="param-enum">ML</div><div class="param-enum">GM</div><div class="param-enum">SA</div><div class="param-enum">CX</div><div class="param-enum">BH</div><div class="param-enum">NE</div><div class="param-enum">BN</div><div class="param-enum">CD</div><div class="param-enum">DK</div><div class="param-enum">BJ</div><div class="param-enum">SJ</div><div class="param-enum">BO</div><div class="param-enum">JO</div><div class="param-enum">CV</div><div class="param-enum">VE</div><div class="param-enum">CI</div><div class="param-enum">UZ</div><div class="param-enum">TN</div><div class="param-enum">IS</div><div class="param-enum">EH</div><div class="param-enum">TM</div><div class="param-enum">GA</div><div class="param-enum">LS</div><div class="param-enum">TZ</div><div class="param-enum">AT</div><div class="param-enum">LT</div><div class="param-enum">NP</div><div class="param-enum">BG</div><div class="param-enum">IL</div><div class="param-enum">GU</div><div class="param-enum">PK</div><div class="param-enum">PT</div><div class="param-enum">HR</div><div class="param-enum">VU</div><div class="param-enum">PF</div><div class="param-enum">BM</div><div class="param-enum">MR</div><div class="param-enum">GE</div><div class="param-enum">HU</div><div class="param-enum">TW</div><div class="param-enum">MM</div><div class="param-enum">YU</div><div class="param-enum">VG</div><div class="param-enum">YE</div><div class="param-enum">SR</div><div class="param-enum">PN</div><div class="param-enum">VA</div><div class="param-enum">AN</div><div class="param-enum">PR</div><div class="param-enum">KW</div><div class="param-enum">FX</div><div class="param-enum">SE</div><div class="param-enum">UM</div><div class="param-enum">VN</div><div class="param-enum">CF</div><div class="param-enum">PA</div><div class="param-enum">VC</div><div class="param-enum">JP</div><div class="param-enum">IR</div><div class="param-enum">AF</div><div class="param-enum">LY</div><div class="param-enum">MZ</div><div class="param-enum">RO</div><div class="param-enum">QA</div><div class="param-enum">CM</div><div class="param-enum">BY</div><div class="param-enum">SD</div><div class="param-enum">MO</div><div class="param-enum">KY</div><div class="param-enum">AR</div><div class="param-enum">BR</div><div class="param-enum">ZW</div><div class="param-enum">NR</div><div class="param-enum">NZ</div><div class="param-enum">AW</div><div class="param-enum">FJ</div><div class="param-enum">ID</div><div class="param-enum">SV</div><div class="param-enum">CN</div><div class="param-enum">FM</div><div class="param-enum">HT</div><div class="param-enum">CC</div><div class="param-enum">RW</div><div class="param-enum">BA</div><div class="param-enum">JM</div><div class="param-enum">KM</div><div class="param-enum">KE</div><div class="param-enum">WS</div><div class="param-enum">TO</div><div class="param-enum">PY</div><div class="param-enum">SH</div><div class="param-enum">CY</div><div class="param-enum">GH</div><div class="param-enum">MA</div><div class="param-enum">SG</div><div class="param-enum">LK</div><div class="param-enum">PH</div><div class="param-enum">SM</div><div class="param-enum">WF</div><div class="param-enum">TR</div><div class="param-enum">BZ</div><div class="param-enum">CU</div><div class="param-enum">TV</div><div class="param-enum">AD</div><div class="param-enum">SB</div><div class="param-enum">DM</div><div class="param-enum">LR</div><div class="param-enum">OM</div><div class="param-enum">SO</div><div class="param-enum">DO</div><div class="param-enum">AL</div><div class="param-enum">FR</div><div class="param-enum">GW</div><div class="param-enum">MS</div><div class="param-enum">BB</div><div class="param-enum">CA</div><div class="param-enum">MG</div><div class="param-enum">KH</div><div class="param-enum">LA</div><div class="param-enum">GP</div><div class="param-enum">BV</div><div class="param-enum">HN</div><div class="param-enum">TH</div><div class="param-enum">DE</div><div class="param-enum">LB</div><div class="param-enum">KZ</div><div class="param-enum">AS</div><div class="param-enum">EC</div><div class="param-enum">NO</div><div class="param-enum">AO</div><div class="param-enum">FK</div><div class="param-enum">ET</div><div class="param-enum">GS</div><div class="param-enum">MD</div><div class="param-enum">AG</div><div class="param-enum">BE</div><div class="param-enum">MV</div><div class="param-enum">SZ</div><div class="param-enum">CZ</div><div class="param-enum">CL</div><div class="param-enum">BT</div><div class="param-enum">NL</div><div class="param-enum">EG</div><div class="param-enum">MQ</div><div class="param-enum">SN</div><div class="param-enum">FO</div><div class="param-enum">EE</div><div class="param-enum">AQ</div><div class="param-enum">ST</div><div class="param-enum">KN</div><div class="param-enum">BW</div><div class="param-enum">MH</div><div class="param-enum">NI</div><div class="param-enum">PG</div><div class="param-enum">VI</div><div class="param-enum">IQ</div><div class="param-enum">KG</div><div class="param-enum">US</div><div class="param-enum">ZM</div><div class="param-enum">MC</div><div class="param-enum">GI</div><div class="param-enum">NC</div><div class="param-enum">GT</div><div class="param-enum">BF</div><div class="param-enum">YT</div><div class="param-enum">LU</div><div class="param-enum">UA</div><div class="param-enum">IE</div><div class="param-enum">LV</div><div class="param-enum">GD</div><div class="param-enum">MW</div><div class="param-enum">BS</div><div class="param-enum">AZ</div><div class="param-enum">SK</div><div class="param-enum">GQ</div><div class="param-enum">TC</div><div class="param-enum">RE</div><div class="param-enum">IN</div><div class="param-enum">ES</div><div class="param-enum">GL</div><div class="param-enum">KI</div><div class="param-enum">HK</div><div class="param-enum">CO</div><div class="param-enum">IO</div><div class="param-enum">NG</div><div class="param-enum">UG</div><div class="param-enum">SL</div><div class="param-enum">ER</div><div class="param-enum">AE</div><div class="param-enum">HM</div><div class="param-enum">PM</div><div class="param-enum">BD</div><div class="param-enum">MT</div><div class="param-enum">AI</div><div class="param-enum">GN</div><div class="param-enum">PW</div><div class="param-enum">NA</div><div class="param-enum">MX</div><div class="param-enum">PL</div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Response44650">Response44650</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">success</div><div class="param-enum">error</div>
+      
+      <div class="param">message </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Response44652">Response44652</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">badge </div><div class="param-desc"><span class="param-type">Response44652Badge</span> </div>
+      
+      <div class="param">public_users </div><div class="param-desc"><span class="param-type">array[Response44652PublicUsers]</span> </div>
+      
+      <div class="param">private_user_count </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Response44652Badge">Response44652Badge</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">image_file </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">rating_count </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">recipient </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">issuer_contact </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">issuer_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">html_content </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">criteria_url </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">issuer_url </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">average_rating </div><div class="param-desc"><span class="param-type">Double</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Response44652PublicUsers">Response44652PublicUsers</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">first_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">last_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Response44654">Response44654</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">success</div><div class="param-enum">error</div>
+      
+      <div class="param">message </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Response44655">Response44655</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">success</div><div class="param-enum">error</div>
+      
+      <div class="param">message </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="SavePageContent">SavePageContent</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">blocks </div><div class="param-desc"><span class="param-type">array[null]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="TagBlock">TagBlock</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">type </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">tag </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">format </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">long</div><div class="param-enum">short</div>
+      
+      <div class="param">sort </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">name</div><div class="param-enum">modified</div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Upload">Upload</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">success</div><div class="param-enum">error</div>
+      
+      <div class="param">message </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">reason </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ViewPage">ViewPage</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">tags </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">first_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">visible_before </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">visible_after </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">theme </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">ctime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">padding </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">last_name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">blocks </div><div class="param-desc"><span class="param-type">array[null]</span> </div>
+      
+      <div class="param">user_id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">border </div><div class="param-desc"><span class="param-type">ViewPageBorder</span> </div>
+      
+      <div class="param">visibility </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">internal</div><div class="param-enum">private</div><div class="param-enum">password</div><div class="param-enum">public</div>
+      
+      <div class="param">mtime </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ViewPageBorder">ViewPageBorder</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">style </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">width </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">color </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  </body>
+</html>
