@@ -37,7 +37,7 @@
              (POST "/upload" []
                    :return schemas/Upload
                    :multipart-params [file :- upload/TempFileUpload]
-                   :middlewares [upload/wrap-multipart-params]
+                   :middleware [upload/wrap-multipart-params]
                    :summary "Reveive file upload"
                    :auth-rules access/authenticated
                    :current-user current-user
