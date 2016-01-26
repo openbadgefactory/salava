@@ -5,7 +5,7 @@
 
 (defmethod restructure-param :auth-rules
   [_ rule acc]
-  (update-in acc [:middleware] conj `(wrap-rule ~rule)))
+  (update-in acc [:middleware] conj [wrap-rule rule]))
 
 (defmethod restructure-param :current-user
   [_ binding acc]
