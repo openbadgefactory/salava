@@ -36,15 +36,14 @@
   (try+
     (let [file (select-file-owner-count-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))
           usage (:usage file)]
-      (if-not (= (:owner file) user-id)
-        (throw+ "Current user is not owner of the file"))
       (if (= usage 0)
         (throw+ "File not found"))
+      (if-not (= (:owner file) user-id)
+        (throw+ "Current user is not owner of the file"))
       (if (= usage 1)
         (delete-file (str "resources/public/" (:path file))))
       (delete-file! {:id file-id} (get-db ctx))
       (delete-files-block-file! {:file_id file-id} (get-db ctx))
       {:status "success" :message (t :file/Filedeleted) :reason (t :file/Filedeleted)})
     (catch Object _
-      (println _)
       {:status "error" :message (t :file/Errorwhiledeleting) :reason (t :file/Errorwhiledeleting)})))

@@ -41,13 +41,16 @@
                   :path-params [pageid :- s/Int]
                   :summary "View page"
                   :auth-rules access/authenticated
-                  (ok (p/page-with-blocks ctx pageid)))
+                  :current-user current-user
+                  (ok (p/page-with-blocks ctx pageid (:id current-user))))
 
              (GET "/edit/:pageid" []
                   :return schemas/EditPageContent
                   :path-params [pageid :- s/Int]
                   :summary "Edit page"
-                  (ok (p/page-for-edit ctx pageid)))
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (p/page-for-edit ctx pageid (:id current-user))))
 
              (POST "/save_content/:pageid" []
                    :return {:status (s/enum "error" "success")
@@ -63,10 +66,12 @@
                   :path-params [pageid :- s/Int]
                   :summary "Edit page theme"
                   :auth-rules access/authenticated
-                  (ok (p/page-with-blocks ctx pageid)))
+                  :current-user current-user
+                  (ok (p/page-with-blocks ctx pageid (:id current-user))))
 
              (POST "/save_theme/:pageid" []
-                   :return s/Str
+                   :return {:status (s/enum "error" "success")
+                            :message (s/maybe s/Str)}
                    :path-params [pageid :- s/Int]
                    :body-params [theme :- s/Int
                                  border :- s/Int
@@ -74,16 +79,19 @@
                    :summary "Save page theme"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (p/set-theme! ctx pageid theme border padding (:id current-user)))))
+                   (ok (p/set-theme! ctx pageid theme border padding (:id current-user))))
 
              (GET "/settings/:pageid" []
                   :return schemas/PageSettings
                   :path-params [pageid :- s/Int]
                   :summary "Edit page settings"
                   :auth-rules access/authenticated
-                  (ok (p/page-settings ctx pageid)))
+                  :current-user current-user
+                  (ok (p/page-settings ctx pageid (:id current-user))))
 
              (POST "/save_settings/:pageid" []
+                   :return {:status (s/enum "error" "success")
+                            :message (s/maybe s/Str)}
                    :path-params [pageid :- s/Int]
                    :body-params [tags :- [s/Str]
                                  visibility :- (s/enum "public" "password" "internal" "private")

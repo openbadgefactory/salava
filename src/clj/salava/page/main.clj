@@ -90,20 +90,22 @@
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
     (sort-by :block_order blocks)))
 
-(defn page-with-blocks [ctx page-id]
-  (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
-        blocks (page-blocks ctx page-id)]
-    (assoc page :blocks blocks
-                :border (border-attributes (:border page)))))
+(defn page-with-blocks [ctx page-id user-id]
+  (if (page-owner? ctx page-id user-id)
+    (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
+          blocks (page-blocks ctx page-id)]
+      (assoc page :blocks blocks
+                  :border (border-attributes (:border page))))))
 
-(defn page-for-edit [ctx page-id]
-  (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
-        blocks (page-blocks-for-edit ctx page-id)
-        owner (:user_id page)
-        badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
-        files (map #(select-keys % [:id :name :path :mime_type :size]) (f/user-files-all ctx owner))
-        tags (distinct (flatten (map :tags badges)))]
-    {:page (assoc page :blocks blocks) :badges badges :tags tags :files files}))
+(defn page-for-edit [ctx page-id user-id]
+  (if (page-owner? ctx page-id user-id)
+    (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
+          blocks (page-blocks-for-edit ctx page-id)
+          owner (:user_id page)
+          badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
+          files (map #(select-keys % [:id :name :path :mime_type :size]) (f/user-files-all ctx owner))
+          tags (distinct (flatten (map :tags badges)))]
+      {:page (assoc page :blocks blocks) :badges badges :tags tags :files files})))
 
 (defn delete-block! [ctx block]
   (case (:type block)
@@ -172,18 +174,24 @@
       (doseq [old-block page-blocks]
         (if-not (some #(= (:id old-block) (:id %)) blocks)
           (delete-block! ctx old-block)))
-      {:status "success" :message (t :page/Pagesavedsuccesfully)})
+      {:status "success" :message (t :page/Pagesavedsuccessfully)})
     (catch Object _
       {:status "error" :message (t :page/Errorwhilesavingpage)})))
 
 (defn set-theme! [ctx page-id theme-id border-id padding user-id]
-  (if (page-owner? ctx page-id user-id)
-    (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx))))
+  (try+
+    (if-not (page-owner? ctx page-id user-id)
+      (throw+ "Page is not owned by current user"))
+    (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx))
+    {:status "success" :message (t :page/Pagesavedsuccessfully)}
+    (catch Object _
+      {:status "error" :message (t :page/Errorwhilesavingpage)})))
 
-(defn page-settings [ctx page-id]
-  (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))]
-    (when page
-      (assoc page :tags (if (:tags page) (split (:tags page) #",") [])))))
+(defn page-settings [ctx page-id user-id]
+  (if (page-owner? ctx page-id user-id)
+    (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))]
+      (when page
+        (assoc page :tags (if (:tags page) (split (:tags page) #",") []))))))
 
 (defn save-page-tags!
   "Save tags associated to page. Delete existing tags."
@@ -195,14 +203,19 @@
                                  (get-db ctx))))))
 
 (defn save-page-settings! [ctx page-id tags visibility pword user-id]
-  (if (page-owner? ctx page-id user-id)
+  (try+
+    (if-not (page-owner? ctx page-id user-id)
+      (throw+ "Page is not owned by current user"))
     (let [password (if (= visibility "password") (trim pword) "")
           page-visibility (if (and (= visibility "password")
                                    (empty? password))
                             "private"
                             visibility)]
       (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
-      (save-page-tags! ctx page-id tags))))
+      (save-page-tags! ctx page-id tags)
+      {:status "success" :message (t :page/Pagesavedsuccessfully)})
+    (catch Object _
+      {:status "error" :message (t :page/Errorwhilesavingpage)})))
 
 (defn remove-files-blocks-and-content! [ctx page-id]
   (let [file-blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]

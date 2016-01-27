@@ -21,4 +21,15 @@
           :ctime 1449151320
           :mtime 1449151320}
    }
+  {
+   :table "user_file"
+   :data {
+          :user_id 2
+          :name "Another user's file"
+          :path "file/1/9/8/3/1983bd8127df711e199325d8459b4fe3827f04c6cb5c229393502726c01782e5.jpg"
+          :mime_type "image/jpg"
+          :size 7507
+          :ctime 1453891235
+          :mtime 1453891235}
+   }
 )
