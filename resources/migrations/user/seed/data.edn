@@ -2,11 +2,11 @@
  {
   :table "user"
   :data {
-         :first_name "admin"
-         :last_name "admin"
-         :role "admin"
+         :first_name "Test"
+         :last_name "User"
+         :role "user"
          :country "FI"
-         :pass "bcrypt+sha512$d6d175aaa9c525174d817a74$12$24326124313224314d345444356149457a67516150447967517a67472e717a2e777047565a7071495330625441704f46686a556b5535376849743575"
+         :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
          :ctime 1438954261
          :mtime 1438954261
          :activated 1
@@ -15,7 +15,7 @@
   {:table "user_email"
    :data {
           :user_id 1
-          :email "admin@example.com"
+          :email "test-user@example.com"
           :verified 1
           :primary_address 1
           :ctime 1438954261
@@ -25,11 +25,11 @@
   {
    :table "user"
    :data {
-          :first_name "user"
-          :last_name "user"
+          :first_name "Another"
+          :last_name "User"
           :role "user"
           :country "US"
-          :pass "bcrypt+sha512$d6d175aaa9c525174d817a74$12$24326124313224314d345444356149457a67516150447967517a67472e717a2e777047565a7071495330625441704f46686a556b5535376849743575"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
           :ctime 1450172372
           :mtime 1450172372
           :activated 1
@@ -38,10 +38,33 @@
   {:table "user_email"
    :data {
           :user_id 2
-          :email "user@example.com"
+          :email "another-user@example.com"
           :verified 1
           :primary_address 1
           :ctime 1450172372
           :mtime 1450172372}
+   }
+
+  {
+   :table "user"
+   :data {
+          :first_name "Third"
+          :last_name "User"
+          :role "user"
+          :country "SE"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1453812046
+          :mtime 1453812046
+          :activated 1
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 3
+          :email "third-user@example.com"
+          :verified 1
+          :primary_address 1
+          :ctime 1453812046
+          :mtime 1453812046}
    }
 )
