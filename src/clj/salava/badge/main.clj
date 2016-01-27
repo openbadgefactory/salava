@@ -176,12 +176,13 @@
 
 (defn badge-settings
   "Get badge settings"
-  [ctx badge-id]
-  (let [badge (select-badge-settings {:id badge-id}
-                                     (into {:result-set-fn first}
-                                           (get-db ctx)))
-        tags (select-taglist {:badge_ids [badge-id]} (get-db ctx))]
-    (assoc-badge-tags badge tags)))
+  [ctx badge-id user-id]
+  (if (badge-owner? ctx badge-id user-id)
+    (let [badge (select-badge-settings {:id badge-id}
+                                       (into {:result-set-fn first}
+                                             (get-db ctx)))
+          tags (select-taglist {:badge_ids [badge-id]} (get-db ctx))]
+      (assoc-badge-tags badge tags))))
 
 (defn save-badge-settings!
   "Update badge setings"

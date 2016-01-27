@@ -97,7 +97,8 @@
                   :path-params [badgeid :- Long]
                   :summary "Get badge settings"
                   :auth-rules access/authenticated
-                  (ok (b/badge-settings ctx badgeid)))
+                  :current-user current-user
+                  (ok (b/badge-settings ctx badgeid (:id current-user))))
 
              (POST "/save_settings/:badgeid" []
                    :path-params [badgeid :- Long]

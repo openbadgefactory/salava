@@ -3,7 +3,7 @@
   :table "badge"
   :data {
          :user_id 1
-         :email "admin@example.com"
+         :email "test-user@example.com"
          :assertion_url "http://example.com/assertion-1.json"
          :assertion_jws nil
          :assertion_json "{\"uid\":\"e0d524c88cc2df8ea9ce00cf72f4586ecbf13eb8\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-1.json\",\"verify\":{\"url\":\"http://example.com/assertion-1.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494262\"}"
@@ -79,7 +79,7 @@ Open Badge Passport is a free service developed by Discendum, where the user can
   :table "badge"
   :data {
          :user_id 1
-         :email "admin@example.com"
+         :email "test-user@example.com"
          :assertion_url "http://example.com/assertion-2.json"
          :assertion_jws nil
          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-2.json\",\"verify\":{\"url\":\"http://example.com/assertion-2.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
@@ -137,7 +137,7 @@ Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käytt
   :table "badge"
   :data {
          :user_id 2
-         :email "user@example.com"
+         :email "another-user@example.com"
          :assertion_url "http://example.com/assertion-3.json"
          :assertion_jws nil
          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-3.json\",\"verify\":{\"url\":\"http://example.com/assertion-3.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
