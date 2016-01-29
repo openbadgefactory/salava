@@ -62,6 +62,12 @@
     :password "testtest"}
    {:id 3
     :email "third-user@example.com"
+    :password "testtest"}
+   {:id 4
+    :email "fourth-user@example.com"
+    :password "testtest"}
+   {:id 5
+    :email "fifth-user@example.com"
     :password "testtest"}])
 
 (defn test-user-credentials [user-id]

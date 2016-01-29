@@ -67,4 +67,49 @@
           :ctime 1453812046
           :mtime 1453812046}
    }
+  {
+   :table "user"
+   :data {
+          :first_name "Sample"
+          :last_name "User"
+          :role "user"
+          :country "FI"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1453968291
+          :mtime 1453968291
+          :activated 1
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 4
+          :email "fourth-user@example.com"
+          :verified 1
+          :primary_address 1
+          :ctime 1453968291
+          :mtime 1453968291}
+   }
+  {
+   :table "user"
+   :data {
+          :first_name "Example"
+          :last_name "Account"
+          :role "user"
+          :country "SE"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1453968291
+          :mtime 1453968291
+          :activated 1
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 5
+          :email "fifth-user@example.com"
+          :verified 1
+          :primary_address 1
+          :ctime 1453968291
+          :mtime 1453968291}
+   }
+
 )

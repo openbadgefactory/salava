@@ -19,7 +19,7 @@ CREATE TABLE `badge` (
   `status` enum('pending','accepted','declined') DEFAULT 'pending',
   `visibility` enum('private','internal','public') DEFAULT 'private',
   `show_recipient_name` boolean DEFAULT 0,
-  `rating` tinyint(3) unsigned DEFAULT NULL,
+  `rating` decimal(2,1) DEFAULT NULL,
   `ctime` bigint(20) unsigned NOT NULL,
   `mtime` bigint(20) unsigned NOT NULL,
   `deleted` boolean DEFAULT 0,
