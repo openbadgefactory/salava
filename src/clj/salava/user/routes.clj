@@ -5,7 +5,9 @@
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.user.schemas :as schemas]
-            [salava.user.db :as u]))
+            [salava.user.db :as u]
+            [salava.core.access :as access]
+            salava.core.restructure))
 
 (defn route-def [ctx]
   (routes
@@ -45,4 +47,9 @@
             :body [activation-data schemas/ActivateUser]
             :summary "Set password and activate user account"
             (let [{:keys [user_id code password password_verify]} activation-data]
-              (ok (u/set-password-and-activate ctx user_id code password password_verify)))))))
+              (ok (u/set-password-and-activate ctx user_id code password password_verify))))
+
+      (GET "/test" []
+           :summary "Test is user authenticated"
+           :auth-rules access/authenticated
+           (ok)))))

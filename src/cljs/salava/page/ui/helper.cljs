@@ -1,7 +1,7 @@
 (ns salava.page.ui.helper
   (:require [reagent-modals.modals :as m]
             [markdown.core :refer [md->html]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]

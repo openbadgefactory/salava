@@ -1,9 +1,8 @@
 (ns salava.gallery.ui.badges
   (:require [reagent.core :refer [atom cursor]]
             [reagent-modals.modals :as m]
-            [ajax.core :as ajax]
-            [clojure.walk :refer [keywordize-keys]]
             [clojure.string :refer [trim]]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
@@ -13,9 +12,8 @@
 (defn open-modal [badge-content-id]
   (ajax/GET
     (str "/obpv1/gallery/public_badge_content/" badge-content-id)
-    :handler (fn [data]
-               (let [data-with-kws (keywordize-keys data)]
-                 (m/modal! [badge-content-modal data-with-kws] {:size :lg})))))
+    {:handler (fn [data]
+                (m/modal! [badge-content-modal data] {:size :lg}))}))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -31,9 +29,7 @@
                  :recipient (trim recipient-name)
                  :issuer    (trim issuer-name)}
        :handler (fn [data]
-                  (let [data-with-kws (keywordize-keys data)
-                        badges (:badges data-with-kws)]
-                    (swap! state assoc :badges badges)))
+                  (swap! state assoc :badges (:badges data)))
        :finally (fn []
                   (ajax-stop ajax-message-atom))})))
 
@@ -102,7 +98,8 @@
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]]))
 
 (defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description issuer_name issuer_url recipients]} element-data]
+  (let [{:keys [id image_file name description issuer_name issuer_url recipients badge_content_id]} element-data
+        badge-id (or badge_content_id id)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -112,7 +109,7 @@
           [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:on-click #(open-modal id)}
+         [:a.heading-link {:on-click #(open-modal badge-id)}
           name]]
         [:div.media-issuer
          [:a {:href issuer_url
@@ -153,8 +150,7 @@
               :issuer ""
               :recipient ""}
      :handler (fn [data]
-                (let [data-with-kws (keywordize-keys data)
-                      {:keys [badges countries user-country]} data-with-kws]
+                (let [{:keys [badges countries user-country]} data]
                   (swap! state assoc :badges badges
                                      :countries countries
                                      :country-selected user-country)))}))

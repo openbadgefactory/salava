@@ -2,8 +2,7 @@
   (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
             [clojure.set :refer [intersection]]
-            [clojure.walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [unique-values]]
             [salava.core.ui.grid :as g]
@@ -123,9 +122,8 @@
   (ajax/GET
     "/obpv1/badge/export"
     {:handler (fn [data]
-                (let [data-kws (map keywordize-keys data)]
-                  (swap! state assoc :data data-kws)
-                  (swap! state assoc :email-selected (first (unique-values :email data-kws)))))}))
+                (swap! state assoc :data data)
+                (swap! state assoc :email-selected (first (unique-values :email data))))}))
 
 (defn handler [site-navi]
   (let [state (atom {:data []

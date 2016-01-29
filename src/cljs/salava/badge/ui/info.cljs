@@ -1,9 +1,8 @@
 (ns salava.badge.ui.info
   (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [clojure.walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]))
 
@@ -71,7 +70,7 @@
   (ajax/GET
     (str "/obpv1/badge/info/" id)
     {:handler (fn [data]
-                (reset! state (keywordize-keys data)))}))
+                (reset! state data))}))
 
 
 (defn handler [site-navi params]

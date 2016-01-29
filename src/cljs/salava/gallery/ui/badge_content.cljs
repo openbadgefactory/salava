@@ -1,6 +1,5 @@
 (ns salava.gallery.ui.badge-content
   (:require [reagent.core :refer [atom create-class]]
-            [clojure.walk :refer [keywordize-keys]]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.rate-it :as r]
@@ -45,7 +44,7 @@
                  :target "_blank"} (t :badge/Opencriteriapage)]]]
           [:div.row
            [:div.col-md-12
-            html_content]]]]
+            {:dangerouslySetInnerHTML {:__html html_content}}]]]]
         [:div.row
          [:div.col-md-12
           [:h3 (t :gallery/Recipients)]]]

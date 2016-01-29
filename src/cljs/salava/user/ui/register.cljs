@@ -1,7 +1,6 @@
 (ns salava.user.ui.register
   (:require [reagent.core :refer [atom cursor]]
-            [ajax.core :as ajax]
-            [clojure.walk :as walk :refer [keywordize-keys]]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid?]]
             [salava.core.ui.layout :as layout]
             [salava.core.countries :refer [all-countries-sorted]]
@@ -30,10 +29,9 @@
                  :last_name last-name
                  :country country}
        :handler (fn [data]
-                  (let [data-with-kws (keywordize-keys data)]
-                    (if (= (:status data-with-kws) "error")
-                      (swap! state assoc :error-message (:message data-with-kws))
-                      (swap! state assoc :registration-sent true))))})))
+                  (if (= (:status data) "error")
+                    (swap! state assoc :error-message (:message data))
+                    (swap! state assoc :registration-sent true)))})))
 
 (defn login-form [state]
   (let [email-atom (cursor state [:email])

@@ -1,7 +1,6 @@
 (ns salava.user.ui.login
   (:require [reagent.core :refer [atom cursor]]
-            [ajax.core :as ajax]
-            [clojure.walk :as walk :refer [keywordize-keys]]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]))
@@ -13,15 +12,13 @@
       {:params  {:email    email
                  :password password}
        :handler (fn [data]
-                  (let [data-with-kws (keywordize-keys data)]
-                    (if (= (:status data-with-kws) "success")
-                      (navigate-to "/badge/mybadges"))
+                  (if (= (:status data) "success")
+                    (navigate-to "/badge/mybadges"))
 
-                    ;(if (= (:status data-with-kws) "error")
-                    ;(swap! state assoc :error-message (:message data-with-kws))
-                    ;(swap! state assoc :registration-sent true))
-
-                    ))})))
+                  ;(if (= (:status data-with-kws) "error")
+                  ;(swap! state assoc :error-message (:message data-with-kws))
+                  ;(swap! state assoc :registration-sent true))
+                  )})))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])

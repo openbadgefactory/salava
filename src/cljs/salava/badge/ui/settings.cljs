@@ -1,6 +1,6 @@
 (ns salava.badge.ui.settings
   (:require [reagent.core :refer [cursor]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
@@ -136,6 +136,3 @@
                 :data-dismiss "modal"
                 :on-click     #(save-settings state)}
        (t :badge/Save)]]]))
-
-(def old-rating
-  )

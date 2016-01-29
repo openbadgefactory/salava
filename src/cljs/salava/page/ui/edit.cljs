@@ -1,8 +1,6 @@
 (ns salava.page.ui.edit
   (:require [reagent.core :refer [atom cursor create-class]]
-            [reagent.session :as session]
-            [clojure.walk :as walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to]]
@@ -305,9 +303,8 @@
   (ajax/GET
     (str "/obpv1/page/edit/" id)
     {:handler (fn [data]
-                (let [data-with-kws (keywordize-keys data)
-                      data-with-uuids (assoc-in data-with-kws [:page :blocks] (vec (map #(assoc % :key (random-key))
-                                                                                    (get-in data-with-kws [:page :blocks]))))]
+                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
+                                                                               (get-in data [:page :blocks]))))]
                   (reset! state data-with-uuids)))}))
 
 (defn handler [site-navi params]

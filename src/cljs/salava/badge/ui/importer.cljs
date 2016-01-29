@@ -1,9 +1,7 @@
 (ns salava.badge.ui.importer
   (:require [reagent.core :refer [atom]]
-            [reagent.session :as session]
             [reagent-modals.modals :as m]
-            [clojure.walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.helper :refer [dump]]
@@ -41,24 +39,23 @@
 (defn fetch-badges [state]
   (swap! state assoc :ajax-message (t :badge/Fetchingbadges))
   (ajax/GET
-    (str (session/get :apihost) "/obpv1/badge/import")
+    "/obpv1/badge/import"
     {:finally (fn []
                 (ajax-stop state))
-     :handler (fn [x]
-                (let [data (keywordize-keys x)]
-                  (swap! state assoc :error (:error data))
-                  (swap! state assoc :badges (:badges data))
-                  (swap! state assoc :ok-badges (ok-badge-keys (:badges data)))))}))
+     :handler (fn [data]
+                (swap! state assoc :error (:error data))
+                (swap! state assoc :badges (:badges data))
+                (swap! state assoc :ok-badges (ok-badge-keys (:badges data))))}))
 
 (defn import-badges [state]
   (swap! state assoc :ajax-message (t :badge/Savingbadges))
   (ajax/POST
-    (str (session/get :apihost) "/obpv1/badge/import_selected")
+    "/obpv1/badge/import_selected"
     {:params  {:keys (:badges-selected @state)}
      :finally (fn []
                 (ajax-stop state))
      :handler (fn [data]
-                (m/modal! (import-modal (keywordize-keys data))
+                (m/modal! (import-modal data)
                           {:hide #(navigate-to "/badge")}))}))
 
 (defn remove-badge-selection [key state]
@@ -145,6 +142,9 @@
      [:div {:class "alert alert-warning"} (:error @state)])
    [badge-grid state]])
 
+(defn init-data []
+  (ajax/GET "/obpv1/user/test" {}))
+
 (defn handler [site-navi params]
   (let [state (atom {:badges []
                      :badges-selected []
@@ -152,6 +152,7 @@
                      :ajax-message nil
                      :all-selected false
                      :ok-badges []})]
+    (init-data)
     (fn []
       (layout/default site-navi (content state)))))
 

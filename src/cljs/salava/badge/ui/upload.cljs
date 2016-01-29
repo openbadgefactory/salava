@@ -1,9 +1,7 @@
 (ns salava.badge.ui.upload
   (:require [reagent.core :refer [atom]]
-            [reagent.session :as session]
             [reagent-modals.modals :as m]
-            [clojure.walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.i18n :refer [t]]))
@@ -40,10 +38,9 @@
       "/obpv1/badge/upload"
       {:body    form-data
        :handler (fn [data]
-                  (let [data-kws (keywordize-keys data)]
-                    (m/modal! (upload-modal data-kws)
-                              (if (= (:status data-kws) "success")
-                                {:hide #(navigate-to "/badge")}))))})))
+                  (m/modal! (upload-modal data)
+                            (if (= (:status data) "success")
+                              {:hide #(navigate-to "/badge")})))})))
 
 (defn content []
   [:div {:class "badge-upload"}
@@ -55,6 +52,10 @@
              :on-change #(send-file)
              :accept "image/png"}]]])
 
+(defn init-data []
+      (ajax/GET "/obpv1/user/test" {}))
+
 (defn handler [site-navi]
   (fn []
+    (init-data)
     (layout/default site-navi (content))))

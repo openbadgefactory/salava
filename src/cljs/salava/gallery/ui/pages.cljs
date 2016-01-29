@@ -1,23 +1,20 @@
 (ns salava.gallery.ui.pages
   (:require [reagent.core :refer [atom cursor]]
             [reagent-modals.modals :as m]
-            [ajax.core :as ajax]
-            [clojure.walk :refer [keywordize-keys]]
             [clojure.string :refer [trim]]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.page.ui.helper :refer [view-page-modal]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.gallery.ui.badge-content :refer [badge-content-modal]]
-            [salava.core.helper :refer [dump]]))
+            [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
 
 (defn open-modal [page-id]
   (ajax/GET
     (str "/obpv1/page/view/" page-id)
-    :handler (fn [data]
-               (let [data-with-kws (keywordize-keys data)]
-                 (m/modal! [view-page-modal data-with-kws] {:size :lg})))))
+    {:handler (fn [data]
+                (m/modal! [view-page-modal data] {:size :lg}))}))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -28,12 +25,10 @@
     (reset! ajax-message-atom (t :gallery/Searchingpages))
     (ajax/POST
       (str "/obpv1/gallery/pages/" user-id)
-      {:params  {:country   (trim country-selected)
-                 :owner     (trim owner-name)}
+      {:params  {:country (trim country-selected)
+                 :owner   (trim owner-name)}
        :handler (fn [data]
-                  (let [data-with-kws (keywordize-keys data)
-                        pages (:pages data-with-kws)]
-                    (swap! state assoc :pages pages)))
+                  (swap! state assoc :pages (:pages data)))
        :finally (fn []
                   (ajax-stop ajax-message-atom))})))
 
@@ -139,8 +134,7 @@
     {:params {:country ""
               :owner ""}
      :handler (fn [data]
-                (let [data-with-kws (keywordize-keys data)
-                      {:keys [pages countries user-country]} data-with-kws]
+                (let [{:keys [pages countries user-country]} data]
                   (swap! state assoc :pages pages
                          :countries countries
                          :country-selected user-country)))}))

@@ -1,9 +1,8 @@
 (ns salava.file.ui.my
   (:require [reagent.core :refer [atom cursor]]
             [reagent-modals.modals :as m]
-            [clojure.walk :refer [keywordize-keys]]
             [clojure.set :refer [intersection]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.file.icons :refer [file-icon]]
             [salava.core.ui.helper :refer [unique-values navigate-to]]
             [salava.core.ui.layout :as layout]
@@ -51,20 +50,17 @@
       "/obpv1/file/upload"
       {:body    form-data
        :handler (fn [data]
-                  (let [data-kws (keywordize-keys data)]
-                    (if (= (:status data-kws) "success")
-                      (reset! files-atom (conj @files-atom (:data data-kws))))
-                    (m/modal! (upload-modal (:status data-kws) (:message data-kws) (:reason data-kws)))
-                    ))})))
+                  (if (= (:status data) "success")
+                    (reset! files-atom (conj @files-atom (:data data))))
+                  (m/modal! (upload-modal (:status data) (:message data) (:reason data))))})))
 
 (defn delete-file [id files-atom]
   (ajax/DELETE
     (str "/obpv1/file/" id)
     {:handler (fn [data]
-                (let [data-with-kws (keywordize-keys data)]
-                  (when (= (:status data-with-kws) "success")
-                    (reset! files-atom (vec (remove #(= id (:id %)) @files-atom)))
-                    (m/close-modal!))))}))
+                (when (= (:status data) "success")
+                  (reset! files-atom (vec (remove #(= id (:id %)) @files-atom)))
+                  (m/close-modal!)))}))
 
 (defn delete-file-modal [file-id files-atom]
   [:div
@@ -193,8 +189,7 @@
   (ajax/GET
     "/obpv1/file"
     {:handler (fn [data]
-                (let [data-with-kws (map keywordize-keys data)]
-                  (swap! state assoc :files (vec data-with-kws))))}))
+                (swap! state assoc :files (vec data)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:files         []

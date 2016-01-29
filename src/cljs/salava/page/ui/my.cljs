@@ -1,9 +1,7 @@
 (ns salava.page.ui.my
   (:require [reagent.core :refer [atom]]
-            [reagent.session :as session]
-            [clojure.walk :refer [keywordize-keys]]
             [clojure.set :refer [intersection]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -127,8 +125,7 @@
   (ajax/GET
     "/obpv1/page"
     {:handler (fn [data]
-                (let [data-with-kws (map keywordize-keys data)]
-                  (swap! state assoc :pages data-with-kws)))}))
+                (swap! state assoc :pages data))}))
 
 (defn handler [site-navi]
   (let [state (atom {:pages []

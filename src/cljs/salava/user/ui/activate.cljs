@@ -1,7 +1,6 @@
 (ns salava.user.ui.activate
   (:require [reagent.core :refer [atom cursor]]
-            [ajax.core :as ajax]
-            [clojure.walk :as walk :refer [keywordize-keys]]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid?]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
@@ -22,10 +21,9 @@
                  :password        password
                  :password_verify password-verify}
        :handler (fn [data]
-                  (let [data-with-kws (keywordize-keys data)]
-                    (if (= (:status data-with-kws) "error")
-                      (swap! state assoc :error-message (:message data-with-kws))
-                      (swap! state assoc :account-activated true))))})))
+                  (if (= (:status data) "error")
+                    (swap! state assoc :error-message (:message data))
+                    (swap! state assoc :account-activated true)))})))
 
 (defn activation-form [state]
   (let [password-atom (cursor state [:password])

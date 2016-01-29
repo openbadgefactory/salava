@@ -3,8 +3,7 @@
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :as set :refer [intersection]]
-            [clojure.walk :as walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -52,16 +51,14 @@
   (ajax/GET
     (str "/obpv1/badge/settings/" badge-id)
     {:handler (fn [data]
-                (let [data-with-kws (keywordize-keys data)]
-                  (swap! state assoc :badge-settings (hash-map :id badge-id
-                                                               :visibility (:visibility data-with-kws)
-                                                               :tags (:tags data-with-kws)
-                                                               :evidence-url (:evidence_url data-with-kws)
-                                                               :rating (:rating data-with-kws)
-                                                               :new-tag ""
-                                                               ))
-                  (m/modal! [s/settings-modal data-with-kws state]
-                            {:size :lg})))}))
+                (swap! state assoc :badge-settings (hash-map :id badge-id
+                                                             :visibility (:visibility data)
+                                                             :tags (:tags data)
+                                                             :evidence-url (:evidence_url data)
+                                                             :rating (:rating data)
+                                                             :new-tag ""))
+                (m/modal! [s/settings-modal data state]
+                          {:size :lg}))}))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description visibility]} element-data]
@@ -154,10 +151,9 @@
 (defn init-data [state]
   (ajax/GET
     "/obpv1/badge"
-    {:handler (fn [x]
-                (let [data (map keywordize-keys x)]
-                  (swap! state assoc :badges (filter #(= "accepted" (:status %)) data))
-                  (swap! state assoc :pending (filter #(= "pending" (:status %)) data))))}))
+    {:handler (fn [data]
+                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data))
+                (swap! state assoc :pending (filter #(= "pending" (:status %)) data)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:badges []

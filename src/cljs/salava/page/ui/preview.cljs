@@ -1,8 +1,6 @@
 (ns salava.page.ui.preview
   (:require [reagent.core :refer [atom cursor]]
-            [reagent.session :as session]
-            [clojure.walk :as walk :refer [keywordize-keys]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -20,8 +18,7 @@
     (ajax/GET
       (str "/obpv1/page/view/" id)
       {:handler (fn [data]
-                  (let [data-with-kws (keywordize-keys data)]
-                    (swap! state assoc :page data-with-kws)))}))
+                  (swap! state assoc :page data))}))
 
   (defn handler [site-navi params]
     (let [id (:page-id params)
