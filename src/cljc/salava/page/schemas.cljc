@@ -55,6 +55,7 @@
                                   :last_name s/Str
                                   :border {:id s/Int :style s/Str :width s/Int :color s/Str}
                                   :tags (s/maybe s/Str)
+                                  :owner? s/Bool
                                   :blocks [(s/conditional #(= (:type %) "heading") (assoc HeadingBlock :id s/Int
                                                                                                        :block_order s/Int)
                                                           #(= (:type %) "badge") (merge

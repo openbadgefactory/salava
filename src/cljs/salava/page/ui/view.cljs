@@ -8,6 +8,15 @@
 
 (defn content [state]
   [:div {:id "page-view"}
+   (if (get-in @state [:page :owner?])
+     [:div {:id "buttons"
+            :class "text-right"}
+      [:a {:class "btn btn-primary"
+           :href  (str "/page/edit/" (get-in @state [:page :id]))}
+       (t :page/Edit)]
+      [:button {:class "btn btn-primary"
+                :on-click #(.print js/window)}
+       (t :core/Print)]])
    [ph/view-page (:page @state)]])
 
 (defn init-data [state id]

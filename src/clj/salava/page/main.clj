@@ -95,7 +95,8 @@
     (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
           blocks (page-blocks ctx page-id)]
       (assoc page :blocks blocks
-                  :border (border-attributes (:border page))))))
+                  :border (border-attributes (:border page))
+                  :owner? (= user-id (:user_id page))))))
 
 (defn page-for-edit [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)

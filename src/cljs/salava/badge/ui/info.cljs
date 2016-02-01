@@ -47,7 +47,7 @@
     [:div.col-sm-4
      [:button {:class "btn btn-primary"
                :on-click #(.print js/window)}
-      (t :badge/Print)]]]
+      (t :core/Print)]]]
    [:div.row
     [:div {:class "col-md-3 badge-image"}
      [:img {:src (str "/" (:image_file @state))}]]
