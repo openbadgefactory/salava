@@ -29,25 +29,26 @@
 
 (defn content [state]
   [:div {:class "badge-info"}
-   [:div.row
-    [:div.col-sm-4
-     [:input {:type "checkbox"
-              :id "checkbox-share"
-              :on-change #(toggle-visibility state)
-              :checked (= "public" (:visibility @state))}]
-     [:label {:for "checkbox-share"}
-     (t :badge/Publishshare)]]
-    [:div.col-sm-4
-     [:input {:type "checkbox"
-              :on-change #(toggle-recipient-name state)
-              :id "checkbox-show-recipient-name"
-              :checked (:show_recipient_name @state)}]
-     [:label {:for "checkbox-show-recipient-name"}
-      (t :badge/Showyourname)]]
-    [:div.col-sm-4
-     [:button {:class "btn btn-primary"
-               :on-click #(.print js/window)}
-      (t :core/Print)]]]
+   (if (:owner? @state)
+     [:div.row
+      [:div.col-sm-4
+       [:input {:type "checkbox"
+                :id "checkbox-share"
+                :on-change #(toggle-visibility state)
+                :checked (= "public" (:visibility @state))}]
+       [:label {:for "checkbox-share"}
+        (t :badge/Publishshare)]]
+      [:div.col-sm-4
+       [:input {:type "checkbox"
+                :on-change #(toggle-recipient-name state)
+                :id "checkbox-show-recipient-name"
+                :checked (:show_recipient_name @state)}]
+       [:label {:for "checkbox-show-recipient-name"}
+        (t :badge/Showyourname)]]
+      [:div.col-sm-4
+       [:button {:class "btn btn-primary"
+                 :on-click #(.print js/window)}
+        (t :core/Print)]]])
    [:div.row
     [:div {:class "col-md-3 badge-image"}
      [:img {:src (str "/" (:image_file @state))}]]

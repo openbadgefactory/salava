@@ -34,8 +34,17 @@
                   ;:return schemas/BadgeContent
                   :path-params [badgeid :- Long]
                   :summary "Get badge"
-                  :auth-rules access/authenticated
-                  (ok (b/get-badge ctx badgeid)))
+                  :current-user current-user
+                  (let [user-id (:id current-user)
+                        badge (b/get-badge ctx badgeid)
+                        badge-owner-id (:owner badge)
+                        visibility (:visibility badge)]
+                    (if (or (and (= user-id badge-owner-id) user-id badge-owner-id)
+                            (= visibility "public")
+                            (and user-id
+                                 (= visibility "internal")))
+                      (ok (assoc badge :owner? (= user-id badge-owner-id)))
+                      (unauthorized))))
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
