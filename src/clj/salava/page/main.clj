@@ -90,13 +90,15 @@
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
     (sort-by :block_order blocks)))
 
-(defn page-with-blocks [ctx page-id user-id]
+(defn page-with-blocks [ctx page-id]
+  (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
+        blocks (page-blocks ctx page-id)]
+    (assoc page :blocks blocks
+                :border (border-attributes (:border page)))))
+
+(defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
-    (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
-          blocks (page-blocks ctx page-id)]
-      (assoc page :blocks blocks
-                  :border (border-attributes (:border page))
-                  :owner? (= user-id (:user_id page))))))
+    (page-with-blocks ctx page-id)))
 
 (defn page-for-edit [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)

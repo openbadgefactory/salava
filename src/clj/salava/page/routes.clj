@@ -36,13 +36,50 @@
                    :current-user current-user
                    (ok (str (p/create-empty-page! ctx (:id current-user)))))
 
-             (GET "/view/:pageid" []
+             (GET "/:pageid" []
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
-                  :summary "View page"
+                  :summary "Edit page theme"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (p/page-with-blocks ctx pageid (:id current-user))))
+                  (let [page (p/page-with-blocks-for-owner ctx pageid (:id current-user))]
+                    (ok (assoc page :owner? (= (:id current-user) (:user_id page))))))
+
+             (GET "/view/:pageid" []
+                  :return {:page         (s/maybe schemas/ViewPage)
+                           :ask-password s/Bool}
+                  :path-params [pageid :- s/Int]
+                  :summary "View page"
+                  :current-user current-user
+                  (let [user-id (:id current-user)
+                        page (p/page-with-blocks ctx pageid)
+                        page-owner-id (:user_id page)
+                        visibility (:visibility page)
+                        password-protected? (and (= visibility "password")
+                                                 (not= user-id page-owner-id))]
+                    (if (or (and (= user-id page-owner-id) user-id page-owner-id)
+                            (= visibility "public")
+                            password-protected?
+                            (and user-id
+                                 (= visibility "internal")))
+                      (ok {:page (if password-protected?
+                                   nil
+                                   (assoc page :owner? (= user-id page-owner-id)))
+                           :ask-password password-protected?})
+                      (unauthorized))))
+
+             (POST "/password/:pageid" []
+                   :return schemas/ViewPage
+                   :path-params [pageid :- s/Int]
+                   :body-params [password :- s/Str]
+                   :summary "View password protected page"
+                   :current-user current-user
+                   (let [page (p/page-with-blocks ctx pageid)
+                         user-id (:id current-user)
+                         page-owner-id (:user_id page)]
+                     (if (= (:password page) password)
+                       (ok (assoc page :owner? (= user-id page-owner-id)))
+                       (unauthorized))))
 
              (GET "/edit/:pageid" []
                   :return schemas/EditPageContent
@@ -60,14 +97,6 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (p/save-page-content! ctx pageid page-content (:id current-user))))
-
-             (GET "/edit_theme/:pageid" []
-                  :return schemas/ViewPage
-                  :path-params [pageid :- s/Int]
-                  :summary "Edit page theme"
-                  :auth-rules access/authenticated
-                  :current-user current-user
-                  (ok (p/page-with-blocks ctx pageid (:id current-user))))
 
              (POST "/save_theme/:pageid" []
                    :return {:status (s/enum "error" "success")
