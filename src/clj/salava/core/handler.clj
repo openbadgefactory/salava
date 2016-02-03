@@ -46,8 +46,8 @@
     (wrap-middlewares
       ctx
       (api
-        (swagger-ui "/swagger-ui")
-        (swagger-docs {:info  {:version "0.1.0"
+        (swagger-routes {:ui "/swagger-ui"
+                         :info  {:version "0.1.0"
                                :title "Salava REST API"
                                :description ""
                                :contact  {:name "Discendum Oy"
