@@ -58,10 +58,14 @@
 
 (defn get-badge
   "Get badge by id"
-  [ctx badge-id]
-  (select-badge {:id badge-id}
-             (into {:result-set-fn first}
-                   (get-db ctx))))
+  [ctx badge-id user-id]
+  (let [badge (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
+        all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (get-db ctx)))
+        user-congratulation? (and user-id
+                                  (not= user-id (:owner badge))
+                                  (some #(= user-id (:id %)) all-congratulations))]
+    (assoc badge :congratulated? user-congratulation?
+                 :congratulations all-congratulations)))
 
 (defn save-badge-content!
   "Save badge content"
@@ -173,6 +177,13 @@
     (update-show-recipient-name! {:id badge-id
                                   :show_recipient_name show-recipient-name}
                                  (get-db ctx))))
+
+(defn congratulate!
+  "User congratulates badge receiver"
+  [ctx badge-id user-id]
+  (let [congratulation-exists (select-badge-congratulation {:badge_id badge-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
+    (if (empty? congratulation-exists)
+      (insert-badge-congratulation! {:badge_id badge-id :user_id user-id} (get-db ctx)))))
 
 (defn badge-settings
   "Get badge settings"

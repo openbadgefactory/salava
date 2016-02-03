@@ -36,14 +36,15 @@
                   :summary "Get badge"
                   :current-user current-user
                   (let [user-id (:id current-user)
-                        badge (b/get-badge ctx badgeid)
+                        badge (b/get-badge ctx badgeid user-id)
                         badge-owner-id (:owner badge)
                         visibility (:visibility badge)]
                     (if (or (and (= user-id badge-owner-id) user-id badge-owner-id)
                             (= visibility "public")
                             (and user-id
                                  (= visibility "internal")))
-                      (ok (assoc badge :owner? (= user-id badge-owner-id)))
+                      (ok (assoc badge :owner? (= user-id badge-owner-id)
+                                       :user-logged-in? (boolean user-id)))
                       (unauthorized))))
 
              (POST "/set_visibility/:badgeid" []
@@ -69,6 +70,13 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (str (b/toggle-show-recipient-name! ctx badgeid show_recipient_name (:id current-user)))))
+
+             (POST "/congratulate/:badgeid" []
+                   :path-params [badgeid :- Long]
+                   :summary "Congratulate user who received a badge"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (str (b/congratulate! ctx badgeid (:id current-user)))))
 
              (GET "/export" []
                   :return [schemas/BadgeContent]
