@@ -18,6 +18,10 @@ SELECT id, first_name, last_name, pass, activated FROM user AS u
        JOIN user_email AS ue ON ue.user_id = u.id
        WHERE email = :email
 
+--name: select-user
+-- get user by id
+SELECT id, first_name, last_name, country, language FROM user WHERE id = :id
+
 -- name: insert-user<!
 -- add new user
 INSERT INTO user (first_name, last_name, role, language, country, activation_code, ctime, mtime) VALUES (:first_name, :last_name, 'user', :language, :country, :activation_code, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
@@ -32,5 +36,15 @@ SELECT activation_code, activated FROM user WHERE id = :id
 -- name: update-user-password-and-activate!
 UPDATE user SET activated = 1, pass = :pass, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
+-- name: select-password-by-user-id
+-- get user password by user-id
+SELECT pass FROM user WHERE id = :id
 
+-- name: update-user!
+-- update basic user information
+UPDATE user SET first_name = :first_name, last_name = :last_name, country = :country, language = :language WHERE id = :id
+
+-- name: update-password!
+-- change user password
+UPDATE user SET pass = :pass WHERE id = :id
 

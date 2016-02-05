@@ -13,15 +13,21 @@
                    :last_name  (s/constrained s/Str #(and (>= (count %) 1)
                                                           (<= (count %) 255)))
                    :country    (apply s/enum (keys all-countries))
+                   :language   (s/enum "fi" "en")
                    :password   (s/constrained s/Str #(and (>= (count %) 6)
                                                           (<= (count %) 50)))
                    :password_verify (s/constrained s/Str #(and (>= (count %) 6)
                                                                (<= (count %) 50)))})
 
-(s/defschema RegisterUser (dissoc User :password :password_verify))
+(s/defschema RegisterUser (dissoc User :password :password_verify :language))
 
 (s/defschema LoginUser (select-keys User [:email :password]))
 
 (s/defschema ActivateUser (merge {:code      s/Str
                                   :user_id   s/Int}
                                  (select-keys User [:password :password_verify])))
+
+(s/defschema EditUser (-> {:current_password (s/maybe (:password User))
+                           :new_password (s/maybe (:password User))
+                           :new_password_verify (s/maybe (:password User))}
+                          (merge (select-keys User [:first_name :last_name :language :country]))))

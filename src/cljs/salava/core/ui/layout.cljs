@@ -56,7 +56,7 @@
          :class "nav navbar-nav navbar-right"}
    [:ul {:id "secondary-menu-links"
          :class "clearfix"}
-    [:li [:a {:href "#"}
+    [:li [:a {:href "/user/edit"}
           [:i {:class "fa fa-caret-right"}]
           "My account"]]
     [:li [:a {:href "#"

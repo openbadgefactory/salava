@@ -16,7 +16,15 @@
              (layout/main ctx "/login/:next-url")
              (layout/main ctx "/register")
              (layout/main ctx "/account")
-             (layout/main ctx "/activate/:userid/:timestamp/:code"))
+             (layout/main ctx "/activate/:userid/:timestamp/:code")
+             (layout/main ctx "/edit")
+             (layout/main ctx "/edit/email-addresses")
+             (layout/main ctx "/edit/fboauth")
+             (layout/main ctx "/edit/linkedin")
+             (layout/main ctx "/:id")
+             (layout/main ctx "/view/:id")
+             (layout/main ctx "/view/edit_profile")
+             (layout/main ctx "/cancel"))
 
     (context "/obpv1/user" []
       :tags ["user"]
@@ -48,6 +56,21 @@
             :summary "Set password and activate user account"
             (let [{:keys [user_id code password password_verify]} activation-data]
               (ok (u/set-password-and-activate ctx user_id code password password_verify))))
+
+      (GET "/edit" []
+           :summary "Get user information for editing"
+           :auth-rules access/authenticated
+           :current-user current-user
+           (ok (u/user-information ctx (:id current-user))))
+
+      (POST "/edit" []
+            :return {:status (s/enum "success" "error")
+                     :message (s/maybe s/Str)}
+            :body [user-data schemas/EditUser]
+            :summary "Save user information"
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (u/edit-user ctx user-data (:id current-user))))
 
       (GET "/test" []
            :summary "Test is user authenticated"

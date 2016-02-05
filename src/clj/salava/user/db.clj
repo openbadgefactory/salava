@@ -1,11 +1,15 @@
 (ns salava.user.db
   (:require [yesql.core :refer [defqueries]]
+            [slingshot.slingshot :refer :all]
             [buddy.hashers :as hashers]
             [salava.core.util :refer [get-db]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]))
 
 (defqueries "sql/user/main.sql")
+
+(defn hash-password [password]
+  (hashers/encrypt password {:alg :pbkdf2+sha256}))
 
 (defn user-backpack-emails
   "Get list of user email addresses by user id"
@@ -48,7 +52,7 @@
         (if-not (= activation_code code)
           {:status "error" :message (t :user/Activationcodemissmatch)}
           (do
-            (update-user-password-and-activate! {:pass (hashers/encrypt password {:alg :pbkdf2+sha256})
+            (update-user-password-and-activate! {:pass (hash-password password)
                                                  :id user-id} (get-db ctx))
             {:status "success" :message ""}))))))
 
@@ -61,3 +65,31 @@
              (hashers/check plain-password pass))
       {:status "success" :id id :fullname (str first_name " " last_name)}
       {:status "error" :message (t :user/Loginfailed)})))
+
+(defn user-information
+  "Get user data by user-id"
+  [ctx user-id]
+  (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+
+(defn edit-user
+  "Edit user information"
+  [ctx user-information user-id]
+  (try+
+    (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
+      (when new_password
+        (if-not (= new_password new_password_verify)
+          (throw+ (t :user/Passwordmissmatch)))
+        (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
+          (if-not (hashers/check current_password pass)
+            (throw+ (t :user/Wrongpassword)))))
+      (update-user! {:id user-id
+                     :first_name first_name
+                     :last_name last_name
+                     :language language
+                     :country country}
+                    (get-db ctx))
+      (if new_password
+        (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx)))
+      {:status "success" :message nil})
+    (catch Object _
+      {:status "error" :message _})))
