@@ -60,12 +60,15 @@
   "Get badge by id"
   [ctx badge-id user-id]
   (let [badge (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
+        owner? (= user-id (:owner badge))
         all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (get-db ctx)))
         user-congratulation? (and user-id
-                                  (not= user-id (:owner badge))
-                                  (some #(= user-id (:id %)) all-congratulations))]
+                                  (not owner?)
+                                  (some #(= user-id (:id %)) all-congratulations))
+        view-count (if owner? (select-badge-view-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))]
     (assoc badge :congratulated? user-congratulation?
-                 :congratulations all-congratulations)))
+                 :congratulations all-congratulations
+                 :view_count view-count)))
 
 (defn save-badge-content!
   "Save badge content"
@@ -93,7 +96,8 @@
 (defn save-badge!
   "Save user's badge"
   [ctx user-id badge badge-content-id issuer-content-id criteria-content-id]
-  (let [data {:user_id             user-id
+  (let [expires (get-in badge [:assertion :expires])
+        data {:user_id             user-id
               :email               (get-in badge [:_email])
               :assertion_url       (get-in badge [:assertion :verify :url])
               :assertion_jws       (get-in badge [:assertion :assertion_jws])
@@ -105,7 +109,7 @@
               :badge_content_id    badge-content-id
               :issuer_content_id   issuer-content-id
               :issued_on           (get-in badge [:assertion :issuedOn])
-              :expires_on          (get-in badge [:assertion :expires])
+              :expires_on          (if (= expires "0") nil expires)
               :evidence_url        (get-in badge [:assertion :evidence])
               :status              (get-in badge [:_status] "pending")
               :visibility          "private"
@@ -225,5 +229,10 @@
   [ctx tag user-id]
   (select-badges-by-tag-and-owner {:badge_tag tag
                                     :user_id user-id} (get-db ctx)))
+
+(defn badge-viewed
+  "Save information about viewing a badge. If user is not logged in user-id is nil."
+  [ctx badge-id user-id]
+  (insert-badge-viewed! {:badge_id badge-id :user_id user-id} (get-db ctx)))
 
 

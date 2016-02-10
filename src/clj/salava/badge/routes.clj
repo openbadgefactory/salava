@@ -38,13 +38,17 @@
                   (let [user-id (:id current-user)
                         badge (b/get-badge ctx badgeid user-id)
                         badge-owner-id (:owner badge)
-                        visibility (:visibility badge)]
-                    (if (or (and (= user-id badge-owner-id) user-id badge-owner-id)
+                        visibility (:visibility badge)
+                        owner? (= user-id badge-owner-id)]
+                    (if (or (and user-id badge-owner-id owner?)
                             (= visibility "public")
                             (and user-id
                                  (= visibility "internal")))
-                      (ok (assoc badge :owner? (= user-id badge-owner-id)
-                                       :user-logged-in? (boolean user-id)))
+                      (do
+                        (if (and badge (not owner?))
+                          (b/badge-viewed ctx badgeid user-id))
+                        (ok (assoc badge :owner? owner?
+                                         :user-logged-in? (boolean user-id))))
                       (unauthorized))))
 
              (POST "/set_visibility/:badgeid" []

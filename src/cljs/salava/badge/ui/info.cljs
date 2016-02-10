@@ -35,7 +35,7 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? visibility show_recipient_name image_file rating issuer_name issuer_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations]} @state]
+  (let [{:keys [owner? visibility show_recipient_name image_file rating issuer_name issuer_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count]} @state]
     [:div {:class "badge-info"}
      (if owner?
        [:div.row
@@ -62,11 +62,16 @@
        [:div.row
         [:div.col-xs-12
          [:img {:src (str "/" image_file)}]]]
-       [:div.row
-        [:div.col-xs-12
-         (if owner?
+       (if owner?
+         [:div.row
+          [:div.col-xs-12
            [:div.rating
-            [r/rate-it rating]])]]
+            [r/rate-it rating]]
+           [:div.view-count
+            (cond
+              (= view_count 1) (t :badge/Viewedonce)
+              (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
+              :else (t :badge/Badgeisnotviewedyet))]]])
        [:div.row
         [:div.col-xs-12
          (if (and user-logged-in? (not owner?))

@@ -46,8 +46,8 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 --get badge by id
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
-       JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
+       LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
+       LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
        JOIN user AS u ON (u.id = badge.user_id)
        WHERE badge.id = :id
 
@@ -116,4 +116,12 @@ INSERT INTO badge_congratulation (badge_id, user_id, ctime) VALUES (:badge_id, :
 SELECT u.id, first_name, last_name FROM user AS u
        JOIN badge_congratulation AS b ON u.id = b.user_id
        WHERE b.badge_id = :badge_id
+
+--name: insert-badge-viewed!
+--save badge view information
+INSERT INTO badge_view (badge_id, user_id, ctime) VALUES (:badge_id, :user_id, UNIX_TIMESTAMP())
+
+--name: select-badge-view-count
+--get badge view count
+SELECT COUNT(id) AS count FROM badge_view WHERE badge_id = :badge_id
 
