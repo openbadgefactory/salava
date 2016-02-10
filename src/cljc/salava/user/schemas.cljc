@@ -31,3 +31,10 @@
                            :new_password (s/maybe (:password User))
                            :new_password_verify (s/maybe (:password User))}
                           (merge (select-keys User [:first_name :last_name :language :country]))))
+
+(s/defschema EmailAddress {:email            (:email User)
+                           :verified         s/Bool
+                           :primary_address  s/Bool
+                           :backpack_id      (s/maybe s/Int)
+                           :ctime            s/Int
+                           :mtime            s/Int})

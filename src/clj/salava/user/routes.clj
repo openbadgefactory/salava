@@ -72,6 +72,48 @@
             :current-user current-user
             (ok (u/edit-user ctx user-data (:id current-user))))
 
+      (GET "/email-addresses" []
+           :return [schemas/EmailAddress]
+           :summary "Get user email addresses"
+           :auth-rules access/authenticated
+           :current-user current-user
+           (ok (u/email-addresses ctx (:id current-user))))
+
+      (POST "/add_email" []
+            :return {:status (s/enum "success" "error")
+                     (s/optional-key :message) s/Str
+                     (s/optional-key :new-email) schemas/EmailAddress}
+            :body-params [email :- (:email schemas/User)]
+            :summary "Add new unverified email address"
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (u/add-email-address ctx email (:id current-user))))
+
+      (POST "/delete_email" []
+            :return {:status (s/enum "success" "error")}
+            :body-params [email :- (:email schemas/User)]
+            :summary "Remove email address"
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (u/delete-email-address ctx email (:id current-user))))
+
+      (POST "/set_primary_email" []
+            :return {:status (s/enum "success" "error")}
+            :body-params [email :- (:email schemas/User)]
+            :summary "Set primary email address"
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (u/set-primary-email-address ctx email (:id current-user))))
+
+      (POST "/verify_email" []
+            :return {:status (s/enum "success" "error")}
+            :body-params [verification_key :- s/Str
+                          email :- (:email schemas/User)]
+            :summary "Confirm user email address"
+            :auth-rules access/authenticated
+            :current-user current-user
+            (ok (u/verify-email-address ctx email verification_key (:id current-user))))
+
       (GET "/test" []
            :summary "Test is user authenticated"
            :auth-rules access/authenticated

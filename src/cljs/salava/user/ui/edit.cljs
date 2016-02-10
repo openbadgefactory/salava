@@ -11,10 +11,11 @@
 (defn save-user-info [state]
   (ajax/POST
     "/obpv1/user/edit"
-    {:params  (dissoc @state :error-message)
+    {:params  (dissoc @state :message)
      :handler (fn [data]
                 (if (= (:status data) "error")
-                  (swap! state assoc :error-message (:message data))))}))
+                  (swap! state assoc :message {:class "alert-danger" :content (:message data)})
+                  (swap! state assoc :message {:class "alert-success" :content (t :core/Thechangeshavebeensaved)})))}))
 
 (defn new-password-valid? [current-password new-password new-password-verify]
   (if (or (not-empty new-password) (not-empty new-password-verify))
@@ -32,20 +33,20 @@
         first-name-atom (cursor state [:first_name])
         last-name-atom (cursor state [:last_name])
         country-atom (cursor state [:country])
-        error-message (:error-message @state)]
+        message (:message @state)]
     [:div {:class "panel"
            :id "edit-user"}
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       (if error-message
-         [:div {:class "alert alert-danger"}
-          error-message])
+       (if message
+         [:div {:class (str "alert " (:class message))}
+          (:content message)])
        [:div.form-group
         [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "current-password" :atom current-password-atom :password? true}]]
         [:div.col-md-12
-         (t :user/Entercurrentpasswordif) " " [:a {:href "/user/password"} (t :user/Requestnewpassword)]]]
+         (t :user/Enteryourcurrentpassword) " " [:a {:href "/user/password"} (t :user/Requestnewpassword)]]]
 
        [:div.form-group
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
@@ -53,10 +54,10 @@
          [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]
 
        [:div.form-group
-        [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Newpasswordverify)]
+        [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]
-        [:div.col-md-12 (t :user/Toconfirmnewpassword)]]
+        [:div.col-md-12 (t :user/Tochangecurrentpassword)]]
 
        [:div.form-group
         [:label {:class "col-md-3"}
@@ -68,13 +69,14 @@
                   :value     "fi"
                   :on-click  #(reset! language-atom "fi")}]
          [:label {:for "input-language-fi"}
-          (t :core/fi)]
+          (t :core/Finnish)]
          [:input {:id        "input-language-en"
                   :type      "radio"
                   :name      "language"
                   :value     "en"
                   :on-click  #(reset! language-atom "en")}]
-         [:label {:for "input-language-en"} (t :core/en)]]]
+         [:label {:for "input-language-en"}
+          (t :core/English)]]]
 
        [:div.form-group
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
@@ -90,7 +92,7 @@
         [:label {:for "input-country"
                  :class "col-md-3"}
          (t :user/Country)]
-        [:div.col-xs-8
+        [:div.col-md-9
          [input/country-selector country-atom]]]
 
        [:div.row
@@ -113,7 +115,7 @@
   {:current_password nil
    :new_password nil
    :new_password_verify nil
-   :error-message nil})
+   :message nil})
 
 (defn init-data [state]
   (ajax/GET

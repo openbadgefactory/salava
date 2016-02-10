@@ -4,7 +4,8 @@
             [salava.user.ui.login :as login]
             [salava.user.ui.activate :as password]
             [salava.user.ui.register :as register]
-            [salava.user.ui.edit :as edit]))
+            [salava.user.ui.edit :as edit]
+            [salava.user.ui.email-addresses :as email-addresses]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -16,12 +17,13 @@
             [["/activate/" :user-id "/" :timestamp "/" :code] password/handler]
             ["/register" register/handler]
             ["/account" (placeholder [:p "My account"])]
-            ["/edit" edit/handler]]})
+            ["/edit" edit/handler]
+            ["/edit/email-addresses" email-addresses/handler]]})
 
 (defn ^:export navi [context]
-  {"/user/view"               {:weight 40 :title (t :user/Profile) :breadcrumb   (t :user/User " / " :user/Profile)}
-   "/user/edit"               {:weight 41 :title (t :user/Edit) :breadcrumb   (t :user/User " / " :user/Edit)}
-   "/user/edit/email-address" {:weight 42 :title (t :user/Emailaddresses) :breadcrumb (t :user/User " / "  :user/Emailaddresses)}
-   "/user/edit/fboauth"       {:weight 43 :title (t :user/Facebook) :breadcrumb   (t :user/User " / "  :user/Facebook)}
-   "/user/edit/linkedin"      {:weight 44 :title (t :user/Linkedin) :breadcrumb   (t :user/User " / "  :user/Linkedin)}})
+  {"/user/view"                 {:weight 40 :title (t :user/Myprofile) :breadcrumb   (t :user/User " / " :user/Myprofile)}
+   "/user/edit"                 {:weight 41 :title (t :user/Accountsettings) :breadcrumb   (t :user/User " / " :user/Accountsettings)}
+   "/user/edit/email-addresses" {:weight 42 :title (t :user/Emailaddresses) :breadcrumb (t :user/User " / "  :user/Emailaddresses)}
+   "/user/edit/fboauth"         {:weight 43 :title (t :user/Facebook) :breadcrumb   (t :user/User " / "  :user/Facebook)}
+   "/user/edit/linkedin"        {:weight 44 :title (t :user/Linkedin) :breadcrumb   (t :user/User " / "  :user/Linkedin)}})
 
