@@ -125,3 +125,37 @@ INSERT INTO badge_view (badge_id, user_id, ctime) VALUES (:badge_id, :user_id, U
 --get badge view count
 SELECT COUNT(id) AS count FROM badge_view WHERE badge_id = :badge_id
 
+
+--name: select-user-badge-count
+--get user's badge count
+SELECT COUNT(id) as count FROM badge WHERE user_id = :user_id AND deleted = 0 AND status = 'accepted'
+
+--name: select-user-expired-badge-count
+--get user's expired badge count
+SELECT COUNT(id) as count FROM badge WHERE user_id = :user_id AND deleted = 0 AND status = 'accepted' AND expires_on <= UNIX_TIMESTAMP()
+
+--name: select-badge-views-stats
+--get user's badge view stats
+SELECT b.id, bc.name, bc.image_file, SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS anon_count, MAX(bv.ctime) AS latest_view FROM badge AS b
+       JOIN badge_view AS bv ON b.id = bv.badge_id
+       JOIN badge_content AS bc ON b.badge_content_id = bc.id
+       WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
+       GROUP BY b.id
+       ORDER BY latest_view DESC
+
+--name: select-badge-congratulations-stats
+--get user's badge congratulations stats
+SELECT b.id, bc.name, bc.image_file, COUNT(bco.user_id) AS congratulation_count, MAX(bco.ctime) AS latest_congratulation FROM badge AS b
+       JOIN badge_congratulation AS bco ON b.id = bco.badge_id
+       JOIN badge_content AS bc ON b.badge_content_id = bc.id
+       WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
+       GROUP BY b.id
+       ORDER BY latest_congratulation DESC
+
+--name: select-badge-issuer-stats
+--get user's badge issuer stats
+SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_name, ic.url AS issuer_url FROM badge AS b
+       JOIN badge_content AS bc ON b.badge_content_id = bc.id
+       JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+       WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
+       ORDER BY ic.name

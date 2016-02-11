@@ -100,3 +100,49 @@ button {
         font-size: 15px;
     }
 }
+
+#badge-stats {
+    h3 {
+        font-weight: 300;
+    }
+    .panel {
+        border-radius: 4px;
+        img.badge-icon {
+            width: 30px;
+        }
+        .panel-heading {
+            border-bottom: 1px solid #dddddd;
+            h3 {
+                line-height: 30px;
+                font: 300 28px "Open Sans Condensed",sans-serif;
+                text-transform: uppercase;
+                text-decoration: none;
+                color: #7f7179;
+                margin: 0px;
+            }
+        }
+        .panel-body {
+            padding-top: 5px;
+            table {
+                td, th {
+                    border-bottom: 0px;
+                    border-top: 0px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+                td.name {
+                    text-align: left;
+                }
+            }
+            .issuer-badges-wrapper {
+                padding: 5px 15px 15px 15px;
+                border-bottom: 1px solid #f0f0f0;
+                .issuer-badges {
+                    a {
+                        padding-right: 15px;
+                    }
+                }
+            }
+        }
+    }
+}

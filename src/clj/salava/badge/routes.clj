@@ -137,4 +137,11 @@
                      :summary "Delete badge"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     (ok (str (b/delete-badge! ctx badgeid (:id current-user))))))))
+                     (ok (str (b/delete-badge! ctx badgeid (:id current-user)))))
+
+             (GET "/stats" []
+                  :return schemas/BadgeStats
+                  :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (b/badge-stats ctx (:id current-user)))))))

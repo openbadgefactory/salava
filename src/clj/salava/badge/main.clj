@@ -235,4 +235,25 @@
   [ctx badge-id user-id]
   (insert-badge-viewed! {:badge_id badge-id :user_id user-id} (get-db ctx)))
 
+(defn badges-by-issuer [badges-issuers]
+  (reduce (fn [result issuer-badge]
+            (let [issuer (select-keys issuer-badge [:issuer_content_id :issuer_name :issuer_url])
+                  badge (select-keys issuer-badge [:id :name :image_file])
+                  index (.indexOf (map :issuer_content_id result) (:issuer_content_id issuer))]
+              (if (= index -1)
+                (conj result (assoc issuer :badges [badge]))
+                (update-in result [index :badges] conj badge)))) [] badges-issuers))
 
+(defn badge-stats
+  "Get badge statistics by user-id."
+  [ctx user-id]
+  (let [badge-count (select-user-badge-count {:user_id user-id} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+        expired-badge-count (select-user-expired-badge-count {:user_id user-id} (into {:result-set-fn first :row-fn :count} (get-db ctx)))
+        badge-views (select-badge-views-stats {:user_id user-id} (get-db ctx))
+        badge-congratulations (select-badge-congratulations-stats {:user_id user-id} (get-db ctx))
+        issuer-stats (badges-by-issuer (select-badge-issuer-stats {:user_id user-id} (get-db ctx)))]
+    {:badge_count badge-count
+     :expired_badge_count expired-badge-count
+     :badge_views badge-views
+     :badge_congratulations badge-congratulations
+     :badge_issuers issuer-stats}))

@@ -5,6 +5,7 @@
             [salava.badge.ui.importer :as imp]
             [salava.badge.ui.exporter :as exp]
             [salava.badge.ui.upload :as up]
+            [salava.badge.ui.stats :as stats]
             [salava.core.i18n :as i18n :refer [t]]))
 
 (defn placeholder [content]
@@ -19,7 +20,7 @@
              ["/import"  imp/handler]
              ["/upload"  up/handler]
              ["/export"  exp/handler]
-             ["/stats"   (placeholder [:p (t :badge/Badgestats)])]]})
+             ["/stats"   stats/handler]]})
 
 (defn ^:export navi [context]
   {"/badge"          {:weight 20 :title (t :badge/Badges) :breadcrumb   (t :badge/Badges " / " :badge/Mybadges)}

@@ -61,3 +61,18 @@
 (s/defschema Upload {:status (s/enum "success" "error")
                      :message s/Str
                      :reason (s/maybe s/Str)})
+
+(s/defschema BadgeStats {:badge_count           s/Int
+                         :expired_badge_count   s/Int
+                         :badge_views           [(merge
+                                                   (select-keys Badge [:id :name :image_file])
+                                                   {:reg_count   s/Int
+                                                    :anon_count  s/Int
+                                                    :latest_view (s/maybe s/Int)})]
+                         :badge_congratulations [(merge
+                                                   (select-keys Badge [:id :name :image_file])
+                                                   {:congratulation_count  s/Int
+                                                    :latest_congratulation (s/maybe s/Int)})]
+                         :badge_issuers         [(-> Badge
+                                                     (select-keys [:issuer_content_id :issuer_name :issuer_url])
+                                                     (assoc :badges [(select-keys Badge [:id :name :image_file])]))]})
