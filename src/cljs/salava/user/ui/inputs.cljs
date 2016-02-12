@@ -5,13 +5,14 @@
             [salava.user.schemas :as schemas]))
 
 (defn text-field [input-data]
-  (let [{:keys [name atom password?]} input-data]
-    [:input {:class     "form-control"
-             :id        (str "input-" name)
-             :name      name
-             :type      (if password? "password" "text")
-             :on-change #(reset! atom (.-target.value %))
-             :value     @atom}]))
+  (let [{:keys [name atom placeholder password?]} input-data]
+    [:input {:class       "form-control"
+             :id          (str "input-" name)
+             :name        name
+             :type        (if password? "password" "text")
+             :placeholder placeholder
+             :on-change   #(reset! atom (.-target.value %))
+             :value       @atom}]))
 
 (defn country-selector [atom]
   [:select {:id "input-country"

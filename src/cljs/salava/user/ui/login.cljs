@@ -29,9 +29,9 @@
          @error-message-atom])
       [:form
        [:div.form-group
-        [input/text-field {:name "email" :atom email-atom}]]
+        [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email)}]]
        [:div.form-group
-        [input/text-field {:name "password" :atom password-atom :password? true}]]
+        [input/text-field {:name "password" :atom password-atom :placeholder (t :user/Password) :password? true}]]
        [:button {:class    "btn btn-warning"
                  :on-click #(do
                              (.preventDefault %)

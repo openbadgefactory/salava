@@ -27,94 +27,94 @@
              (layout/main ctx "/cancel"))
 
     (context "/obpv1/user" []
-      :tags ["user"]
-      (POST "/login" []
-            ;:return ""
-            :body [login-content schemas/LoginUser]
-            :summary "User logs in"
-            (let [{:keys [email password]} login-content
-                 login-status (u/login-user ctx email password)]
-              (if (= "success" (:status login-status))
-                (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname]))
-                (ok login-status))))
+             :tags ["user"]
+             (POST "/login" []
+                   ;:return ""
+                   :body [login-content schemas/LoginUser]
+                   :summary "User logs in"
+                   (let [{:keys [email password]} login-content
+                         login-status (u/login-user ctx email password)]
+                     (if (= "success" (:status login-status))
+                       (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname]))
+                       (ok login-status))))
 
-      (POST "/logout" []
-            (assoc-in (ok) [:session :identity] nil))
+             (POST "/logout" []
+                   (assoc-in (ok) [:session :identity] nil))
 
-      (POST "/register" []
-            :return {:status (s/enum "success" "error")
+             (POST "/register" []
+                   :return {:status (s/enum "success" "error")
+                            :message (s/maybe s/Str)}
+                   :body [form-content schemas/RegisterUser]
+                   :summary "Create new user account"
+                   (let [{:keys [email first_name last_name country]} form-content]
+                     (ok (u/register-user ctx email first_name last_name country))))
+
+             (POST "/activate" []
+                   :return {:status (s/enum "success" "error")
                      :message (s/maybe s/Str)}
-            :body [form-content schemas/RegisterUser]
-            :summary "Create new user account"
-            (let [{:keys [email first_name last_name country]} form-content]
-              (ok (u/register-user ctx email first_name last_name country))))
+                   :body [activation-data schemas/ActivateUser]
+                   :summary "Set password and activate user account"
+                   (let [{:keys [user_id code password password_verify]} activation-data]
+                     (ok (u/set-password-and-activate ctx user_id code password password_verify))))
 
-      (POST "/activate" []
-            :return {:status (s/enum "success" "error")
-                     :message (s/maybe s/Str)}
-            :body [activation-data schemas/ActivateUser]
-            :summary "Set password and activate user account"
-            (let [{:keys [user_id code password password_verify]} activation-data]
-              (ok (u/set-password-and-activate ctx user_id code password password_verify))))
+             (GET "/edit" []
+                  :summary "Get user information for editing"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (u/user-information ctx (:id current-user))))
 
-      (GET "/edit" []
-           :summary "Get user information for editing"
-           :auth-rules access/authenticated
-           :current-user current-user
-           (ok (u/user-information ctx (:id current-user))))
+             (POST "/edit" []
+                   :return {:status (s/enum "success" "error")
+                            :message (s/maybe s/Str)}
+                   :body [user-data schemas/EditUser]
+                   :summary "Save user information"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/edit-user ctx user-data (:id current-user))))
 
-      (POST "/edit" []
-            :return {:status (s/enum "success" "error")
-                     :message (s/maybe s/Str)}
-            :body [user-data schemas/EditUser]
-            :summary "Save user information"
-            :auth-rules access/authenticated
-            :current-user current-user
-            (ok (u/edit-user ctx user-data (:id current-user))))
+             (GET "/email-addresses" []
+                  :return [schemas/EmailAddress]
+                  :summary "Get user email addresses"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (u/email-addresses ctx (:id current-user))))
 
-      (GET "/email-addresses" []
-           :return [schemas/EmailAddress]
-           :summary "Get user email addresses"
-           :auth-rules access/authenticated
-           :current-user current-user
-           (ok (u/email-addresses ctx (:id current-user))))
+             (POST "/add_email" []
+                   :return {:status (s/enum "success" "error")
+                            (s/optional-key :message) s/Str
+                            (s/optional-key :new-email) schemas/EmailAddress}
+                   :body-params [email :- (:email schemas/User)]
+                   :summary "Add new unverified email address"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/add-email-address ctx email (:id current-user))))
 
-      (POST "/add_email" []
-            :return {:status (s/enum "success" "error")
-                     (s/optional-key :message) s/Str
-                     (s/optional-key :new-email) schemas/EmailAddress}
-            :body-params [email :- (:email schemas/User)]
-            :summary "Add new unverified email address"
-            :auth-rules access/authenticated
-            :current-user current-user
-            (ok (u/add-email-address ctx email (:id current-user))))
+             (POST "/delete_email" []
+                   :return {:status (s/enum "success" "error")}
+                   :body-params [email :- (:email schemas/User)]
+                   :summary "Remove email address"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/delete-email-address ctx email (:id current-user))))
 
-      (POST "/delete_email" []
-            :return {:status (s/enum "success" "error")}
-            :body-params [email :- (:email schemas/User)]
-            :summary "Remove email address"
-            :auth-rules access/authenticated
-            :current-user current-user
-            (ok (u/delete-email-address ctx email (:id current-user))))
+             (POST "/set_primary_email" []
+                   :return {:status (s/enum "success" "error")}
+                   :body-params [email :- (:email schemas/User)]
+                   :summary "Set primary email address"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/set-primary-email-address ctx email (:id current-user))))
 
-      (POST "/set_primary_email" []
-            :return {:status (s/enum "success" "error")}
-            :body-params [email :- (:email schemas/User)]
-            :summary "Set primary email address"
-            :auth-rules access/authenticated
-            :current-user current-user
-            (ok (u/set-primary-email-address ctx email (:id current-user))))
+             (POST "/verify_email" []
+                   :return {:status (s/enum "success" "error")}
+                   :body-params [verification_key :- s/Str
+                                 email :- (:email schemas/User)]
+                   :summary "Confirm user email address"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/verify-email-address ctx email verification_key (:id current-user))))
 
-      (POST "/verify_email" []
-            :return {:status (s/enum "success" "error")}
-            :body-params [verification_key :- s/Str
-                          email :- (:email schemas/User)]
-            :summary "Confirm user email address"
-            :auth-rules access/authenticated
-            :current-user current-user
-            (ok (u/verify-email-address ctx email verification_key (:id current-user))))
-
-      (GET "/test" []
-           :summary "Test is user authenticated"
-           :auth-rules access/authenticated
-           (ok)))))
+             (GET "/test" []
+                  :summary "Test is user authenticated"
+                  :auth-rules access/authenticated
+                  (ok)))))
