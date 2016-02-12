@@ -111,10 +111,32 @@
         (for [badge (:badges @state)]
           (import-grid-element badge state))))
 
+(defn import-info []
+  [:div
+   [:p
+    "You can import your existing badges from your "
+    [:a {:href "https://backpack.openbadges.org/backpack/" :target "_blank"} "Mozilla Backpack"]
+    " account. Before you start make sure that the e-mail address associated with your Backpack account is saved at the "
+    [:a {:href "/user/edit/email-addresses"} "E-mail addresse"] " page."
+    [:br]
+    "To import badges from Backpack, badges have to be placed to a public Collection (group). If your badges are not in a public Collection, please follow these instructions:"]
+   [:ol
+    [:li "Please login to your Mozilla Backpack."]
+    [:li "Go to Collections page and drag the badges you want to import under any of the collections."]
+    [:li "Check \"public\" checkbox for the collection."]
+    [:li "Click \"Import badges from Mozilla Backpack\" button below."]]
+   [:p
+    "Your imported badges will appear at "
+    [:a {:href "/badge/mybadges"} "My badges"] " page. "
+    ". You can delete unwanted badges at "
+    [:a {:href "/badge/mybadges"} "My badges"]
+    " page in badge Settings."]])
+
 (defn content [state]
   [:div {:class "import-badges"}
    [m/modal-window]
    [:h2.uppercase-header (t :badge/Importfrom)]
+   [import-info]
    [:div.import-button
     (if (:ajax-message @state)
       [:div.ajax-message

@@ -141,12 +141,39 @@
         (for [badge (:pending @state)]
           (badge-pending badge state))))
 
+(defn welcome-text []
+  [:div.panel
+   [:div.panel-body
+    [:h2.uppercase-header (t :core/WelcometoOpenBadgePassport)]
+    [:div.text
+     [:p "Using Open Badge Passport could not be easier:"]
+     [:ol.welcome-text
+      [:li
+       "Add a " [:a {:href "/user/edit_profile"} "profile picture"]
+       ", a short bio or contact information to your "
+       [:a {:href "/user/edit_profile"} "profile"] "."]
+      [:li
+       "Do you already have Open Badges saved to Mozilla Backpack? "
+       [:a {:href "/badge/import"} "Import your badges"]
+       " to Open Badge Passport. "
+       [:b "NB! Remember to add your Backpack email to the " [:a {:href "/user/edit/email-addresses"} "email addresses"] "."]]
+      [:li
+       "No badges yet? "
+       [:b "Earn your \"Open Badge Passport - Member\" badge " [:a {:href "/gallery/getbadge"} "here!"]]]
+      [:li
+       [:a {:href "/page/mypages"} "Create a page"]
+       " to display your badges and share it with others in Social Media or in "
+       [:a {:href "/gallery/pages"} "in the Gallery"] "."]]]]])
+
 (defn content [state]
   [:div {:class "my-badges"}
    [m/modal-window]
-   [badges-pending state]
-   [badge-grid-form state]
-   [badge-grid state]])
+   (if (and (empty? (:pending @state)) (empty? (:badges @state)))
+     [welcome-text]
+     [:div
+      [badges-pending state]
+      [badge-grid-form state]
+      [badge-grid state]])])
 
 (defn init-data [state]
   (ajax/GET

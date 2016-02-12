@@ -42,10 +42,25 @@
                             (if (= (:status data) "success")
                               {:hide #(navigate-to "/badge")})))})))
 
+(defn upload-info []
+  [:div
+   [:p
+    "You can upload your own badge files from your computer:"]
+   [:ol
+    [:li "Click " [:b "Browse"] " and browse to your badge"]
+    [:li "Click " [:b "Open"]]]
+   [:p
+    "Your uploaded badges will appear at "
+    [:a {:href "/badge/mybadges"} "My badges"] " page. "
+    ". You can delete unwanted badges at "
+    [:a {:href "/badge/mybadges"} "My badges"]
+    " page in badge Settings."]])
+
 (defn content []
   [:div {:class "badge-upload"}
    [m/modal-window]
    [:h2.uppercase-header (t :badge/Uploadbadgesfrom)]
+   [upload-info]
    [:form {:id "form"}
     [:input {:type "file"
              :name "file"
