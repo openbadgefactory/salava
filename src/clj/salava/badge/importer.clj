@@ -24,9 +24,10 @@
           :as          :json
           :form-params post-params}))
      (catch [:status 404] {:keys [request-time headers body]}
-       (if (= path "/convert/email")
-         (throw+ (t :badge/Backpacknotfound))
-         (throw+ (t :badge/Errorconnecting))))
+       ; (if (= path "/convert/email")
+       ;  (throw+ (t :badge/Backpacknotfound))
+       ;  (throw+ (t :badge/Errorconnecting)))
+     )
      (catch Object _
        (throw+ (t :badge/Errorconnecting))))))
 

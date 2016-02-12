@@ -83,7 +83,7 @@
         recipient-badge-data (select-badge-criteria-issuer-by-recipient {:badge_content_id badge-content-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
         badge-data (or recipient-badge-data (select-badge-criteria-issuer-by-date {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx))))
         rating-and-recipient (select-common-badge-rating-and-recipient {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
-        recipients (select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx))]
+        recipients (if user-id (select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx)))]
     (hash-map :badge (merge badge-content badge-data rating-and-recipient)
               :public_users (->> recipients
                                  (filter #(= (:visibility %) "public"))
