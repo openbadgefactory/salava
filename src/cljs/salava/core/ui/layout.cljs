@@ -15,12 +15,11 @@
     (sort-by :weight (map map-fn (select-keys navi key-list)))))
 
 (defn top-navi-list [navi]
-  (let [key-list (filter #(<= (count (str/split % #"/")) 2) (keys navi))]
+  (let [key-list (filter #(get-in navi [% :top-navi]) (keys navi))]
     (filtered-navi-list navi key-list)))
 
 (defn sub-navi-list [parent navi]
-  (let [parent-filter #(and (not= (str "/" parent) %) (= parent (navi-parent %)))
-        key-list (filter parent-filter (keys navi))]
+  (let [key-list (filter #(and (get-in navi [% :site-navi]) (= parent (navi-parent %))) (keys navi))]
     (when parent
       (filtered-navi-list navi key-list))))
 
@@ -86,7 +85,9 @@
        (navi-link i))]))
 
 (defn breadcrumb [site-navi]
-  [:h2 (get-in site-navi [:navi-items (current-path) :breadcrumb])])
+  (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))]
+    (if matched-route
+      [:h2 (get-in site-navi [:navi-items matched-route :breadcrumb])])))
 
 
 (defn default-0 [top-items sub-items heading content]

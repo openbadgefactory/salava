@@ -23,10 +23,11 @@
              ["/stats"   stats/handler]]})
 
 (defn ^:export navi [context]
-  {"/badge"          {:weight 20 :title (t :badge/Badges) :breadcrumb   (t :badge/Badges " / " :badge/Mybadges)}
-   "/badge/mybadges" {:weight 20 :title (t :badge/Mybadges) :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
-   "/badge/import"   {:weight 21 :title (t :badge/Import) :breadcrumb   (t :badge/Badges " / "  :badge/Import)}
-   "/badge/upload"   {:weight 22 :title (t :badge/Upload) :breadcrumb   (t :badge/Badges " / "  :badge/Upload)}
-   "/badge/export"   {:weight 23 :title (t :badge/Export) :breadcrumb   (t :badge/Badges " / "  :badge/Export)}
-   "/badge/stats"    {:weight 24 :title (t :badge/Stats)  :breadcrumb   (t :badge/Badges " / " :badge/Stats)}})
+  {"/badge"          {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
+   "/badge/mybadges" {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
+   "/badge/import"   {:weight 21 :title (t :badge/Import)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Import)}
+   "/badge/upload"   {:weight 22 :title (t :badge/Upload)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Upload)}
+   "/badge/export"   {:weight 23 :title (t :badge/Export)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Export)}
+   "/badge/stats"    {:weight 24 :title (t :badge/Stats)    :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Stats)}
+   "/badge/info/\\d+" {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}})
 

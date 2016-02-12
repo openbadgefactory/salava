@@ -18,6 +18,11 @@
             [["/preview/" :page-id] preview/handler]]})
 
 (defn ^:export navi [context]
-  {"/page"         {:weight 30 :title (t :page/Pages)   :breadcrumb (t :page/Pages " / " :page/Mypages)}
-   "/page/mypages" {:weight 31 :title (t :page/Mypages) :breadcrumb (t :page/Pages " / " :page/Mypages)}})
+  {"/page"         {:weight 30 :title (t :page/Pages)   :top-navi true  :breadcrumb (t :page/Pages " / " :page/Mypages)}
+   "/page/mypages" {:weight 31 :title (t :page/Mypages) :site-navi true :breadcrumb (t :page/Pages " / " :page/Mypages)}
+   "/page/view/\\d+" {:breadcrumb (t :page/Pages " / " :page/Viewpage)}
+   "/page/edit/\\d+" {:breadcrumb (t :page/Pages " / " :page/Editpage)}
+   "/page/edit_theme/\\d+" {:breadcrumb (t :page/Pages " / " :page/Choosetheme)}
+   "/page/settings/\\d+" {:breadcrumb (t :page/Pages " / " :page/Settings)}
+   "/page/preview/\\d+" {:breadcrumb (t :page/Pages " / " :page/Viewpage)}})
 

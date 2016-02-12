@@ -21,9 +21,9 @@
             ["/edit/email-addresses" email-addresses/handler]]})
 
 (defn ^:export navi [context]
-  {"/user/view"                 {:weight 40 :title (t :user/Myprofile) :breadcrumb   (t :user/User " / " :user/Myprofile)}
-   "/user/edit"                 {:weight 41 :title (t :user/Accountsettings) :breadcrumb   (t :user/User " / " :user/Accountsettings)}
-   "/user/edit/email-addresses" {:weight 42 :title (t :user/Emailaddresses) :breadcrumb (t :user/User " / "  :user/Emailaddresses)}
-   "/user/edit/fboauth"         {:weight 43 :title (t :user/Facebook) :breadcrumb   (t :user/User " / "  :user/Facebook)}
-   "/user/edit/linkedin"        {:weight 44 :title (t :user/Linkedin) :breadcrumb   (t :user/User " / "  :user/Linkedin)}})
+  {"/user/view"                 {:weight 40 :title (t :user/Myprofile)       :site-navi true :breadcrumb (t :user/User " / " :user/Myprofile)}
+   "/user/edit"                 {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
+   "/user/edit/email-addresses" {:weight 42 :title (t :user/Emailaddresses)  :site-navi true :breadcrumb (t :user/User " / "  :user/Emailaddresses)}
+   "/user/edit/fboauth"         {:weight 43 :title (t :user/Facebook)        :site-navi true :breadcrumb (t :user/User " / "  :user/Facebook)}
+   "/user/edit/linkedin"        {:weight 44 :title (t :user/Linkedin)        :site-navi true :breadcrumb (t :user/User " / "  :user/Linkedin)}})
 

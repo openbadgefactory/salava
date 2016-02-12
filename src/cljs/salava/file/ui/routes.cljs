@@ -7,5 +7,5 @@
   {"/page" [["/files" my/handler]]})
 
 (defn ^:export navi [context]
-  {"/page/files" {:weight 35 :title (t :page/Files) :breadcrumb (t :page/Pages " / " :page/Files)}})
+  {"/page/files" {:weight 35 :title (t :page/Files) :site-navi true :breadcrumb (t :page/Pages " / " :page/Files)}})
 
