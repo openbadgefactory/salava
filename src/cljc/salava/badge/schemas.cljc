@@ -33,19 +33,21 @@
                     :revoked (s/maybe s/Bool)
                     :tag (s/maybe s/Str)})
 
-(s/defschema BadgeContent {:id s/Int
-                           :name (s/maybe s/Str)
-                           :description (s/maybe s/Str)
-                           :image_file (s/maybe s/Str)
-                           :issued_on (s/maybe s/Int)
-                           :expires_on (s/maybe s/Int)
-                           :visibility (s/maybe (s/enum "private" "internal" "public"))
-                           :status (s/maybe (s/enum "pending" "accepted" "declined"))
-                           :mtime s/Int
-                           :badge_content_id (s/maybe s/Str)
-                           (s/optional-key :email) s/Str
+(s/defschema BadgeContent {:id                             s/Int
+                           :name                           (s/maybe s/Str)
+                           :description                    (s/maybe s/Str)
+                           :image_file                     (s/maybe s/Str)
+                           :issued_on                      (s/maybe s/Int)
+                           :expires_on                     (s/maybe s/Int)
+                           :visibility                     (s/maybe (s/enum "private" "internal" "public"))
+                           :status                         (s/maybe (s/enum "pending" "accepted" "declined"))
+                           :mtime                          s/Int
+                           :badge_content_id               (s/maybe s/Str)
+                           (s/optional-key :issuer_name)   s/Str
+                           (s/optional-key :issuer_url)    s/Str
+                           (s/optional-key :email)         s/Str
                            (s/optional-key :assertion_url) (s/maybe s/Str)
-                           (s/optional-key :tags) (s/maybe [s/Str])})
+                           (s/optional-key :tags)          (s/maybe [s/Str])})
 
 (s/defschema BadgeToImport {:status  (s/enum "ok" "invalid")
                             :message (s/maybe s/Str)

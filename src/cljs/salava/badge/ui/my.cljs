@@ -3,23 +3,27 @@
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :as set :refer [intersection]]
+            [clojure.string :refer [upper-case]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.badge.ui.settings :as s]
+            [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
    {:value "public"  :title (t :core/Public)}
-   {:value "shared"  :title (t :core/Shared)}
-   {:value "private" :title (t :core/Private)}])
+   {:value "internal"  :title (t :core/Registeredusers)}
+   {:value "private" :title (t :core/Onlyyou)}])
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
-   {:value "name" :id "radio-name" :label (t :core/byname)}])
+   {:value "name" :id "radio-name" :label (t :core/byname)}
+   {:value "issuer_name" :id "radio-issuer" :label (t :core/byissuername)}
+   {:value "expires_on" :id "radio-expiratio" :label (t :core/byexpirationdate)}])
 
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"
@@ -61,18 +65,19 @@
                           {:size :lg}))}))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description visibility]} element-data]
+  (let [{:keys [id image_file name description visibility expires_on]} element-data
+        expired? (and expires_on (>= (unix-time) expires_on))
+        badge-link (str "/badge/info/" id)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
-      [:div.media-content
+      [:div {:class (str "media-content " (if expired? "media-expired"))}
        (if image_file
          [:div.media-left
-          [:img {:src (str "/" image_file)}]])
+          [:a {:href badge-link} [:img {:src (str "/" image_file)}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (str "/badge/info/" id)}
-          name]]
+         [:a.heading-link {:href badge-link} name]]
         [:div.visibility-icon
          (case visibility
            "private" [:i {:class "fa fa-lock"
@@ -84,22 +89,28 @@
            nil)]
         [:div.media-description description]]]
       [:div {:class "media-bottom"}
-       [:a {:class "bottom-link"
-            :href (str "/badge/info/" id)}
-        [:i {:class "fa fa-share-alt"}]
-        [:span (t :badge/Share)]]
-       [:a {:class "bottom-link pull-right"
-            :href "#"
-            :on-click #(show-settings-dialog id state)}
-        [:i {:class "fa fa-cog"}]
-        [:span (t :badge/Settings)]]]]]))
+       (if expired?
+         [:div.expired
+          [:i {:class "fa fa-history"}] " " (t :badge/Expired)]
+         [:div
+          [:a {:class "bottom-link" :href (str "/badge/info/" id)}
+           [:i {:class "fa fa-share-alt"}]
+           [:span (t :badge/Share)]]
+          [:a {:class "bottom-link pull-right" :href "" :on-click #(show-settings-dialog id state)}
+           [:i {:class "fa fa-cog"}]
+           [:span (t :badge/Settings)]]])]]]))
 
 (defn badge-grid [state]
   (let [badges (:badges @state)
-        order (:order @state)]
+        order (keyword (:order @state))
+        badges (case order
+                 (:mtime) (sort-by order > badges)
+                 (:name :issuer_name) (sort-by (comp clojure.string/upper-case order) badges)
+                 (:expires_on) (sort-by (comp nil? order) badges)
+                 badges)]
     (into [:div {:class "row"
                  :id    "grid"}]
-          (for [element-data (sort-by (keyword order) badges)]
+          (for [element-data badges]
             (if (badge-visible? element-data state)
               (badge-grid-element element-data state))))))
 
@@ -113,7 +124,7 @@
                   (if (= new-status "accepted")
                     (swap! state assoc :badges (conj (:badges @state) badge)))))}))
 
-(defn badge-pending [{:keys [id image_file name description]} state]
+(defn badge-pending [{:keys [id image_file name description issuer_name issuer_url issued_on]} state]
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
@@ -125,6 +136,9 @@
         [:div.media-body
          [:h4.media-heading
           name]
+         [:div
+          [:a {:href issuer_url :target "_blank"} issuer_name]]
+         [:div (date-from-unix-time (* 1000 issued_on))]
          [:div
           description]]]]]
      [:div {:class "row button-row"}
@@ -186,7 +200,7 @@
   (let [state (atom {:badges []
                      :pending []
                      :visibility "all"
-                     :order ""
+                     :order :mtime
                      :tags-all true
                      :tags-selected []})]
     (init-data state)

@@ -15,6 +15,10 @@ $grid-link-hover: #2a6496;
     box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
 }
 
+a:hover, a:active, a:visited, a:focus {
+    text-decoration: none;
+}
+
 body {
     font-family: 'Open Sans';
     height: 100%;
@@ -341,14 +345,16 @@ ul.side-links {
             color: #766d72;
             font-size: 12px;
             min-height: 35px;
+            text-transform: uppercase;
+            i.fa {
+                font-size: 20px;
+                padding-right: 5px;
+            }
             a.bottom-link {
                 color: #766d72;
-                text-transform: uppercase;
                 cursor: pointer;
                 i.fa {
-                    font-size: 20px;
                     color: #b1a1ab;
-                    padding-right: 5px;
                 }
                 span {
                     vertical-align: top;
@@ -361,6 +367,13 @@ ul.side-links {
                 font-weight: normal;
                 margin-bottom: 0;
             }
+            .expired {
+                text-transform: uppercase;
+                color: #8c2e0b;
+            }
+        }
+        .media-expired {
+            opacity: 0.7;
         }
     }
 }
@@ -401,6 +414,10 @@ ul.side-links {
 
 .form-bar-error {
     border-color: #d9534f;
+}
+
+ol.welcome-text li {
+    padding-top: 10px;
 }
 
 
