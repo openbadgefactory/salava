@@ -35,8 +35,8 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? visibility show_recipient_name image_file rating issuer_name issuer_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count]} @state]
-    [:div {:class "badge-info"}
+  (let [{:keys [owner? visibility show_recipient_name image_file rating issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count issued_by_obf verified_by_obf obf_url]} @state]
+    [:div {:id "badge-info"}
      (if owner?
        [:div.row
         [:div.col-sm-4
@@ -57,6 +57,8 @@
          [:button {:class "btn btn-primary"
                    :on-click #(.print js/window)}
           (t :core/Print)]]])
+     (if (or verified_by_obf issued_by_obf)
+       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row
       [:div {:class "col-md-3 badge-image"}
        [:div.row
@@ -86,9 +88,9 @@
            )]]]
       [:div {:class "col-md-9"}
        [:div.row
-        [:div {:class "col-md-12 badge-info"}
+        [:div {:class "col-md-12"}
          [:h1 (:name @state)]
-         (bh/issuer-label-and-link issuer_name issuer_url issuer_contact)
+         (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
          (if show_recipient_name
            [:div
             (t :badge/Recipient ": " first_name " " last_name)])

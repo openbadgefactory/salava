@@ -29,7 +29,7 @@
 (defn fetch-signed-badge-assertion [image-url]
   (try+
     (let [temp-file (java.io.File/createTempFile "file" ".png")
-          output (copy-to-file temp-file image-url)
+          _ (copy-to-file temp-file image-url)
           assertion (p/get-assertion-from-png temp-file)]
       (.delete temp-file)
       assertion)
@@ -59,6 +59,7 @@
         criteria-markdown (or (get-criteria-markdown criteria) "")
         criteria-html (md/md-to-html-string criteria-markdown)]
     (assoc badge-data
+      :badge_url badge-assertion-url
       :issuer_url issuer-url
       :issuer issuer-data
       :criteria_url criteria

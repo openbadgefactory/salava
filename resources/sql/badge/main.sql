@@ -1,10 +1,10 @@
 
 -- name: select-user-badges-all
 -- get user's badges
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, ic.name AS issuer_name, ic.url AS issuer_url FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, badge_url, issuer_url, issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
-       WHERE user_id = :user_id AND deleted = 0
+       WHERE user_id = :user_id AND deleted = 0 AND status != "declined"
 
 -- name: select-user-badges-to-export
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, email, assertion_url FROM badge
@@ -40,12 +40,12 @@ REPLACE INTO criteria_content (id, html_content, markdown_content)
 
 --name: insert-badge<!
 --save badge
-INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked)
-       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0)
+INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified)
+       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0, :issuer_verified)
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -78,7 +78,7 @@ UPDATE badge SET show_recipient_name = :show_recipient_name WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_contact FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -155,8 +155,12 @@ SELECT b.id, bc.name, bc.image_file, COUNT(bco.user_id) AS congratulation_count,
 
 --name: select-badge-issuer-stats
 --get user's badge issuer stats
-SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_name, ic.url AS issuer_url FROM badge AS b
+SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge AS b
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
        ORDER BY ic.name
+
+--name: update-badge-set-verified!
+--update verification status of the issuer of the badge
+UPDATE badge SET issuer_verified = :issuer_verified, mtime = UNIX_TIMESTAMP() WHERE id = :id

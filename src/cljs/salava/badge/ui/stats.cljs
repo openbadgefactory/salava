@@ -66,9 +66,9 @@
      (if (= @visible-area-atom panel-identity)
        (into [:div.panel-body]
              (for [issuer issuers
-                   :let [{:keys [issuer_name issuer_url badges]} issuer]]
+                   :let [{:keys [issuer_content_name issuer_content_url badges]} issuer]]
                [:div.issuer-badges-wrapper
-                [:h4 [:a {:href issuer_url :target "_blank"} issuer_name] ": " (count badges)]
+                [:h4 [:a {:href issuer_content_url :target "_blank"} issuer_content_name] ": " (count badges)]
                 (into [:div.issuer-badges]
                       (for [badge badges
                             :let [{:keys [id image_file name]} badge]]

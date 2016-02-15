@@ -1,5 +1,5 @@
 -- name: select-users-public-badges
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url, ic.name AS issuer_name, ic.url AS issuer_url FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        WHERE visibility = 'public' AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp()) AND user_id = :user_id
@@ -31,7 +31,7 @@ SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count, COUNT(DISTI
        WHERE b.visibility = 'public' AND b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND bc.id = :badge_content_id
 
 -- name: select-badge-criteria-issuer-by-recipient
-SELECT html_content, criteria_url, ic.name AS issuer_name, url AS issuer_url, ic.email AS issuer_contact FROM badge AS b
+SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE user_id = :user_id AND badge_content_id = :badge_content_id
@@ -39,7 +39,7 @@ SELECT html_content, criteria_url, ic.name AS issuer_name, url AS issuer_url, ic
        LIMIT 1
 
 -- name: select-badge-criteria-issuer-by-date
-SELECT html_content, criteria_url, ic.name AS issuer_name, url AS issuer_url, ic.email AS issuer_contact FROM badge AS b
+SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE badge_content_id = :badge_content_id
