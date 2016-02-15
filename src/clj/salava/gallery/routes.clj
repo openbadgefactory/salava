@@ -13,6 +13,7 @@
              (layout/main ctx "/")
              (layout/main ctx "/badges")
              (layout/main ctx "/badges/:user-id")
+             (layout/main ctx "/badgeview/:badge-id")
              (layout/main ctx "/pages")
              (layout/main ctx "/pages/:user-id")
              (layout/main ctx "/profiles")
@@ -48,8 +49,8 @@
                                           :average_rating (s/maybe s/Num)
                                           :rating_count   (s/maybe s/Int)
                                           :recipient      (s/maybe s/Int)
-                                          :issuer_name    (s/maybe s/Str)
-                                          :issuer_url     (s/maybe s/Str)
+                                          :issuer_content_name (s/maybe s/Str)
+                                          :issuer_content_url  (s/maybe s/Str)
                                           :issuer_contact (s/maybe s/Str)
                                           :html_content   (s/maybe s/Str)
                                           :criteria_url   (s/maybe s/Str)}
@@ -57,7 +58,7 @@
                                                     :first_name s/Str
                                                     :last_name s/Str}])
                            :private_user_count (s/maybe s/Int)}
-                  :path-params [badge-content-id :- (s/constrained s/Str #(= (count %) 64))]
+                  :path-params [badge-content-id :- s/Str]
                   :summary "Get public badge data"
                   :auth-rules access/authenticated
                   :current-user current-user

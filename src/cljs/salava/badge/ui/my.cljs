@@ -9,6 +9,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.badge.ui.settings :as s]
+            [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
@@ -22,7 +23,7 @@
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
    {:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "issuer_name" :id "radio-issuer" :label (t :core/byissuername)}
+   {:value "issuer_content_name" :id "radio-issuer" :label (t :core/byissuername)}
    {:value "expires_on" :id "radio-expiratio" :label (t :core/byexpirationdate)}])
 
 (defn badge-grid-form [state]
@@ -105,7 +106,7 @@
         order (keyword (:order @state))
         badges (case order
                  (:mtime) (sort-by order > badges)
-                 (:name :issuer_name) (sort-by (comp clojure.string/upper-case order) badges)
+                 (:name :issuer_content_name) (sort-by (comp clojure.string/upper-case order) badges)
                  (:expires_on) (sort-by (comp nil? order) badges)
                  badges)]
     (into [:div {:class "row"
@@ -124,10 +125,12 @@
                   (if (= new-status "accepted")
                     (swap! state assoc :badges (conj (:badges @state) badge)))))}))
 
-(defn badge-pending [{:keys [id image_file name description issuer_name issuer_url issued_on]} state]
+(defn badge-pending [{:keys [id image_file name description issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
+     (if (or verified_by_obf issued_by_obf)
+       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row
       [:div.col-md-12
        [:div.media
@@ -137,7 +140,7 @@
          [:h4.media-heading
           name]
          [:div
-          [:a {:href issuer_url :target "_blank"} issuer_name]]
+          [:a {:href issuer_content_url :target "_blank"} issuer_content_name]]
          [:div (date-from-unix-time (* 1000 issued_on))]
          [:div
           description]]]]]

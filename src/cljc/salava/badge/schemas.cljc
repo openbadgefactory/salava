@@ -18,7 +18,8 @@
                     :image_file (s/maybe s/Str)
                     :issuer_content_id (s/maybe s/Str)
                     :issuer_email (s/maybe s/Str)
-                    :issuer_name (s/maybe s/Str)
+                    :issuer_content_name (s/maybe s/Str)
+                    :issuer_content_url (s/maybe s/Str)
                     :issuer_url (s/maybe s/Str)
                     :issued_on (s/maybe s/Int)
                     :expires_on (s/maybe s/Int)
@@ -43,8 +44,14 @@
                            :status                         (s/maybe (s/enum "pending" "accepted" "declined"))
                            :mtime                          s/Int
                            :badge_content_id               (s/maybe s/Str)
-                           (s/optional-key :issuer_name)   s/Str
-                           (s/optional-key :issuer_url)    s/Str
+                           :issuer_url                     (s/maybe s/Str)
+                           :badge_url                      (s/maybe s/Str)
+                           :obf_url                        (s/maybe s/Str)
+                           :issued_by_obf                  s/Bool
+                           :verified_by_obf                s/Bool
+                           :issuer_verified                s/Bool
+                           (s/optional-key :issuer_content_name) s/Str
+                           (s/optional-key :issuer_content_url)  s/Str
                            (s/optional-key :email)         s/Str
                            (s/optional-key :assertion_url) (s/maybe s/Str)
                            (s/optional-key :tags)          (s/maybe [s/Str])})
@@ -76,5 +83,5 @@
                                                    {:congratulation_count  s/Int
                                                     :latest_congratulation (s/maybe s/Int)})]
                          :badge_issuers         [(-> Badge
-                                                     (select-keys [:issuer_content_id :issuer_name :issuer_url])
+                                                     (select-keys [:issuer_content_id :issuer_content_name :issuer_content_url])
                                                      (assoc :badges [(select-keys Badge [:id :name :image_file])]))]})

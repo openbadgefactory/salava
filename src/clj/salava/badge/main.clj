@@ -1,11 +1,12 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
-            [clojure.string :refer [blank?]]
+            [clojure.string :refer [blank? split]]
             [slingshot.slingshot :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db map-sha256 file-from-url]]))
+            [salava.core.util :refer [get-db map-sha256 file-from-url]]
+            [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -20,12 +21,43 @@
   (let [owner (select-badge-owner {:id badge-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
     (= owner user-id)))
 
+(defn check-issuer-verified!
+  "Fetch issuer data and check if issuer is verified by OBF"
+  [ctx badge-id issuer-json-url mtime issuer-verified-initial]
+  (try+
+    (if (and issuer-json-url (< mtime (- (unix-time) (* 60 60 24 2))))
+      (let [issuer-url-base (split issuer-json-url #"&event=")
+            issuer-json (if (second issuer-url-base) (fetch-json-data (first issuer-url-base)))
+            issuer-verified (if issuer-json (:verified issuer-json) issuer-verified-initial)]
+        (if (and issuer-json badge-id)
+          (update-badge-set-verified! {:issuer_verified issuer-verified :id badge-id} (get-db ctx)))
+        issuer-verified)
+      issuer-verified-initial)
+    (catch Object _
+      issuer-verified-initial)))
+
+(defn badge-issued-and-verified-by-obf
+  "Check if badge is issued by Open Badge Factory and if the issuer is verified"
+  [ctx badge]
+  (try+
+    (let [obf-url (get-in ctx [:config :core :open-badge-factory-url] "")
+          obf-base (-> obf-url (split #"://") second)
+          {:keys [id badge_url issuer_url mtime issuer_verified]} badge
+          issued-by-obf (if (and obf-base badge_url) (-> obf-base re-pattern (re-find badge_url) boolean))
+          verified-by-obf (and issued-by-obf (check-issuer-verified! ctx id issuer_url mtime issuer_verified))]
+      (assoc badge :issued_by_obf (boolean issued-by-obf)
+                   :verified_by_obf (boolean verified-by-obf)
+                   :obf_url obf-url))
+    (catch Object _
+      badge)))
+
 (defn user-badges-all
   "Returns all the badges of a given user"
   [ctx userid]
   (let [badges (select-user-badges-all {:user_id userid} (get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))]
-    (map-badges-tags badges tags)))
+        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))
+        badges-with-tags (map-badges-tags badges tags)]
+    (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
   "Returns valid badges of a given user"
@@ -65,7 +97,8 @@
         user-congratulation? (and user-id
                                   (not owner?)
                                   (some #(= user-id (:id %)) all-congratulations))
-        view-count (if owner? (select-badge-view-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))]
+        view-count (if owner? (select-badge-view-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+        badge (badge-issued-and-verified-by-obf ctx badge)]
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count)))
@@ -92,18 +125,19 @@
     (replace-criteria-content! data (get-db ctx))
     criteria-content-sha256))
 
-
 (defn save-badge!
   "Save user's badge"
   [ctx user-id badge badge-content-id issuer-content-id criteria-content-id]
   (let [expires (get-in badge [:assertion :expires])
+        issuer-url (get-in badge [:assertion :badge :issuer_url])
+        issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
         data {:user_id             user-id
               :email               (get-in badge [:_email])
               :assertion_url       (get-in badge [:assertion :verify :url])
               :assertion_jws       (get-in badge [:assertion :assertion_jws])
               :assertion_json      (get-in badge [:assertion :assertion_json])
               :badge_url           (get-in badge [:assertion :badge :badge_url])
-              :issuer_url          (get-in badge [:assertion :badge :issuer_url])
+              :issuer_url          issuer-url
               :criteria_url        (get-in badge [:assertion :badge :criteria_url])
               :criteria_content_id criteria-content-id
               :badge_content_id    badge-content-id
@@ -118,7 +152,8 @@
               :ctime               (unix-time)
               :mtime               (unix-time)
               :deleted             0
-              :revoked             0}]
+              :revoked             0
+              :issuer_verified     issuer-verified}]
     (insert-badge<! data (get-db ctx))))
 
 (defn save-issuer-content!
@@ -237,7 +272,7 @@
 
 (defn badges-by-issuer [badges-issuers]
   (reduce (fn [result issuer-badge]
-            (let [issuer (select-keys issuer-badge [:issuer_content_id :issuer_name :issuer_url])
+            (let [issuer (select-keys issuer-badge [:issuer_content_id :issuer_content_name :issuer_content_url])
                   badge (select-keys issuer-badge [:id :name :image_file])
                   index (.indexOf (map :issuer_content_id result) (:issuer_content_id issuer))]
               (if (= index -1)

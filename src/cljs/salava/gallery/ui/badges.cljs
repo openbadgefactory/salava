@@ -98,7 +98,7 @@
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]]))
 
 (defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description issuer_name issuer_url recipients badge_content_id]} element-data
+  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
         badge-id (or badge_content_id id)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
@@ -112,8 +112,8 @@
          [:a.heading-link {:on-click #(open-modal badge-id)}
           name]]
         [:div.media-issuer
-         [:a {:href issuer_url
-              :target "_blank"} issuer_name]]
+         [:a {:href issuer_content_url
+              :target "_blank"} issuer_content_name]]
         (if recipients
           [:div.media-recipients
            recipients " " (if (= recipients 1)

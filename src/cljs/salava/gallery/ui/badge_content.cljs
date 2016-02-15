@@ -6,7 +6,7 @@
             [salava.core.helper :refer [dump]]))
 
 (defn badge-content-modal [{:keys [badge public_users private_user_count]}]
-  (let [{:keys [name image_file description issuer_name issuer_url issuer_contact html_content criteria_url average_rating rating_count]} badge]
+  (let [{:keys [name image_file description issuer_content_name issuer_content_url issuer_contact html_content criteria_url average_rating rating_count]} badge]
     [:div {:id "badge-content"}
      [:div.modal-body
       [:div.row
@@ -31,7 +31,7 @@
         [:div.row
          [:div {:class "col-md-12 badge-info"}
           [:h2.uppercase-header name]
-          (bh/issuer-label-and-link issuer_name issuer_url issuer_contact)
+          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
           [:div.row
            [:div.col-md-12
             description]]]]

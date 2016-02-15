@@ -14,3 +14,15 @@
    [:a {:target "_blank" :href url} name]
    (if email
      [:span " / " [:a {:href (str "mailto:" email)} email]])])
+
+(defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
+  [:div.row
+   [:div.col-xs-12
+    (if verified-by-obf?
+      [:div.issued-by-obf
+       [:a {:href obf-url :target "_blank"}
+        [:img {:src "/img/verifiedissuedbyobf.png"}]]]
+      (if issued-by-obf?
+        [:div.issued-by-obf
+         [:a {:href obf-url :target "_blank"}
+          [:img {:src "/img/issuedbyobf.png"}]]]))]])
