@@ -24,4 +24,4 @@
            :secure false
            :max-age 28800}
 
- :http {:host "localhost" :port 5000}}
+ :http {:host "localhost" :port 5000 :max-body 100000000}}
