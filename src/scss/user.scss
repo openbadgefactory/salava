@@ -18,3 +18,25 @@
 .modal-cancel-button {
     padding: 7px 13px;
 }
+
+#profile {
+    #grid {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    h2.user-profile-header {
+        padding-top: 20px;
+        padding-bottom: 0;
+        margin: 0;
+    }
+
+    img.profile-picture {
+        display: inline-block;
+        width: 200px;
+        height: auto;
+        padding: 4px;
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
+    }
+}

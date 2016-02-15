@@ -4,6 +4,7 @@
             [clojure.string :refer [trim]]
             [slingshot.slingshot :refer :all]
             [buddy.hashers :as hashers]
+            [salava.gallery.db :as g]
             [salava.core.util :refer [get-db get-datasource]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
@@ -140,3 +141,21 @@
         (update-verify-email-address! {:email email :user_id user-id} (get-db ctx))
         {:status "success"})
       {:status "error"})))
+
+(defn user-profile
+  "Get user profile information"
+  [ctx user-id]
+  (let [user (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+        user-profile (select-user-profile-fields {:user_id user-id} (get-db ctx))
+        recent-badges (g/public-badges-by-user ctx user-id)
+        recent-pages (g/public-pages-by-user ctx user-id)]
+    {:user user
+     :profile user-profile
+     :badges recent-badges
+     :pages recent-pages}))
+
+(defn set-profile-visibility
+  "Set user profile visibility."
+  [ctx visibility user-id]
+  (update-user-visibility! {:profile_visibility visibility :id user-id} (get-db ctx))
+  visibility)

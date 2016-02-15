@@ -1,0 +1,1 @@
+ALTER TABLE `user` DROP `profile_picture` DROP `about`;

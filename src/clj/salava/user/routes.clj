@@ -21,8 +21,7 @@
              (layout/main ctx "/edit/email-addresses")
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
-             (layout/main ctx "/:id")
-             (layout/main ctx "/view/:id")
+             (layout/main ctx "/profile/:id")
              (layout/main ctx "/view/edit_profile")
              (layout/main ctx "/cancel"))
 
@@ -113,6 +112,22 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (u/verify-email-address ctx email verification_key (:id current-user))))
+
+             (GET "/profile/:userid" []
+                  ;:return ""
+                  :path-params [userid :- s/Int]
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (let [profile (u/user-profile ctx userid)]
+                    (ok (assoc profile :owner? (= userid (:id current-user))))))
+
+             (POST "/profile/set_visibility" []
+                   :return (:profile_visibility schemas/User)
+                   :body-params [visibility :- (:profile_visibility schemas/User)]
+                   :summary "Update profile visibility"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/set-profile-visibility ctx visibility (:id current-user))))
 
              (GET "/test" []
                   :summary "Test is user authenticated"

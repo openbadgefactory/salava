@@ -20,7 +20,11 @@ SELECT id, first_name, last_name, pass, activated, primary_address, verified, ve
 
 --name: select-user
 -- get user by id
-SELECT id, first_name, last_name, country, language FROM user WHERE id = :id
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, about FROM user WHERE id = :id
+
+--name: select-user-profile-fields
+-- get all user's profile fields
+SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 
 -- name: insert-user<!
 -- add new user
@@ -65,3 +69,6 @@ UPDATE user_email SET verified = 1, mtime = UNIX_TIMESTAMP() WHERE user_id = :us
 
 --name: update-verify-primary-email-address!
 UPDATE user_email SET verified = 1, mtime = UNIX_TIMESTAMP() WHERE user_id = :user_id AND primary_address = 1
+
+--name: update-user-visibility!
+UPDATE user SET profile_visibility = :profile_visibility, mtime = UNIX_TIMESTAMP() WHERE id = :id
