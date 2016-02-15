@@ -25,7 +25,7 @@
   "Fetch issuer data and check if issuer is verified by OBF"
   [ctx badge-id issuer-json-url mtime issuer-verified-initial]
   (try+
-    (if (and issuer-json-url (< mtime (- (unix-time) (* 60 60 24 2))))
+    (if (and issuer-json-url mtime (< mtime (- (unix-time) (* 60 60 24 2))))
       (let [issuer-url-base (split issuer-json-url #"&event=")
             issuer-json (if (second issuer-url-base) (fetch-json-data (first issuer-url-base)))
             issuer-verified (if issuer-json (:verified issuer-json) issuer-verified-initial)]

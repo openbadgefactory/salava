@@ -43,17 +43,22 @@
                    (ok (hash-map :badges (g/public-badges-by-user ctx userid))))
 
              (GET "/public_badge_content/:badge-content-id" []
-                  :return {:badge        {:name           s/Str
-                                          :image_file     (s/maybe s/Str)
-                                          :description    (s/maybe s/Str)
-                                          :average_rating (s/maybe s/Num)
-                                          :rating_count   (s/maybe s/Int)
-                                          :recipient      (s/maybe s/Int)
+                  :return {:badge        {:name                s/Str
+                                          :image_file          (s/maybe s/Str)
+                                          :description         (s/maybe s/Str)
+                                          :average_rating      (s/maybe s/Num)
+                                          :rating_count        (s/maybe s/Int)
+                                          :recipient           (s/maybe s/Int)
                                           :issuer_content_name (s/maybe s/Str)
                                           :issuer_content_url  (s/maybe s/Str)
-                                          :issuer_contact (s/maybe s/Str)
-                                          :html_content   (s/maybe s/Str)
-                                          :criteria_url   (s/maybe s/Str)}
+                                          :issuer_contact      (s/maybe s/Str)
+                                          :html_content        (s/maybe s/Str)
+                                          :criteria_url        (s/maybe s/Str)
+                                          :badge_url           (s/maybe s/Str)
+                                          :verified_by_obf     s/Bool
+                                          :issued_by_obf       s/Bool
+                                          :issuer_verified     s/Bool
+                                          :obf_url             s/Str}
                            :public_users (s/maybe [{:id s/Int
                                                     :first_name s/Str
                                                     :last_name s/Str}])
