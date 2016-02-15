@@ -4,7 +4,8 @@
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [salava.core.helper :refer [dump]]
-            [hiccup.page :refer [html5 include-css include-js]]))
+            [hiccup.page :refer [html5 include-css include-js]]
+            salava.core.restructure))
 
 (def asset-css
   ["/assets/bootstrap/css/bootstrap.min.css"
@@ -34,7 +35,7 @@
 
 
 (defn context-js [ctx]
-  (let [ctx-out {:plugins {:all (get-in ctx [:config :core :plugins])}}]
+  (let [ctx-out {:plugins {:all (get-in ctx [:config :core :plugins])} :user (:user ctx)}]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 
@@ -61,6 +62,7 @@
   (GET path []
          :no-doc true
          :summary "Main HTML layout"
-         (-> (main-view ctx)
+         :current-user current-user
+         (-> (main-view (assoc ctx :user current-user))
              (ok)
              (content-type "text/html; charset=\"UTF-8\""))))
