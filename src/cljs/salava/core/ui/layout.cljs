@@ -1,5 +1,6 @@
 (ns salava.core.ui.layout
-  (:require [clojure.string :as str]
+  (:require [reagent.session :as session]
+            [clojure.string :as str]
             [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [current-path navigate-to]]
@@ -51,20 +52,21 @@
     [:span {:class "icon-bar"}]]])
 
 (defn top-navi-right []
-  [:div {:id "main-header-right"
-         :class "nav navbar-nav navbar-right"}
-   [:ul {:id "secondary-menu-links"
-         :class "clearfix"}
-    [:li [:a {:href "/user/edit"}
-          [:i {:class "fa fa-caret-right"}]
-          "My account"]]
-    [:li [:a {:href "#"
-              :on-click #(logout)}
-          [:i {:class "fa fa-caret-right"}]
-          "Log out"]]]
-   [:div.userpic
-    [:a {:href "#"}
-     [:img {:src "/img/user.png"}]]]])
+  (let [profile-picture (session/get-in [:user :picture])]
+    [:div {:id    "main-header-right"
+          :class "nav navbar-nav navbar-right"}
+    [:ul {:id    "secondary-menu-links"
+          :class "clearfix"}
+     [:li [:a {:href "/user/edit"}
+           [:i {:class "fa fa-caret-right"}]
+           "My account"]]
+     [:li [:a {:href     "#"
+               :on-click #(logout)}
+           [:i {:class "fa fa-caret-right"}]
+           "Log out"]]]
+    [:div.userpic
+     [:a {:href "#"}
+      [:img {:src (if profile-picture (str "/" profile-picture) "/img/user_default.png")}]]]]))
 
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]

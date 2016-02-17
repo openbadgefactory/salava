@@ -16,7 +16,7 @@
 
 (def ctx (get-ctx))
 
-(session/put! :lang :en)
+(session/put! :user (:user ctx))
 
 (session/put! :i18n-editable (some #(= "translator" %1) (get-in ctx [:plugins :all])))
 
