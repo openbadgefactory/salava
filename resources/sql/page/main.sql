@@ -143,3 +143,6 @@ DELETE FROM page WHERE id = :id
 --name: select-page-owner
 --get page owner's user-id
 SELECT user_id FROM page WHERE id = :id
+
+--name: update-page-visibility!
+UPDATE page SET visibility = :visibility, mtime = UNIX_TIMESTAMP() WHERE id = :id

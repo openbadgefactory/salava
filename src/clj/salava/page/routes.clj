@@ -131,6 +131,15 @@
                    :current-user current-user
                    (ok (p/save-page-settings! ctx pageid tags visibility password (:id current-user))))
 
+             (POST "/toggle_visibility/:pageid" []
+                   :return (s/enum "private" "public")
+                   :path-params [pageid :- s/Int]
+                   :body-params [visibility :- (s/enum "private" "public")]
+                   :summary "Toggle page visibility"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (p/toggle-visibility! ctx pageid visibility (:id current-user))))
+
              (DELETE "/:pageid" []
                      :path-params [pageid :- s/Int]
                      :summary "Delete page"

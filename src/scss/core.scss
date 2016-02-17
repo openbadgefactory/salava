@@ -425,3 +425,35 @@ ol.welcome-text li {
 .rateit .rateit-selected {
     background-position: left -32px;
 }
+
+/* share buttons */
+#share {
+    #share-buttons {
+        .share-button {
+            margin-right: 3px;
+            vertical-align: top;
+            display: inline-block;
+        }
+        .share-link {
+            vertical-align: top;
+            display: inline-block;
+            margin-left: 10px;
+            a {
+                color: #7f7179;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+    #share-buttons.share-disabled {
+        background-color: #ececec;
+        opacity: 0.5;
+        cursor: default;
+        pointer-events: none;
+    }
+    margin-top: 10px;
+    margin-bottom: 20px;
+}

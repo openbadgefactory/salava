@@ -74,12 +74,12 @@
     [:div.col-md-12
      [:label.files-label
       (t :page/Attachments) ": "]
-     (for [file files]
-       [:span.attachment
-        [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-        [:a.file-link {:href (str "/" (:path file))
-                       :target "_blank"}
-         (:name file)]])]]])
+     (into [:div] (for [file files]
+                    [:span.attachment
+                     [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
+                     [:a.file-link {:href (str "/" (:path file))
+                                    :target "_blank"}
+                      (:name file)]]))]]])
 
 (defn heading-block [{:keys [size content]}]
   [:div.heading-block
