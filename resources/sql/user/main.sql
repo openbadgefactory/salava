@@ -14,7 +14,7 @@ SELECT user_id FROM user_email WHERE email = :email
 
 -- name: select-user-by-email-address
 -- get user data by email address
-SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key FROM user AS u
+SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, profile_picture FROM user AS u
        JOIN user_email AS ue ON ue.user_id = u.id
        WHERE email = :email
 
@@ -72,3 +72,6 @@ UPDATE user_email SET verified = 1, mtime = UNIX_TIMESTAMP() WHERE user_id = :us
 
 --name: update-user-visibility!
 UPDATE user SET profile_visibility = :profile_visibility, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: update-user-visibility-picture-about!
+UPDATE user SET profile_visibility = :profile_visibility, profile_picture = :profile_picture, about = :about, mtime = UNIX_TIMESTAMP() WHERE id = :id

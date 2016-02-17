@@ -76,11 +76,11 @@
         [:div.row
          (profile-visibility-input visibility-atom)
          [:div.col-xs-12
-          [:a {:href "/user/profile/edit"} (t :user/Editprofile)]]])
+          [:a {:href "/user/edit/profile"} (t :user/Editprofile)]]])
       [:h2.uppercase-header first_name " " last_name]
       [:div.row
        [:div {:class "col-md-3 col-xs-12"}
-        [:img.profile-picture {:src (or profile_picture "/img/user_default.png")}]]
+        [:img.profile-picture {:src (if profile_picture (str "/" profile_picture) "/img/user_default.png")}]]
        [:div {:class "col-md-9 col-xs-12"}
         (if about
           [:div.row

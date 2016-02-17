@@ -18,9 +18,11 @@
                                                           (<= (count %) 50)))
                    :password_verify (s/constrained s/Str #(and (>= (count %) 6)
                                                                (<= (count %) 50)))
-                   :profile_visibility (s/enum "public" "internal")})
+                   :profile_visibility (s/enum "public" "internal")
+                   :profile_picture (s/maybe s/Str)
+                   :about (s/maybe s/Str)})
 
-(s/defschema RegisterUser (dissoc User :password :password_verify :language :profile_visibility))
+(s/defschema RegisterUser (dissoc User :password :password_verify :language :profile_visibility :profile_picture :about))
 
 (s/defschema LoginUser (select-keys User [:email :password]))
 

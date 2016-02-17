@@ -164,8 +164,7 @@
       [:input {:id "grid-file-upload"
                :type "file"
                :name "file"
-               :on-change #(send-file (cursor state [:files]))
-               :accept "image/*"}]
+               :on-change #(send-file (cursor state [:files]))}]
       [:div {:class "media grid-container"}
        [:div.media-content
         [:div.media-body

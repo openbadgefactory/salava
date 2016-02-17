@@ -5,6 +5,7 @@
             [slingshot.slingshot :refer :all]
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
+            [salava.file.db :as f]
             [salava.core.util :refer [get-db get-datasource]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
@@ -63,15 +64,10 @@
 (defn login-user
   "Check if user exists and password matches"
   [ctx email plain-password]
-  (let [{:keys [id first_name last_name pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+  (let [{:keys [id first_name last_name pass activated verified primary_address language profile_picture]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
     (if (and (hashers/check plain-password pass) id activated verified primary_address)
-      {:status "success" :id id :fullname (str first_name " " last_name)}
+      {:status "success" :id id :fullname (str first_name " " last_name) :language language :picture profile_picture}
       {:status "error" :message (t :user/Loginfailed)})))
-
-(defn user-information
-  "Get user data by user-id"
-  [ctx user-id]
-  (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx))))
 
 (defn edit-user
   "Edit user information"
@@ -142,11 +138,21 @@
         {:status "success"})
       {:status "error"})))
 
-(defn user-profile
-  "Get user profile information"
+(defn user-information
+  "Get user data by user-id"
   [ctx user-id]
-  (let [user (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))
-        user-profile (select-user-profile-fields {:user_id user-id} (get-db ctx))
+  (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+
+(defn user-profile
+  "Get user profile fields"
+  [ctx user-id]
+  (select-user-profile-fields {:user_id user-id} (get-db ctx)))
+
+(defn user-information-and-profile
+  "Get user informatin, profile, public badges and pages"
+  [ctx user-id]
+  (let [user (user-information ctx user-id)
+        user-profile (user-profile ctx user-id)
         recent-badges (g/public-badges-by-user ctx user-id)
         recent-pages (g/public-pages-by-user ctx user-id)]
     {:user user
@@ -154,8 +160,27 @@
      :badges recent-badges
      :pages recent-pages}))
 
+(defn user-profile-for-edit
+  "Get user profile visibility, profile picture, about text and profile fields for editing"
+  [ctx user-id]
+  (let [user (user-information ctx user-id)
+        user-profile (user-profile ctx user-id)]
+    {:user (select-keys user [:about :profile_picture :profile_visibility])
+     :profile user-profile
+     :user_id user-id
+     :picture_files (f/user-image-files ctx user-id)}))
+
+
 (defn set-profile-visibility
   "Set user profile visibility."
   [ctx visibility user-id]
   (update-user-visibility! {:profile_visibility visibility :id user-id} (get-db ctx))
   visibility)
+
+(defn save-user-profile
+  "Save user's profile"
+  [ctx visibility picture about user-id]
+  (update-user-visibility-picture-about! {:profile_visibility visibility
+                                         :profile_picture picture
+                                         :about about
+                                         :id user-id} (get-db ctx)))

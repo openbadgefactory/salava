@@ -47,3 +47,8 @@
       {:status "success" :message (t :file/Filedeleted) :reason (t :file/Filedeleted)})
     (catch Object _
       {:status "error" :message (t :file/Errorwhiledeleting) :reason (t :file/Errorwhiledeleting)})))
+
+(defn user-image-files
+  "Get all image files by user"
+  [ctx user-id]
+  (select-user-image-files {:user_id user-id} (get-db ctx)))

@@ -22,7 +22,7 @@
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
              (layout/main ctx "/profile/:id")
-             (layout/main ctx "/view/edit_profile")
+             (layout/main ctx "/edit/profile")
              (layout/main ctx "/cancel"))
 
     (context "/obpv1/user" []
@@ -34,7 +34,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname]))
+                       (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname :picture :language]))
                        (ok login-status))))
 
              (POST "/logout" []
@@ -60,7 +60,8 @@
                   :summary "Get user information for editing"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (u/user-information ctx (:id current-user))))
+                  (let [user-info (u/user-information ctx (:id current-user))]
+                    (ok (dissoc user-info :profile_picture :profile_visibility :about))))
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")
@@ -115,11 +116,19 @@
 
              (GET "/profile/:userid" []
                   ;:return ""
+                  :summary "Get user information and profile fields"
                   :path-params [userid :- s/Int]
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (let [profile (u/user-profile ctx userid)]
+                  (let [profile (u/user-information-and-profile ctx userid)]
                     (ok (assoc profile :owner? (= userid (:id current-user))))))
+
+             (GET "/edit/profile" []
+                  ;:return
+                  :summary "Get user information and profile fields for editing"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (u/user-profile-for-edit ctx (:id current-user))))
 
              (POST "/profile/set_visibility" []
                    :return (:profile_visibility schemas/User)
@@ -128,6 +137,16 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (u/set-profile-visibility ctx visibility (:id current-user))))
+
+             (POST "/profile" []
+                   ;:return
+                   :body-params [profile_visibility :- (:profile_visibility schemas/User)
+                                 profile_picture :- (:profile_picture schemas/User)
+                                 about :- (:about schemas/User)]
+                   :summary "Save user's profile fields, visibility, picture and about text"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (str (u/save-user-profile ctx profile_visibility profile_picture about (:id current-user)))))
 
              (GET "/test" []
                   :summary "Test is user authenticated"

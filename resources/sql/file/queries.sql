@@ -25,3 +25,7 @@ DELETE FROM user_file_tag WHERE file_id = :file_id
 
 --name: insert-file<!
 INSERT INTO user_file (user_id, name, path, mime_type, size, ctime, mtime) VALUES (:user_id, :name, :path, :mime_type, :size, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: select-user-image-files
+SELECT id, name, path, mime_type, size, ctime, mtime FROM user_file AS f
+       WHERE user_id = :user_id AND mime_type LIKE 'image/%'
