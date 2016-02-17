@@ -7,13 +7,16 @@
             [salava.core.time :refer [unix-time]]
             [salava.file.db :as f]))
 
-(defn upload-file [ctx user-id file]
+(defn upload-file [ctx user-id file image-only?]
   (try+
     (let [{:keys [size filename tempfile]} file
-          mime-types (-> ctx
-                         (get-in [:config :file :allowed-file-types])
-                         vals
-                         distinct)
+          types (-> ctx
+                    (get-in [:config :file :allowed-file-types])
+                    vals
+                    distinct)
+          mime-types (if image-only?
+                       (filter #(re-matches #"^image/.*" %) types)
+                       types)
           max-size (get-in ctx [:config :file :max-size] 100000000)
           extension (file-extension filename)
           mime-type (mime-type-of tempfile)

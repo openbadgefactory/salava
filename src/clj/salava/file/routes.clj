@@ -41,7 +41,16 @@
                    :summary "Reveive file upload"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (u/upload-file ctx (:id current-user) file)))
+                   (ok (u/upload-file ctx (:id current-user) file false)))
+
+             (POST "/upload_image" []
+                   :return schemas/Upload
+                   :multipart-params [file :- upload/TempFileUpload]
+                   :middleware [upload/wrap-multipart-params]
+                   :summary "Reveive image upload"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (u/upload-file ctx (:id current-user) file true)))
 
              (POST "/save_tags/:fileid" []
                    :path-params [fileid :- Long]
