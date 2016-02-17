@@ -1,7 +1,9 @@
 (ns salava.user.ui.profile
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.share :as s]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]))
 
@@ -69,15 +71,19 @@
 
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
-        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user user-id :user-id} @state]
+        link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
+        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user user-id :user-id} @state
+        fullname (str first_name " " last_name)]
     [:div.panel {:id "profile"}
      [:div.panel-body
       (if owner?
         [:div.row
          (profile-visibility-input visibility-atom)
          [:div.col-xs-12
+          [s/share-buttons (str (session/get :base-url) "/user/profile/" user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
+         [:div.col-xs-12
           [:a {:href "/user/edit/profile"} (t :user/Editprofile)]]])
-      [:h2.uppercase-header first_name " " last_name]
+      [:h2.uppercase-header fullname]
       [:div.row
        [:div {:class "col-md-3 col-xs-12"}
         [:img.profile-picture {:src (if profile_picture (str "/" profile_picture) "/img/user_default.png")}]]
@@ -101,7 +107,8 @@
   (ajax/GET
     (str "/obpv1/user/profile/" user-id)
     {:handler (fn [data]
-                (reset! state (assoc data :user-id user-id)))}))
+                (reset! state (assoc data :user-id user-id
+                                          :show-link-or-embed-code nil)))}))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)

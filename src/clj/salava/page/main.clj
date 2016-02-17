@@ -238,3 +238,10 @@
     (delete-blocks! ctx page-id)
     (delete-page-tags! {:page_id page-id} (get-db ctx))
     (delete-page! {:id page-id} (get-db ctx))))
+
+(defn toggle-visibility! [ctx page-id visibility user-id]
+  (if (page-owner? ctx page-id user-id)
+    (do
+      (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
+      visibility)
+    (if (= visibility "public") "private" "public")))

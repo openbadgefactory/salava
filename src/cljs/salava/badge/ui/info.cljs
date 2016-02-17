@@ -1,11 +1,12 @@
 (ns salava.badge.ui.info
-  (:require [reagent.core :refer [atom]]
+  (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
-            [salava.core.ui.rate-it :as r]))
+            [salava.core.ui.rate-it :as r]
+            [salava.core.ui.share :as s]))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -35,7 +36,7 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? visibility show_recipient_name image_file rating issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count issued_by_obf verified_by_obf obf_url]} @state]
+  (let [{:keys [id name owner? visibility show_recipient_name image_file rating issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count issued_by_obf verified_by_obf obf_url]} @state]
     [:div {:id "badge-info"}
      (if owner?
        [:div.row
@@ -43,9 +44,9 @@
          [:input {:type "checkbox"
                   :id "checkbox-share"
                   :on-change #(toggle-visibility state)
-                  :checked (= "public" visibility)}]
+                  :checked (= visibility "public")}]
          [:label {:for "checkbox-share"}
-          (t :badge/Publishshare)]]
+          (t :core/Publishandshare)]]
         [:div.col-sm-4
          [:input {:type "checkbox"
                   :on-change #(toggle-recipient-name state)
@@ -56,7 +57,9 @@
         [:div.col-sm-4
          [:button {:class "btn btn-primary"
                    :on-click #(.print js/window)}
-          (t :core/Print)]]])
+          (t :core/Print)]]
+        [:div.col-sm-12
+         [s/share-buttons (str (session/get :base-url) "/badge/info/" id) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
      (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row
@@ -89,7 +92,7 @@
       [:div {:class "col-md-9"}
        [:div.row
         [:div {:class "col-md-12"}
-         [:h1 (:name @state)]
+         [:h1 name]
          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
          (if show_recipient_name
            [:div
@@ -118,7 +121,8 @@
   (ajax/GET
     (str "/obpv1/badge/info/" id)
     {:handler (fn [data]
-                (reset! state data))}))
+                (reset! state (assoc data :id id
+                                          :show-link-or-embed-code nil)))}))
 
 
 (defn handler [site-navi params]

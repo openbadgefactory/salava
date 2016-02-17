@@ -1,12 +1,13 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
-            [clojure.string :refer [blank? split]]
+            [clojure.string :refer [blank? split upper-case lower-case capitalize]]
             [slingshot.slingshot :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db map-sha256 file-from-url]]
-            [salava.badge.assertion :refer [fetch-json-data]]))
+            [salava.core.util :refer [get-db map-sha256 file-from-url hex-digest]]
+            [salava.badge.assertion :refer [fetch-json-data]]
+            [clojure.string :as string]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -127,12 +128,12 @@
 
 (defn save-badge!
   "Save user's badge"
-  [ctx user-id badge badge-content-id issuer-content-id criteria-content-id]
+  [ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id]
   (let [expires (get-in badge [:assertion :expires])
         issuer-url (get-in badge [:assertion :badge :issuer_url])
         issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
         data {:user_id             user-id
-              :email               (get-in badge [:_email])
+              :email               recipient-email
               :assertion_url       (get-in badge [:assertion :verify :url])
               :assertion_jws       (get-in badge [:assertion :assertion_jws])
               :assertion_json      (get-in badge [:assertion :assertion_json])
@@ -170,10 +171,35 @@
     (replace-issuer-content! data (get-db ctx))
     issuer-content-sha256))
 
+(defn check-email [recipient email algorithms]
+  (let [{hashed :hashed identity :identity salt :salt} recipient
+        [algo hash] (split (or identity "") #"\$")
+        algorithm (get algorithms algo)]
+    (if hashed
+      (do
+        (if-not algorithm
+          (throw+ "Invalid algorithm"))
+        (first (filter #(= hash (hex-digest algorithm (str % salt))) [email (upper-case email) (lower-case email) (capitalize email)])))
+      (if (= email identity)
+        email))))
+
+(defn check-recipient [ctx user-emails assertion]
+  (let [algorithms (get-in ctx [:config :badge :algorithms])
+        recipient (:recipient assertion)]
+    (if (empty? user-emails)
+      (throw+ "Badge is not issued to user"))
+    (loop [emails user-emails
+           checked-email (check-email recipient (first emails) algorithms)]
+      (cond
+        (empty? (rest emails)) nil
+        (boolean checked-email) checked-email
+        :else (recur (rest emails) (check-email recipient (first emails) algorithms))))))
+
 (defn save-badge-from-assertion!
-  [ctx badge user-id]
+  [ctx badge user-id emails]
   (try+
     (let [assertion (:assertion badge)
+          recipient-email (check-recipient ctx emails assertion)
           badge-image-path (file-from-url (get-in assertion [:badge :image]))
           badge-content-id (save-badge-content! ctx assertion badge-image-path)
           issuer-image (get-in assertion [:badge :issuer :image])
@@ -183,7 +209,9 @@
           criteria-content-id (save-criteria-content! ctx assertion)]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
         (throw+ (t :badge/Alreadyowned)))
-      (:generated_key (save-badge! ctx user-id badge badge-content-id issuer-content-id criteria-content-id)))))
+      (if-not recipient-email
+        (throw+ (t :badge/Userdoesnotownthisbadge)))
+      (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id)))))
 
 (defn save-badge-tags!
   "Save tags associated to badge. Delete existing tags."
