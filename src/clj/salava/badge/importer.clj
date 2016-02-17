@@ -8,7 +8,8 @@
             [salava.core.i18n :refer [t]]
             [salava.user.db :as u]
             [salava.badge.assertion :as a]
-            [salava.badge.png :as p]))
+            [salava.badge.png :as p]
+            [salava.badge.svg :as s]))
 
 (def api-root-url "https://backpack.openbadges.org/displayer")
 
@@ -129,7 +130,7 @@
 
 (defn badges-to-import [ctx user-id]
   (try+
-    (let [backpack-emails (u/user-backpack-emails ctx user-id)
+    (let [backpack-emails (u/verified-email-addresses ctx user-id)
           badges (fetch-all-user-badges backpack-emails)]
       {:status "success"
        :badges (map #(badge-to-import ctx user-id %) badges)
@@ -139,9 +140,9 @@
        :badges []
        :error _})))
 
-(defn save-badge-data! [ctx user-id badge]
+(defn save-badge-data! [ctx emails user-id badge]
   (try+
-    (let [badge-id (b/save-badge-from-assertion! ctx badge user-id)
+    (let [badge-id (b/save-badge-from-assertion! ctx badge user-id emails)
           tags (list (:_group_name badge))]
       (if (and tags badge-id)
         (b/save-badge-tags! ctx tags badge-id))
@@ -151,7 +152,7 @@
 
 (defn do-import [ctx user-id keys]
   (try+
-    (let [backpack-emails (u/user-backpack-emails ctx user-id)
+    (let [backpack-emails (u/verified-email-addresses ctx user-id)
           all-badges (fetch-all-user-badges backpack-emails)
           badges-with-keys (map #(assoc % :key
                                           (map-sha256 (get-in % [:assertion_key])))
@@ -159,7 +160,7 @@
           badges-to-save (filter (fn [b]
                                    (some #(= (:key b) %) keys)) badges-with-keys)
           saved-badges (for [b badges-to-save]
-                         (save-badge-data! ctx user-id b))]
+                         (save-badge-data! ctx backpack-emails user-id b))]
       {:status      "success"
        :message     (t :badge/Badgessaved)
        :saved-count (->> saved-badges
@@ -173,14 +174,16 @@
 
 (defn upload-badge [ctx uploaded-file user-id]
   (try+
-    (if-not (= (:content-type uploaded-file) "image/png")
+    (if-not (some #(= (:content-type uploaded-file) %) ["image/png" "image/svg+xml"])
       (throw+ (t :badge/Invalidfiletype)))
-    (let [assertion-url (p/get-assertion-from-png (:tempfile uploaded-file))
+    (let [content-type (:content-type uploaded-file)
+          assertion-url (if (= content-type "image/png")
+                          (p/get-assertion-from-png (:tempfile uploaded-file))
+                          (s/get-assertion-from-svg (:tempfile uploaded-file)))
           assertion (a/create-assertion assertion-url {})
-          email (u/primary-email ctx user-id)
-          data {:assertion assertion
-                :_email email}
-          badge-id (b/save-badge-from-assertion! ctx data user-id)]
+          emails (u/verified-email-addresses ctx user-id)
+          data {:assertion assertion}
+          badge-id (b/save-badge-from-assertion! ctx data user-id emails)]
       {:status "success" :message (t :badge/Badgeuploaded) :reason (t :badge/Badgeuploaded)})
     (catch Object _
       {:status "error" :message (t :badge/Errorwhileuploading) :reason _})))

@@ -1,7 +1,7 @@
 (ns salava.user.db
   (:require [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
-            [clojure.string :refer [trim]]
+            [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
@@ -15,10 +15,11 @@
 (defn hash-password [password]
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
 
-(defn user-backpack-emails
+(defn verified-email-addresses
   "Get list of user email addresses by user id"
   [ctx user-id]
-  (select-user-email-addresses {:userid user-id} (into {:row-fn :email} (get-db ctx))))
+  (let [addresses (filter :verified (select-user-email-addresses {:user_id user-id} (get-db ctx)))]
+    (map :email addresses)))
 
 (defn primary-email
   "Get user's primary email address"
@@ -94,7 +95,7 @@
 (defn email-addresses
   "Get all user email addresses"
   [ctx user-id]
-  (select-user-email-addresses {:userid user-id} (get-db ctx)))
+  (select-user-email-addresses {:user_id user-id} (get-db ctx)))
 
 (defn add-email-address
   "Add new email address to user accont"

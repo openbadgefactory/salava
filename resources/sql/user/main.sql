@@ -1,7 +1,7 @@
 -- name: select-user-email-addresses
 -- get user's email-addresses
 SELECT email, verified, primary_address, backpack_id, ctime, mtime FROM user_email
-       WHERE user_id = :userid
+       WHERE user_id = :user_id
 
 -- name: select-user-primary-email-addresses
 -- get user's badges

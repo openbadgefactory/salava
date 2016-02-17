@@ -37,6 +37,7 @@
                  [markdown-clj "0.9.82"]
                  [ar.com.hjg/pngj "2.1.0"]
                  [com.novemberain/pantomime "2.7.0" :exclusions [org.bouncycastle/bcprov-jdk15on]]
+                 [com.github.kyleburton/clj-xpath "1.4.5"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.170"]
