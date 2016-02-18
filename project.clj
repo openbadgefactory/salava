@@ -31,6 +31,7 @@
                  [clj-time "0.11.0"]
                  [prismatic/schema "1.0.4"]
                  [clojurewerkz/propertied "1.2.0"]
+                 [com.draines/postal "1.11.3"]
 
                  [clj-http "2.0.0"]
                  [enlive "1.1.6"]
