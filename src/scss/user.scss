@@ -1,11 +1,13 @@
-#login-panel {
+#narrow-panel {
     max-width: 600px;
     margin: 30px auto 0 auto;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
     border: 1px solid #cccccc;
+}
 
+#login-page {
     .login-links {
         margin-top: 20px;
     }

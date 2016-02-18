@@ -16,21 +16,23 @@
 
 (defn content [state]
   (let [email-atom (cursor state [:email])]
-    [:div {:id "reset-password"
-           :class "panel"}
-     [:div.panel-body
-      (cond
-        (= "success" (:reset-link-sent @state)) [:div {:class "alert alert-success" :role "alert"}
-                                                 (t :user/Passwordresetlinksent) ": " (:email @state)]
-        (= "error" (:reset-link-sent @state)) [:div {:class "alert alert-warning" :role "alert"}
-                                               (t :user/Errorsendingresetlink)])
-      [:div.form-group
-       [:label {:for "input-email"} (t :user/Emailaddress)]
-       [input/text-field {:name "email" :atom email-atom}]]
-      [:button {:class "btn btn-primary"
-                :on-click #(do (.preventDefault %) (send-password-reset-link state))
-                :disabled (not (input/email-valid? @email-atom))}
-       (t :user/Sendpasswordresetlink)]]]))
+    [:div {:id "reset-password"}
+     [:div {:id "narrow-panel"
+            :class "panel"}
+      [:div.panel-body
+       (cond
+         (= "success" (:reset-link-sent @state)) [:div {:class "alert alert-success" :role "alert"}
+                                                  (t :user/Passwordresetlinksent) ": " (:email @state)]
+         (= "error" (:reset-link-sent @state)) [:div {:class "alert alert-warning" :role "alert"}
+                                                (t :user/Errorsendingresetlink)])
+       [:form
+        [:div.form-group
+         [:label {:for "input-email"} (t :user/Emailaddress)]
+         [input/text-field {:name "email" :atom email-atom}]]
+        [:button {:class "btn btn-primary"
+                  :on-click #(do (.preventDefault %) (send-password-reset-link state))
+                  :disabled (not (input/email-valid? @email-atom))}
+         (t :user/Sendpasswordresetlink)]]]]]))
 
 (defn handler []
   (let [state (atom {:email ""

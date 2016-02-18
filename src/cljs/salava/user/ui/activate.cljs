@@ -64,15 +64,16 @@
       (t :user/Setpassword)]]))
 
 (defn content [state]
-  [:div {:id "login-panel"
-         :class "panel"}
-   [:div.panel-body
-    (if (:account-activated @state)
-      [:div {:class "alert alert-success"
-             :role "alert"}
-       (t :user/Accountactivatedsuccessfully)
-       [:a {:href "/user/login"} (t :user/Clickheretologin)]]
-      (activation-form state))]])
+  [:div {:id "activate-account"}
+   [:div {:id "narrow-panel"
+          :class "panel"}
+    [:div.panel-body
+     (if (:account-activated @state)
+       [:div {:class "alert alert-success"
+              :role "alert"}
+        (t :user/Accountactivatedsuccessfully) ". "
+        [:a {:href "/user/login"} (t :user/Clickheretologin)]]
+       (activation-form state))]]])
 
 (defn handler [site-navi params]
   (let [state (atom {:password ""

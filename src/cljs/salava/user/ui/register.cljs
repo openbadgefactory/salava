@@ -19,7 +19,7 @@
                     (swap! state assoc :error-message (:message data))
                     (swap! state assoc :registration-sent true)))})))
 
-(defn login-form [state]
+(defn registration-form [state]
   (let [email-atom (cursor state [:email])
         first-name-atom (cursor state [:first-name])
         last-name-atom (cursor state [:last-name])
@@ -79,14 +79,15 @@
       (t :user/Createnewaccount)]]))
 
 (defn content [state]
-  [:div {:id "login-panel"
-         :class "panel"}
-   [:div.panel-body
-    (if (:registration-sent @state)
-      [:div {:class "alert alert-success"
-             :role "alert"}
-       (t :user/Welcomemessagesent)]
-      (login-form state))]])
+  [:div {:id "registration-page"}
+   [:div {:id "narrow-panel"
+          :class "panel"}
+    [:div.panel-body
+     (if (:registration-sent @state)
+       [:div {:class "alert alert-success"
+              :role "alert"}
+        (t :user/Welcomemessagesent)]
+       (registration-form state))]]])
 
 (defn handler []
   (let [state (atom {:email ""

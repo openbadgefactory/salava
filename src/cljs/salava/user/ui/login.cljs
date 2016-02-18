@@ -31,26 +31,27 @@
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
         error-message-atom (cursor state [:error-message])]
-    [:div {:id "login-panel"
-           :class "panel"}
-     [:div {:class "panel-body"}
-      (if @error-message-atom
-        [:div {:class "alert alert-warning"}
-         @error-message-atom])
-      [:form
-       [:div.form-group
-        [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email)}]]
-       [:div.form-group
-        [input/text-field {:name "password" :atom password-atom :placeholder (t :user/Password) :password? true}]]
-       [:button {:class    "btn btn-warning"
-                 :on-click #(do (.preventDefault %) (login state))
-                 :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
-        (t :user/Login)]
-       [:div {:class "row login-links"}
-        [:div {:class "col-xs-6 text-right"}
-         [:a {:href "/user/register"} (t :user/Createnewaccount)]]
-        [:div {:class "col-xs-6 text-left"}
-         [:a {:href "/user/reset"} (t :user/Requestnewpassword)]]]]]]))
+    [:div {:id "login-page"}
+     [:div {:id "narrow-panel"
+            :class "panel"}
+      [:div {:class "panel-body"}
+       (if @error-message-atom
+         [:div {:class "alert alert-warning"}
+          @error-message-atom])
+       [:form
+        [:div.form-group
+         [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email)}]]
+        [:div.form-group
+         [input/text-field {:name "password" :atom password-atom :placeholder (t :user/Password) :password? true}]]
+        [:button {:class    "btn btn-warning"
+                  :on-click #(do (.preventDefault %) (login state))
+                  :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
+         (t :user/Login)]
+        [:div {:class "row login-links"}
+         [:div {:class "col-xs-6 text-right"}
+          [:a {:href "/user/register"} (t :user/Createnewaccount)]]
+         [:div {:class "col-xs-6 text-left"}
+          [:a {:href "/user/reset"} (t :user/Requestnewpassword)]]]]]]]))
 
 (defn handler []
   (let [state (atom {:email ""
