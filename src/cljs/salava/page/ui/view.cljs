@@ -74,7 +74,7 @@
                   :on-change #(toggle-visibility (:id page) visibility-atom)
                   :checked     (= @visibility-atom "public")}]
          [:label {:for "input-visibility"} (t :core/Publishandshare)]]
-        [s/share-buttons (str (session/get :base-url) "/page/view/" (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
+        [s/share-buttons (str (session/get :site-url) "/page/view/" (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
      [ph/view-page page]]))
 
 (defn content [state]

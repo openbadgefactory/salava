@@ -59,7 +59,7 @@
                    :on-click #(.print js/window)}
           (t :core/Print)]]
         [:div.col-sm-12
-         [s/share-buttons (str (session/get :base-url) "/badge/info/" id) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
+         [s/share-buttons (str (session/get :site-url) "/badge/info/" id) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
      (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row

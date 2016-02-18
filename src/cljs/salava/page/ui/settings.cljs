@@ -1,9 +1,10 @@
 (ns salava.page.ui.settings
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.tag :as tag]
-            [salava.core.ui.helper :refer [base-url navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
@@ -68,7 +69,7 @@
          [:input {:class    "form-control"
                   :type     "text"
                   :disabled true
-                  :value    (str (base-url) "/pages/" id "/view/")}]])
+                  :value    (str (session/get :site-url) "/pages/" id "/view/")}]])
       (if (= @visibility-atom "password")
         [:div.form-group
          [:label {:for "page-password"}

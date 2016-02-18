@@ -1,5 +1,7 @@
 {:site-name "Open Badge Passport"
 
+ :site-url "http://localhost:5000"
+
  :asset-version nil
 
  :languages [:en :fi]

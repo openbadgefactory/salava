@@ -18,7 +18,7 @@
 
 (session/put! :user (:user ctx))
 
-(session/put! :base-url (get-in ctx [:site-url]))
+(session/put! :site-url (get-in ctx [:site-url]))
 
 (session/put! :i18n-editable (some #(= "translator" %1) (get-in ctx [:plugins :all])))
 
