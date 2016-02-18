@@ -29,8 +29,9 @@
                 (if (= status "success")
                   (let [emails (:emails @state)]
                     (swap! state assoc :emails (conj emails new-email)
-                                       :new-address "")))
-                (swap! state assoc :message {:class status :content message}))}))
+                           :new-address ""
+                           :message {:class "alert-success" :content (str (t :user/Emailaddress) " " (:email new-email) " " (t :user/added))}))
+                  (swap! state assoc :message {:class "alert-danger" :content (t :user/Erroraddingemailaddress)})))}))
 
 (defn set-primary-email [email state]
   (ajax/POST
@@ -161,7 +162,7 @@
                  :on-click #(do
                              (.preventDefault %)
                              (add-email-address state))}
-        (t :core/Save)]]]]))
+        (t :core/Add)]]]]))
 
 (defn init-data [state]
   (ajax/GET

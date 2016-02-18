@@ -80,7 +80,7 @@
         [:div.row
          (profile-visibility-input visibility-atom)
          [:div.col-xs-12
-          [s/share-buttons (str (session/get :base-url) "/user/profile/" user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
+          [s/share-buttons (str (session/get :site-url) "/user/profile/" user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           [:a {:href "/user/edit/profile"} (t :user/Editprofile)]]])
       [:h2.uppercase-header fullname]

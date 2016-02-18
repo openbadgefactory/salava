@@ -13,9 +13,8 @@
   (routes
     (context "/user" []
              (layout/main ctx "/login")
-             (layout/main ctx "/login/:next-url")
              (layout/main ctx "/register")
-             (layout/main ctx "/account")
+             (layout/main ctx "/reset")
              (layout/main ctx "/activate/:userid/:timestamp/:code")
              (layout/main ctx "/edit")
              (layout/main ctx "/edit/email-addresses")
@@ -50,7 +49,7 @@
 
              (POST "/activate" []
                    :return {:status (s/enum "success" "error")
-                     :message (s/maybe s/Str)}
+                            :message (s/maybe s/Str)}
                    :body [activation-data schemas/ActivateUser]
                    :summary "Set password and activate user account"
                    (let [{:keys [user_id code password password_verify]} activation-data]
@@ -147,6 +146,12 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (str (u/save-user-profile ctx profile_visibility profile_picture about (:id current-user)))))
+
+             (POST "/reset" []
+                   :return {:status (s/enum "success" "error")}
+                   :body-params [email :- (:email schemas/User)]
+                   :summary "Send password reset link to requested email address"
+                   (ok (u/send-password-reset-link ctx email)))
 
              (GET "/test" []
                   :summary "Test is user authenticated"
