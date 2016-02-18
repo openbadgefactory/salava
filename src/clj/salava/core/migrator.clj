@@ -4,9 +4,7 @@
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
-            [salava.core.util :as util]))
-
-(def config (-> (io/resource "config/core.edn") slurp read-string))
+            [salava.core.util :refer [public-path config]]))
 
 (def plugins (cons :core (:plugins config)))
 
@@ -48,7 +46,7 @@
 (defn seed-copy [plugin]
   (when-let [data-dir (io/resource (str (seed-dir plugin) "/public"))]
     (doseq [source-file (-> data-dir io/as-file file-seq rest)]
-      (copy-file source-file (str "resources/public/" (util/public-path source-file))))))
+      (copy-file source-file (str "resources/public/" (public-path source-file))))))
 
 
 (defn migratus-config [test-mode? plugin]

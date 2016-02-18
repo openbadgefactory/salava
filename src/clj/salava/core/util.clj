@@ -4,6 +4,7 @@
             [slingshot.slingshot :refer :all]
             [clj-http.client :as client]))
 
+(def config (-> (clojure.java.io/resource "config/core.edn") slurp read-string))
 
 (defn get-db [ctx]
   {:connection {:datasource (:db ctx)}})
