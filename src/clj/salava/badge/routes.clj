@@ -83,7 +83,7 @@
                    (ok (str (b/congratulate! ctx badgeid (:id current-user)))))
 
              (GET "/export" []
-                  :return [schemas/BadgeContent]
+                  :return [schemas/BadgesToExport]
                   :summary "Get the badges of a specified user for export"
                   :auth-rules access/authenticated
                   :current-user current-user

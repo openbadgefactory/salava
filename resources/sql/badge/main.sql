@@ -40,8 +40,8 @@ REPLACE INTO criteria_content (id, html_content, markdown_content)
 
 --name: insert-badge<!
 --save badge
-INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified)
-       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0, :issuer_verified)
+INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified, criteria_content_id)
+       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0, :issuer_verified, :criteria_content_id)
 
 --name: select-badge
 --get badge by id
@@ -164,3 +164,6 @@ SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_cont
 --name: update-badge-set-verified!
 --update verification status of the issuer of the badge
 UPDATE badge SET issuer_verified = :issuer_verified, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-badge-assertion-url
+SELECT assertion_url FROM badge WHERE id = :id AND user_id = :user_id
