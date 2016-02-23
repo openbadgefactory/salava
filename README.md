@@ -27,9 +27,29 @@ use. Still, you can try it out.
 
 The code is known to work with Ubuntu Linux, Oracle Java 8 and MariaDb 10. We use
 [Leiningen](http://leiningen.org/) as dependency manager. For building scss files you need a sass
-compiler, such as [sassc](https://github.com/sass/sassc).
+compiler, such as [sassc](https://github.com/sass/sassc). On OS X you can use [Homebrew](http://brew.sh):
 
-Start the installation with creating your config file:
+    $ brew install sassc
+
+Install the database. With Homebrew:
+
+    $ brew install mariadb
+
+Start the database:
+
+    mysql.server start
+
+Create the database:
+
+    mysql -uroot
+    create database salava;
+    create database salava_test;
+    create user salava identified by 'salava';
+    grant all privileges on salava.* to 'salava'@'localhost';
+    grant all privileges on salava_test.* to 'salava'@'localhost';
+    quit
+
+Create your config file:
 
     $ cp resources/config/core.edn.base resources/config/core.edn
 
