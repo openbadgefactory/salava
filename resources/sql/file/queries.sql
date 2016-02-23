@@ -11,8 +11,8 @@ REPLACE INTO user_file_tag (file_id, tag)
 --get file owner's user-id
 SELECT user_id FROM user_file WHERE id = :id
 
---name: select-file-owner-count-and-path
-SELECT user_id AS owner, count(id) AS 'usage', path FROM user_file WHERE path = (SELECT path FROM user_file WHERE id = :id)
+--name: select-file-owner-and-path
+SELECT user_id AS owner, path FROM user_file WHERE id = :id
 
 --name: delete-file!
 DELETE FROM user_file WHERE id = :id
@@ -29,3 +29,9 @@ INSERT INTO user_file (user_id, name, path, mime_type, size, ctime, mtime) VALUE
 --name: select-user-image-files
 SELECT id, name, path, mime_type, size, ctime, mtime FROM user_file AS f
        WHERE user_id = :user_id AND mime_type LIKE 'image/%'
+
+--name: select-file-usage
+SELECT (SELECT COUNT(*) FROM user_file WHERE path = :path) AS file_count,
+       (SELECT COUNT(*) FROM badge_content WHERE image_file = :path) AS badge_content_file_count,
+       (SELECT COUNT(*) FROM issuer_content WHERE image_file = :path) AS issuer_content_file_count,
+       (SELECT COUNT(*) FROM user WHERE profile_picture = :path) AS profile_picture_file_count;

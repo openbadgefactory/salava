@@ -45,7 +45,7 @@
                      :summary "Delete file by id"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     (ok (f/remove-file! ctx fileid (:id current-user))))
+                     (ok (f/remove-user-file! ctx fileid (:id current-user))))
 
              (POST "/upload" []
                    :return schemas/Upload

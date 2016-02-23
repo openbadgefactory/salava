@@ -1,6 +1,6 @@
 (ns salava.file.db
   (:require [slingshot.slingshot :refer :all]
-            [clojure.java.io :refer [delete-file]]
+            [clojure.java.io :as io]
             [clojure.string :refer [split blank?]]
             [yesql.core :refer [defqueries]]
             [salava.core.i18n :refer [t]]
@@ -32,18 +32,27 @@
   [ctx user-id data]
   (:generated_key (insert-file<! (assoc data :user_id user-id) (get-db ctx))))
 
-(defn remove-file! [ctx file-id user-id]
+(defn file-usage [ctx path]
+  (let [usage (select-file-usage {:path path} (into {:result-set-fn first} (get-db ctx)))]
+    (reduce + (vals usage))))
+
+(defn remove-file! [ctx path]
+  (let [usage (file-usage ctx path)
+        data-dir (get-in ctx [:config :core :data-dir])
+        full-path (str data-dir "/" path)]
+    (if-not (and data-dir (.exists (io/as-file full-path)))
+      (throw+ "File does not exist"))
+    (if (= usage 0)
+      (io/delete-file full-path))))
+
+(defn remove-user-file! [ctx file-id user-id]
   (try+
-    (let [file (select-file-owner-count-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))
-          usage (:usage file)]
-      (if (= usage 0)
-        (throw+ "File not found"))
-      (if-not (= (:owner file) user-id)
+    (let [{:keys [owner path]} (select-file-owner-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))]
+      (if-not (= owner user-id)
         (throw+ "Current user is not owner of the file"))
-      (if (= usage 1)
-        (delete-file (str "resources/public/" (:path file))))
       (delete-file! {:id file-id} (get-db ctx))
       (delete-files-block-file! {:file_id file-id} (get-db ctx))
+      (remove-file! ctx path)
       {:status "success" :message (t :file/Filedeleted) :reason (t :file/Filedeleted)})
     (catch Object _
       {:status "error" :message (t :file/Errorwhiledeleting) :reason (t :file/Errorwhiledeleting)})))
