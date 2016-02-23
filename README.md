@@ -34,7 +34,12 @@ Start the installation with creating your config file:
     $ cp resources/config/core.edn.base resources/config/core.edn
 
 Edit the file and add your db settings etc. (Don't forget to create the
-database as well). After that:
+database as well).
+
+Create a directory to store files that are uploaded or created by Salava. Add
+the directory to the config file (keyword :data-dir).
+
+After that:
 
     # Initialize your db and insert some sample data
     $ lein migrator-reset
@@ -56,12 +61,9 @@ database as well). After that:
 
 ## TODO
 
-- User accounts, login, OAuth
-- Badge sharing
-- Badge/Page Gallery
+- OAuth
 - Full text search
 - User groups
-- Statistics
 - Admin tools
 - More tests
 
