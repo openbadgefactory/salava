@@ -25,7 +25,7 @@
                  [ring/ring-defaults "0.1.5"]
                  [ring-webjars "0.1.1"]
                  [compojure "1.4.0"]
-                 [metosin/compojure-api "1.0.0-RC1" :exclusions [com.google.guava/guava]]
+                 [metosin/compojure-api "1.0.0" :exclusions [com.google.guava/guava]]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
                  [clj-time "0.11.0"]
