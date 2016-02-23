@@ -121,6 +121,7 @@
                                         :pretty-print    true}}
                        :adv {:source-paths ["src/cljs" "src/cljc"]
                              :compiler {:main           "salava.core.ui.main"
+                                        :externs        ["resources/public/js/externs/jquery.ext.js" "resources/public/js/externs/externs.js"]
                                         :output-to      "target/adv/public/js/salava.js"
                                         :optimizations  :advanced
                                         :elide-asserts  true
