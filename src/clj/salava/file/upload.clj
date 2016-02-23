@@ -21,7 +21,8 @@
           extension (file-extension filename)
           mime-type (mime-type-of tempfile)
           path (public-path tempfile extension)
-          full-path (str "resources/public/" path)
+          data-dir (get-in ctx [:config :core :data-dir])
+          full-path (str data-dir "/" path)
           insert-data {:name filename
                      :path path
                      :size size
@@ -32,6 +33,8 @@
         (throw+ (str (t :file/Filetype) " " mime-type " " (t :file/isnotallowed))))
       (if (> size max-size)
         (throw+ (str (t :file/Filetoobig) ". " (t :file/Maxfilesize) ": " (quot max-size (* 1024 1024)) "MB")))
+      (if-not (and data-dir (.exists (io/as-file data-dir)))
+        (throw+ "Data directory does not exist"))
 
       (io/make-parents full-path)
       (io/copy tempfile  (io/file full-path))

@@ -8,6 +8,8 @@
             [salava.file.upload :as u]
             [salava.file.schemas :as schemas]
             [salava.core.access :as access]
+            [clojure.java.io :as io]
+            [pantomime.mime :refer [mime-type-of]]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -16,7 +18,18 @@
              (layout/main ctx "/files"))
 
     (context "/file" []
-             (layout/main ctx "/upload"))
+             (layout/main ctx "/upload")
+             (GET "/:folder1/:folder2/:folder3/:folder4/:filename" []
+                  :path-params [folder1 :- s/Str, folder2 :- s/Str, folder3 :- s/Str, folder4 :- s/Str, filename :- s/Str]
+                  (let [path (str "file/" folder1 "/" folder2 "/" folder3 "/"folder4 "/" filename)
+                        mime-type (mime-type-of path)
+                        data-dir (get-in ctx [:config :core :data-dir])
+                        full-path (str data-dir "/" path)]
+                    (if (.exists (io/as-file full-path))
+                      (-> full-path
+                          file-response
+                          (content-type mime-type))
+                      (not-found nil)))))
 
     (context "/obpv1/file" []
              :tags ["file"]
