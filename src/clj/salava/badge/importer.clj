@@ -2,7 +2,7 @@
   (:require [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
             [salava.badge.main :as b]
-            [salava.core.util :refer [map-sha256 file-from-url]]
+            [salava.core.util :refer [map-sha256]]
             [salava.core.time :refer [unix-time]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]

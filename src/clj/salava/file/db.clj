@@ -5,7 +5,7 @@
             [yesql.core :refer [defqueries]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db map-sha256 file-from-url]]))
+            [salava.core.util :refer [get-db map-sha256]]))
 
 (defqueries "sql/file/queries.sql")
 

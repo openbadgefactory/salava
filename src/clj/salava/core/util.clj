@@ -62,21 +62,21 @@
     path))
 
 (defn file-from-url
-  ([url] (file-from-url url nil))
-  ([url filename]
-   (if (re-find #"https?" (str url))
-     (let [content (fetch-file-content url)
-           path (public-path url)
-           fname (or filename
-                     (trim-path path))
-           fullpath (or filename
-                        (str "resources/public/" fname))]
-       (try+
-         (do
-           (io/make-parents fullpath)
-           (with-open [w (io/output-stream fullpath)]
-             (.write w content))
-           fname)
-         (catch Object _
-           (throw+ "Error copying file"))))
-     (throw+ "Error in file url: " url))))
+  [url]
+  (if (re-find #"https?" (str url))
+    (let [content (fetch-file-content url)
+          path (public-path url)
+          fname (trim-path path)
+          data-dir (get config :data-dir)
+          fullpath (str data-dir "/" fname)]
+      (try+
+        (if-not (.exists (io/as-file data-dir))
+          (throw+ "Data directry does not exist"))
+        (do
+          (io/make-parents fullpath)
+          (with-open [w (io/output-stream fullpath)]
+            (.write w content))
+          fname)
+        (catch Object _
+          (throw+ "Error copying file: " _))))
+    (throw+ "Error in file url: " url)))
