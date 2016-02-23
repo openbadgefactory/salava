@@ -6,8 +6,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db map-sha256 file-from-url hex-digest]]
-            [salava.badge.assertion :refer [fetch-json-data]]
-            [clojure.string :as string]))
+            [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -41,7 +40,7 @@
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
   (try+
-    (let [obf-url (get-in ctx [:config :core :open-badge-factory-url] "")
+    (let [obf-url (get-in ctx [:config :core :obf :url] "")
           obf-base (-> obf-url (split #"://") second)
           {:keys [id badge_url issuer_url mtime issuer_verified]} badge
           issued-by-obf (if (and obf-base badge_url) (-> obf-base re-pattern (re-find badge_url) boolean))
@@ -54,23 +53,23 @@
 
 (defn user-badges-all
   "Returns all the badges of a given user"
-  [ctx userid]
-  (let [badges (select-user-badges-all {:user_id userid} (get-db ctx))
+  [ctx user-id]
+  (let [badges (select-user-badges-all {:user_id user-id} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))
         badges-with-tags (map-badges-tags badges tags)]
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
   "Returns valid badges of a given user"
-  [ctx userid]
-  (let [badges (select-user-badges-to-export {:user_id userid} (get-db ctx))
+  [ctx user-id]
+  (let [badges (select-user-badges-to-export {:user_id user-id} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
-  [ctx userid]
-  (let [badges (select-user-badges-pending {:user_id userid} (get-db ctx))
+  [ctx user-id]
+  (let [badges (select-user-badges-pending {:user_id user-id} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :badge_content_id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
 
@@ -191,8 +190,8 @@
     (loop [emails user-emails
            checked-email (check-email recipient (first emails) algorithms)]
       (cond
-        (empty? (rest emails)) nil
         (boolean checked-email) checked-email
+        (empty? (rest emails)) nil
         :else (recur (rest emails) (check-email recipient (first emails) algorithms))))))
 
 (defn save-badge-from-assertion!
@@ -270,8 +269,8 @@
                :visibility   visibility
                :evidence_url evidence-url
                :rating       rating}]
-     (update-badge-settings! data (get-db ctx))
-     (save-badge-tags! ctx tags badge-id))))
+      (update-badge-settings! data (get-db ctx))
+      (save-badge-tags! ctx tags badge-id))))
 
 (defn delete-badge!
   "Set badge deleted and delete tags"

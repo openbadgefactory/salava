@@ -20,7 +20,7 @@
                    :database-name "salava_test"
                    :server-name   "localhost"}
 
- :open-badge-factory-url "https://openbadgefactory.com"
+ :obf {:url "https://openbadgefactory.com"}
 
  :session {:name "salava-session"
            :root "/"
