@@ -32,7 +32,7 @@
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
 
 (defn verified-email-addresses
-  "Get list of user email addresses by user id"
+  "Get list of user's verified email addresses by user id"
   [ctx user-id]
   (let [addresses (filter :verified (select-user-email-addresses {:user_id user-id} (get-db ctx)))]
     (map :email addresses)))
@@ -71,6 +71,7 @@
           {:status "error" :message (t :user/Passwordresetlinkexpired)}
           (do
             (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
+            (update-set-primary-email-address-verification-key-null! {:id user-id} (get-db ctx))
             (if (not activated)
               (update-verify-primary-email-address! {:user_id user-id} (get-db ctx)))
             {:status "success" :message ""}))))))
