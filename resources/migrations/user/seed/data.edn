@@ -15,9 +15,18 @@
   {:table "user_email"
    :data {
           :user_id 1
-          :email "test-user@example.com"
+          :email "test.user@example.com"
           :verified 1
           :primary_address 1
+          :ctime 1438954261
+          :mtime 1438954261}
+   }
+  {:table "user_email"
+   :data {
+          :user_id 1
+          :email "secondary.email@example.com"
+          :verified 1
+          :primary_address 0
           :ctime 1438954261
           :mtime 1438954261}
    }
@@ -38,13 +47,13 @@
   {:table "user_email"
    :data {
           :user_id 2
-          :email "another-user@example.com"
+          :email "another.user@example.com"
           :verified 1
+          :verification_key "8cd3a052-5575-42a3-ad6b-f4b57ee9ebb4"
           :primary_address 1
           :ctime 1450172372
           :mtime 1450172372}
    }
-
   {
    :table "user"
    :data {
@@ -61,11 +70,12 @@
   {:table "user_email"
    :data {
           :user_id 3
-          :email "third-user@example.com"
+          :email "third.user@example.com"
           :verified 1
+          :verification_key "94c36436-d2ce-4337-a05a-64a6b849f144"
           :primary_address 1
           :ctime 1453812046
-          :mtime 1453812046}
+          :mtime 2000000000}
    }
   {
    :table "user"
@@ -83,7 +93,7 @@
   {:table "user_email"
    :data {
           :user_id 4
-          :email "fourth-user@example.com"
+          :email "fourth.user@example.com"
           :verified 1
           :primary_address 1
           :ctime 1453968291
@@ -105,11 +115,80 @@
   {:table "user_email"
    :data {
           :user_id 5
-          :email "fifth-user@example.com"
+          :email "fifth.user@example.com"
           :verified 1
           :primary_address 1
           :ctime 1453968291
           :mtime 1453968291}
    }
-
-)
+  {
+   :table "user"
+   :data {
+          :first_name "Waiting"
+          :last_name "Activation"
+          :role "user"
+          :country "UK"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1456305482
+          :mtime 1456305482
+          :activated 0
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 6
+          :email "sixth.user@example.com"
+          :verified 0
+          :verification_key "a0372e4f-c634-4ccb-afe3-1622ae551bcf"
+          :primary_address 1
+          :ctime 1456305482
+          :mtime 1456305482}
+   }
+  {
+   :table "user"
+   :data {
+          :first_name "Also waiting"
+          :last_name "Activation"
+          :role "user"
+          :country "UK"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1456305482
+          :mtime 1456305482
+          :activated 0
+          :about "This account is waiting for activation, but will never be activated"
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 7
+          :email "seventh.user@example.com"
+          :verified 1
+          :verification_key nil
+          :primary_address 1
+          :ctime 1456305482
+          :mtime 1456305482}
+   }
+  {
+   :table "user"
+   :data {
+          :first_name "Email not"
+          :last_name "Verified"
+          :role "user"
+          :country "UK"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1456305482
+          :mtime 1456305482
+          :activated 1
+          :about "This account is activated but email address is not verified"
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 8
+          :email "eight.user@example.com"
+          :verified 0
+          :verification_key "c81a2212-c457-48a7-809d-fbcf05977f8c"
+          :primary_address 1
+          :ctime 1456305482
+          :mtime 1456305482}
+   })

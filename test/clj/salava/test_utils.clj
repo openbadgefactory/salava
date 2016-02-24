@@ -55,19 +55,28 @@
 
 (def test-users
   [{:id 1
-    :email "test-user@example.com"
+    :email "test.user@example.com"
     :password "testtest"}
    {:id 2
-    :email "another-user@example.com"
+    :email "another.user@example.com"
     :password "testtest"}
    {:id 3
-    :email "third-user@example.com"
+    :email "third.user@example.com"
     :password "testtest"}
    {:id 4
-    :email "fourth-user@example.com"
+    :email "fourth.user@example.com"
     :password "testtest"}
    {:id 5
-    :email "fifth-user@example.com"
+    :email "fifth.user@example.com"
+    :password "testtest"}
+   {:id 6
+    :email "sixth.user@example.com"
+    :password "testtest"}
+   {:id 7
+    :email "seventh.user@example.com"
+    :password "testtest"}
+   {:id 8
+    :email "eight.user@example.com"
     :password "testtest"}])
 
 (defn test-user-credentials [user-id]
