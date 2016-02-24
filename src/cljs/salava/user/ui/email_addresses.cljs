@@ -9,18 +9,6 @@
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
-(defn verify-email-address [email verification-key state]
-  (ajax/POST
-    "/obpv1/user/verify_email"
-    {:params  {:email            email
-               :verification_key verification-key}
-     :handler (fn [{:keys [status]} data]
-                (if (= status "success")
-                  (let [emails (map #(assoc % :verified (or (:verified %) (= (:email %) email))) (:emails @state))]
-                    (swap! state assoc :emails emails :message {:class "alert-success" :content (str (t :user/Emailaddress) " " email " " (t :user/verified))}))
-                  (swap! state assoc :message {:class "alert-danger" :content (t :user/Errorwhileverifyingemail)}))
-                (modal/close-modal!))}))
-
 (defn add-email-address [state]
   (ajax/POST
     "/obpv1/user/add_email"
@@ -77,35 +65,6 @@
          :href ""}
      (t :core/Cancel)]]])
 
-(defn verify-modal [email verify-atom state]
-  (reset! verify-atom "")
-  (fn []
-    [:div
-     [:div.modal-header
-      [:button {:type         "button"
-               :class        "close"
-               :data-dismiss "modal"
-               :aria-label   "OK"}
-       [:span {:aria-hidden             "true"
-              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-     [:div.modal-body
-      [:form.form-horizontal
-       [:p (t :user/Theemailaddress) " " [:i email] " " (t :user/iswaitingconfirmation)]
-       [:div.form-group
-        [:label.col-md-4 {:for "input-email-confirm"}
-         (t :user/Verificationcode)]
-        [:div.col-md-8
-         [input/text-field {:atom verify-atom :name "email-confirm"}]]]]]
-     [:div.modal-footer
-      [:button {:type     "button"
-                :class    "btn btn-primary"
-                :on-click #(verify-email-address email @verify-atom state)}
-       (t :user/Verifyemail)]
-      [:a {:class "modal-cancel-button"
-           :data-dismiss "modal"
-           :href ""}
-       (t :core/Cancel)]]]))
-
 (defn email-options [email verified? state]
   (let [delete-email-fn (fn [] (delete-email email state))
         set-primary-fn (fn [] (set-primary-email email state))]
@@ -125,18 +84,14 @@
    [:thead
     [:tr
      [:th (t :user/Email)]
-     [:th (t :user/Verified)]
+     [:th.text-center (t :user/Verified)]
      [:th (t :user/Actions)]]]
    (into [:tbody]
          (for [address (sort-by :ctime (:emails @state))
                :let [{:keys [email verified primary_address]} address]]
            [:tr
             [:td email]
-            [:td (if verified
-                   (t :core/Yes)
-                   [:a {:href "#"
-                        :on-click #(modal/modal! [verify-modal email (cursor state [:verify-code]) state] {:size :lg})}
-                    (t :user/Clicktoverify)])]
+            [:td.text-center (if verified [:i {:class "fa fa-check"}])]
             [:td (if primary_address
                    (t :user/Loginaddress)
                    (email-options email verified state))]]))])
@@ -173,7 +128,6 @@
 (defn handler [site-navi]
   (let [state (atom {:emails []
                      :new-address ""
-                     :verify-code ""
                      :message nil})]
     (init-data state)
     (fn []

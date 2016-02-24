@@ -65,7 +65,7 @@ UPDATE user_email SET primary_address = 1 WHERE user_id = :user_id AND email = :
 UPDATE user_email SET primary_address = 0 WHERE user_id = :user_id AND email != :email
 
 --name: update-verify-email-address!
-UPDATE user_email SET verified = 1 WHERE user_id = :user_id AND email = :email
+UPDATE user_email SET verified = 1, verification_key = NULL WHERE user_id = :user_id AND email = :email
 
 --name: update-verify-primary-email-address!
 UPDATE user_email SET verified = 1 WHERE user_id = :user_id AND primary_address = 1
@@ -75,6 +75,9 @@ UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTA
 
 --name: update-set-primary-email-address-verification-key-null!
 UPDATE user_email SET verification_key = NULL WHERE user_id = :user-id AND primary_address = 1
+
+--name: select-email-by-verification-key
+SELECT user_id, email, verified, verification_key, mtime FROM user_email WHERE verification_key = :verification_key AND user_id = :user_id
 
 --name: update-user-visibility!
 UPDATE user SET profile_visibility = :profile_visibility, mtime = UNIX_TIMESTAMP() WHERE id = :id
