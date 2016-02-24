@@ -71,9 +71,8 @@
           {:status "error" :message (t :user/Passwordresetlinkexpired)}
           (do
             (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
-            (update-set-primary-email-address-verification-key-null! {:id user-id} (get-db ctx))
-            (if (not activated)
-              (update-verify-primary-email-address! {:user_id user-id} (get-db ctx)))
+            (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
+            (update-verify-primary-email-address! {:user_id user-id} (get-db ctx))
             {:status "success" :message ""}))))))
 
 (defn login-user
@@ -203,7 +202,7 @@
   [ctx email]
   (let [{:keys [id first_name last_name verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
-    (if (and id verified primary_address)
+    (if (and id primary_address)
       (do
         (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
         (m/send-password-reset-message site-url (activation-link id verification-key) (str first_name " " last_name) email)

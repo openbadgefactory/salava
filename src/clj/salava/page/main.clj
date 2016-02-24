@@ -152,7 +152,7 @@
                         (assoc :page_id page-id
                                :block_order block-index))
               id (and (:id block)
-                      (some #(= (:id %) (:id block)) page-blocks))]
+                      (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) page-blocks))]
           (case (:type block)
             "heading" (if id
                         (update-heading-block! block (get-db ctx))
@@ -175,7 +175,7 @@
                     (update-tag-block! block (get-db ctx))
                     (insert-tag-block! block (get-db ctx))))))
       (doseq [old-block page-blocks]
-        (if-not (some #(= (:id old-block) (:id %)) blocks)
+        (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
           (delete-block! ctx old-block)))
       {:status "success" :message (t :page/Pagesavedsuccessfully)})
     (catch Object _

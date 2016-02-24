@@ -107,11 +107,11 @@
         verify (or (:verify assertion) {:type "hosted"
                                         :url assertion-url})
         issued-on-raw (or (:issuedOn assertion) (:issued-on assertion) "0")
-        issued-on (if (re-find #"\D" issued-on-raw)
+        issued-on (if (re-find #"\D" (str issued-on-raw))
                     (iso8601-to-unix-time issued-on-raw)
                     issued-on-raw)
         expires-raw (or (:expires assertion) "0")
-        expires (if (re-find #"\D" expires-raw)
+        expires (if (re-find #"\D" (str expires-raw))
                   (iso8601-to-unix-time expires-raw)
                   expires-raw)
         recipient (if (string? (:recipient assertion))
