@@ -2,6 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [schema.core :as s]
+            [salava.gallery.schemas :as schemas]
             [salava.core.layout :as layout]
             [salava.gallery.db :as g]
             [salava.core.access :as access]
@@ -85,4 +86,14 @@
                    :path-params [userid :- s/Int]
                    :summary "Get user's public pages."
                    :auth-rules access/authenticated
-                   (ok (hash-map :pages (g/public-pages-by-user ctx userid)))))))
+                   (ok (hash-map :pages (g/public-pages-by-user ctx userid))))
+
+             (POST "/users" []
+                   :return {:users [schemas/UserProfiles]
+                            :countries schemas/Countries}
+                   :body [search-params schemas/UserSearch]
+                   :summary "Get public user profiles"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok {:users (g/public-profiles ctx search-params (:id current-user))
+                        :countries (g/profile-countries ctx)})))))

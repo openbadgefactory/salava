@@ -19,6 +19,12 @@ SELECT country FROM user AS u
                GROUP BY country
                ORDER BY country
 
+--name: select-profile-countries
+SELECT country FROM user AS u
+               WHERE profile_visibility = "public"
+               GROUP BY country
+               ORDER BY country
+
 -- name: select-user-country
 SELECT country FROM user WHERE id = :id
 

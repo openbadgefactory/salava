@@ -1,9 +1,10 @@
 (ns salava.gallery.db
   (:require [yesql.core :refer [defqueries]]
+            [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db]]
-            [salava.core.countries :refer [all-countries]]
+            [salava.core.countries :refer [all-countries all-countries-sorted]]
             [salava.page.main :as p]
             [salava.badge.main :as b]))
 
@@ -124,6 +125,34 @@
                 [conn (:connection (get-db ctx))]
                 (jdbc/query conn (into [query] params)))]
     (p/page-badges ctx pages)))
+
+(defn profile-countries [ctx]
+  (let [countries (select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (select-keys all-countries-sorted countries)))
+
+(defn public-profiles
+  "Searcn public user profiles by user's name and country"
+  [ctx search-params user-id]
+  (let [{:keys [name country common_badges]} search-params
+        where ""
+        params [user-id]
+        [where params] (if-not (or (empty? country) (= country "all"))
+                         [(str where " AND country = ?") (conj params country)]
+                         [where params])
+        [where params] (if-not (empty? name)
+                         [(str where " AND (first_name LIKE ? OR last_name LIKE ?)") (conj params (str name "%") (str name "%"))]
+                         [where params])
+        having (if common_badges " HAVING common_badge_count > 0")
+        query (str "SELECT id AS uid, first_name, last_name, country, profile_picture, ctime, (SELECT COUNT(DISTINCT badge_content_id) FROM badge WHERE user_id = uid AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()) AND badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE user_id = ? AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))) AS common_badge_count
+                    FROM user
+                    WHERE profile_visibility = 'public'"
+                   where
+                   having
+                   " LIMIT 100")
+        profiles (jdbc/with-db-connection
+                   [conn (:connection (get-db ctx))]
+                   (jdbc/query conn (into [query] params)))]
+    (map #(rename-keys % {:uid :id}) profiles)))
 
 
 

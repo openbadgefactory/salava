@@ -1,0 +1,156 @@
+(ns salava.gallery.ui.profiles
+  (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
+            [clojure.string :refer [trim]]
+            [salava.core.ui.ajax-utils :as ajax]
+            [salava.core.ui.layout :as layout]
+            [salava.core.ui.grid :as g]
+            [salava.core.ui.helper :refer [profile-picture]]
+            [salava.core.i18n :refer [t]]
+            [salava.core.time :refer [date-from-unix-time]]))
+
+(defn ajax-stop [ajax-message-atom]
+  (reset! ajax-message-atom nil))
+
+(defn fetch-users [state]
+  (let [{:keys [name country-selected common-badges?]} @state
+        ajax-message-atom (cursor state [:ajax-message])]
+    (reset! ajax-message-atom (t :gallery/Searchingprofiles))
+    (ajax/POST
+      (str "/obpv1/gallery/users/")
+      {:params  {:country       country-selected
+                 :name          (trim (str name))
+                 :common_badges (boolean common-badges?)}
+       :handler (fn [data] (swap! state assoc :users (:users data)))
+       :finally (fn [] (ajax-stop ajax-message-atom))})))
+
+(defn search-timer [state]
+  (let [timer-atom (cursor state [:timer])]
+    (if @timer-atom
+      (js/clearTimeout @timer-atom))
+    (reset! timer-atom (js/setTimeout (fn [] (fetch-users state)) 500))))
+
+(defn text-field [key label placeholder state]
+  (let [search-atom (cursor state [key])
+        field-id (str key "-field")]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
+     [:div.col-sm-10
+      [:input {:class       (str "form-control")
+               :id          field-id
+               :type        "text"
+               :placeholder placeholder
+               :value       @search-atom
+               :on-change   #(do
+                              (reset! search-atom (.-target.value %))
+                              (search-timer state))}]]]))
+
+(defn country-selector [state]
+  (let [country-atom (cursor state [:country-selected])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
+     [:div.col-sm-10
+      [:select {:class     "form-control"
+                :id        "country-selector"
+                :name      "country"
+                :value     @country-atom
+                :on-change #(do
+                             (reset! country-atom (.-target.value %))
+                             (fetch-users state))}
+       [:option {:value "all" :key "all"} (t :core/All)]
+       (for [[country-key country-name] (map identity (:countries @state))]
+         [:option {:value country-key
+                   :key country-key} country-name])]]]))
+
+(defn common-badges-checkbox [state]
+  (let [common-badges-atom (cursor state [:common-badges?])]
+    [:div.form-group
+     [:div {:class "col-sm-10 col-sm-offset-2"}
+      [:div.checkbox
+       [:label
+        [:input {:type "checkbox"
+                 :checked @common-badges-atom
+                 :on-change #(do
+                              (reset! common-badges-atom (not @common-badges-atom))
+                              (fetch-users state))}](str (t :gallery/Hideuserswithnocommonbadges))]]]]))
+
+(defn order-radio-values []
+  [{:value "ctime" :id "radio-date" :label (t :core/bydatejoined)}
+   {:value "name" :id "radio-name" :label (t :core/byname)}
+   {:value "common_badge_count" :id "radio-common-badges" :label (t :core/bycommonbadges)}])
+
+(defn profile-gallery-grid-form [state]
+  [:div {:id "grid-filter"
+         :class "form-horizontal"}
+   [:div
+    [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
+    [country-selector state]
+    [common-badges-checkbox state]]
+   [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
+
+(defn profile-gallery-grid-element [element-data]
+  (let [{:keys [id first_name last_name ctime profile_picture common_badge_count]} element-data
+        current-user (session/get-in [:user :id])]
+    [:div {:class "col-xs-12 col-sm-6 col-md-4"
+           :key id}
+     [:div {:class "media grid-container"}
+      [:div.media-content
+       [:div.media-left
+        [:img {:src (profile-picture profile_picture)}]]
+       [:div.media-body
+        [:div {:class "media-heading profile-heading"}
+         [:a {:href (str "/user/profile/" id)} first_name " " last_name]]
+        [:div.media-content
+         [:div.user-join-date
+          (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]
+         [:div.user-common-badges
+          (if (= id current-user)
+            (t :gallery/ownprofile)
+            [:span common_badge_count " " (if (= common_badge_count 1)
+                                            (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]))
+
+(defn profile-gallery-grid [state]
+  (let [users (:users @state)
+        order (:order @state)
+        users (case order
+                ("ctime" "common_badge_count") (sort-by (keyword order) > users)
+                "name" (sort-by :last_name users)
+                users)]
+    (into [:div {:class "row"
+                 :id    "grid"}]
+          (for [element-data users]
+            (profile-gallery-grid-element element-data)))))
+
+(defn content [state]
+  [:div {:id "profile-gallery"}
+   [profile-gallery-grid-form state]
+   (if (:ajax-message @state)
+     [:div.ajax-message
+      [:i {:class "fa fa-cog fa-spin fa-2x "}]
+      [:span (:ajax-message @state)]]
+     [profile-gallery-grid state])])
+
+(defn init-data [state]
+  (let [country (session/get-in [:user :country] "all")]
+    (ajax/POST
+      (str "/obpv1/gallery/users/")
+      {:params {:country country
+                :name ""
+                :common_badges true}
+       :handler (fn [{:keys [users countries]} data]
+                  (swap! state assoc :users users
+                         :countries countries
+                         :country-selected country))})))
+
+(defn handler [site-navi]
+  (let [state (atom {:users []
+                     :countries []
+                     :country-selected "Finland"
+                     :name ""
+                     :order "ctime"
+                     :timer nil
+                     :ajax-message nil
+                     :common-badges? true})]
+    (init-data state)
+    (fn []
+      (layout/default site-navi (content state)))))

@@ -2,7 +2,8 @@
    (:require [salava.core.ui.layout :as layout]
              [salava.core.i18n :as i18n :refer [t]]
              [salava.gallery.ui.badges :as b]
-             [salava.gallery.ui.pages :as p]))
+             [salava.gallery.ui.pages :as p]
+             [salava.gallery.ui.profiles :as u]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -14,7 +15,7 @@
                [["/badges/" :user-id] b/handler]
                ["/pages"    p/handler]
                [["/pages/" :user-id] p/handler]
-               ["/profiles" (placeholder [:p "User gallery"])]
+               ["/profiles" u/handler]
                ["/getbadge" (placeholder [:p "Apply for a badge"])]]})
 
 (defn ^:export navi [context]
