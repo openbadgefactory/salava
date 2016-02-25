@@ -88,7 +88,10 @@
            "public" [:i {:class "fa fa-globe"
                          :title (t :badge/Public)}]
            nil)]
-        [:div.media-description description]]]
+        (if expires_on
+          [:div.media-expires (t :badge/Expireson) ": " (date-from-unix-time (* expires_on 1000))])
+        [:div.media-description
+         description]]]
       [:div {:class "media-bottom"}
        (if expired?
          [:div.expired
@@ -166,9 +169,9 @@
      [:p "Using Open Badge Passport could not be easier:"]
      [:ol.welcome-text
       [:li
-       "Add a " [:a {:href "/user/edit_profile"} "profile picture"]
+       "Add a " [:a {:href "/user/edit/profile"} "profile picture"]
        ", a short bio or contact information to your "
-       [:a {:href "/user/edit_profile"} "profile"] "."]
+       [:a {:href "/user/edit"} "profile"] "."]
       [:li
        "Do you already have Open Badges saved to Mozilla Backpack? "
        [:a {:href "/badge/import"} "Import your badges"]
