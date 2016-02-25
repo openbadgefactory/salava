@@ -12,16 +12,33 @@
 }
 
 #profile-gallery {
-    .media-heading {
-        height: auto !important;
-    }
-    .media-left {
-        img {
-            max-width: 55px;
-            max-height: 55px;
-            padding: 3px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+    .media {
+        height: auto;
+        padding: 10px 15px;
+        .media-content {
+            height: auto;
+            .media-heading {
+                font-weight: bold;
+            }
+            .media-left {
+                img {
+                    max-width: 55px;
+                    max-height: 55px;
+                    padding: 3px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+            }
+            .media-profile {
+                font-size: 12px;
+                .join-date {
+                    color: #9dbe5f;
+                }
+            }
+        }
+        .common-badges {
+            margin-top: 5px;
+            font-size: 12px;
         }
     }
 }

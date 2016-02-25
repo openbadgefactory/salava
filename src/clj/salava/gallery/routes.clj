@@ -88,7 +88,7 @@
                    :auth-rules access/authenticated
                    (ok (hash-map :pages (g/public-pages-by-user ctx userid))))
 
-             (POST "/users" []
+             (POST "/profiles" []
                    :return {:users [schemas/UserProfiles]
                             :countries schemas/Countries}
                    :body [search-params schemas/UserSearch]

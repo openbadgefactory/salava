@@ -17,7 +17,7 @@
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
-      (str "/obpv1/gallery/users/")
+      (str "/obpv1/gallery/profiles/")
       {:params  {:country       country-selected
                  :name          (trim (str name))
                  :common_badges (boolean common-badges?)}
@@ -100,14 +100,14 @@
        [:div.media-body
         [:div {:class "media-heading profile-heading"}
          [:a {:href (str "/user/profile/" id)} first_name " " last_name]]
-        [:div.media-content
-         [:div.user-join-date
-          (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]
-         [:div.user-common-badges
-          (if (= id current-user)
-            (t :gallery/ownprofile)
-            [:span common_badge_count " " (if (= common_badge_count 1)
-                                            (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]))
+        [:div.media-profile
+         [:div.join-date
+          (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
+      [:div.common-badges
+       (if (= id current-user)
+         (t :gallery/ownprofile)
+         [:span common_badge_count " " (if (= common_badge_count 1)
+                                         (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]))
 
 (defn profile-gallery-grid [state]
   (let [users (:users @state)
@@ -145,7 +145,7 @@
 (defn handler [site-navi]
   (let [state (atom {:users []
                      :countries []
-                     :country-selected "Finland"
+                     :country-selected "all"
                      :name ""
                      :order "ctime"
                      :timer nil
