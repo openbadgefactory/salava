@@ -33,7 +33,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname :picture :language]))
+                       (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname :picture :language :country]))
                        (ok login-status))))
 
              (POST "/logout" []

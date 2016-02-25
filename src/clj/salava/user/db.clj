@@ -78,9 +78,9 @@
 (defn login-user
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
-  (let [{:keys [id first_name last_name pass activated verified primary_address language profile_picture]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+  (let [{:keys [id first_name last_name pass activated verified primary_address language profile_picture country]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
     (if (and (hashers/check plain-password pass) id activated verified primary_address)
-      {:status "success" :id id :fullname (str first_name " " last_name) :language language :picture profile_picture}
+      {:status "success" :id id :fullname (str first_name " " last_name) :language language :picture profile_picture :country country}
       {:status "error" :message (t :user/Loginfailed)})))
 
 (defn edit-user

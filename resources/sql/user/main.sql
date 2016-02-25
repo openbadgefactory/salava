@@ -14,7 +14,7 @@ SELECT user_id FROM user_email WHERE email = :email
 
 -- name: select-user-by-email-address
 -- get user data by email address
-SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, profile_picture FROM user AS u
+SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, profile_picture, country FROM user AS u
        JOIN user_email AS ue ON ue.user_id = u.id
        WHERE email = :email
 
