@@ -79,7 +79,7 @@
   (let [{:keys [badge_count expired_badge_count badge_views badge_congratulations badge_issuers]} @state
         visible-area-atom (cursor state [:visible_area])]
     [:div {:id "badge-stats"}
-     [:h2.uppercase-header
+     [:h1.uppercase-header
       (t :badge/Badgestatistics)]
      [:h3 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
      [views-panel badge_views visible-area-atom]

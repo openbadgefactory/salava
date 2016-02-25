@@ -89,7 +89,7 @@
                          :title (t :badge/Public)}]
            nil)]
         (if expires_on
-          [:div.media-expires (t :badge/Expireson) ": " (date-from-unix-time (* expires_on 1000))])
+          [:div.media-expires (if expired? (t :badge/Expiredon) (t :badge/Expireson)) ": " (date-from-unix-time (* expires_on 1000))])
         [:div.media-description
          description]]]
       [:div {:class "media-bottom"}
@@ -164,7 +164,7 @@
 (defn welcome-text []
   [:div.panel
    [:div.panel-body
-    [:h2.uppercase-header (t :core/WelcometoOpenBadgePassport)]
+    [:h1.uppercase-header (t :core/WelcometoOpenBadgePassport)]
     [:div.text
      [:p "Using Open Badge Passport could not be easier:"]
      [:ol.welcome-text
@@ -186,7 +186,7 @@
        [:a {:href "/gallery/pages"} "in the Gallery"] "."]]]]])
 
 (defn content [state]
-  [:div {:class "my-badges"}
+  [:div {:id "my-badges"}
    [m/modal-window]
    (if (and (empty? (:pending @state)) (empty? (:badges @state)))
      [welcome-text]
@@ -206,7 +206,7 @@
   (let [state (atom {:badges []
                      :pending []
                      :visibility "all"
-                     :order :mtime
+                     :order "mtime"
                      :tags-all true
                      :tags-selected []})]
     (init-data state)

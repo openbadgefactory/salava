@@ -46,7 +46,7 @@
        [:div {:class "col-md-9 badge-content"}
         [:div.row
          [:div {:class "col-md-12 badge-info"}
-          [:h2.uppercase-header name]
+          [:h1.uppercase-header name]
           (if (> issued_on 0)
             [:div.issued_on
              [:label (t :badge/Issuedon ":")]

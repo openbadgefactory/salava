@@ -10,8 +10,8 @@
 
 (defn issuer-label-and-link [name url email]
   [:div.issuer
-   [:label (t :badge/Issuedby ": ")]
-   [:a {:target "_blank" :href url} name]
+   [:label (t :badge/Issuedby) ":"]
+   [:a {:target "_blank" :href url} " " name]
    (if email
      [:span " / " [:a {:href (str "mailto:" email)} email]])])
 

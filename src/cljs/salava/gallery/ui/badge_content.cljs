@@ -32,7 +32,7 @@
        [:div {:class "col-md-9 badge-content"}
         [:div.row
          [:div {:class "col-md-12 badge-info"}
-          [:h2.uppercase-header name]
+          [:h1.uppercase-header name]
           (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
           [:div.row
            [:div.col-md-12

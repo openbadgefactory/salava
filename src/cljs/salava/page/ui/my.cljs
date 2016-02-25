@@ -102,14 +102,14 @@
             :id "add-element"
             :key "new-page"}
       [:div {:class "media grid-container"}
-       [:div.media-content
-        [:div.media-body
-         [:div {:id "add-element-icon"}
-          [:i {:class "fa fa-plus"}]]
-         [:div
-          [:a {:id "add-element-link"
-               :href "#"
-               :on-click #(create-page)}
+       [:a {:id "add-element-link"
+            :href "#"
+            :on-click #(create-page)}
+        [:div.media-content
+         [:div.media-body
+          [:div {:id "add-element-icon"}
+           [:i {:class "fa fa-plus"}]]
+          [:div {:id "add-element-link"}
            (t :page/Addpage)]]]]]]
      (doall
        (for [element-data pages]

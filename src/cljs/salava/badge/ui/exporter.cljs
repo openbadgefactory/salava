@@ -52,7 +52,7 @@
     true false))
 
 (defn grid-element [element-data state]
-  (let [{:keys [id image_file name description visibility]} element-data]
+  (let [{:keys [id image_file name description visibility assertion_url]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -72,24 +72,23 @@
            "internal" [:i {:class "fa fa-group"}]
            "public" [:i {:class "fa fa-globe"}]
            nil)]
-        [:div.badge-description description]]]
+        [:div.media-description description]]]
       [:div {:class "media-bottom"}
-       (let [input-id (str "check_" id)
-             checked? (boolean (some #(= id %) (:badges-selected @state)))]
-         [:div
-          [:input {:type "checkbox"
-                   :id input-id
-                   :on-change (fn []
-                                (if checked?
-                                  (swap! state assoc :badges-selected
-                                         (remove
-                                           #(= % id)
-                                           (:badges-selected @state)))
-                                  (swap! state assoc :badges-selected
-                                         (conj (:badges-selected @state) id))))
-                   :checked checked?}]
-          [:label {:for input-id}
-           (t :badge/Exporttobackpack)]])]]]))
+       [:div.row
+        [:div.col-xs-8
+         (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
+           [:div.checkbox
+            [:label
+             [:input {:type "checkbox"
+                      :on-change (fn []
+                                   (if checked?
+                                     (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
+                                     (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
+                      :checked checked?}]
+             (t :badge/Exporttobackpack)]])]
+        [:div {:class "col-xs-4 text-right"}
+         [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download"}
+          [:i {:class "fa fa-download"}]]]]]]]))
 
 (defn badge-grid [state]
   [:div {:class "row"
@@ -108,8 +107,8 @@
       (.issue js/OpenBadges (clj->js assertion-urls)))))
 
 (defn content [state]
-  [:div {:class "export-badges"}
-   [:h2.uppercase-header (t :badge/Exportordownload)]
+  [:div {:id "export-badges"}
+   [:h1.uppercase-header (t :badge/Exportordownload)]
    [badge-grid-form state]
    [:div.export-button
     [:button {:class    "btn btn-primary"

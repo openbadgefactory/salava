@@ -6,7 +6,8 @@
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.rate-it :as r]
-            [salava.core.ui.share :as s]))
+            [salava.core.ui.share :as s]
+            [salava.core.time :refer [date-from-unix-time unix-time]]))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -36,86 +37,93 @@
 
 
 (defn content [state]
-  (let [{:keys [id name owner? visibility show_recipient_name image_file rating issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count issued_by_obf verified_by_obf obf_url]} @state]
+  (let [{:keys [id name owner? visibility show_recipient_name image_file rating issued_on expires_on issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count issued_by_obf verified_by_obf obf_url]} @state]
     [:div {:id "badge-info"}
-     (if owner?
-       [:div.row
-        [:div.col-sm-4
-         [:input {:type "checkbox"
-                  :id "checkbox-share"
-                  :on-change #(toggle-visibility state)
-                  :checked (= visibility "public")}]
-         [:label {:for "checkbox-share"}
-          (t :core/Publishandshare)]]
-        [:div.col-sm-4
-         [:input {:type "checkbox"
-                  :on-change #(toggle-recipient-name state)
-                  :id "checkbox-show-recipient-name"
-                  :checked show_recipient_name}]
-         [:label {:for "checkbox-show-recipient-name"}
-          (t :badge/Showyourname)]]
-        [:div.col-sm-4
-         [:button {:class "btn btn-primary"
-                   :on-click #(.print js/window)}
-          (t :core/Print)]]
-        [:div.col-sm-12
-         [s/share-buttons (str (session/get :site-url) "/badge/info/" id) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
-     (if (or verified_by_obf issued_by_obf)
-       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-     [:div.row
-      [:div {:class "col-md-3 badge-image"}
-       [:div.row
-        [:div.col-xs-12
-         [:img {:src (str "/" image_file)}]]]
+     [:div.panel
+      [:div.panel-body
        (if owner?
+         [:div.row
+          [:div.col-sm-4
+           [:div.checkbox
+            [:label
+             [:input {:type "checkbox"
+                      :on-change #(toggle-visibility state)
+                      :checked (= visibility "public")}]
+             (t :core/Publishandshare)]]]
+          [:div.col-sm-4
+           [:div.checkbox
+            [:label
+             [:input {:type "checkbox"
+                      :on-change #(toggle-recipient-name state)
+                      :checked show_recipient_name}]
+             (t :badge/Showyourname)]]]
+          [:div {:class "col-sm-4 text-right"}
+           [:button {:class "btn btn-primary"
+                     :on-click #(.print js/window)}
+            (t :core/Print)]]
+          [:div.col-sm-12
+           [s/share-buttons (str (session/get :site-url) "/badge/info/" id) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
+       (if (or verified_by_obf issued_by_obf)
+         (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+       [:div.row
+        [:div {:class "col-md-3 badge-image"}
          [:div.row
           [:div.col-xs-12
-           [:div.rating
-            [r/rate-it rating]]
-           [:div.view-count
-            (cond
-              (= view_count 1) (t :badge/Viewedonce)
-              (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
-              :else (t :badge/Badgeisnotviewedyet))]]])
-       [:div.row
-        [:div.col-xs-12
-         (if (and user-logged-in? (not owner?))
-           (if congratulated?
-             [:div.congratulated
-              [:i {:class "fa fa-heart"}]
-              (str " " (t :badge/Congratulated))]
-             [:button {:class "btn btn-primary"
-                       :on-click #(congratulate state)}
-              [:i {:class "fa fa-heart"}]
-              (str " " (t :badge/Congratulations) "!")])
-           )]]]
-      [:div {:class "col-md-9"}
-       [:div.row
-        [:div {:class "col-md-12"}
-         [:h1 name]
-         (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
-         (if show_recipient_name
-           [:div
-            (t :badge/Recipient ": " first_name " " last_name)])
-         [:div
-          description]
-         [:h2.uppercase-header (t :badge/Criteria)]
-         [:a {:href criteria_url
-              :target "_blank"}
-          (t :badge/Opencriteriapage)]]]
-       [:div.row
-        [:div.col-md-12
-         {:dangerouslySetInnerHTML {:__html html_content}}]]
-       (if owner?
+           [:img {:src (str "/" image_file)}]]]
+         (if owner?
+           [:div.row
+            [:div.col-xs-12
+             [:div.rating
+              [r/rate-it rating]]
+             [:div.view-count
+              (cond
+                (= view_count 1) (t :badge/Viewedonce)
+                (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
+                :else (t :badge/Badgeisnotviewedyet))]]])
+         [:div.row
+          [:div.col-xs-12
+           (if (and user-logged-in? (not owner?))
+             (if congratulated?
+               [:div.congratulated
+                [:i {:class "fa fa-heart"}]
+                (str " " (t :badge/Congratulated))]
+               [:button {:class "btn btn-primary"
+                         :on-click #(congratulate state)}
+                [:i {:class "fa fa-heart"}]
+                (str " " (t :badge/Congratulations) "!")])
+             )]]]
+        [:div {:class "col-md-9 badge-info"}
+         [:div.row
+          [:div {:class "col-md-12"}
+           (if (or (not expires_on) (< expires_on (unix-time)))
+             [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
+           [:h1.uppercase-header name]
+           (if (and issued_on (> issued_on 0))
+             [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
+           (if (and expires_on (> expires_on (unix-time)))
+             [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
+           (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+           (if show_recipient_name
+             [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
+           [:div.description
+            description]
+           [:h2.uppercase-header (t :badge/Criteria)]
+           [:a {:href criteria_url
+                :target "_blank"}
+            (t :badge/Opencriteriapage)]]]
          [:div.row
           [:div.col-md-12
-           [:h3.congratulated-header
-            [:i {:class "fa fa-heart"}]
-            " " (t :badge/Congratulatedby) ":"]
-           (into [:div ]
-                 (for [congratulated-user congratulations]
-                   [:a {:href "#"}
-                    (:first_name congratulated-user) " " (:last_name congratulated-user)]))]])]]]))
+           {:dangerouslySetInnerHTML {:__html html_content}}]]
+         (if (and owner? (not-empty congratulations))
+           [:div.row
+            [:div.col-md-12
+             [:h3.congratulated-header
+              [:i {:class "fa fa-heart"}]
+              " " (t :badge/Congratulatedby) ":"]
+             (into [:div ]
+                   (for [congratulated-user congratulations]
+                     [:a {:href "#"}
+                      (:first_name congratulated-user) " " (:last_name congratulated-user)]))]])]]]]]))
 
 (defn init-data [state id]
   (ajax/GET
@@ -130,5 +138,7 @@
         state (atom {})]
     (init-data state id)
     (fn []
-      (layout/default site-navi (content state)))))
+      (if (session/get :user)
+        (layout/default site-navi (content state))
+        (layout/landing-page (content state))))))
 

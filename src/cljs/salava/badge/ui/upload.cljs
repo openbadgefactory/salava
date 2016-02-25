@@ -59,7 +59,7 @@
 (defn content []
   [:div {:class "badge-upload"}
    [m/modal-window]
-   [:h2.uppercase-header (t :badge/Uploadbadgesfrom)]
+   [:h1.uppercase-header (t :badge/Uploadbadgesfrom)]
    [upload-info]
    [:form {:id "form"}
     [:input {:type "file"

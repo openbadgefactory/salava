@@ -126,7 +126,7 @@
      [:ul {:class "nav navbar-nav"}]
      [:div {:id "main-header-right"
             :class "nav navbar-nav navbar-right"}
-      [:a {:class "btn btn-warning"
+      [:a {:id "login-button" :class "btn btn-warning"
            :href "/user/login"}
        (t :user/Login)]]]]])
 

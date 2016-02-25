@@ -83,7 +83,7 @@
           [s/share-buttons (str (session/get :site-url) "/user/profile/" user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           [:a {:href "/user/edit/profile"} (t :user/Editprofile)]]])
-      [:h2.uppercase-header fullname]
+      [:h1.uppercase-header fullname]
       [:div.row
        [:div {:class "col-md-3 col-xs-12"}
         [:img.profile-picture {:src (if profile_picture (str "/" profile_picture) "/img/user_default.png")}]]

@@ -147,3 +147,29 @@ button {
         }
     }
 }
+
+#badge-info {
+    font-size: 13px;
+}
+
+.badge-info {
+    .expired {
+        color: #8c2e0b;
+        font-weight: bold;
+        font-size: 20px;
+    }
+    label {
+        color: #83a04b;
+        margin-bottom: 5px;
+    }
+    .description {
+        font-weight: bold;
+        margin: 10px 0;
+    }
+}
+
+#export-badges {
+    .badge-download {
+        color: #766d72;
+    }
+}
