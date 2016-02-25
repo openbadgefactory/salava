@@ -22,7 +22,16 @@
              (layout/main ctx "/edit/linkedin")
              (layout/main ctx "/profile/:id")
              (layout/main ctx "/edit/profile")
-             (layout/main ctx "/cancel"))
+             (layout/main ctx "/cancel")
+
+             (GET "/verify_email/:verification_key" []
+                  :path-params [verification_key :- s/Str]
+                  :summary "Confirm user email address"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (do
+                    (u/verify-email-address ctx verification_key (:id current-user))
+                    (found "/user/edit/email-addresses"))))
 
     (context "/obpv1/user" []
              :tags ["user"]
@@ -103,15 +112,6 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (u/set-primary-email-address ctx email (:id current-user))))
-
-             (POST "/verify_email" []
-                   :return {:status (s/enum "success" "error")}
-                   :body-params [verification_key :- s/Str
-                                 email :- (:email schemas/User)]
-                   :summary "Confirm user email address"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (ok (u/verify-email-address ctx email verification_key (:id current-user))))
 
              (GET "/profile/:userid" []
                   ;:return ""

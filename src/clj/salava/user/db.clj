@@ -145,13 +145,10 @@
 
 (defn verify-email-address
   "Verify email address"
-  [ctx email verification-code user-id]
-  (let [{:keys [id verified verification_key]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-    (if (and (= id user-id) (not verified) (= verification-code verification_key))
-      (do
-        (update-verify-email-address! {:email email :user_id user-id} (get-db ctx))
-        {:status "success"})
-      {:status "error"})))
+  [ctx key user-id]
+  (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
+    (if (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
+      (update-verify-email-address! {:email email :user_id user_id} (get-db ctx)))))
 
 (defn user-information
   "Get user data by user-id"
