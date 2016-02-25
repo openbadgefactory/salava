@@ -179,7 +179,7 @@
            (file-grid-element (cursor state [:files index]) (cursor state [:new-tag]) (cursor state [:files])))))]))
 
 (defn content [state]
-  [:div {:class "my-files"}
+  [:div {:id "my-files"}
    [m/modal-window]
    [file-grid-form state]
    [file-grid state]])
