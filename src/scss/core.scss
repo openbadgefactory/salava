@@ -326,7 +326,6 @@ ul.side-links {
                 .media-heading {
                     line-height: 1.1em;
                     height: 2.2em;
-                    width: 100%;
                     margin-top: 10px;
                     margin-right: 35px;
                     overflow-y: hidden;
@@ -448,6 +447,10 @@ ol.welcome-text li {
             margin-right: 3px;
             vertical-align: top;
             display: inline-block;
+            line-height: 1;
+            .fb-share {
+                margin-top: -2px;
+            }
         }
         .share-link {
             vertical-align: top;
