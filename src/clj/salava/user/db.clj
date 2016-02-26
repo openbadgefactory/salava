@@ -25,8 +25,8 @@
 (defn login-link []
   (str site-url "/user/login"))
 
-(defn email-verification-link []
-  (str site-url "/user/edit/email-addresses"))
+(defn email-verification-link [verification-key]
+  (str site-url "/user/verify_email/" verification-key))
 
 (defn hash-password [password]
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
@@ -115,7 +115,7 @@
       (let [verification-key (generate-activation-id)
             {:keys [first_name last_name]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
         (insert-user-email! {:user_id user-id :email email :primary_address 0 :verification_key verification-key} (get-db ctx))
-        (m/send-verification site-url (email-verification-link) verification-key (str first_name " " last_name) email)
+        (m/send-verification site-url (email-verification-link verification-key) (str first_name " " last_name) email)
         {:status "success" :message (str (t :user/Emailaddress) " " email " " (t :user/added)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
     (catch Object _
       {:status "error" :message (t :user/Errorwhileaddingemail)})))

@@ -39,8 +39,9 @@
                      site-url" team")]
     (send-mail subject message [email-address])))
 
-(defn send-verification [site-url email-verification-link verification-key fullname email]
+(defn send-verification [site-url email-verification-link fullname email]
   (let [subject (str "Confirm your e-mail address at  " site-url)
-        message (str fullname "\n\nYou have added the e-mail address '" email "' to your\naccount at " site-url". In order to complete the registration of\nthis email, you must confirm it by clicking the link below and entering this\nconfirmation code: "
-                     verification-key "\n\n " email-verification-link "\n\nIf the web address does not appear as a link, you must copy the address out\nof this email, and paste it into the address bar of your web browser.\n\nIf you do not confirm this e-mail in 5 days, it will be unregistered from\nyour account.\n")]
+        message (str fullname "\n\nYou have added the e-mail address '" email "' to your\naccount at " site-url". In order to complete the registration of\nthis email, you must confirm it by clicking the link below.\n\n"
+                     email-verification-link
+                     "\n\nIf the web address does not appear as a link, you must copy the address out\nof this email, and paste it into the address bar of your web browser.\n\nIf you do not confirm this e-mail in 5 days, it will be unregistered from\nyour account.\n")]
     (send-mail subject message [email])))
