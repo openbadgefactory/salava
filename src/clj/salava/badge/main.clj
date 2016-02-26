@@ -98,10 +98,13 @@
                                   (not owner?)
                                   (some #(= user-id (:id %)) all-congratulations))
         view-count (if owner? (select-badge-view-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
-        badge (badge-issued-and-verified-by-obf ctx badge)]
+        badge (badge-issued-and-verified-by-obf ctx badge)
+        recipient-count (select-badge-recipient-count {:badge_content_id (:badge_content_id badge) :visibility (if user-id "internal" "public")}
+                                                      (into {:result-set-fn first :row-fn :recipient_count} (get-db ctx)))]
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
-                 :view_count view-count)))
+                 :view_count view-count
+                 :recipient_count recipient-count)))
 
 (defn save-badge-content!
   "Save badge content"
@@ -243,6 +246,12 @@
     (update-show-recipient-name! {:id badge-id
                                   :show_recipient_name show-recipient-name}
                                  (get-db ctx))))
+
+(defn toggle-show-evidence!
+  "Toggle evidence visibility"
+  [ctx badge-id show-evidence user-id]
+  (if (badge-owner? ctx badge-id user-id)
+    (update-show-evidence! {:id badge-id :show_evidence show-evidence} (get-db ctx))))
 
 (defn congratulate!
   "User congratulates badge receiver"

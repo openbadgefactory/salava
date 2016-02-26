@@ -109,14 +109,12 @@
 
 
 (defn badge-to-import [ctx user-id badge]
-  (let [expires (Integer. (re-find #"\d+" (get-in badge [:assertion :expires])))
-        expired? (and (not= expires 0)
-                      (< expires (unix-time)))
+  (let [expires (re-find #"\d+" (str (get-in badge [:assertion :expires])))
+        expires-int (if expires (Integer. expires))
+        expired? (and expires-int (not= expires-int 0) (< expires-int (unix-time)))
         exists? (b/user-owns-badge? ctx (:assertion badge) user-id)
         error (get-in badge [:assertion :error])]
-    {:status      (if (or expired? exists? error)
-                    "invalid"
-                    "ok")
+    {:status      (if (or expired? exists? error) "invalid" "ok")
      :message     (cond
                     exists? (t :badge/Alreadyowned)
                     expired? (t :badge/Badgeisexpired)

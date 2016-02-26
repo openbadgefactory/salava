@@ -1,0 +1,1 @@
+ALTER TABLE `badge` ADD COLUMN `show_evidence` boolean DEFAULT 0;

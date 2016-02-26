@@ -45,7 +45,7 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
+SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -75,6 +75,10 @@ UPDATE badge SET status = :status WHERE id = :id
 --name: update-show-recipient-name!
 --show/hide recipient name
 UPDATE badge SET show_recipient_name = :show_recipient_name WHERE id = :id
+
+--name: update-show-evidence!
+--show/hide evidence
+UPDATE badge SET show_evidence = :show_evidence WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
@@ -114,7 +118,7 @@ INSERT INTO badge_congratulation (badge_id, user_id, ctime) VALUES (:badge_id, :
 
 --name: select-all-badge-congratulations
 --get all users who congratulated another user from specific badge
-SELECT u.id, first_name, last_name FROM user AS u
+SELECT u.id, first_name, last_name, profile_picture FROM user AS u
        JOIN badge_congratulation AS b ON u.id = b.user_id
        WHERE b.badge_id = :badge_id
 
@@ -126,6 +130,9 @@ INSERT INTO badge_view (badge_id, user_id, ctime) VALUES (:badge_id, :user_id, U
 --get badge view count
 SELECT COUNT(id) AS count FROM badge_view WHERE badge_id = :badge_id
 
+--name: select-badge-recipient-count
+--get badge badge recipient count
+SELECT COUNT(DISTINCT user_id) AS recipient_count FROM badge WHERE badge_content_id = :badge_content_id AND (visibility = 'public' OR visibility = :visibility) AND status='accepted' and deleted = 0
 
 --name: select-user-badge-count
 --get user's badge count

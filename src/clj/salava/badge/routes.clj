@@ -75,6 +75,14 @@
                    :current-user current-user
                    (ok (str (b/toggle-show-recipient-name! ctx badgeid show_recipient_name (:id current-user)))))
 
+             (POST "/toggle_evidence/:badgeid" []
+                   :path-params [badgeid :- Long]
+                   :body-params [show_evidence :- (s/enum false true)]
+                   :summary "Set evidence visibility"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (str (b/toggle-show-evidence! ctx badgeid show_evidence (:id current-user)))))
+
              (POST "/congratulate/:badgeid" []
                    :path-params [badgeid :- Long]
                    :summary "Congratulate user who received a badge"

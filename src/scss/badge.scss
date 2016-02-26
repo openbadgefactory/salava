@@ -150,21 +150,39 @@ button {
 
 #badge-info {
     font-size: 13px;
-}
-
-.badge-info {
+    h2.uppercase-header {
+        padding: 15px 0 0 0;
+    }
     .expired {
         color: #8c2e0b;
         font-weight: bold;
         font-size: 20px;
     }
-    label {
-        color: #83a04b;
-        margin-bottom: 5px;
+    .badge-info {
+        label {
+            color: #83a04b;
+            margin-bottom: 5px;
+        }
     }
     .description {
         font-weight: bold;
-        margin: 10px 0;
+        margin: 20px 0 5px 0;
+    }
+    .congratulated-header > i {
+        color: #ea7d45;
+    }
+    li.badge-congratulation {
+        list-style: none;
+        display: inline-block;
+        img {
+            max-width: 30px;
+            max-height: 30px;
+            padding: 3px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 3px;
+        }
+        padding-right: 10px;
     }
 }
 

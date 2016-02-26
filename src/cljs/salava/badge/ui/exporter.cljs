@@ -128,7 +128,7 @@
   (let [state (atom {:data []
                      :email-selected ""
                      :visibility "all"
-                     :order ""
+                     :order "mtime"
                      :tags-all true
                      :tags-selected []
                      :badges-all false
