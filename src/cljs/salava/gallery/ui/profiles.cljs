@@ -133,7 +133,7 @@
 (defn init-data [state]
   (let [country (session/get-in [:user :country] "all")]
     (ajax/POST
-      (str "/obpv1/gallery/users/")
+      (str "/obpv1/gallery/profiles/")
       {:params {:country country
                 :name ""
                 :common_badges true}

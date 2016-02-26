@@ -149,8 +149,7 @@
       [:button {:type         "button"
                 :class        "close"
                 :data-dismiss "modal"
-                :aria-label   "OK"
-                }
+                :aria-label   "OK"}
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]])

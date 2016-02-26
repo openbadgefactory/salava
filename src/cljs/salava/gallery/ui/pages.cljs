@@ -14,7 +14,7 @@
   (ajax/GET
     (str "/obpv1/page/view/" page-id)
     {:handler (fn [data]
-                (m/modal! [view-page-modal data] {:size :lg}))}))
+                (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
