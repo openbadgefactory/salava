@@ -62,6 +62,6 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
        LIMIT 100
 
 -- name: select-badge-recipients
-SELECT u.id, first_name, last_name, visibility FROM user AS u
+SELECT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN badge AS b ON b.user_id = u.id
        WHERE badge_content_id = :badge_content_id AND status = 'accepted' AND b.deleted = 0

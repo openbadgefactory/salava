@@ -1,3 +1,21 @@
+#badge-gallery {
+    #grid {
+        .grid-container {
+            height: 200px;
+            .media-content {
+                height: 145px;
+                .media-issuer {
+                    font-size: 12px;
+                }
+                .media-recipients {
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}
+
 #page-gallery .page-owner {
     font-weight: bold;
     padding: 5px 0;

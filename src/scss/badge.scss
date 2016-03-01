@@ -171,19 +171,6 @@ button {
     .congratulated-header > i {
         color: #ea7d45;
     }
-    li.badge-congratulation {
-        list-style: none;
-        display: inline-block;
-        img {
-            max-width: 30px;
-            max-height: 30px;
-            padding: 3px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 3px;
-        }
-        padding-right: 10px;
-    }
 }
 
 #export-badges {

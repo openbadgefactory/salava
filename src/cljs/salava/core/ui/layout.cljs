@@ -4,6 +4,7 @@
             [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [current-path navigate-to]]
+            [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
@@ -52,21 +53,20 @@
     [:span {:class "icon-bar"}]]])
 
 (defn top-navi-right []
-  (let [profile-picture (session/get-in [:user :picture])]
-    [:div {:id    "main-header-right"
-          :class "nav navbar-nav navbar-right"}
-    [:ul {:id    "secondary-menu-links"
-          :class "clearfix"}
-     [:li [:a {:href "/user/edit"}
-           [:i {:class "fa fa-caret-right"}]
-           "My account"]]
-     [:li [:a {:href     "#"
-               :on-click #(logout)}
-           [:i {:class "fa fa-caret-right"}]
-           "Log out"]]]
-    [:div.userpic
-     [:a {:href "#"}
-      [:img {:src (if profile-picture (str "/" profile-picture) "/img/user_default.png")}]]]]))
+  [:div {:id    "main-header-right"
+         :class "nav navbar-nav navbar-right"}
+   [:ul {:id    "secondary-menu-links"
+         :class "clearfix"}
+    [:li [:a {:href "/user/edit"}
+          [:i {:class "fa fa-caret-right"}]
+          "My account"]]
+    [:li [:a {:href     "#"
+              :on-click #(logout)}
+          [:i {:class "fa fa-caret-right"}]
+          "Log out"]]]
+   [:div.userpic
+    [:a {:href "#"}
+     [:img {:src (profile-picture (session/get-in [:user :picture]))}]]]])
 
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]

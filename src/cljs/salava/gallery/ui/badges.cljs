@@ -75,7 +75,7 @@
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
    {:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "issuer_name" :id "radio-issuer-name" :label (t :core/byissuername)}])
+   {:value "issuer_content_name" :id "radio-issuer-name" :label (t :core/byissuername)}])
 
 (defn gallery-grid-form [state]
   (let [show-advanced-search (cursor state [:advanced-search])]
@@ -119,14 +119,16 @@
            recipients " " (if (= recipients 1)
                             (t :gallery/recipient)
                             (t :gallery/recipients))])
-        [:div.media-description description]]]]]))
+        [:div.media-description description]]]
+      [:div.media-bottom
+       [:a.bottom-link {:href "#"} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)
         order (keyword (:order @state))
         badges (if (= order :mtime)
                  (sort-by order > badges)
-                 (sort-by order badges))]
+                 (sort-by (comp clojure.string/upper-case order) badges))]
     (into [:div {:class "row"
                  :id    "grid"}]
           (for [element-data badges]

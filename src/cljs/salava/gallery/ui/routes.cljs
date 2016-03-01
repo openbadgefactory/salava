@@ -2,6 +2,7 @@
    (:require [salava.core.ui.layout :as layout]
              [salava.core.i18n :as i18n :refer [t]]
              [salava.gallery.ui.badges :as b]
+             [salava.gallery.ui.badge-view :as bv]
              [salava.gallery.ui.pages :as p]
              [salava.gallery.ui.profiles :as u]))
 
@@ -16,6 +17,7 @@
                ["/pages"    p/handler]
                [["/pages/" :user-id] p/handler]
                ["/profiles" u/handler]
+               [["/badgeview/" :badge-content-id] bv/handler]
                ["/getbadge" (placeholder [:p "Apply for a badge"])]]})
 
 (defn ^:export navi [context]
@@ -25,5 +27,6 @@
    "/gallery/profiles" {:weight 43 :title (t :gallery/Sharedprofiles) :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedprofiles)}
    "/gallery/getbadge" {:weight 44 :title (t :gallery/Applybadge)     :site-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Applybadge)}
    "/gallery/badges/\\d+" {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}
-   "/gallery/pages/\\d+" {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedpages)}})
+   "/gallery/pages/\\d+" {:breadcrumb (t :gallery/Gallery " / " :gallery/Sharedpages)}
+   "/gallery/badgeview/\\w+" {:breadcrumb (t :gallery/Gallery " / " :gallery/Viewbadge)}})
 

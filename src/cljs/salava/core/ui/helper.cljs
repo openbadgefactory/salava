@@ -27,8 +27,3 @@
     (s/validate schema input)
     (catch js/Error e
       false)))
-
-(def default-profile-picture "/img/user_default.png")
-
-(defn profile-picture [path]
-  (if path (str "/" path) default-profile-picture))

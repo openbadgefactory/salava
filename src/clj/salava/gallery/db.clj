@@ -32,11 +32,11 @@
         [where params] (if-not (empty? recipient-name)
                          [(str where " AND (u.first_name LIKE ? OR u.last_name LIKE ?)") (conj params (str recipient-name "%") (str recipient-name "%"))]
                          [where params])
-        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, b.mtime, ic.name AS issuer_name, ic.url AS issuer_url, MAX(b.ctime) AS ctime, COUNT(DISTINCT b.user_id) AS recipients FROM badge AS b
+        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, b.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, COUNT(DISTINCT b.user_id) AS recipients FROM badge AS b
                     JOIN badge_content AS bc ON b.badge_content_id = bc.id
                     JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
                     LEFT JOIN user AS u ON b.user_id = u.id
-                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) AND b.visibility = 'public' "
+                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) AND (b.visibility = 'public' OR b.visibility = 'internal')"
                    where
                    " GROUP BY bc.id
                     ORDER BY b.ctime DESC

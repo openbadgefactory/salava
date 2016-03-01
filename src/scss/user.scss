@@ -97,3 +97,17 @@
         margin-top: 20px;
     }
 }
+
+li.user-link-inline {
+    list-style: none;
+    display: inline-block;
+    img {
+        max-width: 30px;
+        max-height: 30px;
+        padding: 3px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-right: 3px;
+    }
+    padding-right: 10px;
+}

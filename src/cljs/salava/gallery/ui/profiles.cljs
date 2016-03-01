@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [profile-picture]]
+            [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]))
 

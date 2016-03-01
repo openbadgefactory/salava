@@ -7,7 +7,7 @@
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :as h]
+            [salava.user.ui.helper :as h]
             [salava.core.time :refer [date-from-unix-time unix-time]]))
 
 (defn toggle-visibility [state]
@@ -40,7 +40,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count]} @state
         expired? (and expires_on (< expires_on (unix-time)))]
     [:div {:id "badge-info"}
      [:div.panel
@@ -94,7 +94,7 @@
          (if (> recipient_count 0)
            [:div.row
             [:div.col-xs-12
-             [:a {:href "#"} (t :badge/Otherrecipients)]]])
+             [:a {:href (str "/gallery/badgeview/" badge_content_id)} (t :badge/Otherrecipients)]]])
          [:div.row
           [:div.col-xs-12
            (if (and user-logged-in? (not owner?))
@@ -140,10 +140,7 @@
              (into [:div ]
                    (for [congratulation congratulations
                          :let [{:keys [id first_name last_name profile_picture]} congratulation]]
-                     [:li.badge-congratulation
-                      [:a {:href (str "/user/profile/" id)}
-                       [:img {:src (h/profile-picture profile_picture)}]
-                       first_name " " last_name]]))]])]]]]]))
+                     (h/profile-link-inline id first_name last_name profile_picture)))]])]]]]]))
 
 (defn init-data [state id]
   (ajax/GET

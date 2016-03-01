@@ -4,6 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
+            [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]))
 
@@ -86,7 +87,7 @@
       [:h1.uppercase-header fullname]
       [:div.row
        [:div {:class "col-md-3 col-xs-12"}
-        [:img.profile-picture {:src (if profile_picture (str "/" profile_picture) "/img/user_default.png")}]]
+        [:img.profile-picture {:src (profile-picture profile_picture)}]]
        [:div {:class "col-md-9 col-xs-12"}
         (if about
           [:div.row
