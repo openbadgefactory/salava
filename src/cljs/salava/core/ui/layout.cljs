@@ -31,8 +31,7 @@
 (defn logout []
   (ajax/POST
     "/obpv1/user/logout"
-    {:handler (fn []
-                (navigate-to "/user/login"))}))
+    {:handler (fn [] (navigate-to "/user/login"))}))
 
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
@@ -59,14 +58,14 @@
          :class "clearfix"}
     [:li [:a {:href "/user/edit"}
           [:i {:class "fa fa-caret-right"}]
-          "My account"]]
+          (t :user/Myaccount)]]
     [:li [:a {:href     "#"
               :on-click #(logout)}
           [:i {:class "fa fa-caret-right"}]
-          "Log out"]]]
+          (t :user/Logout)]]]
    [:div.userpic
-    [:a {:href "#"}
-     [:img {:src (profile-picture (session/get-in [:user :picture]))}]]]])
+    [:a {:href (str "/user/profile/" (session/get-in [:user :id]))}
+     [:img {:src (profile-picture (session/get-in [:user :profile_picture]))}]]]])
 
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]

@@ -26,7 +26,7 @@
 
 (defn ^:export navi [context]
   {"/user/profile/\\d+"                                {:breadcrumb (t :user/User " / " :user/Profile)}
-   (str "/user/profile/" (get-in context [:user :id])) {:weight 40 :title (t :user/Myprofile) :site-navi true :breadcrumb (t :user/User " / " (get-in context [:user :fullname]))}
+   (str "/user/profile/" (get-in context [:user :id])) {:weight 40 :title (t :user/Myprofile) :site-navi true :breadcrumb (str (t :user/User) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
    "/user/edit/profile"                                {:breadcrumb (t :user/User " / " :user/Editprofile)}
    "/user/edit"                                        {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
    "/user/edit/email-addresses"                        {:weight 42 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}

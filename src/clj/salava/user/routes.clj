@@ -42,7 +42,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity] (select-keys login-status [:id :fullname :picture :language :country]))
+                       (assoc-in (ok login-status) [:session :identity :id] (:id login-status))
                        (ok login-status))))
 
              (POST "/logout" []
@@ -69,7 +69,8 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (let [user-info (u/user-information ctx (:id current-user))]
-                    (ok (dissoc user-info :profile_picture :profile_visibility :about))))
+                    (ok {:user (dissoc user-info :profile_picture :profile_visibility :about)
+                         :languages (get-in ctx [:config :core :languages])})))
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")

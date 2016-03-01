@@ -1,9 +1,10 @@
 (ns salava.user.ui.edit
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid?]]
+            [salava.core.ui.helper :refer [input-valid? navigate-to]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
+            [salava.core.common :refer [deep-merge]]
             [salava.user.schemas :as schemas]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
@@ -11,11 +12,9 @@
 (defn save-user-info [state]
   (ajax/POST
     "/obpv1/user/edit"
-    {:params  (dissoc @state :message)
+    {:params  (:user @state)
      :handler (fn [data]
-                (if (= (:status data) "error")
-                  (swap! state assoc :message {:class "alert-danger" :content (:message data)})
-                  (swap! state assoc :message {:class "alert-success" :content (t :core/Thechangeshavebeensaved)})))}))
+                (navigate-to "/user/edit"))}))
 
 (defn new-password-valid? [current-password new-password new-password-verify]
   (if (or (not-empty new-password) (not-empty new-password-verify))
@@ -26,16 +25,15 @@
     true))
 
 (defn content [state]
-  (let [current-password-atom (cursor state [:current_password])
-        new-password-atom (cursor state [:new_password])
-        new-password-verify-atom (cursor state [:new_password_verify])
-        language-atom (cursor state [:language])
-        first-name-atom (cursor state [:first_name])
-        last-name-atom (cursor state [:last_name])
-        country-atom (cursor state [:country])
+  (let [current-password-atom (cursor state [:user :current_password])
+        new-password-atom (cursor state [:user :new_password])
+        new-password-verify-atom (cursor state [:user :new_password_verify])
+        language-atom (cursor state [:user :language])
+        first-name-atom (cursor state [:user :first_name])
+        last-name-atom (cursor state [:user :last_name])
+        country-atom (cursor state [:user :country])
         message (:message @state)]
-    [:div {:class "panel"
-           :id "edit-user"}
+    [:div {:class "panel" :id "edit-user"}
      [:div {:class "panel-body"}
       [:form.form-horizontal
        (if message
@@ -45,8 +43,7 @@
         [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "current-password" :atom current-password-atom :password? true}]]
-        [:div.col-md-12
-         (t :user/Enteryourcurrentpassword) " " [:a {:href "/user/password"} (t :user/Requestnewpassword)]]]
+        [:div.col-md-12 (t :user/Enteryourcurrentpassword)]]
 
        [:div.form-group
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
@@ -62,22 +59,15 @@
        [:div.form-group
         [:label {:class "col-md-3"}
          (t :user/Language)]
-        [:div {:class "col-md-9"}
-         [:input {:id        "input-language-fi"
-                  :type      "radio"
-                  :name      "language"
-                  :value     "fi"
-                  :on-click  #(reset! language-atom "fi")}]
-         [:label {:for "input-language-fi"}
-          (t :core/Finnish)]
-         [:input {:id        "input-language-en"
-                  :type      "radio"
-                  :name      "language"
-                  :value     "en"
-                  :on-click  #(reset! language-atom "en")}]
-         [:label {:for "input-language-en"}
-          (t :core/English)]]]
-
+        (into [:div {:class "col-md-9"}]
+              (for [language (:languages @state)]
+                [:label.radio-inline
+                 [:input {:type      "radio"
+                          :name      "language"
+                          :value     language
+                          :checked   (= @language-atom language)
+                          :on-click  #(reset! language-atom language)}]
+                 (t (keyword (str "core/" language)))]))]
        [:div.form-group
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
@@ -112,16 +102,16 @@
           (t :user/Removeaccount)]]]]]]))
 
 (def initial-state
-  {:current_password nil
-   :new_password nil
-   :new_password_verify nil
+  {:user {:current_password nil
+          :new_password nil
+          :new_password_verify nil}
    :message nil})
 
 (defn init-data [state]
   (ajax/GET
     (str "/obpv1/user/edit/")
     {:handler (fn [data]
-                (reset! state (merge initial-state (dissoc data :id))))}))
+                (reset! state (deep-merge initial-state (update-in data [:user] dissoc :id))))}))
 
 (defn handler [site-navi]
   (let [state (atom {})]

@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [salava.core.helper :refer [dump]]
+            [salava.user.db :as u]
             [hiccup.page :refer [html5 include-css include-js]]
             salava.core.restructure))
 
@@ -60,9 +61,10 @@
 
 (defn main [ctx path]
   (GET path []
-         :no-doc true
-         :summary "Main HTML layout"
-         :current-user current-user
-         (-> (main-view (assoc ctx :user current-user))
+       :no-doc true
+       :summary "Main HTML layout"
+       :current-user current-user
+       (let [user (if current-user (u/user-information ctx (:id current-user)))]
+         (-> (main-view (assoc ctx :user user))
              (ok)
-             (content-type "text/html; charset=\"UTF-8\""))))
+             (content-type "text/html; charset=\"UTF-8\"")))))
