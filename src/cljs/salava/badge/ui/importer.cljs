@@ -128,7 +128,7 @@
    [:p
     "Your imported badges will appear at "
     [:a {:href "/badge/mybadges"} "My badges"] " page. "
-    ". You can delete unwanted badges at "
+    "You can delete unwanted badges at "
     [:a {:href "/badge/mybadges"} "My badges"]
     " page in badge Settings."]])
 

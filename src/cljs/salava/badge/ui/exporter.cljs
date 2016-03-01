@@ -102,19 +102,31 @@
 (defn content [state]
   [:div {:id "export-badges"}
    [:h1.uppercase-header (t :badge/Exportordownload)]
-   [badge-grid-form state]
-   [:div.export-button
-    [:button {:class    "btn btn-primary"
-              :on-click #(export-badges state)
-              :disabled (= 0 (count (:badges-selected @state)))}
-     (t :badge/Exportselected)]]
-   [badge-grid state]])
+   (if (:initializing @state)
+     [:div.ajax-message
+      [:i {:class "fa fa-cog fa-spin fa-2x "}]
+      [:span (str (t :core/Loading) "...")]]
+     [:div
+      (if (or (empty? (:badges @state)) (empty? (:emails @state)))
+        [:div {:class "alert alert-warning"}
+         (cond
+           (empty? (:badges @state)) (t :badge/Nobadgestoexport)
+           (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href "/user/edit/email-addresses"} (t :badge/here) "."]])]
+        [:div
+         [badge-grid-form state]
+         [:div.export-button
+          [:button {:class    "btn btn-primary"
+                    :on-click #(export-badges state)
+                    :disabled (= 0 (count (:badges-selected @state)))}
+           (t :badge/Exportselected)]]
+         [badge-grid state]])])])
 
 (defn init-data [state]
   (ajax/GET
     "/obpv1/badge/export"
     {:handler (fn [{:keys [badges emails]} data]
-                (swap! state assoc :badges badges :emails emails :email-selected (first emails)))}))
+                (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
+                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:badges []
@@ -125,7 +137,8 @@
                      :tags-all true
                      :tags-selected []
                      :badges-all false
-                     :badges-selected []})]
+                     :badges-selected []
+                     :initializing true})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

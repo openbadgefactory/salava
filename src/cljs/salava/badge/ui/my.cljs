@@ -188,19 +188,24 @@
 (defn content [state]
   [:div {:id "my-badges"}
    [m/modal-window]
-   (if (and (empty? (:pending @state)) (empty? (:badges @state)))
-     [welcome-text]
-     [:div
-      [badges-pending state]
-      [badge-grid-form state]
-      [badge-grid state]])])
+   (if (:initializing @state)
+     [:div.ajax-message
+      [:i {:class "fa fa-cog fa-spin fa-2x "}]
+      [:span (str (t :core/Loading) "...")]]
+     (if (and (empty? (:pending @state)) (empty? (:badges @state)))
+       [welcome-text]
+       [:div
+        [badges-pending state]
+        [badge-grid-form state]
+        [badge-grid state]]))])
 
 (defn init-data [state]
   (ajax/GET
     "/obpv1/badge"
     {:handler (fn [data]
-                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data))
-                (swap! state assoc :pending (filter #(= "pending" (:status %)) data)))}))
+                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                                   :pending (filter #(= "pending" (:status %)) data)
+                                   :initializing false))}))
 
 (defn handler [site-navi]
   (let [state (atom {:badges []
@@ -208,7 +213,8 @@
                      :visibility "all"
                      :order "mtime"
                      :tags-all true
-                     :tags-selected []})]
+                     :tags-selected []
+                     :initializing true})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
