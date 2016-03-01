@@ -11,7 +11,7 @@
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"
-              :database-name "salava"
+              :database-name "salava_test"
               :server-name   "localhost"}
 
  :obf {:url "https://openbadgefactory.com"}
