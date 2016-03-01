@@ -14,9 +14,11 @@
   (try+
     (:body
       (client/request
-        {:method      :get
-         :url         url
-         :as          :json}))
+        {:method         :get
+         :url            url
+         :as             :json
+         :socket-timeout 30000
+         :conn-timeout   30000}))
     (catch Object _
       {:error (t :badge/Errorfetchingjson)})))
 
