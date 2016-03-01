@@ -13,7 +13,6 @@
 
 (def api-root-url "https://backpack.openbadges.org/displayer")
 
-
 (defn api-request
   ([method path] (api-request method path {}))
   ([method path post-params]
@@ -32,7 +31,6 @@
      (catch Object _
        (throw+ (t :badge/Errorconnecting))))))
 
-
 (defn get-badge-type [badge]
   (if (= (get-in badge [:assertion :verify :type]) "hosted")
     "hosted"
@@ -41,7 +39,6 @@
       "signed"
       (if (:hostedUrl badge)
         "hostedUrl"))))
-
 
 (defn get-assertion-and-key [type badge]
   "Get badge type and data.
@@ -52,7 +49,6 @@
     "hostedUrl" [(:hostedUrl badge) (:hostedUrl badge)]
     [{:error (t :badge/Invalidassertion)} nil]))
 
-
 (defn add-assertion-and-key [badge]
   (let [badge-type (get-badge-type badge)
         [assertion assertion-key] (get-assertion-and-key badge-type badge)
@@ -60,13 +56,11 @@
     (assoc badge :assertion (a/create-assertion assertion old-assertion)
                  :assertion_key assertion-key)))
 
-
 (defn collect-badges
   "Collect badges fetched from groups"
   [badge-colls]
   (let [badges (flatten badge-colls)]
     (map add-assertion-and-key badges)))
-
 
 (defn fetch-badges-by-group
   "Get badges from public group in Backpack"
@@ -78,35 +72,36 @@
                         :_email email
                         :_status "accepted")))))
 
-
 (defn fetch-badges-from-groups
   "Fetch and collect users badges in public groups."
-  [email backpack-id]
-  (let [response (api-request :get (str "/" backpack-id "/groups"))
-        groups (map #(hash-map :id (:groupId %)
-                               :name (:name %))
-                    (:groups response))]
-    (if (pos? (count groups))
-      (collect-badges (map #(fetch-badges-by-group email backpack-id %) groups)))))
+  [backpack]
+  (if (and (:email backpack) (:userId backpack))
+    (let [response (api-request :get (str "/" (:userId backpack) "/groups"))
+          groups (map #(hash-map :id (:groupId %) :name (:name %)) (:groups response))]
+      (if (pos? (count groups))
+        (collect-badges (map #(fetch-badges-by-group (:email backpack) (:userId backpack) %) groups))))))
 
+(defn fetch-backpack-uid
+  "Get Mozilla uid by email address"
+  [ctx user-id email]
+  (let [backpack-id (:userId (api-request :post "/convert/email" {:email email}))]
+    (when backpack-id
+      (u/set-email-backpack-id ctx user-id email backpack-id)
+      {:email email :userId backpack-id})))
 
-(defn fetch-badges-from-backpack
-  "Get badges by backpack email address"
-  [email]
-  (let [response (api-request :post "/convert/email" {:email email})]
-    (fetch-badges-from-groups email (:userId response))))
+(defn user-backpack-emails
+  "Get list of user's email addresses"
+  [ctx user-id]
+  (let [emails (u/verified-email-addresses ctx user-id)]
+    (->> emails
+         (map #(fetch-backpack-uid ctx user-id %))
+         (filter :email)
+         (map :email))))
 
-
-(defn fetch-all-user-badges [backpack-emails]
+(defn fetch-all-user-badges [ctx user-id backpack-emails]
   (if (empty? backpack-emails)
     (throw+ (t :badge/Noemails)))
-  (loop [badges []
-         emails backpack-emails]
-    (if (empty? emails)
-      badges
-      (recur (concat badges (fetch-badges-from-backpack (first emails)))
-             (rest emails)))))
-
+  (reduce #(concat %1 (fetch-badges-from-groups %2)) [] (map #(fetch-backpack-uid ctx user-id %) backpack-emails)))
 
 (defn badge-to-import [ctx user-id badge]
   (let [expires (re-find #"\d+" (str (get-in badge [:assertion :expires])))
@@ -125,11 +120,10 @@
      :image_file  (get-in badge [:assertion :badge :image])
      :key         (map-sha256 (get-in badge [:assertion_key]))}))
 
-
 (defn badges-to-import [ctx user-id]
   (try+
-    (let [backpack-emails (u/verified-email-addresses ctx user-id)
-          badges (fetch-all-user-badges backpack-emails)]
+    (let [emails (u/verified-email-addresses ctx user-id)
+          badges (fetch-all-user-badges ctx user-id emails)]
       {:status "success"
        :badges (map #(badge-to-import ctx user-id %) badges)
        :error nil})
@@ -151,7 +145,7 @@
 (defn do-import [ctx user-id keys]
   (try+
     (let [backpack-emails (u/verified-email-addresses ctx user-id)
-          all-badges (fetch-all-user-badges backpack-emails)
+          all-badges (fetch-all-user-badges ctx user-id backpack-emails)
           badges-with-keys (map #(assoc % :key
                                           (map-sha256 (get-in % [:assertion_key])))
                                 all-badges)

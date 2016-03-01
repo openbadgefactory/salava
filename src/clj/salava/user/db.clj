@@ -208,3 +208,8 @@
         (m/send-password-reset-message site-url (activation-link id verification-key) (str first_name " " last_name) email)
         {:status "success"})
       {:status "error"})))
+
+(defn set-email-backpack-id
+  "Associate Mozilla backpack-id to email address"
+  [ctx user-id email backpack-id]
+  (update-email-backpack-id! {:user_id user-id :email email :backpack_id backpack-id} (get-db ctx)))

@@ -84,3 +84,6 @@ UPDATE user SET profile_visibility = :profile_visibility, mtime = UNIX_TIMESTAMP
 
 --name: update-user-visibility-picture-about!
 UPDATE user SET profile_visibility = :profile_visibility, profile_picture = :profile_picture, about = :about, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: update-email-backpack-id!
+UPDATE user_email SET backpack_id = :backpack_id WHERE user_id = :user_id AND email = :email

@@ -3,9 +3,9 @@
             [salava.core.i18n :refer [t]]))
 
 (defn rate-it-stars [value read-only]
-  [:div {:id "rateit"
-         :class "rateit"
-         :data-rateit-value value
+  [:div {:id                   "rateit"
+         :class                "rateit"
+         :data-rateit-value    (if value (/ value 10))
          :data-rateit-readonly read-only}])
 
 (defn rate-it
@@ -19,6 +19,6 @@
                                          (if value-atom
                                            (-> (js* "$('#rateit')")
                                                (.bind "rated" (fn [e new-value]
-                                                                (reset! value-atom new-value)))
+                                                                (reset! value-atom (* 10 new-value))))
                                                (.bind "reset" (fn []
                                                                 (reset! value-atom nil))))))})))

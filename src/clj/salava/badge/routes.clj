@@ -91,11 +91,12 @@
                    (ok (str (b/congratulate! ctx badgeid (:id current-user)))))
 
              (GET "/export" []
-                  :return [schemas/BadgesToExport]
+                  :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
                   :summary "Get the badges of a specified user for export"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (b/user-badges-to-export ctx (:id current-user))))
+                  (let [emails (i/user-backpack-emails ctx (:id current-user))]
+                    (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))})))
 
              (GET "/import" []
                   :return schemas/Import
@@ -133,7 +134,7 @@
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public" "internal")
                                  evidence-url :- (s/maybe s/Str)
-                                 rating :- (s/maybe (s/enum 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5))
+                                 rating :- (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
                    :auth-rules access/authenticated

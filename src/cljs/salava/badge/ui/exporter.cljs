@@ -9,8 +9,7 @@
             [salava.core.i18n :refer [t]]))
 
 (defn email-options [state]
-  (let [emails (unique-values :email (:data @state))]
-    (map #(hash-map :value % :title %) emails)))
+  (map #(hash-map :value % :title %) (:emails @state)))
 
 (defn visibility-options []
   [{:value "all" :title (t :badge/All)}
@@ -28,28 +27,22 @@
    [g/grid-select        (t :badge/Email ":") "select-email" :email-selected (email-options state) state]
    [g/grid-search-field  (t :badge/Search ":") "badgesearch" (t :badge/Searchbyname) :search state]
    [g/grid-select        (t :badge/Show ":") "select-visibility" :visibility (visibility-options) state]
-   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (:data @state)) :tags-selected :tags-all state]
+   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
    [g/grid-radio-buttons (t :badge/Order ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
-  (if (and
-        (= (:email-selected @state) (:email element))
-        (or (= (:visibility @state) "all")
-            (= (:visibility @state) (:visibility element)))
-        (or (> (count
-                 (intersection
-                   (into #{} (:tags-selected @state))
-                   (into #{} (:tags element)))
-                 )
-               0)
-            (= (:tags-all @state)
-               true))
-        (or (empty? (:search @state))
-            (not= (.indexOf
-                    (.toLowerCase (:name element))
-                    (.toLowerCase (:search @state)))
-                  -1)))
-    true false))
+  (and
+    (= (:email-selected @state) (:email element))
+    (or (= (:visibility @state) "all")
+        (= (:visibility @state) (:visibility element)))
+    (or (> (count
+             (intersection
+               (into #{} (:tags-selected @state))
+               (into #{} (:tags element)))
+             ) 0)
+        (= (:tags-all @state) true))
+    (or (empty? (:search @state))
+        (not= (.indexOf (.toLowerCase (:name element)) (.toLowerCase (:search @state))) -1))))
 
 (defn grid-element [element-data state]
   (let [{:keys [id image_file name description visibility assertion_url]} element-data]
@@ -93,7 +86,7 @@
 (defn badge-grid [state]
   [:div {:class "row"
          :id "grid"}
-   (doall (let [badges (:data @state)
+   (doall (let [badges (:badges @state)
                 order (:order @state)]
             (for [element-data (sort-by (keyword order) badges)]
               (if (badge-visible? element-data state)
@@ -102,7 +95,7 @@
 (defn export-badges [state]
   (let [badges-to-export (:badges-selected @state)
         assertion-urls (map :assertion_url (filter (fn [b] (and (some #(= % (:id b)) badges-to-export)
-                                                                (badge-visible? b state))) (:data @state)))]
+                                                                (badge-visible? b state))) (:badges @state)))]
     (if-not (empty? badges-to-export)
       (.issue js/OpenBadges (clj->js assertion-urls)))))
 
@@ -120,12 +113,12 @@
 (defn init-data [state]
   (ajax/GET
     "/obpv1/badge/export"
-    {:handler (fn [data]
-                (swap! state assoc :data data)
-                (swap! state assoc :email-selected (first (unique-values :email data))))}))
+    {:handler (fn [{:keys [badges emails]} data]
+                (swap! state assoc :badges badges :emails emails :email-selected (first emails)))}))
 
 (defn handler [site-navi]
-  (let [state (atom {:data []
+  (let [state (atom {:badges []
+                     :emails []
                      :email-selected ""
                      :visibility "all"
                      :order "mtime"
