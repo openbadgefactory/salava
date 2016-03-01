@@ -1,8 +1,12 @@
 (ns salava.core.routes
   (:require [compojure.api.sweet :refer :all]
-            [compojure.route :as route]
-            [salava.core.layout :as layout]))
+            [ring.util.http-response :refer :all]
+            [salava.core.layout :as layout]
+            salava.core.restructure))
 
 (defn route-def [ctx]
-  (layout/main ctx "/")
-  (route/not-found "404 Not found"))
+  (GET "/" []
+       :current-user current-user
+       (if current-user
+         (temporary-redirect "/badge")
+         (temporary-redirect "/user/login"))))

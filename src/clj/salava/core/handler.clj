@@ -1,5 +1,6 @@
 (ns salava.core.handler
   (:require [compojure.api.sweet :refer :all]
+            [compojure.route :as route]
             [salava.core.session :refer [wrap-app-session]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
@@ -61,5 +62,6 @@
                                {:name "page", :description "plugin"}
                                {:name "translator", :description "plugin"}
                                {:name "user", :description "plugin"}]})
-        (resolve-routes ctx))))
+        (resolve-routes ctx)
+        (route/not-found "404 Not found"))))
 

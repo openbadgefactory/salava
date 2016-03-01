@@ -42,7 +42,7 @@
 (defn top-navi-header []
   [:div {:class "navbar-header"}
    [:a {:class "logo pull-left"
-        :href  "/"
+        :href  (if (session/get :user) "/badge" "/user/login")
         :title "Open Badge Passport"}
     [:img {:src   "/img/logo.png"
            :class "logo-main"}]
