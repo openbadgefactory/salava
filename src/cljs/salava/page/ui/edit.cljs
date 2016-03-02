@@ -36,15 +36,13 @@
         (select-keys [:id :type])
         (merge (block-specific-values block)))))
 
-(defn save-page [{:keys [id name description blocks]} redirect-url]
+(defn save-page [{:keys [id name description blocks]} next-url]
   (ajax/POST
     (str "/obpv1/page/save_content/" id)
     {:params {:name name
               :description description
               :blocks (prepare-blocks-to-save blocks)}
-     :handler (fn []
-                (if redirect-url
-                  (navigate-to redirect-url)))}))
+     :handler (fn [] (navigate-to next-url))}))
 
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
@@ -293,10 +291,10 @@
       (t :page/Save)]]]])
 
 (defn content [state]
-  (let [{:keys [id name description blocks]} (:page @state)]
+  (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-edit"}
      [ph/edit-page-header (t :page/Editpage ": " name)]
-     [ph/edit-page-buttons id :content]
+     [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) next-url))]
      [page-form state]]))
 
 (defn init-data [state id]

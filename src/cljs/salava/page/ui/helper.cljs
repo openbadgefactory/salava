@@ -3,16 +3,15 @@
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
+            [salava.core.ui.helper :refer [navigate-to]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.helper :refer [dump]]
             [salava.file.icons :refer [file-icon]]))
 
 (defn delete-page [id]
   (ajax/DELETE
     (str "/obpv1/page/" id)
-    {:handler (fn []
-                (.replace js/window.location "/page"))}))
+    {:handler (fn [] (navigate-to "/page"))}))
 
 (defn delete-page-modal [page-id]
   [:div
@@ -36,7 +35,7 @@
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
 
-(defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email]} ]
+(defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
@@ -57,7 +56,7 @@
       [:h3 (t :badge/Criteria)]]]
     [:div.row
      [:div.col-md-12
-      [:a {:href criteria_url} (t :badge/Opencriteriapage)]]]
+      [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage)]]]
     (if (= format "long")
       [:div.row
        [:div {:class "col-md-12"
@@ -105,41 +104,42 @@
          (badge-block (assoc badge :format "long")))))])
 
 (defn view-page [page]
-  (let [{:keys [id name description mtime first_name last_name blocks theme border padding]} page]
+  (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding]} page]
     [:div {:id    (str "theme-" (or theme 0))
            :class "page-content"}
-     [:div.panel
-      [:div.panel-left
-       [:div.panel-right
-        [:div.panel-content
-         [:div.row
-          [:div {:class "col-md-12 page-mtime"}
-           (date-from-unix-time (* 1000 mtime))]]
-         [:div.row
-          [:div {:class "col-md-12 page-title"}
-           [:h1 name]]]
-         [:div.row
-          [:div {:class "col-md-12 page-summary"}
-           description]]
-         [:div.row
-          [:div {:class "col-md-12 page-author"}
-           [:a {:href "#"}
-            (str first_name " " last_name)]]]
-         (into [:div.page-blocks]
-               (for [block blocks]
-                 [:div {:class "block-wrapper"
-                        :style {:border-top-width (:width border)
-                                :border-top-style (:style border)
-                                :border-top-color (:color border)
-                                :padding-top (str padding "px")
-                                :margin-top (str padding "px")}}
-                  (case (:type block)
-                    "badge" (badge-block block)
-                    "html" (html-block block)
-                    "file" (file-block block)
-                    "heading" (heading-block block)
-                    "tag" (tag-block block)
-                    nil)]))]]]]]))
+     (if id
+       [:div.panel
+        [:div.panel-left
+         [:div.panel-right
+          [:div.panel-content
+           (if mtime
+             [:div.row
+              [:div {:class "col-md-12 page-mtime"}
+               (date-from-unix-time (* 1000 mtime))]])
+           [:div.row
+            [:div {:class "col-md-12 page-title"}
+             [:h1 name]]]
+           [:div.row
+            [:div {:class "col-md-12 page-author"}
+             [:a {:href (str "/user/profile/" user_id)} (str first_name " " last_name)]]]
+           [:div.row
+            [:div {:class "col-md-12 page-summary"}
+             description]]
+           (into [:div.page-blocks]
+                 (for [block blocks]
+                   [:div {:class "block-wrapper"
+                          :style {:border-top-width (:width border)
+                                  :border-top-style (:style border)
+                                  :border-top-color (:color border)
+                                  :padding-top (str padding "px")
+                                  :margin-top (str padding "px")}}
+                    (case (:type block)
+                      "badge" (badge-block block)
+                      "html" (html-block block)
+                      "file" (file-block block)
+                      "heading" (heading-block block)
+                      "tag" (tag-block block)
+                      nil)]))]]]])]))
 
 (defn view-page-modal [page]
   [:div {:id "badge-content"}
@@ -159,21 +159,25 @@
    [:div.col-sm-12
     [:h1 header]]])
 
-(defn edit-page-buttons [id target]
+(defn edit-page-buttons [id target save-function]
   [:div {:class "row"
          :id "buttons"}
    [:div.col-xs-8
     [:a {:class (str "btn" (if (= target :content) " btn-active"))
-         :href (str "/page/edit/" id)}
+         :href "#"
+         :on-click #(do (.preventDefault %) (save-function (str "/page/edit/" id)))}
      (t "1." :page/Content)]
     [:a {:class (str "btn" (if (= target :theme) " btn-active"))
-         :href (str "/page/edit_theme/" id)}
+         :href "#"
+         :on-click #(do (.preventDefault %) (save-function (str "/page/edit_theme/" id)))}
      (t "2." :page/Theme)]
     [:a {:class (str "btn" (if (= target :settings) " btn-active"))
-         :href (str "/page/settings/" id)}
+         :href "#"
+         :on-click #(do (.preventDefault %) (save-function (str "/page/settings/" id)))}
      (t "3." :page/Settings)]
     [:a {:class (str "btn" (if (= target :preview) " btn-active"))
-         :href (str "/page/preview/" id)}
+         :href "#"
+         :on-click #(do (.preventDefault %) (save-function (str "/page/preview/" id)))}
      (t "4." :page/Preview)]]
    [:div {:class "col-xs-4"
           :id "buttons-right"}

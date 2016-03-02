@@ -39,7 +39,7 @@
                             :border-top-color color}}
               ]]))))
 
-(defn save-theme [state]
+(defn save-theme [state next-url]
   (let [page-id (get-in @state [:page :id])
         theme-id (get-in @state [:page :theme])
         border-id (get-in @state [:page :border :id])
@@ -49,14 +49,14 @@
       {:params {:theme theme-id
                 :border border-id
                 :padding padding-id}
-       :handler #(navigate-to (str "/page/settings/" page-id))})))
+       :handler #(navigate-to next-url)})))
 
 (defn content [state]
   (let [page (:page @state)
         {:keys [id name]} page]
     [:div {:id "page-edit-theme"}
      [ph/edit-page-header (t :page/Choosetheme ": " name)]
-     [ph/edit-page-buttons id :theme]
+     [ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url))]
      [:div {:class "panel page-panel" :id "theme-panel"}
       [:form.form-horizontal
        [:div.form-group
@@ -79,7 +79,7 @@
          [:button {:class    "btn btn-primary"
                    :on-click #(do
                                (.preventDefault %)
-                               (save-theme state))}
+                               (save-theme state (str "/page/settings/" id)))}
           (t :page/Save)]]]]]
      [ph/view-page page]]))
 

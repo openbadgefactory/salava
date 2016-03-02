@@ -9,14 +9,14 @@
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
 
-(defn save-settings [page]
+(defn save-settings [page next-url]
   (let [{:keys [id tags visibility password]} page]
     (ajax/POST
       (str "/obpv1/page/save_settings/" id)
       {:params {:tags tags
                 :visibility visibility
                 :password password}
-       :handler #(navigate-to (str "/page/preview/" id))})))
+       :handler #(navigate-to next-url)})))
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)
@@ -26,7 +26,7 @@
         password-atom (cursor state [:page :password])]
     [:div {:id "page-settings"}
      [ph/edit-page-header (t :page/Settings ": " name)]
-     [ph/edit-page-buttons id :settings]
+     [ph/edit-page-buttons id :settings (fn [next-url] (save-settings (:page @state) next-url))]
      [:div {:class "panel page-panel" :id "settings-panel"}
       [:div.form-group
        [:label {:for "page-tags"}
@@ -83,7 +83,7 @@
        [:button {:class    "btn btn-primary"
                  :on-click #(do
                              (.preventDefault %)
-                             (save-settings (:page @state)))
+                             (save-settings (:page @state) (str "/page/preview/" id)))
                  :disabled (and (empty? @password-atom)
                                 (= @visibility-atom "password"))}
         (t :page/Save)]]]]))

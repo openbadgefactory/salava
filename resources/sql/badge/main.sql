@@ -99,8 +99,9 @@ UPDATE badge SET deleted = 1, visibility = 'private' WHERE id = :id
 SELECT b.id, bc.name, bc.image_file FROM badge AS b JOIN badge_content AS bc ON b.badge_content_id = bc.id WHERE b.id IN (:ids)
 
 --name: select-badges-by-tag-and-owner
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, bt.tag FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, criteria_url, badge_content_id, bt.tag, cc.markdown_content AS criteria_markdown FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
+       JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
        JOIN badge_tag AS bt ON bt.badge_id = badge.id
        WHERE user_id = :user_id AND deleted = 0 AND bt.tag = :badge_tag
 
