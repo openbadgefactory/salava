@@ -17,7 +17,7 @@
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
-   {:value "name" :id "radio-name" :label (t :core/byname)}])
+   {:value "name" :id "radio-name" :label (t :core/bypagetitle)}])
 
 (defn create-page []
   (ajax/POST
@@ -95,7 +95,7 @@
         order (keyword (:order @state))
         pages (if (= order :mtime)
                 (sort-by order > pages)
-                (sort-by order pages))]
+                (sort-by (comp clojure.string/upper-case order) pages))]
     [:div {:class "row"
            :id    "grid"}
      [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -130,7 +130,7 @@
 (defn handler [site-navi]
   (let [state (atom {:pages []
                      :visibility "all"
-                     :order ""
+                     :order "mtime"
                      :tags-all true
                      :tags-selected []})]
     (init-data state)

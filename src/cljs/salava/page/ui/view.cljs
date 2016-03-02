@@ -67,13 +67,13 @@
          [:button {:class "btn btn-primary"
                    :on-click #(.print js/window)}
           (t :core/Print)]]
-        [:div
-         [:input {:id        "input-visibility"
-                  :name      "visibility"
-                  :type      "checkbox"
-                  :on-change #(toggle-visibility (:id page) visibility-atom)
-                  :checked     (= @visibility-atom "public")}]
-         [:label {:for "input-visibility"} (t :core/Publishandshare)]]
+        [:div.checkbox
+         [:label
+          [:input {:name      "visibility"
+                   :type      "checkbox"
+                   :on-change #(toggle-visibility (:id page) visibility-atom)
+                   :checked     (= @visibility-atom "public")}]
+          (t :core/Publishandshare)]]
         [s/share-buttons (str (session/get :site-url) "/page/view/" (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
      [ph/view-page page]]))
 
@@ -106,4 +106,6 @@
                      :show-link-or-embed-code nil})]
     (init-data state id)
     (fn []
-      (layout/default site-navi (content state)))))
+      (if (session/get :user)
+        (layout/default site-navi (content state))
+        (layout/landing-page (content state))))))
