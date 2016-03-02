@@ -116,7 +116,7 @@
         query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
                     JOIN user AS u ON p.user_id = u.id
                     LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
-                    WHERE visibility = 'public' "
+                    WHERE visibility = 'public' OR visibility = 'internal'"
                    where
                    " GROUP BY p.id
                     ORDER BY p.mtime DESC

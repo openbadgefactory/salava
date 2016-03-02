@@ -167,7 +167,7 @@
                      :badge-name ""
                      :recipient-name ""
                      :issuer-name ""
-                     :order "name"
+                     :order "mtime"
                      :timer nil
                      :ajax-message nil})]
     (init-data state user-id)

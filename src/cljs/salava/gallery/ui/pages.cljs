@@ -85,7 +85,7 @@
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn page-gallery-grid-element [element-data]
-  (let [{:keys [id name first_name last_name badges mtime]} element-data]
+  (let [{:keys [id name user_id first_name last_name badges mtime]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -96,8 +96,7 @@
           name]]
         [:div.media-content
          [:div.page-owner
-          [:a {:href "#"}
-           first_name " " last_name]]
+          [:a {:href (str "/user/profile/" user_id)} first_name " " last_name]]
          [:div.page-create-date
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
