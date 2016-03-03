@@ -88,6 +88,18 @@
                     (into {:result-set-fn first}
                           (get-db ctx)))))))
 
+(defn check-badge-revoked
+  "Check if badge assertion url exists and set badge re"
+  [ctx badge-id init-revoked? assertion-url last-checked]
+  (if (and (not init-revoked?) (or (nil? last-checked) (< last-checked (- (unix-time) (* 2 24 60 60)))) assertion-url)
+    (let [assertion (fetch-json-data assertion-url)
+          revoked? (contains? assertion :error)]
+      (update-revoked! {:revoked revoked? :id badge-id} (get-db ctx))
+      (if revoked?
+        (update-visibility! {:visibility "private" :id badge-id} (get-db ctx)))
+      revoked?)
+    init-revoked?))
+
 (defn get-badge
   "Get badge by id"
   [ctx badge-id user-id]
@@ -104,7 +116,8 @@
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count
-                 :recipient_count recipient-count)))
+                 :recipient_count recipient-count
+                 :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge)))))
 
 (defn save-badge-content!
   "Save badge content"
@@ -221,31 +234,24 @@
   (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
     (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
     (doall (for [tag valid-tags]
-             (replace-badge-tag! {:badge_id badge-id :tag tag}
-                              (get-db ctx))))))
+             (replace-badge-tag! {:badge_id badge-id :tag tag} (get-db ctx))))))
 (defn set-visibility!
   "Set badge visibility"
   [ctx badge-id visibility user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (update-visibility! {:id badge-id
-                         :visibility visibility}
-                        (get-db ctx))))
+    (update-visibility! {:id badge-id :visibility visibility} (get-db ctx))))
 
 (defn set-status!
   "Set badge status"
   [ctx badge-id status user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (update-status! {:id badge-id
-                     :status status}
-                    (get-db ctx))))
+    (update-status! {:id badge-id :status status} (get-db ctx))))
 
 (defn toggle-show-recipient-name!
   "Toggle recipient name visibility"
   [ctx badge-id show-recipient-name user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (update-show-recipient-name! {:id badge-id
-                                  :show_recipient_name show-recipient-name}
-                                 (get-db ctx))))
+    (update-show-recipient-name! {:id badge-id :show_recipient_name show-recipient-name} (get-db ctx))))
 
 (defn toggle-show-evidence!
   "Toggle evidence visibility"
@@ -264,14 +270,12 @@
   "Get badge settings"
   [ctx badge-id user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (let [badge (select-badge-settings {:id badge-id}
-                                       (into {:result-set-fn first}
-                                             (get-db ctx)))
+    (let [badge (select-badge-settings {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
           tags (select-taglist {:badge_ids [badge-id]} (get-db ctx))]
       (assoc-badge-tags badge tags))))
 
 (defn save-badge-settings!
-  "Update badge setings"
+  "Update badge settings"
   [ctx badge-id user-id visibility evidence-url rating tags]
   (if (badge-owner? ctx badge-id user-id)
     (let [data {:id          badge-id
@@ -298,8 +302,7 @@
 (defn badges-by-tag-and-owner
   "Get badges by list of tag names and owner's user-id"
   [ctx tag user-id]
-  (select-badges-by-tag-and-owner {:badge_tag tag
-                                    :user_id user-id} (get-db ctx)))
+  (select-badges-by-tag-and-owner {:badge_tag tag :user_id user-id} (get-db ctx)))
 
 (defn badge-viewed
   "Save information about viewing a badge. If user is not logged in user-id is nil."

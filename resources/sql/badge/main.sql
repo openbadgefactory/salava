@@ -45,7 +45,7 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
+SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, revoked, last_checked, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -68,6 +68,10 @@ REPLACE INTO issuer_content (id,name,url,description,image_file,email,revocation
 --change badge visibility
 UPDATE badge SET visibility = :visibility WHERE id = :id
 
+--name: update-revoked!
+--change badge revoke status and last revoke check timestamp
+UPDATE badge SET revoked = :revoked, last_checked = UNIX_TIMESTAMP() WHERE id = :id
+
 --name: update-status!
 --change badge status
 UPDATE badge SET status = :status WHERE id = :id
@@ -82,7 +86,7 @@ UPDATE badge SET show_evidence = :show_evidence WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, revoked, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)

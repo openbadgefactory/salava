@@ -40,12 +40,12 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count]} @state
-        expired? (and expires_on (< expires_on (unix-time)))]
+  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count]} @state
+        expired? (bh/badge-expired? expires_on)]
     [:div {:id "badge-info"}
      [:div.panel
       [:div.panel-body
-       (if (and owner? (not expired?))
+       (if (and owner? (not expired?) (not revoked))
          [:div.row
           [:div.col-sm-3
            [:div.checkbox
@@ -110,12 +110,14 @@
         [:div {:class "col-md-9 badge-info"}
          [:div.row
           [:div {:class "col-md-12"}
+           (if revoked
+             [:div.revoked (t :badge/Revoked)])
            (if expired?
              [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
            [:h1.uppercase-header name]
            (if (and issued_on (> issued_on 0))
              [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
-           (if (and expires_on (> expires_on (unix-time)))
+           (if (and expires_on (not expired?))
              [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
            (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
            (if show_recipient_name

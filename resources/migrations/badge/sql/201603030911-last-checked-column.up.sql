@@ -1,0 +1,1 @@
+ALTER TABLE `badge` ADD COLUMN `last_checked` bigint(20) unsigned DEFAULT NULL;

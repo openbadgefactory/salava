@@ -1,6 +1,9 @@
 (ns salava.badge.ui.helper
   (:require [salava.core.i18n :refer [t]]
-            [salava.core.time :refer [date-from-unix-time]]))
+            [salava.core.time :refer [unix-time date-from-unix-time]]))
+
+(defn badge-expired? [expires-on]
+  (and expires-on (< expires-on (unix-time))))
 
 (defn issued-on [issued]
   (when (> issued 0)
@@ -12,7 +15,7 @@
   [:div.issuer
    [:label (t :badge/Issuedby) ":"]
    [:a {:target "_blank" :href url} " " name]
-   (if email
+   (if (not-empty email)
      [:span " / " [:a {:href (str "mailto:" email)} email]])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]

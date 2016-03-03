@@ -153,10 +153,13 @@ button {
     h2.uppercase-header {
         padding: 15px 0 0 0;
     }
-    .expired {
+    .expired, .revoked {
         color: #8c2e0b;
         font-weight: bold;
         font-size: 20px;
+    }
+    .revoked {
+        text-transform: uppercase;
     }
     .badge-info {
         label {
