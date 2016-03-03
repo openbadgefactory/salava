@@ -2,7 +2,9 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [slingshot.slingshot :refer :all]
-            [clj-http.client :as client]))
+            [clj-http.client :as client]
+            [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [buddy.core.codecs :refer [base64->bytes base64->str]]))
 
 (def config (-> (clojure.java.io/resource "config/core.edn") slurp read-string))
 
@@ -16,12 +18,10 @@
   (let [digest (.digest (java.security.MessageDigest/getInstance algo) (.getBytes string))]
     (.toString (new java.math.BigInteger 1 digest) 16)))
 
-
 (defn ordered-map-values
   "Returns a flat list of keys and values in a map, sorted by keys."
   [coll]
   (flatten (seq (into (sorted-map) coll))))
-
 
 (defn flat-coll [item]
   "Returns a sorted and flattened collection"
@@ -29,24 +29,28 @@
     (list item)
     (flatten (map flat-coll (if-not (map? item) item (ordered-map-values item))))))
 
-
 (defn map-sha256
   "Calculates SHA-256 hex digest of (ordered) content in a collection"
   [coll]
   (hex-digest "SHA-256" (apply str (flat-coll coll))))
 
 (defn file-extension [filename]
-  (last (str/split (str filename) #"\.")))
+  (let [ext (last (str/split (str filename) #"\."))]
+    (if ext (str "." ext))))
+
+(defn public-path-from-content
+  [content extension]
+  (let [checksum (hex-digest "SHA-256" content)]
+    (apply str (concat (list "file/")
+                       (interpose "/" (take 4 (char-array checksum)))
+                       (list "/" checksum extension)))))
 
 (defn public-path
   "Calculate checksum for file and use it as a filename under public dir"
   ([filename] (public-path filename (file-extension filename)))
   ([filename extension]
-   (let [content (slurp filename)
-         checksum (hex-digest "SHA-256" content)]
-     (apply str (concat (list "file/")
-                        (interpose "/" (take 4 (char-array checksum)))
-                        (list "/" checksum "." extension))))))
+    (let [content (slurp filename)]
+      (public-path-from-content content extension))))
 
 (defn fetch-file-content [url]
   "Fetch file content from url"
@@ -61,22 +65,41 @@
     (subs path 0 (.lastIndexOf path "?"))
     path))
 
+(defn save-file-data
+  [content path]
+  (let [filename (trim-path path)
+        data-dir (get config :data-dir)
+        fullpath (str data-dir "/" filename)]
+    (try+
+      (if-not (.exists (io/as-file data-dir))
+        (throw+ "Data directry does not exist"))
+      (do
+        (io/make-parents fullpath)
+        (with-open [w (io/output-stream fullpath)]
+          (.write w content))
+        filename)
+      (catch Object _
+        (throw+ (str "Error copying file: " _))))))
+
+(defn save-file-from-http-url
+  [url]
+  (let [content (fetch-file-content url)
+        path (public-path url)]
+    (save-file-data content path)))
+
+(defn save-file-from-data-url
+  [data-str comma-pos]
+  (if (> comma-pos -1)
+    (let [base64-data (subs data-str (inc comma-pos))
+          content (base64->bytes base64-data)
+          content-str (base64->str base64-data)
+          ext (-> content mime-type-of extension-for-name)
+          path (public-path-from-content content-str ext)]
+      (save-file-data content path))))
+
 (defn file-from-url
   [url]
-  (if (re-find #"https?" (str url))
-    (let [content (fetch-file-content url)
-          path (public-path url)
-          fname (trim-path path)
-          data-dir (get config :data-dir)
-          fullpath (str data-dir "/" fname)]
-      (try+
-        (if-not (.exists (io/as-file data-dir))
-          (throw+ "Data directry does not exist"))
-        (do
-          (io/make-parents fullpath)
-          (with-open [w (io/output-stream fullpath)]
-            (.write w content))
-          fname)
-        (catch Object _
-          (throw+ "Error copying file: " _))))
-    (throw+ "Error in file url: " url)))
+  (cond
+    (re-find #"https?" (str url)) (save-file-from-http-url url)
+    (re-find #"data?" (str url)) (save-file-from-data-url url (.lastIndexOf url ","))
+    :else (throw+ (str "Error in file url: " url))))
