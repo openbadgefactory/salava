@@ -66,8 +66,8 @@
                           {:size :lg}))}))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description visibility expires_on]} element-data
-        expired? (and expires_on (>= (unix-time) expires_on))
+  (let [{:keys [id image_file name description visibility expires_on revoked]} element-data
+        expired? (bh/badge-expired? expires_on)
         badge-link (str "/badge/info/" id)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
@@ -93,16 +93,16 @@
         [:div.media-description
          description]]]
       [:div {:class "media-bottom"}
-       (if expired?
-         [:div.expired
-          [:i {:class "fa fa-history"}] " " (t :badge/Expired)]
-         [:div
-          [:a {:class "bottom-link" :href (str "/badge/info/" id)}
-           [:i {:class "fa fa-share-alt"}]
-           [:span (t :badge/Share)]]
-          [:a {:class "bottom-link pull-right" :href "" :on-click #(show-settings-dialog id state)}
-           [:i {:class "fa fa-cog"}]
-           [:span (t :badge/Settings)]]])]]]))
+       (cond
+         expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)]
+         revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)]
+         :else [:div
+                [:a {:class "bottom-link" :href (str "/badge/info/" id)}
+                 [:i {:class "fa fa-share-alt"}]
+                 [:span (t :badge/Share)]]
+                [:a {:class "bottom-link pull-right" :href "" :on-click #(show-settings-dialog id state)}
+                 [:i {:class "fa fa-cog"}]
+                 [:span (t :badge/Settings)]]])]]]))
 
 (defn badge-grid [state]
   (let [badges (:badges @state)

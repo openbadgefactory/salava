@@ -41,6 +41,7 @@
                            :image_file                           (s/maybe s/Str)
                            :issued_on                            (s/maybe s/Int)
                            :expires_on                           (s/maybe s/Int)
+                           :revoked (s/maybe s/Bool)
                            :visibility                           (s/maybe (s/enum "private" "internal" "public"))
                            :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
                            :mtime                                s/Int

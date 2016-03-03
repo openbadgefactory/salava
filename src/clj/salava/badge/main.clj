@@ -147,9 +147,10 @@
   (let [expires (get-in badge [:assertion :expires])
         issuer-url (get-in badge [:assertion :badge :issuer_url])
         issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
+        hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
         data {:user_id             user-id
               :email               recipient-email
-              :assertion_url       (get-in badge [:assertion :verify :url])
+              :assertion_url       (if hosted? (get-in badge [:assertion :verify :url]))
               :assertion_jws       (get-in badge [:assertion :assertion_jws])
               :assertion_json      (get-in badge [:assertion :assertion_json])
               :badge_url           (get-in badge [:assertion :badge :badge_url])

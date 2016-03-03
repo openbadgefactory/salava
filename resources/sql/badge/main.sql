@@ -1,7 +1,7 @@
 
 -- name: select-user-badges-all
 -- get user's badges
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, badge_url, issuer_url, issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, revoked, visibility, mtime, status, badge_content_id, badge_url, issuer_url, issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        WHERE user_id = :user_id AND deleted = 0 AND status != "declined"
@@ -9,7 +9,7 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 -- name: select-user-badges-to-export
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, email, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL AND deleted = 0
+       WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL AND deleted = 0 AND revoked = 0
 
 -- name: select-user-badges-pending
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url FROM badge
@@ -45,7 +45,7 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, revoked, last_checked, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
+SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, revoked, last_checked, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
