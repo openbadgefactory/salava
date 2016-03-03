@@ -299,7 +299,7 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (str "/obpv1/page/edit/" id)
+    (str "/obpv1/page/edit/" id "?_=" (.now js/Date))
     {:handler (fn [data]
                 (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
                                                                                (get-in data [:page :blocks]))))]
