@@ -41,7 +41,7 @@
                            :image_file                           (s/maybe s/Str)
                            :issued_on                            (s/maybe s/Int)
                            :expires_on                           (s/maybe s/Int)
-                           :revoked (s/maybe s/Bool)
+                           :revoked                              (s/maybe s/Bool)
                            :visibility                           (s/maybe (s/enum "private" "internal" "public"))
                            :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
                            :mtime                                s/Int
@@ -52,9 +52,9 @@
                            :issued_by_obf                        s/Bool
                            :verified_by_obf                      s/Bool
                            :issuer_verified                      (s/maybe s/Bool)
-                           (s/optional-key :issuer_content_name) s/Str
-                           (s/optional-key :issuer_content_url)  s/Str
-                           (s/optional-key :email)               s/Str
+                           (s/optional-key :issuer_content_name) (s/maybe s/Str)
+                           (s/optional-key :issuer_content_url)  (s/maybe s/Str)
+                           (s/optional-key :email)               (s/maybe s/Str)
                            (s/optional-key :assertion_url)       (s/maybe s/Str)
                            (s/optional-key :tags)                (s/maybe [s/Str])})
 
