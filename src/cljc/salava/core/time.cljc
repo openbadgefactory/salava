@@ -1,5 +1,7 @@
 (ns salava.core.time
-  #?(:clj (:require [clj-time.coerce :as c])))
+  #?(:clj
+     (:require [clj-time.coerce :as c]
+               [clj-time.format :as f])))
 
 (defn unix-time []
   (quot #?(:clj (System/currentTimeMillis)
@@ -19,5 +21,11 @@
          (case format
            "date" (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date))
            "minutes" (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date) " - " (.getHours date) ":" (if (< (.getMinutes date) 10) (str "0" (.getMinutes date)) (.getMinutes date)))
-           (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date)))))))
-
+           (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date))))
+       :clj
+       (let [date (c/from-long time)
+             formatter (case format
+                         "date" "dd.MM.yyyy"
+                         "minutes" "dd.MM.yyyy - HH:mm"
+                         "dd.MM.yyyy")]
+         (f/unparse (f/formatter formatter) (c/from-long date))))))

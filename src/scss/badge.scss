@@ -176,8 +176,39 @@ button {
     }
 }
 
+#assertion-info {
+    width: 100%;
+    th {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 13px;
+        color: #f59f48;
+        border-bottom: 3px solid #ccc;
+    }
+    td:first-child {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 12px;
+    }
+}
+
 #export-badges {
     .badge-download {
         color: #766d72;
+    }
+}
+
+.issuer-data {
+    .issuer-links, .issuer-image {
+        margin-left: 5px;
+    }
+    .issuer-image {
+        img {
+            max-width: 50px;
+            max-height: 50px;
+            padding: 3px;
+            border: 1px solid #dddddd;
+            border-radius: 4px;
+        }
     }
 }

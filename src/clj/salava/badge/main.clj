@@ -2,7 +2,8 @@
   (:require [yesql.core :refer [defqueries]]
             [clojure.string :refer [blank? split upper-case lower-case capitalize]]
             [slingshot.slingshot :refer :all]
-            [salava.core.time :refer [unix-time]]
+            [clojure.data.json :as json]
+            [salava.core.time :refer [unix-time iso8601-to-unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db map-sha256 file-from-url hex-digest]]
@@ -100,6 +101,24 @@
       revoked?)
     init-revoked?))
 
+(defn parse-assertion-json
+  [assertion-json]
+  (try+
+    (let [assertion (json/read-str assertion-json :key-fn keyword)
+          issued-on-raw (or (:issuedOn assertion) (:issued-on assertion))
+          issued-on (cond
+                      (re-find #"\D" (str issued-on-raw)) (iso8601-to-unix-time issued-on-raw)
+                      (string? issued-on-raw) (read-string issued-on-raw)
+                      :else issued-on-raw)
+          expires-raw (or (:expires assertion))
+          expires (cond
+                    (re-find #"\D" (str expires-raw)) (iso8601-to-unix-time issued-on-raw)
+                    (string? expires-raw) (read-string expires-raw)
+                    :else expires-raw)]
+      (assoc (dissoc assertion :issued_on) :issuedOn (if issued-on (date-from-unix-time (* 1000 issued-on)) "-")
+                                           :expires (if expires (date-from-unix-time (* 1000 expires)) "-")))
+    (catch Object _)))
+
 (defn get-badge
   "Get badge by id"
   [ctx badge-id user-id]
@@ -117,7 +136,8 @@
                  :congratulations all-congratulations
                  :view_count view-count
                  :recipient_count recipient-count
-                 :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge)))))
+                 :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
+                 :assertion (parse-assertion-json (:assertion_json badge)))))
 
 (defn save-badge-content!
   "Save badge content"
