@@ -21,17 +21,17 @@
           [:div (if (= rating_count 1)
                   (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                   (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])]
-      [:div {:class "col-md-9 badge-content"}
+      [:div {:class "col-md-9 badge-info"}
        [:div.row
-        [:div {:class "col-md-12 badge-info"}
+        [:div {:class "col-md-12"}
          [:h1.uppercase-header name]
          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
          [:div.row
-          [:div.col-md-12
+          [:div {:class "col-md-12 description"}
            description]]]]
        [:div.row
         [:div {:class "col-md-12 badge-info"}
-         [:h3 (t :badge/Criteria)]
+         [:h2.uppercase-header (t :badge/Criteria)]
          [:div.row
           [:div.col-md-12
            [:a {:href criteria_url
@@ -42,7 +42,7 @@
        (if (or (> (count public_users) 0) (> private_user_count 0))
          [:div.row
           [:div.col-md-12
-           [:h3 (t :gallery/Allrecipients)]]
+           [:h2.uppercase-header (t :gallery/Allrecipients)]]
           [:div {:class "col-md-12"}
            (into [:div]
                  (for [user public_users

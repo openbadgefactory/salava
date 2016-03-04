@@ -60,3 +60,15 @@
         }
     }
 }
+
+#badge-gallery-view, #badge-content {
+    font-size: 13px;
+    .description {
+        font-weight: bold;
+        margin: 20px 0 5px 0;
+    }
+    h2.uppercase-header {
+        padding: 15px 0 0 0;
+        font-size: 30px;
+    }
+}
