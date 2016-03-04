@@ -20,6 +20,7 @@
   [ctx country badge-name issuer-name recipient-name]
   (let [where ""
         params []
+        default-visibility " AND (b.visibility = 'public' OR b.visibility = 'internal')"
         [where params] (if-not (or (empty? country) (= country "all"))
                          [(str where " AND u.country = ?") (conj params country)]
                          [where params])
@@ -32,11 +33,14 @@
         [where params] (if-not (empty? recipient-name)
                          [(str where " AND (u.first_name LIKE ? OR u.last_name LIKE ?)") (conj params (str recipient-name "%") (str recipient-name "%"))]
                          [where params])
-        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, b.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, COUNT(DISTINCT b.user_id) AS recipients FROM badge AS b
+        [where params] (if (and (not (empty? issuer-name)) (empty? recipient-name)) ;if issuer name is present but recipient name is not, search also private badges
+                         [where params]
+                         [(str where default-visibility) params])
+        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, b.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, COUNT(b.user_id) AS recipients FROM badge AS b
                     JOIN badge_content AS bc ON b.badge_content_id = bc.id
                     JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
                     LEFT JOIN user AS u ON b.user_id = u.id
-                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) AND (b.visibility = 'public' OR b.visibility = 'internal')"
+                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())"
                    where
                    " GROUP BY bc.id
                     ORDER BY b.ctime DESC
@@ -89,11 +93,11 @@
         badge (merge badge-content badge-data rating-and-recipient)]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
               :public_users (->> recipients
-                                 (filter #(= (:visibility %) "public"))
+                                 (filter #(not= (:visibility %) "private"))
                                  (map #(dissoc % :visibility))
                                  distinct)
               :private_user_count (->> recipients
-                                       (filter #(not= (:visibility %) "public"))
+                                       (filter #(= (:visibility %) "private"))
                                        count))))
 
 (defn public-pages-by-user
@@ -113,7 +117,7 @@
         [where params] (if-not (empty? owner)
                          [(str where " AND (u.first_name LIKE ? OR u.last_name LIKE ?)") (conj params (str owner "%") (str owner "%"))]
                          [where params])
-        query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
+        query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
                     JOIN user AS u ON p.user_id = u.id
                     LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
                     WHERE visibility = 'public' OR visibility = 'internal'"

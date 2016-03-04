@@ -121,7 +121,7 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       [:a.bottom-link {:href "#"} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]]]))
+       [:a.bottom-link {:href (str "/gallery/badgeview/" badge-id)} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)

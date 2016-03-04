@@ -8,6 +8,7 @@
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
+            [salava.user.ui.helper :as u]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
 
 (defn open-modal [page-id]
@@ -85,7 +86,7 @@
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn page-gallery-grid-element [element-data]
-  (let [{:keys [id name user_id first_name last_name badges mtime]} element-data]
+  (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -104,7 +105,7 @@
                  [:img {:title (:name badge)
                         :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
-        [:img {:src "/img/user_default.png"}]]]]]))
+        [:img {:src (u/profile-picture profile_picture)}]]]]]))
 
 (defn page-gallery-grid [state]
   (let [pages (:pages @state)

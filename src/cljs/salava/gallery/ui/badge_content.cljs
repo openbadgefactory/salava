@@ -39,17 +39,19 @@
          [:div.row
           [:div.col-md-12
            {:dangerouslySetInnerHTML {:__html html_content}}]]]]
-       (if (> (count public_users) 0)
+       (if (or (> (count public_users) 0) (> private_user_count 0))
          [:div.row
           [:div.col-md-12
-           [:h3 (t :gallery/Recipients)]]
+           [:h3 (t :gallery/Allrecipients)]]
           [:div {:class "col-md-12"}
            (into [:div]
                  (for [user public_users
                        :let [{:keys [id first_name last_name profile_picture]} user]]
                    (profile-link-inline id first_name last_name profile_picture)))
            (if (> private_user_count 0)
-             [:span "... " (t :core/and) " " private_user_count " " (t :core/more)])]])]]]))
+             (if (> (count public_users) 0)
+               [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
+               [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]]))
 
 (defn badge-content-modal-render [data]
   [:div {:id "badge-content"}
