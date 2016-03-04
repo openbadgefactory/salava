@@ -65,7 +65,7 @@
     [:input {:type "file"
              :name "file"
              :on-change #(send-file)
-             :accept "image/png"}]]])
+             :accept "image/png, image/svg+xml"}]]])
 
 (defn init-data []
       (ajax/GET "/obpv1/user/test" {}))
