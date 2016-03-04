@@ -1,10 +1,12 @@
 (ns salava.badge.ui.info
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
+            [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
+            [salava.badge.ui.assertion :as a]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
             [salava.user.ui.helper :as h]
@@ -40,9 +42,10 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion]} @state
         expired? (bh/badge-expired? expires_on)]
     [:div {:id "badge-info"}
+     [m/modal-window]
      [:div.panel
       [:div.panel-body
        (if (and owner? (not expired?) (not revoked))
@@ -61,13 +64,14 @@
                       :on-change #(toggle-recipient-name state)
                       :checked show_recipient_name}]
              (t :badge/Showyourname)]]]
-          [:div.col-sm-3
-           [:div.checkbox
-            [:label
-             [:input {:type "checkbox"
-                      :on-change #(toggle-evidence state)
-                      :checked show_evidence}]
-             (t :badge/Showevidence)]]]
+          (if evidence_url
+            [:div.col-sm-3
+             [:div.checkbox
+              [:label
+               [:input {:type "checkbox"
+                        :on-change #(toggle-evidence state)
+                        :checked show_evidence}]
+               (t :badge/Showevidence)]]])
           [:div {:class "col-sm-3 text-right"}
            [:button {:class "btn btn-primary"
                      :on-click #(.print js/window)}
@@ -91,7 +95,7 @@
                 (= view_count 1) (t :badge/Viewedonce)
                 (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
                 :else (t :badge/Badgeisnotviewedyet))]]])
-         (if (> recipient_count 0)
+         (if (> recipient_count 1)
            [:div.row
             [:div.col-xs-12
              [:a {:href (str "/gallery/badgeview/" badge_content_id)} (t :badge/Otherrecipients)]]])
@@ -119,7 +123,12 @@
              [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
            (if (and expires_on (not expired?))
              [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
-           (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+           (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+           (if assertion
+             [:div [:label (t :badge/Metadata)] ": " [:a {:href "#"
+                                                          :on-click #(do (.preventDefault %)
+                                                                         (m/modal! [a/assertion-modal assertion] {:size :lg}))}
+                                                      (t :badge/Openassertion) "..."]])
            (if show_recipient_name
              [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
            [:div.description description]

@@ -20,6 +20,7 @@
                     :issuer_email (s/maybe s/Str)
                     :issuer_content_name (s/maybe s/Str)
                     :issuer_content_url (s/maybe s/Str)
+                    :issuer_image (s/maybe s/Str)
                     :issuer_url (s/maybe s/Str)
                     :issued_on (s/maybe s/Int)
                     :expires_on (s/maybe s/Int)

@@ -37,7 +37,7 @@ SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count, COUNT(DISTI
        WHERE b.visibility = 'public' AND b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND bc.id = :badge_content_id
 
 -- name: select-badge-criteria-issuer-by-recipient
-SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact FROM badge AS b
+SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE user_id = :user_id AND badge_content_id = :badge_content_id
@@ -45,7 +45,7 @@ SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer
        LIMIT 1
 
 -- name: select-badge-criteria-issuer-by-date
-SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact FROM badge AS b
+SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE badge_content_id = :badge_content_id

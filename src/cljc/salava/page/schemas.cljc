@@ -61,7 +61,7 @@
                                                           #(= (:type %) "badge") (merge
                                                                                    (assoc BadgeBlock :id s/Int
                                                                                                      :block_order s/Int)
-                                                                                   (select-keys Badge [:name :criteria_markdown :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url]))
+                                                                                   (select-keys Badge [:name :criteria_markdown :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url :issuer_image]))
                                                           #(= (:type %) "html") (assoc HtmlBlock :id s/Int
                                                                                                  :block_order
                                                                                                  s/Int)

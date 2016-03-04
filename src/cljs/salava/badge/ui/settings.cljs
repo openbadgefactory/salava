@@ -27,7 +27,7 @@
        :handler (fn []
                   (.reload js/window.location))})))
 
-(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact]} state]
+(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image]} state]
   [:div {:id "badge-settings"}
    [:div.modal-body
     [:div.row
@@ -50,7 +50,7 @@
           [:div.issued_on
            [:label (t :badge/Issuedon ":")]
            [:span (date-from-unix-time (* 1000 issued_on))]])
-        (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+        (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
         [:div.row
          [:div.col-md-12
           description]]]]]]

@@ -11,12 +11,16 @@
      [:label (t :badge/Issuedon ":")]
      [:span (date-from-unix-time (* 1000 issued))]]))
 
-(defn issuer-label-and-link [name url email]
-  [:div.issuer
-   [:label (t :badge/Issuedby) ":"]
-   [:a {:target "_blank" :href url} " " name]
-   (if (not-empty email)
-     [:span " / " [:a {:href (str "mailto:" email)} email]])])
+(defn issuer-label-and-link [name url email image]
+  [:div {:class "issuer-data clearfix"}
+   [:label.pull-left (t :badge/Issuedby) ":"]
+   [:div {:class "issuer-links pull-left"}
+    [:a {:target "_blank" :href url} " " name]
+    (if (not-empty email)
+      [:span [:br] [:a {:href (str "mailto:" email)} email]])]
+   (if image
+     [:div {:class "issuer-image pull-left"}
+      [:img {:src (str "/" image)}]])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   [:div.row
