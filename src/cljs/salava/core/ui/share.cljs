@@ -30,7 +30,7 @@
     [:div.share-link
      [:a {:href "" :on-click #(reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link"))} (t :core/Link)]]
     [:div.share-link
-     [:a {:href "" :on-click #(reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "embed"))} (t :core/Embedcode)]]]
+     [:a {:href "" :on-click #(reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed"))} (t :core/Embedcode)]]]
    (if (and public? (= "link" @link-or-embed-atom))
      [:div [:input {:class "form-control" :disabled true :type "text" :value url}]])
    (if (and public? (= "embed" @link-or-embed-atom))
