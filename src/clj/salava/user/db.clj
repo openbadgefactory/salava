@@ -191,11 +191,13 @@
 
 (defn save-user-profile
   "Save user's profile"
-  [ctx visibility picture about user-id]
-  (update-user-visibility-picture-about! {:profile_visibility visibility
-                                         :profile_picture picture
-                                         :about about
-                                         :id user-id} (get-db ctx)))
+  [ctx visibility picture about fields user-id]
+  (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
+  (doseq [index (range 0 (count fields))
+        :let [{:keys [field value]} (get fields index)]]
+    (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
+  (update-user-visibility-picture-about! {:profile_visibility visibility :profile_picture picture :about about :id user-id} (get-db ctx)))
+
 
 (defn send-password-reset-link
   ""

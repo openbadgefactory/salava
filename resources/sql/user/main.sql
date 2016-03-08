@@ -87,3 +87,9 @@ UPDATE user SET profile_visibility = :profile_visibility, profile_picture = :pro
 
 --name: update-email-backpack-id!
 UPDATE user_email SET backpack_id = :backpack_id WHERE user_id = :user_id AND email = :email
+
+--name: delete-user-profile-fields!
+DELETE FROM user_profile WHERE user_id = :user_id
+
+--name: insert-user-profile-field!
+INSERT INTO user_profile (user_id, field, value, field_order) VALUES (:user_id, :field, :value, :field_order)

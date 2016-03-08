@@ -41,6 +41,17 @@
         border: 1px solid #dddddd;
         border-radius: 4px;
     }
+
+    .about {
+        margin-bottom: 15px;
+    }
+
+    .table {
+        width: 50%;
+        td.profile-field {
+            padding-left: 0;
+        }
+    }
 }
 
 #edit-profile {

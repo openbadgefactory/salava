@@ -142,11 +142,12 @@
                    ;:return
                    :body-params [profile_visibility :- (:profile_visibility schemas/User)
                                  profile_picture :- (:profile_picture schemas/User)
-                                 about :- (:about schemas/User)]
+                                 about :- (:about schemas/User)
+                                 fields :- [{:field (apply s/enum (map :type schemas/contact-fields)) :value (s/maybe s/Str)}]]
                    :summary "Save user's profile fields, visibility, picture and about text"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (u/save-user-profile ctx profile_visibility profile_picture about (:id current-user)))))
+                   (ok (str (u/save-user-profile ctx profile_visibility profile_picture about fields (:id current-user)))))
 
              (POST "/reset" []
                    :return {:status (s/enum "success" "error")}

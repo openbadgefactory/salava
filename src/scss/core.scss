@@ -474,3 +474,76 @@ ol.welcome-text li {
     margin-top: 10px;
     margin-bottom: 20px;
 }
+
+#field-editor {
+    margin-top: 25px;
+    .field {
+        position: relative;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        box-shadow: 0px 4px 0px #ececec;
+        margin-bottom: 15px;
+        .field-move {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 25px;
+            height: 100%;
+            .move-arrows {
+                position: relative;
+                height: 100%;
+                .move-up, .move-down {
+                    position: absolute;
+                    text-align: center;
+                    color: #f59f48;
+                    cursor: pointer;
+                }
+                .move-up {
+                    top: 0;
+                    padding: 0 5px 10px 5px;
+                }
+                .move-down {
+                    bottom: 0;
+                    padding: 10px 5px 0 5px;
+                }
+            }
+        }
+        .field-content {
+            .field-remove {
+                text-align: right;
+                span.remove-button {
+                    display: inline-block;
+                    padding: 6px 8px;
+                    background-color: #ea8241;
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    cursor: pointer;
+                    line-height: 1;
+                }
+            }
+            .form-group:last-of-type {
+                margin-bottom: 0;
+            }
+            border-left: 1px solid #cccccc;
+            margin-left: 25px;
+            padding: 10px 25px;
+
+            .badge-select {
+                margin-bottom: 15px;
+            }
+            .badge-image {
+                padding-right: 40px;
+                text-align: right;
+                img {
+                    width: 70px;
+                }
+            }
+        }
+    }
+}
+
+.add-field-after {
+    margin-bottom: 15px;
+    text-align: center;
+}

@@ -5,6 +5,20 @@
             [salava.core.schema-helper :as h]
             [salava.core.countries :refer [all-countries]]))
 
+(def contact-fields
+  [{:type "email" :key :user/Emailaddress}
+   {:type "phone" :key :user/Phonenumber}
+   {:type "address" :key :user/Address}
+   {:type "city" :key :user/City}
+   {:type "state" :key :user/State}
+   {:type "country" :key :user/Country}
+   {:type "facebook" :key :user/Facebookaccount}
+   {:type "linkedin" :key :user/LinkedInaccount}
+   {:type "twitter" :key :user/Twitteraccount}
+   {:type "pinterest" :key :user/Pinterestaccount}
+   {:type "instagram" :key :user/Instagramaccount}
+   {:type "blog" :key :user/Blog}])
+
 (s/defschema User {:email      (s/constrained s/Str #(and (>= (count %) 1)
                                                           (<= (count %) 255)
                                                           (h/email-address? %)))

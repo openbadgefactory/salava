@@ -4,6 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
+            [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]))
@@ -17,12 +18,13 @@
 
 (defn profile-visibility-input [visibility-atom]
   [:div.col-xs-12
-   [:input {:id        "input-visibility"
-            :name      "visibility"
-            :type      "checkbox"
-            :on-change #(toggle-visibility visibility-atom)
-            :checked   (= "public" @visibility-atom)}]
-   [:label {:for "input-visibility"} (t :user/Publishandshare)]])
+   [:div.checkbox
+    [:label
+     [:input {:name      "visibility"
+              :type      "checkbox"
+              :on-change #(toggle-visibility visibility-atom)
+              :checked   (= "public" @visibility-atom)}]
+     (t :user/Publishandshare)]]])
 
 (defn badge-grid-element [element-data]
   (let [{:keys [id image_file name description]} element-data]
@@ -73,7 +75,7 @@
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
-        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user user-id :user-id} @state
+        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
     [:div.panel {:id "profile"}
      [:div.panel-body
@@ -89,10 +91,26 @@
        [:div {:class "col-md-3 col-xs-12"}
         [:img.profile-picture {:src (profile-picture profile_picture)}]]
        [:div {:class "col-md-9 col-xs-12"}
-        (if about
-          [:div.row
+        (if (not-empty about)
+          [:div {:class "row about"}
            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
-           [:div.col-xs-12 about]])]]
+           [:div.col-xs-12 about]])
+        (if (not-empty profile)
+          [:div.row
+           [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
+           [:div.col-xs-12
+            [:table.table
+             (into [:tbody]
+                   (for [profile-field (sort-by :order profile)
+                         :let [{:keys [field value]} profile-field
+                               key (->> contact-fields
+                                        (filter #(= (:type %) field))
+                                        first
+                                        :key)]]
+                     [:tr
+                      [:td.profile-field (t key) ":"]
+                      [:td (t value)]]))]]]
+          )]]
       (if (not-empty badges)
         [:div {:id "user-badges"}
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentbadges)]
