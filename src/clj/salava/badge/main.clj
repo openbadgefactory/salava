@@ -207,35 +207,33 @@
     (replace-issuer-content! data (get-db ctx))
     issuer-content-sha256))
 
-(defn check-email [recipient email algorithms]
+(defn check-email [recipient email]
   (let [{hashed :hashed identity :identity salt :salt} recipient
-        [algo hash] (split (or identity "") #"\$")
-        algorithm (get algorithms algo)]
+        [algo hash] (split (or identity "") #"\$")]
     (if hashed
       (do
-        (if-not algorithm
+        (if-not algo
           (throw+ "Invalid algorithm"))
-        (first (filter #(= hash (hex-digest algorithm (str % salt))) [email (upper-case email) (lower-case email) (capitalize email)])))
+        (first (filter #(= hash (hex-digest algo (str % salt))) [email (upper-case email) (lower-case email) (capitalize email)])))
       (if (= email identity)
         email))))
 
-(defn check-recipient [ctx user-emails assertion]
-  (let [algorithms (get-in ctx [:config :badge :algorithms])
-        recipient (:recipient assertion)]
+(defn check-recipient [user-emails assertion]
+  (let [recipient (:recipient assertion)]
     (if (empty? user-emails)
       (throw+ "Badge is not issued to user"))
     (loop [emails user-emails
-           checked-email (check-email recipient (first emails) algorithms)]
+           checked-email (check-email recipient (first emails))]
       (cond
         (boolean checked-email) checked-email
-        (empty? (rest emails)) nil
-        :else (recur (rest emails) (check-email recipient (first emails) algorithms))))))
+        (empty? emails) nil
+        :else (recur (rest emails) (check-email recipient (first emails)))))))
 
 (defn save-badge-from-assertion!
   [ctx badge user-id emails]
   (try+
     (let [assertion (:assertion badge)
-          recipient-email (check-recipient ctx emails assertion)
+          recipient-email (check-recipient emails assertion)
           badge-image-path (file-from-url (get-in assertion [:badge :image]))
           badge-content-id (save-badge-content! ctx assertion badge-image-path)
           issuer-image (get-in assertion [:badge :issuer :image])

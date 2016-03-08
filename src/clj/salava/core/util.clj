@@ -1,6 +1,7 @@
 (ns salava.core.util
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [digest :as d]
             [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
@@ -15,8 +16,12 @@
   {:datasource (:db ctx)})
 
 (defn hex-digest [algo string]
-  (let [digest (.digest (java.security.MessageDigest/getInstance algo) (.getBytes string))]
-    (.toString (new java.math.BigInteger 1 digest) 16)))
+  (case algo
+    "sha1" (d/sha-1 string)
+    "sha256" (d/sha-256 string)
+    "sha512" (d/sha-512 string)
+    "md5" (d/md5 string)
+    (throw+ (str "Unknown algorithm: " algo))))
 
 (defn ordered-map-values
   "Returns a flat list of keys and values in a map, sorted by keys."
@@ -32,7 +37,7 @@
 (defn map-sha256
   "Calculates SHA-256 hex digest of (ordered) content in a collection"
   [coll]
-  (hex-digest "SHA-256" (apply str (flat-coll coll))))
+  (hex-digest "sha256" (apply str (flat-coll coll))))
 
 (defn file-extension [filename]
   (let [ext (last (str/split (str filename) #"\."))]
@@ -40,7 +45,7 @@
 
 (defn public-path-from-content
   [content extension]
-  (let [checksum (hex-digest "SHA-256" content)]
+  (let [checksum (hex-digest "sha256" content)]
     (apply str (concat (list "file/")
                        (interpose "/" (take 4 (char-array checksum)))
                        (list "/" checksum extension)))))
