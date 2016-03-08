@@ -4,6 +4,7 @@
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.field :as f]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]
@@ -170,9 +171,6 @@
                                             [:textarea {:class "form-control"
                                                         :id    element-id}]]])})))
 
-(defn remove-block [blocks block-atom]
-  (reset! blocks (vec (remove #(= % @block-atom) @blocks))))
-
 (defn block-type [block-atom]
   (let [type (:type @block-atom)]
     [:div
@@ -186,50 +184,32 @@
       [:option {:value "html"} (t :page/Html)]
       [:option {:value "file"} (t :page/Files)]]]))
 
-(defn create-new-block
-  ([blocks] (create-new-block blocks (count @blocks)))
-  ([blocks index]
-   (let [new-block {:type "heading" :key (random-key)}
-         [before-blocks after-blocks] (split-at index @blocks)]
-     (reset! blocks (vec (concat before-blocks [new-block] after-blocks))))))
-
-(defn move-block [direction blocks block]
-  (let [old-position (.indexOf (to-array @blocks) @block)
-        new-position (cond
-                       (= :down direction) (if-not (= (inc old-position) (count @blocks))
-                                           (inc old-position))
-                       (= :up direction) (if-not (= (dec old-position) -1)
-                                             (dec old-position)))]
-    (if new-position
-      (swap! blocks assoc old-position (nth @blocks new-position)
-             new-position (nth @blocks old-position)))))
-
 (defn block [block-atom index blocks badges tags files]
   (let [{:keys [type]} @block-atom
         first? (= 0 index)
         last? (= (dec (count @blocks)) index)]
     [:div {:key index}
-     [:div.add-block-after
+     [:div.add-field-after
       [:button {:class    "btn btn-success"
                 :on-click #(do
                             (.preventDefault %)
-                            (create-new-block blocks index))}
+                            (f/add-field blocks {:type "heading"} index))}
        (t :page/Addblock)]]
-     [:div.block
-      [:div.block-move
+     [:div.field
+      [:div.field-move
        [:div.move-arrows
         (if-not first?
-          [:div.move-up {:on-click #(move-block :up blocks block-atom)}
+          [:div.move-up {:on-click #(f/move-field :up blocks index)}
            [:i {:class "fa fa-chevron-up"}]])
         (if-not last?
-          [:div.move-down {:on-click #(move-block :down blocks block-atom)}
+          [:div.move-down {:on-click #(f/move-field :down blocks index)}
            [:i {:class "fa fa-chevron-down"}]])]]
-      [:div.block-content
+      [:div.field-content
        [:div.form-group
         [:div.col-xs-8
          [block-type block-atom]]
-        [:div {:class "col-xs-4 block-remove"
-               :on-click #(remove-block blocks block-atom)}
+        [:div {:class "col-xs-4 field-remove"
+               :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button"}
           [:i {:class "fa fa-close"}]]]]
        (case type
@@ -242,15 +222,15 @@
      ]))
 
 (defn page-blocks [blocks badges tags files]
-  [:div
+  [:div {:id "field-editor"}
    (into [:div {:id "page-blocks"}]
          (for [index (range (count @blocks))]
            (block (cursor blocks [index]) index blocks badges tags files)))
-   [:div.add-block-after
+   [:div.add-field-after
     [:button {:class    "btn btn-success"
               :on-click #(do
                           (.preventDefault %)
-                          (create-new-block blocks))}
+                          (f/add-field blocks {:type "heading"}))}
      (t :page/Addblock)]]])
 
 (defn page-description [description]

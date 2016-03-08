@@ -72,75 +72,6 @@
     #title-and-description {
         margin-bottom: 35px;
     }
-    #page-blocks {
-        margin-top: 25px;
-        .block {
-            position: relative;
-            background-color: #ffffff;
-            border: 1px solid #cccccc;
-            box-shadow: 0px 4px 0px #ececec;
-            margin-bottom: 15px;
-            .block-move {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 25px;
-                height: 100%;
-                .move-arrows {
-                    position: relative;
-                    height: 100%;
-                    .move-up, .move-down {
-                        position: absolute;
-                        text-align: center;
-                        color: #f59f48;
-                        cursor: pointer;
-                    }
-                    .move-up {
-                        top: 0;
-                        padding: 0 5px 10px 5px;
-                    }
-                    .move-down {
-                        bottom: 0;
-                        padding: 10px 5px 0 5px;
-                    }
-                }
-
-
-            }
-            .block-content {
-                .block-remove {
-                    text-align: right;
-                    span.remove-button {
-                        display: inline-block;
-                        padding: 6px 8px;
-                        background-color: #ea8241;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #ffffff;
-                        cursor: pointer;
-                        line-height: 1;
-                    }
-                }
-                .form-group:last-of-type {
-                    margin-bottom: 0;
-                }
-                border-left: 1px solid #cccccc;
-                margin-left: 25px;
-                padding: 10px 25px;
-
-                .badge-select {
-                    margin-bottom: 15px;
-                }
-                .badge-image {
-                    padding-right: 40px;
-                    text-align: right;
-                    img {
-                        width: 70px;
-                    }
-                }
-            }
-        }
-    }
 }
 
 .remove-file-icon {
@@ -153,11 +84,6 @@
     border-color: #dddddd;
     border-radius: 0;
     box-shadow: 0px 4px 0px #ececec
-}
-
-.add-block-after {
-    margin-bottom: 15px;
-    text-align: center;
 }
 
 .select-border-wrapper {
@@ -337,4 +263,21 @@
 
 .page-file-icon {
     margin-right: 3px;
+}
+
+#field-editor {
+    .field {
+        .field-content {
+            .badge-select {
+                margin-bottom: 15px;
+            }
+            .badge-image {
+                padding-right: 40px;
+                text-align: right;
+                img {
+                    width: 70px;
+                }
+            }
+        }
+    }
 }
