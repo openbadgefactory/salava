@@ -14,7 +14,7 @@
 (defn visibility-options []
   [{:value "all" :title (t :badge/All)}
    {:value "public"  :title (t :badge/Public)}
-   {:value "shared"  :title (t :badge/Shared)}
+   {:value "internal"  :title (t :badge/Shared)}
    {:value "private" :title (t :badge/Private)}])
 
 (defn order-radio-values []
@@ -99,6 +99,11 @@
     (if-not (empty? badges-to-export)
       (.issue js/OpenBadges (clj->js assertion-urls)))))
 
+(defn select-all [state]
+  (if (:badges-all @state)
+    (swap! state assoc :badges-selected [] :badges-all false)
+    (swap! state assoc :badges-selected (map :id (:badges @state)) :badges-all true)))
+
 (defn content [state]
   [:div {:id "export-badges"}
    [:h1.uppercase-header (t :badge/Exportordownload)]
@@ -114,11 +119,13 @@
            (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href "/user/edit/email-addresses"} (t :badge/here) "."]])]
         [:div
          [badge-grid-form state]
-         [:div.export-button
-          [:button {:class    "btn btn-primary"
-                    :on-click #(export-badges state)
-                    :disabled (= 0 (count (:badges-selected @state)))}
-           (t :badge/Exportselected)]]
+         [:button {:class "btn btn-primary"
+                   :on-click #(select-all state)}
+          (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
+         [:button {:class    "btn btn-primary"
+                   :on-click #(export-badges state)
+                   :disabled (= 0 (count (:badges-selected @state)))}
+          (t :badge/Exportselected)]
          [badge-grid state]])])])
 
 (defn init-data [state]
