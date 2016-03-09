@@ -4,7 +4,7 @@
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to set-meta-tags]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]))
 
@@ -90,8 +90,8 @@
     {:response-format :json
      :keywords? true
      :handler (fn [data]
-                (swap! state assoc :page (:page data))
-                (swap! state assoc :ask-password (:ask-password data)))
+                (swap! state assoc :page (:page data) :ask-password (:ask-password data))
+                (set-meta-tags (get-in data [:page :title]) (get-in data [:page :description]) ""))
      :error-handler (fn [{:keys [status status-text]}]
                       (if (= status 401)
                         (navigate-to "/user/login")))}))

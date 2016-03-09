@@ -9,7 +9,8 @@
             [salava.badge.ui.assertion :as a]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
-            [salava.user.ui.helper :as h]
+            [salava.user.ui.helper :as uh]
+            [salava.core.ui.helper :as ch]
             [salava.core.time :refer [date-from-unix-time unix-time]]))
 
 (defn toggle-visibility [state]
@@ -151,14 +152,15 @@
              (into [:div ]
                    (for [congratulation congratulations
                          :let [{:keys [id first_name last_name profile_picture]} congratulation]]
-                     (h/profile-link-inline id first_name last_name profile_picture)))]])]]]]]))
+                     (uh/profile-link-inline id first_name last_name profile_picture)))]])]]]]]))
 
 (defn init-data [state id]
   (ajax/GET
     (str "/obpv1/badge/info/" id)
     {:handler (fn [data]
                 (reset! state (assoc data :id id
-                                          :show-link-or-embed-code nil)))}))
+                                          :show-link-or-embed-code nil))
+                (ch/set-meta-tags (:name data) (:description data) (str (session/get :site-url) "/" (:image_file data))))}))
 
 
 (defn handler [site-navi params]

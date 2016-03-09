@@ -3,10 +3,10 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.helper :as h]
             [salava.gallery.ui.badge-content :refer [badge-content]]
             [salava.core.ui.share :refer [share-buttons]]
-            [salava.core.i18n :refer [t]]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.i18n :refer [t]]))
 
 (defn content [state]
   (let [{content :content badge-content-id :badge-content-id} @state
@@ -20,7 +20,9 @@
 (defn init-data [state badge-content-id]
   (ajax/GET
     (str "/obpv1/gallery/public_badge_content/" badge-content-id)
-    {:handler (fn [data] (swap! state assoc :content data))}))
+    {:handler (fn [data]
+                (swap! state assoc :content data)
+                (h/set-meta-tags (get-in data [:badge :name]) (get-in data [:badge :description]) (str (session/get :site-url) "/" (get-in data [:badge :image_file]))))}))
 
 (defn handler [site-navi params]
   (let [badge-content-id (:badge-content-id params)

@@ -27,3 +27,9 @@
     (s/validate schema input)
     (catch js/Error e
       false)))
+
+(defn set-meta-tags [title description image]
+  (-> (js/$ "meta[property=\"og:title\"]") (.attr "content" title))
+  (-> (js/$ "meta[property=\"og:description\"]") (.attr "content" description))
+  (-> (js/$ "meta[name=\"description\"]") (.attr "content" description))
+  (-> (js/$ "meta[property=\"og:image\"]") (.attr "content" image)))
