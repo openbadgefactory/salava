@@ -86,7 +86,7 @@
      (if (:registration-sent @state)
        [:div {:class "alert alert-success"
               :role "alert"}
-        (t :user/Welcomemessagesent)]
+        (t :user/Welcomemessagesent) "."]
        (registration-form state))]]])
 
 (defn handler []

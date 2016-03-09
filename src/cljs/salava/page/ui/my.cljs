@@ -12,7 +12,7 @@
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
    {:value "public"  :title (t :core/Public)}
-   {:value "shared"  :title (t :core/Shared)}
+   {:value "internal"  :title (t :core/Shared)}
    {:value "private" :title (t :core/Private)}])
 
 (defn order-radio-values []
