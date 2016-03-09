@@ -122,16 +122,19 @@
             (t :badge/Evidenceurl)]]
           [:div {:class "form-group"}
            [:div {:class "col-md-12"}
-            [:input {:class     "form-control"
-                     :type      "text"
-                     :value     (get-in @state [:badge-settings :evidence-url])
-                     :on-change #(swap! state assoc-in [:badge-settings :evidence-url] (-> % .-target .-value))}]]]
+            [:input {:class       "form-control"
+                     :type        "text"
+                     :placeholder (t :badge/EnterevidenceURLstartingwith)
+                     :value       (get-in @state [:badge-settings :evidence-url])
+                     :on-change   #(swap! state assoc-in [:badge-settings :evidence-url] (-> % .-target .-value))}]]]
           [:div {:class "row"}
            [:div {:class "col-md-12 sub-heading"}
             (t :badge/Rating)]]
           [:div.row
            [:div.col-md-12
-            [r/rate-it (get-in @state [:badge-settings :rating]) (cursor state [:badge-settings :rating])]]]])
+            [r/rate-it (get-in @state [:badge-settings :rating]) (cursor state [:badge-settings :rating])]]
+           [:div {:class "col-md-12 rating-help"}
+            (t :badge/Tellushowvaluableorusefullyouthinkthisbadgeis)]]])
        ]]]]
    [:div.modal-footer
     (if (not revoked)
