@@ -164,8 +164,7 @@
 (defn save-badge!
   "Save user's badge"
   [ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id]
-  (let [expires (get-in badge [:assertion :expires])
-        issuer-url (get-in badge [:assertion :badge :issuer_url])
+  (let [issuer-url (get-in badge [:assertion :badge :issuer_url])
         issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
         hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
         data {:user_id             user-id
@@ -180,7 +179,7 @@
               :badge_content_id    badge-content-id
               :issuer_content_id   issuer-content-id
               :issued_on           (get-in badge [:assertion :issuedOn])
-              :expires_on          (if (= expires "0") nil expires)
+              :expires_on          (get-in badge [:assertion :expires])
               :evidence_url        (get-in badge [:assertion :evidence])
               :status              (get-in badge [:_status] "pending")
               :visibility          "private"
@@ -232,6 +231,8 @@
 (defn save-badge-from-assertion!
   [ctx badge user-id emails]
   (try+
+    (if (and (get-in badge [:assertion :expires]) (< (get-in badge [:assertion :expires]) (unix-time)))
+      (throw+ (t :badge/Badgeexpired)))
     (let [assertion (:assertion badge)
           recipient-email (check-recipient emails assertion)
           badge-image-path (file-from-url (get-in assertion [:badge :image]))
