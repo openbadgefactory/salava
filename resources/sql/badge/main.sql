@@ -59,6 +59,12 @@ REPLACE INTO badge_tag (badge_id, tag)
 --name: delete-badge-tags!
 DELETE FROM badge_tag WHERE badge_id = :badge_id
 
+--name: delete-badge-views!
+DELETE FROM badge_view WHERE badge_id = :badge_id
+
+--name: delete-badge-congratulations!
+DELETE FROM badge_congratulation WHERE badge_id = :badge_id
+
 -- name: replace-issuer-content!
 -- save issuer, replace if issuer exists already
 REPLACE INTO issuer_content (id,name,url,description,image_file,email,revocation_list_url)

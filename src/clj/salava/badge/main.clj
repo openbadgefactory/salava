@@ -1,12 +1,13 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
+            [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [blank? split upper-case lower-case capitalize]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time iso8601-to-unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db map-sha256 file-from-url hex-digest]]
+            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest]]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
@@ -305,12 +306,19 @@
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id))))
 
+(defn delete-badge-with-db! [db badge-id]
+  (delete-badge-tags! {:badge_id badge-id} db)
+  (delete-badge-views! {:badge_id badge-id} db)
+  (delete-badge-congratulations! {:badge_id badge-id} db)
+  (update-badge-set-deleted! {:id badge-id} db))
+
 (defn delete-badge!
   "Set badge deleted and delete tags"
   [ctx badge-id user-id]
   (when (badge-owner? ctx badge-id user-id)
-    (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
-    (update-badge-set-deleted! {:id badge-id} (get-db ctx))))
+    (jdbc/with-db-transaction
+      [tr-cn (get-datasource ctx)]
+      (delete-badge-with-db! {:connection tr-cn} badge-id))))
 
 (defn badges-images-names
   "Get badge images and names. Return a map."
