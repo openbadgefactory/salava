@@ -1,11 +1,12 @@
 (ns salava.page.main
   (:require [clojure.string :refer [split blank? trim]]
             [yesql.core :refer [defqueries]]
+            [clojure.java.jdbc :as jdbc]
             [slingshot.slingshot :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db get-datasource]]
             [salava.badge.main :as b]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
             [salava.file.db :as f]))
@@ -220,24 +221,29 @@
     (catch Object _
       {:status "error" :message (t :page/Errorwhilesavingpage)})))
 
-(defn remove-files-blocks-and-content! [ctx page-id]
-  (let [file-blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
+(defn remove-files-blocks-and-content! [db page-id]
+  (let [file-blocks (select-pages-files-blocks {:page_id page-id} db)]
     (doseq [file-block file-blocks]
-      (delete-files-block-files! {:block_id (:id file-block)} (get-db ctx)))
-    (delete-files-blocks! {:page_id page-id} (get-db ctx))))
+      (delete-files-block-files! {:block_id (:id file-block)} db))
+    (delete-files-blocks! {:page_id page-id} db)))
 
-(defn delete-blocks! [ctx page-id]
-  (delete-heading-blocks! {:page_id page-id} (get-db ctx))
-  (delete-badge-blocks! {:page_id page-id} (get-db ctx))
-  (delete-html-blocks! {:page_id page-id} (get-db ctx))
-  (remove-files-blocks-and-content! ctx page-id)
-  (delete-tag-blocks! {:page_id page-id} (get-db ctx)))
+(defn delete-blocks! [db page-id]
+  (delete-heading-blocks! {:page_id page-id} db)
+  (delete-badge-blocks! {:page_id page-id} db)
+  (delete-html-blocks! {:page_id page-id} db)
+  (remove-files-blocks-and-content! db page-id)
+  (delete-tag-blocks! {:page_id page-id} db))
+
+(defn delete-page-with-db! [db page-id]
+  (delete-blocks! db page-id)
+  (delete-page-tags! {:page_id page-id} db)
+  (delete-page! {:id page-id} db))
 
 (defn delete-page-by-id! [ctx page-id user-id]
   (when (page-owner? ctx page-id user-id)
-    (delete-blocks! ctx page-id)
-    (delete-page-tags! {:page_id page-id} (get-db ctx))
-    (delete-page! {:id page-id} (get-db ctx))))
+    (jdbc/with-db-transaction
+      [tr-cn (get-datasource ctx)]
+      (delete-page-with-db! {:connection tr-cn} page-id))))
 
 (defn toggle-visibility! [ctx page-id visibility user-id]
   (if (page-owner? ctx page-id user-id)
