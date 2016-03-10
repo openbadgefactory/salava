@@ -97,7 +97,7 @@
                                (.preventDefault %)
                                (save-user-info state))}
           (t :core/Save)]
-         [:a {:class "btn btn-warning" :href "/user/cancel"} (t :user/Cancelaccount)]]]]]]))
+         [:a {:id "cancel-button" :class "btn btn-warning" :href "/user/cancel"} (t :user/Cancelaccount)]]]]]]))
 
 (def initial-state
   {:user {:current_password nil

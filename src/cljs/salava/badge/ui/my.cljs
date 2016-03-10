@@ -109,8 +109,12 @@
         order (keyword (:order @state))
         badges (case order
                  (:mtime) (sort-by order > badges)
-                 (:name :issuer_content_name) (sort-by (comp clojure.string/upper-case order) badges)
-                 (:expires_on) (sort-by (comp nil? order) badges)
+                 (:name :issuer_content_name) (sort-by (comp clojure.string/upper-case str order) badges)
+                 (:expires_on) (->> badges
+                                    (sort-by order)
+                                    (partition-by #(nil? (% order)))
+                                    reverse
+                                    flatten)
                  badges)]
     (into [:div {:class "row"
                  :id    "grid"}]

@@ -76,8 +76,7 @@
 
 (defn import-grid-element [element-data state]
   (let [{:keys [image_file name key description status message]} element-data
-        checked? (some #(= key %) (:badges-selected @state))
-        input-id (str "input-" key)]
+        checked? (some #(= key %) (:badges-selected @state))]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key key}
      [:div {:class "media grid-container"}
@@ -93,15 +92,14 @@
         [:div.badge-description description]]]
       [:div {:class "media-bottom"}
        (if (= status "ok")
-         [:div
-          [:input {:type "checkbox"
-                   :checked checked?
-                   :id input-id
-                   :on-change (fn []
-                                (if checked?
-                                  (remove-badge-selection key state)
-                                  (add-badge-selection key state)))}]
-          [:label {:for input-id}
+         [:div.checkbox
+          [:label
+           [:input {:type "checkbox"
+                    :checked checked?
+                    :on-change (fn []
+                                 (if checked?
+                                   (remove-badge-selection key state)
+                                   (add-badge-selection key state)))}]
            (t :badge/Savebadge)]]
          [:div message])]]]))
 
