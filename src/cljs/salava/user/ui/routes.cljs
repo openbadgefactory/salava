@@ -8,7 +8,8 @@
             [salava.user.ui.reset :as reset]
             [salava.user.ui.edit :as edit]
             [salava.user.ui.email-addresses :as email-addresses]
-            [salava.user.ui.edit-profile :as edit-profile]))
+            [salava.user.ui.edit-profile :as edit-profile]
+            [salava.user.ui.cancel :as cancel]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -22,7 +23,8 @@
             ["/reset" reset/handler]
             ["/edit" edit/handler]
             ["/edit/email-addresses" email-addresses/handler]
-            ["/edit/profile" edit-profile/handler]]})
+            ["/edit/profile" edit-profile/handler]
+            ["/cancel" cancel/handler]]})
 
 (defn ^:export navi [context]
   {"/user/profile/\\d+"                                {:breadcrumb (t :user/User " / " :user/Profile)}
@@ -30,6 +32,8 @@
    "/user/edit/profile"                                {:breadcrumb (t :user/User " / " :user/Editprofile)}
    "/user/edit"                                        {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
    "/user/edit/email-addresses"                        {:weight 42 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}
-   "/user/edit/fboauth"                                {:weight 43 :title (t :user/Facebook) :site-navi true :breadcrumb (t :user/User " / " :user/Facebook)}
-   "/user/edit/linkedin"                               {:weight 44 :title (t :user/Linkedin) :site-navi true :breadcrumb (t :user/User " / " :user/Linkedin)}})
+   "/user/cancel"                                      {:weight 43 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}
+   ;"/user/edit/fboauth"                                {:weight 43 :title (t :user/Facebook) :site-navi true :breadcrumb (t :user/User " / " :user/Facebook)}
+   ;"/user/edit/linkedin"                               {:weight 44 :title (t :user/Linkedin) :site-navi true :breadcrumb (t :user/User " / " :user/Linkedin)}
+   })
 

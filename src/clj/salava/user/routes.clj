@@ -155,6 +155,16 @@
                    :summary "Send password reset link to requested email address"
                    (ok (u/send-password-reset-link ctx email)))
 
+             (POST "/delete" []
+                   :body-params [password :- (:password schemas/User)]
+                   :summary "Delete user account"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (let [result (u/delete-user ctx (:id current-user) password)]
+                     (if (= "success" (:status result))
+                       (assoc-in (ok) [:session :identity] nil)
+                       (ok result))))
+
              (GET "/test" []
                   :summary "Test is user authenticated"
                   :auth-rules access/authenticated

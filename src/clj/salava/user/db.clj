@@ -6,6 +6,8 @@
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
             [salava.file.db :as f]
+            [salava.page.main :as p]
+            [salava.badge.main :as b]
             [salava.core.util :refer [config get-db get-datasource]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
@@ -215,3 +217,37 @@
   "Associate Mozilla backpack-id to email address"
   [ctx user-id email backpack-id]
   (update-email-backpack-id! {:user_id user-id :email email :backpack_id backpack-id} (get-db ctx)))
+
+(defn remove-user-files [ctx db user-id]
+  (let [user-files (select-user-files-id-path {:user_id user-id} db)]
+    (doseq [file user-files
+            :let [{:keys [id path]} file]]
+      (f/remove-file-with-db! db id)
+      (f/remove-file! ctx path))))
+
+(defn remove-user-badges [db user-id]
+  (let [badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
+    (doseq [badge-id badge-ids]
+      (b/delete-badge-with-db! db badge-id))))
+
+(defn delete-user
+  "Delete user and all user data"
+  [ctx user-id plain-password]
+  (try+
+    (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+      (if-not (and (hashers/check plain-password pass) id activated)
+        (throw+ "Invalid password")))
+    (jdbc/with-db-transaction
+      [tr-cn (get-datasource ctx)]
+      (remove-user-files ctx {:connection tr-cn} user-id)
+      (remove-user-badges {:connection tr-cn} user-id)
+      (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
+      (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
+      (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
+      (delete-user-profile! {:user_id user-id} {:connection tr-cn})
+      (delete-email-addresses! {:user_id user-id} {:connection tr-cn})
+      (delete-user! {:id user-id} {:connection tr-cn}))
+    {:status "success"}
+    (catch Object _
+      (println _)
+      {:status "error"})))

@@ -18,6 +18,10 @@ SELECT id, first_name, last_name, pass, activated, primary_address, verified, ve
        JOIN user_email AS ue ON ue.user_id = u.id
        WHERE email = :email
 
+-- name: select-user-by-id
+-- get user data by user id
+SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id
+
 --name: select-user
 -- get user by id
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, about FROM user WHERE id = :id
@@ -93,3 +97,30 @@ DELETE FROM user_profile WHERE user_id = :user_id
 
 --name: insert-user-profile-field!
 INSERT INTO user_profile (user_id, field, value, field_order) VALUES (:user_id, :field, :value, :field_order)
+
+--name: select-user-files-id-path
+SELECT id, path FROM user_file WHERE user_id = :user_id
+
+--name: select-user-badge-ids
+SELECT id  FROM badge WHERE user_id = :user_id
+
+--name: update-user-badges-set-deleted!
+UPDATE badge SET visibility = 'private', deleted = 1 WHERE user_id = :user_id
+
+--name: delete-user-badge-views!
+DELETE FROM badge_view WHERE user_id = :user_id
+
+--name: delete-user-badge-congratulations!
+DELETE FROM badge_congratulation WHERE user_id = :user_id
+
+--name: update-user-pages-set-deleted!
+UPDATE page SET visibility = 'private' WHERE user_id = :user_id
+
+--name: delete-user-profile!
+DELETE FROM user_profile WHERE user_id = :user_id
+
+--name: delete-email-addresses!
+DELETE FROM user_email WHERE user_id = :user_id
+
+--name: delete-user!
+DELETE FROM user WHERE id = :id
