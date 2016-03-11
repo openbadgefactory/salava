@@ -118,10 +118,13 @@
                   ;:return ""
                   :summary "Get user information and profile fields"
                   :path-params [userid :- s/Int]
-                  :auth-rules access/authenticated
                   :current-user current-user
-                  (let [profile (u/user-information-and-profile ctx userid)]
-                    (ok (assoc profile :owner? (= userid (:id current-user))))))
+                  (let [profile (u/user-information-and-profile ctx userid (:id current-user))
+                        visibility (get-in profile [:user :profile_visibility])]
+                    (if (or (= visibility "public")
+                            (and (= visibility "internal") current-user))
+                      (ok profile)
+                      (unauthorized))))
 
              (GET "/edit/profile" []
                   ;:return

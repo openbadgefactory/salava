@@ -1,5 +1,6 @@
 (ns salava.gallery.ui.badges
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
             [salava.core.ui.ajax-utils :as ajax]
@@ -172,4 +173,6 @@
                      :ajax-message nil})]
     (init-data state user-id)
     (fn []
-      (layout/default site-navi (content state)))))
+      (if (session/get :user)
+        (layout/default site-navi (content state))
+        (layout/landing-page (content state))))))

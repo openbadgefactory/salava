@@ -12,8 +12,9 @@
 
 (defn public-badges-by-user
   "Return user's public badges"
-  [ctx user-id]
-  (select-users-public-badges {:user_id user-id} (get-db ctx)))
+  ([ctx user-id] (public-badges-by-user ctx user-id "public"))
+  ([ctx user-id visibility]
+   (select-users-public-badges {:user_id user-id :visibility visibility} (get-db ctx))))
 
 (defn public-badges
   "Return badges visible in gallery. Badges can be searched by country ID, badge name, issuer name or recipient's first or last name"
@@ -102,9 +103,10 @@
 
 (defn public-pages-by-user
   "Return all public pages owned by user"
-  [ctx user-id]
-  (let [pages (select-users-public-pages {:user_id user-id} (get-db ctx))]
-    (p/page-badges ctx pages)))
+  ([ctx user-id] (public-badges-by-user ctx user-id "public"))
+  ([ctx user-id visibility]
+   (let [pages (select-users-public-pages {:user_id user-id :visibility visibility} (get-db ctx))]
+     (p/page-badges ctx pages))))
 
 (defn public-pages
   ""
@@ -120,7 +122,7 @@
         query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
                     JOIN user AS u ON p.user_id = u.id
                     LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
-                    WHERE visibility = 'public' OR visibility = 'internal'"
+                    WHERE (visibility = 'public' OR visibility = 'internal')"
                    where
                    " GROUP BY p.id
                     ORDER BY p.mtime DESC

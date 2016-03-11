@@ -164,15 +164,17 @@
 
 (defn user-information-and-profile
   "Get user informatin, profile, public badges and pages"
-  [ctx user-id]
+  [ctx user-id current-user-id]
   (let [user (user-information ctx user-id)
         user-profile (user-profile ctx user-id)
-        recent-badges (g/public-badges-by-user ctx user-id)
-        recent-pages (g/public-pages-by-user ctx user-id)]
+        visibility (if current-user-id "internal" "public")
+        recent-badges (g/public-badges-by-user ctx user-id visibility)
+        recent-pages (g/public-pages-by-user ctx user-id visibility)]
     {:user user
      :profile user-profile
      :badges recent-badges
-     :pages recent-pages}))
+     :pages recent-pages
+     :owner? (= user-id current-user-id)}))
 
 (defn user-profile-for-edit
   "Get user profile visibility, profile picture, about text and profile fields for editing"

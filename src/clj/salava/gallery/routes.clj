@@ -40,8 +40,8 @@
                    ;:return []
                    :path-params [userid :- s/Int]
                    :summary "Get user's public badges."
-                   :auth-rules access/authenticated
-                   (ok (hash-map :badges (g/public-badges-by-user ctx userid))))
+                   :current-user current-user
+                   (ok (hash-map :badges (g/public-badges-by-user ctx userid (if current-user "internal" "public")))))
 
              (GET "/public_badge_content/:badge-content-id" []
                   :return {:badge              {:name                s/Str
@@ -86,8 +86,8 @@
              (POST "/pages/:userid" []
                    :path-params [userid :- s/Int]
                    :summary "Get user's public pages."
-                   :auth-rules access/authenticated
-                   (ok (hash-map :pages (g/public-pages-by-user ctx userid))))
+                   :current-user current-user
+                   (ok (hash-map :pages (g/public-pages-by-user ctx userid (if current-user "internal" "public")))))
 
              (POST "/profiles" []
                    :return {:users [schemas/UserProfiles]
