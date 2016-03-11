@@ -1,5 +1,6 @@
 (ns salava.page.ui.helper
-  (:require [reagent-modals.modals :as m]
+  (:require [reagent.core :refer [create-class]]
+            [reagent-modals.modals :as m]
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
@@ -141,7 +142,7 @@
                       "tag" (tag-block block)
                       nil)]))]]]])]))
 
-(defn view-page-modal [page]
+(defn render-page-modal [page]
   [:div {:id "badge-content"}
    [:div.modal-body
     [:div.row
@@ -153,6 +154,10 @@
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]])
+
+(defn view-page-modal [page]
+  (create-class {:reagent-render (fn [] (render-page-modal page))
+                 :component-will-unmount (fn [] (m/close-modal!))}))
 
 (defn edit-page-header [header]
   [:div.row
