@@ -175,7 +175,7 @@
       [:li
        "Add a " [:a {:href "/user/edit/profile"} "profile picture"]
        ", a short bio or contact information to your "
-       [:a {:href "/user/edit"} "profile"] "."]
+       [:a {:href (str "/user/profile/" (session/get-in [:user :id]))} "profile"] "."]
       [:li
        "Do you already have Open Badges saved to Mozilla Backpack? "
        [:a {:href "/badge/import"} "Import your badges"]
