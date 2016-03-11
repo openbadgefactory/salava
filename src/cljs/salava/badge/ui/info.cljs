@@ -165,10 +165,11 @@
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
-        state (atom {})]
+        state (atom {})
+        user (session/get :user)]
     (init-data state id)
     (fn []
-      (if (session/get :user)
-        (layout/default site-navi (content state))
-        (layout/landing-page (content state))))))
+      (cond (and (:owner? @state) user) (layout/default site-navi (content state))
+            user (layout/default-no-sidebar site-navi (content state))
+            :else (layout/landing-page (content state))))))
 

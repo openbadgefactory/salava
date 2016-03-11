@@ -103,9 +103,10 @@
                      :ask-password false
                      :password ""
                      :password-error false
-                     :show-link-or-embed-code nil})]
+                     :show-link-or-embed-code nil})
+        user (session/get :user)]
     (init-data state id)
     (fn []
-      (if (session/get :user)
-        (layout/default site-navi (content state))
-        (layout/landing-page (content state))))))
+      (cond (and user (= (get-in @state [:page :user_id]) (:id user))) (layout/default site-navi (content state))
+            user (layout/default-no-sidebar site-navi (content state))
+            :else (layout/landing-page (content state))))))

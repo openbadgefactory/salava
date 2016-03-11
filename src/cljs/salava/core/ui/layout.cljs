@@ -117,6 +117,17 @@
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]])
 
+(defn default-no-sidebar [site-navi content]
+  [:div
+   [:header {:id "navbar"}
+    (top-navi site-navi)]
+   [:div {:class "title-row"}
+    [:div {:class "container"}
+     (breadcrumb site-navi)]]
+   [:div {:class "container main-container"}
+    [:div {:class "row"}
+     [:div {:class "col-md-12" :id "content"} content]]]])
+
 (defn top-navi-landing []
   [:nav {:class "navbar"}
    [:div {:class "container-fluid"}
@@ -134,5 +145,6 @@
    [:header {:id "navbar"}
     (top-navi-landing)]
    [:div {:class "container main-container"}
-    content]])
+    [:div {:id "content"}
+     content]]])
 
