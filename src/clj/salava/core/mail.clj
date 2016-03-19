@@ -8,6 +8,8 @@
 
 (def mail-sender (:mail-sender config))
 
+(def mail-host-config (:mail-host-config config))
+
 (defn send-mail [subject message recipients]
   (try+
     (let [data {:from    mail-sender
@@ -15,7 +17,9 @@
                 :subject subject
                 :body    [{:type    "text/plain; charset=utf-8"
                            :content message}]}]
-      (send-message data))
+      (if (nil? mail-host-config)
+        (send-message data)
+        (send-message mail-host-config data)))
     (catch Object _
       ;TODO log an error
       )))
