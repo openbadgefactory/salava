@@ -75,7 +75,7 @@
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
-   {:value "name" :id "radio-name" :label (t :core/byname)}])
+   {:value "name" :id "radio-name" :label (t :core/bypagetitle)}])
 
 (defn page-gallery-grid-form [state]
   [:div {:id "grid-filter"

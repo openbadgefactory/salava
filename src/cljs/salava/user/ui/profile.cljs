@@ -110,7 +110,9 @@
                                         :key)]]
                      [:tr
                       [:td.profile-field (t key) ":"]
-                      [:td (t value)]]))]]]
+                      [:td (if (re-find #"^https?://" (str value))
+                             [:a {:href value :target "_blank"} (t value)]
+                             (t value))]]))]]]
           )]]
       (if (not-empty badges)
         [:div {:id "user-badges"}
