@@ -11,7 +11,7 @@
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"
-              :database-name "salava"
+              :database-name "salava_test"
               :server-name   "localhost"}
 
  :obf {:url "https://openbadgefactory.com"}
@@ -25,12 +25,5 @@
  :http {:host "localhost" :port 5000 :max-body 100000000}
 
  :mail-sender "sender@example.com"
-
- :mail-host-config {:host "smtp.example.com"
-                    :user "yourusername"
-                    :pass "yourpassword"
-                    :ssl true
-                    :tls false
-                    :port 587}
 
  :data-dir "/path/to/data/directory"}
