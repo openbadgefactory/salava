@@ -58,7 +58,7 @@
         visibility-atom (cursor state [:page :visibility])]
     [:div {:id "page-view"}
      (if (:owner? page)
-       [:div
+       [:div {:id "page-buttons-share"}
         [:div {:id "buttons"
                :class "text-right"}
          [:a {:class "btn btn-primary"

@@ -1,0 +1,53 @@
+a[href]::after{
+    content: none !important;
+}
+
+.title-row, .side-links {
+    display: none;
+}
+
+#print-logo {
+    display: block
+}
+
+#badge-info {
+    #badge-share-inputs, #badge-rating, #badge-views , #badge-congratulations, #assertion-link {
+        display: none;
+    }
+
+    .row{
+        clear: both;
+        width: 100%;
+    }
+
+    .col-md-3 {
+        width: 30%;
+        float: left;
+    }
+
+    .col-md-9 {
+        width: 70%;
+        float: left;
+    }
+}
+
+#page-view {
+    #page-buttons-share, .page-mtime, .file-block {
+        display: none;
+    }
+
+    .row{
+        clear: both;
+        width: 100%;
+    }
+
+    .col-md-4 {
+        width: 30%;
+        float: left;
+    }
+
+    .col-md-8 {
+        width: 70%;
+        float: left;
+    }
+}

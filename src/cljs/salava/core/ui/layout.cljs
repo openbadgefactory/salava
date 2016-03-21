@@ -109,6 +109,7 @@
   [:div
    [:header {:id "navbar"}
     (top-navi site-navi)]
+   [:img {:id "print-logo" :src "/img/logo.png"}]
    [:div {:class "title-row"}
     [:div {:class "container"}
      (breadcrumb site-navi)]]
