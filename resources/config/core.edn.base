@@ -32,4 +32,11 @@
 
  :mail-sender "sender@example.com"
 
+ :mail-host-config {:host "smtp.example.com"
+                    :user "yourusername"
+                    :pass "yourpassword"
+                    :ssl true
+                    :tls false
+                    :port 587}
+
  :data-dir "/path/to/data/directory"}
