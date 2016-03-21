@@ -1,13 +1,13 @@
 (ns salava.test-utils
   (:require [clj-http.client :as client]
             [clj-http.cookies :as cookies]
-            [slingshot.slingshot :refer :all]
-            [salava.core.components.config :as c]))
+            [slingshot.slingshot :refer :all]))
+
+(def test-config (-> (clojure.java.io/resource "test_config/core.edn") slurp read-string))
 
 (def api-root
-  (let [config (c/load-config :core)
-        host (get-in config [:http :host])
-        port (get-in config [:http :port])]
+  (let [host (get-in test-config [:http :host])
+        port (get-in test-config [:http :port])]
     (str "http://" host ":"port "/obpv1" )))
 
 (def ^:dynamic *cookie-store*

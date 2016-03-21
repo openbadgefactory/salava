@@ -39,6 +39,7 @@
                  [ar.com.hjg/pngj "2.1.0"]
                  [com.novemberain/pantomime "2.7.0" :exclusions [org.bouncycastle/bcprov-jdk15on]]
                  [com.github.kyleburton/clj-xpath "1.4.5"]
+                 [org.clojure/tools.cli "0.3.3"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.170"]
@@ -78,6 +79,7 @@
                    :dependencies [[figwheel "0.5.0-2"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [org.clojure/tools.namespace "0.2.11"]
+                                  [lein-midje "3.1.3"]
                                   [reloaded.repl "0.2.1"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :plugins [[lein-pdo "0.1.1"]
@@ -85,10 +87,6 @@
                              [lein-scss "0.2.2"]
                              [lein-figwheel "0.5.0-2"]]
                    :resource-paths ["target/generated"]}
-             :test {:source-paths ["src/test-clj"]
-                    :dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                   [reloaded.repl "0.2.1"]]
-                    :plugins [[lein-midje "3.1.3"]]}
              :uberjar {:resource-paths  ["target/adv"]
                        :main  salava.core.main
                        :aot   [salava.core.main]}}
@@ -136,8 +134,8 @@
 
             "translate"       ["run" "-m" "salava.core.translator/translate"]
 
-            "migrate"         ["run" "-m" "salava.core.migrator/migrate" "false"]
-            "rollback"        ["run" "-m" "salava.core.migrator/rollback" "false"]
-            "migrator-remove" ["run" "-m" "salava.core.migrator/remove-plugin" "false"]
-            "migrator-seed"   ["run" "-m" "salava.core.migrator/seed" "false"]
-            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset" "false"]})
+            "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
+            "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
+            "migrator-remove" ["run" "-m" "salava.core.migrator/remove-plugin"]
+            "migrator-seed"   ["run" "-m" "salava.core.migrator/seed"]
+            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]})
