@@ -13,10 +13,6 @@
 
 (defn save-profile [state]
   (let [{:keys [profile_visibility about profile_picture]} (:user @state)
-        picture_path (->> (:picture_files @state)
-                          (filter #(= profile_picture (:id %)))
-                          first
-                          :path)
         profile-fields (->> (:profile @state)
                             (filter #(not-empty (:field %)))
                             (map #(select-keys % [:field :value])))]
@@ -24,7 +20,7 @@
       "/obpv1/user/profile"
       {:params  {:profile_visibility profile_visibility
                  :about              about
-                 :profile_picture    picture_path
+                 :profile_picture    profile_picture
                  :fields             profile-fields}
        :handler (fn [] (navigate-to (str "/user/profile/" (:user_id @state))))})))
 
@@ -45,10 +41,10 @@
                   (m/modal! (file/upload-modal status message reason)))})))
 
 (defn gallery-element [picture-data profile-picture-atom]
-  (let [{:keys [id path]} picture-data]
+  (let [{:keys [path]} picture-data]
     [:div {:key path
-           :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom id) "element-selected"))
-           :on-click #(reset! profile-picture-atom id)}
+           :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
+           :on-click #(reset! profile-picture-atom path)}
      [:img {:src (if path (str "/" path) default-profile-picture)}]]))
 
 (defn profile-picture-gallery [pictures-atom profile-picture-atom]
@@ -57,7 +53,7 @@
    [:div.col-xs-12
     [gallery-element {:path nil} profile-picture-atom]
     (into [:div]
-          (for [picture-elem @pictures-atom]
+          (for [picture-elem (map first (vals (group-by :path @pictures-atom)))]
             [gallery-element picture-elem profile-picture-atom]))]
    [:div.col-xs-12 {:id "profile-picture-upload-button"}
     [:button {:class "btn btn-primary"
