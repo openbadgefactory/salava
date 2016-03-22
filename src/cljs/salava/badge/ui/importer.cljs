@@ -42,10 +42,12 @@
     "/obpv1/badge/import"
     {:finally (fn []
                 (ajax-stop state))
-     :handler (fn [data]
-                (swap! state assoc :error (:error data))
-                (swap! state assoc :badges (:badges data))
-                (swap! state assoc :ok-badges (ok-badge-keys (:badges data))))}))
+     :handler (fn [{:keys [error badges]} data]
+                (swap! state assoc :error error)
+                (swap! state assoc :badges badges)
+                (swap! state assoc :ok-badges (ok-badge-keys badges))
+                (if (and (empty? badges) (not error))
+                  (m/modal! (import-modal {:status "warning" :message (t :badge/Nobackpackfound)}))))}))
 
 (defn import-badges [state]
   (swap! state assoc :ajax-message (t :badge/Savingbadges))
