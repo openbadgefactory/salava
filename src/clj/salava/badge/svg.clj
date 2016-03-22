@@ -1,5 +1,6 @@
 (ns salava.badge.svg
   (:require [slingshot.slingshot :refer :all]
+            [salava.badge.signed :refer [signed-assertion]]
             [clojure.data.json :as json]
             [clj-xpath.core :as xp]
             [clojure.string :as string]))
@@ -7,7 +8,7 @@
 (defn get-assertion [assertion]
   (cond
     (and (string? assertion) (re-matches #"^https?:\/\/.+" assertion)) assertion
-    (not (map? assertion)) nil ;signed-assertion
+    (not (map? assertion)) (signed-assertion assertion) ;signed-assertion
     :else (get-in assertion [:verify :url])))
 
 (defn remove-doctype [xml]
