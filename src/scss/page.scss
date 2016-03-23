@@ -22,11 +22,14 @@
 }
 
 .page-content {
-    h1.main-title, .page-author {
-        text-align: center;
+    .page-title {
+        h1 {
+            text-align: center;
+            font-size: 45px;
+        }
     }
-    h1.main-title {
-        font-size: 45px;
+    .page-author {
+        text-align: center;
     }
     .panel-left {
         background-position: top left;
@@ -202,7 +205,6 @@
     }
     .page-title {
         h1 {
-
         }
     }
     .page-author {

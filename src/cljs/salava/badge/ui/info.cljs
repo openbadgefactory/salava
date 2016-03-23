@@ -50,7 +50,7 @@
      [:div.panel
       [:div.panel-body
        (if (and owner? (not expired?) (not revoked))
-         [:div.row
+         [:div.row {:id "badge-share-inputs"}
           [:div.col-sm-3
            [:div.checkbox
             [:label
@@ -87,7 +87,7 @@
           [:div.col-xs-12
            [:img {:src (str "/" image_file)}]]]
          (if owner?
-           [:div.row
+           [:div.row {:id "badge-rating"}
             [:div.col-xs-12
              [:div.rating
               [r/rate-it rating]]
@@ -97,11 +97,11 @@
                 (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
                 :else (t :badge/Badgeisnotviewedyet))]]])
          (if (> recipient_count 1)
-           [:div.row
+           [:div.row {:id "badge-views"}
             [:div.col-xs-12
              [:a {:href (str "/gallery/badgeview/" badge_content_id)} (t :badge/Otherrecipients)]]])
          [:div.row
-          [:div.col-xs-12
+          [:div.col-xs-12 {:id "badge-congratulations"}
            (if (and user-logged-in? (not owner?))
              (if congratulated?
                [:div.congratulated
@@ -126,10 +126,12 @@
              [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
            (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
            (if assertion
-             [:div [:label (t :badge/Metadata)] ": " [:a {:href "#"
-                                                          :on-click #(do (.preventDefault %)
-                                                                         (m/modal! [a/assertion-modal assertion] {:size :lg}))}
-                                                      (t :badge/Openassertion) "..."]])
+             [:div {:id "assertion-link"}
+              [:label (t :badge/Metadata)] ": "
+              [:a {:href "#"
+                   :on-click #(do (.preventDefault %)
+                                  (m/modal! [a/assertion-modal assertion] {:size :lg}))}
+               (t :badge/Openassertion) "..."]])
            (if show_recipient_name
              [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
            [:div.description description]

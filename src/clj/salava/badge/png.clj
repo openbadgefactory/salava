@@ -1,7 +1,8 @@
 (ns salava.badge.png
   (:require [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
-            [clojure.string :refer [blank?]])
+            [clojure.string :refer [blank?]]
+            [salava.badge.signed :refer [signed-assertion]])
   (:import [ar.com.hjg.pngj PngReader]))
 
 (defn init-reader [file]
@@ -23,5 +24,4 @@
         hosted? (re-find #"\{" data)]
     (if hosted?
       (get-in (json/read-str data :key-fn keyword) [:verify :url])
-      ;TODO parse signed assertion
-      )))
+      (signed-assertion data))))
