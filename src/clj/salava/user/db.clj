@@ -8,7 +8,7 @@
             [salava.file.db :as f]
             [salava.page.main :as p]
             [salava.badge.main :as b]
-            [salava.core.util :refer [config get-db get-datasource]]
+            [salava.core.util :refer [get-db get-datasource]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -19,15 +19,16 @@
 (defn generate-activation-id []
   (str (java.util.UUID/randomUUID)))
 
-(def site-url (:site-url config))
+(defn get-site-url [ctx]
+ (get-in ctx [:config :core :site-url]))
 
-(defn activation-link [user-id code]
+(defn activation-link [site-url user-id code]
   (str site-url "/user/activate/" user-id "/" (unix-time) "/" code))
 
-(defn login-link []
+(defn login-link [site-url]
   (str site-url "/user/login"))
 
-(defn email-verification-link [verification-key]
+(defn email-verification-link [site-url verification-key]
   (str site-url "/user/verify_email/" verification-key))
 
 (defn hash-password [password]
@@ -54,11 +55,12 @@
   [ctx email first-name last-name country]
   (if (email-exists? ctx email)
     {:status "error" :message (t :user/Enteredaddressisalready)}
-    (let [activation_code (generate-activation-id)
+    (let [site-url (get-site-url ctx)
+          activation_code (generate-activation-id)
           new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language "fi"} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-      (m/send-activation-message site-url (activation-link user-id activation_code) (login-link) (str first-name " " last-name) email)
+      (m/send-activation-message ctx site-url (activation-link site-url user-id activation_code) (login-link site-url) (str first-name " " last-name) email)
       {:status "success" :message ""})))
 
 (defn set-password-and-activate
@@ -114,10 +116,11 @@
   (try+
     (if (email-exists? ctx email)
       {:status "error" :message (t :user/Enteredaddressisalready)}
-      (let [verification-key (generate-activation-id)
+      (let [site-url (get-site-url ctx)
+            verification-key (generate-activation-id)
             {:keys [first_name last_name]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
         (insert-user-email! {:user_id user-id :email email :primary_address 0 :verification_key verification-key} (get-db ctx))
-        (m/send-verification site-url (email-verification-link verification-key) (str first_name " " last_name) email)
+        (m/send-verification ctx site-url (email-verification-link site-url verification-key) (str first_name " " last_name) email)
         {:status "success" :message (str (t :user/Emailaddress) " " email " " (t :user/added)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
     (catch Object _
       {:status "error" :message (t :user/Errorwhileaddingemail)})))
@@ -206,12 +209,13 @@
 (defn send-password-reset-link
   ""
   [ctx email]
-  (let [{:keys [id first_name last_name verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
+  (let [site-url (get-site-url ctx)
+        {:keys [id first_name last_name verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
     (if (and id primary_address)
       (do
         (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
-        (m/send-password-reset-message site-url (activation-link id verification-key) (str first_name " " last_name) email)
+        (m/send-password-reset-message ctx site-url (activation-link site-url id verification-key) (str first_name " " last_name) email)
         {:status "success"})
       {:status "error"})))
 

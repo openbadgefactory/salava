@@ -7,13 +7,15 @@
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [buddy.core.codecs :refer [base64->bytes base64->str]]))
 
-(def config (-> (clojure.java.io/resource "config/core.edn") slurp read-string))
 
 (defn get-db [ctx]
   {:connection {:datasource (:db ctx)}})
 
 (defn get-datasource [ctx]
   {:datasource (:db ctx)})
+
+(defn get-data-dir [ctx]
+  (get-in ctx [:config :core :data-dir]))
 
 (defn hex-digest [algo string]
   (case algo
@@ -71,9 +73,9 @@
     path))
 
 (defn save-file-data
-  [content path]
+  [ctx content path]
   (let [filename (trim-path path)
-        data-dir (get config :data-dir)
+        data-dir (get-data-dir ctx)
         fullpath (str data-dir "/" filename)]
     (try+
       (if-not (.exists (io/as-file data-dir))
@@ -87,24 +89,24 @@
         (throw+ (str "Error copying file: " _))))))
 
 (defn save-file-from-http-url
-  [url]
+  [ctx url]
   (let [content (fetch-file-content url)
         path (public-path url)]
-    (save-file-data content path)))
+    (save-file-data ctx content path)))
 
 (defn save-file-from-data-url
-  [data-str comma-pos]
+  [ctx data-str comma-pos]
   (if (> comma-pos -1)
     (let [base64-data (subs data-str (inc comma-pos))
           content (base64->bytes base64-data)
           content-str (base64->str base64-data)
           ext (-> content mime-type-of extension-for-name)
           path (public-path-from-content content-str ext)]
-      (save-file-data content path))))
+      (save-file-data ctx content path))))
 
 (defn file-from-url
-  [url]
+  [ctx url]
   (cond
-    (re-find #"https?" (str url)) (save-file-from-http-url url)
-    (re-find #"data?" (str url)) (save-file-from-data-url url (.lastIndexOf url ","))
+    (re-find #"https?" (str url)) (save-file-from-http-url ctx url)
+    (re-find #"data?" (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw+ (str "Error in file url: " url))))

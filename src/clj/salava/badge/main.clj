@@ -236,11 +236,11 @@
       (throw+ (t :badge/Badgeexpired)))
     (let [assertion (:assertion badge)
           recipient-email (check-recipient emails assertion)
-          badge-image-path (file-from-url (get-in assertion [:badge :image]))
+          badge-image-path (file-from-url ctx (get-in assertion [:badge :image]))
           badge-content-id (save-badge-content! ctx assertion badge-image-path)
           issuer-image (get-in assertion [:badge :issuer :image])
           issuer-image-path (if-not (empty? issuer-image)
-                              (file-from-url issuer-image))
+                              (file-from-url ctx issuer-image))
           issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
           criteria-content-id (save-criteria-content! ctx assertion)]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
