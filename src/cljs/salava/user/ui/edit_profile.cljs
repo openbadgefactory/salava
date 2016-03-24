@@ -24,7 +24,7 @@
                  :fields             profile-fields}
        :handler (fn [] (navigate-to (str "/user/profile/" (:user_id @state))))})))
 
-(defn send-file [files-atom]
+(defn send-file [files-atom profile-picture-atom]
   (let [file (-> (.querySelector js/document "#profile-picture-upload")
                  .-files
                  (.item 0))
@@ -36,8 +36,9 @@
       "/obpv1/file/upload"
       {:body    form-data
        :handler (fn [{:keys [status message reason data]} response]
-                  (if (= status "success")
-                    (reset! files-atom (conj @files-atom data)))
+                  (when (= status "success")
+                    (reset! files-atom (conj @files-atom data))
+                    (reset! profile-picture-atom (:path data)))
                   (m/modal! (file/upload-modal status message reason)))})))
 
 (defn gallery-element [picture-data profile-picture-atom]
@@ -62,7 +63,7 @@
     [:input {:id "profile-picture-upload"
              :type "file"
              :name "file"
-             :on-change #(send-file pictures-atom)
+             :on-change #(send-file pictures-atom profile-picture-atom)
              :accept "image/*"}]]])
 
 (def empty-field {:field "" :value ""})
