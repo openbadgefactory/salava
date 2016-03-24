@@ -88,13 +88,17 @@
   (ajax/GET
     (str "/obpv1/page/view/" id)
     {:response-format :json
-     :keywords? true
-     :handler (fn [data]
-                (swap! state assoc :page (:page data) :ask-password (:ask-password data))
-                (set-meta-tags (get-in data [:page :title]) (get-in data [:page :description]) ""))
-     :error-handler (fn [{:keys [status status-text]}]
-                      (if (= status 401)
-                        (navigate-to "/user/login")))}))
+     :keywords?       true
+     :handler         (fn [data]
+                        (swap! state assoc :page (:page data) :ask-password (:ask-password data))
+                        (let [first-badge-block (->> (get-in data [:page :blocks])
+                                                     (filter #(= (:type %) "badge"))
+                                                     first)
+                              meta-image (if first-badge-block (str (session/get :site-url) "/" (:image_file first-badge-block)) "")]
+                          (set-meta-tags (get-in data [:page :name]) (get-in data [:page :description]) meta-image)))
+     :error-handler   (fn [{:keys [status status-text]}]
+                        (if (= status 401)
+                          (navigate-to "/user/login")))}))
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
