@@ -20,7 +20,7 @@ SELECT p.id, name, description, theme, border, padding, visibility, password, vi
        GROUP BY p.id
 
 -- name: select-pages-badge-blocks
-SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, cc.markdown_content AS criteria_markdown, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image FROM page_block_badge AS pb
+SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, cc.html_content AS html_content, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image FROM page_block_badge AS pb
        JOIN badge AS b ON pb.badge_id = b.id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id

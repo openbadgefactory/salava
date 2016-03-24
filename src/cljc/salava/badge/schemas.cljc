@@ -13,7 +13,7 @@
                     :assertion_json (s/maybe s/Str)
                     :badge_url (s/maybe s/Str)
                     :criteria_url (s/maybe s/Str)
-                    :criteria_markdown (s/maybe s/Str)
+                    :html_content (s/maybe s/Str)
                     :badge_content_id (s/maybe s/Str)
                     :image_file (s/maybe s/Str)
                     :issuer_content_id (s/maybe s/Str)
