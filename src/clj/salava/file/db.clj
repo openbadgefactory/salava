@@ -53,9 +53,12 @@
 
 (defn remove-user-file! [ctx file-id user-id]
   (try+
-    (let [{:keys [owner path]} (select-file-owner-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))]
+    (let [{:keys [owner path]} (select-file-owner-and-path {:id file-id} (into {:result-set-fn first} (get-db ctx)))
+          profile-picture-path (select-profile-picture-path {:id user-id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))]
       (if-not (= owner user-id)
         (throw+ "Current user is not owner of the file"))
+      (if (and profile-picture-path (= profile-picture-path path))
+        (throw+ "Cannot delete profile picture"))
       (jdbc/with-db-transaction
         [tr-cn (get-datasource ctx)]
         (remove-file-with-db! {:connection tr-cn} file-id))

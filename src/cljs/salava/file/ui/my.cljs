@@ -1,5 +1,6 @@
 (ns salava.file.ui.my
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
@@ -116,7 +117,8 @@
 
 (defn file-grid-element [file-atom new-tag-atom files-atom]
   (let [{:keys [id name path mime_type ctime]} @file-atom
-        tags-atom (cursor file-atom [:tags])]
+        tags-atom (cursor file-atom [:tags])
+        profile-picture-path (session/get-in [:user :profile_picture])]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
@@ -138,12 +140,13 @@
                                   {:size :lg :hide #(save-tags file-atom)}))}
         [:i {:class "fa fa-tags"}]
         [:span (t :file/Edittags)]]
-       [:a {:class "bottom-link pull-right"
-            :on-click (fn []
-                        (m/modal! [delete-file-modal id files-atom]
-                                  {:size :lg}))}
-        [:i {:class "fa fa-trash"}]
-        [:span (t :file/Delete)]]]]]))
+       (if-not (= path profile-picture-path)
+         [:a {:class "bottom-link pull-right"
+              :on-click (fn []
+                          (m/modal! [delete-file-modal id files-atom]
+                                    {:size :lg}))}
+          [:i {:class "fa fa-trash"}]
+          [:span (t :file/Delete)]])]]]))
 
 (defn file-visible? [file-tags tags-selected tags-all]
   (boolean
