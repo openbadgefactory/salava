@@ -132,9 +132,10 @@
                 (jdbc/query conn (into [query] params)))]
     (p/page-badges ctx pages)))
 
-(defn profile-countries [ctx]
-  (let [countries (select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
-    (select-keys all-countries-sorted countries)))
+(defn profile-countries [ctx user-id]
+  (let [current-country (user-country ctx user-id)
+        countries (select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (select-keys all-countries-sorted (conj countries current-country))))
 
 (defn public-profiles
   "Searcn public user profiles by user's name and country"
