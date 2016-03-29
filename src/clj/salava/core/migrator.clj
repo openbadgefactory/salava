@@ -95,7 +95,7 @@
 
 
 (defn run-test-reset []
-  (doseq [plugin plugins]
+  (doseq [plugin (plugins)]
     (run-reset (test-ds) plugin)))
 
 
@@ -108,7 +108,7 @@
 
 
 (defn migrate [& args]
-  (doseq [plugin (or args plugins)]
+  (doseq [plugin (or args (plugins))]
     (log/info "running migrations for plugin" (name plugin))
     (migratus/migrate (migratus-config (dev-ds) plugin)))
   (System/exit 0))
@@ -126,11 +126,11 @@
   (System/exit 0))
 
 (defn seed [& args]
-  (doseq [plugin (or args plugins)]
+  (doseq [plugin (or args (plugins))]
     (run-seed (dev-ds) plugin))
   (System/exit 0))
 
 (defn reset [& args]
-  (doseq [plugin (or args plugins)]
+  (doseq [plugin (or args (plugins))]
     (run-reset (dev-ds) plugin))
   (System/exit 0))
