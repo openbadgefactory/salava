@@ -1,7 +1,7 @@
 
 -- name: select-user-pages
 -- get user's pages
-SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime, GROUP_CONCAT(pb.badge_id) AS badges, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
+SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime, GROUP_CONCAT(DISTINCT pb.badge_id) AS badges, GROUP_CONCAT(DISTINCT pt.tag) AS tags FROM page AS p
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
        WHERE user_id = :user_id
