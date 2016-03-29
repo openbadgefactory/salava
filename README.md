@@ -49,12 +49,13 @@ Create the database:
     grant all privileges on salava_test.* to 'salava'@'localhost';
     quit
 
-Create your config file:
+Create your config files for development and testing:
 
     $ cp resources/config/core.edn.base resources/config/core.edn
+    $ cp resources/test_config/core.edn.base resources/test_config/core.edn
 
-Edit the file and add your db settings etc. (Don't forget to create the
-database as well).
+Edit the files and add your db settings etc. (Don't forget to create the
+databases as well).
 
 Create a directory to store files that are uploaded or created by Salava. Add
 the directory to the config file (keyword :data-dir).
@@ -77,7 +78,12 @@ After that:
     # ...
     user=> (go)
 
+    # Load test config and run all tests
+    user=> (toggle-test-mode)
+    user=> (run-tests)
 
+    # Switch back to development mode
+    user=> (toggle-test-mode)
 
 ## TODO
 

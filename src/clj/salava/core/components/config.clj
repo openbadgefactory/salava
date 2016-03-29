@@ -7,9 +7,14 @@
     (io/file name)
     (io/resource name)))
 
+(defn- exists [file]
+  (and
+    (not (nil? file))
+    (.exists (io/as-file file))))
+
 (defn- load-config [base-path plugin]
   (let [config-file (get-file (str base-path "/" (name plugin) ".edn"))]
-    (if-not (nil? config-file)
+    (if (exists config-file)
       (-> config-file slurp read-string))))
 
 
