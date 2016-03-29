@@ -97,4 +97,4 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok {:users (g/public-profiles ctx search-params (:id current-user))
-                        :countries (g/profile-countries ctx)})))))
+                        :countries (g/profile-countries ctx (:id current-user))})))))

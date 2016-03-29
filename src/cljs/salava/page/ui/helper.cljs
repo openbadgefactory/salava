@@ -36,14 +36,14 @@
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
 
-(defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_image]}]
+(defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_image html_content]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
    [:div {:class "col-md-8"}
     [:div.row
      [:div.col-md-12
-      [:h3 name]]]
+      [:h3.badge-name name]]]
     [:div.row
      [:div.col-md-12
       (bh/issued-on issued_on)]]
@@ -51,13 +51,16 @@
      [:div.col-md-12
       (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_email issuer_image)]]
     [:div.row
-     [:div.col-md-12 description]]
+     [:div {:class "col-md-12 description"} description]]
     [:div.row
      [:div.col-md-12
-      [:h3 (t :badge/Criteria)]]]
+      [:h3.criteria (t :badge/Criteria)]]]
     [:div.row
      [:div.col-md-12
       [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage)]]]
+    [:div {:class "row criteria-html"}
+     [:div.col-md-12
+      {:dangerouslySetInnerHTML {:__html html_content}}]]
     (if (= format "long")
       [:div.row
        [:div {:class "col-md-12"
@@ -72,14 +75,21 @@
   [:div.file-block
    [:div.row
     [:div.col-md-12
-     [:label.files-label
-      (t :page/Attachments) ": "]
-     (into [:div] (for [file files]
-                    [:span.attachment
-                     [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-                     [:a.file-link {:href (str "/" (:path file))
-                                    :target "_blank"}
-                      (:name file)]]))]]])
+     (if (every? #(re-find #"image/" (str (:mime_type %))) files)
+       (into [:div.file-block-images]
+             (for [file files]
+               [:div.file-block-image
+                [:img {:src (str "/" (:path file))}]]))
+       [:div.file-block-attachments
+        [:label.files-label
+         (t :page/Attachments) ": "]
+        (into [:div]
+              (for [file files]
+                [:span.attachment
+                 [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
+                 [:a.file-link {:href (str "/" (:path file))
+                                :target "_blank"}
+                  (:name file)]]))])]]])
 
 (defn heading-block [{:keys [size content]}]
   [:div.heading-block

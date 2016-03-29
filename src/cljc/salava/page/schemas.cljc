@@ -61,14 +61,14 @@
                                                           #(= (:type %) "badge") (merge
                                                                                    (assoc BadgeBlock :id s/Int
                                                                                                      :block_order s/Int)
-                                                                                   (select-keys Badge [:name :criteria_markdown :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url :issuer_image]))
+                                                                                   (select-keys Badge [:name :html_content :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url :issuer_image]))
                                                           #(= (:type %) "html") (assoc HtmlBlock :id s/Int
                                                                                                  :block_order
                                                                                                  s/Int)
                                                           #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
                                                           #(= (:type %) "tag") (assoc TagBlock :id s/Int
                                                                                                :block_order s/Int
-                                                                                               :badges [(select-keys Badge [:id :name :criteria_markdown :criteria_url :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :tag])]))]))
+                                                                                               :badges [(select-keys Badge [:id :name :html_content :criteria_url :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :tag])]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int

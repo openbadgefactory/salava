@@ -1,5 +1,6 @@
 (ns salava.page.ui.edit
   (:require [reagent.core :refer [atom cursor create-class]]
+            [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
@@ -8,6 +9,7 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]
+            [salava.file.ui.my :as file]
             [salava.file.icons :refer [file-icon]]))
 
 (defn random-key []
@@ -61,6 +63,23 @@
     (if file
       (update-block-value block-atom :files (conj (vec (:files @block-atom)) (assoc file :key (random-key)))))))
 
+(defn send-file [files-atom block-atom]
+  (let [file (-> (.querySelector js/document (str "#upload-file-" (:key @block-atom)))
+                 .-files
+                 (.item 0))
+        form-data (doto
+                    (js/FormData.)
+                    (.append "file" file (.-name file)))]
+    (m/modal! (file/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
+    (ajax/POST
+      "/obpv1/file/upload"
+      {:body    form-data
+       :handler (fn [{:keys [status message reason data]} response]
+                  (when (= status "success")
+                    (reset! files-atom (conj @files-atom data))
+                    (select-file block-atom @files-atom (:id data)))
+                  (m/modal! (file/upload-modal status message reason)))})))
+
 (defn remove-file [files-atom file]
   (reset! files-atom (vec (remove #(= % file) @files-atom))))
 
@@ -94,7 +113,7 @@
         format (get-in @block-atom [:format] "short")
         sort-by (get-in @block-atom [:sort] "name")
         tagged-badges (->> @badges
-                         (filter #(some (fn [t] (= t tag)) (:tags %))))]
+                           (filter #(some (fn [t] (= t tag)) (:tags %))))]
     [:div.form-group
      [:div.col-xs-8
       [:div.badge-select
@@ -124,27 +143,38 @@
 
 (defn edit-block-files [block-atom files]
   [:div
-   [:div.edit-block-files
-    (for [file (:files @block-atom)]
-      [:div.row
-       [:div.col-xs-6
-        [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-        [:a {:href (str "/" (:path file))
-             :target "_blank"}
-         (:name file)]]
-       [:div.col-xs-6
-        [:span {:class "remove-file-icon"
-                :on-click #(remove-file (cursor block-atom [:files]) file)}
-         [:i {:class "fa fa-close"}]]]])]
+   (into
+     [:div.edit-block-files]
+     (for [file (:files @block-atom)]
+       [:div.row
+        [:div.col-xs-6
+         [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
+         [:a {:href (str "/" (:path file))
+              :target "_blank"}
+          (:name file)]]
+        [:div.col-xs-6
+         [:span {:class "remove-file-icon"
+                 :on-click #(remove-file (cursor block-atom [:files]) file)}
+          [:i {:class "fa fa-close"}]]]]))
    [:div.form-group
     [:div.col-xs-12
      [:div.file-select
       [:select {:class "form-control"
                 :value ""
                 :on-change #(select-file block-atom @files (js/parseInt (.-target.value %)))}
-       [:option {:value ""} (t "-" :page/none "-")]
+       [:option {:value ""} "- " (t :page/choosefile) " -"]
        (for [file @files]
-         [:option {:value (:id file) :key (:id file)} (:name file)])]]]]])
+         [:option {:value (:id file) :key (:id file)} (:name file)])]]]]
+   [:div.form-group
+    [:div.col-xs-12
+     [:button {:class "btn btn-primary"
+               :on-change #(.preventDefault %)}
+      (t :page/oruploadnewfile)]
+     [:input {:id        (str "upload-file-" (:key @block-atom))
+              :class     "page-file-upload"
+              :type      "file"
+              :name      "file"
+              :on-change #(send-file files block-atom)}]]]])
 
 (defn edit-block-text [block-atom]
   (let [content (:content @block-atom)]
@@ -273,6 +303,7 @@
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-edit"}
+     [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) next-url))]
      [page-form state]]))

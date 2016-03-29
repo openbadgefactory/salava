@@ -8,7 +8,7 @@
 (defn issued-on [issued]
   (when (> issued 0)
     [:div.issued-on
-     [:label (t :badge/Issuedon ":")]
+     [:label (t :badge/Issuedon) ":"]
      [:span (date-from-unix-time (* 1000 issued))]]))
 
 (defn issuer-label-and-link [name url email image]

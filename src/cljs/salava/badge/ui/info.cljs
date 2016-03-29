@@ -101,7 +101,7 @@
             [:div.col-xs-12
              [:a {:href (str "/gallery/badgeview/" badge_content_id)} (t :badge/Otherrecipients)]]])
          [:div.row
-          [:div.col-xs-12 {:id "badge-congratulations"}
+          [:div.col-xs-12 {:id "badge-congratulated"}
            (if (and user-logged-in? (not owner?))
              (if congratulated?
                [:div.congratulated
@@ -137,7 +137,7 @@
            [:div.description description]
            [:h2.uppercase-header (t :badge/Criteria)]
            [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]]]
-         [:div {:class "row evidence-html"}
+         [:div {:class "row criteria-html"}
           [:div.col-md-12
            {:dangerouslySetInnerHTML {:__html html_content}}]]
          (if (and show_evidence evidence_url)
@@ -147,7 +147,7 @@
              [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
          (if (and owner? (not-empty congratulations))
            [:div.row
-            [:div.col-md-12
+            [:div.col-md-12 {:id "badge-congratulations"}
              [:h3.congratulated-header
               [:i {:class "fa fa-heart"}]
               " " (t :badge/Congratulatedby) ":"]

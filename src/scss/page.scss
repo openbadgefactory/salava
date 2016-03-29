@@ -22,10 +22,16 @@
 }
 
 .page-content {
+    font-family: Open Sans;
+    font-size: 14px;
+    line-height: 17px;
     .page-title {
         h1 {
+            color: #000000;
             text-align: center;
-            font-size: 45px;
+            text-transform: uppercase;
+            line-height: 30px;
+            font: 300 45px "Open Sans Condensed",sans-serif;
         }
     }
     .page-author {
@@ -49,7 +55,8 @@
     }
     .panel-content {
         background-color: #ffffff;
-        padding: 0 15px;
+        color: #000000;
+        padding: 25px;
     }
     a.small-badge-image {
         display: inline-block;
@@ -58,7 +65,24 @@
             width: 90px;
             height: 90px;
         }
-
+    }
+    .heading-block {
+        h1 {
+            font: bold 24px "Open Sans";
+        }
+        h2 {
+            font: bold 17px "Open Sans";
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: 300 30px "Open Sans Condensed";
+            text-transform: uppercase;
+        }
+        h3.criteria {
+            font: 300 20px "Open Sans Condensed";
+            text-transform: uppercase;
+        }
     }
 }
 
@@ -74,6 +98,20 @@
 #page-edit {
     #title-and-description {
         margin-bottom: 35px;
+    }
+    .edit-block-files {
+        margin-bottom: 10px;
+    }
+    .page-file-upload {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        font-size: 0;
+        position: absolute;
+        z-index: 1;
     }
 }
 
@@ -116,24 +154,178 @@
 }
 
 #theme-1 {
+    font-family: Oswald,arial;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 24px;
+    color: #000000;
+
+    a {
+        color: #e98342;
+    }
+
+    .page-title {
+        h1 {
+            font: 40px "Archivo Black",sans-serif;
+            color: #e98342;
+            text-transform: uppercase;
+        }
+    }
+
+    .page-summary {
+        font: 300 20px "Oswald",arial;
+    }
+
     .panel-left {
         background-image: url('/img/themes/custom_left.png');
     }
     .panel-right {
         background-image: url('/img/themes/custom_right.png');
     }
+
+    .heading-block {
+        h1 {
+            font: bold 20px "Oswald",arial;
+        }
+        h2 {
+            font: bold 17px "Oswald",arial;
+        }
+    }
+
+    .badge-block {
+        h3.badge-name {
+            font: normal 28px "Oswald";
+            text-transform: uppercase;
+            color: #f8a053;
+        }
+        h3.criteria {
+            font: 300 20px "Oswald";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font: 300 17px Oswald;
+        }
+        label {
+            font: normal 15px Oswald
+        }
+    }
+    .html-block {
+        font-size: 17px;
+        line-height: 24px;
+    }
 }
 
 #theme-2 {
+    color: #000000;
+    font-family: Halant;
+    font-size: 17px;
+    line-height: 17px;
+
+    a {
+        color: #7e7079;
+    }
+    .page-title {
+        h1 {
+            font-size: 45px;
+        }
+    }
+    .page-summary {
+        font: normal 20px "Halant",arial;
+    }
+
     .panel-left {
         background-image: url('/img/themes/classic_left.png');
     }
     .panel-right {
         background-image: url('/img/themes/classic_left.png');
     }
+
+    .heading-block {
+        h1 {
+            font: bold 20px "Halant",arial;
+        }
+        h2 {
+            font: bold 17px "Halant",arial;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: bold 24px "Cinzel";
+            text-transform: uppercase;
+        }
+        h3.criteria {
+            font: bold 17px "Cinzel";
+            text-transform: uppercase;
+        }
+        .description {
+            line-height: 20px;
+            font: normal 17px Halant;
+        }
+        label {
+            font: 600 17px "Halant";
+        }
+    }
+    .html-block {
+        font-size: 18px;
+        line-height: 24px;
+    }
 }
 
 #theme-3 {
+    color: #000000;
+    font-family: "Coming Soon";
+    font-size: 17px;
+    line-height: 17px;
+
+    a {
+        color: #9dbe5f;
+    }
+    .page-title {
+        h1 {
+            font: normal 55px "Gochi Hand",sans-serif;
+            color: #6a8140;
+            text-transform: uppercase;
+        }
+    }
+    .page-summary {
+        font: normal 18px "Coming Soon",arial;
+    }
+
+    .heading-block {
+        h1 {
+            font: normal 24px "Gochi Hand",arial;
+        }
+        h2 {
+            font: normal 20px "Gochi Hand",arial;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: normal 30px "Gochi Hand";
+            text-transform: uppercase;
+            color: #9dbe5f;
+        }
+        h3.criteria {
+            font: normal 20px "Gochi Hand";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font: normal 16px "Coming Soon";
+        }
+        label {
+            font: normal 17px "Gochi Hand";
+            color: #000000;
+        }
+    }
+    .html-block {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
     .panel-left {
         background-image: url('/img/themes/handmade_left.png');
     }
@@ -143,24 +335,180 @@
 }
 
 #theme-4 {
+    color: #000000;
+    font-family: Open Sans;
+    font-size: 14px;
+    line-height: 18px;
+
+    a {
+        color: #4499a9;
+    }
+    .page-title {
+        h1 {
+            font: bold 40px "Georgia",sans-serif;
+            color: #4499a9;
+            font-size: 40px;
+            text-transform: none;
+            font-weight: 400;
+        }
+    }
+    .page-summary {
+        font: normal 16px "Open Sans",arial;
+    }
+
     .panel-left {
         background-image: url('/img/themes/art_left.jpg');
     }
     .panel-right {
         background-image: url('/img/themes/art_right.jpg');
     }
+
+    .heading-block {
+        h1 {
+            font: bold 20px "Open Sans",arial;
+        }
+        h2 {
+            font: bold 17px "Open Sans",arial;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: 600 24px "Open Sans";
+            text-transform: uppercase;
+            color: #459aa9;
+        }
+        h3.criteria {
+            font: 400 16px "Open Sans";
+            text-transform: uppercase;
+        }
+        .description {
+            line-height: 16px;
+            font: normal 14px Open Sans;
+        }
+        label {
+            font: 600 16px "Open Sans";
+        }
+    }
+    .html-block {
+        font-size: 14px;
+        line-height: 18px;
+    }
 }
 
 #theme-5 {
+    color: #000000;
+    font-weight: 300;
+    font-family: Oswald;
+    font-size: 17px;
+    line-height: 24px;
+
+    a {
+        font-size: 17px;
+        color: #6b6b6b;
+        font-weight: 300;
+    }
+    .page-title {
+        h1 {
+            font: 40px "Archivo Black",sans-serif;
+            text-transform: uppercase;
+        }
+    }
+    .page-summary {
+        font: 300 20px "Oswald",arial;
+    }
+
     .panel-left {
         background-image: url('/img/themes/cardboard_left.jpg');
     }
     .panel-right {
         background-image: url('/img/themes/cardboard_right.jpg');
     }
+
+    .heading-block {
+        h1 {
+            font: bold 20px "Oswald",arial
+        }
+        h2 {
+            font: bold 17px "Oswald",arial
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: normal 28px "Oswald";
+            text-transform: uppercase;
+            color: #6b6b6b;
+        }
+        h3.criteria {
+            font: 300 20px "Oswald";
+            text-transform: uppercase;
+        }
+        .description {
+            line-height: 20px;
+            font: 300 17px Oswald;
+        }
+        label {
+            font: normal 15px Oswald;
+        }
+    }
+    .html-block {
+        font-size: 17px;
+        line-height: 24px;
+    }
 }
 
 #theme-6 {
+    color: #000000;
+    font-family: "Coming Soon";
+    font-size: 16px;
+    line-height: 17px;
+
+    a {
+        color: #257bd1;
+    }
+    .page-title {
+        h1 {
+            font: normal 55px "Gochi Hand",sans-serif;
+            color: #0060bf;
+            text-transform: uppercase;
+        }
+    }
+    .page-summary {
+        font: normal 18px "Coming Soon",arial;
+    }
+
+    .heading-block {
+        h1 {
+            font: normal 24px "Gochi Hand",arial;
+        }
+        h2 {
+            font: normal 20px "Gochi Hand",arial;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: normal 30px "Gochi Hand";
+            text-transform: uppercase;
+            color: #257bd1;
+        }
+        h3.criteria {
+            font: normal 20px "Gochi Hand";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font: normal 16px "Coming Soon";
+        }
+        label {
+            font: normal 17px "Gochi Hand";
+            color: #000000;
+        }
+    }
+    .html-block {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
     .panel-left {
         background-image: url('/img/themes/lego_left.png');
     }
@@ -170,6 +518,64 @@
 }
 
 #theme-7 {
+    color: #000000;
+    font-family: Open Sans;
+    font-size: 14px;
+    line-height: 17px;
+
+    a {
+        color: #264254;
+        font-weight: 400;
+    }
+    .page-title {
+        h1 {
+            font: 700 45px "Open Sans",sans-serif;
+            color: #284558;
+            font-style: italic;
+            text-transform: uppercase;
+            text-align: center;
+        }
+    }
+    .page-summary {
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+    .heading-block {
+        h1 {
+            font: 400 24px "Open Sans",arial;
+            color: #264254;
+        }
+        h2 {
+            font: 400 19px "Open Sans",arial;
+            color: #264254;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            color: #000000;
+            font: 600 24px "Open Sans";
+            text-transform: uppercase;
+        }
+        h3.criteria {
+            font: 400 16px "Open Sans";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font-size: 14px;
+        }
+        label {
+            font: bold 14px 'Open Sans';
+            color: #000000;
+        }
+    }
+    .html-block {
+        font-size: 14px;
+        line-height: 24px;
+    }
+
     .panel-left {
         background-image: url('/img/themes/diamonds_left.png');
     }
@@ -179,6 +585,11 @@
 }
 
 #theme-8 {
+    color: #000000;
+    a {
+        color: #6b6b6b;
+        font-weight: 400;
+    }
     .panel-left {
         background-image: url('/img/themes/ornament_left.png');
     }
@@ -188,43 +599,188 @@
 }
 
 #theme-9 {
-    .panel-left {
-        background-image: url('/img/themes/vintage_left.png');
-    }
-    .panel-right {
-        background-image: url('/img/themes/vintage_right.png');
-    }
-}
+   font-family: Halant;
+   font-size: 16px;
+   line-height: 17px;
 
-#theme-10 {
-    font-family: "Halant";
-    color: #000000;
-
-    .page-mtime {
-
+    a {
+        color: #876b36;
+        font-weight: 400;
     }
     .page-title {
         h1 {
+            font: normal 40px "Cinzel",sans-serif;
+            color: #876b36;
+            text-transform: uppercase;
+            text-align: center;
         }
     }
-    .page-author {
-        a {
+    .page-summary {
+        font: normal 20px "Halant",arial;
+    }
 
+
+    .heading-block {
+        h1 {
+            font: bold 20px "Halant",arial;
+            color: #876b36;
+            text-transform: none;
+        }
+        h2 {
+            font: bold 17px "Halant",arial;
+            color: #000000;
+            text-transform: none;
         }
     }
+    .badge-block {
+        h3.badge-name {
+            font: bold 24px "Cinzel";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        h3.criteria {
+            font: bold 17px "Cinzel";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font: normal 17px Halant;
+        }
+        label {
+            font: 600 17px "Halant";
+            color: #000000;
+        }
+    }
+    .html-block {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+   .panel-left {
+       background-image: url('/img/themes/vintage_left.png');
+   }
+   .panel-right {
+       background-image: url('/img/themes/vintage_right.png');
+   }
+}
+
+#theme-10 {
+    color: #000000;
+    font-family: Halant;
+    font-size: 16px;
+    line-height: 17px;
+
+    a {
+        color: #085760;
+        font-weight: 400;
+    }
+    .page-title {
+        h1 {
+            font: 400 45px Halant;
+            text-transform: none;
+        }
+    }
+    .page-summary {
+        font: normal 20px "Halant",arial;
+    }
+
+    .heading-block {
+        h1 {
+            font: 300 24px "Halant", arial;
+            text-transform: none;
+        }
+        h2 {
+            font: bold 17px "Halant",arial;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: 400 24px "Halant";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        h3.criteria {
+            font: 300 16px "Open Sans";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font: normal 17px Halant;
+        }
+        label {
+            font: 600 17px "Halant";
+            color: #000000;
+        }
+    }
+    .html-block {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
     .panel-left {
         background-image: url('/img/themes/colours_left.png');
     }
     .panel-right {
         background-image: url('/img/themes/colours_right.png');
     }
-    a {
-        color:#085760;
-        font-weight: 400;
-    }
 }
 
 #theme-11 {
+    color: #000000;
+    font-family: Halant;
+    font-size: 16px;
+    line-height: 17px;
+
+    a {
+        color: #840d2b;
+        font-weight: 400;
+    }
+    .page-title {
+        h1 {
+            font: 400 45px Halant;
+            text-transform: none;
+        }
+    }
+    .page-summary {
+        font: normal 20px "Halant",arial;
+    }
+
+    .heading-block {
+        h1 {
+            font: 300 24px "Halant", arial;
+            text-transform: none;
+        }
+        h2 {
+            font: bold 17px "Halant",arial;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: 400 24px "Halant";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        h3.criteria {
+            font: 300 16px "Open Sans";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font: normal 17px Halant;
+        }
+        label {
+            font: 600 17px "Halant";
+            color: #000000;
+        }
+    }
+    .html-block {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
     .panel-left {
         background-image: url('/img/themes/dotted_left.jpg');
     }
@@ -234,6 +790,55 @@
 }
 
 #theme-12 {
+    font-family: Georgia;
+
+    a {
+        color: #6b6b6b;
+        font-weight: 400;
+    }
+    .page-title {
+        h1 {
+            font: 700 45px "Dancing Script",cursive;
+        }
+    }
+    .page-summary {
+        font-size: 16px;
+        font-wright: normal;
+    }
+
+    .heading-block {
+        h1 {
+            font: 700 24px "Dancing Script",cursive;
+            text-transform: none;
+        }
+        h2 {
+            font: 700 20px "Dancing Script",cursive;
+            text-transform: none;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: 400 20px "Georgia";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        h3.criteria {
+            font: 400 16px "Georgia";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 20px;
+            font-size: 14px;
+        }
+        label {
+            font: bold 14px "Georgia";
+        }
+    }
+    .html-block {
+        font-size: 14px;
+        line-height: 24px;
+    }
     .panel-left {
         background-image: url('/img/themes/script_left.jpg');
     }
@@ -243,6 +848,61 @@
 }
 
 #theme-13 {
+    font: normal 16px Dosis;
+
+    a {
+        color: #0060bf;
+        font-weight: 400;
+        font-family: Dosis;
+    }
+    .page-title {
+        h1 {
+            font: 700 55px "Dosis",sans-serif;
+            text-shadow: -2px -2px 0 #ffe612,2px -2px 0 #ffe612,-2px 2px 0 #ffe612,2px 2px 0 #ffe612;
+            color: #f4080b;
+            text-transform: none;
+            text-align: center;
+        }
+    }
+    .page-summary {
+        font: normal 18px Dosis
+    }
+
+    .heading-block {
+        h1 {
+            font: bold 24px Dosis;
+            text-transform: none;
+        }
+        h2 {
+            font: bold 20px Dosis;
+            text-transform: none;
+        }
+    }
+    .badge-block {
+        h3.badge-name {
+            font: 300 30px "Dosis";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        h3.criteria {
+            font: 300 20px "Dosis";
+            text-transform: uppercase;
+            color: #000000;
+        }
+        .description {
+            line-height: 24px;
+            font: normal 16px "Dosis";
+        }
+        label {
+            font: bold 16px "Dosis";
+            color: #000000;
+        }
+    }
+    .html-block {
+        font: normal 16px Dosis;
+        line-height: 24px;
+    }
+
     .panel-left {
         background-image: url('/img/themes/lego_left.png');
     }
@@ -253,7 +913,7 @@
 
 .file-block {
     .attachment {
-        margin-left: 15px;
+        margin-right: 15px;
     }
 }
 
