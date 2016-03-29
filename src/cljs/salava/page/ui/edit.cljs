@@ -185,21 +185,41 @@
               :value     content
               :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
 
-(defn init-editor [block-atom element-id]
-  (let [editor (js/SimpleMDE. (js-obj "element" (.getElementById js/document element-id)
-                                      "toolbar" simplemde-toolbar))]
-    (.value editor (get @block-atom :content ""))
-    (.codemirror.on editor "change" (fn []
-                                      (update-block-value block-atom :content (.value editor))))))
+(defn save-editor-content [block-atom]
+  (if-let [editor (aget js/CKEDITOR "instances" "ckeditor")]
+    (swap! block-atom assoc :content (.getData editor)))
+  (m/close-modal!))
+
+(defn editor-modal-content [block-atom]
+  [:div
+   [:div.modal-header
+    [:button {:class "close" :type "button" :data-dismiss "modal" :aria-label "OK"}
+     [:span {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    [:h4.modal-title (t :page/Editblockcontent)]]
+   [:div.modal-body
+    [:textarea {:name "ckeditor"}]]
+   [:div.modal-footer
+    [:button {:class "btn btn-primary" :type "button" :on-click #(save-editor-content block-atom)}
+     (t :core/Save)]]])
+
+(defn editor-modal [block-atom]
+  (create-class {:component-did-mount (fn []
+                                        (js/CKEDITOR.replace "ckeditor")
+                                        (.setData (aget js/CKEDITOR "instances" "ckeditor") (:content @block-atom)))
+                 :reagent-render      (fn [] (editor-modal-content block-atom))}))
 
 (defn edit-block-html [block-atom]
-  (let [element-id (str "editor_" (:key @block-atom))]
-    (create-class {:component-did-mount #(init-editor block-atom element-id)
-                   :reagent-render       (fn []
-                                          [:div.form-group
-                                           [:div.col-md-12
-                                            [:textarea {:class "form-control"
-                                                        :id    element-id}]]])})))
+  [:div.form-group
+   [:div.col-md-12
+    [:div {:class         (str "html-block-content" (if (:hover @block-atom) " html-block-content-hover"))
+           :on-click      #(m/modal! [editor-modal block-atom] {:size :lg})
+           :on-mouse-over #(swap! block-atom assoc :hover true)
+           :on-mouse-out  #(swap! block-atom assoc :hover false)}
+     (if (:hover @block-atom)
+       [:i {:class "edit-icon fa fa-pencil-square-o fa-2x"}])
+     (if (empty? (:content @block-atom))
+       [:div.default-content (t :page/Clickheretoaddsomecontent)]
+       [:div {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}])]]])
 
 (defn block-type [block-atom]
   (let [type (:type @block-atom)]
@@ -303,7 +323,6 @@
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-edit"}
-     [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) next-url))]
      [page-form state]]))
@@ -324,7 +343,6 @@
                             :id id}
                      :badges []
                      :tags []})]
-
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))

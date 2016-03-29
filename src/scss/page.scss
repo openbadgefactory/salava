@@ -113,6 +113,28 @@
         position: absolute;
         z-index: 1;
     }
+    .html-block-content {
+        min-height: 60px;
+        position: relative;
+        padding: 15px;
+        cursor: pointer;
+        min-width: 100px;
+        border: 2px solid #ffffff;
+        .edit-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+    }
+    .html-block-content-hover {
+        border: 2px dashed #000000;
+        opacity: 0.4;
+        color: #000000;
+    }
+    .default-content {
+        color: #7f7179;
+        font-size: 16px;
+    }
 }
 
 .remove-file-icon {
