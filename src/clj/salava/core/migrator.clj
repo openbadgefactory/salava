@@ -6,15 +6,18 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.util :refer [public-path]]))
 
-(def dev-config (-> (clojure.java.io/resource "config/core.edn") slurp read-string))
+(defn read-config [path]
+  (-> (clojure.java.io/file (str path "/core.edn")) slurp read-string))
 
-(def test-config (-> (clojure.java.io/resource "test_config/core.edn") slurp read-string))
+(defn dev-config  [] (read-config "resources/config"))
+(defn test-config [] (read-config "resources/test_config"))
 
-(def plugins (cons :core (:plugins dev-config)))
 
-(def dev-ds (:datasource dev-config))
+(defn plugins [] (cons :core (:plugins (dev-config))))
 
-(def test-ds (:datasource test-config))
+(defn dev-ds [] (:datasource (dev-config)))
+
+(defn test-ds [] (:datasource (test-config)))
 
 (defn jdbc-uri [source]
   (str "jdbc:" (:adapter source "mysql") "://"
@@ -93,12 +96,13 @@
 
 (defn run-test-reset []
   (doseq [plugin plugins]
-    (run-reset test-ds plugin)))
+    (run-reset (test-ds) plugin)))
 
 
-(defn migrate-all [config]
-  (doseq [plugin (:plugins config)]
-    (migratus/migrate (migratus-config (:datasource config) plugin))))
+(defn migrate-all [config-path]
+  (let [config (read-config config-path)]
+    (doseq [plugin (:plugins config)]
+      (migratus/migrate (migratus-config (:datasource config) plugin)))))
 
 ;;;
 
@@ -106,27 +110,27 @@
 (defn migrate [& args]
   (doseq [plugin (or args plugins)]
     (log/info "running migrations for plugin" (name plugin))
-    (migratus/migrate (migratus-config dev-ds plugin)))
+    (migratus/migrate (migratus-config (dev-ds) plugin)))
   (System/exit 0))
 
 (defn rollback [plugin]
-  (when-let [id (last (applied-migrations dev-ds plugin))]
+  (when-let [id (last (applied-migrations (dev-ds) plugin))]
     (log/info "rolling back latest migration for plugin" (name plugin))
     (run-down dev-ds plugin [id]))
   (System/exit 0))
 
 (defn remove-plugin [plugin]
   (log/info "rolling back all migrations for plugin" (name plugin))
-  (let [applied (reverse (applied-migrations dev-ds plugin))]
-    (run-down dev-ds plugin applied))
+  (let [applied (reverse (applied-migrations (dev-ds) plugin))]
+    (run-down (dev-ds) plugin applied))
   (System/exit 0))
 
 (defn seed [& args]
   (doseq [plugin (or args plugins)]
-    (run-seed dev-ds plugin))
+    (run-seed (dev-ds) plugin))
   (System/exit 0))
 
 (defn reset [& args]
   (doseq [plugin (or args plugins)]
-    (run-reset dev-ds plugin))
+    (run-reset (dev-ds) plugin))
   (System/exit 0))
