@@ -1,5 +1,6 @@
 (ns salava.page.ui.edit
   (:require [reagent.core :refer [atom cursor create-class]]
+            [reagent.session :as session]
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
@@ -15,13 +16,6 @@
 (defn random-key []
   (-> (make-random-uuid)
       (uuid-string)))
-
-(def simplemde-toolbar
-  (array "bold" "italic" "strikethrough" "|"
-         "heading-1" "heading-2" "heading-3" "|"
-         "quote" "unordered-list" "ordered-list" "|"
-         "link" "image" "horizontal-rule" "|"
-         "preview" "side-by-side" "fullscreen"))
 
 (defn block-specific-values [{:keys [type content badge tag format sort files]}]
   (case type
@@ -204,7 +198,10 @@
 
 (defn editor-modal [block-atom]
   (create-class {:component-did-mount (fn []
-                                        (js/CKEDITOR.replace "ckeditor")
+                                        (.getScript (js* "$") "/js/ckeditor/modal-fix.js")
+                                        (js/CKEDITOR.replace "ckeditor"
+                                                             (js-obj "language" (name (session/get-in [:user :language] :en))
+                                                                     "filebrowserBrowseUrl" "/file/browser"))
                                         (.setData (aget js/CKEDITOR "instances" "ckeditor") (:content @block-atom)))
                  :reagent-render      (fn [] (editor-modal-content block-atom))}))
 
@@ -346,3 +343,4 @@
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
+

@@ -19,6 +19,15 @@
 
     (context "/file" []
              (layout/main ctx "/upload")
+             (layout/main ctx "/browser/:editor/:callback/:lang")
+
+             (GET "/browser" []
+                  :summary "View user files"
+                  :query-params [CKEditor :- String
+                                 CKEditorFuncNum :- String
+                                 langCode :- String]
+                  (temporary-redirect (str "/file/browser/" CKEditor"/" CKEditorFuncNum"/" langCode)))
+
              (GET "/:folder1/:folder2/:folder3/:folder4/:filename" []
                   :path-params [folder1 :- s/Str, folder2 :- s/Str, folder3 :- s/Str, folder4 :- s/Str, filename :- s/Str]
                   (let [path (str "file/" folder1 "/" folder2 "/" folder3 "/"folder4 "/" filename)

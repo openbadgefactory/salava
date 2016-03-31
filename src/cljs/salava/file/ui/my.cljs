@@ -10,8 +10,7 @@
             [salava.core.ui.grid :as g]
             [salava.core.ui.tag :as tag]
             [salava.core.i18n :refer [t]]
-            [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.time :refer [date-from-unix-time]]))
 
 (defn upload-modal [status title message]
   [:div
