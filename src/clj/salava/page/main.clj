@@ -3,6 +3,7 @@
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [slingshot.slingshot :refer :all]
+            [autoclave.core :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -134,6 +135,36 @@
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
     (save-files-block-content ctx (assoc block :id block-id))))
 
+(defn sanitize-html [content]
+  (let [policy (html-policy :allow-elements ["a" "big" "blockquote" "br" "caption" "cite" "code" "del" "div"
+                                             "em" "h1" "h2" "h3" "hr" "img" "ins" "kbd" "li" "ol" "p" "pre"
+                                             "q" "s" "samp" "small" "span" "strong" "table" "tbody" "td" "tfoot"
+                                             "th" "thead" "tr" "tt" "ul" "var"]
+                            :allow-attributes ["align" :on-elements ["table"]]
+                            :allow-attributes ["alt" :on-elements ["img"]]
+                            :allow-attributes ["border" :on-elements ["table"]]
+                            :allow-attributes ["bordercolor" :on-elements ["table"]]
+                            :allow-attributes ["cellpadding" :on-elements ["table"]]
+                            :allow-attributes ["cellspacing" :on-elements ["table"]]
+                            :allow-attributes ["colspan" :on-elements ["td" "th"]]
+                            :allow-attributes ["data-cke-realelement" :on-elements ["img"]]
+                            :allow-attributes ["dir" :on-elements ["span"]]
+                            :allow-attributes ["href" :on-elements ["a"]]
+                            :allow-attributes ["id" :on-elements ["a"]]
+                            :allow-attributes ["name" :on-elements ["a"]]
+                            :allow-attributes ["onclick" :on-elements ["a"]]
+                            :allow-attributes ["rowspan" :on-elements ["td" "th"]]
+                            :allow-attributes ["scope" :on-elements ["th" "td" "tr"]]
+                            :allow-attributes ["src" :on-elements ["img"]]
+                            :allow-attributes ["summary" :on-elements ["table"]]
+                            :allow-attributes ["target" :on-elements ["a"]]
+                            :allow-attributes ["rowspan" :on-elements ["td" "th"]]
+                            :allow-attributes ["title" :on-elements ["img"]]
+                            :allow-standard-url-protocols
+                            :require-rel-nofollow-on-links
+                            :allow-styling)]
+    (html-sanitize policy content)))
+
 (defn save-page-content! [ctx page-id page-content user-id]
   (try+
     (if-not (page-owner? ctx page-id user-id)
@@ -162,9 +193,10 @@
                       (if id
                         (update-badge-block! block (get-db ctx))
                         (insert-badge-block! block (get-db ctx))))
-            "html" (if id
-                     (update-html-block! block (get-db ctx))
-                     (insert-html-block! block (get-db ctx)))
+            "html" (let [sanitized-block (update block :content sanitize-html)]
+                     (if id
+                       (update-html-block! sanitized-block (get-db ctx))
+                       (insert-html-block! sanitized-block (get-db ctx))))
             "file" (when (= (->> (:files block)
                                  (filter (fn [x] (some #(= x %) file-ids)))
                                  count)
