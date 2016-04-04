@@ -45,12 +45,12 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
+SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, show_evidence, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
        JOIN user AS u ON (u.id = badge.user_id)
-       WHERE badge.id = :id
+       WHERE badge.id = :id AND badge.deleted = 0
 
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (badge_id, tag)
@@ -123,7 +123,7 @@ SELECT user_id FROM badge WHERE id = :id
 --get badge congratulation
 SELECT badge_id, user_id, ctime FROM badge_congratulation WHERE badge_id = :badge_id AND user_id = :user_id
 
---name: insert-badge-congratulation!
+--name: insert-badge-congratulation<!
 --add new badge congratulation
 INSERT INTO badge_congratulation (badge_id, user_id, ctime) VALUES (:badge_id, :user_id, UNIX_TIMESTAMP())
 

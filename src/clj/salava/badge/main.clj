@@ -8,7 +8,8 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest]]
-            [salava.badge.assertion :refer [fetch-json-data]]))
+            [salava.badge.assertion :refer [fetch-json-data]]
+            [user :refer [test-mode?]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -93,7 +94,7 @@
 (defn check-badge-revoked
   "Check if badge assertion url exists and set badge re"
   [ctx badge-id init-revoked? assertion-url last-checked]
-  (if (and (not init-revoked?) (or (nil? last-checked) (< last-checked (- (unix-time) (* 2 24 60 60)))) assertion-url)
+  (if (and (not init-revoked?) (or (nil? last-checked) (< last-checked (- (unix-time) (* 2 24 60 60)))) assertion-url (not @test-mode?))
     (let [assertion (fetch-json-data assertion-url)
           revoked? (contains? assertion :error)]
       (update-revoked! {:revoked revoked? :id badge-id} (get-db ctx))
@@ -283,9 +284,16 @@
 (defn congratulate!
   "User congratulates badge receiver"
   [ctx badge-id user-id]
-  (let [congratulation-exists (select-badge-congratulation {:badge_id badge-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
-    (if (empty? congratulation-exists)
-      (insert-badge-congratulation! {:badge_id badge-id :user_id user-id} (get-db ctx)))))
+  (try+
+    (let [congratulation (select-badge-congratulation {:badge_id badge-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
+      (if congratulation
+        (throw+ "User have congratulated owner already"))
+      (if (badge-owner? ctx badge-id user-id)
+        (throw+ "User cannot congratulate himself"))
+      (insert-badge-congratulation<! {:badge_id badge-id :user_id user-id} (get-db ctx))
+      {:status "success" :message ""})
+    (catch Object _
+      {:status "error" :message _})))
 
 (defn badge-settings
   "Get badge settings"
@@ -300,9 +308,9 @@
   [ctx badge-id user-id visibility evidence-url rating tags]
   (if (badge-owner? ctx badge-id user-id)
     (let [data {:id          badge-id
-               :visibility   visibility
-               :evidence_url evidence-url
-               :rating       rating}]
+                :visibility   visibility
+                :evidence_url evidence-url
+                :rating       rating}]
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id))))
 
@@ -315,10 +323,14 @@
 (defn delete-badge!
   "Set badge deleted and delete tags"
   [ctx badge-id user-id]
-  (when (badge-owner? ctx badge-id user-id)
+  (try+
+    (if-not (badge-owner? ctx badge-id user-id)
+      (throw+ "User does not own this badge"))
     (jdbc/with-db-transaction
       [tr-cn (get-datasource ctx)]
-      (delete-badge-with-db! {:connection tr-cn} badge-id))))
+      (delete-badge-with-db! {:connection tr-cn} badge-id))
+    {:status "success" :message "Badge deleted"}
+    (catch Object _ {:status "error" :message ""})))
 
 (defn badges-images-names
   "Get badge images and names. Return a map."

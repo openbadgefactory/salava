@@ -74,6 +74,12 @@ Open Badge Passport is a free service developed by Discendum, where the user can
          :revocation_list_url nil
          }
   }
+  {
+   :table "badge_congratulation"
+   :data {
+          :badge_id 1
+          :user_id 3
+          :ctime 1459763679}}
 
  {
   :table "badge"

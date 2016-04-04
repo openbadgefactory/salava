@@ -84,11 +84,12 @@
                    (ok (str (b/toggle-show-evidence! ctx badgeid show_evidence (:id current-user)))))
 
              (POST "/congratulate/:badgeid" []
+                   :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
                    :path-params [badgeid :- Long]
                    :summary "Congratulate user who received a badge"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (b/congratulate! ctx badgeid (:id current-user)))))
+                   (ok (b/congratulate! ctx badgeid (:id current-user))))
 
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
@@ -142,11 +143,12 @@
                    (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
 
              (DELETE "/:badgeid" []
+                     :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
                      :path-params [badgeid :- Long]
                      :summary "Delete badge"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     (ok (str (b/delete-badge! ctx badgeid (:id current-user)))))
+                     (ok (b/delete-badge! ctx badgeid (:id current-user))))
 
              (GET "/stats" []
                   :return schemas/BadgeStats

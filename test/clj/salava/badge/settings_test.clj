@@ -11,6 +11,8 @@
    :evidence-url "http://example.com/evidence"
    :visibility "internal"})
 
+(def badge-to-delete 1)
+
 (def badge-id 2)
 
 (def badge-not-owned-by-user 3)
@@ -68,6 +70,29 @@
                status => 200)
              (let [{:keys [status]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :tags ["first tag" "second tag"]))]
                status => 200))
+
+       (logout!))
+
+(facts "about deleting a badge"
+       (fact "user must be logged in to delete a badge"
+             (:status (test-api-request :delete (str "/badge/" badge-to-delete))) => 401)
+
+       (apply login! (test-user-credentials test-user))
+
+       (fact "user must be the owner of the badge"
+             (let [{:keys [status body]} (test-api-request :delete (str "/badge/" badge-not-owned-by-user))]
+               status => 200
+               (:status body) => "error"))
+
+       (test-api-request :delete (str "/badge/" badge-to-delete))
+
+       (fact "badge can be deleted"
+             (let [{:keys [status body]} (test-api-request :delete (str "/badge/" badge-to-delete))]
+               status => 200
+               (:status body) => "success"))
+
+       (fact "badge is deleted"
+             (:status (test-api-request :get (str "/badge/info/" badge-to-delete))) => 401)
 
        (logout!))
 
