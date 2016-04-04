@@ -1,6 +1,7 @@
 (ns salava.badge.upload-test
   (:require [clojure.java.io :as io]
             [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request test-upload login! logout! test-user-credentials]]))
 
 (def test-user 1)
@@ -34,5 +35,6 @@
                (:message body) => "Error while uploading badge"
                (:reason body) => "Empty metadata"))
 
-       (logout!)
-       )
+       (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

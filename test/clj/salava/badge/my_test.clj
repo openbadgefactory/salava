@@ -1,5 +1,6 @@
 (ns salava.badge.my-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request test-user-credentials login! logout!]]))
 
 (def test-user 1)
@@ -35,5 +36,6 @@
              (let [{:keys [status body]} (test-api-request :get (str "/badge"))]
                status => 200
                (count body) => 0))
-
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

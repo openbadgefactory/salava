@@ -15,7 +15,7 @@
    :data {
           :user_id 1
           :name "Sample document"
-          :path "file/3/9/f/c/39fcd778de26be5d2c95a0adc8e945354003379b964f31dca5d5d0edd927128.doc"
+          :path "file/0/3/9/f/039fcd778de26be5d2c95a0adc8e945354003379b964f31dca5d5d0edd927128.doc"
           :mime_type "application/msword"
           :size 9216
           :ctime 1449151320

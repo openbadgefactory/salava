@@ -1,5 +1,6 @@
 (ns salava.badge.info-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request login! logout! test-user-credentials]]))
 
 (def test-user 1)
@@ -25,8 +26,8 @@
 
        (fact "badge does not exist"
              (let [{:keys [status body]} (test-api-request :get "/badge/info/99")]
-               status => 200
-               body => nil))
+               status => 401
+               body => ""))
 
        (fact "badge visibility can be updated. Value must be: private, internal or public"
              (let [{:keys [status body]} (test-api-request :post (str "/badge/set_visibility/" badge-id) {})]
@@ -57,3 +58,5 @@
                (:show_recipient_name body) => true))
 
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

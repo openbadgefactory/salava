@@ -16,20 +16,16 @@
        (apply login! (test-user-credentials test-user))
 
        (fact "user cannot view other user's page"
-             (let [{:keys [status body]} (test-api-request :get (str "/page/view/" page-owned-by-another-user))]
-               status => 500
-               body => "{\"errors\":\"(not (map? nil))\"}"))
+             (:status (test-api-request :get (str "/page/view/" page-owned-by-another-user))) => 401)
 
        (let [{:keys [status body]} (test-api-request :get (str "/page/view/" page-id))]
          (fact "page exists"
                status => 200
                (nil? body) => false)
-         (fact "page has valid attributes" (keys body) => (just [:description :tags :first_name :last_name :password :name :visible_before :visible_after :theme :ctime :id :padding :border :blocks :user_id :visibility :mtime] :in-any-order)))
+         (fact "page has valid attributes" (keys (:page body)) => (just [:description :tags :first_name :password :name :owner? :visible_before :visible_after :theme :ctime :id :padding :last_name :blocks :user_id :border :visibility :mtime] :in-any-order)))
 
-       (let [{:keys [status body]} (test-api-request :get (str "/page/view/99"))]
-         (fact "page does not exist"
-               status => 500
-               body => "{\"errors\":\"(not (map? nil))\"}"))
+       (fact "page does not exist"
+             (:status (test-api-request :get (str "/page/view/99"))) => 401)
 
        (logout!))
 

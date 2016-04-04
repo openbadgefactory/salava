@@ -1,5 +1,6 @@
 (ns salava.page.my-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request login! logout! test-user-credentials]]
             [salava.core.i18n :refer [t]]))
 
@@ -90,3 +91,5 @@
                (count body) => 2))
 
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

@@ -6,6 +6,7 @@
          :last_name "User"
          :role "user"
          :country "FI"
+         :profile_visibility "public"
          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
          :ctime 1438954261
          :mtime 1438954261
@@ -38,6 +39,7 @@
           :last_name "User"
           :role "user"
           :country "US"
+          :profile_visibility "public"
           :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
           :ctime 1450172372
           :mtime 1450172372
@@ -61,6 +63,7 @@
           :last_name "User"
           :role "user"
           :country "SE"
+          :profile_visibility "public"
           :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
           :ctime 1453812046
           :mtime 1453812046

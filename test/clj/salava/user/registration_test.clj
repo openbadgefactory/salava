@@ -1,5 +1,6 @@
 (ns salava.user.registration-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request]]))
 
 (def registration-data
@@ -44,3 +45,5 @@
              (let [{:keys [status body]} (test-api-request :post "/user/register" registration-data)]
                status => 200
                (:status body) => "error")))
+
+(migrator/reset-seeds (migrator/test-config))

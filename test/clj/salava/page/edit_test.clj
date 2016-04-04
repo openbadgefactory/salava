@@ -1,5 +1,6 @@
 (ns salava.page.edit-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [clojure.string :refer [join]]
             [salava.test-utils :refer [test-api-request login! logout! test-user-credentials]]))
 
@@ -89,12 +90,12 @@
              (:status (test-api-request :post (str "/page/save_content/" page-id) sample-page-content)) => 200)
 
        (fact "existing blocks can be editied"
-             (let [blocks (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks)
+             (let [blocks (-> (test-api-request :get (str "/page/view/" page-id)) :body :page :blocks)
                    altered-block-content "Altered block title"
                    block-to-edit (-> blocks first (assoc :content altered-block-content) (dissoc :page_id :block_order))]
                (:status (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [block-to-edit]))) => 200
                (let [{:keys [body status]} (test-api-request :get (str "/page/view/" page-id))
-                     altered-block (->> body :blocks (filter #(= (:id %) (:id block-to-edit))) first)]
+                     altered-block (->> body :page :blocks (filter #(= (:id %) (:id block-to-edit))) first)]
                  status => 200
                  (:content altered-block) => altered-block-content)))
 
@@ -119,10 +120,10 @@
                body =>   "{\"errors\":{\"blocks\":[{\"format\":\"(not (#{\\\"long\\\" \\\"short\\\"} \\\"not-valid\\\"))\",\"badge_id\":\"(not (integer? \\\"not-valid\\\"))\"}]}}")
              (let [{:keys [status]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "badge" :format "long" :badge_id 99}]))]
                status => 200
-               (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks count) => 0)
+               (-> (test-api-request :get (str "/page/view/" page-id)) :body :page :blocks count) => 0)
              (let [{:keys [status]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "badge" :format "long" :badge_id 1}]))]
                status => 200
-               (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks count) => 1))
+               (-> (test-api-request :get (str "/page/view/" page-id)) :body :page :blocks count) => 1))
 
        (fact "saving a html block requires content"
              (let [{:keys [status body]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "html"}]))]
@@ -141,10 +142,10 @@
                status => 200)
              (let [{:keys [status]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "file" :files [1 99]}]))]
                status => 200
-               (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks count) => 0)
+               (-> (test-api-request :get (str "/page/view/" page-id)) :body :page :blocks count) => 0)
              (let [{:keys [status]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "file" :files [1]}]))]
                status => 200
-               (-> (test-api-request :get (str "/page/view/" page-id)) :body :blocks count) => 1))
+               (-> (test-api-request :get (str "/page/view/" page-id)) :body :page :blocks count) => 1))
 
        (fact "saving a badge-tag block requires tag, format and sort parameters"
              (let [{:keys [status body]} (test-api-request :post (str "/page/save_content/" page-id) (assoc sample-page-content :blocks [{:type "tag"}]))]
@@ -165,3 +166,5 @@
                status => 200))
 
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

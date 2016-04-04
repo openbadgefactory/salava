@@ -297,7 +297,7 @@ Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käytt
           :expires_on nil
           :evidence_url nil
           :status "accepted"
-          :visibility "public"
+          :visibility "internal"
           :show_recipient_name 1
           :rating nil
           :ctime 1453975481

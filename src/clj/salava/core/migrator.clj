@@ -39,6 +39,11 @@
   (doseq [seed (-> data-file slurp read-string)]
     (jdbc/insert! (jdbc-uri conf) (:table seed) (:data seed))))
 
+(defn seed-delete [conf data-file]
+  (doseq [seed (-> data-file slurp read-string)]
+    (jdbc/delete! (jdbc-uri conf) (:table seed) [])
+    (jdbc/execute! (jdbc-uri conf) [(str "ALTER TABLE " (:table seed) " AUTO_INCREMENT = 1")])))
+
 
 (defn copy-file [source-path dest-path]
   (do
@@ -81,6 +86,14 @@
     (log/info "running seed functions for plugin" (name plugin))
     (seed-insert conf data-file)
     (seed-copy conf plugin)))
+
+(defn reset-seeds [conf]
+  (doseq [plugin (plugins)]
+    (when-let [data-file (io/resource (str (seed-dir plugin) "/data.edn"))]
+      (log/info "running seed functions for plugin" (name plugin))
+      (seed-delete conf data-file)
+      (seed-insert conf data-file)
+      (seed-copy conf plugin))))
 
 
 (defn run-reset [conf plugin]

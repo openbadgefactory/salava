@@ -1,5 +1,6 @@
 (ns salava.page.settings-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request login! logout! test-user-credentials]]
             [salava.core.helper :refer [dump]]))
 
@@ -42,7 +43,7 @@
        (fact "visibility, password and tags are required"
              (let [{:keys [status body]} (test-api-request :post (str "/page/save_settings/" page-id) {})]
                status => 400
-               body => "{\"errors\":{\"password\":\"missing-required-key\",\"visibility\":\"missing-required-key\",\"tags\":\"missing-required-key\"}}"))
+               body => "{\"errors\":{\"tags\":\"missing-required-key\",\"visibility\":\"missing-required-key\",\"password\":\"missing-required-key\"}}"))
 
        (fact "visibility must be valid"
              (let [{:keys [status body]} (test-api-request :post (str "/page/save_settings/" page-id) {:password "" :tags [] :visibility "not-valid"})]
@@ -76,3 +77,5 @@
                (:visibility body) => "private"))
 
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

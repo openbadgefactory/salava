@@ -1,5 +1,6 @@
 (ns salava.badge.settings-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request login! logout! test-user-credentials]]))
 
 (def test-user 1)
@@ -19,7 +20,6 @@
              (:status (test-api-request :get (str "/badge/settings/" badge-id))) => 401
              (:status (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating 0))) => 401)
 
-
        (apply login! (test-user-credentials test-user))
 
        (fact "badge settings can be accessed"
@@ -37,18 +37,18 @@
        (fact "when editing badge settings: tags, rating, evidence URL and visibility are required"
              (let [{:keys [status body]} (test-api-request :post (str "/badge/save_settings/" badge-id) {})]
                status => 400
-               body => "{\"errors\":{\"tags\":\"missing-required-key\",\"rating\":\"missing-required-key\",\"evidence-url\":\"missing-required-key\",\"visibility\":\"missing-required-key\"}}"))
+               body => "{\"errors\":{\"visibility\":\"missing-required-key\",\"evidence-url\":\"missing-required-key\",\"rating\":\"missing-required-key\",\"tags\":\"missing-required-key\"}}"))
 
-       (fact "badge rating must be between 0-5"
+       (fact "badge rating must be between 0-50"
              (let [{:keys [status body]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating 0))]
                status => 400
-               body => "{\"errors\":{\"rating\":\"(not (#{0.5 4.5 2.5 1.5 3.5 1 4 3 2 5} 0))\"}}")
-             (let [{:keys [status body]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating 6))]
+               body => "{\"errors\":{\"rating\":\"(not (#{20 15 50 40 25 35 5 45 30 10} 0))\"}}")
+             (let [{:keys [status body]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating 60))]
                status => 400
-               body => "{\"errors\":{\"rating\":\"(not (#{0.5 4.5 2.5 1.5 3.5 1 4 3 2 5} 6))\"}}")
+               body => "{\"errors\":{\"rating\":\"(not (#{20 15 50 40 25 35 5 45 30 10} 60))\"}}")
              (let [{:keys [status]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating nil))]
                status => 200)
-             (let [{:keys [status]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating 3.5))]
+             (let [{:keys [status]} (test-api-request :post (str "/badge/save_settings/" badge-id) (assoc badge-settings :rating 35))]
                status => 200))
 
        (fact "badge visibility value must be: public, internal or private"
@@ -70,3 +70,5 @@
                status => 200))
 
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

@@ -1,5 +1,6 @@
 (ns salava.user.reset-password-test
   (:require [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request login! logout! test-user-credentials]]))
 
 (def expired-activation-data
@@ -47,3 +48,5 @@
              (let [{:keys [status body]} (test-api-request :post "/user/activate" valid-activation-data)]
                status => 200
                (:status body) => "success")))
+
+(migrator/reset-seeds (migrator/test-config))

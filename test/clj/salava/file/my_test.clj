@@ -2,18 +2,11 @@
   (:require [clojure.java.io :as io]
             [slingshot.slingshot :refer :all]
             [midje.sweet :refer :all]
+            [salava.core.migrator :as migrator]
             [salava.test-utils :refer [test-api-request test-upload login! logout! test-user-credentials]]
             [salava.core.i18n :refer [t]]))
 
 (def test-user 1)
-
-(defn file-exists? [path]
-  (try+
-    (-> path
-        io/resource
-        io/as-file
-        .exists)
-    (catch Exception _)))
 
 (facts "about accessin user's files"
        (fact "user must be logged in to access files"
@@ -78,7 +71,7 @@
                (keys upload-data) => (just [:id :name :path :mime_type :size :ctime :mtime :tags] :in-any-order)
                id => 4
                name => "sample.doc"
-               path => "file/3/9/f/c/39fcd778de26be5d2c95a0adc8e945354003379b964f31dca5d5d0edd927128.doc"
+               path => "file/0/3/9/f/039fcd778de26be5d2c95a0adc8e945354003379b964f31dca5d5d0edd927128.doc"
                mime_type => "application/msword"
                size => 9216))
 
@@ -113,16 +106,12 @@
                (:status body) => "success"
                (:message body) => (t :file/Filedeleted)))
 
-       (fact "file still exists"
-             (file-exists? "public/file/3/9/f/c/39fcd778de26be5d2c95a0adc8e945354003379b964f31dca5d5d0edd927128.doc") => true)
-
        (fact "another file instance can be deleted"
              (let [{:keys [body status]} (test-api-request :delete "/file/2")]
                status => 200
                (:status body) => "success"
                (:message body) => (t :file/Filedeleted)))
 
-       (fact "file is actually deleted"
-             (file-exists? "public/file/3/9/f/c/39fcd778de26be5d2c95a0adc8e945354003379b964f31dca5d5d0edd927128.doc") => nil)
-
        (logout!))
+
+(migrator/reset-seeds (migrator/test-config))

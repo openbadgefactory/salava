@@ -16,16 +16,15 @@
        (fact "user has a badge which can be exported"
              (let [{:keys [status body]} (test-api-request :get "/badge/export")]
                status => 200
-               (count body) => 1))
+               (count (:badges body)) => 0))
 
        (logout!)
-
 
        (apply login! (test-user-credentials user-with-no-badges))
 
        (fact "user does not have a badge which can be exported"
              (let [{:keys [status body]} (test-api-request :get "/badge/export")]
                status => 200
-               body => []))
+               (:badges body) => []))
 
        (logout!))
