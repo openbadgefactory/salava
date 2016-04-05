@@ -1,0 +1,16 @@
+{:max-size 52428800 ;50MB
+ :allowed-file-types {"jpg " "image/jpeg"
+                      "jpeg" "image/jpeg"
+                      "gif" "image/gif"
+                      "png" "image/png"
+                      "txt" "text/plain"
+                      "doc" "application/msword"
+                      "docx" "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      "xls" "application/vnd.ms-excel"
+                      "xlsx" "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                      "pdf" "application/pdf"
+                      "ppt" "application/vnd.ms-powerpoint"
+                      "pptx" "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                      "odt" "application/vnd.oasis.opendocument.text"
+                      "ods" "application/vnd.oasis.opendocument.spreadsheet"
+                      "odp" "application/vnd.oasis.opendocument.presentation"}}
