@@ -21,12 +21,17 @@
 (defn save-file-tags!
   "Save tags associated to file. Delete existing tags."
   [ctx file-id user-id tags]
-  (if (file-owner? ctx file-id user-id)
+  (try+
+    (if-not (file-owner? ctx file-id user-id)
+      (throw+ "User does not own this file"))
     (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
       (delete-file-tags! {:file_id file-id} (get-db ctx))
       (doall (for [tag valid-tags]
                (replace-file-tag! {:file_id file-id :tag tag}
-                                  (get-db ctx)))))))
+                                  (get-db ctx))))
+      {:status "success"})
+    (catch Object _
+      {:status "error"})))
 
 (defn save-file!
   "Save file info to database"

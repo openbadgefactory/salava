@@ -75,9 +75,10 @@
                    (ok (u/upload-file ctx (:id current-user) file true)))
 
              (POST "/save_tags/:fileid" []
+                   :return {:status (s/enum "success" "error")}
                    :path-params [fileid :- Long]
-                   :body-params [tags :- [s/Str]]
+                   :body-params [tags :- (s/both [s/Str] (s/pred seq))]
                    :summary "Save file tags"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (f/save-file-tags! ctx fileid (:id current-user) tags)))))))
+                   (ok (f/save-file-tags! ctx fileid (:id current-user) tags))))))
