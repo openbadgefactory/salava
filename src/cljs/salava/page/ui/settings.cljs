@@ -68,7 +68,7 @@
         [:div.form-group
          [:input {:class    "form-control"
                   :type     "text"
-                  :disabled true
+                  :read-only true
                   :value    (str (session/get :site-url) "/page/view/" id)}]])
       (if (= @visibility-atom "password")
         [:div.form-group

@@ -32,17 +32,17 @@
     [:div.share-link
      [:a {:href "" :on-click #(reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed"))} (t :core/Embedcode)]]]
    (if (and public? (= "link" @link-or-embed-atom))
-     [:div [:input {:class "form-control" :disabled true :type "text" :value url}]])
+     [:div [:input {:class "form-control" :read-only true :type "text" :value url}]])
    (if (and public? (= "embed" @link-or-embed-atom))
      (if is-badge?
        [:div.form-horizontal
         [:div.form-group
          [:label.col-xs-3 (t :core/Alldetails) ":"]
-         [:div.col-xs-9 [:input {:class "form-control" :disabled true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]]
+         [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]]
         [:div.form-group
          [:label.col-xs-3 (t :core/Imageonly) ":"]
-         [:div.col-xs-9 [:input {:class "form-control" :disabled true :type "text" :value (str "<iframe width=\"90%\" height=\"320\" src=\""url"/embed/pic\" frameborder=\"0\"></iframe>")}]]]]
-       [:div [:input {:class "form-control" :disabled true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"\" frameborder=\"0\"></iframe>")}]]))])
+         [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"320\" src=\""url"/embed/pic\" frameborder=\"0\"></iframe>")}]]]]
+       [:div [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"\" frameborder=\"0\"></iframe>")}]]))])
 
 (defn share-buttons [url title public? is-badge? link-or-embed-atom]
   (create-class {:reagent-render      (fn [url title public? is-badge?]
