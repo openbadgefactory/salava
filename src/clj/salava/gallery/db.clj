@@ -109,7 +109,7 @@
      (p/page-badges ctx pages))))
 
 (defn public-pages
-  ""
+  "Return public pages visible in gallery. Pages can be searched with page owner's name and/or country"
   [ctx country owner]
   (let [where ""
         params []

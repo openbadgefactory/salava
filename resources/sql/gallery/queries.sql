@@ -15,7 +15,7 @@ SELECT country FROM user AS u
 -- name: select-page-countries
 SELECT country FROM user AS u
                LEFT JOIN page AS p ON p.user_id = u.id
-               WHERE p.visibility = "public" OR b.visibility = "internal"
+               WHERE p.visibility = "public" OR p.visibility = "internal"
                GROUP BY country
                ORDER BY country
 
