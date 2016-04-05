@@ -27,11 +27,12 @@
              (GET "/verify_email/:verification_key" []
                   :path-params [verification_key :- s/Str]
                   :summary "Confirm user email address"
-                  :auth-rules access/authenticated
                   :current-user current-user
-                  (do
-                    (u/verify-email-address ctx verification_key (:id current-user))
-                    (found "/user/edit/email-addresses"))))
+                  (if current-user
+                    (do
+                      (u/verify-email-address ctx verification_key (:id current-user))
+                      (found "/user/edit/email-addresses"))
+                    (found "/user/login"))))
 
     (context "/obpv1/user" []
              :tags ["user"]
