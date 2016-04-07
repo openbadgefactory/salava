@@ -26,4 +26,6 @@
 
  :mail-sender "sender@example.com"
 
- :data-dir "/path/to/data/directory"}
+ :data-dir "/path/to/data/directory"
+
+ :test-mode true}
