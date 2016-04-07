@@ -42,8 +42,15 @@
        [:div.form-group
         [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "current-password" :atom current-password-atom :password? true}]]
-        [:div.col-md-12 (t :user/Enteryourcurrentpassword)]]
+         [:input {:class       "form-control"
+                  :id          "input-current-password"
+                  :name        name
+                  :type        "password"
+                  :placeholder (t :user/Enteryourcurrentpassword)
+                  :read-only   true
+                  :on-focus    #(.removeAttribute (.-target %) "readonly")
+                  :on-change   #(reset! current-password-atom (.-target.value %))
+                  :value       @current-password-atom}]]]
 
        [:div.form-group
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]

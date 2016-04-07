@@ -30,13 +30,15 @@
        (t :user/Password)
        [:span.form-required " *"]]
       [:div.col-xs-9
-       [:input {:class "form-control"
-                :id "input-password"
-                :type "password"
-                :name "password"
-                :on-change #(reset! password-atom (.-target.value %))
+       [:input {:class       "form-control"
+                :id          "input-password"
+                :type        "password"
+                :name        "password"
+                :read-only   true
+                :on-change   #(reset! password-atom (.-target.value %))
+                :on-focus    #(.removeAttribute (.-target %) "readonly")
                 :placeholder (t :user/Tocancelaccountenterpassword)
-                :value @password-atom}]]]
+                :value       @password-atom}]]]
      [:button {:class    "btn btn-warning"
                :disabled (if-not (password-valid? @password-atom)
                            "disabled")
