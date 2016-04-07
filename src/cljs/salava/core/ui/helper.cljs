@@ -25,7 +25,7 @@
 (defn input-valid? [schema input]
   (try
     (s/validate schema input)
-    (catch js/Error e
+    (catch :default e
       false)))
 
 (defn set-meta-tags [title description image]
