@@ -57,9 +57,7 @@
      [:script {:type "text/javascript"} (context-js ctx)]]
     [:body
      [:div#app]
-     "<!--[if lt IE 10]>"
-     (include-js "/assets/es5-shim/es5-shim.js" "/assets/es5-shim/es5-sham.js")
-     "<![endif]-->"
+     (include-js "/assets/es6-shim/es6-shim.js" "/assets/es6-shim/es6-sham.js")
      (apply include-js (js-list ctx))
      (include-js "https://backpack.openbadges.org/issuer.js")]))
 

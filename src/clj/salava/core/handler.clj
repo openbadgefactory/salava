@@ -36,11 +36,11 @@
   (let [config (get-in ctx [:config :core])]
     (-> routes
         (ignore-trailing-slash)
+        (wrap-webjars)
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
                            (assoc-in [:session] false)))
-        (wrap-app-session config)
-        (wrap-webjars))))
+        (wrap-app-session config))))
 
 
 (defn handler [ctx]

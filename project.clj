@@ -58,6 +58,7 @@
                  [org.webjars/bootstrap "3.3.6"]
                  [org.webjars/font-awesome "4.5.0"]
                  [org.webjars/es5-shim "4.1.14"]
+                 [org.webjars/es6-shim "0.20.2"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
                  [org.clojure/tools.logging "0.3.1"]
