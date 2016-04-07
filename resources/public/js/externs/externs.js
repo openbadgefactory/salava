@@ -1,5 +1,5 @@
-var SimpleMDE = {};
-SimpleMDE.codemirror.on = function() {};
+var CKEDITOR = {};
+CKEDITOR.tools.callFunction = function() {};
 
-var OpenBadges = {}
+var OpenBadges = {};
 OpenBadges.issue = function() {};
