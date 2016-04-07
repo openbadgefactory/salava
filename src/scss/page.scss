@@ -91,6 +91,9 @@
     #buttons-right {
         text-align: right;
     }
+    .btn {
+        margin-bottom: 5px;
+    }
 }
 
 
@@ -936,6 +939,12 @@
 .file-block {
     .attachment {
         margin-right: 15px;
+    }
+    .file-block-image {
+        img {
+            max-width: 100%;
+            height: auto;
+        }
     }
 }
 
