@@ -32,7 +32,7 @@
                          [(str where " AND ic.name LIKE ?") (conj params (str "%" issuer-name "%"))]
                          [where params])
         [where params] (if-not (empty? recipient-name)
-                         [(str where " AND (u.first_name LIKE ? OR u.last_name LIKE ?)") (conj params (str recipient-name "%") (str recipient-name "%"))]
+                         [(str where " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?") (conj params (str "%" recipient-name "%"))]
                          [where params])
         [where params] (if (and (not (empty? issuer-name)) (empty? recipient-name)) ;if issuer name is present but recipient name is not, search also private badges
                          [where params]
@@ -117,7 +117,7 @@
                          [(str where " AND u.country = ?") (conj params country)]
                          [where params])
         [where params] (if-not (empty? owner)
-                         [(str where " AND (u.first_name LIKE ? OR u.last_name LIKE ?)") (conj params (str owner "%") (str owner "%"))]
+                         [(str where " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?") (conj params (str "%" owner "%"))]
                          [where params])
         query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
                     JOIN user AS u ON p.user_id = u.id
@@ -147,7 +147,7 @@
                          [(str where " AND country = ?") (conj params country)]
                          [where params])
         [where params] (if-not (empty? name)
-                         [(str where " AND (first_name LIKE ? OR last_name LIKE ?)") (conj params (str name "%") (str name "%"))]
+                         [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
                          [where params])
         having (if common_badges " HAVING common_badge_count > 0")
         query (str "SELECT id AS uid, first_name, last_name, country, profile_picture, ctime, (SELECT COUNT(DISTINCT badge_content_id) FROM badge WHERE user_id = uid AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()) AND badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE user_id = ? AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))) AS common_badge_count
