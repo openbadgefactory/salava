@@ -142,7 +142,7 @@
                          :type "radio"
                          :checked (= "internal" @visibility-atom)
                          :on-change #(reset! visibility-atom (.-target.value %))}]
-         (t :user/Visibleonlytoregeistered)]]
+         (t :user/Visibleonlytoregistered)]]
        [:div.radio
         [:label [:input {:name "visibility"
                          :value "public"
@@ -171,7 +171,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/user/edit/profile")
+    (str "/obpv1/user/edit/profile?_=" (.now js/Date))
     {:handler (fn [data]
                 (reset! state data))}))
 

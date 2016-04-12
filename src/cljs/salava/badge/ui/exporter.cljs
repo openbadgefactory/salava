@@ -130,7 +130,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/badge/export"
+    (str "/obpv1/badge/export?_=" (.now js/Date))
     {:handler (fn [{:keys [badges emails]} data]
                 (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
                   (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false)))}))

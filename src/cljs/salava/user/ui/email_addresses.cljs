@@ -121,7 +121,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/user/email-addresses/")
+    (str "/obpv1/user/email-addresses?_=" (.now js/Date))
     {:handler (fn [data]
                 (swap! state assoc :emails data))}))
 

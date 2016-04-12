@@ -54,7 +54,7 @@
 
 (defn show-settings-dialog [badge-id state]
   (ajax/GET
-    (str "/obpv1/badge/settings/" badge-id)
+    (str "/obpv1/badge/settings/" badge-id "?_=" (.now js/Date))
     {:handler (fn [data]
                 (swap! state assoc :badge-settings (hash-map :id badge-id
                                                              :visibility (:visibility data)
@@ -75,7 +75,7 @@
       [:div {:class (str "media-content " (if expired? "media-expired"))}
        (if image_file
          [:div.media-left
-          [:a {:href badge-link} [:img {:src (str "/" image_file)}]]])
+          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:href badge-link} name]]
@@ -100,7 +100,7 @@
                 [:a {:class "bottom-link" :href (str "/badge/info/" id)}
                  [:i {:class "fa fa-share-alt"}]
                  [:span (t :badge/Share)]]
-                [:a {:class "bottom-link pull-right" :href "" :on-click #(show-settings-dialog id state)}
+                [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
                  [:i {:class "fa fa-cog"}]
                  [:span (t :badge/Settings)]]])]]]))
 
@@ -205,7 +205,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/badge"
+    (str "/obpv1/badge?_=" (.now js/Date))
     {:handler (fn [data]
                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
                                    :pending (filter #(= "pending" (:status %)) data)

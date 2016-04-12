@@ -72,8 +72,8 @@
                  [:input {:type      "radio"
                           :name      "language"
                           :value     language
-                          :checked   (= @language-atom language)
-                          :on-click  #(reset! language-atom language)}]
+                          :default-checked   (= @language-atom language)
+                          :on-change  #(reset! language-atom language)}]
                  (t (keyword (str "core/" language)))]))]
        [:div.form-group
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
@@ -114,7 +114,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/user/edit/")
+    (str "/obpv1/user/edit?_=" (.now js/Date))
     {:handler (fn [data]
                 (reset! state (deep-merge initial-state (update-in data [:user] dissoc :id))))}))
 

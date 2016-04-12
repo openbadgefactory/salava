@@ -123,7 +123,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/page"
+    (str "/obpv1/page?_=" (.now js/Date))
     {:handler (fn [data]
                 (swap! state assoc :pages data))}))
 

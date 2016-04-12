@@ -127,7 +127,7 @@
 
 (defn init-data [user-id state]
   (ajax/GET
-    (str "/obpv1/user/profile/" user-id)
+    (str "/obpv1/user/profile/" user-id "?_=" (.now js/Date))
     {:handler (fn [data]
                 (reset! state (assoc data :user-id user-id
                                           :show-link-or-embed-code nil))

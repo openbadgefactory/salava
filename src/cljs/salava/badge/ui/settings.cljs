@@ -87,7 +87,7 @@
                      :value     "public"
                      :type      "radio"
                      :on-change #(set-visibility "public" state)
-                     :checked   (= "public" (get-in @state [:badge-settings :visibility]))}]
+                     :default-checked   (= "public" (get-in @state [:badge-settings :visibility]))}]
             [:label {:for "visibility-public"}
              (t :badge/Public)]
             [:input {:id        "visibility-internal"
@@ -95,7 +95,7 @@
                      :value     "internal"
                      :type      "radio"
                      :on-change #(set-visibility "internal" state)
-                     :checked   (= "internal" (get-in @state [:badge-settings :visibility]))}]
+                     :default-checked   (= "internal" (get-in @state [:badge-settings :visibility]))}]
             [:label {:for "visibility-internal"}
              (t :badge/Shared)]
             [:input {:id        "visibility-private"
@@ -103,7 +103,7 @@
                      :value     "private"
                      :type      "radio"
                      :on-change #(set-visibility "private" state)
-                     :checked   (= "private" (get-in @state [:badge-settings :visibility]))}]
+                     :default-checked   (= "private" (get-in @state [:badge-settings :visibility]))}]
             [:label {:for "visibility-private"}
              (t :badge/Private)]]]])
        (if (and (not revoked) (not (bh/badge-expired? expires_on)))

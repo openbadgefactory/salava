@@ -11,7 +11,7 @@
     [:div.panel
      [:div.panel-heading
       [:h3
-       [:a {:href "" :on-click #(reset! visible-area-atom panel-identity)} (t :badge/Badgeviews) ":"] " (" total-views ")"]]
+       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Badgeviews) ":"] " (" total-views ")"]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:table.table
@@ -38,7 +38,7 @@
     [:div.panel
      [:div.panel-heading
       [:h3
-       [:a {:href "" :on-click #(reset! visible-area-atom panel-identity)} (t :badge/Congratulations) ":"] " (" total-congratulations ")"]]
+       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Congratulations) ":"] " (" total-congratulations ")"]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:table.table
@@ -62,7 +62,7 @@
     [:div.panel
      [:div.panel-heading
       [:h3
-       [:a {:href "" :on-click #(reset! visible-area-atom panel-identity)} (t :badge/Issuers) ":"] " (" (count issuers) ")"]]
+       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Issuers) ":"] " (" (count issuers) ")"]]
      (if (= @visible-area-atom panel-identity)
        (into [:div.panel-body]
              (for [issuer issuers

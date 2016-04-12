@@ -188,7 +188,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    "/obpv1/file"
+    (str "/obpv1/file?_=" (.now js/Date))
     {:handler (fn [data]
                 (swap! state assoc :files (vec data)))}))
 
