@@ -7,8 +7,7 @@
     #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {"/" [["" my/handler]
-        [true (placeholder (constantly [:p "404 Not Found"]))]]})
+  {"/" [["" my/handler]]})
 
 
 (defn ^:export navi [context] {})
