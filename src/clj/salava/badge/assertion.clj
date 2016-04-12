@@ -91,9 +91,9 @@
                       :criteria_html criteria-html
                       :badge_url badge-url
                       :issuer_url nil
-                      :issuer {:name (str (get-in assertion [:issuer :name])
-                                          ": "
-                                          (get-in assertion [:issuer :org]))
+                      :issuer {:name (if (get-in assertion [:issuer :org])
+                                       (str (get-in assertion [:issuer :name]) ": " (get-in assertion [:issuer :org]))
+                                       (get-in assertion [:issuer :name]))
                                :url (get-in assertion [:issuer :origin])
                                :email (or (get-in assertion [:issuer :contact]) "")}})))
 
