@@ -9,4 +9,5 @@
                 [salava.gallery.ui.routes]
                 [salava.file.ui.routes]
                 [salava.user.ui.routes]
+                [salava.displayer.ui.routes]
                 [salava.core.ui.routes]])))
