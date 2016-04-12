@@ -1,8 +1,8 @@
 (ns salava.file.upload
   (:require [clojure.java.io :as io]
             [slingshot.slingshot :refer :all]
-            [pantomime.mime :refer [mime-type-of]]
-            [salava.core.util :refer [public-path file-extension]]
+            [pantomime.mime :refer [mime-type-of extension-for-name]]
+            [salava.core.util :refer [public-path]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
             [salava.file.db :as f]))
@@ -18,8 +18,8 @@
                        (filter #(re-matches #"^image/.*" %) types)
                        types)
           max-size (get-in ctx [:config :file :max-size] 100000000)
-          extension (file-extension filename)
           mime-type (mime-type-of tempfile)
+          extension (extension-for-name mime-type)
           path (public-path tempfile extension)
           data-dir (get-in ctx [:config :core :data-dir])
           full-path (str data-dir "/" path)

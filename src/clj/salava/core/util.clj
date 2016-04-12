@@ -42,8 +42,13 @@
   (hex-digest "sha256" (apply str (flat-coll coll))))
 
 (defn file-extension [filename]
-  (let [ext (last (str/split (str filename) #"\."))]
-    (if ext (str "." ext))))
+  (try+
+    (let [file (if (re-find #"https?" (str filename)) (java.net.URL. filename) filename)]
+      (-> file
+          mime-type-of
+          extension-for-name))
+    (catch Object _
+      (throw+ (str "Could not get extension for file: " filename)))))
 
 (defn public-path-from-content
   [content extension]
