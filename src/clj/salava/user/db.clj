@@ -57,7 +57,7 @@
     {:status "error" :message (t :user/Enteredaddressisalready)}
     (let [site-url (get-site-url ctx)
           activation_code (generate-activation-id)
-          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language "fi"} (get-db ctx))
+          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language "en"} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
       (m/send-activation-message ctx site-url (activation-link site-url user-id activation_code) (login-link site-url) (str first-name " " last-name) email)
