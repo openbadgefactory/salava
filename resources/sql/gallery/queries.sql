@@ -37,17 +37,19 @@ SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count, COUNT(DISTI
        WHERE b.visibility = 'public' AND b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND bc.id = :badge_content_id
 
 -- name: select-badge-criteria-issuer-by-recipient
-SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge AS b
+SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+       LEFT JOIN creator_content AS crc ON b.creator_content_id = crc.id
        WHERE user_id = :user_id AND badge_content_id = :badge_content_id
        ORDER By ctime DESC
        LIMIT 1
 
 -- name: select-badge-criteria-issuer-by-date
-SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge AS b
+SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+       LEFT JOIN creator_content AS crc ON b.creator_content_id = crc.id
        WHERE badge_content_id = :badge_content_id
        ORDER By ctime DESC
        LIMIT 1

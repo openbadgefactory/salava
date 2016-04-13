@@ -59,14 +59,18 @@
                       (fetch-json-data issuer-url))
         criteria (:criteria badge-data)
         criteria-markdown (or (get-criteria-markdown criteria) "")
-        criteria-html (md/md-to-html-string criteria-markdown)]
+        criteria-html (md/md-to-html-string criteria-markdown)
+        original-creator-url (get-in badge-data [:extensions:OriginalCreator :url])
+        original-creator (if (not-empty original-creator-url)
+                           (fetch-json-data original-creator-url))]
     (assoc badge-data
       :badge_url badge-assertion-url
       :issuer_url issuer-url
       :issuer issuer-data
       :criteria_url criteria
       :criteria_markdown criteria-markdown
-      :criteria_html criteria-html)))
+      :criteria_html criteria-html
+      :OriginalCreator (assoc original-creator :json-url original-creator-url))))
 
 (defn old-badge-assertion [assertion issued-on]
   (let [image-path (:image assertion)
@@ -84,24 +88,26 @@
                                                 issued-on
                                                 (:name assertion)
                                                 (:image assertion)
-                                                (:criteria assertion))))]
-    (merge assertion {:image image
-                      :criteria_url criteria
+                                                (:criteria assertion))))
+        original-creator-url (get-in assertion [:extensions:OriginalCreator :url])
+        original-creator (if (not-empty original-creator-url)
+                           (fetch-json-data original-creator-url))]
+    (merge assertion {:image             image
+                      :criteria_url      criteria
                       :criteria_markdown criteria-markdown
-                      :criteria_html criteria-html
-                      :badge_url badge-url
-                      :issuer_url nil
-                      :issuer {:name (if (get-in assertion [:issuer :org])
-                                       (str (get-in assertion [:issuer :name]) ": " (get-in assertion [:issuer :org]))
-                                       (get-in assertion [:issuer :name]))
-                               :url (get-in assertion [:issuer :origin])
-                               :email (or (get-in assertion [:issuer :contact]) "")}})))
+                      :criteria_html     criteria-html
+                      :badge_url         badge-url
+                      :issuer_url        nil
+                      :issuer            {:name  (if (get-in assertion [:issuer :org])
+                                                   (str (get-in assertion [:issuer :name]) ": " (get-in assertion [:issuer :org]))
+                                                   (get-in assertion [:issuer :name]))
+                                          :url   (get-in assertion [:issuer :origin])
+                                          :email (or (get-in assertion [:issuer :contact]) "")}
+                      :OriginalCreator   (assoc original-creator :json-url original-creator-url)})))
 
 (defn create-assertion [a old-assertion]
   (let [assertion-url (if (string? a) a nil)
-        assertion (if assertion-url
-                    (fetch-json-data assertion-url)
-                    a)
+        assertion (if assertion-url (fetch-json-data assertion-url) a)
         error (or (:error assertion) nil)
         assertion-json (json/write-str assertion)
         uid (or (:uid assertion) nil)
@@ -130,12 +136,12 @@
         badge (if (string? (:badge assertion))
                 (new-badge-assertion (:badge assertion))
                 (old-badge-assertion (or (:badge assertion) (:badge old-assertion)) issued-on))]
-    {:uid uid
-     :assertion_json assertion-json
-     :evidence evidence
-     :verify verify
-     :issuedOn issued-on
-     :expires expires
-     :recipient recipient
-     :badge badge
-     :error error}))
+    {:uid              uid
+     :assertion_json   assertion-json
+     :evidence         evidence
+     :verify           verify
+     :issuedOn         issued-on
+     :expires          expires
+     :recipient        recipient
+     :badge            badge
+     :error            error}))

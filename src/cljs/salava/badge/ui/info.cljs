@@ -43,7 +43,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_recipient_name show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image]} @state
         expired? (bh/badge-expired? expires_on)]
     (if (:initializing @state)
       [:div.ajax-message
@@ -129,6 +129,8 @@
             (if (and expires_on (not expired?))
               [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
             (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+            (if creator_name
+              (bh/creator-label-and-link creator_name creator_url creator_email creator_image))
             (if assertion
               [:div {:id "assertion-link"}
                [:label (t :badge/Metadata)] ": "

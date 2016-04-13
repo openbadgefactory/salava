@@ -162,11 +162,11 @@
        (fact "badge-content-id must be valid"
              (let [{:keys [status body]} (test-api-request :get "/gallery/public_badge_content/not-valid")]
                status => 500
-               body => "{\"errors\":{\"badge\":{\"description\":\"missing-required-key\",\"badge_url\":\"missing-required-key\",\"issuer_content_url\":\"missing-required-key\",\"issuer_content_name\":\"missing-required-key\",\"name\":\"missing-required-key\",\"image_file\":\"missing-required-key\",\"issuer_contact\":\"missing-required-key\",\"issuer_image\":\"missing-required-key\",\"html_content\":\"missing-required-key\",\"criteria_url\":\"missing-required-key\",\"issuer_verified\":\"missing-required-key\"}}}")
+               body => "{\"errors\":{\"badge\":{\"description\":\"missing-required-key\",\"badge_url\":\"missing-required-key\",\"issuer_content_url\":\"missing-required-key\",\"creator_name\":\"missing-required-key\",\"issuer_content_name\":\"missing-required-key\",\"name\":\"missing-required-key\",\"image_file\":\"missing-required-key\",\"issuer_contact\":\"missing-required-key\",\"issuer_image\":\"missing-required-key\",\"html_content\":\"missing-required-key\",\"criteria_url\":\"missing-required-key\",\"creator_email\":\"missing-required-key\",\"creator_image\":\"missing-required-key\",\"creator_url\":\"missing-required-key\",\"issuer_verified\":\"missing-required-key\"}}}")
 
              (let [{:keys [status body]} (test-api-request :get (str "/gallery/public_badge_content/" not-existing-public-badge-id))]
                status => 500
-               body => "{\"errors\":{\"badge\":{\"description\":\"missing-required-key\",\"badge_url\":\"missing-required-key\",\"issuer_content_url\":\"missing-required-key\",\"issuer_content_name\":\"missing-required-key\",\"name\":\"missing-required-key\",\"image_file\":\"missing-required-key\",\"issuer_contact\":\"missing-required-key\",\"issuer_image\":\"missing-required-key\",\"html_content\":\"missing-required-key\",\"criteria_url\":\"missing-required-key\",\"issuer_verified\":\"missing-required-key\"}}}"))
+               body => "{\"errors\":{\"badge\":{\"description\":\"missing-required-key\",\"badge_url\":\"missing-required-key\",\"issuer_content_url\":\"missing-required-key\",\"creator_name\":\"missing-required-key\",\"issuer_content_name\":\"missing-required-key\",\"name\":\"missing-required-key\",\"image_file\":\"missing-required-key\",\"issuer_contact\":\"missing-required-key\",\"issuer_image\":\"missing-required-key\",\"html_content\":\"missing-required-key\",\"criteria_url\":\"missing-required-key\",\"creator_email\":\"missing-required-key\",\"creator_image\":\"missing-required-key\",\"creator_url\":\"missing-required-key\",\"issuer_verified\":\"missing-required-key\"}}}"))
 
        (fact "badge's public information is correct"
              (let [{:keys [status body]} (test-api-request :get (str "/gallery/public_badge_content/" public-badge-id))
@@ -174,14 +174,14 @@
                status => 200
                private_user_count => 1
                (count public_users) => 2
-               (keys badge) => (just [:description :issuer_content_url :issuer_content_name :name :image_file :recipient :rating_count :issuer_contact :html_content :criteria_url :average_rating :issuer_verified :issued_by_obf :verified_by_obf :obf_url :issuer_image :badge_url] :in-any-order))
+               (keys badge) => (just [:description :badge_url :issuer_content_url :creator_name :issuer_content_name :verified_by_obf :name :image_file :rating_count :recipient :issuer_contact :issuer_image :obf_url :html_content :issued_by_obf :criteria_url :creator_email :creator_image :average_rating :creator_url :issuer_verified] :in-any-order))
 
              (let [{:keys [status body]} (test-api-request :get (str "/gallery/public_badge_content/" another-public-badge-id))
                    {:keys [badge public_users private_user_count]} body]
                status => 200
                private_user_count => 0
                (count public_users) => 1
-               (keys badge) => (just [:description :issuer_content_url :issuer_content_name :name :image_file :recipient :rating_count :issuer_contact :html_content :criteria_url :average_rating :issuer_verified :issued_by_obf :verified_by_obf :obf_url :issuer_image :badge_url] :in-any-order)))
+               (keys badge) => (just [:description :badge_url :issuer_content_url :creator_name :issuer_content_name :verified_by_obf :name :image_file :rating_count :recipient :issuer_contact :issuer_image :obf_url :html_content :issued_by_obf :criteria_url :creator_email :creator_image :average_rating :creator_url :issuer_verified] :in-any-order)))
 
        (logout!)
 
@@ -191,4 +191,4 @@
                status => 200
                private_user_count => 0
                public_users => []
-               (keys badge) => (just [:description :issuer_content_url :issuer_content_name :name :image_file :recipient :rating_count :issuer_contact :html_content :criteria_url :average_rating :issuer_verified :issued_by_obf :verified_by_obf :obf_url :issuer_image :badge_url] :in-any-order))))
+               (keys badge) => (just [:description :badge_url :issuer_content_url :creator_name :issuer_content_name :verified_by_obf :name :image_file :rating_count :recipient :issuer_contact :issuer_image :obf_url :html_content :issued_by_obf :criteria_url :creator_email :creator_image :average_rating :creator_url :issuer_verified] :in-any-order))))

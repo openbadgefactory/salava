@@ -22,6 +22,17 @@
      [:div {:class "issuer-image pull-left"}
       [:img {:src (str "/" image)}]])])
 
+(defn creator-label-and-link [name url email image]
+  [:div {:class "issuer-data clearfix"}
+   [:label.pull-left (t :badge/Createdby) ":"]
+   [:div {:class "issuer-links pull-left"}
+    [:a {:target "_blank" :href url} " " name]
+    (if (not-empty email)
+      [:span [:br] [:a {:href (str "mailto:" email)} email]])]
+   (if image
+     [:div {:class "issuer-image pull-left"}
+      [:img {:src (str "/" image)}]])])
+
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   [:div.row
    [:div.col-xs-12

@@ -40,15 +40,16 @@ REPLACE INTO criteria_content (id, html_content, markdown_content)
 
 --name: insert-badge<!
 --save badge
-INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified, criteria_content_id)
-       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0, :issuer_verified, :criteria_content_id)
+INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified, criteria_content_id, creator_content_id)
+       VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0, :issuer_verified, :criteria_content_id, :creator_content_id)
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, show_evidence, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.html_content FROM badge
+SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, show_evidence, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.html_content, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
+       LEFT JOIN creator_content AS crc ON (crc.id = badge.creator_content_id)
        JOIN user AS u ON (u.id = badge.user_id)
        WHERE badge.id = :id AND badge.deleted = 0
 
@@ -67,8 +68,13 @@ DELETE FROM badge_congratulation WHERE badge_id = :badge_id
 
 -- name: replace-issuer-content!
 -- save issuer, replace if issuer exists already
-REPLACE INTO issuer_content (id,name,url,description,image_file,email,revocation_list_url)
+REPLACE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url)
         VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url);
+
+-- name: replace-creator-content!
+-- save badge original creator, replace if creator exists already
+REPLACE INTO creator_content (id, url, name, description, image_file, email, json_url)
+        VALUES (:id, :url, :name, :description, :image_file, :email, :json_url);
 
 --name: update-visibility!
 --change badge visibility

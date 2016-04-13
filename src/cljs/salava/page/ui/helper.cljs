@@ -36,7 +36,7 @@
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
 
-(defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_image html_content]}]
+(defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_image html_content creator_name creator_url creator_email creator_image]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
@@ -49,7 +49,9 @@
       (bh/issued-on issued_on)]]
     [:div.row
      [:div.col-md-12
-      (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_email issuer_image)]]
+      (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_email issuer_image)
+      (if creator_name
+        (bh/creator-label-and-link creator_name creator_url creator_email creator_image))]]
     [:div.row
      [:div {:class "col-md-12 description"} description]]
     [:div.row

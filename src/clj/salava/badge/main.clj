@@ -162,9 +162,23 @@
     (replace-criteria-content! data (get-db ctx))
     criteria-content-sha256))
 
+(defn save-original-creator!
+  "Save original creator of the badge"
+  [ctx assertion image-file]
+  (if (get-in assertion [:badge :OriginalCreator :json-url])
+    (let [creator-data {:url (get-in assertion [:badge :OriginalCreator :url])
+                        :name (get-in assertion [:badge :OriginalCreator :name])
+                        :description (get-in assertion [:badge :OriginalCreator :description])
+                        :email (get-in assertion [:badge :OriginalCreator :email])
+                        :json_url (get-in assertion [:badge :OriginalCreator :json-url])
+                        :image_file image-file}
+          creator-content-sha256 (map-sha256 creator-data)]
+      (replace-creator-content! (assoc creator-data :id creator-content-sha256) (get-db ctx))
+      creator-content-sha256)))
+
 (defn save-badge!
   "Save user's badge"
-  [ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id]
+  [ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id]
   (let [issuer-url (get-in badge [:assertion :badge :issuer_url])
         issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
         hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
@@ -179,6 +193,7 @@
               :criteria_content_id criteria-content-id
               :badge_content_id    badge-content-id
               :issuer_content_id   issuer-content-id
+              :creator_content_id  creator-content-id
               :issued_on           (get-in badge [:assertion :issuedOn])
               :expires_on          (get-in badge [:assertion :expires])
               :evidence_url        (get-in badge [:assertion :evidence])
@@ -242,12 +257,16 @@
           issuer-image-path (if-not (empty? issuer-image)
                               (file-from-url ctx issuer-image))
           issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
+          original-creator-image (get-in assertion [:badge :OriginalCreator :image])
+          original-creator-image-path (if (not (empty? original-creator-image))
+                                        (file-from-url ctx original-creator-image))
+          creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
           criteria-content-id (save-criteria-content! ctx assertion)]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
         (throw+ (t :badge/Alreadyowned)))
       (if-not recipient-email
         (throw+ (t :badge/Userdoesnotownthisbadge)))
-      (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id)))))
+      (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id)))))
 
 (defn save-badge-tags!
   "Save tags associated to badge. Delete existing tags."
