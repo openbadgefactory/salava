@@ -43,7 +43,7 @@
          [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email)}]]
         [:div.form-group
          [input/text-field {:name "password" :atom password-atom :placeholder (t :user/Password) :password? true}]]
-        [:button {:class    "btn btn-warning"
+        [:button {:class    "btn btn-primary"
                   :on-click #(do (.preventDefault %) (login state))
                   :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
          (t :user/Login)]
