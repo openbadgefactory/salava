@@ -37,5 +37,9 @@
   (run-test-reset)
   (load-facts))
 
+(defn do-test []
+  (run-tests)
+  (stop)
+  (System/exit 0))
 
 (set-opts)

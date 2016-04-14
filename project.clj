@@ -141,4 +141,5 @@
             "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
             "migrator-remove" ["run" "-m" "salava.core.migrator/remove-plugin"]
             "migrator-seed"   ["run" "-m" "salava.core.migrator/seed"]
-            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]})
+            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]
+            "test"            ["run" "-m" "user/do-test"]})
