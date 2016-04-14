@@ -30,10 +30,10 @@
                   (temporary-redirect (str "/file/browser/" CKEditor"/" CKEditorFuncNum"/" langCode)))
 
              (GET "/:folder1/:folder2/:folder3/:folder4/:filename" []
-                  :path-params [folder1 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
-                                folder2 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
-                                folder3 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
-                                folder4 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
+                  :path-params [folder1 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
+                                folder2 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
+                                folder3 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
+                                folder4 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
                                 filename :- (s/constrained s/Str #(and (string? %) (re-matches #"(\w+)(\.\w+)?" %)))]
                   (let [path (str "file/" folder1 "/" folder2 "/" folder3 "/"folder4 "/" filename)
                         data-dir (get-in ctx [:config :core :data-dir])
