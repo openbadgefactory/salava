@@ -255,5 +255,4 @@
       (delete-user! {:id user-id} {:connection tr-cn}))
     {:status "success"}
     (catch Object _
-      (println _)
       {:status "error"})))
