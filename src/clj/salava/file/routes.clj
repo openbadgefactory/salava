@@ -8,6 +8,7 @@
             [salava.file.upload :as u]
             [salava.file.schemas :as schemas]
             [salava.core.access :as access]
+            [salava.core.schema-helper :as h]
             [clojure.java.io :as io]
             [pantomime.mime :refer [mime-type-of]]
             salava.core.restructure))
@@ -29,12 +30,17 @@
                   (temporary-redirect (str "/file/browser/" CKEditor"/" CKEditorFuncNum"/" langCode)))
 
              (GET "/:folder1/:folder2/:folder3/:folder4/:filename" []
-                  :path-params [folder1 :- s/Str, folder2 :- s/Str, folder3 :- s/Str, folder4 :- s/Str, filename :- s/Str]
+                  :path-params [folder1 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
+                                folder2 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
+                                folder3 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
+                                folder4 :- (s/constrained s/Str #(and (= (count %) 1) (h/chars-nums? %)))
+                                filename :- (s/constrained s/Str #(and (string? %) (re-matches #"(\w+)(\.\w+)?" %)))]
                   (let [path (str "file/" folder1 "/" folder2 "/" folder3 "/"folder4 "/" filename)
                         data-dir (get-in ctx [:config :core :data-dir])
-                        full-path (str data-dir "/" path)]
-                    (if (.exists (io/as-file full-path))
-                      (let [mime-type (mime-type-of (io/file full-path))]
+                        full-path (-> (str data-dir "/" path) java.net.URI. (.normalize) (.getPath))
+                        file (io/as-file full-path)]
+                    (if (and (re-find (re-pattern (str "^" data-dir)) full-path) (.exists file) (.canWrite file))
+                      (let [mime-type (mime-type-of file)]
                         (-> full-path
                             file-response
                             (content-type mime-type)))
