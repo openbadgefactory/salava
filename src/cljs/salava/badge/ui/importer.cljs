@@ -39,7 +39,7 @@
 (defn fetch-badges [state]
   (swap! state assoc :ajax-message (t :badge/Fetchingbadges))
   (ajax/GET
-    "/obpv1/badge/import"
+    (str "/obpv1/badge/import?_=" (.now js/Date))
     {:finally (fn []
                 (ajax-stop state))
      :handler (fn [{:keys [error badges]} data]

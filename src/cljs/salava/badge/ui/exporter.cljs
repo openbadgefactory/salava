@@ -115,8 +115,8 @@
       (if (or (empty? (:badges @state)) (empty? (:emails @state)))
         [:div {:class "alert alert-warning"}
          (cond
-           (empty? (:badges @state)) (t :badge/Nobadgestoexport)
-           (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href "/user/edit/email-addresses"} (t :badge/here) "."]])]
+           (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href "/user/edit/email-addresses"} (t :badge/here) "."]]
+           (empty? (:badges @state)) (t :badge/Nobadgestoexport))]
         [:div
          [badge-grid-form state]
          [:button {:class "btn btn-primary"

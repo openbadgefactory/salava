@@ -24,7 +24,7 @@
                  :tags         tags
                  :rating       rating
                  :evidence-url evidence-url}
-       :finally (fn []
+       :handler (fn []
                   (.reload js/window.location))})))
 
 (defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image]} state]
