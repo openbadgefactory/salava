@@ -2,6 +2,12 @@
   (:require [reagent.core :refer [create-class]]
             [salava.core.i18n :refer [t]]))
 
+(defn google-plus [url]
+  (create-class
+    {:reagent-render (fn [url]
+                       [:div.g-plus {:data-action "share" :data-href url :data-annotation "none" :data-height "20px"}])
+     :should-component-update (fn [] false)}))
+
 (defn share-buttons-element [url title public? is-badge? link-or-embed-atom]
   [:div {:id "share"}
    [:div {:id "share-buttons" :class (if-not public? " share-disabled")}
@@ -18,7 +24,7 @@
     [:div.share-button
      [:script {:type "IN/Share" :data-url url}]]
     [:div.share-button
-     [:div.g-plus {:data-action "share" :data-href url :data-annotation "none" :data-height "20px"}]]
+     [google-plus url]]
     [:div.share-button
      [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank"} [:img.fb-share {:src "/img/fb_share.png"}]]]
     [:div.share-button
