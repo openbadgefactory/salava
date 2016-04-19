@@ -51,6 +51,13 @@
             padding-left: 0;
         }
     }
+    .media-right img {
+        max-width: 55px;
+        max-height: 55px;
+        padding: 3px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
 }
 
 #edit-profile {

@@ -4,13 +4,13 @@
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to set-meta-tags]]
+            [salava.core.ui.helper :refer [navigate-to set-meta-tags path-for]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]))
 
 (defn check-password [password-atom page-id state]
   (ajax/POST
-    (str "/obpv1/page/password/" page-id)
+    (path-for (str "/obpv1/page/password/" page-id))
     {:response-format :json
      :keywords? true
      :params {:password @password-atom}
@@ -23,7 +23,7 @@
 
 (defn toggle-visibility [page-id visibility-atom]
   (ajax/POST
-    (str "/obpv1/page/toggle_visibility/" page-id)
+    (path-for (str "/obpv1/page/toggle_visibility/" page-id))
     {:response-format :json
      :keywords? true
      :params {:visibility (if (= "private" @visibility-atom) "public" "private")}
@@ -62,7 +62,7 @@
         [:div {:id "buttons"
                :class "text-right"}
          [:a {:class "btn btn-primary"
-              :href  (str "/page/edit/" (:id page))}
+              :href  (path-for (str "/page/edit/" (:id page)))}
           (t :page/Edit)]
          [:button {:class "btn btn-primary"
                    :on-click #(.print js/window)}
@@ -74,7 +74,7 @@
                    :on-change #(toggle-visibility (:id page) visibility-atom)
                    :checked     (= @visibility-atom "public")}]
           (t :core/Publishandshare)]]
-        [s/share-buttons (str (session/get :site-url) "/page/view/" (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
+        [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
      [ph/view-page page]]))
 
 (defn content [state]
@@ -86,7 +86,7 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (str "/obpv1/page/view/" id)
+    (path-for (str "/obpv1/page/view/" id))
     {:response-format :json
      :keywords?       true
      :handler         (fn [data]
@@ -94,7 +94,7 @@
                         (let [first-badge-block (->> (get-in data [:page :blocks])
                                                      (filter #(= (:type %) "badge"))
                                                      first)
-                              meta-image (if first-badge-block (str (session/get :site-url) "/" (:image_file first-badge-block)) "")]
+                              meta-image (if first-badge-block (str (session/get :site-url) (path-for (:image_file first-badge-block))) "")]
                           (set-meta-tags (get-in data [:page :name]) (get-in data [:page :description]) meta-image)))
      :error-handler   (fn [{:keys [status status-text]}]
                         (if (= status 401)

@@ -9,12 +9,13 @@
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.user.ui.helper :as u]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
 
 (defn open-modal [page-id]
   (ajax/GET
-    (str "/obpv1/page/view/" page-id)
+    (path-for (str "/obpv1/page/view/" page-id))
     {:handler (fn [data]
                 (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
 
@@ -26,7 +27,7 @@
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingpages))
     (ajax/POST
-      (str "/obpv1/gallery/pages/" user-id)
+      (path-for (str "/obpv1/gallery/pages/" user-id))
       {:params  {:country (trim country-selected)
                  :owner   (trim owner-name)}
        :handler (fn [data]
@@ -98,13 +99,13 @@
           name]]
         [:div.media-content
          [:div.page-owner
-          [:a {:href (str "/user/profile/" user_id)} first_name " " last_name]]
+          [:a {:href (path-for (str "/user/profile/" user_id))} first_name " " last_name]]
          [:div.page-create-date
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
-                        :src (str "/" (:image_file badge))}]))]]
+                        :src (path-for (:image_file badge))}]))]]
        [:div {:class "media-right"}
         [:img {:src (u/profile-picture profile_picture)}]]]]]))
 
@@ -131,7 +132,7 @@
 
 (defn init-data [state user-id]
   (ajax/POST
-    (str "/obpv1/gallery/pages/" user-id)
+    (path-for (str "/obpv1/gallery/pages/" user-id))
     {:params {:country ""
               :owner ""}
      :handler (fn [data]

@@ -7,8 +7,9 @@
 
 (def api-root
   (let [host (get-in test-config [:http :host])
-        port (get-in test-config [:http :port])]
-    (str "http://" host ":"port "/obpv1" )))
+        port (get-in test-config [:http :port])
+        base-path (get-in test-config [:base-path] "")]
+    (str "http://" host ":"port base-path "/obpv1" )))
 
 (def ^:dynamic *cookie-store*
   (cookies/cookie-store))

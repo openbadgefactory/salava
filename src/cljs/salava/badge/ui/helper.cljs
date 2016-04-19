@@ -1,5 +1,6 @@
 (ns salava.badge.ui.helper
   (:require [salava.core.i18n :refer [t]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [unix-time date-from-unix-time]]))
 
 (defn badge-expired? [expires-on]
@@ -20,7 +21,7 @@
       [:span [:br] [:a {:href (str "mailto:" email)} email]])]
    (if image
      [:div {:class "issuer-image pull-left"}
-      [:img {:src (str "/" image)}]])])
+      [:img {:src (path-for image)}]])])
 
 (defn creator-label-and-link [name url email image]
   [:div {:class "issuer-data clearfix"}
@@ -31,7 +32,7 @@
       [:span [:br] [:a {:href (str "mailto:" email)} email]])]
    (if image
      [:div {:class "issuer-image pull-left"}
-      [:img {:src (str "/" image)}]])])
+      [:img {:src (path-for image)}]])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   [:div.row

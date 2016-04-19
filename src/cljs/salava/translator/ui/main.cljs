@@ -1,11 +1,12 @@
 (ns salava.translator.ui.main
-  (:require [ajax.core :as ajax]))
+  (:require [ajax.core :as ajax]
+            [salava.core.ui.helper :refer [path-for]]))
 
 
 (defn post-url [lang key]
   (let [lang-str (subs (str lang) 1)
         key-str  (subs (str key)  1)]
-    (str "/obpv1/translator/" lang-str "/" key-str)))
+    (path-for (str "/obpv1/translator/" lang-str "/" key-str))))
 
 
 (defn send-new [lang key value]

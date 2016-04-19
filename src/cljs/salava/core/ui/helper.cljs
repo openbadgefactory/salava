@@ -1,5 +1,6 @@
 (ns salava.core.ui.helper
-  (:require [schema.core :as s]
+  (:require [reagent.session :as session]
+            [schema.core :as s]
             [ajax.core :as ajax]))
 
 (defn unique-values [key data]
@@ -8,6 +9,10 @@
        (filter some?)
        flatten
        distinct))
+
+(defn base-path
+  ([] (session/get :base-path ""))
+  ([ctx] (:base-path ctx "")))
 
 (defn current-path []
   (let [uri js/window.location.pathname]
@@ -19,8 +24,15 @@
 (defn base-url []
   (str (.-location.protocol js/window) "//" (.-location.host js/window)))
 
+(defn path-for
+  ([url] (path-for url false))
+  ([url prevent-cache?]
+   (let [time-param (if prevent-cache? (str "?_=" (.now js/Date)))
+         url (if (and (not (empty? url)) (not= (subs (str url) 0 1) "/")) (str "/" url) url)]
+     (str (base-path) url time-param))))
+
 (defn navigate-to [url]
-  (set! (.-location.href js/window) url))
+  (set! (.-location.href js/window) (path-for url)))
 
 (defn input-valid? [schema input]
   (try

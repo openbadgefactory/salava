@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
@@ -17,7 +17,7 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (str "/obpv1/page/" id "?_=" (.now js/Date))
+    (path-for (str "/obpv1/page/" id))
     {:handler (fn [data]
                 (swap! state assoc :page data))}))
 

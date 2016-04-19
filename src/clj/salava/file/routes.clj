@@ -7,6 +7,7 @@
             [salava.file.db :as f]
             [salava.file.upload :as u]
             [salava.file.schemas :as schemas]
+            [salava.core.util :refer [get-base-path]]
             [salava.core.access :as access]
             [salava.core.schema-helper :as h]
             [clojure.java.io :as io]
@@ -27,7 +28,7 @@
                   :query-params [CKEditor :- String
                                  CKEditorFuncNum :- String
                                  langCode :- String]
-                  (temporary-redirect (str "/file/browser/" CKEditor"/" CKEditorFuncNum"/" langCode)))
+                  (temporary-redirect (str (get-base-path ctx) "/file/browser/" CKEditor"/" CKEditorFuncNum"/" langCode)))
 
              (GET "/:folder1/:folder2/:folder3/:folder4/:filename" []
                   :path-params [folder1 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))

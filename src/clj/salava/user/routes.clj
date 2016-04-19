@@ -4,6 +4,7 @@
             [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
             [schema.core :as s]
+            [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
             [salava.core.access :as access]
@@ -31,8 +32,8 @@
                   (if current-user
                     (do
                       (u/verify-email-address ctx verification_key (:id current-user))
-                      (found "/user/edit/email-addresses"))
-                    (found "/user/login"))))
+                      (found (str (get-base-path ctx) "/user/edit/email-addresses")))
+                    (found (str (get-base-path ctx) "/user/login")))))
 
     (context "/obpv1/user" []
              :tags ["user"]

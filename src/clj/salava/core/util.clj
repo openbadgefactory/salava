@@ -17,6 +17,9 @@
 (defn get-data-dir [ctx]
   (get-in ctx [:config :core :data-dir]))
 
+(defn get-base-path [ctx]
+  (get-in ctx [:config :core :base-path] ""))
+
 (defn hex-digest [algo string]
   (case algo
     "sha1" (d/sha-1 string)

@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom]]
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
@@ -21,7 +21,7 @@
 
 (defn create-page []
   (ajax/POST
-    "/obpv1/page/create"
+    (path-for "/obpv1/page/create")
     {:params {:userid 1}
      :handler (fn [id]
                 (navigate-to (str "/page/edit/" id)))}))
@@ -42,18 +42,14 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (str "/page/view/" id)}
+         [:a.heading-link {:href (path-for (str "/page/view/" id))}
           name]]
         [:div.visibility-icon
          (case visibility
-           "private" [:i {:class "fa fa-lock"
-                          :title (t :page/Private)}]
-           "password" [:i {:class "fa fa-lock"
-                          :title (t :page/Passwordprotected)}]
-           "internal" [:i {:class "fa fa-group"
-                           :title (t :page/Forregistered)}]
-           "public" [:i {:class "fa fa-globe"
-                         :title (t :page/Public)}]
+           "private" [:i {:class "fa fa-lock" :title (t :page/Private)}]
+           "password" [:i {:class "fa fa-lock" :title (t :page/Passwordprotected)}]
+           "internal" [:i {:class "fa fa-group" :title (t :page/Forregistered)}]
+           "public" [:i {:class "fa fa-globe" :title (t :page/Public)}]
            nil)]
         [:div.media-description
          [:div.page-create-date
@@ -61,14 +57,14 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
-                        :src (str "/" (:image_file badge))}]))]]]
+                        :src (path-for (:image_file badge))}]))]]]
       [:div {:class "media-bottom"}
        [:a {:class "bottom-link"
-            :href (str "/page/edit/" id)}
+            :href  (path-for (str "/page/edit/" id))}
         [:i {:class "fa fa-pencil"}]
         [:span (t :page/Edit)]]
        [:a {:class "bottom-link pull-right"
-            :href  (str "/page/settings/" id)}
+            :href  (path-for (str "/page/settings/" id))}
         [:i {:class "fa fa-cog"}]
         [:span (t :page/Settings)]]]]]))
 
@@ -123,7 +119,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/page?_=" (.now js/Date))
+    (path-for "/obpv1/page" true)
     {:handler (fn [data]
                 (swap! state assoc :pages data))}))
 

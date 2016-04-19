@@ -3,7 +3,7 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.i18n :refer [t]]))
 
 (defn upload-modal [{:keys [status message reason]}]
@@ -35,7 +35,7 @@
                     (js/FormData.)
                     (.append "file" file (.-name file)))]
     (ajax/POST
-      "/obpv1/badge/upload"
+      (path-for "/obpv1/badge/upload")
       {:body    form-data
        :handler (fn [data]
                   (m/modal! (upload-modal data)
@@ -51,9 +51,9 @@
     [:li "Click " [:b "Open"]]]
    [:p
     "Your uploaded badges will appear at "
-    [:a {:href "/badge/mybadges"} "My badges"] " page. "
+    [:a {:href (path-for "/badge/mybadges")} "My badges"] " page. "
     ". You can delete unwanted badges at "
-    [:a {:href "/badge/mybadges"} "My badges"]
+    [:a {:href (path-for "/badge/mybadges")} "My badges"]
     " page in badge Settings."]])
 
 (defn content []
@@ -68,7 +68,7 @@
              :accept "image/png, image/svg+xml"}]]])
 
 (defn init-data []
-      (ajax/GET "/obpv1/user/test" {}))
+      (ajax/GET (path-for "/obpv1/user/test") {}))
 
 (defn handler [site-navi]
   (fn []

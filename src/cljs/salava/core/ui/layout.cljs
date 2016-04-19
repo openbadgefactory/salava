@@ -1,15 +1,16 @@
 (ns salava.core.ui.layout
   (:require [reagent.session :as session]
-            [clojure.string :as str]
+            [clojure.string :as s]
             [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [current-path navigate-to]]
+            [salava.core.ui.helper :refer [current-path navigate-to path-for base-path]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
-  (let [sections (str/split path #"/")]
-      (second sections)))
+  (let [path (s/replace (str path) (re-pattern (base-path)) "")
+        sections (s/split path #"/")]
+    (second sections)))
 
 (defn filtered-navi-list [navi key-list]
   (let [map-fn (fn [[tr nv]]
@@ -30,7 +31,7 @@
 
 (defn logout []
   (ajax/POST
-    "/obpv1/user/logout"
+    (path-for "/obpv1/user/logout")
     {:handler (fn [] (navigate-to "/user/login"))}))
 
 (defn navi-link [{:keys [target title active]}]
@@ -41,7 +42,7 @@
 (defn top-navi-header []
   [:div {:class "navbar-header"}
    [:a {:class "logo pull-left"
-        :href  (if (session/get :user) "/badge" "/user/login")
+        :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
         :title "Open Badge Passport"}
     [:img {:src   "/img/logo.png"
            :class "logo-main"}]
@@ -56,7 +57,7 @@
          :class "nav navbar-nav navbar-right"}
    [:ul {:id    "secondary-menu-links"
          :class "clearfix"}
-    [:li [:a {:href "/user/edit"}
+    [:li [:a {:href (path-for "/user/edit")}
           [:i {:class "fa fa-caret-right"}]
           (t :user/Myaccount)]]
     [:li [:a {:href     "#"
@@ -64,7 +65,7 @@
           [:i {:class "fa fa-caret-right"}]
           (t :user/Logout)]]]
    [:div.userpic
-    [:a {:href (str "/user/profile/" (session/get-in [:user :id]))}
+    [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))}]]]])
 
 (defn top-navi [site-navi]
@@ -139,7 +140,7 @@
             :class "nav navbar-nav navbar-right"}
       [:a {:id "login-button" :class "btn btn-primary"
            :href "/user/login"}
-       (t :user/Login)]]]]])
+       "Login"]]]]])
 
 (defn landing-page [content]
   [:div

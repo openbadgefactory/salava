@@ -6,13 +6,14 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             [salava.core.helper :refer [dump]]))
 
 (defn open-modal [badge-content-id]
   (ajax/GET
-    (str "/obpv1/gallery/public_badge_content/" badge-content-id)
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
     {:handler (fn [data]
                 (m/modal! [badge-content-modal data] {:size :lg}))}))
 
@@ -24,7 +25,7 @@
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (ajax/POST
-      (str "/obpv1/gallery/badges/" user-id)
+      (path-for (str "/obpv1/gallery/badges/" user-id))
       {:params  {:country   (trim country-selected)
                  :badge     (trim badge-name)
                  :recipient (trim recipient-name)
@@ -107,7 +108,7 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (str "/" image_file)}]])
+          [:img {:src (path-for image_file)}]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(open-modal badge-id)}
@@ -122,7 +123,7 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       [:a.bottom-link {:href (str "/gallery/badgeview/" badge-id)} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]]]))
+       [:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)
@@ -147,7 +148,7 @@
 
 (defn init-data [state user-id]
   (ajax/POST
-    (str "/obpv1/gallery/badges/" user-id)
+    (path-for (str "/obpv1/gallery/badges/" user-id))
     {:params {:country ""
               :badge ""
               :issuer ""

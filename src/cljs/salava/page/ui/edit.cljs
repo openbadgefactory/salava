@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.ui.field :as f]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -35,7 +35,7 @@
 
 (defn save-page [{:keys [id name description blocks]} next-url]
   (ajax/POST
-    (str "/obpv1/page/save_content/" id)
+    (path-for (str "/obpv1/page/save_content/" id))
     {:params {:name name
               :description description
               :blocks (prepare-blocks-to-save blocks)}
@@ -66,7 +66,7 @@
                     (.append "file" file (.-name file)))]
     (m/modal! (file/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
-      "/obpv1/file/upload"
+      (path-for "/obpv1/file/upload")
       {:body    form-data
        :handler (fn [{:keys [status message reason data]} response]
                   (when (= status "success")
@@ -100,7 +100,7 @@
         [:option {:value "long"} (t :page/Long)]]]]
      [:div {:class "col-xs-4 badge-image"}
       (if image
-        [:img {:src (str "/" image)}])]]))
+        [:img {:src (path-for image)}])]]))
 
 (defn edit-block-badge-groups [block-atom tags badges]
   (let [tag (get-in @block-atom [:tag] "")
@@ -132,7 +132,7 @@
      [:div {:class "col-xs-4 badge-image"}
       (if tagged-badges
         (for [badge tagged-badges]
-          [:img {:src (str "/" (:image_file badge))
+          [:img {:src (path-for (:image_file badge))
                  :key (:name badge)}]))]]))
 
 (defn edit-block-files [block-atom files]
@@ -143,7 +143,7 @@
        [:div.row
         [:div.col-xs-6
          [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-         [:a {:href (str "/" (:path file))
+         [:a {:href (path-for (:path file))
               :target "_blank"}
           (:name file)]]
         [:div.col-xs-6
@@ -201,7 +201,7 @@
                                         (.getScript (js* "$") "/js/ckeditor/modal-fix.js")
                                         (js/CKEDITOR.replace "ckeditor"
                                                              (js-obj "language" (name (session/get-in [:user :language] :en))
-                                                                     "filebrowserBrowseUrl" "/file/browser"))
+                                                                     "filebrowserBrowseUrl" (path-for "/file/browser")))
                                         (.setData (aget js/CKEDITOR "instances" "ckeditor") (:content @block-atom)))
                  :reagent-render      (fn [] (editor-modal-content block-atom))}))
 
@@ -326,7 +326,7 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (str "/obpv1/page/edit/" id "?_=" (.now js/Date))
+    (path-for (str "/obpv1/page/edit/" id) true)
     {:handler (fn [data]
                 (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
                                                                                (get-in data [:page :blocks]))))]

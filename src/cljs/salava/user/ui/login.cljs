@@ -4,22 +4,22 @@
             [clojure.string :as string]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
-            [salava.core.ui.helper :refer [base-url navigate-to]]
+            [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]))
 
 (defn follow-up-url []
   (let [referrer js/document.referrer
-        site-url (session/get :site-url)
+        site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
-    (if (or (empty? path) (= referrer path) (= path "/user/login"))
+    (if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
       "/badge/mybadges"
       path)))
 
 (defn login [state]
   (let [{:keys [email password]} @state]
     (ajax/POST
-      (str "/obpv1/user/login")
+      (path-for "/obpv1/user/login")
       {:params  {:email    email
                  :password password}
        :handler (fn [data]
@@ -49,9 +49,9 @@
          (t :user/Login)]
         [:div {:class "row login-links"}
          [:div {:class "col-xs-6 text-right"}
-          [:a {:href "/user/register"} (t :user/Createnewaccount)]]
+          [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]]
          [:div {:class "col-xs-6 text-left"}
-          [:a {:href "/user/reset"} (t :user/Requestnewpassword)]]]]]]]))
+          [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]]]]]))
 
 (defn handler []
   (let [state (atom {:email ""

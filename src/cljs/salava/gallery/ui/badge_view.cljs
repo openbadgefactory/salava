@@ -3,7 +3,7 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :as h]
+            [salava.core.ui.helper :refer [set-meta-tags path-for]]
             [salava.gallery.ui.badge-content :refer [badge-content]]
             [salava.core.ui.share :refer [share-buttons]]
             [salava.core.i18n :refer [t]]))
@@ -14,15 +14,15 @@
     [:div {:id "badge-gallery-view"}
      [:div.panel
       [:div.panel-body
-       [share-buttons (str (session/get :site-url) "/gallery/badgeview/" badge-content-id) name true true (cursor state [:show-link-or-embed])]
+       [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
        [badge-content content]]]]))
 
 (defn init-data [state badge-content-id]
   (ajax/GET
-    (str "/obpv1/gallery/public_badge_content/" badge-content-id)
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
     {:handler (fn [data]
                 (swap! state assoc :content data)
-                (h/set-meta-tags (get-in data [:badge :name]) (get-in data [:badge :description]) (str (session/get :site-url) "/" (get-in data [:badge :image_file]))))}))
+                (set-meta-tags (get-in data [:badge :name]) (get-in data [:badge :description]) (str (session/get :site-url) (path-for (get-in data [:badge :image_file])))))}))
 
 (defn handler [site-navi params]
   (let [badge-content-id (:badge-content-id params)

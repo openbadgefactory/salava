@@ -3,7 +3,7 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
@@ -39,7 +39,7 @@
 (defn fetch-badges [state]
   (swap! state assoc :ajax-message (t :badge/Fetchingbadges))
   (ajax/GET
-    (str "/obpv1/badge/import?_=" (.now js/Date))
+    (path-for "/obpv1/badge/import" true)
     {:finally (fn []
                 (ajax-stop state))
      :handler (fn [{:keys [error badges]} data]
@@ -52,7 +52,7 @@
 (defn import-badges [state]
   (swap! state assoc :ajax-message (t :badge/Savingbadges))
   (ajax/POST
-    "/obpv1/badge/import_selected"
+    (path-for "/obpv1/badge/import_selected")
     {:params  {:keys (:badges-selected @state)}
      :finally (fn []
                 (ajax-stop state))
@@ -117,7 +117,7 @@
     "You can import your existing badges from your "
     [:a {:href "https://backpack.openbadges.org/backpack/" :target "_blank"} "Mozilla Backpack"]
     " account. Before you start make sure that the e-mail address associated with your Backpack account is saved at the "
-    [:a {:href "/user/edit/email-addresses"} "E-mail addresses"] " page."
+    [:a {:href (path-for "/user/edit/email-addresses")} "E-mail addresses"] " page."
     [:br]
     "To import badges from Backpack, badges have to be placed to a public Collection (group). If your badges are not in a public Collection, please follow these instructions:"]
    [:ol
@@ -127,9 +127,9 @@
     [:li "Click \"Import badges from Mozilla Backpack\" button below."]]
    [:p
     "Your imported badges will appear at "
-    [:a {:href "/badge/mybadges"} "My badges"] " page. "
+    [:a {:href (path-for "/badge/mybadges")} "My badges"] " page. "
     "You can delete unwanted badges at "
-    [:a {:href "/badge/mybadges"} "My badges"]
+    [:a {:href (path-for "/badge/mybadges")} "My badges"]
     " page in badge Settings."]])
 
 (defn content [state]
@@ -165,7 +165,7 @@
    [badge-grid state]])
 
 (defn init-data []
-  (ajax/GET "/obpv1/user/test" {}))
+  (ajax/GET (path-for "/obpv1/user/test") {}))
 
 (defn handler [site-navi params]
   (let [state (atom {:badges []

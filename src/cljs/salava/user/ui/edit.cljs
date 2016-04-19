@@ -1,7 +1,7 @@
 (ns salava.user.ui.edit
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? navigate-to]]
+            [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.core.common :refer [deep-merge]]
@@ -11,7 +11,7 @@
 
 (defn save-user-info [state]
   (ajax/POST
-    "/obpv1/user/edit"
+    (path-for "/obpv1/user/edit")
     {:params  (:user @state)
      :handler (fn [data]
                 (navigate-to "/user/edit"))}))
@@ -104,7 +104,7 @@
                                (.preventDefault %)
                                (save-user-info state))}
           (t :core/Save)]
-         [:a {:id "cancel-button" :class "btn btn-warning" :href "/user/cancel"} (t :user/Cancelaccount)]]]]]]))
+         [:a {:id "cancel-button" :class "btn btn-warning" :href (path-for "/user/cancel")} (t :user/Cancelaccount)]]]]]]))
 
 (def initial-state
   {:user {:current_password nil
@@ -114,7 +114,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/user/edit?_=" (.now js/Date))
+    (path-for "/obpv1/user/edit" true)
     {:handler (fn [data]
                 (reset! state (deep-merge initial-state (update-in data [:user] dissoc :id))))}))
 

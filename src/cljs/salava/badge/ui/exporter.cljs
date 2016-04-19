@@ -4,7 +4,7 @@
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [unique-values]]
+            [salava.core.ui.helper :refer [unique-values path-for]]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]))
 
@@ -52,12 +52,10 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (if-not (re-find #"http" image_file)
-                        (str "/" image_file)
-                        image_file)}]])
+          [:img {:src (path-for image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.badge-link {:href (str "/badge/info/" id)}
+         [:a.badge-link {:href (path-for (str "/badge/info/" id))}
           name]]
         [:div.visibility-icon
          (case visibility
@@ -115,7 +113,7 @@
       (if (or (empty? (:badges @state)) (empty? (:emails @state)))
         [:div {:class "alert alert-warning"}
          (cond
-           (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href "/user/edit/email-addresses"} (t :badge/here) "."]]
+           (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/here) "."]]
            (empty? (:badges @state)) (t :badge/Nobadgestoexport))]
         [:div
          [badge-grid-form state]
@@ -130,7 +128,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/badge/export?_=" (.now js/Date))
+    (path-for "/obpv1/badge/export" true)
     {:handler (fn [{:keys [badges emails]} data]
                 (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
                   (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false)))}))

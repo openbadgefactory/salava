@@ -1,7 +1,7 @@
 (ns salava.user.ui.activate
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid?]]
+            [salava.core.ui.helper :refer [input-valid? path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]))
@@ -15,7 +15,7 @@
 (defn activate-account [state]
   (let [{:keys [user-id code password password-verify]} @state]
     (ajax/POST
-      (str "/obpv1/user/activate/")
+      (path-for "/obpv1/user/activate/")
       {:params  {:user_id         (js/parseInt user-id)
                  :code            code
                  :password        password
@@ -76,7 +76,7 @@
        [:div {:class "alert alert-success"
               :role "alert"}
         (t :user/Accountactivatedsuccessfully) ". "
-        [:a {:href "/user/login"} (t :user/Clickheretologin)]]
+        [:a {:href (path-for "/user/login")} (t :user/Clickheretologin)]]
        (activation-form state))]]])
 
 (defn handler [site-navi params]

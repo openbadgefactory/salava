@@ -5,12 +5,13 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.file.icons :refer [file-icon]]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn select-file [file-path callback-id]
   (when js/window.opener
-    (js/window.opener.CKEDITOR.tools.callFunction callback-id (str "/" file-path))
+    (js/window.opener.CKEDITOR.tools.callFunction callback-id (path-for file-path))
     (js/window.close)))
 
 (defn content [state]
@@ -25,7 +26,7 @@
               [:div.thumbnail {:on-click #(do (.preventDefault %) (select-file path callback))}
                [:div.thumbnail-img
                 (if image?
-                  [:img {:src (str "/" path)}]
+                  [:img {:src (path-for path)}]
                   [:i {:class (str "fa " (file-icon mime_type))}])]
                [:div.thumbnail-name
                 [:a {:href "#"}
@@ -33,7 +34,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/file?_=" (.now js/Date))
+    (path-for "/obpv1/file" true)
     {:handler (fn [data]
                 (swap! state assoc :files data))}))
 

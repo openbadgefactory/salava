@@ -1,7 +1,7 @@
 (ns salava.user.ui.cancel
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? navigate-to]]
+            [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]))
@@ -11,7 +11,7 @@
 
 (defn cancel-account [state]
   (ajax/POST
-    (str "/obpv1/user/delete")
+    (path-for "/obpv1/user/delete")
     {:params  {:password (:password @state)}
      :handler (fn [data]
                 (if (= (:status data) "error")
@@ -53,11 +53,11 @@
     [:p "All badges and pages in your account will be removed from the site. Remember\nto a) upload your badges to your computer or b) save them to Mozilla\nBackpack. Here's how:"]
     [:p "a) upload your badges to your computer:"]
     [:ul
-     [:li "Go to " [:a {:href "/badge/export"} "badge export"] " page"]
+     [:li "Go to " [:a {:href (path-for "/badge/export")} "badge export"] " page"]
      [:li "Click the icon on the right lower corner of the box where the badge is, \"download badge\""]]
     [:p "b) export badges to Mozilla Backpack:"]
     [:ul
-     [:li "Go to " [:a {:href "/badge/export"} "badge export"] " page"]
+     [:li "Go to " [:a {:href (path-for "/badge/export")} "badge export"] " page"]
      [:li "Click \"Select All\" button in order to select all of your badges or click one-by-one \"Export to backpack\" "]
      [:li "Click \"Export selected badges to backpack\""]
      [:li "Follow the Backpack instructions after this "]]

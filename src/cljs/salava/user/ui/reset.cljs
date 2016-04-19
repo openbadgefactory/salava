@@ -2,6 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.core.i18n :refer [t]]
             [salava.user.ui.input :as input]))
@@ -9,7 +10,7 @@
 (defn send-password-reset-link [state]
   (let [email (:email @state)]
     (ajax/POST
-      (str "/obpv1/user/reset/")
+      (path-for "/obpv1/user/reset/")
       {:params  {:email email}
        :handler (fn [data]
                   (swap! state assoc :reset-link-sent (:status data)))})))

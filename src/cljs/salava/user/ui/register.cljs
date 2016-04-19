@@ -2,6 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.core.i18n :refer [t]]
             [salava.user.ui.input :as input]))
@@ -9,7 +10,7 @@
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country]} @state]
     (ajax/POST
-      (str "/obpv1/user/register/")
+      (path-for "/obpv1/user/register/")
       {:params  {:email email
                  :first_name first-name
                  :last_name last-name

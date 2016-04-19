@@ -2,6 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [clojure.string :refer [trim]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -17,7 +18,7 @@
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
-      (str "/obpv1/gallery/profiles/")
+      (path-for "/obpv1/gallery/profiles/")
       {:params  {:country       country-selected
                  :name          (trim (str name))
                  :common_badges (boolean common-badges?)}
@@ -99,7 +100,7 @@
         [:img {:src (profile-picture profile_picture)}]]
        [:div.media-body
         [:div {:class "media-heading profile-heading"}
-         [:a {:href (str "/user/profile/" id)} first_name " " last_name]]
+         [:a {:href (path-for (str "/user/profile/" id))} first_name " " last_name]]
         [:div.media-profile
          [:div.join-date
           (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
@@ -133,7 +134,7 @@
 (defn init-data [state]
   (let [country (session/get-in [:user :country] "all")]
     (ajax/POST
-      (str "/obpv1/gallery/profiles/")
+      (path-for (str "/obpv1/gallery/profiles/"))
       {:params {:country country
                 :name ""
                 :common_badges true}

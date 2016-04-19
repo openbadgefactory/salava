@@ -35,7 +35,7 @@
 
 
 (defn context-js [ctx]
-  (let [ctx-out {:plugins {:all (get-in ctx [:config :core :plugins])} :user (:user ctx) :site-url (get-in ctx [:config :core :site-url])}]
+  (let [ctx-out {:plugins {:all (get-in ctx [:config :core :plugins])} :user (:user ctx) :site-url (get-in ctx [:config :core :site-url]) :base-path (get-in ctx [:config :core :base-path])}]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 

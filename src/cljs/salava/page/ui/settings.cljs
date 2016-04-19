@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.tag :as tag]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
@@ -12,7 +12,7 @@
 (defn save-settings [page next-url]
   (let [{:keys [id tags visibility password]} page]
     (ajax/POST
-      (str "/obpv1/page/save_settings/" id)
+      (path-for (str "/obpv1/page/save_settings/" id))
       {:params {:tags tags
                 :visibility visibility
                 :password password}
@@ -66,10 +66,10 @@
          (t :page/Public)]]]
       (if (some #(= @visibility-atom %) ["public" "password"])
         [:div.form-group
-         [:input {:class    "form-control"
-                  :type     "text"
+         [:input {:class     "form-control"
+                  :type      "text"
                   :read-only true
-                  :value    (str (session/get :site-url) "/page/view/" id)}]])
+                  :value     (str (session/get :site-url) (path-for "/page/view/") id)}]])
       (if (= @visibility-atom "password")
         [:div.form-group
          [:label {:for "page-password"}
@@ -90,7 +90,7 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (str "/obpv1/page/settings/" id "?_=" (.now js/Date))
+    (path-for (str "/obpv1/page/settings/" id) true)
     {:handler (fn [data]
                 (swap! state assoc :page data))}))
 

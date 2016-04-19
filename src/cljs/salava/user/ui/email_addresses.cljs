@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [reagent-modals.modals :as modal]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid?]]
+            [salava.core.ui.helper :refer [input-valid? path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]
@@ -11,7 +11,7 @@
 
 (defn add-email-address [state]
   (ajax/POST
-    "/obpv1/user/add_email"
+    (path-for "/obpv1/user/add_email")
     {:params  {:email (:new-address @state)}
      :handler (fn [{:keys [status message new-email]} data]
                 (if (= status "success")
@@ -23,7 +23,7 @@
 
 (defn set-primary-email [email state]
   (ajax/POST
-    "/obpv1/user/set_primary_email"
+    (path-for "/obpv1/user/set_primary_email")
     {:params {:email email}
      :handler (fn [{:keys [status]} data]
                 (if (= status "success")
@@ -34,7 +34,7 @@
 
 (defn delete-email [email state]
   (ajax/POST
-    "/obpv1/user/delete_email"
+    (path-for "/obpv1/user/delete_email")
     {:params  {:email email}
      :handler (fn [{:keys [status]} data]
                 (if (= status "success")
@@ -121,7 +121,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/user/email-addresses?_=" (.now js/Date))
+    (path-for "/obpv1/user/email-addresses" true)
     {:handler (fn [data]
                 (swap! state assoc :emails data))}))
 

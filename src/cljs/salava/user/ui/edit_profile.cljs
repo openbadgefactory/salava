@@ -6,10 +6,10 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.file.ui.my :as file]
             [salava.user.schemas :refer [contact-fields]]
-            [salava.user.ui.helper :refer [default-profile-picture]]))
+            [salava.user.ui.helper :refer [profile-picture]]))
 
 (defn save-profile [state]
   (let [{:keys [profile_visibility about profile_picture]} (:user @state)
@@ -17,7 +17,7 @@
                             (filter #(not-empty (:field %)))
                             (map #(select-keys % [:field :value])))]
     (ajax/POST
-      "/obpv1/user/profile"
+      (path-for "/obpv1/user/profile")
       {:params  {:profile_visibility profile_visibility
                  :about              about
                  :profile_picture    profile_picture
@@ -33,7 +33,7 @@
                     (.append "file" file (.-name file)))]
     (m/modal! (file/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
-      "/obpv1/file/upload"
+      (path-for "/obpv1/file/upload")
       {:body    form-data
        :handler (fn [{:keys [status message reason data]} response]
                   (when (= status "success")
@@ -46,7 +46,7 @@
     [:div {:key path
            :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
            :on-click #(reset! profile-picture-atom path)}
-     [:img {:src (if path (str "/" path) default-profile-picture)}]]))
+     [:img {:src (profile-picture path)}]]))
 
 (defn profile-picture-gallery [pictures-atom profile-picture-atom]
   [:div {:id "profile-picture-gallery" :class "row"}
@@ -133,7 +133,7 @@
     [:div.panel {:id "edit-profile"}
      [m/modal-window]
      [:div.panel-body
-      [:div.row [:div.col-xs-12 [:a {:href (str "/user/profile/" (:user_id @state))} (t :user/Viewprofile)]]]
+      [:div.row [:div.col-xs-12 [:a {:href (path-for (str "/user/profile/" (:user_id @state)))} (t :user/Viewprofile)]]]
       [:form.form-horizontal
        [:div.row [:label.col-xs-12 (t :user/Profilevisibility)]]
        [:div.radio {:id "visibility-radio-internal"}
@@ -171,7 +171,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/user/edit/profile?_=" (.now js/Date))
+    (path-for "/obpv1/user/edit/profile" true)
     {:handler (fn [data]
                 (reset! state data))}))
 

@@ -2,6 +2,8 @@
 
  :site-url "http://localhost:5000"
 
+ :base-path ""
+
  :asset-version nil
 
  :languages [:en :fi]

@@ -4,14 +4,14 @@
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]))
 
 (defn delete-page [id]
   (ajax/DELETE
-    (str "/obpv1/page/" id)
+    (path-for (str "/obpv1/page/" id))
     {:handler (fn [] (navigate-to "/page"))}))
 
 (defn delete-page-modal [page-id]
@@ -39,7 +39,7 @@
 (defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_image html_content creator_name creator_url creator_email creator_image]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
-    [:img {:src (str "/" image_file)}]]
+    [:img {:src (path-for image_file)}]]
    [:div {:class "col-md-8"}
     [:div.row
      [:div.col-md-12
@@ -81,7 +81,7 @@
        (into [:div.file-block-images]
              (for [file files]
                [:div.file-block-image
-                [:img {:src (str "/" (:path file))}]]))
+                [:img {:src (path-for (:path file))}]]))
        [:div.file-block-attachments
         [:label.files-label
          (t :page/Attachments) ": "]
@@ -89,7 +89,7 @@
               (for [file files]
                 [:span.attachment
                  [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-                 [:a.file-link {:href (str "/" (:path file))
+                 [:a.file-link {:href (path-for (:path file))
                                 :target "_blank"}
                   (:name file)]]))])]]])
 
@@ -110,9 +110,9 @@
                          badges)]
      (for [badge sorted-badges]
        (if (= format "short")
-         [:a.small-badge-image {:href (str "/badge/info/" (:id badge))
-                                :key (:id badge)}
-          [:img {:src (str "/" (:image_file badge))
+         [:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
+                                :key  (:id badge)}
+          [:img {:src (path-for (:image_file badge))
                  :title (:name badge)}]]
          (badge-block (assoc badge :format "long")))))])
 
@@ -134,7 +134,7 @@
              [:h1 name]]]
            [:div.row
             [:div {:class "col-md-12 page-author"}
-             [:a {:href (str "/user/profile/" user_id)} (str first_name " " last_name)]]]
+             [:a {:href (path-for (str "/user/profile/" user_id))} (str first_name " " last_name)]]]
            [:div.row
             [:div {:class "col-md-12 page-summary"}
              description]]
@@ -199,7 +199,7 @@
    [:div {:class "col-xs-4"
           :id "buttons-right"}
     [:a {:class "btn btn-primary"
-         :href (str "/page/view/" id)}
+         :href  (path-for (str "/page/view/" id))}
      (t :page/View)]
     [:a {:class "btn btn-warning"
          :on-click #(m/modal! (delete-page-modal id))}

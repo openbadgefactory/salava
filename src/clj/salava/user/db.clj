@@ -20,7 +20,9 @@
   (str (java.util.UUID/randomUUID)))
 
 (defn get-site-url [ctx]
- (get-in ctx [:config :core :site-url]))
+  (let [site-url (get-in ctx [:config :core :site-url])
+        base-path (get-in ctx [:config :core :base-path] "")]
+    (str site-url base-path)))
 
 (defn activation-link [site-url user-id code]
   (str site-url "/user/activate/" user-id "/" (unix-time) "/" code))

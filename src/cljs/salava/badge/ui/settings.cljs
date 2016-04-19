@@ -5,6 +5,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
             [salava.core.ui.rate-it :as r]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.badge.ui.helper :as bh]))
 
 (defn set-visibility [visibility state]
@@ -12,14 +13,14 @@
 
 (defn delete-badge [id]
   (ajax/DELETE
-    (str "/obpv1/badge/" id)
+    (path-for (str "/obpv1/badge/" id))
     {:handler (fn []
                 (.reload js/window.location))}))
 
 (defn save-settings [state]
   (let [{:keys [id visibility tags rating evidence-url]} (:badge-settings @state)]
     (ajax/POST
-      (str "/obpv1/badge/save_settings/" id)
+      (path-for (str "/obpv1/badge/save_settings/" id))
       {:params  {:visibility   visibility
                  :tags         tags
                  :rating       rating
@@ -41,7 +42,7 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
     [:div.row
      [:div {:class "col-md-3 badge-image modal-left"}
-      [:img {:src (str "/" image_file)}]]
+      [:img {:src (path-for image_file)}]]
      [:div {:class "col-md-9 badge-content"}
       [:div.row
        [:div {:class "col-md-12 badge-info"}

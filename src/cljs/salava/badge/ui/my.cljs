@@ -5,7 +5,7 @@
             [clojure.set :as set :refer [intersection]]
             [clojure.string :refer [upper-case]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.badge.ui.settings :as s]
@@ -54,7 +54,7 @@
 
 (defn show-settings-dialog [badge-id state]
   (ajax/GET
-    (str "/obpv1/badge/settings/" badge-id "?_=" (.now js/Date))
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
                 (swap! state assoc :badge-settings (hash-map :id badge-id
                                                              :visibility (:visibility data)
@@ -68,14 +68,14 @@
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description visibility expires_on revoked]} element-data
         expired? (bh/badge-expired? expires_on)
-        badge-link (str "/badge/info/" id)]
+        badge-link (path-for (str "/badge/info/" id))]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
       [:div {:class (str "media-content " (if expired? "media-expired"))}
        (if image_file
          [:div.media-left
-          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)}]]])
+          [:a {:href badge-link} [:img.badge-img {:src (path-for image_file)}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:href badge-link} name]]
@@ -97,7 +97,7 @@
          expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)]
          revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)]
          :else [:div
-                [:a {:class "bottom-link" :href (str "/badge/info/" id)}
+                [:a {:class "bottom-link" :href (path-for (str "/badge/info/" id))}
                  [:i {:class "fa fa-share-alt"}]
                  [:span (t :badge/Share)]]
                 [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
@@ -124,7 +124,7 @@
 
 (defn update-status [id new-status state]
   (ajax/POST
-    (str "/obpv1/badge/set_status/" id)
+    (path-for (str "/obpv1/badge/set_status/" id) true)
     {:params  {:status new-status}
      :handler (fn []
                 (let [badge (first (filter #(= id (:id %)) (:pending @state)))]
@@ -142,7 +142,7 @@
       [:div.col-md-12
        [:div.media
         [:div.pull-left
-         [:img.badge-image {:src (str "/" image_file)}]]
+         [:img.badge-image {:src (path-for image_file)}]]
         [:div.media-body
          [:h4.media-heading
           name]
@@ -173,21 +173,18 @@
      [:p "Using Open Badge Passport could not be easier:"]
      [:ol.welcome-text
       [:li
-       "Add a " [:a {:href "/user/edit/profile"} "profile picture"]
+       "Add a " [:a {:href (path-for "/user/edit/profile")} "profile picture"]
        ", a short bio or contact information to your "
-       [:a {:href (str "/user/profile/" (session/get-in [:user :id]))} "profile"] "."]
+       [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))} "profile"] "."]
       [:li
        "Do you already have Open Badges saved to Mozilla Backpack? "
-       [:a {:href "/badge/import"} "Import your badges"]
+       [:a {:href (path-for "/badge/import")} "Import your badges"]
        " to Open Badge Passport. "
-       [:b "NB! Remember to add your Backpack email to the " [:a {:href "/user/edit/email-addresses"} "email addresses"] "."]]
+       [:b "NB! Remember to add your Backpack email to the " [:a {:href (path-for "/user/edit/email-addresses")} "email addresses"] "."]]
       [:li
-       "No badges yet? "
-       [:b "Earn your \"Open Badge Passport - Member\" badge " [:a {:href "/gallery/getbadge"} "here!"]]]
-      [:li
-       [:a {:href "/page/mypages"} "Create a page"]
+       [:a {:href (path-for "/page/mypages")} "Create a page"]
        " to display your badges and share it with others in Social Media or in "
-       [:a {:href "/gallery/pages"} "in the Gallery"] "."]]]]])
+       [:a {:href (path-for "/gallery/pages")} "in the Gallery"] "."]]]]])
 
 (defn content [state]
   [:div {:id "my-badges"}
@@ -205,7 +202,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/badge?_=" (.now js/Date))
+    (path-for "/obpv1/badge" true)
     {:handler (fn [data]
                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
                                    :pending (filter #(= "pending" (:status %)) data)

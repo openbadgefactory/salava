@@ -2,6 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [compojure.route :as route]
             [salava.core.session :refer [wrap-app-session]]
+            [salava.core.util :refer [get-base-path]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.cookie :refer [cookie-store]]
@@ -62,6 +63,8 @@
                                {:name "page", :description "plugin"}
                                {:name "translator", :description "plugin"}
                                {:name "user", :description "plugin"}]})
-        (resolve-routes ctx)
+        (context (get-base-path ctx) []
+                 (resolve-routes ctx))
+
         (route/not-found "404 Not found"))))
 
