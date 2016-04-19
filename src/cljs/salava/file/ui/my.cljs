@@ -5,7 +5,7 @@
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.file.icons :refer [file-icon]]
-            [salava.core.ui.helper :refer [unique-values navigate-to]]
+            [salava.core.ui.helper :refer [unique-values navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.ui.tag :as tag]
@@ -47,7 +47,7 @@
                     (.append "file" file (.-name file)))]
     (m/modal! (upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
-      "/obpv1/file/upload"
+      (path-for "/obpv1/file/upload")
       {:body    form-data
        :handler (fn [data]
                   (if (= (:status data) "success")
@@ -56,7 +56,7 @@
 
 (defn delete-file [id files-atom]
   (ajax/DELETE
-    (str "/obpv1/file/" id)
+    (path-for (str "/obpv1/file/" id))
     {:handler (fn [data]
                 (when (= (:status data) "success")
                   (reset! files-atom (vec (remove #(= id (:id %)) @files-atom)))
@@ -86,7 +86,7 @@
 
 (defn save-tags [file-atom]
   (let [{:keys [id tags]} @file-atom]
-    (ajax/POST (str "/obpv1/file/save_tags/" id)
+    (ajax/POST (path-for (str "/obpv1/file/save_tags/" id))
                {:params {:tags tags}
                 :handler (fn [])})))
 
@@ -126,8 +126,7 @@
         [:i {:class (str "file-icon-large fa " (file-icon mime_type))}]]
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (str "/" path)
-                           :target "_blank"}
+         [:a.heading-link {:href (path-for path) :target "_blank"}
           name]]
         [:div.media-description
          [:div.file-create-date
@@ -188,7 +187,7 @@
 
 (defn init-data [state]
   (ajax/GET
-    (str "/obpv1/file?_=" (.now js/Date))
+    (path-for "/obpv1/file" true)
     {:handler (fn [data]
                 (swap! state assoc :files (vec data)))}))
 
