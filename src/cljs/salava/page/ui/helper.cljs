@@ -199,7 +199,8 @@
    [:div {:class "col-xs-4"
           :id "buttons-right"}
     [:a {:class "btn btn-primary"
-         :href  (path-for (str "/page/view/" id))}
+         :on-click #(do (.preventDefault %) (save-function (str "/page/view/" id)))
+         :href "#"}
      (t :page/View)]
     [:a {:class "btn btn-warning"
          :on-click #(m/modal! (delete-page-modal id))}
