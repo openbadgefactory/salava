@@ -8,7 +8,7 @@
             [salava.file.db :as f]
             [salava.page.main :as p]
             [salava.badge.main :as b]
-            [salava.core.util :refer [get-db get-datasource]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -19,19 +19,14 @@
 (defn generate-activation-id []
   (str (java.util.UUID/randomUUID)))
 
-(defn get-site-url [ctx]
-  (let [site-url (get-in ctx [:config :core :site-url])
-        base-path (get-in ctx [:config :core :base-path] "")]
-    (str site-url base-path)))
+(defn activation-link [site-url base-path user-id code]
+  (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code))
 
-(defn activation-link [site-url user-id code]
-  (str site-url "/user/activate/" user-id "/" (unix-time) "/" code))
+(defn login-link [site-url base-path]
+  (str site-url base-path "/user/login"))
 
-(defn login-link [site-url]
-  (str site-url "/user/login"))
-
-(defn email-verification-link [site-url verification-key]
-  (str site-url "/user/verify_email/" verification-key))
+(defn email-verification-link [site-url base-path verification-key]
+  (str site-url base-path "/user/verify_email/" verification-key))
 
 (defn hash-password [password]
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
@@ -58,11 +53,12 @@
   (if (email-exists? ctx email)
     {:status "error" :message (t :user/Enteredaddressisalready)}
     (let [site-url (get-site-url ctx)
+          base-path (get-base-path ctx)
           activation_code (generate-activation-id)
           new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language "en"} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-      (m/send-activation-message ctx site-url (activation-link site-url user-id activation_code) (login-link site-url) (str first-name " " last-name) email)
+      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code) (login-link site-url base-path) (str first-name " " last-name) email)
       {:status "success" :message ""})))
 
 (defn set-password-and-activate
@@ -119,10 +115,11 @@
     (if (email-exists? ctx email)
       {:status "error" :message (t :user/Enteredaddressisalready)}
       (let [site-url (get-site-url ctx)
+            base-path (get-base-path ctx)
             verification-key (generate-activation-id)
             {:keys [first_name last_name]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
         (insert-user-email! {:user_id user-id :email email :primary_address 0 :verification_key verification-key} (get-db ctx))
-        (m/send-verification ctx site-url (email-verification-link site-url verification-key) (str first_name " " last_name) email)
+        (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email)
         {:status "success" :message (str (t :user/Emailaddress) " " email " " (t :user/added)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
     (catch Object _
       {:status "error" :message (t :user/Errorwhileaddingemail)})))
@@ -212,12 +209,13 @@
   ""
   [ctx email]
   (let [site-url (get-site-url ctx)
+        base-path (get-base-path ctx)
         {:keys [id first_name last_name verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
     (if (and id primary_address)
       (do
         (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
-        (m/send-password-reset-message ctx site-url (activation-link site-url id verification-key) (str first_name " " last_name) email)
+        (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key) (str first_name " " last_name) email)
         {:status "success"})
       {:status "error"})))
 

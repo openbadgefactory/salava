@@ -17,6 +17,9 @@
 (defn get-data-dir [ctx]
   (get-in ctx [:config :core :data-dir]))
 
+(defn get-site-url [ctx]
+  (get-in ctx [:config :core :site-url] ""))
+
 (defn get-base-path [ctx]
   (get-in ctx [:config :core :base-path] ""))
 
