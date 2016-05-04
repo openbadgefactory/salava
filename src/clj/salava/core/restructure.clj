@@ -10,3 +10,7 @@
 (defmethod restructure-param :current-user
   [_ binding acc]
   (update-in acc [:letks] into [binding `(:identity ~'+compojure-api-request+)]))
+
+(defmethod restructure-param :flash-message
+  [_ binding acc]
+  (update-in acc [:letks] into [binding `(:flash ~'+compojure-api-request+)]))

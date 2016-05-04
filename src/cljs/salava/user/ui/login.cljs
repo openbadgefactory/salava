@@ -4,6 +4,7 @@
             [clojure.string :as string]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
+            [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]))
@@ -51,11 +52,15 @@
          [:div {:class "col-xs-6 text-right"}
           [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]]
          [:div {:class "col-xs-6 text-left"}
-          [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]]]]]))
+          [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
+        [:div {:class "row oauth-buttons"}
+         [:div {:class "col-xs-6 text-right"} (facebook-link false)]
+         [:div.col-xs-6 (linkedin-link nil nil)]]]]]]))
 
 (defn handler []
-  (let [state (atom {:email ""
-                     :password ""
-                     :error-message nil})]
+  (let [flash-message (t (keyword (session/get! :flash-message)))
+        state (atom {:email         ""
+                     :password      ""
+                     :error-message (if (not-empty flash-message) flash-message)})]
     (fn []
       (layout/landing-page (content state)))))

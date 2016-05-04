@@ -24,6 +24,8 @@
              (layout/main ctx "/profile/:id")
              (layout/main ctx "/edit/profile")
              (layout/main ctx "/cancel")
+             (layout/main ctx "/remote/facebook")
+             (layout/main ctx "/remote/linkedin")
 
              (GET "/verify_email/:verification_key" []
                   :path-params [verification_key :- s/Str]
@@ -71,7 +73,9 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (let [user-info (u/user-information ctx (:id current-user))]
-                    (ok {:user (dissoc user-info :profile_picture :profile_visibility :about)
+                    (ok {:user      (-> user-info
+                                        (dissoc :profile_picture :profile_visibility :about)
+                                        (assoc :password? (u/has-password? ctx (:id current-user))))
                          :languages (get-in ctx [:config :core :languages])})))
 
              (POST "/edit" []

@@ -43,7 +43,7 @@
   [:div {:class "navbar-header"}
    [:a {:class "logo pull-left"
         :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
-        :title "Open Badge Passport"}
+        :title (session/get :site-name)}
     [:img {:src   "/img/logo.png"
            :class "logo-main"}]
     [:img {:src "/img/logo_icon.png" :class "logo-icon"}]]
@@ -136,11 +136,9 @@
     (top-navi-header)
     [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
      [:ul {:class "nav navbar-nav"}]
-     [:div {:id "main-header-right"
-            :class "nav navbar-nav navbar-right"}
-      [:a {:id "login-button" :class "btn btn-primary"
-           :href "/user/login"}
-       "Login"]]]]])
+     [:div {:id "main-header-right" :class "nav navbar-nav navbar-right"}
+      [:a {:id  "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
+       (t :user/Login)]]]]])
 
 (defn landing-page [content]
   [:div

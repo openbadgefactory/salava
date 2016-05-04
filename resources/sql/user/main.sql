@@ -26,6 +26,9 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id
 -- get user by id
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, about FROM user WHERE id = :id
 
+--name: select-user-password
+SELECT pass FROM user WHERE id = :id
+
 --name: select-user-profile-fields
 -- get all user's profile fields
 SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id

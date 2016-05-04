@@ -5,6 +5,7 @@
             [salava.core.util :refer [get-base-path]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
+            [ring.middleware.flash :refer [wrap-flash]]
             [ring.middleware.session.cookie :refer [cookie-store]]
             [ring.middleware.webjars :refer [wrap-webjars]]))
 
@@ -41,6 +42,7 @@
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
                            (assoc-in [:session] false)))
+        (wrap-flash)
         (wrap-app-session config))))
 
 

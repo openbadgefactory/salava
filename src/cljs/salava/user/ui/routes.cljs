@@ -18,14 +18,14 @@
 
 (defn ^:export routes [context]
   {(str (base-path context) "/user") [[["/profile/" [#"\d+" :user-id]] profile/handler]
-                                     ["/login" login/handler]
-                                     [["/activate/" :user-id "/" :timestamp "/" :code] password/handler]
-                                     ["/register" register/handler]
-                                     ["/reset" reset/handler]
-                                     ["/edit" edit/handler]
-                                     ["/edit/email-addresses" email-addresses/handler]
-                                     ["/edit/profile" edit-profile/handler]
-                                     ["/cancel" cancel/handler]]})
+                                      ["/login" login/handler]
+                                      [["/activate/" :user-id "/" :timestamp "/" :code] password/handler]
+                                      ["/register" register/handler]
+                                      ["/reset" reset/handler]
+                                      ["/edit" edit/handler]
+                                      ["/edit/email-addresses" email-addresses/handler]
+                                      ["/edit/profile" edit-profile/handler]
+                                      ["/cancel" cancel/handler]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/user/profile/\\d+")                          {:breadcrumb (t :user/User " / " :user/Profile)}
@@ -33,8 +33,5 @@
    (str (base-path context) "/user/edit/profile")                          {:breadcrumb (t :user/User " / " :user/Editprofile)}
    (str (base-path context) "/user/edit")                                  {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
    (str (base-path context) "/user/edit/email-addresses")                  {:weight 42 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}
-   (str (base-path context) "/user/cancel")                                {:weight 43 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}
-   ;"/user/edit/fboauth"                                {:weight 43 :title (t :user/Facebook) :site-navi true :breadcrumb (t :user/User " / " :user/Facebook)}
-   ;"/user/edit/linkedin"                               {:weight 44 :title (t :user/Linkedin) :site-navi true :breadcrumb (t :user/User " / " :user/Linkedin)}
-   })
+   (str (base-path context) "/user/cancel")                                {:weight 43 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}})
 

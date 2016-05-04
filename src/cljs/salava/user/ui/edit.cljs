@@ -12,18 +12,17 @@
 (defn save-user-info [state]
   (ajax/POST
     (path-for "/obpv1/user/edit")
-    {:params  (:user @state)
+    {:params  (dissoc (:user @state) :password?)
      :handler (fn [data]
                 (navigate-to "/user/edit"))}))
 
-(defn new-password-valid? [current-password new-password new-password-verify]
-  (if (or (not-empty new-password) (not-empty new-password-verify))
-    (and (input/password-valid? new-password)
-         (input/password-valid? new-password-verify)
-         (= new-password new-password-verify)
-         current-password)
-    true))
-
+(defn new-password-valid? [has-password? current-password new-password new-password-verify]
+  (and (not-empty new-password)
+       (not-empty new-password-verify)
+       (input/password-valid? new-password)
+       (input/password-valid? new-password-verify)
+       (= new-password new-password-verify)
+       (or (not has-password?) (not-empty current-password))))
 (defn content [state]
   (let [current-password-atom (cursor state [:user :current_password])
         new-password-atom (cursor state [:user :new_password])
@@ -32,26 +31,27 @@
         first-name-atom (cursor state [:user :first_name])
         last-name-atom (cursor state [:user :last_name])
         country-atom (cursor state [:user :country])
-        message (:message @state)]
+        message (:message @state)
+        current-password? (get-in @state [:user :password?])]
     [:div {:class "panel" :id "edit-user"}
      [:div {:class "panel-body"}
       [:form.form-horizontal
        (if message
          [:div {:class (str "alert " (:class message))}
           (:content message)])
-       [:div.form-group
-        [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
-        [:div {:class "col-md-9"}
-         [:input {:class       "form-control"
-                  :id          "input-current-password"
-                  :name        name
-                  :type        "password"
-                  :placeholder (t :user/Enteryourcurrentpassword)
-                  :read-only   true
-                  :on-focus    #(.removeAttribute (.-target %) "readonly")
-                  :on-change   #(reset! current-password-atom (.-target.value %))
-                  :value       @current-password-atom}]]]
-
+       (if current-password?
+         [:div.form-group
+          [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
+          [:div {:class "col-md-9"}
+           [:input {:class       "form-control"
+                    :id          "input-current-password"
+                    :name        name
+                    :type        "password"
+                    :placeholder (t :user/Enteryourcurrentpassword)
+                    :read-only   true
+                    :on-focus    #(.removeAttribute (.-target %) "readonly")
+                    :on-change   #(reset! current-password-atom (.-target.value %))
+                    :value       @current-password-atom}]]])
        [:div.form-group
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
         [:div {:class "col-md-9"}
@@ -98,7 +98,7 @@
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
                                           (input/country-valid? @country-atom)
-                                          (new-password-valid? @current-password-atom @new-password-atom @new-password-verify-atom))
+                                          (new-password-valid? current-password? @current-password-atom @new-password-atom @new-password-verify-atom))
                                "disabled")
                    :on-click #(do
                                (.preventDefault %)

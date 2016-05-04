@@ -8,6 +8,7 @@
             [salava.file.db :as f]
             [salava.page.main :as p]
             [salava.badge.main :as b]
+            [salava.oauth.db :as o]
             [salava.core.util :refer [get-db get-datasource get-site-url get-base-path]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
@@ -55,7 +56,8 @@
     (let [site-url (get-site-url ctx)
           base-path (get-base-path ctx)
           activation_code (generate-activation-id)
-          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language "en"} (get-db ctx))
+          language (or (get-in ctx [:config :user :default-language]) "en")
+          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
       (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code) (login-link site-url base-path) (str first-name " " last-name) email)
@@ -80,9 +82,12 @@
 (defn login-user
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
-  (let [{:keys [id first_name last_name pass activated verified primary_address language profile_picture country]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-    (if (and (hashers/check plain-password pass) id activated verified primary_address)
-      {:status "success" :id id}
+  (try+
+    (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+      (if (and id pass activated verified primary_address (hashers/check plain-password pass))
+        {:status "success" :id id}
+        {:status "error" :message (t :user/Loginfailed)}))
+    (catch Object _
       {:status "error" :message (t :user/Loginfailed)})))
 
 (defn edit-user
@@ -94,7 +99,7 @@
         (if-not (= new_password new_password_verify)
           (throw+ (t :user/Passwordmissmatch)))
         (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
-          (if-not (hashers/check current_password pass)
+          (if (and pass (not (hashers/check current_password pass)))
             (throw+ (t :user/Wrongpassword)))))
       (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
       (if new_password
@@ -163,6 +168,10 @@
   "Get user profile fields"
   [ctx user-id]
   (select-user-profile-fields {:user_id user-id} (get-db ctx)))
+
+(defn has-password? [ctx user-id]
+  (let [pass (select-user-password {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
+    (not (empty? pass))))
 
 (defn user-information-and-profile
   "Get user informatin, profile, public badges and pages"
@@ -252,6 +261,8 @@
       (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
       (delete-user-profile! {:user_id user-id} {:connection tr-cn})
       (delete-email-addresses! {:user_id user-id} {:connection tr-cn})
+      (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
+        (o/remove-oauth-user-all-services ctx user-id))
       (delete-user! {:id user-id} {:connection tr-cn}))
     {:status "success"}
     (catch Object _
