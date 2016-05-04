@@ -66,7 +66,13 @@
     [:div.panel-body
      (cancel-form state)]]])
 
+(defn init-data []
+  (ajax/GET
+    (path-for "/obpv1/user/test")
+    {:handler (fn [])}))
+
 (defn handler [site-navi]
   (let [state (atom {:password "" :error-message nil})]
+    (init-data)
     (fn []
       (layout/default site-navi (content state)))))

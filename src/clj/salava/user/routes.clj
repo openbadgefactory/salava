@@ -171,7 +171,7 @@
                    :current-user current-user
                    (let [result (u/delete-user ctx (:id current-user) password)]
                      (if (= "success" (:status result))
-                       (assoc-in (ok) [:session :identity] nil)
+                       (assoc-in (ok result) [:session :identity] nil)
                        (ok result))))
 
              (GET "/test" []
