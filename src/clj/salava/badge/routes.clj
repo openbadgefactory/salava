@@ -132,6 +132,7 @@
                   (ok (b/badge-settings ctx badgeid (:id current-user))))
 
              (POST "/save_settings/:badgeid" []
+                   :return {:status (s/enum "success" "error")}
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public" "internal")
                                  evidence-url :- (s/maybe s/Str)

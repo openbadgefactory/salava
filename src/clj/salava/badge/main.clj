@@ -330,7 +330,9 @@
                 :evidence_url evidence-url
                 :rating       rating}]
       (update-badge-settings! data (get-db ctx))
-      (save-badge-tags! ctx tags badge-id))))
+      (save-badge-tags! ctx tags badge-id)
+      {:status "success"})
+    {:status "error"}))
 
 (defn delete-badge-with-db! [db badge-id]
   (delete-badge-tags! {:badge_id badge-id} db)
