@@ -42,7 +42,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image qr_code]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])]
     (if (:initializing @state)
@@ -90,6 +90,8 @@
           [:div.row
            [:div.col-xs-12
             [:img {:src (path-for image_file)}]]]
+          (if (and qr_code (= visibility "public"))
+            [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
           (if owner?
             [:div.row {:id "badge-rating"}
              [:div.col-xs-12

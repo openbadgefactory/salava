@@ -7,10 +7,14 @@
             [salava.core.time :refer [unix-time iso8601-to-unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest]]
+            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64]]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
+
+(defn badge-url [ctx badge-id]
+  (println (str (get-site-url ctx) (get-base-path ctx) "/badge/info/" badge-id))
+  (str (get-site-url ctx) (get-base-path ctx) "/badge/info/" badge-id))
 
 (defn assoc-badge-tags [badge tags]
   (assoc badge :tags (map :tag (filter #(= (:badge_id %) (:id badge))
@@ -138,7 +142,8 @@
                  :view_count view-count
                  :recipient_count recipient-count
                  :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
-                 :assertion (parse-assertion-json (:assertion_json badge)))))
+                 :assertion (parse-assertion-json (:assertion_json badge))
+                 :qr_code (str->qr-base64 (badge-url ctx badge-id)))))
 
 (defn save-badge-content!
   "Save badge content"

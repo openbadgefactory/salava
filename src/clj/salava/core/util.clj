@@ -4,9 +4,9 @@
             [digest :as d]
             [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
+            [clj.qrgen :as q]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
-            [buddy.core.codecs :refer [base64->bytes base64->str]]))
-
+            [buddy.core.codecs :refer [base64->bytes base64->str bytes->base64]]))
 
 (defn get-db [ctx]
   {:connection {:datasource (:db ctx)}})
@@ -121,3 +121,14 @@
     (re-find #"https?" (str url)) (save-file-from-http-url ctx url)
     (re-find #"data?" (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw+ (str "Error in file url: " url))))
+
+(defn str->qr-base64 [text]
+  (try+
+    (-> text
+        str
+        (q/from)
+        (q/as-bytes)
+        (bytes->base64))
+    (catch Object _
+      ;(TODO: (log "could not generate QR-code for string:" text)
+      )))

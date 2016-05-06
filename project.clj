@@ -42,6 +42,7 @@
                  [digest "1.4.4"]
                  [org.clojure/tools.cli "0.3.3"]
                  [alxlit/autoclave "0.2.0"]
+                 [clj.qrgen "0.4.0"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.7.170"]

@@ -117,7 +117,7 @@
          (badge-block (assoc badge :format "long")))))])
 
 (defn view-page [page]
-  (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding]} page]
+  (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} page]
     [:div {:id    (str "theme-" (or theme 0))
            :class "page-content"}
      (if id
@@ -125,6 +125,10 @@
         [:div.panel-left
          [:div.panel-right
           [:div.panel-content
+           (if (and qr_code (= visibility "public"))
+             [:div.row
+              [:div {:class "col-xs-12 text-center"}
+               [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}]]])
            (if mtime
              [:div.row
               [:div {:class "col-md-12 page-mtime"}

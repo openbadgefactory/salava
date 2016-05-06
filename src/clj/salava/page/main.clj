@@ -7,12 +7,15 @@
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db get-datasource]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path str->qr-base64]]
             [salava.badge.main :as b]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
             [salava.file.db :as f]))
 
 (defqueries "sql/page/main.sql")
+
+(defn page-url [ctx page-id]
+  (str (get-site-url ctx) (get-base-path ctx) "/page/view/" page-id))
 
 (defn page-owner?
   "Check if user owns page"
@@ -96,7 +99,8 @@
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
         blocks (page-blocks ctx page-id)]
     (assoc page :blocks blocks
-                :border (border-attributes (:border page)))))
+                :border (border-attributes (:border page))
+                :qr_code (str->qr-base64 (page-url ctx page-id)))))
 
 (defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
