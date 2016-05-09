@@ -194,4 +194,28 @@
           :primary_address 1
           :ctime 1456305482
           :mtime 1456305482}
-   })
+   }
+
+ {
+  :table "user"
+  :data {
+         :first_name "Testing"
+         :last_name "Import"
+         :role "user"
+         :country "EE"
+         :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+         :ctime 1462785916
+         :mtime 1462785916
+         :activated 1
+         :about "This account is created to test badge importing from Mozilla Backpack"}
+  }
+ {:table "user_email"
+  :data {
+         :user_id 9
+         :email "test.discendum@gmail.com"
+         :verified 1
+         :verification_key ""
+         :primary_address 1
+         :ctime 1462785916
+         :mtime 1462785916}
+  })
