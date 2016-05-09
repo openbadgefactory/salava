@@ -80,7 +80,7 @@
     :email "eight.user@example.com"
     :password "testtest"}
    {:id 9
-    :email "test.disendum@gmail.com"
+    :email "test.discendum@gmail.com"
     :password "testtest"}])
 
 (defn test-user-credentials [user-id]
