@@ -51,10 +51,10 @@
         [:div {:class "row login-links"}
          [:div {:class "col-xs-6 text-right"}
           [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]]
-         [:div {:class "col-xs-6 text-left"}
+         [:div {:class "col-sm-6 col-xs-12 text-left"}
           [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
         [:div {:class "row oauth-buttons"}
-         [:div {:class "col-xs-6 text-right"} (facebook-link false)]
+         [:div {:class "col-sm-6 col-xs-12 text-right"} (facebook-link false)]
          [:div.col-xs-6 (linkedin-link nil nil)]]]]]]))
 
 (defn handler []
