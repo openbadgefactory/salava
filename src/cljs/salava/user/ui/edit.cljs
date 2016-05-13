@@ -1,5 +1,6 @@
 (ns salava.user.ui.edit
   (:require [reagent.core :refer [atom cursor]]
+            [clojure.string :refer [blank?]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
             [salava.core.ui.layout :as layout]
@@ -10,19 +11,31 @@
             [salava.user.ui.input :as input]))
 
 (defn save-user-info [state]
-  (ajax/POST
-    (path-for "/obpv1/user/edit")
-    {:params  (dissoc (:user @state) :password?)
-     :handler (fn [data]
-                (navigate-to "/user/edit"))}))
+  (let [params (:user @state)
+        current-password (if-not (blank? (:current_password params)) (:current_password params))
+        new-password (if-not (blank? (:new_password params)) (:new_password params))
+        new-password-verify (if-not (blank? (:new_password_verify params)) (:new_password_verify params))]
+    (ajax/POST
+      (path-for "/obpv1/user/edit")
+      {:params  (-> params
+                    (dissoc :password?)
+                    (assoc :current_password current-password
+                           :new_password new-password
+                           :new_password_verify new-password-verify))
+       :handler (fn [data]
+                  (navigate-to "/user/edit"))})))
 
 (defn new-password-valid? [has-password? current-password new-password new-password-verify]
-  (and (not-empty new-password)
-       (not-empty new-password-verify)
-       (input/password-valid? new-password)
-       (input/password-valid? new-password-verify)
-       (= new-password new-password-verify)
-       (or (not has-password?) (not-empty current-password))))
+  (or
+    (and (empty? new-password)
+         (empty? new-password-verify)
+         (empty? current-password))
+    (and (not-empty new-password)
+         (not-empty new-password-verify)
+         (input/password-valid? new-password)
+         (input/password-valid? new-password-verify)
+         (= new-password new-password-verify)
+         (or (not has-password?) (not-empty current-password)))))
 (defn content [state]
   (let [current-password-atom (cursor state [:user :current_password])
         new-password-atom (cursor state [:user :new_password])
