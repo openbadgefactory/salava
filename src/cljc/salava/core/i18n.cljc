@@ -25,7 +25,7 @@
 #?(:clj  (defn t [key] (get-t "en" key))
 
    :cljs (defn t [& keylist]
-           (let [lang (or (session/get-in [:user :lang]) :en)]
+           (let [lang (or (session/get-in [:user :language]) :en)]
              (if (session/get :i18n-editable)
                (tr/get-editable translation lang keylist)
                (apply str (map (fn [k] (if (keyword? k) (get-t lang k) k)) keylist))))))
