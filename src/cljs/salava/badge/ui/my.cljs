@@ -170,21 +170,21 @@
    [:div.panel-body
     [:h1.uppercase-header (t :core/WelcometoOpenBadgePassport)]
     [:div.text
-     [:p "Using Open Badge Passport could not be easier:"]
+     [:p (t :badge/Welcometext1) ":"]
      [:ol.welcome-text
       [:li
-       "Add a " [:a {:href (path-for "/user/edit/profile")} "profile picture"]
-       ", a short bio or contact information to your "
+       (t :badge/Add) " " [:a {:href (path-for "/user/edit/profile")} (t :badge/Profilepicture)]
+       "," (t :badge/Welcometextinfo1) " "
        [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))} "profile"] "."]
       [:li
-       "Do you already have Open Badges saved to Mozilla Backpack? "
-       [:a {:href (path-for "/badge/import")} "Import your badges"]
-       " to Open Badge Passport. "
-       [:b "NB! Remember to add your Backpack email to the " [:a {:href (path-for "/user/edit/email-addresses")} "email addresses"] "."]]
+       (t :badge/Welcometextinfo2) " "
+       [:a {:href (path-for "/badge/import")} (t :badge/Importyourbages)]
+       " "(t :badge/Toopenbagdgepassport) ". "
+       [:b (t :badge/Rememberaddyouremail) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/Mailaddresses)] "."]]
       [:li
-       [:a {:href (path-for "/page/mypages")} "Create a page"]
-       " to display your badges and share it with others in Social Media or in "
-       [:a {:href (path-for "/gallery/pages")} "in the Gallery"] "."]]]]])
+       [:a {:href (path-for "/page/mypages")} (t :badge/Createpage)]
+       " "(t :badge/Welcometextinfo3) " "
+       [:a {:href (path-for "/gallery/pages")} (t :badge/Ingallery)] "."]]]]])
 
 (defn content [state]
   [:div {:id "my-badges"}

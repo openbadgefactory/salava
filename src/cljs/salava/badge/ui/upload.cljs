@@ -45,16 +45,18 @@
 (defn upload-info []
   [:div
    [:p
-    "You can upload your own badge files from your computer:"]
+    (t :badge/Uploadbadgesfrominfo1) ":"]
    [:ol
-    [:li "Click " [:b "Browse"] " and browse to your badge"]
-    [:li "Click " [:b "Open"]]]
+    [:li {:dangerouslySetInnerHTML
+         {:__html (t :badge/Uploadbadgesfrominfo2)}}]
+    [:li {:dangerouslySetInnerHTML
+         {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
    [:p
-    "Your uploaded badges will appear at "
-    [:a {:href (path-for "/badge/mybadges")} "My badges"] " page. "
-    ". You can delete unwanted badges at "
-    [:a {:href (path-for "/badge/mybadges")} "My badges"]
-    " page in badge Settings."]])
+    (t :badge/Uploadbagesfromresult1) " "
+    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
+     (t :badge/Uploadbagesfromresult2) "  "
+    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    " " (t :badge/Uploadbagesfromresult3) "."]])
 
 (defn content []
   [:div {:class "badge-upload"}

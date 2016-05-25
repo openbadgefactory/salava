@@ -49,19 +49,22 @@
   [:div {:id "cancel-account"}
    [:h1.uppercase-header (t :user/Cancelaccount)]
    [:div {:id "cancel-info"}
-    [:p "You are about to cancel your user account"]
-    [:p "All badges and pages in your account will be removed from the site. Remember\nto a) upload your badges to your computer or b) save them to Mozilla\nBackpack. Here's how:"]
-    [:p "a) upload your badges to your computer:"]
+    [:p (t :user/Cancelaccountinstructions1)]
+    [:p (t :user/Cancelaccountinstructions2) ":"]
+    [:p (t :user/Cancelaccountinstructions3) ":"]
     [:ul
-     [:li "Go to " [:a {:href (path-for "/badge/export")} "badge export"] " page"]
-     [:li "Click the icon on the right lower corner of the box where the badge is, \"download badge\""]]
-    [:p "b) export badges to Mozilla Backpack:"]
+     [:li (t :user/Goto) " " [:a {:href (path-for "/badge/export")} (t :user/Badgeexport)] " " (t :user/page)]
+     [:li {:dangerouslySetInnerHTML
+         {:__html (t :user/Cancelaccountinstructions4)}}]]
+    [:p (t :user/Cancelaccountinstructions5) ":"]
     [:ul
-     [:li "Go to " [:a {:href (path-for "/badge/export")} "badge export"] " page"]
-     [:li "Click \"Select All\" button in order to select all of your badges or click one-by-one \"Export to backpack\" "]
-     [:li "Click \"Export selected badges to backpack\""]
-     [:li "Follow the Backpack instructions after this "]]
-    [:p [:b "NOTE: The cancellation of your account is not reversible. "]]]
+     [:li (t :user/Goto) " " [:a {:href (path-for "/badge/export")} (t :user/Badgeexport)] " " (t :user/page)]
+     [:li {:dangerouslySetInnerHTML
+         {:__html (t :user/Cancelaccountinstructions6)}}]
+     [:li {:dangerouslySetInnerHTML
+         {:__html (t :user/Cancelaccountinstructions7)}}]
+     [:li  (t :user/Cancelaccountinstructions8)]]
+    [:p [:b (t :user/Cancelaccountinstructions9)]]]
    [:div {:class "panel"}
     [:div.panel-body
      (cancel-form state)]]])

@@ -114,23 +114,25 @@
 (defn import-info []
   [:div
    [:p
-    "You can import your existing badges from your "
+    (t :badge/Importexistbadges1) " "
     [:a {:href "https://backpack.openbadges.org/backpack/" :target "_blank"} "Mozilla Backpack"]
-    " account. Before you start make sure that the e-mail address associated with your Backpack account is saved at the "
-    [:a {:href (path-for "/user/edit/email-addresses")} "E-mail addresses"] " page."
+    " " (t :badge/Importexistbadges2) " "
+    [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/Mailaddresses)] " " (t :badge/page) "."
     [:br]
-    "To import badges from Backpack, badges have to be placed to a public Collection (group). If your badges are not in a public Collection, please follow these instructions:"]
+    (t :badge/Importbadgesinstructions1) ":"]
    [:ol
-    [:li "Please login to your Mozilla Backpack."]
-    [:li "Go to Collections page and drag the badges you want to import under any of the collections."]
-    [:li "Check \"public\" checkbox for the collection."]
-    [:li "Click \"Import badges from Mozilla Backpack\" button below."]]
+    [:li (t :badge/Importbadgesinstructions2) "."]
+    [:li (t :badge/Importbadgesinstructions3) "."]
+    [:li [:span {:dangerouslySetInnerHTML
+         {:__html (t :badge/Importbadgesinstructions4)}}] "."]
+    [:li [:span {:dangerouslySetInnerHTML
+         {:__html (t :badge/Importbadgesinstructions5)}}] "."]]
    [:p
-    "Your imported badges will appear at "
-    [:a {:href (path-for "/badge/mybadges")} "My badges"] " page. "
-    "You can delete unwanted badges at "
-    [:a {:href (path-for "/badge/mybadges")} "My badges"]
-    " page in badge Settings."]])
+    (t :badge/Importbadgesresults1) " "
+    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " "
+    (t :badge/Importbadgesresults2) " "
+    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    " " (t :badge/Importbadgesresults3) "."]])
 
 (defn content [state]
   [:div {:class "import-badges"}
