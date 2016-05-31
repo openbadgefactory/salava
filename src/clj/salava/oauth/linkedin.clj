@@ -38,7 +38,9 @@
     (let [access-token (linkedin-access-token ctx code linkedin-login-redirect-path)
           linkedin-user (d/oauth-user ctx "https://api.linkedin.com/v1/people/~:(id,first-name,last-name,picture-url,email-address,location)?format=json" {:oauth-token access-token} parse-linkedin-user)
           user-id (d/get-or-create-user ctx "linkedin" linkedin-user current-user-id)]
-      {:status "success" :user-id user-id})
+      (do
+        (d/update-user-last_login ctx user-id)
+        {:status "success" :user-id user-id}))
     (catch Object _
       {:status "error" :message _})))
 

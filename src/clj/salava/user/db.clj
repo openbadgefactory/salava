@@ -85,7 +85,9 @@
   (try+
     (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
       (if (and id pass activated verified primary_address (hashers/check plain-password pass))
-        {:status "success" :id id}
+        (do
+          (update-user-last_login! {:id id} (get-db ctx))
+          {:status "success" :id id})
         {:status "error" :message (t :user/Loginfailed)}))
     (catch Object _
       {:status "error" :message (t :user/Loginfailed)})))

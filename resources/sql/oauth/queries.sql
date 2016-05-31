@@ -26,3 +26,6 @@ DELETE FROM oauth_user WHERE user_id = :user_id AND service = :service
 
 -- name: delete-oauth-user-all-services!
 DELETE FROM oauth_user WHERE user_id = :user_id
+
+--name: update-user-last_login!
+UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id
