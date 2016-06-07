@@ -13,7 +13,8 @@
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.core.mail :as m]))
+            [salava.core.mail :as m])
+  (:import [salava LegacyPassword]))
 
 (defqueries "sql/user/main.sql")
 
@@ -31,6 +32,11 @@
 
 (defn hash-password [password]
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
+
+(defn check-password [password hash]
+  (if (= (subs hash 0 3) "$S$")
+    (LegacyPassword/checkPassword password hash)
+    (hashers/check password hash)))
 
 (defn verified-email-addresses
   "Get list of user's verified email addresses by user id"
@@ -84,7 +90,7 @@
   [ctx email plain-password]
   (try+
     (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-      (if (and id pass activated verified primary_address (hashers/check plain-password pass))
+      (if (and id pass activated verified primary_address (check-password plain-password pass))
         {:status "success" :id id}
         {:status "error" :message (t :user/Loginfailed)}))
     (catch Object _
@@ -99,7 +105,7 @@
         (if-not (= new_password new_password_verify)
           (throw+ (t :user/Passwordmissmatch)))
         (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
-          (if (and pass (not (hashers/check current_password pass)))
+          (if (and pass (not (check-password current_password pass)))
             (throw+ (t :user/Wrongpassword)))))
       (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
       (if new_password
@@ -250,7 +256,7 @@
   [ctx user-id plain-password]
   (try+
     (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-      (if-not (and (hashers/check plain-password pass) id activated)
+      (if-not (and (check-password plain-password pass) id activated)
         (throw+ "Invalid password")))
     (jdbc/with-db-transaction
       [tr-cn (get-datasource ctx)]

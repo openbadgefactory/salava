@@ -78,6 +78,7 @@
                  ]
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
+  :java-source-paths ["src/java"]
   :test-paths ["test/clj" "test/cljs" "test/cljc"]
   :profiles {:dev {:source-paths ["src/dev-clj"]
                    :dependencies [[figwheel "0.5.0-2"]
