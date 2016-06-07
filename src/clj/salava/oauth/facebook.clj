@@ -42,7 +42,9 @@
     (let [access-token (facebook-access-token ctx code "/oauth/facebook")
           facebook-user (d/oauth-user ctx (str facebook-base-url "/me") {:query-params {:access_token access-token :fields "id,email,first_name,last_name,picture,locale"}} parse-facebook-user)
           user-id (d/get-or-create-user ctx "facebook" facebook-user current-user-id)]
-      {:status "success" :user-id user-id})
+      (do
+        (d/update-user-last_login ctx user-id)
+        {:status "success" :user-id user-id}))
     (catch Object _
       {:status "error" :message _})))
 
@@ -54,4 +56,3 @@
       {:status "success"})
     (catch Object _
       {:status "error" :message _})))
-

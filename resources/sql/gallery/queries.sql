@@ -74,3 +74,6 @@ SELECT user_id, COUNT(DISTINCT badge_content_id) AS c FROM badge
              AND badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE user_id = :user_id AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
              AND user_id IN (:user_ids)
        GROUP BY user_id
+
+-- name: select-badges-recipients
+SELECT badge_content_id, count(distinct user_id) as recipients FROM badge WHERE badge_content_id IN (:badge_content_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp()) GROUP BY badge_content_id

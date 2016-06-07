@@ -83,3 +83,6 @@
   (let [oauth-user-id (select-oauth-user-id {:user_id user-id :service service} (into {:result-set-fn first :row-fn :oauth_user_id} (get-db ctx)))
         password (select-user-password {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
     {:active (boolean oauth-user-id) :no-password? (empty? password)}))
+
+(defn update-user-last_login [ctx user-id]
+  (update-user-last_login! {:id user-id} (get-db ctx)))
