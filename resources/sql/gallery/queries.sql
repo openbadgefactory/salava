@@ -67,3 +67,6 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
 SELECT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN badge AS b ON b.user_id = u.id
        WHERE badge_content_id = :badge_content_id AND status = 'accepted' AND b.deleted = 0
+
+-- name: select-badges-recipients
+SELECT badge_content_id, count(distinct user_id) as recipients FROM badge WHERE badge_content_id IN (:badge_content_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp()) GROUP BY badge_content_id
