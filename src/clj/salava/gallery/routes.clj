@@ -95,10 +95,10 @@
 
              (POST "/profiles" []
                    :return {:users [schemas/UserProfiles]
-                            :countries schemas/Countries}
+                            :countries [schemas/Countries]}
                    :body [search-params schemas/UserSearch]
                    :summary "Get public user profiles"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok {:users (g/public-profiles ctx search-params (:id current-user))
+                   (ok {:users     (g/public-profiles ctx search-params (:id current-user))
                         :countries (g/profile-countries ctx (:id current-user))})))))

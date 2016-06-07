@@ -164,7 +164,7 @@
         state (atom {:user-id user-id
                      :badges []
                      :countries []
-                     :country-selected "Finland"
+                     :country-selected "FI"
                      :advanced-search false
                      :badge-name ""
                      :recipient-name ""

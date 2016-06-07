@@ -64,6 +64,13 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
        LIMIT 100
 
 -- name: select-badge-recipients
-SELECT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
+SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN badge AS b ON b.user_id = u.id
        WHERE badge_content_id = :badge_content_id AND status = 'accepted' AND b.deleted = 0
+
+-- name: select-common-badge-counts
+SELECT user_id, COUNT(DISTINCT badge_content_id) AS c FROM badge
+       WHERE status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
+             AND badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE user_id = :user_id AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
+             AND user_id IN (:user_ids)
+       GROUP BY user_id

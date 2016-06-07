@@ -253,9 +253,12 @@
    "ZW" "Zimbabwe"
    "AX" "Åland Islands"})
 
-(def all-countries-sorted
+(defn sort-countries [country-map]
   (into (sorted-map-by
           (fn [key1 key2]
             (compare (get all-countries key1)
                      (get all-countries key2))))
-        all-countries))
+        country-map))
+
+(def all-countries-sorted
+  (sort-countries all-countries))

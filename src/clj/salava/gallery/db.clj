@@ -4,7 +4,7 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db]]
-            [salava.core.countries :refer [all-countries all-countries-sorted]]
+            [salava.core.countries :refer [all-countries sort-countries]]
             [salava.page.main :as p]
             [salava.badge.main :as b]))
 
@@ -135,31 +135,46 @@
 (defn profile-countries [ctx user-id]
   (let [current-country (user-country ctx user-id)
         countries (select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
-    (select-keys all-countries-sorted (conj countries current-country))))
+    (-> all-countries
+        (select-keys (conj countries current-country))
+        (sort-countries)
+        (seq))))
 
 (defn public-profiles
   "Searcn public user profiles by user's name and country"
   [ctx search-params user-id]
-  (let [{:keys [name country common_badges]} search-params
+  (let [{:keys [name country common_badges order_by]} search-params
         where ""
-        params [user-id]
+        order (case order_by
+                "ctime" " ORDER BY ctime DESC"
+                "name" " ORDER BY last_name, first_name"
+                "")
+        params []
         [where params] (if-not (or (empty? country) (= country "all"))
                          [(str where " AND country = ?") (conj params country)]
                          [where params])
         [where params] (if-not (empty? name)
                          [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
                          [where params])
-        having (if common_badges " HAVING common_badge_count > 0")
-        query (str "SELECT id AS uid, first_name, last_name, country, profile_picture, ctime, (SELECT COUNT(DISTINCT badge_content_id) FROM badge WHERE user_id = uid AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()) AND badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE user_id = ? AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))) AS common_badge_count
+        query (str "SELECT id, first_name, last_name, country, profile_picture, ctime
                     FROM user
-                    WHERE profile_visibility = 'public'"
+                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal')"
                    where
-                   having
-                   " LIMIT 100")
+                   order)
         profiles (jdbc/with-db-connection
                    [conn (:connection (get-db ctx))]
-                   (jdbc/query conn (into [query] params)))]
-    (map #(rename-keys % {:uid :id}) profiles)))
-
-
-
+                   (jdbc/query conn (into [query] params)))
+        common-badge-counts (if-not (empty? profiles)
+                              (->>
+                                (select-common-badge-counts {:user_id user-id :user_ids (map :id profiles)} (get-db ctx))
+                                (reduce #(assoc %1 (:user_id %2) (:c %2)) {})))
+        profiles-with-badges (map #(assoc % :common_badge_count (get common-badge-counts (:id %) 0)) profiles)
+        visible-profiles (filter #(if common_badges
+                                   (pos? (:common_badge_count %))
+                                   identity) profiles-with-badges)]
+    (if (= order_by "common_badge_count")
+      (->> visible-profiles
+           (sort-by :common_badge_count >)
+           (take 100))
+      (->> visible-profiles
+           (take 100)))))

@@ -14,14 +14,15 @@
   (reset! ajax-message-atom nil))
 
 (defn fetch-users [state]
-  (let [{:keys [name country-selected common-badges?]} @state
+  (let [{:keys [name country-selected common-badges? order_by]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
       (path-for "/obpv1/gallery/profiles/")
       {:params  {:country       country-selected
                  :name          (trim (str name))
-                 :common_badges (boolean common-badges?)}
+                 :common_badges (boolean common-badges?)
+                 :order_by      order_by}
        :handler (fn [data] (swap! state assoc :users (:users data)))
        :finally (fn [] (ajax-stop ajax-message-atom))})))
 
@@ -75,10 +76,38 @@
                               (reset! common-badges-atom (not @common-badges-atom))
                               (fetch-users state))}](str (t :gallery/Hideuserswithnocommonbadges))]]]]))
 
-(defn order-radio-values []
-  [{:value "ctime" :id "radio-date" :label (t :core/bydatejoined)}
-   {:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "common_badge_count" :id "radio-common-badges" :label (t :core/bycommonbadges)}])
+(defn order-buttons [state]
+  (let [order-atom (cursor state [:order_by])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
+     [:div.col-sm-10
+      [:label.radio-inline {:for "radio-date"}
+       [:input {:id "radio-date"
+                :name "radio-date"
+                :type "radio"
+                :checked (= @order-atom "ctime")
+                :on-change #(do
+                             (reset! order-atom "ctime")
+                             (fetch-users state))}]
+       (t :core/bydatejoined)]
+      [:label.radio-inline {:for "radio-name"}
+       [:input {:id "radio-name"
+                :name "radio-name"
+                :type "radio"
+                :checked (= @order-atom "name")
+                :on-change #(do
+                             (reset! order-atom "name")
+                             (fetch-users state))}]
+       (t :core/byname)]
+      [:label.radio-inline {:for "radio-count"}
+       [:input {:id "radio-count"
+                :name "radio-count"
+                :type "radio"
+                :checked (= @order-atom "common_badge_count")
+                :on-change #(do
+                             (reset! order-atom "common_badge_count")
+                             (fetch-users state))}]
+       (t :core/bycommonbadges)]]]))
 
 (defn profile-gallery-grid-form [state]
   [:div {:id "grid-filter"
@@ -87,7 +116,7 @@
     [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
     [country-selector state]
     [common-badges-checkbox state]]
-   [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
+   [order-buttons state]])
 
 (defn profile-gallery-grid-element [element-data]
   (let [{:keys [id first_name last_name ctime profile_picture common_badge_count]} element-data
@@ -111,12 +140,7 @@
                                          (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]))
 
 (defn profile-gallery-grid [state]
-  (let [users (:users @state)
-        order (:order @state)
-        users (case order
-                ("ctime" "common_badge_count") (sort-by (keyword order) > users)
-                "name" (sort-by :last_name users)
-                users)]
+  (let [users (:users @state)]
     (into [:div {:class "row"
                  :id    "grid"}]
           (for [element-data users]
@@ -137,7 +161,8 @@
       (path-for (str "/obpv1/gallery/profiles/"))
       {:params {:country country
                 :name ""
-                :common_badges true}
+                :common_badges true
+                :order_by "ctime"}
        :handler (fn [{:keys [users countries]} data]
                   (swap! state assoc :users users
                          :countries countries
@@ -148,7 +173,7 @@
                      :countries []
                      :country-selected "all"
                      :name ""
-                     :order "ctime"
+                     :order_by "ctime"
                      :timer nil
                      :ajax-message nil
                      :common-badges? true})]
