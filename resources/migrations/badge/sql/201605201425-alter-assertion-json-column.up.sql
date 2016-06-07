@@ -1,0 +1,1 @@
+ALTER TABLE `badge` MODIFY `assertion_json` mediumtext;
