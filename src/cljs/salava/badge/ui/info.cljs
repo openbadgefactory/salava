@@ -10,7 +10,7 @@
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
             [salava.user.ui.helper :as uh]
-            [salava.core.ui.helper :refer [set-meta-tags path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]))
 
 (defn toggle-visibility [state]
@@ -170,8 +170,7 @@
     {:handler (fn [data]
                 (reset! state (assoc data :id id
                                           :show-link-or-embed-code nil
-                                          :initializing false))
-                (set-meta-tags (:name data) (:description data) (str (session/get :site-url) "/" (:image_file data))))}))
+                                          :initializing false)))}))
 
 
 (defn handler [site-navi params]

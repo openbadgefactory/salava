@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [set-meta-tags path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
@@ -129,10 +129,7 @@
     (path-for (str "/obpv1/user/profile/" user-id) true)
     {:handler (fn [data]
                 (reset! state (assoc data :user-id user-id
-                                          :show-link-or-embed-code nil))
-                (set-meta-tags (str (get-in data [:user :first_name]) " " (get-in data [:user :last_name]))
-                                 (get-in data [:user :about])
-                                 (str (session/get :site-url) (profile-picture (get-in data [:user :profile_picture])))))}))
+                                          :show-link-or-embed-code nil)))}))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)

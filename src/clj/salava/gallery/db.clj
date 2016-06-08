@@ -183,3 +183,7 @@
            (take 100))
       (->> visible-profiles
            (take 100)))))
+
+(defn meta-tags [ctx badge-content-id]
+  (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]
+    (rename-keys badge-content {:image_file :image :name :title})))

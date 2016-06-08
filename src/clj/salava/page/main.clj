@@ -2,6 +2,7 @@
   (:require [clojure.string :refer [split blank? trim]]
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
+            [clojure.set :refer [rename-keys]]
             [slingshot.slingshot :refer :all]
             [autoclave.core :refer :all]
             [salava.core.time :refer [unix-time]]
@@ -287,3 +288,16 @@
       (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
       visibility)
     (if (= visibility "public") "private" "public")))
+
+(defn meta-tags [ctx id]
+  (let [page (page-with-blocks ctx id)
+        image (->> page
+                   :blocks
+                   (filter #(= "badge" (:type %)))
+                   first
+                   :image_file)]
+    (if (= (:visibility page) "public")
+      (-> page
+          (select-keys [:name :description])
+          (rename-keys {:name :title})
+          (assoc :image image)))))
