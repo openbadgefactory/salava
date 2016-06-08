@@ -1,6 +1,7 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
+            [clojure.set :refer [rename-keys]]
             [clojure.string :refer [blank? split upper-case lower-case capitalize]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
@@ -13,7 +14,6 @@
 (defqueries "sql/badge/main.sql")
 
 (defn badge-url [ctx badge-id]
-  (println (str (get-site-url ctx) (get-base-path ctx) "/badge/info/" badge-id))
   (str (get-site-url ctx) (get-base-path ctx) "/badge/info/" badge-id))
 
 (defn assoc-badge-tags [badge tags]
@@ -396,3 +396,10 @@
      :badge_views badge-views
      :badge_congratulations badge-congratulations
      :badge_issuers issuer-stats}))
+
+(defn meta-tags [ctx id]
+  (let [badge (select-badge {:id id} (into {:result-set-fn first} (get-db ctx)))]
+    (if (= "public" (:visibility badge))
+      (-> badge
+          (select-keys [:name :description :image_file])
+          (rename-keys {:image_file :image :name :title})))))

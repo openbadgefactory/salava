@@ -20,6 +20,9 @@
 (defn get-site-url [ctx]
   (get-in ctx [:config :core :site-url] ""))
 
+(defn get-site-name [ctx]
+  (get-in ctx [:config :core :site-name] ""))
+
 (defn get-base-path [ctx]
   (get-in ctx [:config :core :base-path] ""))
 

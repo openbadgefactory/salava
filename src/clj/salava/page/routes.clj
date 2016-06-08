@@ -14,7 +14,7 @@
     (context "/page" []
              (layout/main ctx "/")
              (layout/main ctx "/mypages")
-             (layout/main ctx "/view/:id")
+             (layout/main-meta ctx "/view/:id" :page)
              (layout/main ctx "/edit/:id")
              (layout/main ctx "/edit_theme/:id")
              (layout/main ctx "/settings/:id")

@@ -15,7 +15,7 @@
     (context "/badge" []
              (layout/main ctx "/")
              (layout/main ctx "/mybadges")
-             (layout/main ctx "/info/:id")
+             (layout/main-meta ctx "/info/:id" :badge)
              (layout/main ctx "/import")
              (layout/main ctx "/export")
              (layout/main ctx "/upload")
@@ -28,7 +28,8 @@
                   :summary "Get the badges of a current user"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (b/user-badges-all ctx (:id current-user))))
+                  (do
+                    (ok (b/user-badges-all ctx (:id current-user)))))
 
              (GET "/info/:badgeid" []
                   ;:return schemas/BadgeContent

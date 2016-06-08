@@ -9,7 +9,7 @@
             [salava.page.main :as p]
             [salava.badge.main :as b]
             [salava.oauth.db :as o]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -275,3 +275,10 @@
     {:status "success"}
     (catch Object _
       {:status "error"})))
+
+(defn meta-tags [ctx id]
+  (let [user (select-user {:id id} (into {:result-set-fn first} (get-db ctx)))]
+    (if (= "public" (:profile_visibility user))
+      {:title       (str (:first_name user) " " (:last_name user) " - profile")
+       :description (str (get-site-name ctx) " user profile")
+       :image       (:profile_picture user)})))

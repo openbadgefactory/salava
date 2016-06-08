@@ -14,7 +14,7 @@
              (layout/main ctx "/")
              (layout/main ctx "/badges")
              (layout/main ctx "/badges/:user-id")
-             (layout/main ctx "/badgeview/:badge-id")
+             (layout/main-meta ctx "/badgeview/:id" :gallery)
              (layout/main ctx "/pages")
              (layout/main ctx "/pages/:user-id")
              (layout/main ctx "/profiles")
