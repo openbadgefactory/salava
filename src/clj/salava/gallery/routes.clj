@@ -49,7 +49,6 @@
                                                 :description         (s/maybe s/Str)
                                                 :average_rating      (s/maybe s/Num)
                                                 :rating_count        (s/maybe s/Int)
-                                                :recipient           (s/maybe s/Int)
                                                 :issuer_content_name (s/maybe s/Str)
                                                 :issuer_content_url  (s/maybe s/Str)
                                                 :issuer_contact      (s/maybe s/Str)
