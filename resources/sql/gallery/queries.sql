@@ -31,10 +31,10 @@ SELECT country FROM user WHERE id = :id
 -- name: select-common-badge-content
 SELECT name, description, image_file FROM badge_content AS bc WHERE bc.id = :id
 
--- name: select-common-badge-rating-and-recipient
-SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count, COUNT(DISTINCT user_id) AS recipient FROM badge AS b
+-- name: select-common-badge-rating
+SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM badge AS b
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
-       WHERE b.visibility = 'public' AND b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND bc.id = :badge_content_id
+       WHERE b.visibility = 'public' AND b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND bc.id = :badge_content_id AND (rating IS NULL OR rating > 0)
 
 -- name: select-badge-criteria-issuer-by-recipient
 SELECT badge_url, issuer_verified, html_content, criteria_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM badge AS b
