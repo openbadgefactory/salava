@@ -126,7 +126,7 @@
         [:i {:class (str "file-icon-large fa " (file-icon mime_type))}]]
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for path) :target "_blank"}
+         [:a.heading-link {:href (str "/" path) :target "_blank"}
           name]]
         [:div.media-description
          [:div.file-create-date

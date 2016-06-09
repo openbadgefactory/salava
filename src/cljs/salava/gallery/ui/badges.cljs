@@ -108,7 +108,7 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (path-for image_file)}]])
+          [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(open-modal badge-id)}

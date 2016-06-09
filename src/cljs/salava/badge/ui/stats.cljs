@@ -27,7 +27,7 @@
                (for [badge-views views
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:tr
-                  [:td [:img.badge-icon {:src (path-for image_file)}]]
+                  [:td [:img.badge-icon {:src (str "/" image_file)}]]
                   [:td.name [:a {:href (path-for (str "/badge/info/" id))} name]]
                   [:td reg_count]
                   [:td anon_count]
@@ -53,7 +53,7 @@
                (for [badge-congrats congratulations
                      :let [{:keys [id name image_file congratulation_count latest_congratulation]} badge-congrats]]
                  [:tr
-                  [:td [:img.badge-icon {:src (path-for image_file)}]]
+                  [:td [:img.badge-icon {:src (str "/"  image_file)}]]
                   [:td.name [:a {:href (path-for (str "/badge/info/" id))} name]]
                   [:td congratulation_count]
                   [:td (if latest_congratulation (date-from-unix-time (* 1000 latest_congratulation)))]]))]])]))
@@ -74,7 +74,7 @@
                       (for [badge badges
                             :let [{:keys [id image_file name]} badge]]
                         [:a {:href (path-for (str "/badge/info/" id))}
-                         [:img.badge-icon {:src (path-for image_file) :title name :alt name}]]))])))]))
+                         [:img.badge-icon {:src (str "/"  image_file) :title name :alt name}]]))])))]))
 
 (defn content [state]
   (let [{:keys [badge_count expired_badge_count badge_views badge_congratulations badge_issuers]} @state

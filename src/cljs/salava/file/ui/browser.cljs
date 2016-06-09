@@ -11,7 +11,7 @@
 
 (defn select-file [file-path callback-id]
   (when js/window.opener
-    (js/window.opener.CKEDITOR.tools.callFunction callback-id (path-for file-path))
+    (js/window.opener.CKEDITOR.tools.callFunction callback-id (str "/" file-path))
     (js/window.close)))
 
 (defn content [state]
@@ -26,7 +26,7 @@
               [:div.thumbnail {:on-click #(do (.preventDefault %) (select-file path callback))}
                [:div.thumbnail-img
                 (if image?
-                  [:img {:src (path-for path)}]
+                  [:img {:src (str "/" path)}]
                   [:i {:class (str "fa " (file-icon mime_type))}])]
                [:div.thumbnail-name
                 [:a {:href "#"}

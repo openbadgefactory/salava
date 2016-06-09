@@ -35,7 +35,7 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (path-for image_file)}]])
+          [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:href (path-for (str "/badge/info/" id))}
@@ -58,7 +58,7 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
-                        :src (path-for (:image_file badge))}]))]]
+                        :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
         [:img {:src (profile-picture profile_picture)}]]]]]))
 

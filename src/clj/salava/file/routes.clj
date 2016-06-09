@@ -30,22 +30,7 @@
                                  langCode :- String]
                   (temporary-redirect (str (get-base-path ctx) "/file/browser/" CKEditor"/" CKEditorFuncNum"/" langCode)))
 
-             (GET "/:folder1/:folder2/:folder3/:folder4/:filename" []
-                  :path-params [folder1 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
-                                folder2 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
-                                folder3 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
-                                folder4 :- (s/constrained s/Str #(and (= (count %) 1) (h/letters-nums? %)))
-                                filename :- (s/constrained s/Str #(and (string? %) (re-matches #"(\w+)(\.\w+)?" %)))]
-                  (let [path (str "file/" folder1 "/" folder2 "/" folder3 "/"folder4 "/" filename)
-                        data-dir (get-in ctx [:config :core :data-dir])
-                        full-path (-> (str data-dir "/" path) java.net.URI. (.normalize) (.getPath))
-                        file (io/as-file full-path)]
-                    (if (and (re-find (re-pattern (str "^" data-dir)) full-path) (.exists file) (.canWrite file))
-                      (let [mime-type (mime-type-of file)]
-                        (-> full-path
-                            file-response
-                            (content-type mime-type)))
-                      (not-found nil)))))
+             )
 
     (context "/obpv1/file" []
              :tags ["file"]

@@ -5,7 +5,6 @@
             [salava.badge.ui.helper :as bh]
             [salava.user.ui.helper :refer [profile-link-inline]]
             [salava.core.ui.rate-it :as r]
-            [salava.core.ui.helper :refer [path-for]]
             [salava.core.helper :refer [dump]]))
 
 (defn badge-content [{:keys [badge public_users private_user_count]}]
@@ -15,7 +14,7 @@
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row
       [:div {:class "col-md-3 badge-image modal-left"}
-       [:img {:src (path-for image_file)}]
+       [:img {:src (str "/" image_file)}]
        (when (> average_rating 0)
          [:div.rating
           [r/rate-it average_rating]

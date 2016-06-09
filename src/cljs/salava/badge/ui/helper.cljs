@@ -21,7 +21,7 @@
       [:span [:br] [:a {:href (str "mailto:" email)} email]])]
    (if image
      [:div {:class "issuer-image pull-left"}
-      [:img {:src (path-for image)}]])])
+      [:img {:src (str "/" image)}]])])
 
 (defn creator-label-and-link [name url email image]
   [:div {:class "issuer-data clearfix"}
@@ -32,7 +32,7 @@
       [:span [:br] [:a {:href (str "mailto:" email)} email]])]
    (if image
      [:div {:class "issuer-image pull-left"}
-      [:img {:src (path-for image)}]])])
+      [:img {:src (str "/" image)}]])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   [:div.row

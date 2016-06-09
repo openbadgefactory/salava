@@ -4,7 +4,7 @@
 (def default-profile-picture "/img/user_default.png")
 
 (defn profile-picture [path]
-  (if path (path-for path) default-profile-picture))
+  (if path (str "/" path) default-profile-picture))
 
 (defn profile-link-inline [id first_name last_name picture]
   [:li.user-link-inline

@@ -39,7 +39,7 @@
 (defn badge-block [{:keys [format image_file name description issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_image html_content creator_name creator_url creator_email creator_image]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
-    [:img {:src (path-for image_file)}]]
+    [:img {:src (str "/" image_file)}]]
    [:div {:class "col-md-8"}
     [:div.row
      [:div.col-md-12
@@ -81,7 +81,7 @@
        (into [:div.file-block-images]
              (for [file files]
                [:div.file-block-image
-                [:img {:src (path-for (:path file))}]]))
+                [:img {:src (str "/" (:path file))}]]))
        [:div.file-block-attachments
         [:label.files-label
          (t :page/Attachments) ": "]
@@ -89,7 +89,7 @@
               (for [file files]
                 [:span.attachment
                  [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-                 [:a.file-link {:href (path-for (:path file))
+                 [:a.file-link {:href (str "/" (:path file))
                                 :target "_blank"}
                   (:name file)]]))])]]])
 
@@ -112,7 +112,7 @@
        (if (= format "short")
          [:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
                                 :key  (:id badge)}
-          [:img {:src (path-for (:image_file badge))
+          [:img {:src (str "/" (:image_file badge))
                  :title (:name badge)}]]
          (badge-block (assoc badge :format "long")))))])
 

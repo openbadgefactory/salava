@@ -100,7 +100,7 @@
         [:option {:value "long"} (t :page/Long)]]]]
      [:div {:class "col-xs-4 badge-image"}
       (if image
-        [:img {:src (path-for image)}])]]))
+        [:img {:src (str "/" image)}])]]))
 
 (defn edit-block-badge-groups [block-atom tags badges]
   (let [tag (get-in @block-atom [:tag] "")
@@ -132,7 +132,7 @@
      [:div {:class "col-xs-4 badge-image"}
       (if tagged-badges
         (for [badge tagged-badges]
-          [:img {:src (path-for (:image_file badge))
+          [:img {:src (str "/" (:image_file badge))
                  :key (:name badge)}]))]]))
 
 (defn edit-block-files [block-atom files]
@@ -143,7 +143,7 @@
        [:div.row
         [:div.col-xs-6
          [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
-         [:a {:href (path-for (:path file))
+         [:a {:href (str "/" (:path file))
               :target "_blank"}
           (:name file)]]
         [:div.col-xs-6

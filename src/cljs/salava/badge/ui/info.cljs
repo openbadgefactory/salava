@@ -89,7 +89,7 @@
          [:div {:class "col-md-3 badge-image"}
           [:div.row
            [:div.col-xs-12
-            [:img {:src (path-for image_file)}]]]
+            [:img {:src (str "/" image_file)}]]]
           (if (and qr_code (= visibility "public"))
             [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
           (if owner?

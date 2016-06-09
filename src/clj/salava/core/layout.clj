@@ -5,7 +5,7 @@
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-site-url get-base-path]]
+            [salava.core.util :refer [get-site-url]]
             [salava.user.db :as u]
             [salava.badge.main :as b]
             [salava.page.main :as p]
@@ -57,7 +57,7 @@
       [[:meta {:property "og:title" :content title}]
        [:meta {:property "og:description" :content description}]
        [:meta {:name "description" :content description}]
-       [:meta {:property "og:image" :content (str (get-site-url ctx) (get-base-path ctx) "/" image)}]])))
+       [:meta {:property "og:image" :content (str (get-site-url ctx) "/" image)}]])))
 
 (defn main-view
   ([ctx] (main-view ctx nil))

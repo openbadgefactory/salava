@@ -42,7 +42,7 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
     [:div.row
      [:div {:class "col-md-3 badge-image modal-left"}
-      [:img {:src (path-for image_file)}]]
+      [:img {:src (str "/" image_file)}]]
      [:div {:class "col-md-9 badge-content"}
       [:div.row
        [:div {:class "col-md-12 badge-info"}

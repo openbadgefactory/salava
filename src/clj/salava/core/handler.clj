@@ -2,7 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [compojure.route :as route]
             [salava.core.session :refer [wrap-app-session]]
-            [salava.core.util :refer [get-base-path]]
+            [salava.core.util :refer [get-base-path get-data-dir]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.flash :refer [wrap-flash]]
@@ -41,7 +41,9 @@
         (wrap-webjars)
         (wrap-defaults (-> site-defaults
                            (assoc-in [:security :anti-forgery] false)
-                           (assoc-in [:session] false)))
+                           (assoc-in [:session] false)
+                           (assoc-in [:static :files] (get-data-dir ctx))
+                           ))
         (wrap-flash)
         (wrap-app-session config))))
 

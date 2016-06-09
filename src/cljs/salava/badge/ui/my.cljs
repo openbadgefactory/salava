@@ -75,7 +75,7 @@
       [:div {:class (str "media-content " (if expired? "media-expired"))}
        (if image_file
          [:div.media-left
-          [:a {:href badge-link} [:img.badge-img {:src (path-for image_file)}]]])
+          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:href badge-link} name]]
@@ -142,7 +142,7 @@
       [:div.col-md-12
        [:div.media
         [:div.pull-left
-         [:img.badge-image {:src (path-for image_file)}]]
+         [:img.badge-image {:src (str "/" image_file)}]]
         [:div.media-body
          [:h4.media-heading
           name]

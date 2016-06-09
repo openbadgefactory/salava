@@ -57,7 +57,7 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
-                        :src (path-for (:image_file badge))}]))]]]
+                        :src (str "/" (:image_file badge))}]))]]]
       [:div {:class "media-bottom"}
        [:a {:class "bottom-link"
             :href  (path-for (str "/page/edit/" id))}
