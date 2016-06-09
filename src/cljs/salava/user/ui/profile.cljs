@@ -109,9 +109,15 @@
                                         :key)]]
                      [:tr
                       [:td.profile-field (t key) ":"]
-                      [:td (if (re-find #"^https?://" (str value))
-                             [:a {:href value :target "_blank"} (t value)]
-                             (t value))]]))]]]
+                      [:td (cond
+                             (or (re-find #"www." (str value)) (re-find #"^https?://" (str value))) [:a {:href value :target "_blank"} (t value)]
+                             (and (re-find #"@" (str value)) (= "twitter" field)) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
+                             (and (re-find #"@" (str value)) (= "email" field)) [:a {:href (str "mailto:" value)} (t value)]
+                             (and  (empty? (re-find #" " (str value))) (= "facebook" field)) [:a {:href (str "https://www.facebook.com/" value) :target "_blank" } (t value)]
+                             (and (re-find #"@" (str value)) (= "twitter" field)) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
+                             (and  (empty? (re-find #" " (str value))) (= "pinterest" field)) [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
+                             (and  (empty? (re-find #" " (str value))) (= "instagram" field)) [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
+                             :else (t value))]]))]]]
           )]]
       (if (not-empty badges)
         [:div {:id "user-badges"}
