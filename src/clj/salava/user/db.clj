@@ -191,8 +191,8 @@
         recent-pages (g/public-pages-by-user ctx user-id visibility)]
     {:user user
      :profile user-profile
-     :badges recent-badges
-     :pages recent-pages
+     :badges (take 6 recent-badges)
+     :pages (take 6 recent-pages)
      :owner? (= user-id current-user-id)}))
 
 (defn user-profile-for-edit
