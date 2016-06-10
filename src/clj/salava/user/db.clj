@@ -56,13 +56,12 @@
 
 (defn register-user
   "Create new user"
-  [ctx email first-name last-name country]
+  [ctx email first-name last-name country language]
   (if (email-exists? ctx email)
     {:status "error" :message (t :user/Enteredaddressisalready)}
     (let [site-url (get-site-url ctx)
           base-path (get-base-path ctx)
           activation_code (generate-activation-id)
-          language (or (get-in ctx [:config :user :default-language]) "en")
           new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))

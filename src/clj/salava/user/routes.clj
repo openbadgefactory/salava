@@ -52,13 +52,17 @@
              (POST "/logout" []
                    (assoc-in (ok) [:session :identity] nil))
 
+             (GET "/register" []
+                  :summary "Get languages"
+                  (ok {:languages (get-in ctx [:config :core :languages])}))
+
              (POST "/register" []
                    :return {:status (s/enum "success" "error")
                             :message (s/maybe s/Str)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (let [{:keys [email first_name last_name country]} form-content]
-                     (ok (u/register-user ctx email first_name last_name country))))
+                   (let [{:keys [email first_name last_name country language]} form-content]
+                     (ok (u/register-user ctx email first_name last_name country language))))
 
              (POST "/activate" []
                    :return {:status (s/enum "success" "error")
