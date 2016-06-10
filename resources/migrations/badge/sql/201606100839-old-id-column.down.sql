@@ -1,0 +1,1 @@
+ALTER TABLE `badge` DROP `old_id`;

@@ -3,6 +3,7 @@
             [compojure.route :as route]
             [salava.core.session :refer [wrap-app-session]]
             [salava.core.util :refer [get-base-path get-data-dir]]
+            [salava.core.routes :refer [legacy-routes]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.flash :refer [wrap-flash]]
@@ -69,6 +70,8 @@
                                {:name "user", :description "plugin"}]})
         (context (get-base-path ctx) []
                  (resolve-routes ctx))
+
+        (legacy-routes ctx)
 
         (route/not-found "404 Not found"))))
 

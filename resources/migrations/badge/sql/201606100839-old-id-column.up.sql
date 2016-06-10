@@ -1,0 +1,1 @@
+ALTER TABLE `badge` ADD COLUMN `old_id` bigint(20) unsigned DEFAULT NULL;
