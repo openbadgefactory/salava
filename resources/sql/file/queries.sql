@@ -34,6 +34,7 @@ SELECT id, name, path, mime_type, size, ctime, mtime FROM user_file AS f
 SELECT (SELECT COUNT(*) FROM user_file WHERE path = :path) AS file_count,
        (SELECT COUNT(*) FROM badge_content WHERE image_file = :path) AS badge_content_file_count,
        (SELECT COUNT(*) FROM issuer_content WHERE image_file = :path) AS issuer_content_file_count,
+       (SELECT COUNT(*) FROM creator_content WHERE image_file = :path) AS creator_content_file_count,
        (SELECT COUNT(*) FROM user WHERE profile_picture = :path) AS profile_picture_file_count;
 
 --name: select-profile-picture-path

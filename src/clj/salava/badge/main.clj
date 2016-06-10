@@ -406,9 +406,3 @@
 
 (defn old-id->id [ctx old-id user-id]
   (select-badge-id-by-old-id {:user_id user-id :old_id old-id} (into {:result-set-fn first :row-fn :id} (get-db ctx))))
-
-(def ctx {:db (hikari-cp.core/make-datasource {:adapter "mysql",
-                                               :username "root",
-                                               :password "",
-                                               :database-name "salava_heitto",
-                                               :server-name "localhost"})})

@@ -34,8 +34,6 @@ public class LegacyPassword {
     }
 
     /**
-     * Note: taken from the default Drupal 7 password algorithm
-     *
      * @param candidate               the clear text password
      * @param saltedEncryptedPassword the salted encrypted password string to check => NEEDS TO BE THE DEFAULT DRUPAL 7 PASSWORD HASH.
      * @return true if the candidate matches, false otherwise.
