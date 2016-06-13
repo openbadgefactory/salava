@@ -60,33 +60,35 @@
   [ctx user-id]
   (select-user-country {:id user-id} (into {:row-fn :country :result-set-fn first} (get-db ctx))))
 
-(defn all-badge-countries [ctx]
-  "Return all countries which users have public badges"
-  (let [country-keys (select-badge-countries {} (into {:row-fn :country} (get-db ctx)))]
-    (select-keys all-countries country-keys)))
-
-(defn all-page-countries [ctx]
-  "Return all countries which users have public pages"
-  (let [country-keys (select-page-countries {} (into {:row-fn :country} (get-db ctx)))]
-    (select-keys all-countries country-keys)))
-
 (defn badge-countries
   "Return user's country id and list of all countries which users have public badges"
   [ctx user-id]
   (let [current-country (user-country ctx user-id)
-        countries (merge (all-badge-countries ctx) (select-keys all-countries [current-country]))]
-    (hash-map :countries (into (sorted-map-by
-                                 (fn [a b] (compare (countries a) (countries b)))) countries)
+        countries (select-badge-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (hash-map :countries (-> all-countries
+                             (select-keys (conj countries current-country))
+                             (sort-countries)
+                             (seq))
               :user-country current-country)))
 
 (defn page-countries
   "Return user's country id and list of all countries which users have public pages"
   [ctx user-id]
   (let [current-country (user-country ctx user-id)
-        countries (merge (all-page-countries ctx) (select-keys all-countries [current-country]))]
-    (hash-map :countries (into (sorted-map-by
-                                 (fn [a b] (compare (countries a) (countries b)))) countries)
+        countries (select-page-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (hash-map :countries (-> all-countries
+                             (select-keys (conj countries current-country))
+                             (sort-countries)
+                             (seq))
               :user-country current-country)))
+
+(defn profile-countries [ctx user-id]
+  (let [current-country (user-country ctx user-id)
+        countries (select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (-> all-countries
+        (select-keys (conj countries current-country))
+        (sort-countries)
+        (seq))))
 
 (defn public-badge-content
   "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
@@ -136,14 +138,6 @@
                 [conn (:connection (get-db ctx))]
                 (jdbc/query conn (into [query] params)))]
     (p/page-badges ctx pages)))
-
-(defn profile-countries [ctx user-id]
-  (let [current-country (user-country ctx user-id)
-        countries (select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
-    (-> all-countries
-        (select-keys (conj countries current-country))
-        (sort-countries)
-        (seq))))
 
 (defn public-profiles
   "Searcn public user profiles by user's name and country"
