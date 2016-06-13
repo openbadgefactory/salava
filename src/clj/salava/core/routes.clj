@@ -30,4 +30,11 @@
 
     (GET "/user/:userid" []
       :path-params [userid :- s/Int]
-      (temporary-redirect (str (get-base-path ctx) "/user/profile/" userid)))))
+      (temporary-redirect (str (get-base-path ctx) "/user/profile/" userid)))
+
+    (GET "/gallery/badgeview/:oldid" []
+      :path-params [oldid :- s/Int]
+      (let [badge-content-id (b/old-id->id ctx oldid nil)]
+        (if badge-content-id
+          (temporary-redirect (str (get-base-path ctx) "/gallery/badgeview/" badge-content-id))
+          (not-found))))))

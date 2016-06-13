@@ -405,4 +405,6 @@
           (rename-keys {:image_file :image :name :title})))))
 
 (defn old-id->id [ctx old-id user-id]
-  (select-badge-id-by-old-id {:user_id user-id :old_id old-id} (into {:result-set-fn first :row-fn :id} (get-db ctx))))
+  (if user-id
+    (select-badge-id-by-old-id-user-id {:user_id user-id :old_id old-id} (into {:result-set-fn first :row-fn :id} (get-db ctx)))
+    (select-badge-content-id-by-old-id {:old_id old-id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))))

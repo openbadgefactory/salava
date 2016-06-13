@@ -192,5 +192,8 @@ UPDATE badge SET issuer_verified = :issuer_verified, mtime = UNIX_TIMESTAMP() WH
 --name: select-badge-assertion-url
 SELECT assertion_url FROM badge WHERE id = :id AND user_id = :user_id
 
---name: select-badge-id-by-old-id
+--name: select-badge-id-by-old-id-user-id
 SELECT id FROM badge WHERE user_id = :user_id AND old_id = :old_id
+
+--name: select-badge-content-id-by-old-id
+SELECT badge_content_id FROM badge WHERE old_id = :old_id
