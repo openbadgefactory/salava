@@ -9,11 +9,11 @@
   (routes
     (context "/displayer" []
              :tags  ["displayer"]
-             (POST "/convert/email" []
+             (POST "/convert/email" req
                    :return schemas/DisplayerEmail
-                   :form-params [email :- s/Str]
                    :summary "Return user-id by email-address"
-                   (let [user-id (d/convert-email ctx email)]
+                   (let [email (get-in req [:params :email] "missing-email")
+                         user-id (d/convert-email ctx email)]
                      (if user-id
                        (ok {:userId user-id :email email :status "okay"})
                        (not-found {:error (str "Could not find the user by the email address: " email) :status "missing"}))))

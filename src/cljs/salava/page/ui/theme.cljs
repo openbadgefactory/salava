@@ -13,7 +13,7 @@
             :on-change #(reset! theme-atom (js/parseInt (.-target.value %)))
             :value     @theme-atom}
    (for [theme themes]
-     [:option {:key (:id theme) :value (:id theme)} (:name theme)])])
+     [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
 
 (defn padding-selection [padding-atom]
   [:div.row
