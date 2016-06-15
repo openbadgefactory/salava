@@ -22,20 +22,20 @@
   ;        background-image: url ('/img/theme/%THEME-NAME%_right.png');
   ;     }
   ; }
-  [{:id 0 :name (t :page/Defaulttheme)}
-   {:id 1 :name (t :page/Customtheme)}
-   {:id 2 :name (t :page/Classictheme)}
-   {:id 3 :name (t :page/Handmadetheme)}
-   {:id 4 :name (t :page/Arttheme)}
-   {:id 5 :name (t :page/Cardboardtheme)}
-   {:id 6 :name (t :page/Legotheme)}
-   {:id 7 :name (t :page/Diamondstheme)}
-   {:id 8 :name (t :page/Ornamenttheme)}
-   {:id 9 :name (t :page/Vintagetheme)}
-   {:id 10 :name (t :page/Colourstheme)}
-   {:id 11 :name (t :page/Dottedtheme)}
-   {:id 12 :name (t :page/Scripttheme)}
-   {:id 13 :name (t :page/Legoextremetheme)}])
+  [{:id 0 :name :page/Defaulttheme}
+   {:id 1 :name :page/Customtheme}
+   {:id 2 :name :page/Classictheme}
+   {:id 3 :name :page/Handmadetheme}
+   {:id 4 :name :page/Arttheme}
+   {:id 5 :name :page/Cardboardtheme}
+   {:id 6 :name :page/Legotheme}
+   {:id 7 :name :page/Diamondstheme}
+   {:id 8 :name :page/Ornamenttheme}
+   {:id 9 :name :page/Vintagetheme}
+   {:id 10 :name :page/Colourstheme}
+   {:id 11 :name :page/Dottedtheme}
+   {:id 12 :name :page/Scripttheme}
+   {:id 13 :name :page/Legoextremetheme}])
 
 (def borders
  [{:id 0 :style "none" :width 0 :color "#ffffff"}
