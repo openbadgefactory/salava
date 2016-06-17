@@ -4,6 +4,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.countries :refer [all-countries-sorted]]
+            [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.i18n :refer [t]]
             [salava.user.ui.input :as input]))
 
@@ -94,6 +95,17 @@
                            (send-registration state))}
       (t :user/Createnewaccount)]]))
 
+(defn oauth-registration-form []
+  [:div {:class "row oauth-buttons form-group"}
+    [:div {:class "col-sm-6 col-xs-12 text-right"} (facebook-link false true)]
+    [:div.col-xs-6 (linkedin-link nil "register")]])
+
+(defn registeration-content [state]
+  [:div
+   (oauth-registration-form)
+   [:div {:class "or"} (t :user/or)]
+   (registration-form state)])
+
 (defn content [state]
   [:div {:id "registration-page"}
    [:div {:id "narrow-panel"
@@ -103,7 +115,7 @@
        [:div {:class "alert alert-success"
               :role "alert"}
         (t :user/Welcomemessagesent) "."]
-       (registration-form state))]]])
+       (registeration-content state))]]])
 
 (defn init-data [state]
   (ajax/GET
