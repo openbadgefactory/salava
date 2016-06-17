@@ -8,6 +8,11 @@
 }
 
 #login-page {
+   @media (min-width: 768px) {
+       .text-right-sm {
+        	   text-align: right;
+    	}
+    }   
     .login-links {
         margin-top: 20px;
     }

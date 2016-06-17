@@ -36,55 +36,55 @@
         (:error-message @state)])
 
      [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-email"}
        (t :user/Email)
        [:span.form-required " *"]]
-      [:div.col-xs-8
+      [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/email-valid? @email-atom) "form-bar-success" "form-bar-error"))}
         [input/text-field {:name "email" :atom email-atom}]]]
       [:div.col-xs-12
        (t :user/Emailinfotext)]]
 
      [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-first-name"}
        (t :user/Firstname)
        [:span.form-required " *"]]
-      [:div.col-xs-8
+      [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/first-name-valid? @first-name-atom) "form-bar-success" "form-bar-error"))}
         [input/text-field {:name "first-name" :atom first-name-atom}]]]]
 
      [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-last-name"}
        (t :user/Lastname)
        [:span.form-required " *"]]
-      [:div.col-xs-8
+      [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/last-name-valid? @last-name-atom) "form-bar-success" "form-bar-error"))}
         [input/text-field {:name "last-name" :atom last-name-atom}]]]]
 
      
 
      [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-language"}
        (t :user/Language)
        [:span.form-required " *"]]
-      [:div.col-xs-8
+      [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/language-valid? @language-atom) "form-bar-success" "form-bar-error"))}
         [input/radio-button-selector languages language-atom]]]]
 
      [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-country"}
        (t :user/Country)
        [:span.form-required " *"]]
-      [:div.col-xs-8
+      [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
         [input/country-selector country-atom]]]]
 
-     [:button {:class    "btn btn-primary"
+     [:button {:class    "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2"
                :disabled (if-not (and (input/email-valid? @email-atom)
                                       (input/first-name-valid? @first-name-atom)
                                       (input/last-name-valid? @last-name-atom)
@@ -97,9 +97,9 @@
       (t :user/Createnewaccount)]]))
 
 (defn oauth-registration-form []
-  [:div {:class "row oauth-buttons form-group"}
-    [:div {:class "col-sm-6 col-xs-12 text-right"} (facebook-link false true)]
-    [:div.col-xs-6 (linkedin-link nil "register")]])
+  [:div {:class "row"}
+   [:div {:class "col-sm-6 col-sm-push-2 col-xs-12"} (facebook-link false true)]
+   [:div.col-sm-6 (linkedin-link nil "register")]])
 
 (defn registeration-content [state]
   [:div

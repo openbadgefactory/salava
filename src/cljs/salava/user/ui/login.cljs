@@ -49,13 +49,13 @@
                   :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
          (t :user/Login)]
         [:div {:class "row login-links"}
-         [:div {:class "col-xs-6 text-right"}
+         [:div {:class "col-xs-6  text-right-sm"}
           [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]]
          [:div {:class "col-sm-6 col-xs-12 text-left"}
           [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
         [:div {:class "row oauth-buttons"}
-         [:div {:class "col-sm-6 col-xs-12 text-right"} (facebook-link false)]
-         [:div.col-xs-6 (linkedin-link nil nil)]]]]]]))
+         [:div {:class "col-sm-6 col-sm-push-2"} (facebook-link false)]
+         [:div.col-sm-6 (linkedin-link nil nil)]]]]]]))
 
 (defn handler [_ params]
   (let [flash-message (t (keyword (session/get! :flash-message)))
