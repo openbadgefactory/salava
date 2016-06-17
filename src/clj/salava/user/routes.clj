@@ -14,8 +14,11 @@
   (routes
     (context "/user" []
              (layout/main ctx "/login")
+             (layout/main ctx "/login/:lang")
              (layout/main ctx "/register")
+             (layout/main ctx "/register/:lang")
              (layout/main ctx "/reset")
+             (layout/main ctx "/reset/:lang")
              (layout/main ctx "/activate/:userid/:timestamp/:code")
              (layout/main ctx "/edit")
              (layout/main ctx "/edit/email-addresses")

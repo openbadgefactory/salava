@@ -1,5 +1,6 @@
 (ns salava.user.ui.register
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [path-for]]
@@ -124,7 +125,7 @@
                 (let [{:keys [languages]} data]
                   (swap! state assoc :languages languages)))}))
 
-(defn handler []
+(defn handler [_ params]
   (let [state (atom {:email ""
                      :first-name ""
                      :last-name ""
@@ -132,7 +133,10 @@
                      :country ""
                      :languages []
                      :error-message nil
-                     :registration-sent nil})]
+                     :registration-sent nil})
+        lang (:lang params)]
+    (if (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang))
     (init-data state)    
     (fn []
       (layout/landing-page (content state)))))

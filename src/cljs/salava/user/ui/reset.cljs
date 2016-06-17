@@ -1,5 +1,6 @@
 (ns salava.user.ui.reset
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [path-for]]
@@ -35,8 +36,11 @@
                   :disabled (not (input/email-valid? @email-atom))}
          (t :user/Sendpasswordresetlink)]]]]]))
 
-(defn handler []
+(defn handler [_ params]
   (let [state (atom {:email ""
-                     :reset-link-sent nil})]
+                     :reset-link-sent nil})
+        lang (:lang params)]
+    (if (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang))
     (fn []
       (layout/landing-page (content state)))))
