@@ -32,7 +32,8 @@
         (for [border borders]
           (let [{:keys [id width style color]} border]
             [:div {:class    (str "select-border-wrapper" (if (= id (:id @border-atom)) " selected"))
-                   :on-click #(reset! border-atom border)}
+                   :on-click #(reset! border-atom border)
+                   :on-touch-end #(reset! border-atom border)}
              [:div {:class "select-border"
                     :style {:border-top-width width
                             :border-top-style style
