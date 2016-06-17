@@ -40,14 +40,15 @@
 
 
 (defn context-js [ctx]
-  (let [ctx-out {:plugins {:all (get-in ctx [:config :core :plugins])}
-                 :user (:user ctx)
-                 :flash-message (:flash-message ctx)
-                 :site-url (get-in ctx [:config :core :site-url])
-                 :site-name (get-in ctx [:config :core :site-name])
-                 :base-path (get-in ctx [:config :core :base-path])
+  (let [ctx-out {:plugins         {:all (get-in ctx [:config :core :plugins])}
+                 :user            (:user ctx)
+                 :flash-message   (:flash-message ctx)
+                 :site-url        (get-in ctx [:config :core :site-url])
+                 :site-name       (get-in ctx [:config :core :site-name])
+                 :base-path       (get-in ctx [:config :core :base-path])
                  :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
-                 :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])}]
+                 :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
+                 :languages       (map name (get-in ctx [:config :core :languages]))}]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 

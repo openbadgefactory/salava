@@ -57,10 +57,13 @@
          [:div {:class "col-sm-6 col-xs-12 text-right"} (facebook-link false)]
          [:div.col-xs-6 (linkedin-link nil nil)]]]]]]))
 
-(defn handler []
+(defn handler [_ params]
   (let [flash-message (t (keyword (session/get! :flash-message)))
         state (atom {:email         ""
                      :password      ""
-                     :error-message (if (not-empty flash-message) flash-message)})]
+                     :error-message (if (not-empty flash-message) flash-message)})
+        lang (:lang params)]
+    (if (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang))
     (fn []
       (layout/landing-page (content state)))))
