@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.ui.helper :refer [base-path navigate-to path-for]]
+            [salava.core.ui.helper :refer [base-path navigate-to path-for translate-text]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]))
 
@@ -38,7 +38,7 @@
       [:div {:class "panel-body"}
        (if @error-message-atom
          [:div {:class "alert alert-warning"}
-          @error-message-atom])
+          (translate-text @error-message-atom)])
        [:form
         [:div.form-group
          [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email)}]]

@@ -1,7 +1,7 @@
 (ns salava.user.ui.activate
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? path-for]]
+            [salava.core.ui.helper :refer [input-valid? path-for translate-text]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]))
@@ -31,7 +31,7 @@
     [:div {:class "form-horizontal"}
      (if (:error-message @state)
        [:div {:class "alert alert-danger" :role "alert"}
-        (:error-message @state)])
+        (translate-text (:error-message @state))])
      [:div.form-group
       [:label {:class "col-xs-4"
                :for "input-password"}

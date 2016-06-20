@@ -253,7 +253,7 @@
   [ctx badge user-id emails]
   (try+
     (if (and (get-in badge [:assertion :expires]) (< (get-in badge [:assertion :expires]) (unix-time)))
-      (throw+ (t :badge/Badgeexpired)))
+      (throw+ "badge/Badgeexpired"))
     (let [assertion (:assertion badge)
           recipient-email (check-recipient emails assertion)
           badge-image-path (file-from-url ctx (get-in assertion [:badge :image]))
@@ -268,9 +268,9 @@
           creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
           criteria-content-id (save-criteria-content! ctx assertion)]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
-        (throw+ (t :badge/Alreadyowned)))
+        (throw+ "badge/Alreadyowned"))
       (if-not recipient-email
-        (throw+ (t :badge/Userdoesnotownthisbadge)))
+        (throw+ "badge/Userdoesnotownthisbadge"))
       (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id)))))
 
 (defn save-badge-tags!

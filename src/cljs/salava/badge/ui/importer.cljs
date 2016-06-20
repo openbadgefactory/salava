@@ -3,7 +3,7 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for translate-text]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
@@ -21,7 +21,7 @@
     [:div {:class (str "alert " (if (= status "success")
                                   "alert-success"
                                   "alert-warning"))}
-       message]]
+     (translate-text message)]]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"
@@ -143,7 +143,7 @@
     (if (:ajax-message @state)
       [:div.ajax-message
        [:i {:class "fa fa-cog fa-spin fa-2x "}]
-       [:span (:ajax-message @state)]])
+       [:span (translate-text (:ajax-message @state))]])
     (if-not (pos? (count (:badges @state)))
       [:button {:class "btn btn-primary"
                 :on-click #(fetch-badges state)

@@ -58,7 +58,7 @@
   "Create new user"
   [ctx email first-name last-name country language]
   (if (email-exists? ctx email)
-    {:status "error" :message (t :user/Enteredaddressisalready)}
+    {:status "error" :message "user/Enteredaddressisalready"}
     (let [site-url (get-site-url ctx)
           base-path (get-base-path ctx)
           activation_code (generate-activation-id)
@@ -72,12 +72,12 @@
   "Activate user account and set password. Do not change password if user account is already activated and verification key is older than a day. If account is not yet activated, verify primary email address."
   [ctx user-id code password verify-password]
   (if-not (= password verify-password)
-    {:status "error" :message (t :user/Passwordmissmatch)}
+    {:status "error" :message "user/Passwordmissmatch"}
     (let [{:keys [verification_key activated mtime]} (select-activation-code-and-status {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
       (if-not (= verification_key code)
-        {:status "error" :message (t :user/Invalidactivationcode)}
+        {:status "error" :message "user/Invalidactivationcode"}
         (if (and activated (< mtime (- (unix-time) 86400)))
-          {:status "error" :message (t :user/Passwordresetlinkexpired)}
+          {:status "error" :message "user/Passwordresetlinkexpired"}
           (do
             (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
             (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
@@ -93,9 +93,9 @@
         (do
           (update-user-last_login! {:id id} (get-db ctx))
           {:status "success" :id id})
-        {:status "error" :message (t :user/Loginfailed)}))
+        {:status "error" :message  "user/Loginfailed"}))
     (catch Object _
-      {:status "error" :message (t :user/Loginfailed)})))
+      {:status "error" :message "user/Loginfailed"})))
 
 (defn edit-user
   "Edit user information."
@@ -104,10 +104,10 @@
     (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
       (when new_password
         (if-not (= new_password new_password_verify)
-          (throw+ (t :user/Passwordmissmatch)))
+          (throw+ "user/Passwordmissmatch"))
         (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
           (if (and pass (not (check-password current_password pass)))
-            (throw+ (t :user/Wrongpassword)))))
+            (throw+ "user/Wrongpassword"))))
       (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
       (if new_password
         (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx)))
@@ -125,7 +125,7 @@
   [ctx email user-id]
   (try+
     (if (email-exists? ctx email)
-      {:status "error" :message (t :user/Enteredaddressisalready)}
+      {:status "error" :message "user/Enteredaddressisalready"}
       (let [site-url (get-site-url ctx)
             base-path (get-base-path ctx)
             verification-key (generate-activation-id)
@@ -134,7 +134,7 @@
         (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email)
         {:status "success" :message (str (t :user/Emailaddress) " " email " " (t :user/added)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
     (catch Object _
-      {:status "error" :message (t :user/Errorwhileaddingemail)})))
+      {:status "error" :message "user/Errorwhileaddingemail"})))
 
 (defn delete-email-address
   "Remove email address attached to user account"

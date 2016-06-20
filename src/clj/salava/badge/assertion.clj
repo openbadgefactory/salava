@@ -20,7 +20,7 @@
          :socket-timeout 30000
          :conn-timeout   30000}))
     (catch Object _
-      {:error (t :badge/Errorfetchingjson)})))
+      {:error "badge/Errorfetchingjson"})))
 
 (defn copy-to-file [output-file url]
   (with-open [in (io/input-stream url)

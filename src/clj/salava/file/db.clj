@@ -68,9 +68,9 @@
         [tr-cn (get-datasource ctx)]
         (remove-file-with-db! {:connection tr-cn} file-id))
       (remove-file! ctx path)
-      {:status "success" :message (t :file/Filedeleted) :reason (t :file/Filedeleted)})
+      {:status "success" :message "file/Filedeleted" :reason (t :file/Filedeleted)})
     (catch Object _
-      {:status "error" :message (t :file/Errorwhiledeleting) :reason (t :file/Errorwhiledeleting)})))
+      {:status "error" :message "file/Errorwhiledeleting" :reason (t :file/Errorwhiledeleting)})))
 
 (defn user-image-files
   "Get all image files by user"

@@ -3,7 +3,7 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for translate-text]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.i18n :refer [t]]
@@ -33,7 +33,7 @@
     [:form {:class "form-horizontal"}
      (if (:error-message @state)
        [:div {:class "alert alert-danger" :role "alert"}
-        (:error-message @state)])
+        (translate-text (:error-message @state))])
 
      [:div.form-group
       [:label {:class "col-sm-4"
@@ -98,8 +98,8 @@
 
 (defn oauth-registration-form []
   [:div {:class "row"}
-   [:div {:class "col-sm-6 col-sm-push-2 col-xs-12"} (facebook-link false true)]
-   [:div.col-sm-6 (linkedin-link nil "register")]])
+   [:div {:class "col-sm-6 text-right-sm col-xs-12"} (facebook-link false true)]
+   [:div.col-sm-6.pull-left (linkedin-link nil "register")]])
 
 (defn registeration-content [state]
   [:div

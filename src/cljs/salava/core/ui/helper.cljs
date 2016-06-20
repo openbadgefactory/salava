@@ -1,5 +1,6 @@
 (ns salava.core.ui.helper
   (:require [reagent.session :as session]
+            [salava.core.i18n :refer [t]]
             [schema.core :as s]
             [ajax.core :as ajax]))
 
@@ -23,6 +24,14 @@
 
 (defn base-url []
   (str (.-location.protocol js/window) "//" (.-location.host js/window)))
+
+(defn translate-text [text]
+  (let [translated (if (keyword? text)
+                     (t text)
+                     (t (keyword text)))]
+    (if (and (re-find #"\[" translated) (re-find #"\]" translated))
+      text
+      translated)))
 
 (defn path-for
   ([url] (path-for url false))

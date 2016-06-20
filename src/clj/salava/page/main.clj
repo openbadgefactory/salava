@@ -215,18 +215,18 @@
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
           (delete-block! ctx old-block)))
-      {:status "success" :message (t :page/Pagesavedsuccessfully)})
+      {:status "success" :message "page/Pagesavedsuccessfully"})
     (catch Object _
-      {:status "error" :message (t :page/Errorwhilesavingpage)})))
+      {:status "error" :message "page/Errorwhilesavingpage"})))
 
 (defn set-theme! [ctx page-id theme-id border-id padding user-id]
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
     (update-page-theme! {:id page-id :theme (valid-theme-id theme-id) :border (valid-border-id border-id) :padding padding} (get-db ctx))
-    {:status "success" :message (t :page/Pagesavedsuccessfully)}
+    {:status "success" :message "page/Pagesavedsuccessfully"}
     (catch Object _
-      {:status "error" :message (t :page/Errorwhilesavingpage)})))
+      {:status "error" :message "page/Errorwhilesavingpage"})))
 
 (defn page-settings [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
@@ -254,9 +254,9 @@
                             visibility)]
       (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
       (save-page-tags! ctx page-id tags)
-      {:status "success" :message (t :page/Pagesavedsuccessfully)})
+      {:status "success" :message "page/Pagesavedsuccessfully"})
     (catch Object _
-      {:status "error" :message (t :page/Errorwhilesavingpage)})))
+      {:status "error" :message "page/Errorwhilesavingpage"})))
 
 (defn remove-files-blocks-and-content! [db page-id]
   (let [file-blocks (select-pages-files-blocks {:page_id page-id} db)]

@@ -29,7 +29,7 @@
        ;  (throw+ (t :badge/Errorconnecting)))
      )
      (catch Object _
-       (throw+ (t :badge/Errorconnecting))))))
+       (throw+ "badge/Errorconnecting")))))
 
 (defn get-badge-type [badge]
   (if (= (get-in badge [:assertion :verify :type]) "hosted")
@@ -47,7 +47,7 @@
     "hosted" [(:assertion badge) (:assertion badge)]
     "signed" [(a/fetch-signed-badge-assertion (:imageUrl badge)) (:imageUrl badge)]
     "hostedUrl" [(:hostedUrl badge) (:hostedUrl badge)]
-    [{:error (t :badge/Invalidassertion)} nil]))
+    [{:error "badge/Invalidassertion"} nil]))
 
 (defn add-assertion-and-key [badge]
   (let [badge-type (get-badge-type badge)
@@ -100,7 +100,7 @@
 
 (defn fetch-all-user-badges [ctx user-id backpack-emails]
   (if (empty? backpack-emails)
-    (throw+ (t :badge/Noemails)))
+    (throw+ "badge/Noemails"))
   (reduce #(concat %1 (fetch-badges-from-groups %2)) [] (map #(fetch-backpack-uid ctx user-id %) backpack-emails)))
 
 (defn badge-to-import [ctx user-id badge]
@@ -111,10 +111,10 @@
         error (get-in badge [:assertion :error])]
     {:status      (if (or expired? exists? error) "invalid" "ok")
      :message     (cond
-                    exists? (t :badge/Alreadyowned)
-                    expired? (t :badge/Badgeisexpired)
+                    exists? "badge/Alreadyowned"
+                    expired? "badge/Badgeisexpired"
                     error error
-                    :else (t :badge/Savethisbadge))
+                    :else "badge/Savethisbadge")
      :name        (get-in badge [:assertion :badge :name])
      :description (get-in badge [:assertion :badge :description])
      :image_file  (get-in badge [:assertion :badge :image])
@@ -154,7 +154,7 @@
           saved-badges (for [b badges-to-save]
                          (save-badge-data! ctx backpack-emails user-id b))]
       {:status      "success"
-       :message     (t :badge/Badgessaved)
+       :message     "badge/Badgessaved"
        :saved-count (->> saved-badges
                          (filter #(:id %))
                          count)
@@ -167,7 +167,7 @@
 (defn upload-badge [ctx uploaded-file user-id]
   (try+
     (if-not (some #(= (:content-type uploaded-file) %) ["image/png" "image/svg+xml"])
-      (throw+ (t :badge/Invalidfiletype)))
+      (throw+ "badge/Invalidfiletype"))
     (let [content-type (:content-type uploaded-file)
           assertion-url (if (= content-type "image/png")
                           (p/get-assertion-from-png (:tempfile uploaded-file))
@@ -176,6 +176,6 @@
           emails (u/verified-email-addresses ctx user-id)
           data {:assertion assertion}
           badge-id (b/save-badge-from-assertion! ctx data user-id emails)]
-      {:status "success" :message (t :badge/Badgeuploaded) :reason (t :badge/Badgeuploaded)})
+      {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"})
     (catch Object _
-      {:status "error" :message (t :badge/Errorwhileuploading) :reason _})))
+      {:status "error" :message "badge/Errorwhileuploading" :reason _})))
