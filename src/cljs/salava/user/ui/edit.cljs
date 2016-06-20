@@ -66,6 +66,8 @@
                     :on-change   #(reset! current-password-atom (.-target.value %))
                     :value       @current-password-atom}]]])
        [:div.form-group
+        [:div.col-md-12 (t :user/Tochangecurrentpassword)]
+        [:br]
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]
@@ -74,7 +76,8 @@
         [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]
-        [:div.col-md-12 (t :user/Tochangecurrentpassword)]]
+        ;[:div.col-md-12 (t :user/Tochangecurrentpassword)]
+        ]
        
        [:div.form-group
         [:label {:for "languages"
