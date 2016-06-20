@@ -42,8 +42,8 @@
             file-data (assoc insert-data :id file-id
                                          :ctime (unix-time)
                                          :mtime (unix-time))]
-        {:status "success" :message (t :file/Fileuploaded) :reason (t :file/Fileuploaded) :data file-data}))
+        {:status "success" :message "file/Fileuploaded" :reason "file/Fileuploaded" :data file-data}))
     (catch Object _
-      {:status "error" :message (t :file/Errorwhileuploading) :reason _})
+      {:status "error" :message "file/Errorwhileuploading" :reason _})
     (finally
       (.delete (:tempfile file)))))

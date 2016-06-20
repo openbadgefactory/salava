@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
             [salava.core.ui.layout :as layout]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.core.common :refer [deep-merge]]
             [salava.user.schemas :as schemas]
             [salava.core.countries :refer [all-countries-sorted]]
@@ -51,7 +51,7 @@
       [:form.form-horizontal
        (if message
          [:div {:class (str "alert " (:class message))}
-          (:content message)])
+          (translate-text (:content message))])
        (if current-password?
          [:div.form-group
           [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
@@ -75,9 +75,7 @@
        [:div.form-group
         [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]
-        ;[:div.col-md-12 (t :user/Tochangecurrentpassword)]
-        ]
+         [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]]
        
        [:div.form-group
         [:label {:for "languages"

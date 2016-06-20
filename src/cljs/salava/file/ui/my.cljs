@@ -9,7 +9,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.ui.tag :as tag]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn upload-modal [status title message]
@@ -21,16 +21,16 @@
               :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title title]]
+    [:h4.modal-title (translate-text title)]]
    [:div.modal-body
     (if status
       [:div {:class (str "alert " (if (= status "error")
                                     "alert-warning"
                                     "alert-success"))}
-       message]
+       (translate-text message)]
       [:div
        [:i {:class "fa fa-cog fa-spin fa-2x"}]
-       [:span " " message]])]
+       [:span " " (translate-text message)]])]
    (if status
      [:div.modal-footer
       [:button {:type "button"

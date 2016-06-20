@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to path-for]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t translate-text]]))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -15,12 +15,12 @@
               :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title message]]
+    [:h4.modal-title (translate-text message)]]
    [:div.modal-body
     [:div {:class (str "alert " (if (= status "error")
                                   "alert-warning"
                                   "alert-success"))}
-     reason]]
+     (translate-text reason)]]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"

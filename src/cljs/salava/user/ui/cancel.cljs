@@ -3,7 +3,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
             [salava.core.ui.layout :as layout]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.user.schemas :as schemas]))
 
 (defn password-valid? [password]
@@ -23,7 +23,7 @@
     [:div {:class "form-horizontal"}
      (if (:error-message @state)
        [:div {:class "alert alert-warning" :role "alert"}
-        (:error-message @state)])
+        (translate-text (:error-message @state))])
      [:div.form-group
       [:label {:class "col-xs-3"
                :for "input-password"}
