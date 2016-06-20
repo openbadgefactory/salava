@@ -29,3 +29,12 @@
              (if (session/get :i18n-editable)
                (tr/get-editable translation lang keylist)
                (apply str (map (fn [k] (if (keyword? k) (get-t lang k) k)) keylist))))))
+
+
+(defn translate-text [text]
+  (let [translated (if (keyword? text)
+                     (t text)
+                     (t (keyword text)))]
+    (if (and (re-find #"\[" translated) (re-find #"\]" translated))
+      text
+      translated)))

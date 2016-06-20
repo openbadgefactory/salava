@@ -5,11 +5,11 @@
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.file.icons :refer [file-icon]]
-            [salava.core.ui.helper :refer [unique-values navigate-to path-for translate-text]]
+            [salava.core.ui.helper :refer [unique-values navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.ui.tag :as tag]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn upload-modal [status title message]

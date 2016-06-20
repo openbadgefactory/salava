@@ -1,9 +1,9 @@
 (ns salava.user.ui.activate
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? path-for translate-text]]
+            [salava.core.ui.helper :refer [input-valid? path-for]]
             [salava.core.ui.layout :as layout]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.user.schemas :as schemas]))
 
 (defn password-valid? [password]
