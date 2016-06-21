@@ -229,12 +229,12 @@
   [ctx email]
   (let [site-url (get-site-url ctx)
         base-path (get-base-path ctx)
-        {:keys [id first_name last_name verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
+        {:keys [id first_name last_name verified primary_address language]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
     (if (and id primary_address)
       (do
         (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
-        (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key) (str first_name " " last_name) email)
+        (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key language) (str first_name " " last_name) email language)
         {:status "success"})
       {:status "error"})))
 
