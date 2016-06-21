@@ -21,6 +21,7 @@
                                       ["/login" login/handler]
                                       [["/login/" :lang] login/handler]
                                       [["/activate/" :user-id "/" :timestamp "/" :code] password/handler]
+                                      [["/activate/" :user-id "/" :timestamp "/" :code "/" :lang] password/handler]
                                       ["/register" register/handler]
                                       [["/register/" :lang] register/handler]
                                       ["/reset" reset/handler]

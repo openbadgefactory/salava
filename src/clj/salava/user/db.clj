@@ -21,11 +21,14 @@
 (defn generate-activation-id []
   (str (java.util.UUID/randomUUID)))
 
-(defn activation-link [site-url base-path user-id code]
-  (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code))
+(defn activation-link
+  ([site-url base-path user-id code]
+   (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code))
+  ([site-url base-path user-id code lng]
+   (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code "/" lng)))
 
 (defn login-link [site-url base-path]
-  (str site-url base-path "/user/login"))
+    (str site-url base-path "/user/login"))
 
 (defn email-verification-link [site-url base-path verification-key]
   (str site-url base-path "/user/verify_email/" verification-key))
@@ -65,7 +68,7 @@
           new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code) (login-link site-url base-path) (str first-name " " last-name) email)
+      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code language) (login-link site-url base-path) (str first-name " " last-name) email language)
       {:status "success" :message ""})))
 
 (defn set-password-and-activate

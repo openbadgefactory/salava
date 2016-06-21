@@ -135,8 +135,9 @@
                      :error-message nil
                      :registration-sent nil})
         lang (:lang params)]
-    (if (and lang (some #(= lang %) (session/get :languages)))
-      (session/assoc-in! [:user :language] lang))
+    (when (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang)
+      (swap! state assoc :language lang))
     (init-data state)    
     (fn []
       (layout/landing-page (content state)))))

@@ -1,5 +1,6 @@
 (ns salava.user.ui.activate
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? path-for]]
             [salava.core.ui.layout :as layout]
@@ -85,6 +86,9 @@
                      :user-id (:user-id params)
                      :code (:code params)
                      :error-message nil
-                     :account-activated false})]
+                     :account-activated false})
+        lang (:lang params)]
+    (when (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang))
     (fn []
       (layout/landing-page (content state)))))

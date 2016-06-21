@@ -22,7 +22,10 @@
       (str "[" key "]"))))
 
 
-#?(:clj  (defn t [key] (get-t "en" key))
+#?(:clj  (defn t
+           ([key] (get-t "en" key))
+           ([key lng] (let [language lng]
+                         (get-t language key))))
 
    :cljs (defn t [& keylist]
            (let [lang (or (session/get-in [:user :language]) :en)]
