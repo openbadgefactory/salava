@@ -24,7 +24,7 @@
 
 #?(:clj  (defn t
            ([key] (get-t "en" key))
-           ([key lng] (let [language lng]
+           ([key lng] (let [language (or lng "en")]
                          (get-t language key))))
 
    :cljs (defn t [& keylist]

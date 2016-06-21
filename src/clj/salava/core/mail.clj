@@ -39,9 +39,9 @@
                      (t :core/Obpteam lng))]
     (send-mail ctx subject message [email-address])))
 
-(defn send-verification [ctx site-url email-verification-link fullname email]
-  (let [subject (str (t :core/Emailverification1))
-        message (str fullname "\n\n" (t :core/Emailverification2) " '" email "' " (t :core/Emailverification3) " " site-url".\n" (t :core/Emailverification4) ":\n\n"
+(defn send-verification [ctx site-url email-verification-link fullname email lng]
+  (let [subject (str (t :core/Emailverification1 lng))
+        message (str fullname "\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-url".\n" (t :core/Emailverification4 lng) ":\n\n"
                      email-verification-link
-                     "\n\n" (t :core/Emailverification6)".\n")]
+                     "\n\n" (t :core/Emailverification6 lng)".\n")]
     (send-mail ctx subject message [email])))
