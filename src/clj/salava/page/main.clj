@@ -44,8 +44,9 @@
          pages-with-badges)))
 
 (defn create-empty-page! [ctx user-id]
-  (:generated_key (insert-empty-page<! {:user_id user-id
-                                        :name    (t :page/Untitled)} (get-db ctx))))
+  (let [language (select-user-language {:id user-id} (into {:result-set-fn first :row-fn :language} (get-db ctx)))]
+   (:generated_key (insert-empty-page<! {:user_id user-id
+                                         :name    (t :page/Untitled language)} (get-db ctx)))))
 
 (defn page-owner [ctx page-id]
   (select-page-owner {:id page-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx))))
