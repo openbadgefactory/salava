@@ -3,7 +3,7 @@
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :refer [intersection]]
-            [salava.core.ui.ajax-utils :as ajax]
+            [ajax.core :as ajax]
             [salava.file.icons :refer [file-icon]]
             [salava.core.ui.helper :refer [unique-values navigate-to path-for]]
             [salava.core.ui.layout :as layout]
@@ -49,15 +49,21 @@
     (ajax/POST
       (path-for "/obpv1/file/upload")
       {:body    form-data
+       :response-format :json
+       :keywords?       true
        :handler (fn [data]
                   (if (= (:status data) "success")
                     (reset! files-atom (conj @files-atom (:data data))))
-                  (m/modal! (upload-modal (:status data) (:message data) (:reason data))))})))
+                  (m/modal! (upload-modal (:status data) (:message data) (:reason data))))
+       :error-handler (fn [{:keys [status status-text]}]
+                        (m/modal! (upload-modal "error" (t :file/Errorwhileuploading)  (t :file/Filetoobig) )))})))
 
 (defn delete-file [id files-atom]
   (ajax/DELETE
     (path-for (str "/obpv1/file/" id))
-    {:handler (fn [data]
+    {:response-format :json
+     :keywords?       true
+     :handler (fn [data]
                 (when (= (:status data) "success")
                   (reset! files-atom (vec (remove #(= id (:id %)) @files-atom)))
                   (m/close-modal!)))}))
@@ -156,7 +162,11 @@
         (= tags-all true))))
 
 (defn file-grid [state]
-  (let [files (:files @state)]
+  (let [files (:files @state)
+        max-size (:max-size @state)
+        max-sizetext (if (not-empty max-size)
+                   (str (t :file/Maxfilesize) ": "  max-size)
+                   "") ]
     [:div {:class "row"
            :id    "grid"}
      [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -173,7 +183,8 @@
           [:i {:class "fa fa-plus"}]]
          [:div
           [:a {:id "add-element-link"}
-           (t :file/Upload)]]]]]]
+           (t :file/Upload)]
+          [:div max-sizetext]]]]]]
      (doall
        (for [index (range (count files))]
          (if (file-visible? (get-in @state [:files index :tags]) (:tags-selected @state) (:tags-all @state))
@@ -188,14 +199,18 @@
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/file" true)
-    {:handler (fn [data]
-                (swap! state assoc :files (vec data)))}))
+    {:response-format :json
+     :keywords?       true
+     :handler (fn [data]
+                (swap! state assoc :files (vec (:files data))
+                                   :max-size (:max-size data)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:files         []
                      :tags-all      true
                      :tags-selected []
-                     :new-tag ""})]
+                     :new-tag ""
+                     :max-size ""})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

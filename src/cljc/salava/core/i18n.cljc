@@ -35,9 +35,11 @@
 
 
 (defn translate-text [text]
-  (let [translated (if (keyword? text)
-                     (t text)
-                     (t (keyword text)))]
-    (if (and (re-find #"\[" translated) (re-find #"\]" translated))
-      text
-      translated)))
+  (if (re-find #"/" text)
+    (let [translated (if (keyword? text)
+                       (t text)
+                       (t (keyword text)))]
+      (if (and (re-find #"\[" translated) (re-find #"\]" translated))
+        text
+        translated))
+    text))

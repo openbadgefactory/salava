@@ -35,7 +35,8 @@
     (context "/obpv1/file" []
              :tags ["file"]
              (GET "/" []
-                  :return [schemas/File]
+                  :return {:files [schemas/File]
+                           :max-size (s/maybe s/Str) }
                   :summary "Get user's all files"
                   :auth-rules access/authenticated
                   :current-user current-user

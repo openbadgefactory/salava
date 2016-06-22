@@ -11,8 +11,10 @@
 (defqueries "sql/file/queries.sql")
 
 (defn user-files-all [ctx user-id]
-  (let [files (select-user-files {:user_id user-id} (get-db ctx))]
-    (map #(assoc % :tags (if (:tags %) (split (get % :tags "") #",") [])) files)))
+  (let [files (select-user-files {:user_id user-id} (get-db ctx))
+        max-size (get-in ctx [:config :file :max-size] 100000000)
+        sorted-files (map #(assoc % :tags (if (:tags %) (split (get % :tags "") #",") [])) files)]
+    {:files sorted-files :max-size (str (quot max-size (* 1024 1024)) "MB")}))
 
 (defn file-owner? [ctx file-id user-id]
   (let [owner (select-file-owner {:id file-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
