@@ -115,7 +115,7 @@
           blocks (page-blocks-for-edit ctx page-id)
           owner (:user_id page)
           badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
-          files (map #(select-keys % [:id :name :path :mime_type :size]) (f/user-files-all ctx owner))
+          files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
           tags (distinct (flatten (map :tags badges)))]
       {:page (assoc page :blocks blocks) :badges badges :tags tags :files files})))
 
@@ -179,7 +179,7 @@
     (let [{:keys [name description blocks]} page-content
           page-owner-id (page-owner ctx page-id)
           user-files (if (some #(= "file" (:type %)) blocks)
-                       (f/user-files-all ctx page-owner-id))
+                       (:files (f/user-files-all ctx page-owner-id)))
           file-ids (map :id user-files)
           user-badges (if (some #(= "badge" (:type %)) blocks)
                         (b/user-badges-all ctx page-owner-id))
