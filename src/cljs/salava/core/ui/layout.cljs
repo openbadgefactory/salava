@@ -5,6 +5,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [current-path navigate-to path-for base-path]]
             [salava.user.ui.helper :refer [profile-picture]]
+            [salava.core.ui.footer :refer [footer]]
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
@@ -79,7 +80,6 @@
           (navi-link i))]
        (top-navi-right)]]]))
 
-
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi))]
     [:ul {:class "side-links"}
@@ -90,7 +90,6 @@
   (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))]
     (if matched-route
       [:h2 (get-in site-navi [:navi-items matched-route :breadcrumb])])))
-
 
 (defn default-0 [top-items sub-items heading content]
   [:div
@@ -103,7 +102,8 @@
    [:div {:class "container main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
-     [:div {:class "col-md-9"} content]]]])
+     [:div {:class "col-md-9"} content]]]
+   (footer)])
 
 
 (defn default [site-navi content]
@@ -117,7 +117,8 @@
    [:div {:class "container main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
-     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]])
+     [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
+   (footer)])
 
 (defn default-no-sidebar [site-navi content]
   [:div
@@ -128,7 +129,8 @@
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
     [:div {:class "row"}
-     [:div {:class "col-md-12" :id "content"} content]]]])
+     [:div {:class "col-md-12" :id "content"} content]]]
+   (footer)])
 
 (defn top-navi-landing []
   [:nav {:class "navbar"}
@@ -146,5 +148,6 @@
     (top-navi-landing)]
    [:div {:class "container main-container"}
     [:div {:id "content"}
-     content]]])
+     content]]
+   (footer)])
 

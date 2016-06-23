@@ -19,12 +19,19 @@ a:hover, a:active, a:visited, a:focus {
     text-decoration: none;
 }
 
+html {
+    position: relative;
+    min-height: 100%;
+}
+
 body {
     font-family: 'Open Sans';
     height: 100%;
     line-height: 24px;
     background-color: $background;
     color: $main-color;
+    /* Margin bottom by footer height */
+    margin-bottom: 100px;
 }
 
 .btn {
@@ -561,4 +568,24 @@ ol.welcome-text li {
 .add-field-after {
     margin-bottom: 15px;
     text-align: center;
+}
+
+
+footer.footer {
+    position: absolute;
+    bottom: 0;
+    height: 100px;
+    width: 100%;
+    .footer-container {
+	text-align: center;
+	border-top: 1px solid #dbdbdb;
+	padding-top: 12px;
+	font-size: 11px;
+	font-weight: bold;
+    }
+}
+
+
+.text-muted {
+    color: #777;
 }
