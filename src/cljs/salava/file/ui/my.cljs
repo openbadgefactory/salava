@@ -165,8 +165,8 @@
   (let [files (:files @state)
         max-size (:max-size @state)
         max-sizetext (if (not-empty max-size)
-                   (str (t :file/Maxfilesize) ": "  max-size)
-                   "") ]
+                       (str "(" (t :file/Maxfilesize) ": "  max-size ")")
+                       "")]
     [:div {:class "row"
            :id    "grid"}
      [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -184,7 +184,7 @@
          [:div
           [:a {:id "add-element-link"}
            (t :file/Upload)]
-          [:div max-sizetext]]]]]]
+          [:div.max-file-size max-sizetext]]]]]]
      (doall
        (for [index (range (count files))]
          (if (file-visible? (get-in @state [:files index :tags]) (:tags-selected @state) (:tags-all @state))
