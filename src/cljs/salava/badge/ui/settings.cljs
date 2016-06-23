@@ -23,7 +23,7 @@
       (path-for (str "/obpv1/badge/save_settings/" id))
       {:params  {:visibility   visibility
                  :tags         tags
-                 :rating       rating
+                 :rating       (if (pos? rating) rating nil)
                  :evidence-url evidence-url}
        :handler (fn []
                   (.reload js/window.location))})))
