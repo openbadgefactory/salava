@@ -3,7 +3,7 @@
             [clojurewerkz.propertied.properties :refer [properties->map map->properties]]
             [clojure.java.io :as io]
             [clojure.data]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump plugin-str]]
             [salava.core.util :as util]))
 
 
@@ -36,8 +36,8 @@
 
 (defn prop-file [lang plugin]
   (if (nil? lang)
-    (str "resources/i18n/" (name plugin) ".properties")
-    (str "resources/i18n/" (name lang) "/" (name plugin) "_" (name lang) ".properties")))
+    (str "resources/i18n/" (plugin-str plugin) ".properties")
+    (str "resources/i18n/" (name lang) "/" (plugin-str plugin) "_" (name lang) ".properties")))
 
 (defn existing [file]
   (when (.exists (io/file file))

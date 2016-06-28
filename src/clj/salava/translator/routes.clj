@@ -5,6 +5,7 @@
             [schema.core :as s]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [salava.core.helper :refer [dump plugin-str]]
             [clojurewerkz.propertied.properties :refer [map->properties]]))
 
 
@@ -13,7 +14,7 @@
       (.store prop w nil)))
 
 (defn prop-file [lang plugin]
-  (io/resource (str "i18n/" (name lang) "/" (name plugin) "_" (name lang) ".properties")))
+  (io/resource (str "i18n/" (plugin-str lang) "/" (plugin-str plugin) "_" (plugin-str lang) ".properties")))
 
 (defn save-prop-file [data lang plugin ]
   (let [out-file (prop-file lang plugin)]

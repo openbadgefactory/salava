@@ -4,6 +4,7 @@
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
+            [salava.core.helper :refer [dump plugin-str]]
             [salava.core.util :refer [public-path]]))
 
 (defn read-config [path]
@@ -29,10 +30,10 @@
 ;;;
 
 (defn migration-dir [plugin]
-  (str "migrations/" (name plugin) "/sql"))
+  (str "migrations/" (plugin-str plugin) "/sql"))
 
 (defn seed-dir [plugin]
-  (str "migrations/" (name plugin) "/seed"))
+  (str "migrations/" (plugin-str plugin) "/seed"))
 
 
 (defn seed-insert [conf data-file]
@@ -83,14 +84,14 @@
 
 (defn run-seed [conf plugin]
   (when-let [data-file (io/resource (str (seed-dir plugin) "/data.edn"))]
-    (log/info "running seed functions for plugin" (name plugin))
+    (log/info "running seed functions for plugin" (plugin-str plugin))
     (seed-insert conf data-file)
     (seed-copy conf plugin)))
 
 (defn reset-seeds [conf]
   (doseq [plugin (plugins)]
     (when-let [data-file (io/resource (str (seed-dir plugin) "/data.edn"))]
-      (log/info "running seed functions for plugin" (name plugin))
+      (log/info "running seed functions for plugin" (plugin-str plugin))
       (seed-delete conf data-file)
       (seed-insert conf data-file)
       (seed-copy conf plugin))))
@@ -99,7 +100,7 @@
 (defn run-reset [conf plugin]
   (let [applied (reverse (applied-migrations conf plugin))]
     (do
-      (log/info "running reset functions for plugin" (name plugin))
+      (log/info "running reset functions for plugin" (plugin-str plugin))
       (run-down conf plugin applied)
       (migratus/migrate (migratus-config conf plugin))
       (run-seed conf plugin))))
@@ -120,18 +121,18 @@
 
 (defn migrate [& args]
   (doseq [plugin (or args (plugins))]
-    (log/info "running migrations for plugin" (name plugin))
+    (log/info "running migrations for plugin" (plugin-str plugin))
     (migratus/migrate (migratus-config (dev-config) plugin)))
   (System/exit 0))
 
 (defn rollback [plugin]
   (when-let [id (last (applied-migrations (dev-config) plugin))]
-    (log/info "rolling back latest migration for plugin" (name plugin))
+    (log/info "rolling back latest migration for plugin" (plugin-str plugin))
     (run-down (dev-config) plugin [id]))
   (System/exit 0))
 
 (defn remove-plugin [plugin]
-  (log/info "rolling back all migrations for plugin" (name plugin))
+  (log/info "rolling back all migrations for plugin" (plugin-str plugin))
   (let [applied (reverse (applied-migrations (dev-config) plugin))]
     (run-down (dev-config) plugin applied))
   (System/exit 0))

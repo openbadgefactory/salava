@@ -1,5 +1,6 @@
 (ns salava.core.components.config
   (:require [com.stuartsierra.component :as component]
+            [salava.core.helper :refer [dump plugin-str]]
             [clojure.java.io :as io]))
 
 (defn- get-file [name]
@@ -13,7 +14,7 @@
     (.exists (io/as-file file))))
 
 (defn- load-config [base-path plugin]
-  (let [config-file (get-file (str base-path "/" (name plugin) ".edn"))]
+  (let [config-file (get-file (str base-path "/" (plugin-str plugin) ".edn"))]
     (if (exists config-file)
       (-> config-file slurp read-string))))
 
