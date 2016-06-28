@@ -146,7 +146,7 @@
   (let [policy (html-policy :allow-elements ["a" "big" "blockquote" "br" "caption" "cite" "code" "del" "div"
                                              "em" "h1" "h2" "h3" "hr" "img" "ins" "kbd" "li" "ol" "p" "pre"
                                              "q" "s" "samp" "small" "span" "strong" "table" "tbody" "td" "tfoot"
-                                             "th" "thead" "tr" "tt" "ul" "var"]
+                                             "th" "thead" "tr" "tt" "ul" "var" "iframe"]
                             :allow-attributes ["align" :on-elements ["table"]]
                             :allow-attributes ["alt" :on-elements ["img"]]
                             :allow-attributes ["border" :on-elements ["table"]]
@@ -167,6 +167,11 @@
                             :allow-attributes ["target" :on-elements ["a"]]
                             :allow-attributes ["rowspan" :on-elements ["td" "th"]]
                             :allow-attributes ["title" :on-elements ["img"]]
+                            :allow-attributes ["width" :on-elements ["iframe"]]
+                            :allow-attributes ["height" :on-elements ["iframe"]]
+                            :allow-attributes ["frameborder" :on-elements ["iframe"]]
+                            :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
+                            :allow-attributes ["src" :on-elements ["iframe"]]
                             :allow-standard-url-protocols
                             :require-rel-nofollow-on-links
                             :allow-styling)]
@@ -201,6 +206,7 @@
                         (update-badge-block! block (get-db ctx))
                         (insert-badge-block! block (get-db ctx))))
             "html" (let [sanitized-block (update block :content sanitize-html)]
+                     (dump sanitized-block)
                      (if id
                        (update-html-block! sanitized-block (get-db ctx))
                        (insert-html-block! sanitized-block (get-db ctx))))
