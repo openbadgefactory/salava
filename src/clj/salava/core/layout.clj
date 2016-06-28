@@ -31,8 +31,14 @@
 
 
 (defn css-list [ctx]
-  (let [plugin-css (map #(str "/css/" (plugin-str %) ".css") (cons :core (get-in ctx [:config :core :plugins])))]
-    (map #(with-version ctx %) (concat asset-css plugin-css))))
+  (->> [:config :core :plugins]
+       (get-in ctx)
+       (cons :core)
+       (map plugin-str)
+       (map    #(str "/css/" % ".css"))
+       (filter #(io/resource (str "public" %)))
+       (concat asset-css)
+       (map #(with-version ctx %))))
 
 
 (defn js-list [ctx]
