@@ -1,0 +1,18 @@
+$background: #f9f9f9;
+$main-color: #7f7179;
+
+$grey-link: #afa2a9;
+$dark-grey-link: #7b7076;
+$green-link: #89a338;
+$light-green-link: #A5C24C;
+
+$grid-link: #f59f48;
+$grid-link-hover: #ea7d45;
+
+$link-color: #4264a2;
+
+@mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {
+    -webkit-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
+    -moz-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
+    box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
+}

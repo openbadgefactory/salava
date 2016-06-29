@@ -33,3 +33,5 @@ src/scss/extra/
 test/clj/salava/extra/
 test/cljc/salava/extra/
 test/cljs/salava/extra/
+
+src/scss/.sass-cache/

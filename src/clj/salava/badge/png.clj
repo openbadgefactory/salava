@@ -13,6 +13,7 @@
 
 (defn get-png-metadata [file]
   (let [reader (init-reader file)
+        _ (.readSkippingAllRows reader)
         metadata (.getMetadata reader)
         openbadges-data (.getTxtForKey metadata "openbadges")]
     (if (blank? openbadges-data)
