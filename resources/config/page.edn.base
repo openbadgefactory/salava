@@ -1,0 +1,2 @@
+{:iframe-whitelist [#"^https?://www.youtube.com"
+		    #"^https?://player.vimeo.com"] }

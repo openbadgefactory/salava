@@ -216,7 +216,12 @@
        [:i {:class "edit-icon fa fa-pencil-square-o fa-2x"}])
      (if (empty? (:content @block-atom))
        [:div.default-content (t :page/Clickheretoaddsomecontent)]
-       [:div {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}])]]])
+       (if (re-find #"iframe" (str (:content @block-atom)))
+         [:div.embed-responsive.embed-responsive-16by9
+          {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]
+         [:div
+          {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]
+         ))]]])
 
 (defn block-type [block-atom]
   (let [type (:type @block-atom)]

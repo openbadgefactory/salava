@@ -140,42 +140,52 @@
 
 (defn create-files-block! [ctx block]
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
+    
     (save-files-block-content ctx (assoc block :id block-id))))
 
-(defn sanitize-html [content]
-  (let [policy (html-policy :allow-elements ["a" "big" "blockquote" "br" "caption" "cite" "code" "del" "div"
-                                             "em" "h1" "h2" "h3" "hr" "img" "ins" "kbd" "li" "ol" "p" "pre"
-                                             "q" "s" "samp" "small" "span" "strong" "table" "tbody" "td" "tfoot"
-                                             "th" "thead" "tr" "tt" "ul" "var" "iframe"]
-                            :allow-attributes ["align" :on-elements ["table"]]
-                            :allow-attributes ["alt" :on-elements ["img"]]
-                            :allow-attributes ["border" :on-elements ["table"]]
-                            :allow-attributes ["bordercolor" :on-elements ["table"]]
-                            :allow-attributes ["cellpadding" :on-elements ["table"]]
-                            :allow-attributes ["cellspacing" :on-elements ["table"]]
-                            :allow-attributes ["colspan" :on-elements ["td" "th"]]
-                            :allow-attributes ["data-cke-realelement" :on-elements ["img"]]
-                            :allow-attributes ["dir" :on-elements ["span"]]
-                            :allow-attributes ["href" :on-elements ["a"]]
-                            :allow-attributes ["id" :on-elements ["a"]]
-                            :allow-attributes ["name" :on-elements ["a"]]
-                            :allow-attributes ["onclick" :on-elements ["a"]]
-                            :allow-attributes ["rowspan" :on-elements ["td" "th"]]
-                            :allow-attributes ["scope" :on-elements ["th" "td" "tr"]]
-                            :allow-attributes ["src" :on-elements ["img"]]
-                            :allow-attributes ["summary" :on-elements ["table"]]
-                            :allow-attributes ["target" :on-elements ["a"]]
-                            :allow-attributes ["rowspan" :on-elements ["td" "th"]]
-                            :allow-attributes ["title" :on-elements ["img"]]
-                            :allow-attributes ["width" :on-elements ["iframe"]]
-                            :allow-attributes ["height" :on-elements ["iframe"]]
-                            :allow-attributes ["frameborder" :on-elements ["iframe"]]
-                            :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
-                            :allow-attributes ["src" :on-elements ["iframe"]]
-                            :allow-standard-url-protocols
-                            :require-rel-nofollow-on-links
-                            :allow-styling)]
-    (html-sanitize policy content)))
+(defn url-checker [ctx]
+  (fn [element-name attrs]
+    (let [whitelist     (get-in ctx [:config :page :iframe-whitelist])
+          attr-map (apply hash-map attrs)
+          link     (get attr-map "src")]
+      (if (and (some (fn [key] (re-find key link)) whitelist) (not-empty link))
+        "iframe"))))
+
+(defn sanitize-html [ctx]
+ (fn [content]
+   (let [policy (html-policy :allow-elements ["a" "big" "blockquote" "br" "caption" "cite" "code" "del" "div"
+                                              "em" "h1" "h2" "h3" "hr" "img" "ins" "kbd" "li" "ol" "p" "pre"
+                                              "q" "s" "samp" "small" "span" "strong" "table" "tbody" "td" "tfoot"
+                                              "th" "thead" "tr" "tt" "ul" "var"]
+                             :allow-elements [(url-checker ctx)
+                                              "iframe"]
+                             :allow-attributes ["align" :on-elements ["table"]]
+                             :allow-attributes ["alt" :on-elements ["img"]]
+                             :allow-attributes ["border" :on-elements ["table"]]
+                             :allow-attributes ["bordercolor" :on-elements ["table"]]
+                             :allow-attributes ["cellpadding" :on-elements ["table"]]
+                             :allow-attributes ["cellspacing" :on-elements ["table"]]
+                             :allow-attributes ["colspan" :on-elements ["td" "th"]]
+                             :allow-attributes ["data-cke-realelement" :on-elements ["img"]]
+                             :allow-attributes ["dir" :on-elements ["span"]]
+                             :allow-attributes ["href" :on-elements ["a"]]
+                             :allow-attributes ["id" :on-elements ["a"]]
+                             :allow-attributes ["name" :on-elements ["a"]]
+                             :allow-attributes ["onclick" :on-elements ["a"]]
+                             :allow-attributes ["rowspan" :on-elements ["td" "th"]]
+                             :allow-attributes ["scope" :on-elements ["th" "td" "tr"]]
+                             :allow-attributes ["src" :on-elements ["img"]]
+                             :allow-attributes ["summary" :on-elements ["table"]]
+                             :allow-attributes ["target" :on-elements ["a"]]
+                             :allow-attributes ["rowspan" :on-elements ["td" "th"]]
+                             :allow-attributes ["title" :on-elements ["img"]]                        
+                             :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
+                             :allow-attributes ["src" :on-elements ["iframe"]]
+                             :allow-standard-url-protocols
+                             :require-rel-nofollow-on-links
+                             :allow-styling)]
+     (html-sanitize policy content))))
+
 
 (defn save-page-content! [ctx page-id page-content user-id]
   (try+
@@ -205,8 +215,7 @@
                       (if id
                         (update-badge-block! block (get-db ctx))
                         (insert-badge-block! block (get-db ctx))))
-            "html" (let [sanitized-block (update block :content sanitize-html)]
-                     (dump sanitized-block)
+            "html" (let [sanitized-block (update block :content (sanitize-html ctx))]
                      (if id
                        (update-html-block! sanitized-block (get-db ctx))
                        (insert-html-block! sanitized-block (get-db ctx))))
