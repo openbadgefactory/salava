@@ -52,6 +52,7 @@
 
 
 (defn handler [ctx]
+  (let [main-routes (resolve-routes ctx)]
     (wrap-middlewares
       ctx
       (api
@@ -70,10 +71,10 @@
                                {:name "page", :description "plugin"}
                                {:name "translator", :description "plugin"}
                                {:name "user", :description "plugin"}]})
-        (context (get-base-path ctx) []
-                 (resolve-routes ctx))
+
+        (context (get-base-path ctx) [] main-routes)
 
         (legacy-routes ctx)
 
-        (route/not-found "404 Not found"))))
+        (route/not-found "404 Not found")))))
 
