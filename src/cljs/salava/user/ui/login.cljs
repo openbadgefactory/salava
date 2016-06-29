@@ -5,9 +5,9 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.ui.helper :refer [base-path navigate-to path-for translate-text]]
+            [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t translate-text]]))
 
 (defn follow-up-url []
   (let [referrer js/document.referrer

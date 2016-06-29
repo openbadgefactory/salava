@@ -20,6 +20,7 @@
              (layout/main ctx "/reset")
              (layout/main ctx "/reset/:lang")
              (layout/main ctx "/activate/:userid/:timestamp/:code")
+             (layout/main ctx "/activate/:userid/:timestamp/:code/:lang")
              (layout/main ctx "/edit")
              (layout/main ctx "/edit/email-addresses")
              (layout/main ctx "/edit/fboauth")

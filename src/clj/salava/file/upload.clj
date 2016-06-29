@@ -27,12 +27,11 @@
                      :path path
                      :size size
                      :mime_type mime-type
-                     :tags []}]
-
-      (if-not (some #(= % mime-type) mime-types)
-        (throw+ (str (t :file/Filetype) " " mime-type " " (t :file/isnotallowed))))
+                       :tags []}]
       (if (> size max-size)
-        (throw+ (str (t :file/Filetoobig) ". " (t :file/Maxfilesize) ": " (quot max-size (* 1024 1024)) "MB")))
+        (throw+ "file/Filetoobig"))
+      (if-not (some #(= % mime-type) mime-types)
+        (throw+ "file/isnotallowed"))
       (if-not (and data-dir (.exists (io/as-file data-dir)))
         (throw+ "Data directory does not exist"))
 

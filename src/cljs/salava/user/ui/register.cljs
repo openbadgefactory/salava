@@ -3,10 +3,10 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [path-for translate-text]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.user.ui.input :as input]))
 
 (defn send-registration [state]
@@ -135,8 +135,9 @@
                      :error-message nil
                      :registration-sent nil})
         lang (:lang params)]
-    (if (and lang (some #(= lang %) (session/get :languages)))
-      (session/assoc-in! [:user :language] lang))
+    (when (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang)
+      (swap! state assoc :language lang))
     (init-data state)    
     (fn []
       (layout/landing-page (content state)))))

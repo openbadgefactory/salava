@@ -111,11 +111,12 @@
           [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:on-click #(open-modal badge-id)}
+         [:a.heading-link {:on-click #(open-modal badge-id) :title name}
           name]]
         [:div.media-issuer
          [:a {:href issuer_content_url
-              :target "_blank"} issuer_content_name]]
+              :target "_blank"
+              :title issuer_content_name} issuer_content_name]]
         (if recipients
           [:div.media-recipients
            recipients " " (if (= recipients 1)

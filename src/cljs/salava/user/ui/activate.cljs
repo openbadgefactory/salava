@@ -1,9 +1,10 @@
 (ns salava.user.ui.activate
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? path-for translate-text]]
+            [salava.core.ui.helper :refer [input-valid? path-for]]
             [salava.core.ui.layout :as layout]
-            [salava.core.i18n :refer [t]]
+            [salava.core.i18n :refer [t translate-text]]
             [salava.user.schemas :as schemas]))
 
 (defn password-valid? [password]
@@ -85,6 +86,9 @@
                      :user-id (:user-id params)
                      :code (:code params)
                      :error-message nil
-                     :account-activated false})]
+                     :account-activated false})
+        lang (:lang params)]
+    (when (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang))
     (fn []
       (layout/landing-page (content state)))))

@@ -11,12 +11,19 @@ a:hover, a:focus, a:active {
     color: $grid-link-hover;
 }
 
+html {
+    position: relative;
+    min-height: 100%;
+}
+
 body {
     font-family: 'Open Sans';
     height: 100%;
     line-height: 24px;
     background-color: $background;
     color: $main-color;
+    /* Margin bottom by footer height */
+    margin-bottom: 100px;
 }
 /* BUTTON */
 .btn {
@@ -724,4 +731,26 @@ ol.welcome-text li {
     font-size: 14px;
     padding:0px;
     margin-bottom:5px;
+}
+
+footer.footer {
+    position: absolute;
+    bottom: 0;
+    height: 100px;
+    width: 100%;
+    a {
+	color: #7f7179;
+    }
+    .footer-container {
+	text-align: center;
+	border-top: 1px solid #dbdbdb;
+	padding-top: 12px;
+	font-size: 11px;
+	font-weight: bold;
+    }
+}
+
+
+.text-muted {
+    color: #777;
 }

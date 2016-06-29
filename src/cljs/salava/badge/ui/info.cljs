@@ -42,7 +42,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image qr_code]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image qr_code owner]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])]
     (if (:initializing @state)
@@ -141,7 +141,10 @@
                                    (m/modal! [a/assertion-modal assertion] {:size :lg}))}
                 (t :badge/Openassertion) "..."]])
             (if @show-recipient-name-atom
-              [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
+              (if (and user-logged-in? (not owner?))
+                [:div [:label (t :badge/Recipient)] ": " [:a {:href (path-for (str "/user/profile/" owner))}  first_name " " last_name]]
+                [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
+              )
             [:div.description description]
             [:h2.uppercase-header (t :badge/Criteria)]
             [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]]]

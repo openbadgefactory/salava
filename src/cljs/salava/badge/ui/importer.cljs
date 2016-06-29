@@ -3,9 +3,9 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for translate-text]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.helper :refer [dump]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t translate-text]]))
 
 (defn import-modal [{:keys [status message saved-count error-count]}]
   [:div

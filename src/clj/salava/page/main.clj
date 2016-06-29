@@ -44,8 +44,10 @@
          pages-with-badges)))
 
 (defn create-empty-page! [ctx user-id]
-  (:generated_key (insert-empty-page<! {:user_id user-id
-                                        :name    (t :page/Untitled)} (get-db ctx))))
+  (let [language (select-user-language {:id user-id} (into {:result-set-fn first :row-fn :language} (get-db ctx)))
+        name (or (t :page/Untitled language) "Untitled")]
+   (:generated_key (insert-empty-page<! {:user_id user-id
+                                         :name    name} (get-db ctx)))))
 
 (defn page-owner [ctx page-id]
   (select-page-owner {:id page-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx))))
@@ -113,7 +115,7 @@
           blocks (page-blocks-for-edit ctx page-id)
           owner (:user_id page)
           badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
-          files (map #(select-keys % [:id :name :path :mime_type :size]) (f/user-files-all ctx owner))
+          files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
           tags (distinct (flatten (map :tags badges)))]
       {:page (assoc page :blocks blocks) :badges badges :tags tags :files files})))
 
@@ -177,7 +179,7 @@
     (let [{:keys [name description blocks]} page-content
           page-owner-id (page-owner ctx page-id)
           user-files (if (some #(= "file" (:type %)) blocks)
-                       (f/user-files-all ctx page-owner-id))
+                       (:files (f/user-files-all ctx page-owner-id)))
           file-ids (map :id user-files)
           user-badges (if (some #(= "badge" (:type %)) blocks)
                         (b/user-badges-all ctx page-owner-id))

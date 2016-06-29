@@ -22,10 +22,24 @@
       (str "[" key "]"))))
 
 
-#?(:clj  (defn t [key] (get-t "en" key))
+#?(:clj  (defn t
+           ([key] (get-t "en" key))
+           ([key lng] (let [language (or lng "en")]
+                         (get-t language key))))
 
    :cljs (defn t [& keylist]
            (let [lang (or (session/get-in [:user :language]) :en)]
              (if (session/get :i18n-editable)
                (tr/get-editable translation lang keylist)
                (apply str (map (fn [k] (if (keyword? k) (get-t lang k) k)) keylist))))))
+
+
+(defn translate-text [text]
+  (if (re-find #"/" text)
+    (let [translated (if (keyword? text)
+                       (t text)
+                       (t (keyword text)))]
+      (if (and (re-find #"\[" translated) (re-find #"\]" translated))
+        text
+        translated))
+    text))

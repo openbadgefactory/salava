@@ -21,11 +21,14 @@
 (defn generate-activation-id []
   (str (java.util.UUID/randomUUID)))
 
-(defn activation-link [site-url base-path user-id code]
-  (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code))
+(defn activation-link
+  ([site-url base-path user-id code]
+   (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code))
+  ([site-url base-path user-id code lng]
+   (str site-url base-path "/user/activate/" user-id "/" (unix-time) "/" code "/" lng)))
 
 (defn login-link [site-url base-path]
-  (str site-url base-path "/user/login"))
+    (str site-url base-path "/user/login"))
 
 (defn email-verification-link [site-url base-path verification-key]
   (str site-url base-path "/user/verify_email/" verification-key))
@@ -65,7 +68,7 @@
           new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code) (login-link site-url base-path) (str first-name " " last-name) email)
+      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code language) (login-link site-url base-path) (str first-name " " last-name) email language)
       {:status "success" :message ""})))
 
 (defn set-password-and-activate
@@ -129,10 +132,10 @@
       (let [site-url (get-site-url ctx)
             base-path (get-base-path ctx)
             verification-key (generate-activation-id)
-            {:keys [first_name last_name]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+            {:keys [first_name last_name language]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
         (insert-user-email! {:user_id user-id :email email :primary_address 0 :verification_key verification-key} (get-db ctx))
-        (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email)
-        {:status "success" :message (str (t :user/Emailaddress) " " email " " (t :user/added)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
+        (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email language)
+        {:status "success" :message (str (t :user/Emailaddress language) " " email " " (t :user/added language)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
     (catch Object _
       {:status "error" :message "user/Errorwhileaddingemail"})))
 
@@ -226,12 +229,12 @@
   [ctx email]
   (let [site-url (get-site-url ctx)
         base-path (get-base-path ctx)
-        {:keys [id first_name last_name verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
+        {:keys [id first_name last_name verified primary_address language]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
     (if (and id primary_address)
       (do
         (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
-        (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key) (str first_name " " last_name) email)
+        (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key language) (str first_name " " last_name) email language)
         {:status "success"})
       {:status "error"})))
 
