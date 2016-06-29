@@ -1,5 +1,13 @@
-#grid .page-create-date {
-    color: #9dbe5f;
+.pages #grid .grid-container{
+    .media-content {
+        padding:0px 10px;
+        .media-description {
+            height: auto;
+        }
+    }
+    .page-create-date {
+        color: #9dbe5f;
+    }
 }
 
 #add-element-link {
@@ -10,10 +18,10 @@
     img {
         height: 43px;
         width: 43px;
-        padding: 3px;
+        padding: 1px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        margin:0px 3px 35px 0px;
+        margin:3px 3px 0px 0px;
     }
 }
 
@@ -87,7 +95,7 @@
 }
 
 #buttons {
-    margin-bottom: 35px;
+    margin-bottom: 15px;
     #buttons-right {
         text-align: right;
     }
@@ -103,7 +111,7 @@
         margin-bottom: 35px;
     }
     .edit-block-files {
-        margin-bottom: 10px;
+       line-height: 1.7;
     }
     .page-file-upload {
         top: 0;
@@ -115,6 +123,16 @@
         font-size: 0;
         position: absolute;
         z-index: 1;
+        padding-bottom: 10px;
+    }
+    .btn.upload{
+        margin-bottom: 10px;
+        &:before {
+            content: '\f093';
+            font-family: FontAwesome;
+            padding-right: 10px;
+            font-size: 16px;
+        }
     }
     .html-block-content {
         min-height: 60px;
@@ -138,12 +156,20 @@
         color: #7f7179;
         font-size: 16px;
     }
+    #page-name {
+        margin-bottom: 10px;
+    }
+    .col-xs-1.remove {
+        text-align: center;
+    }
+    .remove-file-icon {
+        color: #ea8241;
+        cursor: pointer;
+        font-size: 16px;
+    }
 }
 
-.remove-file-icon {
-    color: #ea8241;
-    cursor: pointer;
-}
+
 
 .page-panel {
     padding: 20px;
@@ -944,6 +970,7 @@
         img {
             max-width: 100%;
             height: auto;
+            margin:10px 0px;
         }
     }
 }
@@ -955,15 +982,12 @@
 }
 
 .page-file-icon {
-    margin-right: 3px;
+    margin-right: 10px;
 }
 
 #field-editor {
     .field {
         .field-content {
-            .badge-select {
-                margin-bottom: 15px;
-            }
             .badge-image {
                 padding-right: 40px;
                 text-align: right;

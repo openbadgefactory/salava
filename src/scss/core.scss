@@ -1,22 +1,14 @@
-$background: #f9f9f9;
-$main-color: #7f7179;
-
-$grey-link: #afa2a9;
-$dark-grey-link: #7b7076;
-$green-link: #89a338;
-$light-green-link: #A5C24C;
-
-$grid-link: #2a6496;
-$grid-link-hover: #2a6496;
-
-@mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {
-    -webkit-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
-    -moz-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
-    box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
-}
+@import 'variables';
 
 a:hover, a:active, a:visited, a:focus {
     text-decoration: none;
+}
+a {
+    color:#f59f48;
+}
+a:hover, a:focus, a:active {
+    text-decoration: underline;
+    color: $grid-link-hover;
 }
 
 body {
@@ -26,7 +18,7 @@ body {
     background-color: $background;
     color: $main-color;
 }
-
+/* BUTTON */
 .btn {
     margin-right: 3px;
     background: none;
@@ -38,9 +30,16 @@ body {
     border: 1px solid #aca3a8;
     font-size: 13px;
     font-weight: normal;
+    text-shadow: none;
+    &:active, &:focus, &:active:focus {
+        color: #FFF;
+        text-decoration: none;
+        outline: none;
+    }
+}
+button {
     &:focus {
         outline: none;
-
     }
 }
 
@@ -59,6 +58,12 @@ body {
         background-color: #3e5c97;
         border-color: #424a7d;
         box-shadow: 0px 2px #d8d8d8;
+    }
+}
+.btn-primary[disabled]{
+    background-color: #587ab3;
+    &:hover, &:active, &:focus{
+        background-color: #587ab3;
     }
 }
 
@@ -88,10 +93,37 @@ body {
     }
 }
 
+.buttons .btn {
+    font-weight: bold;
+    border-radius: 2px;
+}
+
+/* FORM */
+.form-control {
+    border-radius: 3px;
+    &:focus {
+        border-color: #bdbdc0;
+        -webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);
+        box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);
+    }
+}
+select.form-control  {
+    -webkit-appearance:none;
+    background: #FFF url(/img/down_arrow.png) no-repeat top right;
+}
+
+input[type=checkbox], input[type=radio] {
+    margin-top:6px;
+}
+.checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline {
+    margin-left:15px;
+}
+
 header#navbar {
     background: url(/img/header_pic.png) no-repeat #ffffff;
     background-position: top center;
     padding: 0px 30px;
+    box-shadow: -1px 7px 5px -3px #cecccd;
 }
 
 nav.navbar {
@@ -260,6 +292,7 @@ ul.side-links {
 }
 
 #grid-filter {
+    padding-right: 15px;
     label {
         text-align: left;
     }
@@ -285,8 +318,8 @@ ul.side-links {
 }
 
 #grid {
+    margin:0px;
     margin-top: 15px;
-
     #add-element {
         text-align: center;
         position: relative;
@@ -313,6 +346,8 @@ ul.side-links {
         margin-top: 0;
         line-height: 1.4;
         height: 170px;
+        max-width: 280px;
+        min-width: 250px;
 
         .media-content {
             height: 115px;
@@ -333,11 +368,13 @@ ul.side-links {
                     font-size: 25px;
                 }
                 .media-heading {
+                    word-wrap: break-word;
                     line-height: 1.1em;
-                    height: 2.2em;
+                    height: 2.3em;
                     margin-top: 10px;
                     margin-right: 35px;
                     overflow-y: hidden;
+                    margin-bottom: 0px;
 
                     a.heading-link {
                         cursor: pointer;
@@ -352,19 +389,27 @@ ul.side-links {
                     line-height: 1.1em;
                     height: 2.2em;
 		    overflow-y: hidden;
-}	
+                }
                 .media-expires {
                     margin-top: 3px;
                     color: #83a04b;
                     font-size: 12px;
-
                 }
-                .media-description {
+                .media-expires ~ .media-description {
+                    margin-top:0px;
+                }
+                .media-description, .badge-description {
+                    word-wrap: break-word;
+                    color: #929292;
                     font-size: 12px;
                     line-height: 1.2em;
                     height: 4.8em;
                     margin-top: 3px;
+                    font-family: Arial;
                 }
+            }
+            &.media-expired .media-expires {
+                color: #8c2e0b;
             }
         }
         .media-bottom {
@@ -375,20 +420,23 @@ ul.side-links {
             font-size: 12px;
             min-height: 35px;
             text-transform: uppercase;
+            line-height: 1;
             i.fa {
                 font-size: 20px;
-                padding-right: 5px;
+                padding-right: 7px;
+                padding-top:3px;
             }
             a.bottom-link {
                 color: #766d72;
                 cursor: pointer;
                 i.fa {
                     color: #b1a1ab;
+                    padding-right:10px;
                 }
                 span {
                     vertical-align: top;
                     display: inline-block;
-                    padding-top: 3px;
+                    line-height: 25px;
                 }
             }
             .checkbox {
@@ -397,10 +445,34 @@ ul.side-links {
             .expired {
                 text-transform: uppercase;
                 color: #8c2e0b;
+                span {
+                    vertical-align: top;
+                    line-height: 25px;
+                }
+                .fa {
+                    padding-top:3px;
+                }
+            }
+            label span {
+                line-height: 25px;
             }
         }
         .media-expired {
-            opacity: 0.7;
+            opacity: 0.5;
+        }
+    }
+    @media (min-width: 992px){
+        .col-md-4 {
+            width: auto;
+            padding-left: 0px;
+            padding-right:20px;
+        }
+    }
+    @media (max-width: 767px) and (min-width:550px){
+        .col-md-4 {
+            width: 50%;
+            padding-left: 0px;
+            padding-right:20px;
         }
     }
 }
@@ -410,19 +482,26 @@ ul.side-links {
 }
 
 .tag-labels {
-    margin-bottom: 3px;
     .label {
-        margin-right: 3px;
+        margin-right: 5px;
+        margin-bottom: 5px;
         font-size: 12px;
+        padding:0px 0.4em;
+        line-height: 25px;
+        padding-bottom:1px;
+        vertical-align: middle;
         background-color: #f5f5f5;
         color: #555555;
         border: 1px solid #bbbbbb;
+        display: inline-block;
         a.remove-tag {
             font-size: 16px;
             cursor: pointer;
             text-decoration: none;
-            margin-left: 4px;
+            margin-left: 5px;
             color: #bbbbbb;
+            line-height: 25px;
+            vertical-align: middle;
             &:hover {
                 color: #888888;
             }
@@ -456,7 +535,7 @@ ol.welcome-text li {
 /* share buttons */
 #share {
     #share-buttons {
-        padding: 10px 15px 5px 15px;
+        //padding: 10px 15px 5px 15px;
         .share-button {
             margin-right: 3px;
             vertical-align: top;
@@ -464,6 +543,9 @@ ol.welcome-text li {
             line-height: 1;
             .fb-share {
                 margin-top: -2px;
+            }
+            #tweet-button {
+                width:60px !important;
             }
         }
         .share-link {
@@ -486,12 +568,24 @@ ol.welcome-text li {
         cursor: default;
         pointer-events: none;
     }
+    #share-buttons ~ div {
+        margin-top:10px;
+        .form-group{
+            label {
+                margin-bottom: 0px;
+                line-height: 34px;
+            }
+        }
+    }
     margin-top: 10px;
     margin-bottom: 20px;
 }
 
-#field-editor {
+#page-edit {
     margin-top: 25px;
+    .form-group {
+        margin-bottom: 0px;
+    }
     .field {
         position: relative;
         background-color: #ffffff;
@@ -524,6 +618,10 @@ ol.welcome-text li {
             }
         }
         .field-content {
+            border-left: 1px solid #cccccc;
+            margin-left: 25px;
+            padding: 20px 25px;
+            padding-bottom: 5px;
             .field-remove {
                 text-align: right;
                 span.remove-button {
@@ -535,17 +633,16 @@ ol.welcome-text li {
                     color: #ffffff;
                     cursor: pointer;
                     line-height: 1;
+                    &:hover {
+                        background-color: #df6519;
+                    }
                 }
             }
             .form-group:last-of-type {
                 margin-bottom: 0;
             }
-            border-left: 1px solid #cccccc;
-            margin-left: 25px;
-            padding: 10px 25px;
-
-            .badge-select {
-                margin-bottom: 15px;
+            .form-control {
+                margin-bottom: 10px;
             }
             .badge-image {
                 padding-right: 40px;
@@ -561,4 +658,70 @@ ol.welcome-text li {
 .add-field-after {
     margin-bottom: 15px;
     text-align: center;
+    .btn-success:before{
+        content:'\f067';
+        font-family: FontAwesome;
+        font-size: 15px;
+        padding-right: 10px;
+    }
+}
+.modal-content {
+    border-radius: 0px;
+    border: 1px solid #bdbdc0;
+    box-shadow: 0px 3px 6px #000;
+    font-size: 13px;
+    .modal-body > .row{
+        margin:0px 30px;
+        &:first-child{
+            margin-right: 0px;
+            .col-md-12 {
+                padding-right:0px;
+                button.close span {
+                    font-size: 40px;
+                    line-height: 24px;
+                }
+            }
+        }
+    }
+    #badge-contents {
+        margin:0px 45px;
+    }
+    .modal-header {
+        border-bottom:none;
+        padding-bottom: 0px;
+        button span {
+            font-size: 40px;
+            line-height: 24px;
+        }
+    }
+    .modal-footer {
+        border-top:none;
+        padding-top:0px;
+        text-align: left;
+        margin-left:40px;
+        @media (min-width: 992px){
+            margin-left:27%;
+        }
+    }
+}
+#my-files .modal-content {
+    .modal-footer{
+        margin-left: 0px;
+    }
+    .modal-body {
+        padding-top:0px;
+    }
+}
+.panel img {
+    max-width: 100%;
+}
+.alert-warning{
+    color:#7f7179;
+    font-weight: bold;
+    background: transparent;
+    border:none;
+    box-shadow: none;
+    font-size: 14px;
+    padding:0px;
+    margin-bottom:5px;
 }

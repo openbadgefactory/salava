@@ -113,7 +113,7 @@
            (page-grid-element element-data state))))]))
 
 (defn content [state]
-  [:div {:class "my-badges"}
+  [:div {:class "my-badges pages"}
    [page-grid-form state]
    [page-grid state]])
 

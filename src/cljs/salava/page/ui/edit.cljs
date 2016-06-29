@@ -141,17 +141,17 @@
      [:div.edit-block-files]
      (for [file (:files @block-atom)]
        [:div.row
-        [:div.col-xs-6
+        [:div.col-xs-7
          [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
          [:a {:href (str "/" (:path file))
               :target "_blank"}
           (:name file)]]
-        [:div.col-xs-6
+        [:div.col-xs-1.remove
          [:span {:class "remove-file-icon"
                  :on-click #(remove-file (cursor block-atom [:files]) file)}
           [:i {:class "fa fa-close"}]]]]))
    [:div.form-group
-    [:div.col-xs-12
+    [:div.col-xs-8
      [:div.file-select
       [:select {:class "form-control"
                 :value ""
@@ -161,7 +161,7 @@
          [:option {:value (:id file) :key (:id file)} (:name file)])]]]]
    [:div.form-group
     [:div.col-xs-12
-     [:button {:class "btn btn-primary"
+     [:button {:class "btn btn-primary upload"
                :on-change #(.preventDefault %)}
       (t :page/oruploadnewfile)]
      [:input {:id        (str "upload-file-" (:key @block-atom))

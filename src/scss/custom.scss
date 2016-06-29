@@ -1,0 +1,41 @@
+@import 'variables';
+
+#no-sidebar {
+    background: url('/img/bg_subpage.png') no-repeat scroll #f9f9f9;
+}
+
+.title-row {
+    background-color: #9dbe5f;
+    border: none;
+}
+
+ul.side-links > li > a {
+    color: #f59f48;
+    &:hover {
+        color: #ea7d45;
+    }
+}
+
+ul.side-links > li.active > a {
+    color: #ea7d45;
+}
+
+ul#secondary-menu-links li a i.fa {
+    color: #f8a152;
+}
+
+a#login-button {
+    height: 36px;
+    width: 125px;
+    background-color: #f8a152;
+    color: #fff !important;
+    text-transform: uppercase;
+    border: 1px solid #dc8538;
+    border-radius: 3px;
+    box-shadow: 0px 1px 1px #c7b6a2;
+    -webkit-box-shadow: 0px 1px 1px #c7b6a2;
+    font: bold 12px "Open Sans",sans-serif;
+    text-align: center;
+    display: inline-block;
+    padding: 8px 0 0 0 !important;
+}
