@@ -1,10 +1,12 @@
 (ns salava.core.handler
-  (:require [compojure.api.sweet :refer :all]
+  (:require [clojure.tools.logging :as log]
+            [compojure.api.sweet :refer :all]
             [compojure.route :as route]
             [salava.core.session :refer [wrap-app-session]]
             [salava.core.util :refer [get-base-path get-data-dir]]
             [salava.core.routes :refer [legacy-routes]]
             [salava.core.helper :refer [dump plugin-str]]
+            [slingshot.slingshot :refer :all]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.flash :refer [wrap-flash]]
@@ -12,11 +14,13 @@
             [ring.middleware.webjars :refer [wrap-webjars]]))
 
 
-;TODO try-catch
 (defn get-route-def [ctx plugin]
-  (let [sym (symbol (str "salava." (plugin-str plugin) ".routes/route-def"))]
-    (require (symbol (namespace sym)) :reload)
-    ((resolve sym) ctx)))
+  (try+
+    (let [sym (symbol (str "salava." (plugin-str plugin) ".routes/route-def"))]
+      (require (symbol (namespace sym)) :reload)
+      ((resolve sym) ctx))
+    (catch Object _
+      (log/info (str "no routes in plugin " plugin)))))
 
 
 (defn resolve-routes [ctx]

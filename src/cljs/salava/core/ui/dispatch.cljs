@@ -1,5 +1,6 @@
 (ns salava.core.ui.dispatch
-  (:require [reagent.core :as reagent :refer [atom]]
+  (:require [clojure.string :as str]
+            [reagent.core :as reagent :refer [atom]]
             [bidi.bidi :as b :include-macros true]
             [pushy.core :as pushy]
             [reagent.session :as session]
@@ -29,8 +30,10 @@
 
 
 (defn resolve-plugin [kind plugin ctx]
-  (let [resolver (aget js/window "salava" plugin "ui" "routes" kind)]
-    (resolver ctx)))
+  (try
+    (let [resolver (apply aget (concat [js/window "salava"] (str/split plugin #"/") ["ui" "routes" kind]))]
+      (resolver ctx))
+    (catch js/Object _ {})))
 
 
 (defn collect-routes [plugins ctx]

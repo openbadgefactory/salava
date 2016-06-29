@@ -46,7 +46,7 @@
 
 
 (defn context-js [ctx]
-  (let [ctx-out {:plugins         {:all (get-in ctx [:config :core :plugins])}
+  (let [ctx-out {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
                  :user            (:user ctx)
                  :flash-message   (:flash-message ctx)
                  :site-url        (get-in ctx [:config :core :site-url])
