@@ -143,10 +143,10 @@ nav.navbar {
 }
 
 button.navbar-toggle {
-    border: 1px solid $green-link;
+    border: 1px solid $grid-link-hover;
     margin: 8px 0;
     .icon-bar {
-        background-color: $green-link;
+        background-color: $grid-link-hover;
     }
     &:hover {
         border-color: $grey-link;
@@ -738,6 +738,7 @@ footer.footer {
     bottom: 0;
     height: 100px;
     width: 100%;
+    clear:both;
     a {
 	color: #7f7179;
     }
@@ -749,8 +750,51 @@ footer.footer {
 	font-weight: bold;
     }
 }
-
-
 .text-muted {
     color: #777;
+}
+body.anon {
+    background: #f9f9f9 url("/img/bg_subpage.png") no-repeat scroll center 70px;
+    #badge-info, #badge-gallery-view{
+        .panel {
+            background-color: #FFF;
+            border:1px solid #CCC;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+            border-radius: 0px;
+            .panel-body {
+                padding:20px;
+            }
+        }
+    }
+    .navbar-toggle {
+        display: none;
+    }
+    .navbar-collapse {
+        display: inline-block;
+        float:right;
+        .navbar-nav {
+            margin:0px;
+            padding-top:0px;
+        }
+    }
+    .navbar-header {
+        float:left;
+        clear: none;
+    }
+    @media (max-width:550px){
+        .container-fluid{
+            padding:0px;
+        }
+        header#navbar {
+            padding:0px 10px 0px 25px;
+        }
+    }
+    @media (max-width:360px){
+        .logo-main {
+            display: none;
+        }
+        .logo-icon {
+            display: block;
+        }
+    }
 }

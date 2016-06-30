@@ -76,7 +76,7 @@
       [:link {:type "text/css" :href "/css/print.css" :rel "stylesheet" :media "print"}]
       [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
       [:script {:type "text/javascript"} (context-js ctx)]]
-     [:body
+     [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
       [:div#app]
       "<!--[if lt IE 10]>"
       (include-js "/assets/es5-shim/es5-shim.min.js" "/assets/es5-shim/es5-sham.min.js")
