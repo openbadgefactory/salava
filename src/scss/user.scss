@@ -8,16 +8,48 @@
 }
 
 #login-page {
+    padding-bottom: 50px;
     .login-links {
         margin-top: 20px;
     }
+    form {
+	text-align: center;
+	padding-top:15px;
+    }
+    .form-group{
+	margin-right: auto;
+	margin-left: auto;
+	max-width: 300px;
+    }
+    .btn-primary {
+	background-color: #ea7d45;
+	border-color: #f59f48;
+	min-width: 140px;
+	font-size: 14px;
+	border-radius: 3px;
+	&:hover{
+	    background-color:#f59f48;
+	}
+    }
 }
 
+.login-links {
+    .col-xs-6, .col-sm-6 {
+	width: 50%;
+	float:left;
+    }
+    .col-xs-6 {
+	text-align: right;
+    }
+    .col-sm-6 {
+	text-align: left;
+    }
+}
 @media (min-width: 768px) {
-        .text-right-sm {
-        	   text-align: right;
-    	}
-    }  
+    .text-right-sm {
+        text-align: right;
+    }
+}
 .form-required {
     color: #f00f00;
 }
@@ -33,7 +65,18 @@
     padding-bottom: 25px;
     font-weight: 700;
 }
-
+#reset-password, #registration-page {
+    .panel-body form{
+	padding:20px;
+	.btn-primary {
+	    font-size: 14px;
+	    border-radius: 3px;
+	}
+    }
+}
+#registration-page .btn-primary{
+    margin-bottom: 20px;
+}
 #profile {
     #grid {
         margin-top: 0;
