@@ -8,20 +8,20 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 -- name: select-badge-countries
 SELECT country FROM user AS u
                LEFT JOIN badge AS b ON b.user_id = u.id
-               WHERE b.visibility = "public" OR b.visibility = "internal"
+               WHERE b.visibility = 'public' OR b.visibility = 'internal'
                GROUP BY country
                ORDER BY country
 
 -- name: select-page-countries
 SELECT country FROM user AS u
                LEFT JOIN page AS p ON p.user_id = u.id
-               WHERE p.visibility = "public" OR p.visibility = "internal"
+               WHERE p.visibility = 'public' OR p.visibility = 'internal'
                GROUP BY country
                ORDER BY country
 
 --name: select-profile-countries
 SELECT country FROM user AS u
-               WHERE profile_visibility = "public"
+               WHERE profile_visibility = 'public'
                GROUP BY country
                ORDER BY country
 
