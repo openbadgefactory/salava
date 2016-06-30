@@ -69,7 +69,6 @@
               :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]])]])
 
 (defn html-block [{:keys [content]}]
-  (.log js/console (str content))
   [:div.html-block
    (if (re-find #"iframe" (str content))
      [:div.embed-responsive.embed-responsive-16by9
