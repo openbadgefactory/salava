@@ -33,7 +33,7 @@
                     (.append "file" file (.-name file)))]
     (m/modal! (file/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
-      (path-for "/obpv1/file/upload")
+      (path-for "/obpv1/file/upload_image")
       {:body    form-data
        :handler (fn [{:keys [status message reason data]} response]
                   (when (= status "success")
