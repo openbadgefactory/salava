@@ -76,15 +76,21 @@
   [ctx user-id code password verify-password]
   (if-not (= password verify-password)
     {:status "error" :message "user/Passwordmissmatch"}
-    (let [{:keys [verification_key activated mtime]} (select-activation-code-and-status {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+    (let [{:keys [verification_key activated mtime, email, primary_address]} (select-activation-code-and-status {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
       (if-not (= verification_key code)
         {:status "error" :message "user/Invalidactivationcode"}
         (if (and activated (< mtime (- (unix-time) 86400)))
           {:status "error" :message "user/Passwordresetlinkexpired"}
           (do
-            (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
-            (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
-            (update-verify-primary-email-address! {:user_id user-id} (get-db ctx))
+            (if (= primary_address 1)
+              (do
+                (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
+                (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
+                (update-verify-primary-email-address! {:user_id user-id} (get-db ctx)))
+              (do
+                (update-password! {:pass (hash-password password) :id user-id} (get-db ctx))
+                (update-verify-email-address! {:user_id user-id :email email} (get-db ctx)))
+            )
             {:status "success" :message ""}))))))
 
 (defn login-user
@@ -231,9 +237,9 @@
         base-path (get-base-path ctx)
         {:keys [id first_name last_name verified primary_address language]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
-    (if (and id primary_address)
+    (if (and id verified)
       (do
-        (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
+        (update-verified-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
         (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key language) (str first_name " " last_name) email language)
         {:status "success"})
       {:status "error"})))
