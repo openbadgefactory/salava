@@ -27,6 +27,7 @@ resources/i18n/fi/extra/
 resources/migrations/extra/
 resources/sql/extra/
 resources/test_config/extra/
+src/clj/salava/extra/
 src/cljc/salava/extra/
 src/cljs/salava/extra/
 src/scss/extra/
