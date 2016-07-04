@@ -70,7 +70,12 @@
 
 (defn html-block [{:keys [content]}]
   [:div.html-block
-   {:dangerouslySetInnerHTML {:__html (md->html content)}}])
+   (if (re-find #"iframe" (str content))
+     [:div.embed-responsive.embed-responsive-16by9
+      {:dangerouslySetInnerHTML {:__html (md->html content)}}]
+     [:div
+      {:dangerouslySetInnerHTML {:__html (md->html content)}}]
+     )])
 
 
 (defn file-block [{:keys [files]}]

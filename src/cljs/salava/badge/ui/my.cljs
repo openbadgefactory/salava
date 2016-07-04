@@ -13,6 +13,13 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
+(defn init-data [state]
+  (ajax/GET
+    (path-for "/obpv1/badge" true)
+    {:handler (fn [data]
+                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                                   :pending (filter #(= "pending" (:status %)) data)
+                                   :initializing false))}))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -62,7 +69,7 @@
                                                              :evidence-url (:evidence_url data)
                                                              :rating (:rating data)
                                                              :new-tag ""))
-                (m/modal! [s/settings-modal data state]
+                (m/modal! [s/settings-modal data state init-data]
                           {:size :lg}))}))
 
 (defn badge-grid-element [element-data state]
@@ -200,13 +207,7 @@
         [badge-grid-form state]
         [badge-grid state]]))])
 
-(defn init-data [state]
-  (ajax/GET
-    (path-for "/obpv1/badge" true)
-    {:handler (fn [data]
-                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                                   :pending (filter #(= "pending" (:status %)) data)
-                                   :initializing false))}))
+
 
 (defn handler [site-navi]
   (let [state (atom {:badges []

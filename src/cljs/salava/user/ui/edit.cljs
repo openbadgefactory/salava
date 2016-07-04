@@ -10,6 +10,12 @@
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
+(defn clear-password-fields [state]
+  (do
+    (swap! state assoc-in [:user :current_password] "")
+    (swap! state assoc-in [:user :new_password] "")
+    (swap! state assoc-in [:user :new_password_verify] "")))
+
 (defn save-user-info [state]
   (let [params (:user @state)
         current-password (if-not (blank? (:current_password params)) (:current_password params))
@@ -23,19 +29,24 @@
                            :new_password new-password
                            :new_password_verify new-password-verify))
        :handler (fn [data]
-                  (navigate-to "/user/edit"))})))
+                  (if (= (:status data) "success")
+                    (navigate-to "/user/edit")
+                    (do
+                      (swap! state assoc :message {:class "alert-danger" :content (:message data)})
+                      (clear-password-fields state)))
+                  )})))
 
 (defn new-password-valid? [has-password? current-password new-password new-password-verify]
   (or
-    (and (empty? new-password)
-         (empty? new-password-verify)
-         (empty? current-password))
-    (and (not-empty new-password)
-         (not-empty new-password-verify)
-         (input/password-valid? new-password)
-         (input/password-valid? new-password-verify)
-         (= new-password new-password-verify)
-         (or (not has-password?) (not-empty current-password)))))
+   (and (empty? new-password)
+        (empty? new-password-verify)
+        (empty? current-password))
+   (and (not-empty new-password)
+        (not-empty new-password-verify)
+        (input/password-valid? new-password)
+        (input/password-valid? new-password-verify)
+        (= new-password new-password-verify)
+        (or (not has-password?) (not-empty current-password)))))
 (defn content [state]
   (let [current-password-atom (cursor state [:user :current_password])
         new-password-atom (cursor state [:user :new_password])
@@ -47,11 +58,13 @@
         message (:message @state)
         current-password? (get-in @state [:user :password?])]
     [:div {:class "panel" :id "edit-user"}
+     
+     (if message
+       [:div {:class (str "alert " (:class message))}
+       (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       (if message
-         [:div {:class (str "alert " (:class message))}
-          (translate-text (:content message))])
+       
        (if current-password?
          [:div.form-group
           [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
@@ -107,6 +120,7 @@
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
                                           (input/country-valid? @country-atom)
+                                          
                                           (new-password-valid? current-password? @current-password-atom @new-password-atom @new-password-verify-atom))
                                "disabled")
                    :on-click #(do

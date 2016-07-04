@@ -11,13 +11,13 @@
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
 
-(defn delete-badge [id]
+(defn delete-badge [id state init-data]
   (ajax/DELETE
     (path-for (str "/obpv1/badge/" id))
     {:handler (fn []
-                (.reload js/window.location))}))
+                (init-data state))}))
 
-(defn save-settings [state]
+(defn save-settings [state init-data]
   (let [{:keys [id visibility tags rating evidence-url]} (:badge-settings @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/save_settings/" id))
@@ -26,9 +26,9 @@
                  :rating       (if (pos? rating) rating nil)
                  :evidence-url evidence-url}
        :handler (fn []
-                  (.reload js/window.location))})))
+                  (init-data state))})))
 
-(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image]} state]
+(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image]} state init-data]
   [:div {:id "badge-settings"}
    [:div.modal-body
     [:div.row
@@ -68,7 +68,8 @@
            (t :badge/Cancel)]
           [:button {:type "button"
                     :class "btn btn-warning"
-                    :on-click #(delete-badge id)}
+                    :data-dismiss "modal"
+                    :on-click #(delete-badge id state init-data)}
            (t :badge/Delete)]]
          [:button {:type "button"
                    :class "btn btn-warning delete-button"
@@ -142,5 +143,5 @@
       [:button {:type         "button"
                 :class        "btn btn-primary"
                 :data-dismiss "modal"
-                :on-click     #(save-settings state)}
+                :on-click     #(save-settings state init-data)}
        (t :badge/Save)])]])

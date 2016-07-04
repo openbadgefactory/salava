@@ -1,0 +1,11 @@
+{:iframe-whitelist [#"^https?:\/\/vimeo\.com\/moogaloop\.swf\?clip_id=(\d+)"
+                    #":\/\/vimeo\.com"
+                    #":\/\/www\.youtube\.com"
+                    #"^https?:\/\/(?:www\.)?youtube\.com\/(?:tv#\/)?watch\/?\?(?:[^&]+&)*v=([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/www\.youtube\.com\/user\/[a-zA-Z0-9_-]+\/?\?v=([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/www\.youtube\.com\/v\/([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/m\.youtube\.com\/#\/watch\?(?:[^&]+&)*v=([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/youtu.be\/([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/(?:www\.)?youtube\.com\/(?:tv#\/)?watch\/?\?(?:[^&]+&)*v=([a-zA-Z0-9_-]+)"
+                    #"^https?:\/\/www\.youtube\.com\/playlist\?list=([\-_a-zA-Z0-9]+)$"] }
