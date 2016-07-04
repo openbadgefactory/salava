@@ -98,13 +98,22 @@
 
   :scss  {:builds
           {:dev {:source-dir "src/scss"
-                   :dest-dir   "target/generated/public/css"
-                   :executable "sassc"
-                   :args       ["-m" "-l" "-I" "src/scss" "-t" "nested"]}
+                 :dest-dir   "target/generated/public/css"
+                 :executable "sassc"
+                 :args       ["-m" "-l" "-I" "src/scss" "-t" "nested"]}
            :adv {:source-dir "src/scss"
                  :dest-dir   "target/adv/public/css"
                  :executable "sassc"
-                 :args       ["-I" "src/scss/" "-t" "compressed"]}}}
+                 :args       ["-I" "src/scss/" "-t" "compressed"]}
+
+           :dev-extra {:source-dir "src/scss/extra"
+                       :dest-dir   "target/generated/public/css/extra"
+                       :executable "sassc"
+                       :args       ["-m" "-l" "-I" "src/scss" "-t" "nested"]}
+           :adv-extra {:source-dir "src/scss/extra"
+                       :dest-dir   "target/adv/public/css/extra"
+                       :executable "sassc"
+                       :args       ["-I" "src/scss/" "-t" "compressed"]}}}
 
 
   :figwheel {:http-server-root  "public"
@@ -134,8 +143,8 @@
   :auto-clean        false
   :min-lein-version  "2.5.3"
 
-  :aliases {"develop"         ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
-            "uberjar"         ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
+  :aliases {"develop"         ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"] ["scss" ":dev-extra" "boring"]]]
+            "uberjar"         ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] ["scss" ":adv-extra" "once" "boring"] "uberjar"]
 
             "translate"       ["run" "-m" "salava.core.translator/translate"]
 
