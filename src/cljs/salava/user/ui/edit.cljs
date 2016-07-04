@@ -30,9 +30,7 @@
                            :new_password_verify new-password-verify))
        :handler (fn [data]
                   (if (= (:status data) "success")
-                    (do
-                      (swap! state assoc :message {:class "alert-success" :content (:message data)})
-                      (clear-password-fields state))
+                    (navigate-to "/user/edit")
                     (do
                       (swap! state assoc :message {:class "alert-danger" :content (:message data)})
                       (clear-password-fields state)))
