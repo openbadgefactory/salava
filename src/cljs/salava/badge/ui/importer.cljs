@@ -77,11 +77,17 @@
     (swap! state assoc :badges-selected [])))
 
 (defn import-grid-element [element-data state]
-  (let [{:keys [image_file name key description status message]} element-data
-        checked? (some #(= key %) (:badges-selected @state))]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key key}
-     [:div {:class "media grid-container"}
+  (let [{:keys [id image_file name key description status message issuer_content_name issuer_content_url error]} element-data
+        checked? (some #(= key %) (:badges-selected @state))
+        invalidtype (cond
+                    (= "badge/Alreadyowned" message) "duplicate"
+                    (= "badge/Badgeisexpired" message) "expired"
+                    (= "badge/Savethisbadge" message) "ok"
+                    :else "error")
+        badge-link (if (= invalidtype "duplicate") (path-for (str "/badge/info/" id)))
+        ]
+    [:div {:class "col-xs-12 col-sm-6 col-md-4" :key key}
+     [:div {:class (str "media grid-container " invalidtype)}
       [:div.media-content
        (if image_file
          [:div.media-left
@@ -90,8 +96,14 @@
                         image_file)}]])
        [:div.media-body
         [:div.media-heading
-         name]
-        [:div.badge-description description]]]
+          (if badge-link
+            [:a.heading-link {:href badge-link} name]
+            name)]
+         [:div.media-issuer
+          [:a {:href issuer_content_url
+              :target "_blank"
+              :title issuer_content_name} issuer_content_name]]
+        [:div.badge-description.import description]]]
       [:div {:class "media-bottom"}
        (if (= status "ok")
          [:div.checkbox
@@ -103,7 +115,11 @@
                                    (remove-badge-selection key state)
                                    (add-badge-selection key state)))}]
            (t :badge/Savebadge)]]
-         [:div message])]]]))
+        (if (= invalidtype "error")
+         [:div
+          [:span {:id (str "err" key)} error]]
+         [:div message]
+        ))]]]))
 
 (defn badge-grid [state]
   (into [:div {:class "row"

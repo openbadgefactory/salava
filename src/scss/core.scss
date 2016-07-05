@@ -396,6 +396,10 @@ ul.side-links {
                     line-height: 1.1em;
                     height: 2.2em;
 		    overflow-y: hidden;
+                    font-size: 12px;
+                    a {
+                        color: #89a338;
+                    }
                 }
                 .media-expires {
                     margin-top: 3px;
@@ -413,6 +417,9 @@ ul.side-links {
                     height: 4.8em;
                     margin-top: 3px;
                     font-family: Arial;
+                    &.import {
+                        height: 3.6em;
+                    }
                 }
             }
             &.media-expired .media-expires {
@@ -466,6 +473,65 @@ ul.side-links {
         }
         .media-expired {
             opacity: 0.5;
+        }
+        &.duplicate,  {
+            .media-content {
+                opacity: 0.5;
+            }
+            .media-bottom {
+                line-height: 11px;
+                padding-top:8px;
+                color:#b1a1ab;
+                div:before{
+                    content: '\f0c5';
+                    font-family: FontAwesome;
+                    font-size: 20px;
+                    padding-right: 7px;
+                    display: inline-block;
+                    padding-top:3px;
+                    vertical-align: bottom;
+                }
+            }
+        }
+        &.expired {
+            .media-content {
+                opacity: 0.5;
+            }
+            .media-bottom {
+                line-height: 11px;
+                padding-top:8px;
+                color: #8c2e0b;
+                div:before{
+                    font-family: FontAwesome;
+                    content: "\f1da";
+                    font-size: 20px;
+                    padding-right: 7px;
+                    display: inline-block;
+                    padding-top:3px;
+                    vertical-align: bottom;
+                }
+            }
+        }
+        &.error {
+            a.msg.collapsed {
+                display: none;
+            }
+            .media-content {
+                opacity: 0.5;
+            }
+            .media-bottom{
+                color: #8c2e0b;
+                div:before{
+                    font-family: FontAwesome;
+                    content: "\f071";
+                    font-size: 20px;
+                    padding-right: 7px;
+                    display: block;
+                    float:left;
+                    padding-top:3px;
+                    margin-bottom: 9px;
+                }
+            }
         }
     }
     @media (min-width: 992px){
