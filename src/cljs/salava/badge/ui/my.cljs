@@ -13,6 +13,13 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
+(defn init-data [state]
+  (ajax/GET
+    (path-for "/obpv1/badge" true)
+    {:handler (fn [data]
+                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                                   :pending (filter #(= "pending" (:status %)) data)
+                                   :initializing false))}))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -62,7 +69,7 @@
                                                              :evidence-url (:evidence_url data)
                                                              :rating (:rating data)
                                                              :new-tag ""))
-                (m/modal! [s/settings-modal data state]
+                (m/modal! [s/settings-modal data state init-data]
                           {:size :lg}))}))
 
 (defn badge-grid-element [element-data state]
@@ -94,8 +101,14 @@
          description]]]
       [:div {:class "media-bottom"}
        (cond
-         expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)]
-         revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)]
+         expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)
+                   [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
+                    [:i {:class "fa fa-cog"}]
+                    [:span (t :badge/Settings)]]]
+         revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)
+                  [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
+                   [:i {:class "fa fa-cog"}]
+                   [:span (t :badge/Settings)]]]
          :else [:div
                 [:a {:class "bottom-link" :href (path-for (str "/badge/info/" id))}
                  [:i {:class "fa fa-share-alt"}]
@@ -200,13 +213,7 @@
         [badge-grid-form state]
         [badge-grid state]]))])
 
-(defn init-data [state]
-  (ajax/GET
-    (path-for "/obpv1/badge" true)
-    {:handler (fn [data]
-                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                                   :pending (filter #(= "pending" (:status %)) data)
-                                   :initializing false))}))
+
 
 (defn handler [site-navi]
   (let [state (atom {:badges []

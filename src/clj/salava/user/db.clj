@@ -76,15 +76,21 @@
   [ctx user-id code password verify-password]
   (if-not (= password verify-password)
     {:status "error" :message "user/Passwordmissmatch"}
-    (let [{:keys [verification_key activated mtime]} (select-activation-code-and-status {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+    (let [{:keys [verification_key activated mtime, email, primary_address]} (select-activation-code-and-status {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
       (if-not (= verification_key code)
         {:status "error" :message "user/Invalidactivationcode"}
         (if (and activated (< mtime (- (unix-time) 86400)))
           {:status "error" :message "user/Passwordresetlinkexpired"}
           (do
-            (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
-            (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
-            (update-verify-primary-email-address! {:user_id user-id} (get-db ctx))
+            (if (= primary_address 1)
+              (do
+                (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
+                (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
+                (update-verify-primary-email-address! {:user_id user-id} (get-db ctx)))
+              (do
+                (update-password! {:pass (hash-password password) :id user-id} (get-db ctx))
+                (update-verify-email-address! {:user_id user-id :email email} (get-db ctx)))
+            )
             {:status "success" :message ""}))))))
 
 (defn login-user
@@ -104,18 +110,19 @@
   "Edit user information."
   [ctx user-information user-id]
   (try+
-    (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
-      (when new_password
-        (if-not (= new_password new_password_verify)
-          (throw+ "user/Passwordmissmatch"))
-        (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
-          (if (and pass (not (check-password current_password pass)))
+   
+   (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
+     (when new_password
+       (if (not (= new_password new_password_verify))
+         (throw+ "user/Passwordmissmatch"))
+       (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
+         (if (and pass (not (check-password current_password pass)))
             (throw+ "user/Wrongpassword"))))
       (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
       (if new_password
         (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx)))
-      {:status "success" :message nil})
-    (catch Object _
+      {:status "success" :message "core/Thechangeshavebeensaved" })
+   (catch Object _
       {:status "error" :message _})))
 
 (defn email-addresses
@@ -231,9 +238,9 @@
         base-path (get-base-path ctx)
         {:keys [id first_name last_name verified primary_address language]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
-    (if (and id primary_address)
+    (if (and id verified)
       (do
-        (update-primary-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
+        (update-verified-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
         (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key language) (str first_name " " last_name) email language)
         {:status "success"})
       {:status "error"})))
