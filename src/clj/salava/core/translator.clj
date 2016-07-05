@@ -22,6 +22,9 @@
 
 ;;;
 
+(defn dict-kw [plugin]
+ (keyword (clojure.string/replace (plugin-str plugin) #"/" "-")))
+
 
 (defn prop-read [filename]
   (with-open [r (io/reader filename :encoding "UTF-8")]
@@ -74,14 +77,14 @@
 (defn props-to-dict []
   (log/info "reading .properties files")
   (reduce (fn [coll [lang plugin]]
-            (assoc-in coll [lang plugin] (load-prop-file lang plugin))) {} lang-pairs))
+            (assoc-in coll [lang (dict-kw plugin)] (load-prop-file lang plugin))) {} lang-pairs))
 
 
 (defn dict-to-props [dict]
   (log/info "writing .properties files")
   (doseq [[lang plugin] lang-pairs]
-    (when (keys (get-in dict [lang plugin]))
-      (save-prop-file lang plugin (get-in dict [lang plugin])))))
+    (when (keys (get-in dict [lang (dict-kw plugin)]))
+      (save-prop-file lang plugin (get-in dict [lang (dict-kw plugin)])))))
 
 
 (defn combine-dicts [source target]
@@ -93,8 +96,8 @@
 (defn add-default-vals [dict]
   (log/info "merging new keys from default language")
   (reduce (fn [coll [lang plugin]]
-            (assoc-in coll [lang plugin]
-                      (combine-dicts (get-in coll [default-lang plugin]) (get-in coll [lang plugin]))))
+            (let [p (dict-kw plugin)]
+              (assoc-in coll [lang p] (combine-dicts (get-in coll [default-lang p]) (get-in coll [lang p])))))
           dict lang-pairs))
 
 (defn touch-i18n [_]
