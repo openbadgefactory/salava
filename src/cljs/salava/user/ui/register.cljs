@@ -98,8 +98,8 @@
 
 (defn oauth-registration-form []
   [:div {:class "row"}
-   [:div {:class "col-sm-6 text-right-sm col-xs-12"} (facebook-link false true)]
-   [:div.col-sm-6.pull-left (linkedin-link nil "register")]])
+   [:div {:class "col-xs-6"} (facebook-link false true)]
+   [:div.col-sm-6 (linkedin-link nil "register")]])
 
 (defn registeration-content [state]
   [:div
