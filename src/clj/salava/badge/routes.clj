@@ -6,6 +6,7 @@
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
             [salava.badge.importer :as i]
+            [salava.extra.factory.db :as f]
             [salava.core.layout :as layout]
             [salava.core.access :as access]
             salava.core.restructure))
@@ -29,6 +30,7 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (do
+                    (f/save-pending-assertions ctx (:id current-user))
                     (ok (b/user-badges-all ctx (:id current-user)))))
 
              (GET "/info/:badgeid" []

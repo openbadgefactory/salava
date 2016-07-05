@@ -1,5 +1,6 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
+            [clj-http.client :as http]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
             [clojure.string :refer [blank? split upper-case lower-case capitalize]]
@@ -326,6 +327,15 @@
           tags (select-taglist {:badge_ids [badge-id]} (get-db ctx))]
       (assoc-badge-tags badge tags))))
 
+(defn send-badge-info-to-obf [ctx badge-id user-id]
+  (let [obf-url (get-in ctx [:config :core :obf :url])]
+    (if (string? obf-url)
+      (let [assertion-url (select-badge-assertion-url {:id badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (get-db ctx)))]
+        (if (re-find (re-pattern obf-url) (str assertion-url))
+          (try+
+            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" badge-id "user" user-id}})
+            (catch Object _)))))))
+
 (defn save-badge-settings!
   "Update badge settings"
   [ctx badge-id user-id visibility evidence-url rating tags]
@@ -336,6 +346,7 @@
                 :rating       rating}]
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id)
+      (send-badge-info-to-obf ctx badge-id user-id)
       {:status "success"})
     {:status "error"}))
 
