@@ -28,6 +28,14 @@ SELECT COUNT(id) AS count FROM badge WHERE assertion_url = :assertion_url AND us
 -- check if user owns badge
 SELECT COUNT(id) AS count FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id AND status != 'declined' AND deleted = 0
 
+-- name: select-user-owns-hosted-badge-id
+-- check if user owns badge and returns id
+SELECT id AS id FROM badge WHERE assertion_url = :assertion_url AND user_id = :user_id AND status != 'declined' AND deleted = 0
+
+-- name: select-user-owns-signed-badge-id
+-- check if user owns badge and returns id
+SELECT id AS id FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id AND status != 'declined' AND deleted = 0
+
 --name: replace-badge-content!
 --save content of the badge
 REPLACE INTO badge_content (id, name, description, image_file)

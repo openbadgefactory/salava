@@ -113,11 +113,15 @@
      :message     (cond
                     exists? "badge/Alreadyowned"
                     expired? "badge/Badgeisexpired"
-                    error error
+                    error "badge/Invalidbadge"
                     :else "badge/Savethisbadge")
+     :error       error
      :name        (get-in badge [:assertion :badge :name])
      :description (get-in badge [:assertion :badge :description])
      :image_file  (get-in badge [:assertion :badge :image])
+     :issuer_content_name (get-in badge [:assertion :badge :issuer :name])
+     :issuer_content_url (get-in badge [:assertion :badge :issuer :url])
+     :id          (if exists? (b/user-owns-badge-id ctx (:assertion badge) user-id))
      :key         (map-sha256 (get-in badge [:assertion_key]))}))
 
 (defn badges-to-import [ctx user-id]
@@ -125,7 +129,7 @@
     (let [emails (u/verified-email-addresses ctx user-id)
           badges (fetch-all-user-badges ctx user-id emails)]
       {:status "success"
-       :badges (map #(badge-to-import ctx user-id %) badges)
+       :badges (sort-by :message #(compare %2 %1) (map #(badge-to-import ctx user-id %) badges))
        :error nil})
     (catch Object _
       {:status "error"
