@@ -16,7 +16,7 @@
 
 (defn get-route-def [ctx plugin]
   (try+
-    (let [sym (symbol (str "salava." (plugin-str plugin) ".routes/route-def"))]
+    (let [sym (symbol (str "salava." (clojure.string/replace (plugin-str plugin) #"/" ".") ".routes/route-def"))]
       (require (symbol (namespace sym)) :reload)
       ((resolve sym) ctx))
     (catch Object _
