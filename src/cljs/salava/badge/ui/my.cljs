@@ -101,8 +101,14 @@
          description]]]
       [:div {:class "media-bottom"}
        (cond
-         expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)]
-         revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)]
+         expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)
+                   [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
+                    [:i {:class "fa fa-cog"}]
+                    [:span (t :badge/Settings)]]]
+         revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)
+                  [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
+                   [:i {:class "fa fa-cog"}]
+                   [:span (t :badge/Settings)]]]
          :else [:div
                 [:a {:class "bottom-link" :href (path-for (str "/badge/info/" id))}
                  [:i {:class "fa fa-share-alt"}]
