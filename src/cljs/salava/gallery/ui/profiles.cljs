@@ -113,8 +113,8 @@
   [:div {:id "grid-filter"
          :class "form-horizontal"}
    [:div
-    [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
     [country-selector state]
+    [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
     [common-badges-checkbox state]]
    [order-buttons state]])
 
