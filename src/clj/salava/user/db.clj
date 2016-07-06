@@ -82,7 +82,7 @@
         (if (and activated (< mtime (- (unix-time) 86400)))
           {:status "error" :message "user/Passwordresetlinkexpired"}
           (do
-            (if (= primary_address 1)
+            (if (or (true? primary_address) (= primary_address 1))
               (do
                 (update-user-password-and-activate! {:pass (hash-password password) :id user-id} (get-db ctx))
                 (update-set-primary-email-address-verification-key-null! {:user_id user-id} (get-db ctx))
@@ -97,14 +97,14 @@
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
   (try+
-    (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-      (if (and id pass activated verified primary_address (check-password plain-password pass))
-        (do
-          (update-user-last_login! {:id id} (get-db ctx))
-          {:status "success" :id id})
-        {:status "error" :message  "user/Loginfailed"}))
-    (catch Object _
-      {:status "error" :message "user/Loginfailed"})))
+   (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+     (if (and id pass activated verified primary_address (check-password plain-password pass))
+       (do
+         (update-user-last_login! {:id id} (get-db ctx))
+         {:status "success" :id id})
+       {:status "error" :message  "user/Loginfailed"}))
+   (catch Object _
+     {:status "error" :message "user/Loginfailed"})))
 
 (defn edit-user
   "Edit user information."

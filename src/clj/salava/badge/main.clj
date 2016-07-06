@@ -95,6 +95,21 @@
                     (into {:result-set-fn first}
                           (get-db ctx)))))))
 
+(defn user-owns-badge-id
+  "Check if user owns badge and returns id"
+  [ctx assertion user-id]
+  (str (:id (if (= (get-in assertion [:verify :type]) "hosted")
+                  (select-user-owns-hosted-badge-id
+                    {:assertion_url (get-in assertion [:verify :url])
+                     :user_id user-id}
+                    (into {:result-set-fn first}
+                          (get-db ctx)))
+                  (select-user-owns-signed-badge-id
+                    {:assertion_json (get-in assertion [:assertion_json])
+                     :user_id user-id}
+                    (into {:result-set-fn first}
+                          (get-db ctx)))))))
+
 (defn check-badge-revoked
   "Check if badge assertion url exists and set badge re"
   [ctx badge-id init-revoked? assertion-url last-checked]
