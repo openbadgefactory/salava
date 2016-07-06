@@ -1,5 +1,6 @@
 (ns salava.badge.assertion
   (:require [clj-http.client :as client]
+            [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [slingshot.slingshot :refer :all]
@@ -36,8 +37,8 @@
       (.delete temp-file)
       assertion)
     (catch Object _
-      ;TODO: log an error
-      {:error (str (t :badge/Failedfetchsigned)  " " image-url)})))
+      (log/error (str  "Failed to fetch signed assertion from " image-url))
+      {:error (t :badge/Failedfetchsigned)})))
 
 (defn get-criteria-markdown [criteria-url]
   "Get criteria markdown."

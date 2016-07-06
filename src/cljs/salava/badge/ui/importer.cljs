@@ -118,7 +118,7 @@
         (if (= invalidtype "error")
          [:div
           [:span {:id (str "err" key)} error]]
-         [:div message]
+         [:div (t (keyword message))]
         ))]]]))
 
 (defn badge-grid [state]
