@@ -23,7 +23,9 @@ figwheel_server.log
 
 resources/config/extra/
 resources/i18n/en/extra/
+resources/i18n/es/extra/
 resources/i18n/fi/extra/
+resources/i18n/fr/extra/
 resources/migrations/extra/
 resources/public/css/extra/
 resources/public/img/extra/
