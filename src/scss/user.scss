@@ -33,7 +33,7 @@
     }
 }
 
-.login-links {
+.login-links, .oauth-buttons, #registration-page {
     .col-xs-6, .col-sm-6 {
 	width: 50%;
 	float:left;
@@ -45,9 +45,12 @@
 	text-align: left;
     }
 }
-@media (min-width: 768px) {
-    .text-right-sm {
-        text-align: right;
+@media (max-width: 479px) {
+    #registration-page, .oauth-buttons{
+	.col-xs-6,  .col-sm-6 {
+	    width: 100%;
+	    text-align: center;
+	}
     }
 }
 .form-required {
@@ -174,6 +177,10 @@
 #edit-user {
     #cancel-button {
         margin-left: 10px;
+    }
+    .alert-danger {
+	margin:15px;
+	margin-bottom: 0px;
     }
 }
 

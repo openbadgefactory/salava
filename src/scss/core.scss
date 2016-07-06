@@ -788,15 +788,17 @@ ol.welcome-text li {
 .panel img {
     max-width: 100%;
 }
-.alert-warning{
-    color:#7f7179;
+.alert-warning, .alert-danger{
+    color:#8c2e0b;
     font-weight: bold;
     background: transparent;
     border:none;
+    border-left:3px solid #8c2e0b;
+    border-radius: 0px;
     box-shadow: none;
     font-size: 14px;
-    padding:0px;
-    margin-bottom:5px;
+    padding:10px;
+    margin-bottom:10px;
 }
 
 footer.footer {
