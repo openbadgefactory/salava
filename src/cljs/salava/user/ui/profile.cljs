@@ -145,4 +145,4 @@
     (fn []
       (cond (= (:id user) (js/parseInt user-id)) (layout/default site-navi (content state))
             user (layout/default-no-sidebar site-navi (content state))
-            :else (layout/landing-page (content state))))))
+            :else (layout/landing-page site-navi (content state))))))

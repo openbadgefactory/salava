@@ -5,7 +5,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [current-path navigate-to path-for base-path]]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.core.ui.footer :refer [footer]]
+            [salava.core.ui.footer :refer [base-footer]]
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
@@ -45,9 +45,8 @@
    [:a {:class "logo pull-left"
         :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
         :title (session/get :site-name)}
-    [:img {:src   "/img/logo.png"
-           :class "logo-main"}]
-    [:img {:src "/img/logo_icon.png" :class "logo-icon"}]]
+    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
+    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]
    [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]
@@ -80,6 +79,17 @@
           (navi-link i))]
        (top-navi-right)]]]))
 
+(defn get-footer-item [navi]
+  (let [key-list (filter #(get-in navi [% :footer]) (keys navi))
+        footer (get navi (first key-list))]
+    (:footer footer)))
+
+(defn footer [site-navi]
+  (let [footer (get-footer-item (:navi-items site-navi))]
+    (if footer
+      (footer)
+      (base-footer))))
+
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi))]
     [:ul {:class "side-links"}
@@ -103,7 +113,7 @@
     [:div {:class "row"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
      [:div {:class "col-md-9"} content]]]
-   (footer)])
+  ])
 
 
 (defn default [site-navi content]
@@ -118,7 +128,7 @@
     [:div {:class "row"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
-   (footer)])
+   (footer site-navi)])
 
 (defn default-no-sidebar [site-navi content]
   [:div
@@ -130,24 +140,27 @@
    [:div {:class "container main-container"}
     [:div {:class "row"}
      [:div {:class "col-md-12" :id "content"} content]]]
-   (footer)])
+  (footer site-navi)])
 
 (defn top-navi-landing []
   [:nav {:class "navbar"}
    [:div {:class "container-fluid"}
     (top-navi-header)
-    [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
-     [:ul {:class "nav navbar-nav"}]
-     [:div {:id "main-header-right" :class "nav navbar-nav navbar-right"}
-      [:a {:id  "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
-       (t :user/Login)]]]]])
 
-(defn landing-page [content]
+    [:div {:id    "main-header-right"
+           :class "nav navbar-right pull-right"}
+     [:a {:id  "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
+      (t :user/Login)]]]])
+
+
+
+
+(defn landing-page [site-navi content]
   [:div
    [:header {:id "navbar"}
     (top-navi-landing)]
    [:div {:class "container main-container"}
     [:div {:id "content"}
      content]]
-   (footer)])
+  (footer site-navi)])
 

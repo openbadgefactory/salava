@@ -125,7 +125,7 @@
                 (let [{:keys [languages]} data]
                   (swap! state assoc :languages languages)))}))
 
-(defn handler [_ params]
+(defn handler [site-navi params]
   (let [state (atom {:email ""
                      :first-name ""
                      :last-name ""
@@ -140,4 +140,4 @@
       (swap! state assoc :language lang))
     (init-data state)    
     (fn []
-      (layout/landing-page (content state)))))
+      (layout/landing-page site-navi (content state)))))

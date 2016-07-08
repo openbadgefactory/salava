@@ -177,4 +177,4 @@
     (fn []
       (if (session/get :user)
         (layout/default site-navi (content state))
-        (layout/landing-page (content state))))))
+        (layout/landing-page site-navi (content state))))))

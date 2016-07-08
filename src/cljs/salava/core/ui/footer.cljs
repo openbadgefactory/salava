@@ -2,7 +2,7 @@
   (:require [salava.core.i18n :refer [t]]))
 
 
-(defn footer []
+(defn base-footer []
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
