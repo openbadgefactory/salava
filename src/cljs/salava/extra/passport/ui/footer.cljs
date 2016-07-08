@@ -1,4 +1,4 @@
-(ns salava.core.ui.footer
+(ns salava.extra.passport.ui.footer
   (:require [salava.core.i18n :refer [t]]))
 
 
