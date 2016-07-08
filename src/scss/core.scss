@@ -839,9 +839,9 @@ body.anon {
     }
     .navbar-collapse {
         display: inline-block;
-        float:right;
+       /* float:right;*/
         .navbar-nav {
-            margin:0px;
+           /* margin:0px;*/
             padding-top:0px;
         }
     }
@@ -865,4 +865,30 @@ body.anon {
             display: block;
         }
     }
+}
+
+/*logos*/
+
+.logo-image-icon {
+    background-size:     cover;                     
+    background-repeat:   no-repeat;
+    background-position: center center; 
+}
+
+.logo-image {
+    background-size:     cover;                     
+    background-repeat:   no-repeat;
+    background-position: center center;  
+}
+.logo-image-url{
+    width: 200px;
+    height: 48px;
+    background-image: url("/img/logo.png");
+}
+
+
+.logo-image-icon-url {
+    width: 48px;
+    height: 48px;
+    background-image: url("/img/logo_icon.png");
 }

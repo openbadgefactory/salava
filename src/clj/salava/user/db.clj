@@ -98,7 +98,7 @@
   [ctx email plain-password]
   (try+
    (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-     (if (and id pass activated verified primary_address (check-password plain-password pass))
+     (if (and id pass activated verified (check-password plain-password pass))
        (do
          (update-user-last_login! {:id id} (get-db ctx))
          {:status "success" :id id})

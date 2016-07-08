@@ -91,4 +91,4 @@
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))
     (fn []
-      (layout/landing-page (content state)))))
+      (layout/landing-page site-navi (content state)))))

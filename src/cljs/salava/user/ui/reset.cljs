@@ -36,11 +36,11 @@
                   :disabled (not (input/email-valid? @email-atom))}
          (t :user/Sendpasswordresetlink)]]]]]))
 
-(defn handler [_ params]
+(defn handler [site-navi params]
   (let [state (atom {:email ""
                      :reset-link-sent nil})
         lang (:lang params)]
     (if (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))
     (fn []
-      (layout/landing-page (content state)))))
+      (layout/landing-page site-navi (content state)))))
