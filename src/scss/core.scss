@@ -247,7 +247,7 @@ ul.navbar-nav {
 }
 
 #login-button {
-    margin-top: 15px;
+    margin-top: 5px;
 }
 
 .title-row {
@@ -834,11 +834,12 @@ body.anon {
             }
         }
     }
+   
     .navbar-toggle {
-        display: none;
+        //display: none;
     }
     .navbar-collapse {
-        display: inline-block;
+      //  display: inline-block;
        /* float:right;*/
         .navbar-nav {
            /* margin:0px;*/
@@ -846,8 +847,8 @@ body.anon {
         }
     }
     .navbar-header {
-        float:left;
-        clear: none;
+	// float:left;
+        //clear: none;
     }
     @media (max-width:550px){
         .container-fluid{
