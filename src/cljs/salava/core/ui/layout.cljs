@@ -22,6 +22,10 @@
   (let [key-list (filter #(get-in navi [% :top-navi]) (keys navi))]
     (filtered-navi-list navi key-list)))
 
+(defn top-navi-landing-list [navi]
+  (let [key-list (filter #(get-in navi [% :top-navi-landing]) (keys navi))]
+    (filtered-navi-list navi key-list)))
+
 (defn sub-navi-list [parent navi]
   (let [key-list (filter #(and (get-in navi [% :site-navi]) (= parent (navi-parent %))) (keys navi))]
     (when parent
@@ -47,7 +51,7 @@
         :title (session/get :site-name)}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
     [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]
-   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+  [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]]])
@@ -78,6 +82,32 @@
         (for [i items]
           (navi-link i))]
        (top-navi-right)]]]))
+
+(defn top-navi-landing [site-navi]
+  (let [items (top-navi-landing-list (:navi-items site-navi))]
+    [:nav {:class "navbar"}
+     [:div {:class "container-fluid"}
+      [:div {:class "navbar-header pull-left"}
+       [:a {:class "logo"
+            :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
+            :title (session/get :site-name)}
+        [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
+        [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]]
+      [:div {:id    "main-header"
+              :class "navbar-header pull-right"}
+        [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
+         (t :user/Login)]
+       (if (not-empty items)
+         [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+          [:span {:class "icon-bar"}]
+          [:span {:class "icon-bar"}]
+          [:span {:class "icon-bar"}]])]
+      
+      [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
+       [:ul {:class "nav navbar-nav"}
+        (for [i items]
+          (navi-link i))]
+       ]]]))
 
 (defn get-footer-item [navi]
   (let [key-list (filter #(get-in navi [% :footer]) (keys navi))
@@ -142,23 +172,13 @@
      [:div {:class "col-md-12" :id "content"} content]]]
   (footer site-navi)])
 
-(defn top-navi-landing []
-  [:nav {:class "navbar"}
-   [:div {:class "container-fluid"}
-    (top-navi-header)
-
-    [:div {:id    "main-header-right"
-           :class "nav navbar-right pull-right"}
-     [:a {:id  "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
-      (t :user/Login)]]]])
-
 
 
 
 (defn landing-page [site-navi content]
   [:div
    [:header {:id "navbar"}
-    (top-navi-landing)]
+    (top-navi-landing site-navi)]
    [:div {:class "container main-container"}
     [:div {:id "content"}
      content]]
