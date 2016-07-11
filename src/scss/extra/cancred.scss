@@ -1,3 +1,16 @@
+.logo-image-url{
+    width: 350px;
+    height: 48px;
+    background-image: url("/img/extra/cancred/logo.png");
+}
+
+.logo-image-icon-url {
+    width: 48px;
+    height: 48px;
+    background-image: url("/img/extra/cancred/logo_icon.png");
+}
+
+
 header {
     box-shadow: -1px 7px 5px -3px #cecccd;
     .container-fluid {
