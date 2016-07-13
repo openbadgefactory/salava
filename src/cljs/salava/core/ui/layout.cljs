@@ -97,7 +97,7 @@
               :class "navbar-header pull-right"}
         [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
          (t :user/Login)]
-       (if (pos? items)
+       (if (not-empty items)
          [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]

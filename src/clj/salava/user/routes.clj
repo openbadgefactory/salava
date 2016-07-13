@@ -50,7 +50,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity :id] (:id login-status))
+                       (assoc-in (ok login-status) [:session :identity] {:id (:id login-status) :role (:role login-status)})
                        (ok login-status))))
 
              (POST "/logout" []

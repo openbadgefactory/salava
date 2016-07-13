@@ -1,13 +1,23 @@
 (ns salava.core.time
   #?(:clj
-     (:require [clj-time.coerce :as c]
-               [clj-time.format :as f])))
+     (:require
+      [clj-time.core :as t]
+      [clj-time.coerce :as c]
+      [clj-time.format :as f])))
 
 (defn unix-time []
   (quot #?(:clj (System/currentTimeMillis)
            :cljs (.now js/Date))
         1000))
 
+(defn get-date-from-today 
+  "today - months - weeks - days"
+  [months weeks days]
+  (quot #?(:clj (c/to-long (t/plus (t/today) (t/months months) (t/weeks weeks) (t/days days)))
+           :cljs (.now js/Date)) ;TODO frontend get-date-from-today
+        1000))
+
+(get-date-from-today -2 -3 -1)
 (defn iso8601-to-unix-time [str]
   (quot #?(:clj (c/to-long str)
            :cljs (.parse js/Date str))
