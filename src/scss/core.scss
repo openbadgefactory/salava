@@ -142,6 +142,13 @@ nav.navbar {
     padding: 10px 0;
 }
 
+//MAIN HEADER - right navbar margin
+#main-header{
+    @media (max-width: 1100px) and (min-width: 768px){
+        margin-right: 3px;
+    }
+}
+
 button.navbar-toggle {
     border: 1px solid $grid-link-hover;
     margin: 8px 0;

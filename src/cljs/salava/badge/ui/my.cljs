@@ -149,7 +149,7 @@
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
-     (if (or verified_by_obf issued_by_obf)
+     (if  (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row
       [:div.col-md-12
@@ -166,10 +166,10 @@
           description]]]]]
      [:div {:class "row button-row"}
       [:div.col-md-12
-       [:button {:class "btn btn-primary"
+       [:button {:class    "btn btn-primary"
                  :on-click #(update-status id "accepted" state)}
         (t :badge/Acceptbadge)]
-       [:button {:class "btn btn-warning"
+       [:button {:class    "btn btn-warning"
                  :on-click #(update-status id "declined" state)}
         (t :badge/Declinebadge)]]]]]])
 

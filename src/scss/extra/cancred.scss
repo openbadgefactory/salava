@@ -10,6 +10,18 @@
     background-image: url("/img/extra/cancred/logo_icon.png");
 }
 
+.issuedbyobf-image-url{
+    width: 195px;
+    height: 50px;
+    background-image: url("/img/extra/cancred/issuedbyobf.png");
+}
+
+.verifiedissuedbyobf-image-url {
+    width: 220px;
+    height: 44px;
+    background-image: url("/img/extra/cancred/verifiedissuedbyobf.png");
+}
+
 
 header {
     box-shadow: -1px 7px 5px -3px #cecccd;
@@ -36,10 +48,15 @@ button.navbar-toggle {
 }
 
 .ul.navbar-nav li a {
-    &:first-of-type {
+        &:first-of-type {
         margin-left: 40px;
     }
 }
+
+//NAVBAR FIXED TOP
+ .navbar-fixed-top {
+     margin-right: 80px;
+ }
 
 .logo-main, .logo-icon {
     height: 48px;

@@ -42,7 +42,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image qr_code owner]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url verified_by_obf issued_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image qr_code owner]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])]
     (if (:initializing @state)
@@ -50,41 +50,42 @@
        [:i {:class "fa fa-cog fa-spin fa-2x "}]
        [:span (str (t :core/Loading) "...")]]
       [:div {:id "badge-info"}
-      [m/modal-window]
-      [:div.panel
-       [:div.panel-body
-        (if (and owner? (not expired?) (not revoked))
-          [:div.row {:id "badge-share-inputs"}
-           [:div.col-sm-3
-            [:div.checkbox
-             [:label
-              [:input {:type      "checkbox"
-                       :on-change #(toggle-visibility state)
-                       :checked   (= visibility "public")}]
-              (t :core/Publishandshare)]]]
-           [:div.col-sm-3
-            [:div.checkbox
-             [:label
-              [:input {:type      "checkbox"
-                       :on-change #(toggle-recipient-name id show-recipient-name-atom)
-                       :checked   @show-recipient-name-atom}]
-              (t :badge/Showyourname)]]]
-           (if evidence_url
-             [:div.col-sm-3
-              [:div.checkbox
-               [:label
-                [:input {:type      "checkbox"
-                         :on-change #(toggle-evidence state)
-                         :checked   show_evidence}]
-                (t :badge/Showevidence)]]])
-           [:div {:class "col-sm-3 text-right"}
-            [:button {:class    "btn btn-primary"
-                      :on-click #(.print js/window)}
-             (t :core/Print)]]
-           [:div.col-sm-12
-            [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
-        (if (or verified_by_obf issued_by_obf)
-          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+       [m/modal-window]
+       [:div.panel
+        [:div.panel-body
+         (if (and owner? (not expired?) (not revoked))
+           [:div.row {:id "badge-share-inputs"}
+            [:div.col-sm-3
+             [:div.checkbox
+              [:label
+               [:input {:type      "checkbox"
+                        :on-change #(toggle-visibility state)
+                        :checked   (= visibility "public")}]
+               (t :core/Publishandshare)]]]
+            [:div.col-sm-3
+             [:div.checkbox
+              [:label
+               [:input {:type      "checkbox"
+                        :on-change #(toggle-recipient-name id show-recipient-name-atom)
+                        :checked   @show-recipient-name-atom}]
+               (t :badge/Showyourname)]]]
+            (if evidence_url
+              [:div.col-sm-3
+               [:div.checkbox
+                [:label
+                 [:input {:type      "checkbox"
+                          :on-change #(toggle-evidence state)
+                          :checked   show_evidence}]
+                 (t :badge/Showevidence)]]])
+            [:div {:class "col-sm-3 text-right"}
+             [:button {:class    "btn btn-primary"
+                       :on-click #(.print js/window)}
+              (t :core/Print)]]
+            [:div.col-sm-12
+             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
+         (if (or verified_by_obf issued_by_obf)
+         (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+
         [:div.row
          [:div {:class "col-md-3 badge-image"}
           [:div.row
@@ -142,7 +143,7 @@
                 (t :badge/Openassertion) "..."]])
             (if @show-recipient-name-atom
               (if (and user-logged-in? (not owner?))
-                [:div [:label (t :badge/Recipient)] ": " [:a {:href (path-for (str "/user/profile/" owner))}  first_name " " last_name]]
+                [:div [:label (t :badge/Recipient)] ": " [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                 [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
               )
             [:div.description description]

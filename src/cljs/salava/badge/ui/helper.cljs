@@ -35,13 +35,8 @@
       [:img {:src (str "/" image)}]])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
+  (let [class-name (if verified-by-obf? "verifiedissuedbyobf-image-url" "issuedbyobf-image-url")]
   [:div.row
    [:div.col-xs-12
-    (if verified-by-obf?
-      [:div.issued-by-obf
-       [:a {:href obf-url :target "_blank"}
-        [:img {:src "/img/verifiedissuedbyobf.png"}]]]
-      (if issued-by-obf?
-        [:div.issued-by-obf
-         [:a {:href obf-url :target "_blank"}
-          [:img {:src "/img/issuedbyobf.png"}]]]))]])
+     [:div {:class class-name} [:a {:href obf-url :target "_blank"}]]]]))
+
