@@ -54,7 +54,6 @@
       [m/modal-window]
       [:div.panel
        [:div.panel-body
-        (private-this-page)
         (if (and owner? (not expired?) (not revoked))
           [:div.row {:id "badge-share-inputs"}
            [:div.col-sm-3
@@ -84,7 +83,8 @@
                       :on-click #(.print js/window)}
              (t :core/Print)]]
            [:div.col-sm-12
-            [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
+            [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
+          (private-this-page))
         (if (or verified_by_obf issued_by_obf)
           (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
         [:div.row
