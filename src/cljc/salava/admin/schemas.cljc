@@ -9,3 +9,7 @@
                     :all-badges (s/maybe s/Int)
                     :last-month-added-badges (s/maybe s/Int)
                     :pages (s/maybe s/Int)})
+
+
+(s/defschema Url-parser {:item-type (s/enum "badge" "page" "user")
+                         :item-id (s/maybe s/Int)})

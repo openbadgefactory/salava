@@ -2,7 +2,7 @@
    (:require [salava.core.ui.layout :as layout]
              [salava.core.i18n :as i18n :refer [t]]
              [salava.core.ui.helper :refer [base-path]]
-             [salava.admin.ui.reports :as r]
+             [salava.admin.ui.tickets :as t]
              [salava.admin.ui.statistics :as s]))
 
 (defn placeholder [content]
@@ -11,12 +11,12 @@
 
 (defn ^:export routes [context]
   {(str (base-path context) "/admin") [["" s/handler]
-                                       ;["/reports" r/handler]
+                                       ;["/tickets" t/handler]
                                        ["/statistics" s/handler]]})
 
 (defn admin-view [context]
   {(str (base-path context) "/admin")         {:weight 50 :title (t :admin/Admin) :top-navi true :breadcrumb (t :admin/Admin)}
-   ;(str (base-path context) "/admin/reports") {:weight 51 :title (t :admin/Reports) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Reports)}
+   ;(str (base-path context) "/admin/tickets") {:weight 51 :title (t :admin/Tickets) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Tickets)}
    (str (base-path context) "/admin/statistics") {:weight 52 :title (t :admin/Statistics) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Statistics)}}
   )
 

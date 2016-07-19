@@ -25,6 +25,7 @@
       (path-for "/obpv1/user/edit")
       {:params  (-> params
                     (dissoc :password?)
+                    (dissoc :role)
                     (assoc :current_password current-password
                            :new_password new-password
                            :new_password_verify new-password-verify))

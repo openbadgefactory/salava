@@ -11,7 +11,8 @@
             [salava.core.ui.share :as s]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
-            [salava.core.time :refer [date-from-unix-time unix-time]]))
+            [salava.core.time :refer [date-from-unix-time unix-time]]
+            [salava.admin.ui.admintool :refer [private-this-page]]))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -53,6 +54,7 @@
       [m/modal-window]
       [:div.panel
        [:div.panel-body
+        (private-this-page)
         (if (and owner? (not expired?) (not revoked))
           [:div.row {:id "badge-share-inputs"}
            [:div.col-sm-3

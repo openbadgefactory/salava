@@ -28,8 +28,8 @@ SELECT country FROM user AS u
 -- name: select-user-country
 SELECT country FROM user WHERE id = :id
 
--- name: select-common-badge-content
-SELECT name, description, image_file FROM badge_content AS bc WHERE bc.id = :id
+-- name: select-common-badge-content 
+SELECT name, description, image_file, id AS badge_content_id FROM badge_content AS bc WHERE bc.id = :id
 
 -- name: select-common-badge-rating
 SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM badge AS b

@@ -15,7 +15,7 @@
   (routes
     (context "/admin" []
              (layout/main ctx "/")
-             (layout/main ctx "/reports")
+             (layout/main ctx "/tickets")
              (layout/main ctx "/statistics"))
 
     (context "/obpv1/admin" []
@@ -27,7 +27,38 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (do
-                     
                      (ok (a/get-stats ctx))))
-             )))
 
+             (POST "/private_badge/:id" []
+                   :return (s/enum "success" "error")
+                   :path-params [id :- s/Int]
+                   :summary "Set badge to private"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/private-badge! ctx id)))
+
+             (POST "/private_badges/:id" []
+                   :return (s/enum "success" "error")
+                   :path-params [id :- s/Str]
+                   :summary "Set badges from gallery to private"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/private-badges! ctx id)))
+             
+             (POST "/private_page/:id" []
+                   :return (s/enum "success" "error")
+                   :path-params [id :- s/Int]
+                   :summary "Set page to private"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/private-page! ctx id)))
+             
+             (POST "/private_user/:id" []
+                   :return (s/enum "success" "error")
+                   :path-params [id :- s/Int]
+                   :summary "Set user to private"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/private-user! ctx id)))
+             
+             )))

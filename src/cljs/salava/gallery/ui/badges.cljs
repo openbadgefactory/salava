@@ -9,6 +9,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
+            [salava.admin.ui.admintool :refer [private-gallery-badge]]
             [salava.core.helper :refer [dump]]))
 
 (defn open-modal [badge-content-id]
@@ -20,10 +21,25 @@
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
+(defn init-data [state user-id]
+  (ajax/POST
+    (path-for (str "/obpv1/gallery/badges/" user-id))
+    {:params {:country ""
+              :badge ""
+              :issuer ""
+              :recipient ""}
+     :handler (fn [data]
+                (let [{:keys [badges countries user-country]} data]
+                  (swap! state assoc :badges badges
+                                     :countries countries
+                                     :country-selected user-country)))}))
+
+
 (defn fetch-badges [state]
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
+    (.log js/console "meni nyt tänne niinkun piti")
     (ajax/POST
       (path-for (str "/obpv1/gallery/badges/" user-id))
       {:params  {:country   (trim country-selected)
@@ -99,7 +115,7 @@
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]]))
 
-(defn badge-grid-element [element-data]
+(defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
         badge-id (or badge_content_id id)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -124,7 +140,8 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       [:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]]]))
+       [:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
+       (private-gallery-badge badge-id "badges" state init-data)]]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)
@@ -135,7 +152,7 @@
     (into [:div {:class "row"
                  :id    "grid"}]
           (for [element-data badges]
-            (badge-grid-element element-data)))))
+            (badge-grid-element element-data state)))))
 
 (defn content [state]
   [:div {:id "badge-gallery"}
@@ -147,18 +164,7 @@
       [:span (:ajax-message @state)]]
      [gallery-grid state])])
 
-(defn init-data [state user-id]
-  (ajax/POST
-    (path-for (str "/obpv1/gallery/badges/" user-id))
-    {:params {:country ""
-              :badge ""
-              :issuer ""
-              :recipient ""}
-     :handler (fn [data]
-                (let [{:keys [badges countries user-country]} data]
-                  (swap! state assoc :badges badges
-                                     :countries countries
-                                     :country-selected user-country)))}))
+
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
