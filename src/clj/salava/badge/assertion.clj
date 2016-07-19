@@ -18,10 +18,17 @@
         {:method         :get
          :url            url
          :as             :json
+         :throw-entire-message? true
          :socket-timeout 30000
          :conn-timeout   30000}))
+    (catch [:status 403] {:keys [request-time headers body]}
+      {:error "badge/Errorfetchingjson" :status 403 :body body})
+    (catch [:status 410] {:keys [request-time headers body]}
+      {:error "badge/Errorfetchingjson" :status 410 :body body})
+    (catch [:status 404] {:keys [request-time headers body]}
+      {:error "badge/Errorfetchingjson" :status 404 :body body})
     (catch Object _
-      {:error "badge/Errorfetchingjson"})))
+      {:error "badge/Errorfetchingjson" :body _ :status 400})))
 
 (defn copy-to-file [output-file url]
   (with-open [in (io/input-stream url)

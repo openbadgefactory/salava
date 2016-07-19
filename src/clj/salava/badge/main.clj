@@ -115,8 +115,8 @@
   [ctx badge-id init-revoked? assertion-url last-checked]
   (if (and (not init-revoked?) (or (nil? last-checked) (< last-checked (- (unix-time) (* 2 24 60 60)))) assertion-url (not (get-in ctx [:config :core :test-mode])))
     (let [assertion (fetch-json-data assertion-url)
-          revoked? (contains? assertion :error)]
-      (update-revoked! {:revoked revoked? :id badge-id} (get-db ctx))
+          revoked? (and (= 410 (:status assertion)) (= true (get-in assertion [:body :revoked])) )]
+      (update-revoked! {:revoked revoked? :id badge-id} (get-db ctx))                                     
       (if revoked?
         (update-visibility! {:visibility "private" :id badge-id} (get-db ctx)))
       revoked?)
