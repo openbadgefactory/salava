@@ -11,7 +11,8 @@
             [salava.core.ui.share :as s]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
-            [salava.core.time :refer [date-from-unix-time unix-time]]))
+            [salava.core.time :refer [date-from-unix-time unix-time]]
+            [salava.admin.ui.admintool :refer [private-this-page]]))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -82,10 +83,10 @@
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.col-sm-12
-             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
+             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
+           (private-this-page))
          (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-
         [:div.row
          [:div {:class "col-md-3 badge-image"}
           [:div.row

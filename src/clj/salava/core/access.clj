@@ -6,4 +6,4 @@
 
 (defn admin [req]
   (and (authenticated? req)
-       (#{:admin} (:role (:identity req)))))
+       (= "admin" (get-in req [:identity :role]))))

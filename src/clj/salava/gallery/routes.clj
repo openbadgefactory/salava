@@ -60,6 +60,7 @@
                                                 :html_content        (s/maybe s/Str)
                                                 :criteria_url        (s/maybe s/Str)
                                                 :badge_url           (s/maybe s/Str)
+                                                :badge_content_id    (s/maybe s/Str)
                                                 :verified_by_obf     s/Bool
                                                 :issued_by_obf       s/Bool
                                                 :issuer_verified     (s/maybe s/Bool)

@@ -1,0 +1,62 @@
+#ticket-container{
+    background-color: #ffffff;
+    border: 1px solid #d2d2d2;
+    box-shadow: 0px 4px 0px #dcdcdc;
+    -webkit-box-shadow: 0px 4px 0px #dcdcdc;
+    padding: 10px;
+    margin-bottom: 20px;
+    margin-top: 0;
+    line-height: 1.4;
+        //height: 170px;
+        //max-width: 280px;
+        //min-width: 250px;
+}
+
+#private-button{
+    margin:0px 17px 10px 0px;
+}
+
+.media-bottom-admin{
+            margin-top: 5px;
+            padding-top: 10px;
+            color: #766d72;
+            font-size: 12px;
+            min-height: 35px;
+            text-transform: uppercase;
+            line-height: 1;
+            i.fa {
+                font-size: 20px;
+                padding-right: 7px;
+                padding-top:3px;
+            }
+            a.bottom-link {
+                color: #766d72;
+                cursor: pointer;
+                i.fa {
+                    color: #b1a1ab;
+                    padding-right:10px;
+                }
+                span {
+                    vertical-align: top;
+                    display: inline-block;
+                    line-height: 25px;
+                }
+            }
+            .checkbox {
+                margin: 0;
+            }
+            .expired {
+                text-transform: uppercase;
+                color: #8c2e0b;
+                span {
+                    vertical-align: top;
+                    line-height: 25px;
+                }
+                .fa {
+                    padding-top:3px;
+                }
+            }
+            label span {
+                line-height: 25px;
+            }
+        }

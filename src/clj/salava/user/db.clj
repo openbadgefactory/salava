@@ -97,11 +97,11 @@
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
   (try+
-   (let [{:keys [id pass activated verified primary_address]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+   (let [{:keys [id pass activated verified primary_address role]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
      (if (and id pass activated verified (check-password plain-password pass))
        (do
          (update-user-last_login! {:id id} (get-db ctx))
-         {:status "success" :id id})
+         {:status "success" :id id :role role})
        {:status "error" :message  "user/Loginfailed"}))
    (catch Object _
      {:status "error" :message "user/Loginfailed"})))

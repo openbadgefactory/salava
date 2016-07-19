@@ -11,6 +11,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.user.ui.helper :as u]
+            [salava.admin.ui.admintool :refer [private-gallery-page]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
 
 (defn open-modal [page-id]
@@ -21,6 +22,17 @@
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
+
+(defn init-data [state user-id]
+  (ajax/POST
+    (path-for (str "/obpv1/gallery/pages/" user-id))
+    {:params {:country ""
+              :owner ""}
+     :handler (fn [data]
+                (let [{:keys [pages countries user-country]} data]
+                  (swap! state assoc :pages pages
+                         :countries countries
+                         :country-selected user-country)))}))
 
 (defn fetch-pages [state]
   (let [{:keys [user-id country-selected owner-name]} @state
@@ -87,7 +99,7 @@
       [text-field :owner-name (t :gallery/Pageowner) (t :gallery/Searchbypageowner) state]])
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
-(defn page-gallery-grid-element [element-data]
+(defn page-gallery-grid-element [element-data state]
   (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
@@ -107,7 +119,8 @@
                  [:img {:title (:name badge)
                         :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
-        [:img {:src (u/profile-picture profile_picture)}]]]]]))
+        [:img {:src (u/profile-picture profile_picture)}]]]
+      (private-gallery-page id "page" state init-data)]]))
 
 (defn page-gallery-grid [state]
   (let [pages (:pages @state)
@@ -118,7 +131,7 @@
     (into [:div {:class "row"
                  :id    "grid"}]
           (for [element-data pages]
-            (page-gallery-grid-element element-data)))))
+            (page-gallery-grid-element element-data state)))))
 
 (defn content [state]
   [:div {:id "page-gallery"}
@@ -130,16 +143,7 @@
       [:span (:ajax-message @state)]]
      [page-gallery-grid state])])
 
-(defn init-data [state user-id]
-  (ajax/POST
-    (path-for (str "/obpv1/gallery/pages/" user-id))
-    {:params {:country ""
-              :owner ""}
-     :handler (fn [data]
-                (let [{:keys [pages countries user-country]} data]
-                  (swap! state assoc :pages pages
-                         :countries countries
-                         :country-selected user-country)))}))
+
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
