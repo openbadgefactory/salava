@@ -49,8 +49,8 @@
    [:a {:class "logo pull-left"
         :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
         :title (session/get :site-name)}
-    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
-    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]
+    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
+    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]
   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]
