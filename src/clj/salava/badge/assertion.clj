@@ -11,6 +11,7 @@
             [salava.core.i18n :refer [t]]                    ;cljc
             [salava.badge.png :as p]))
 
+
 (defn fetch-json-data [url]
   (try+
     (:body
@@ -21,14 +22,18 @@
          :throw-entire-message? true
          :socket-timeout 30000
          :conn-timeout   30000}))
-    (catch [:status 403] {:keys [request-time headers body]}
-      {:error "badge/Errorfetchingjson" :status 403 :body body})
-    (catch [:status 410] {:keys [request-time headers body]}
-      {:error "badge/Errorfetchingjson" :status 410 :body body})
-    (catch [:status 404] {:keys [request-time headers body]}
-      {:error "badge/Errorfetchingjson" :status 404 :body body})
-    (catch Object _
-      {:error "badge/Errorfetchingjson" :body _ :status 400})))
+
+    (catch :status e
+      (let [{:keys [:status :body]} e
+            body-map (try+
+                       (json/read-str body :key-fn keyword)
+                       (catch Object _
+                         {:raw body}))]
+        {:error "badge/Errorfetchingjson" :status status :body body-map}))
+
+    (catch Object e
+      {:error "badge/Errorfetchingjson" :body e})))
+
 
 (defn copy-to-file [output-file url]
   (with-open [in (io/input-stream url)
