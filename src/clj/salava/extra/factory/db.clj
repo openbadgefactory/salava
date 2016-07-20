@@ -1,5 +1,6 @@
 (ns salava.extra.factory.db
   (:require [yesql.core :refer [defqueries]]
+            [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
@@ -44,10 +45,12 @@
   (let [pending-assertions (select-pending-badges-by-user {:user_id user-id} (get-db ctx))
         emails (u/verified-email-addresses ctx user-id)]
     (doseq [pending-assertion pending-assertions]
+      (log/info "try to save pending assertion: " pending-assertion)
       (try+
         (save-factory-badge ctx (:assertion_url pending-assertion) user-id emails)
         (delete-duplicate-pending-badges! pending-assertion (get-db ctx))
         (catch Object _
+          (log/error "save-pending-assertions: " _)
           nil)))))
 
 (defn get-badge-updates

@@ -1,5 +1,6 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
+            [clojure.tools.logging :as log]
             [clj-http.client :as http]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
@@ -138,7 +139,8 @@
                     :else expires-raw)]
       (assoc (dissoc assertion :issued_on) :issuedOn (if issued-on (date-from-unix-time (* 1000 issued-on)) "-")
                                            :expires (if expires (date-from-unix-time (* 1000 expires)) "-")))
-    (catch Object _)))
+    (catch Object _
+      (log/error "parse-assertion-json: " _))))
 
 (defn get-badge
   "Get badge by id"
@@ -349,7 +351,8 @@
         (if (re-find (re-pattern obf-url) (str assertion-url))
           (try+
             (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" badge-id "user" user-id}})
-            (catch Object _)))))))
+            (catch Object _
+              (log/error "send-badge-info-to-obf: " _))))))))
 
 (defn save-badge-settings!
   "Update badge settings"
