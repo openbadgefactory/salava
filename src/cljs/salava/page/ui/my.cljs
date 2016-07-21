@@ -35,7 +35,8 @@
    [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
 (defn page-grid-element [element-data state]
-  (let [{:keys [id name visibility mtime badges]} element-data]
+  (let [{:keys [id name visibility mtime badges]} element-data
+        badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}

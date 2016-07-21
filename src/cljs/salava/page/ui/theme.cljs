@@ -62,17 +62,17 @@
       [:form.form-horizontal
        [:div.form-group
         [:label.col-xs-4 {:for "select-theme"}
-         (t :page/Selecttheme)]
+         (str (t :page/Selecttheme) ":")]
         [:div.col-xs-8
          [theme-selection (cursor state [:page :theme]) themes]]]
        [:div.form-group
         [:label.col-xs-4 {:for "select-padding"}
-         (t :page/Selectpadding)]
+         (str (t :page/Selectpadding) ":")]
         [:div.col-xs-8
          [padding-selection (cursor state [:page :padding])]]]
        [:div.form-group
         [:label.col-xs-4 {:for "select-border"}
-         (t :page/Selectborder)]
+         (str (t :page/Selectborder) ":")]
         [:div.col-xs-8
          [border-selection (cursor state [:page :border]) borders]]]
        [:div.row

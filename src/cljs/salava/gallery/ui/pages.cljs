@@ -100,7 +100,8 @@
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
 (defn page-gallery-grid-element [element-data state]
-  (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data]
+  (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data
+        badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
