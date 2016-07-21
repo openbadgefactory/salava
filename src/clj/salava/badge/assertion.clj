@@ -24,7 +24,7 @@
          :conn-timeout   30000}))
 
     (catch :status e
-      (let [{:keys [:status :body]} e
+      (let [{:keys [status body]} e
             body-map (try+
                        (json/read-str body :key-fn keyword)
                        (catch Object _
