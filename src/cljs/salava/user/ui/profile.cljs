@@ -43,7 +43,8 @@
         [:div.media-description description]]]]]))
 
 (defn page-grid-element [element-data profile_picture]
-  (let [{:keys [id name first_name last_name badges mtime]} element-data]
+  (let [{:keys [id name first_name last_name badges mtime]} element-data
+        badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
@@ -114,7 +115,7 @@
                              (and (re-find #"@" (str value)) (= "twitter" field)) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
                              (and (re-find #"@" (str value)) (= "email" field)) [:a {:href (str "mailto:" value)} (t value)]
                              (and  (empty? (re-find #" " (str value))) (= "facebook" field)) [:a {:href (str "https://www.facebook.com/" value) :target "_blank" } (t value)]
-                             (and (re-find #"@" (str value)) (= "twitter" field)) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
+                             (= "twitter" field) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
                              (and  (empty? (re-find #" " (str value))) (= "pinterest" field)) [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
                              (and  (empty? (re-find #" " (str value))) (= "instagram" field)) [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
                              :else (t value))]]))]]]
