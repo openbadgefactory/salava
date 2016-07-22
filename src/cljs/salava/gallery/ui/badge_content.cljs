@@ -8,7 +8,7 @@
             [salava.core.helper :refer [dump]]))
 
 (defn badge-content [{:keys [badge public_users private_user_count]}]
-  (let [{:keys [name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image html_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image]} badge]
+  (let [{:keys [name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description html_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description]} badge]
     [:div {:id "badge-contents"}
      (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
@@ -24,10 +24,13 @@
       [:div {:class "col-md-9 badge-info"}
        [:div.row
         [:div {:class "col-md-12"}
+         [:div.row
+          [:div.col-md-12
+           (bh/issuer-image issuer_image)]]
          [:h1.uppercase-header name]
-         (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+         (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_description)
          (if creator_name
-           (bh/creator-label-and-link creator_name creator_url creator_email creator_image))
+           (bh/creator-label-and-link creator_name creator_url creator_email creator_image creator_description))
          [:div.row
           [:div {:class "col-md-12 description"}
            description]]]]

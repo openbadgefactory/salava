@@ -12,27 +12,34 @@
      [:label (t :badge/Issuedon) ":"]
      [:span (date-from-unix-time (* 1000 issued))]]))
 
-(defn issuer-label-and-link [name url email image]
+(defn issuer-image [image]
+    [:div {:class "issuer-image pull-left"}
+     [:img {:src (str "/" image)}]])
+
+(defn issuer-label-and-link [name url email description]
   [:div {:class "issuer-data clearfix"}
    [:label.pull-left (t :badge/Issuedby) ":"]
    [:div {:class "issuer-links pull-left"}
     [:a {:target "_blank" :href url} " " name]
     (if (not-empty email)
       [:span [:br] [:a {:href (str "mailto:" email)} email]])]
-   (if image
-     [:div {:class "issuer-image pull-left"}
-      [:img {:src (str "/" image)}]])])
+   (if description
+     [:div {:class "issuer-description pull-left"}
+      []])])
 
-(defn creator-label-and-link [name url email image]
-  [:div {:class "issuer-data clearfix"}
+(defn creator-label-and-link [name url email image description]
+  [:div {:class "creator-data clearfix"}
    [:label.pull-left (t :badge/Createdby) ":"]
-   [:div {:class "issuer-links pull-left"}
+   [:div {:class "creator-links pull-left"}
     [:a {:target "_blank" :href url} " " name]
     (if (not-empty email)
       [:span [:br] [:a {:href (str "mailto:" email)} email]])]
    (if image
-     [:div {:class "issuer-image pull-left"}
-      [:img {:src (str "/" image)}]])])
+     [:div {:class "creator-image pull-left"}
+      [:img {:src (str "/" image)}]])
+   (if description
+     [:div {:class "creator-image pull-left"}
+      []])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   [:div.row
