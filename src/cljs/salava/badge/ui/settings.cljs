@@ -59,7 +59,8 @@
             [:div.issued_on
              [:label (t :badge/Issuedon ":")]
              [:span (date-from-unix-time (* 1000 issued_on))]])
-          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_description)
+          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+          (bh/issuer-description  issuer_description)
           [:div.row
            [:div.col-md-12
             description]]]]]]

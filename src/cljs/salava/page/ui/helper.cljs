@@ -52,9 +52,11 @@
       (bh/issued-on issued_on)]]
      [:div.row
       [:div.col-md-12
-       (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_email issuer_description)
+       (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_email)
+       (bh/issuer-description  issuer_description)
       (if creator_name
         (bh/creator-label-and-link creator_name creator_url creator_email creator_image creator_description))]]
+
     [:div.row
      [:div {:class "col-md-12 description"} description]]
     [:div.row

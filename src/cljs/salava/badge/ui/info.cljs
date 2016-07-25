@@ -128,17 +128,21 @@
            (if expired?
              [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
            [:h1.uppercase-header name]
-
            [:div.row.before
             (bh/issuer-image issuer_image)]
+
 
            (if (and issued_on (> issued_on 0))
              [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
            (if (and expires_on (not expired?))
              [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
-           (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_description)
+           (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+           (bh/issuer-description  issuer_description)
            (if creator_name
              (bh/creator-label-and-link creator_name creator_url creator_email creator_image creator_description))
+
+
+
            (if assertion
              [:div {:id "assertion-link"}
               [:label (t :badge/Metadata)] ": "
@@ -146,6 +150,9 @@
                    :on-click #(do (.preventDefault %)
                                   (m/modal! [a/assertion-modal assertion] {:size :lg}))}
                (t :badge/Openassertion) "..."]])
+
+
+
            (if @show-recipient-name-atom
              (if (and user-logged-in? (not owner?))
                [:div [:label (t :badge/Recipient)] ": " [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]

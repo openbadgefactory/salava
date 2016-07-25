@@ -16,16 +16,16 @@
     [:div {:class "issuer-image pull-left"}
      [:img {:src (str "/" image)}]])
 
-(defn issuer-label-and-link [name url email description]
+(defn issuer-label-and-link [name url email]
   [:div {:class "issuer-data clearfix"}
    [:label.pull-left (t :badge/Issuedby) ":"]
    [:div {:class "issuer-links pull-left"}
     [:a {:target "_blank" :href url} " " name]
     (if (not-empty email)
-      [:span [:br] [:a {:href (str "mailto:" email)} email]])]
-   (if description
-     [:div {:class "issuer-description pull-left"}
-      []])])
+      [:span [:br] [:a {:href (str "mailto:" email)} email]])]])
+
+(defn issuer-description [issuer_description]
+  [:div [:label (t :badge/IssuerDescription)] ": " [:div {:class "w3-container issuer-description pull-left"} issuer_description]])
 
 (defn creator-label-and-link [name url email image description]
   [:div {:class "creator-data clearfix"}
@@ -39,7 +39,7 @@
       [:img {:src (str "/" image)}]])
    (if description
      [:div {:class "creator-image pull-left"}
-      []])])
+      [:div {:class "col-md- 12 creator-description"} description]])])
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   [:div.row
