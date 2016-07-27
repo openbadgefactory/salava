@@ -228,7 +228,7 @@ button {
 
     margin-bottom: 3px;
     .issuer-links{
-        margin-left: 5px;
+        margin-left: 20px;
     }
 }
 
@@ -239,12 +239,16 @@ button {
                 padding: 3px;
                 border: 1px solid #dddddd;
                 border-radius: 4px;
-                margin-left: 15px;
+                margin-left: 20px;
                 margin-bottom: 10px;
 
             }
         }
 
 .issuer-description{
-          margin-bottom: 10px;
+          font-size: 13px;
+          margin-left: 20px;
+          margin-right: 5px;
+          margin-bottom: 20px;
 }
+
