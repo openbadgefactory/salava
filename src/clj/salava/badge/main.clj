@@ -14,7 +14,7 @@
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
-
+ 
 (defn badge-url [ctx badge-id]
   (str (get-site-url ctx) (get-base-path ctx) "/badge/info/" badge-id))
 
@@ -155,6 +155,7 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_content_id (:badge_content_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (get-db ctx)))]
+    ;(dump badge)
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count
