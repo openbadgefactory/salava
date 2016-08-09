@@ -43,7 +43,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_image first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url verified_by_obf issued_by_obf obf_url recipient_count assertion creator_name creator_url creator_email creator_image qr_code owner]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])]
     (if (:initializing @state)
@@ -86,55 +86,62 @@
              [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
            (private-this-page))
          (if (or verified_by_obf issued_by_obf)
-         (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-        [:div.row
-         [:div {:class "col-md-3 badge-image"}
-          [:div.row
-           [:div.col-xs-12
-            [:img {:src (str "/" image_file)}]]]
-          (if (and qr_code (= visibility "public"))
-            [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
-          (if owner?
-            [:div.row {:id "badge-rating"}
-             [:div.col-xs-12
-              [:div.rating
-               [r/rate-it rating]]
-              [:div.view-count
-               (cond
-                 (= view_count 1) (t :badge/Viewedonce)
-                 (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
-                 :else (t :badge/Badgeisnotviewedyet))]]])
-          (if (> recipient_count 1)
-            [:div.row {:id "badge-views"}
-             [:div.col-xs-12
-              [:a {:href (path-for (str "/gallery/badgeview/" badge_content_id))} (t :badge/Otherrecipients)]]])
-          [:div.row
-           [:div.col-xs-12 {:id "badge-congratulated"}
-            (if (and user-logged-in? (not owner?))
-              (if congratulated?
-                [:div.congratulated
-                 [:i {:class "fa fa-heart"}]
-                 (str " " (t :badge/Congratulated))]
-                [:button {:class    "btn btn-primary"
-                          :on-click #(congratulate state)}
-                 [:i {:class "fa fa-heart"}]
-                 (str " " (t :badge/Congratulations) "!")])
-              )]]]
-         [:div {:class "col-md-9 badge-info"}
-          [:div.row
-           [:div {:class "col-md-12"}
-            (if revoked
-              [:div.revoked (t :badge/Revoked)])
-            (if expired?
-              [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
-            [:h1.uppercase-header name]
-            (if (and issued_on (> issued_on 0))
-              [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
-            (if (and expires_on (not expired?))
-              [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
-            (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-            (if creator_name
-              (bh/creator-label-and-link creator_name creator_url creator_email creator_image))
+           (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+         [:div.row
+          [:div {:class "col-md-3 badge-image"}
+           [:div.row
+            [:div.col-xs-12
+             [:img {:src (str "/" image_file)}]]]
+           (if (and qr_code (= visibility "public"))
+             [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
+           (if owner?
+             [:div.row {:id "badge-rating"}
+              [:div.col-xs-12
+               [:div.rating
+                [r/rate-it rating]]
+               [:div.view-count
+                (cond
+                  (= view_count 1) (t :badge/Viewedonce)
+                  (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
+                  :else (t :badge/Badgeisnotviewedyet))]]])
+           (if (> recipient_count 1)
+             [:div.row {:id "badge-views"}
+              [:div.col-xs-12
+               [:a {:href (path-for (str "/gallery/badgeview/" badge_content_id))} (t :badge/Otherrecipients)]]])
+           [:div.row
+            [:div.col-xs-12 {:id "badge-congratulated"}
+             (if (and user-logged-in? (not owner?))
+               (if congratulated?
+                 [:div.congratulated
+                  [:i {:class "fa fa-heart"}]
+                  (str " " (t :badge/Congratulated))]
+                 [:button {:class    "btn btn-primary"
+                           :on-click #(congratulate state)}
+                  [:i {:class "fa fa-heart"}]
+                  (str " " (t :badge/Congratulations) "!")])
+               )]]]
+          [:div {:class "col-md-9 badge-info"}
+           [:div.row
+            [:div {:class "col-md-12"}
+             (if revoked
+               [:div.revoked (t :badge/Revoked)])
+             (if expired?
+               [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
+             [:h1.uppercase-header name]
+             [:div.row
+             (bh/issuer-image issuer_image)
+             (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+             (bh/issuer-description issuer_description)]
+             (if creator_name
+             [:div.row
+              [:div.issuer-description [:h2.uppercase-header (t :badge/Createdby)]]
+              (bh/creator-image creator_image)
+              (bh/creator-label-and-link creator_name creator_url creator_email)
+              (bh/creator-description creator_description)])
+             (if (and issued_on (> issued_on 0))
+               [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
+             (if (and expires_on (not expired?))
+               [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
             (if assertion
               [:div {:id "assertion-link"}
                [:label (t :badge/Metadata)] ": "

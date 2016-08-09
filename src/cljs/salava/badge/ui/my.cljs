@@ -1,5 +1,6 @@
 (ns salava.badge.ui.my
-  (:require [reagent.core :refer [atom]]
+  (:require
+            [reagent.core :refer [atom]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :as set :refer [intersection]]
@@ -145,11 +146,11 @@
                   (if (= new-status "accepted")
                     (swap! state assoc :badges (conj (:badges @state) badge)))))}))
 
-(defn badge-pending [{:keys [id image_file name description issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
+(defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
-     (if  (or verified_by_obf issued_by_obf)
+     (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
      [:div.row
       [:div.col-md-12
@@ -162,14 +163,18 @@
          [:div
           [:a {:href issuer_content_url :target "_blank"} issuer_content_name]]
          [:div (date-from-unix-time (* 1000 issued_on))]
+
+         ;METABADGE
+         [:div (bh/meta-badge meta_badge meta_badge_req)]
+
          [:div
           description]]]]]
      [:div {:class "row button-row"}
       [:div.col-md-12
-       [:button {:class    "btn btn-primary"
+       [:button {:class "btn btn-primary"
                  :on-click #(update-status id "accepted" state)}
         (t :badge/Acceptbadge)]
-       [:button {:class    "btn btn-warning"
+       [:button {:class "btn btn-warning"
                  :on-click #(update-status id "declined" state)}
         (t :badge/Declinebadge)]]]]]])
 

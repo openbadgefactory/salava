@@ -8,7 +8,7 @@
             [markdown.core :as md]
             [salava.core.util :refer [hex-digest]]
             [salava.core.time :refer [iso8601-to-unix-time]] ;cljc
-            [salava.core.i18n :refer [t]]                    ;cljc
+            [salava.core.i18n :refer [t]]                   ;cljc
             [salava.badge.png :as p]))
 
 
@@ -16,12 +16,12 @@
   (try+
     (:body
       (client/request
-        {:method         :get
-         :url            url
-         :as             :json
+        {:method                :get
+         :url                   url
+         :as                    :json
          :throw-entire-message? true
-         :socket-timeout 30000
-         :conn-timeout   30000}))
+         :socket-timeout        30000
+         :conn-timeout          30000}))
 
     (catch :status e
       (let [{:keys [status body]} e
@@ -33,7 +33,6 @@
 
     (catch Object e
       {:error "badge/Errorfetchingjson" :body e})))
-
 
 (defn copy-to-file [output-file url]
   (with-open [in (io/input-stream url)
@@ -49,7 +48,7 @@
       (.delete temp-file)
       assertion)
     (catch Object _
-      (log/error (str  "Failed to fetch signed assertion from " image-url))
+      (log/error (str "Failed to fetch signed assertion from " image-url))
       {:error (t :badge/Failedfetchsigned)})))
 
 (defn get-criteria-markdown [criteria-url]
@@ -87,11 +86,11 @@
 
 (defn old-badge-assertion [assertion issued-on]
   (let [image-path (:image assertion)
-        image (if (= (get image-path 0) "/" )
+        image (if (= (get image-path 0) "/")
                 (str (get-in assertion [:issuer :origin]) image-path)
                 image-path)
         criteria-path (:criteria assertion)
-        criteria (if (= (get criteria-path 0) "/" )
+        criteria (if (= (get criteria-path 0) "/")
                    (str (get-in assertion [:issuer :origin]) criteria-path)
                    criteria-path)
         criteria-markdown (or (get-criteria-markdown criteria) "")
@@ -126,7 +125,7 @@
         uid (or (:uid assertion) nil)
         evidence (or (:evidence assertion) nil)
         verify (or (:verify assertion) {:type "hosted"
-                                        :url assertion-url})
+                                        :url  assertion-url})
         issued-on-raw (or (:issuedOn assertion) (:issued-on assertion) nil)
         issued-on (cond
                     (re-find #"\D" (str issued-on-raw)) (iso8601-to-unix-time issued-on-raw)
@@ -140,21 +139,21 @@
         recipient (if (string? (:recipient assertion))
                     (merge
                       {:identity (:recipient assertion)
-                       :type "email"
-                       :hashed false}
+                       :type     "email"
+                       :hashed   false}
                       (if-not (re-find #"@" (:recipient assertion))
                         {:hashed true
-                         :salt (or (:salt assertion) "")}))
+                         :salt   (or (:salt assertion) "")}))
                     (:recipient assertion))
         badge (if (string? (:badge assertion))
                 (new-badge-assertion (:badge assertion))
                 (old-badge-assertion (or (:badge assertion) (:badge old-assertion)) issued-on))]
-    {:uid              uid
-     :assertion_json   assertion-json
-     :evidence         evidence
-     :verify           verify
-     :issuedOn         issued-on
-     :expires          expires
-     :recipient        recipient
-     :badge            badge
-     :error            error}))
+    {:uid            uid
+     :assertion_json assertion-json
+     :evidence       evidence
+     :verify         verify
+     :issuedOn       issued-on
+     :expires        expires
+     :recipient      recipient
+     :badge          badge
+     :error          error}))

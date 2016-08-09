@@ -59,6 +59,12 @@
     (catch Object _
       badge)))
 
+
+(defn check-metabadge!
+  "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
+  [ctx assertion-url])
+
+
 (defn user-badges-all
   "Returns all the badges of a given user"
   [ctx user-id]
@@ -228,7 +234,9 @@
               :mtime               (unix-time)
               :deleted             0
               :revoked             0
-              :issuer_verified     issuer-verified}]
+              :issuer_verified     issuer-verified
+              :meta_badge          0
+              :meta_badge_req      0}]
     (insert-badge<! data (get-db ctx))))
 
 (defn save-issuer-content!
