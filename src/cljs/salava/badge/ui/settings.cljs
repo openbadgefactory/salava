@@ -47,6 +47,9 @@
        [:div {:class "col-md-9 badge-content"}
         [:div {:class "row" :id "badge-info"}
          [:div {:class "col-md-12 badge-info"}
+          ;[:div.row
+          ;[:div.col-md-12
+          ;(bh/issuer-image issuer_image)]]
           (if revoked
             [:div.revoked (t :badge/Revoked)])
           (if expired?
