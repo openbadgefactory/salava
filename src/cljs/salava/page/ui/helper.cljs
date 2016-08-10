@@ -7,7 +7,8 @@
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.file.icons :refer [file-icon]]))
+            [salava.file.icons :refer [file-icon]]
+            [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn delete-page [id]
   (ajax/DELETE
@@ -174,7 +175,9 @@
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
-   [view-page page]])
+   [view-page page]
+   (reporttool (:id page) (:name page) "page")
+   ])
 
 (defn view-page-modal [page]
   (create-class {:reagent-render (fn [] (render-page-modal page))

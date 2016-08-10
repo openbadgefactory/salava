@@ -12,7 +12,8 @@
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
-            [salava.admin.ui.admintool :refer [private-this-page]]))
+            [salava.admin.ui.admintool :refer [private-this-page]]
+            [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -167,7 +168,8 @@
               (into [:div]
                     (for [congratulation congratulations
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
-                      (uh/profile-link-inline id first_name last_name profile_picture)))]])]]]]])))
+                      (uh/profile-link-inline id first_name last_name profile_picture)))]])
+          (reporttool id name "badge")]]]]])))
 
 (defn init-data [state id]
   (ajax/GET

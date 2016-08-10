@@ -93,3 +93,22 @@
    (catch Object _
      "error"
      )))
+
+(defn ticket [ctx description report_type item_id item_url item_name item_type reporter_id item_content_id]
+  (try+
+   (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error"
+     )))
+
+(defn get-tickets [ctx]
+  (let [tickets (select-tickets {} (get-db ctx))]
+    tickets))
+
+(defn close-ticket! [ctx id]
+  (try+
+   (update-ticket-status! {:id id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error")))

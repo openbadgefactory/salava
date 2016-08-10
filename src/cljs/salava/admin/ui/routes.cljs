@@ -11,12 +11,12 @@
 
 (defn ^:export routes [context]
   {(str (base-path context) "/admin") [["" s/handler]
-                                       ;["/tickets" t/handler]
+                                       ["/tickets" t/handler]
                                        ["/statistics" s/handler]]})
 
 (defn admin-view [context]
   {(str (base-path context) "/admin")         {:weight 50 :title (t :admin/Admin) :top-navi true :breadcrumb (t :admin/Admin)}
-   ;(str (base-path context) "/admin/tickets") {:weight 51 :title (t :admin/Tickets) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Tickets)}
+   (str (base-path context) "/admin/tickets") {:weight 51 :title (t :admin/Tickets) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Tickets)}
    (str (base-path context) "/admin/statistics") {:weight 52 :title (t :admin/Statistics) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Statistics)}}
   )
 

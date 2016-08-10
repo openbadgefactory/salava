@@ -5,7 +5,8 @@
             [salava.badge.ui.helper :as bh]
             [salava.user.ui.helper :refer [profile-link-inline]]
             [salava.core.ui.rate-it :as r]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn badge-content [{:keys [badge public_users private_user_count]}]
   (let [{:keys [name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image html_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image]} badge]
@@ -68,10 +69,12 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
     (badge-content data)]
    [:div.modal-footer
+    
     [:button {:type         "button"
               :class        "btn btn-primary"
               :data-dismiss "modal"}
-     (t :core/Close)]]])
+     (t :core/Close)]
+    (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges")]])
 
 (defn badge-content-modal [modal-data]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data))

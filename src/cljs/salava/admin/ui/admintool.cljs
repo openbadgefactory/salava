@@ -1,6 +1,5 @@
 (ns salava.admin.ui.admintool
   (:require [reagent.core :refer [atom cursor]]
-            [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
             [reagent.session :as session]
@@ -10,11 +9,7 @@
             [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.admin.schemas :as schemas]))
-
-
-
-(def helper-state (atom "init"))
+            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker admin?]]))
 
 (defn set-private [item-type item-id state init-data]
   (ajax/POST
@@ -79,25 +74,7 @@
               :data-dismiss "modal"}
      (t :admin/No)]]])
 
-(defn valid-item-type? [item]
-  (input-valid? (:item-type schemas/Url-parser) item))
 
-(defn valid-item-id? [item]
-  (input-valid? (:item-id schemas/Url-parser) (js/parseInt item))
-  )
-
-
-(defn checker [url]
-  (let [url-list (vec(re-seq #"\w+" (str url) ))
-        type (get url-list 1)
-        id  (get url-list 3)]
-    {:item-type (if (valid-item-type? type)  type nil )
-     :item-id (if (valid-item-id? id) id nil )}))
-
-
-(defn admin? []
-  (let [role (session/get-in [:user :role])]
-    (= role "admin")))
 
 
 (defn private-this-page[]

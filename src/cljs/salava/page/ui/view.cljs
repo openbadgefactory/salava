@@ -7,7 +7,8 @@
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
-            [salava.admin.ui.admintool :refer [private-this-page]]))
+            [salava.admin.ui.admintool :refer [private-this-page]]
+            [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn check-password [password-atom page-id state]
   (ajax/POST
@@ -78,14 +79,16 @@
           (t :core/Publishandshare)]]
         [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]
        (private-this-page))
-     [ph/view-page page]]))
+     [ph/view-page page]
+     (reporttool (:id page)  (:name page) "page")]))
 
 (defn content [state]
   (let [page (:page @state)]
     (if (:ask-password @state)
       [page-password-field state]
       [:div {:id "page-container"}
-       [page-content page state]])))
+       [page-content page state]])
+    ))
 
 (defn init-data [state id]
   (ajax/GET

@@ -35,6 +35,18 @@ UPDATE user SET profile_visibility  = 'internal', mtime = UNIX_TIMESTAMP() WHERE
 --name: update-badges-visibility!
 UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_content_id= :badge_content_id
 
+--name: insert-report-ticket<!
+--add new report ticket
+INSERT INTO report_ticket (description, report_type, item_id, item_url, item_name, item_type, reporter_id, item_content_id, ctime, mtime) VALUES (:description, :report_type, :item_id, :item_url, :item_name, :item_type, :reporter_id, :item_content_id, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
---name: get-badges-id-by-badges-content-id
-SELECT id FROM badge WHERE badge_content_id= :badge_content_id AND visibility != 'private';
+
+--name: select-tickets
+--get tickets with open status
+SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t.item_type, t.reporter_id, u.first_name, u.last_name, t.item_content_id, t.ctime FROM report_ticket t
+       JOIN user AS u ON (u.id = t.reporter_id)
+       WHERE status = 'open'
+       ORDER BY t.ctime DESC
+
+
+--name: update-ticket-status!
+UPDATE report_ticket SET status  = 'closed', mtime = UNIX_TIMESTAMP() WHERE id = :id
