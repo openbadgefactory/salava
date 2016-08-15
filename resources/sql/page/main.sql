@@ -5,7 +5,7 @@ SELECT p.id, name, description, theme, border, padding, visibility, password, vi
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
        WHERE user_id = :user_id
-       GROUP BY p.id
+       GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime
 
 -- name: insert-empty-page<!
 -- create a new empty page
@@ -17,7 +17,7 @@ SELECT p.id, name, description, theme, border, padding, visibility, password, vi
        JOIN user AS u ON u.id = p.user_id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
        WHERE p.id = :id
-       GROUP BY p.id
+       GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name
 
 -- name: select-pages-badge-blocks
 SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, cc.html_content AS html_content, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM page_block_badge AS pb
