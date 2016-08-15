@@ -59,7 +59,7 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
        JOIN user AS u ON p.user_id = u.id
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        WHERE user_id = :user_id AND (visibility = 'public' OR visibility = :visibility)
-       GROUP BY p.id
+       GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name
        ORDER BY p.mtime DESC
        LIMIT 100
 
@@ -76,4 +76,6 @@ SELECT user_id, COUNT(DISTINCT badge_content_id) AS c FROM badge
        GROUP BY user_id
 
 -- name: select-badges-recipients
-SELECT badge_content_id, count(distinct user_id) as recipients FROM badge WHERE badge_content_id IN (:badge_content_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp()) GROUP BY badge_content_id
+SELECT badge_content_id, count(distinct user_id) as recipients FROM badge
+       WHERE badge_content_id IN (:badge_content_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp())
+       GROUP BY badge_content_id
