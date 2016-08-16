@@ -28,7 +28,7 @@
        :handler (fn []
                   (init-data state))})))
 
-(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image]} state init-data]
+(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image issuer_description]} state init-data]
   (let [expired? (bh/badge-expired? expires_on)]
     [:div {:id "badge-settings"}
      [:div.modal-body
@@ -47,6 +47,9 @@
        [:div {:class "col-md-9 badge-content"}
         [:div {:class "row" :id "badge-info"}
          [:div {:class "col-md-12 badge-info"}
+          ;[:div.row
+          ;[:div.col-md-12
+          ;(bh/issuer-image issuer_image)]]
           (if revoked
             [:div.revoked (t :badge/Revoked)])
           (if expired?
@@ -56,7 +59,8 @@
             [:div.issued_on
              [:label (t :badge/Issuedon ":")]
              [:span (date-from-unix-time (* 1000 issued_on))]])
-          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
+          (bh/issuer-description  issuer_description)
           [:div.row
            [:div.col-md-12
             description]]]]]]
