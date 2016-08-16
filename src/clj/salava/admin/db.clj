@@ -15,7 +15,6 @@
   (let [admin (select-user-admin {:id user-id} (into {:result-set-fn first :row-fn :role} (get-db ctx)))]
     (= admin "admin")))
 
-
 (defn register-users-count
   "Get count from all active and registered users"
   [ctx]
@@ -32,7 +31,6 @@
   [ctx]
   (let [date (get-date-from-today -1 0 0)]
     (count-registered-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
-
 
 (defn badges-count
   "Get count from all badges"

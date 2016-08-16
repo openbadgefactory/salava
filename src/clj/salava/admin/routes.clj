@@ -28,7 +28,6 @@
                    :current-user current-user
                    (do
                      (ok (a/get-stats ctx))))
-             ;;Private 
              
              (POST "/private_badge/:id" []
                    :return (s/enum "success" "error")
@@ -79,7 +78,6 @@
                    (do
                      (ok (a/get-tickets ctx))))
 
-             
              (POST "/close_ticket/:id" []
                    :return (s/enum "success" "error")
                    :path-params [id :- s/Int]

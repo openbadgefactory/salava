@@ -22,17 +22,13 @@
        [:div [:label (t :admin/Numberofmonthlyaddedbadges) ] ": " last-month-added-badges]
        [:div [:label (t :admin/Totalpages)] ": " pages]
        [:div [:label (t :admin/Numberofmonthlyactiveuser)] ": " last-month-active-users]
-       [:div [:label (t :admin/Numberofmonthlyregisteredusers)] ": " last-month-registered-users]
-       ]]]))
+       [:div [:label (t :admin/Numberofmonthlyregisteredusers)] ": " last-month-registered-users]]]]))
 
 (defn init-data [state]
   (ajax/GET 
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
                (reset! state data))}))
-
-
-
 
 (defn handler [site-navi]
   (let [state (atom {:register-users nil

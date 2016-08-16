@@ -13,12 +13,10 @@
             [salava.admin.schemas :as schemas]
             [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker]]))
 
-(def opened-atom (atom "true"))
+(def opened-atom (atom "false"))
 
 (defn save-report [state]
   (let [{:keys [description report-type item-id item-url item-name item-type reporter-id item-content-id]} @state]
-    (.log js/console (str description " " report-type " " item-id " " item-url " " item-name " " item-type " " reporter-id " " item-content-id))
-
     (ajax/POST
      (path-for (str "/obpv1/admin/ticket"))
      {:response-format :json
@@ -32,107 +30,95 @@
                :item_type item-type
                :reporter_id reporter-id}
       :handler (fn [data]
-                 (.log js/console "jeee onnistu")
-                 )
+                 (reset! opened-atom "sent")
+                 (reset! state {:description ""
+                                :report-type "bug"}))
       :error-handler (fn [{:keys [status status-text]}]
-                       (.log js/console "joitain meni mönkään"))})
+                       )})))
 
-
-    
-    (reset! opened-atom "sent")
-    (reset! state {:description ""
-                   :report-type "bug"} ))
-  )
+(defn open-reportform-button [closed?]
+  [:a {:class "pull-right"
+       :id "open-reportform-button"
+       :on-click #(do
+                    (.preventDefault %)
+                    (reset! opened-atom(if (= "true" @opened-atom) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :admin/Close))])
 
 (defn reportform [state]
-  
   (let [description-atom (cursor state [:description]) 
-        report-type-atom (cursor state [:report-type])
-        ]
-    
-    [:div {:class "panel panel-default"}
-     [:div {:class "panel-body"}
-      [:div.form-group
-       [:label {:for "page-tags"}
-        "Ilmoita ongelmasta"]
-       ]
-      [:div
-       [:label
-        "Ongelma koskee"]
-       [:div.radio
+        report-type-atom (cursor state [:report-type])]
+    [:div  
+     (open-reportform-button false)
+     [:div {:class "col-xs-12" :id "reportform"}
+      [:h4 (t :admin/Reportproblem)]
+       [:div.form-group
         [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @report-type-atom "inappropriate")
-                  :onChange #(reset! report-type-atom "inappropriate")
-                  }]
-         "Asiatonta sisältöä"]]
+         (str (t :admin/Problemconcerns) ":")]
+        [:div.radio
+         [:label
+          [:input {:type     "radio"
+                   :name     "visibility"
+                   :checked  (= @report-type-atom "inappropriate")
+                   :onChange #(reset! report-type-atom "inappropriate")
+                   }]
+          (t :admin/inappropriate)]]
+        [:div.radio
+         [:label
+          [:input {:type     "radio"
+                   :name     "visibility"
+                   :checked  (= @report-type-atom "mistranslation")
+                   :onChange #(reset! report-type-atom "mistranslation")}]
+          (t :admin/mistranslation)]]
+        [:div.radio
+         [:label
+          [:input {:type     "radio"
+                   :name     "visibility"
+                   :checked  (= @report-type-atom "bug")
+                   :onChange #(reset! report-type-atom "bug")}]
+          (t :admin/bug)]] 
+        [:div.radio
+         [:label
+          [:input {:type     "radio"
+                   :name     "visibility"
+                   :checked  (= @report-type-atom "fakebadge")
+                   :onChange #(reset! report-type-atom "fakebadge")
+                   }]
+          (t :admin/fakebadge)]]
+        [:div.radio
+         [:label
+          [:input {:type     "radio"
+                   :name     "visibility"
+                   :checked  (= @report-type-atom "other")
+                   :onChange #(reset! report-type-atom "other")
+                   }]
+          (t :admin/other)]]]
+       [:div.form-group
+        [:label 
+         (str (t :admin/Description) ":")]
+        [:textarea {:class    "form-control"
+                    :rows     "5"
+                    :value    @description-atom
+                    :onChange #(reset! description-atom (.-target.value %))}]]   
+       [:div.form-group
+        [:button {:class    "btn btn-primary"
+                  :on-click #(do
+                               (.preventDefault %)
+                               (save-report state)
+                               )}
+         (t :admin/Send)]]]]))
 
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @report-type-atom "mistranslation")
-                  :onChange #(reset! report-type-atom "mistranslation")
-                  }]
-         "Käännösvirheitä" ]]
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @report-type-atom "bug")
-                  :onChange #(reset! report-type-atom "bug")
-                  }]
-         "Bugiraportti"]]
-       
-       
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @report-type-atom "fakebadge")
-                  :onChange #(reset! report-type-atom "fakebadge")
-                  }]
-         "Epävirallinen merkki"]]
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @report-type-atom "other")
-                  :onChange #(reset! report-type-atom "other")
-                  }]
-         "Jotain muuta.."]]]
+(def seconds-elapsed (atom 0))
 
-
-      [:div.form-group
-       [:label {:for "page-password"}
-        (str "Lisätietoja")]
-       [:textarea {:class "form-control"
-                   :rows  "5"
-                   :value @description-atom
-                   :onChange #(reset! description-atom (.-target.value %))
-                   }]]
-      
-      [:div.form-group
-       [:button {:class    "btn btn-primary"
-                 :on-click #(do
-                              (.preventDefault %)
-                              (save-report state)
-                              )}
-        "Lähetä"]]]]
-    ))
-
-
+(defn confirmedtext-timer []
+  (js/setTimeout #(swap! seconds-elapsed inc) 1000)
+  (if (=@seconds-elapsed 5)
+    (do
+      (reset! opened-atom "false")
+      (reset! seconds-elapsed 0))))
 
 (defn confirmedtext []
-  [:div
-   [:div "kiitos ilmoituksesta"]
-   [:button {:class    "btn btn-primary"
-                 :on-click #(do
-                              (.preventDefault %)
-                              (reset! opened-atom "false")
-                              )}
-        "Sulje"]])
+  [:div {:id "reportform"}
+   (confirmedtext-timer)
+   [:div (t :admin/Confirmedtext)]])
 
 (defn url-creator [item-type id]
   (cond
@@ -163,14 +149,10 @@
            :item-type item-type
            :item-url item-url
            :reporter-id reporter-id)
+    
     [:div
-     [:a {:class "pull-right"
-          :on-click #(do
-                       (.preventDefault %)
-                       (reset! opened-atom(if (= "true" @opened-atom) "false" "true")))} "Tee ilmoitus"]
-     
-     (cond 
+     (cond
+       (= @opened-atom "false") (open-reportform-button true)
        (= @opened-atom "true") (reportform state)
        (= @opened-atom "sent") (confirmedtext) 
-       :else "")
-     ]))
+       :else "")]))

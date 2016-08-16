@@ -7,15 +7,19 @@
     margin-bottom: 20px;
     margin-top: 0;
     line-height: 1.4;
-        //height: 170px;
-        //max-width: 280px;
-        //min-width: 250px;
 }
 
 #private-button{
     margin:0px 17px 10px 0px;
 }
 
+#reportform{
+    background-color: white;
+}
+#open-reportform-button {
+    padding-bottom: 20px ;
+    
+}
 
 .title-bar {
     padding-left: 5px;
@@ -80,4 +84,5 @@
             label span {
                 line-height: 25px;
             }
-        }
+}
+

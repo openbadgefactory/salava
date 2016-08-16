@@ -13,19 +13,16 @@
 
 (defn set-private [item-type item-id state init-data]
   (ajax/POST
-    (path-for (str "/obpv1/admin/private_"item-type"/" item-id))
-    {:response-format :json
-     :keywords? true
-     :params {:item-type item-type :item-id item-id}
-     :handler (fn [data]
-                (if (not-empty (str init-data))
-                  (init-data state nil)
-                  (navigate-to "/admin")
-                  )
-                )
-     :error-handler (fn [{:keys [status status-text]}]
-                      (.log js/console "joitain meni mönkään"))}))
-
+   (path-for (str "/obpv1/admin/private_"item-type"/" item-id))
+   {:response-format :json
+    :keywords? true
+    :params {:item-type item-type :item-id item-id}
+    :handler (fn [data]
+               (if (not-empty (str init-data))
+                 (init-data state nil)
+                 (navigate-to "/admin")))
+    :error-handler (fn [{:keys [status status-text]}]
+                     (.log js/console (str status " " status-text)))}))
 
 (defn admin-modal [item-type item-id state init-data]
   [:div
@@ -33,13 +30,11 @@
     [:button {:type "button"
               :class "close"
               :data-dismiss "modal"
-              :aria-label "OK"
-              }
+              :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
-    (str  (t :admin/Privatethis) "?" (:user-id state
-                                      )) ]
+    (str  (t :admin/Privatethis) "?" (:user-id state))]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"
@@ -57,12 +52,11 @@
     [:button {:type "button"
               :class "close"
               :data-dismiss "modal"
-              :aria-label "OK"
-              }
+              :aria-label "OK"}
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
-    (str  (t :admin/Privatethis) "?" ) ]
+    (str  (t :admin/Privatethis) "?" )]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"
@@ -88,16 +82,17 @@
                    :on-click #(do (.preventDefault %)
                                   (m/modal! (admin-modal item-type item-id "" "") ))} (t :admin/Private)]]])))
 
-
 (defn private-gallery-badge [item-id item-type state init-data]
-   (if (admin?)
-     [:a {:class "bottom-link pull-right" :on-click #(do (.preventDefault %)
-                                  (m/modal! (admin-gallery-modal item-type item-id state init-data) ))} [:i {:class "fa fa-lock"}] (t :admin/Private)]))
+  (if (admin?)
+    [:a {:class "bottom-link pull-right"
+         :on-click #(do (.preventDefault %)
+                        (m/modal! (admin-gallery-modal item-type item-id state init-data) ))}
+     [:i {:class "fa fa-lock"}] (t :admin/Private)]))
 
 (defn private-gallery-page [item-id item-type state init-data]
   (if (admin?)
     [:div.media-bottom-admin
-     [:a {:class "bottom-link pull-right" :on-click #(do (.preventDefault %)
-                                                         (m/modal! (admin-gallery-modal item-type item-id state init-data) ))} [:i {:class "fa fa-lock"}] (t :admin/Private)]
-       ]
-     ))
+     [:a {:class "bottom-link pull-right"
+          :on-click #(do (.preventDefault %)
+                         (m/modal! (admin-gallery-modal item-type item-id state init-data) ))}
+      [:i {:class "fa fa-lock"}] (t :admin/Private)]]))

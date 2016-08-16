@@ -51,9 +51,9 @@
       [:div.ajax-message
        [:i {:class "fa fa-cog fa-spin fa-2x "}]
        [:span (str (t :core/Loading) "...")]]
-      [:div {:id "badge-info"}
+      [:div 
       [m/modal-window]
-      [:div.panel
+      [:div{:id "badge-info" :class "panel"}
        [:div.panel-body
         (if (and owner? (not expired?) (not revoked))
           [:div.row {:id "badge-share-inputs"}
@@ -169,7 +169,8 @@
                     (for [congratulation congratulations
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
-          (reporttool id name "badge")]]]]])))
+          ]]
+        (if owner? ""(reporttool id name "badge"))]]])))
 
 (defn init-data [state id]
   (ajax/GET

@@ -176,7 +176,8 @@
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]
-   (reporttool (:id page) (:name page) "page")
+   [:div {:class "modal-footer page-content"}
+   (reporttool (:id page) (:name page) "page") ]
    ])
 
 (defn view-page-modal [page]

@@ -130,8 +130,8 @@
         [:div {:id "user-pages"}
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
          [page-grid pages profile_picture]
-         [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])]
-     (reporttool user-id fullname "user")]))
+         [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
+      (reporttool user-id fullname "user")]]))
 
 (defn init-data [user-id state]
   (ajax/GET

@@ -80,7 +80,9 @@
         [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]
        (private-this-page))
      [ph/view-page page]
-     (reporttool (:id page)  (:name page) "page")]))
+     (if (:owner? page)
+       ""
+       (reporttool (:id page)  (:name page) "page"))]))
 
 (defn content [state]
   (let [page (:page @state)]
