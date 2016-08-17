@@ -173,7 +173,7 @@ SELECT b.id, bc.name, bc.image_file, SUM(bv.id IS NOT NULL AND bv.user_id IS NOT
        JOIN badge_view AS bv ON b.id = bv.badge_id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
-       GROUP BY b.id
+       GROUP BY b.id, bc.name, bc.image_file
        ORDER BY latest_view DESC
 
 --name: select-badge-congratulations-stats
@@ -182,7 +182,7 @@ SELECT b.id, bc.name, bc.image_file, COUNT(bco.user_id) AS congratulation_count,
        JOIN badge_congratulation AS bco ON b.id = bco.badge_id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
-       GROUP BY b.id
+       GROUP BY b.id, bc.name, bc.image_file
        ORDER BY latest_congratulation DESC
 
 --name: select-badge-issuer-stats
@@ -191,7 +191,7 @@ SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_cont
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
-       ORDER BY ic.name
+       ORDER BY ic.name bc.name, bc.image_file, b.issuer_content_id
 
 --name: update-badge-set-verified!
 --update verification status of the issuer of the badge
