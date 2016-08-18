@@ -16,6 +16,8 @@
   ([ctx user-id visibility]
    (select-users-public-badges {:user_id user-id :visibility visibility} (get-db ctx))))
 
+
+
 (defn public-badges
   "Return badges visible in gallery. Badges can be searched by country ID, badge name, issuer name or recipient's first or last name"
   [ctx country badge-name issuer-name recipient-name]
@@ -43,7 +45,7 @@
                     LEFT JOIN user AS u ON b.user_id = u.id
                     WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())"
                    where
-                   " GROUP BY bc.id
+                   " GROUP BY bc.id, bc.name, bc.image_file, bc.description, b.mtime, issuer_content_name, issuer_content_url, badge_content_id
                     ORDER BY b.ctime DESC
                     LIMIT 100")
         badgesearch (jdbc/with-db-connection
@@ -54,6 +56,8 @@
         recipientsmap (reduce #(assoc %1 (:badge_content_id %2) (:recipients %2)) {} recipients)
         assochelper (fn [user recipients] (assoc user  :recipients (get recipientsmap (:badge_content_id user))))]
     (map assochelper badgesearch recipients)))
+
+
 
 (defn user-country
   "Return user's country id"
@@ -118,6 +122,7 @@
 (defn public-pages
   "Return public pages visible in gallery. Pages can be searched with page owner's name and/or country"
   [ctx country owner]
+  
   (let [where ""
         params []
         [where params] (if-not (or (empty? country) (= country "all"))
@@ -131,7 +136,7 @@
                     LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
                     WHERE (visibility = 'public' OR visibility = 'internal')"
                    where
-                   " GROUP BY p.id
+                   " GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
                     ORDER BY p.mtime DESC
                     LIMIT 100")
         pages (jdbc/with-db-connection

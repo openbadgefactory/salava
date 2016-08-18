@@ -28,7 +28,7 @@
                    :current-user current-user
                    (do
                      (ok (a/get-stats ctx))))
-
+             
              (POST "/private_badge/:id" []
                    :return (s/enum "success" "error")
                    :path-params [id :- s/Int]
@@ -60,5 +60,30 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/private-user! ctx id)))
-             
+
+             (POST "/ticket" []
+                   :return (s/enum "success" "error")
+                   :summary "Create reporting ticket"
+                   :body [content schemas/Report]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (let [{:keys [description report_type item_id item_url item_name item_type reporter_id item_content_id]} content]
+                     (ok (a/ticket ctx description report_type item_id item_url item_name item_type reporter_id item_content_id) )))
+
+             (GET "/tickets" []
+                   :return [schemas/Ticket]
+                   :summary "Get all tickets with open status"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (do
+                     (ok (a/get-tickets ctx))))
+
+             (POST "/close_ticket/:id" []
+                   :return (s/enum "success" "error")
+                   :path-params [id :- s/Int]
+                   :summary "Set ticket status to closed"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/close-ticket! ctx id)))
+
              )))

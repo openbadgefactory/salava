@@ -12,7 +12,7 @@
     :else (get-in assertion [:verify :url])))
 
 (defn remove-doctype [xml]
-  (string/replace xml #"<!DOCTYPE((.|\n|\r)*?)\">" ""))
+  (string/replace xml #"<!DOCTYPE((.|\n|\r)*?)(\"|')>" ""))
 
 (defn get-assertion-from-svg [svg-file]
   (try+

@@ -35,6 +35,7 @@
                          current-country (if (empty? country)
                                            (:user-country countries)
                                            country)]
+                     
                      (ok (into {:badges (g/public-badges ctx current-country badge issuer recipient)} countries))))
              (POST "/badges/:userid" []
                    ;:return []
@@ -45,6 +46,7 @@
 
              (GET "/public_badge_content/:badge-content-id" []
                   :return {:badge              {:name                s/Str
+                                                :ctime               s/Int
                                                 :image_file          (s/maybe s/Str)
                                                 :description         (s/maybe s/Str)
                                                 :average_rating      (s/maybe s/Num)
