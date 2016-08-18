@@ -33,11 +33,13 @@
                     [:td (name prop-1) " " (name prop-2) " " (name prop-3)]
                     [:td (or val-3 "-")]]))
                [:tr {:class (str "tr-" prop-1 "-" prop-2)}
-                [:td (name prop-1) " " (name prop-2)]
-                [:td (or val-2 "-")]]))
+                [:td (str (name prop-1) " " (name prop-2))]
+                [:td  (or (str val-2) "-")]
+                ]))
            [:tr {:class (str "tr-" prop-1)}
             [:td (name prop-1)]
-            [:td (or val-1 "-")]])))]]
+            [:td (or (str val-1) "-")]
+            ])))]]
    [:div.modal-footer
     [:button {:type         "button"
               :class        "btn btn-primary"

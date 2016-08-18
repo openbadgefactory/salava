@@ -26,14 +26,11 @@
        [:div.row
         [:div {:class "col-md-12"}
          [:h1.uppercase-header name]
-         [:div.row
-          [:div {:class "col-md-5 col-md-7"}
-           (bh/issuer-image issuer_image)]
-          (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
-          (bh/issuer-description issuer_description)]
-         [:div (bh/creator-image creator_image)
-          (bh/creator-label-and-link creator_name creator_url creator_email)
-          (bh/creator-description creator_description)]
+         (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+         
+         (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+         
+         
          [:div.row
           [:div {:class "col-md-12 description"}
            description]]]]
