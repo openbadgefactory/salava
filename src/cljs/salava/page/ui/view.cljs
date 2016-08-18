@@ -7,7 +7,7 @@
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
-            [salava.admin.ui.admintool :refer [private-this-page]]
+            [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn check-password [password-atom page-id state]
@@ -77,12 +77,13 @@
                    :on-change #(toggle-visibility (:id page) visibility-atom)
                    :checked     (= @visibility-atom "public")}]
           (t :core/Publishandshare)]]
-        [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]
-       (private-this-page))
+        [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
      [ph/view-page page]
      (if (:owner? page)
        ""
-       (reporttool (:id page)  (:name page) "page"))]))
+       (reporttool (:id page)  (:name page) "page"))
+     (admintool (:user_id page))
+     ]))
 
 (defn content [state]
   (let [page (:page @state)]

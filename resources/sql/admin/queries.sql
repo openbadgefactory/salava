@@ -47,3 +47,15 @@ SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t
 
 --name: update-ticket-status!
 UPDATE report_ticket SET status  = 'closed', mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+
+--name: update-badge-deleted!
+UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-user-and-email
+SELECT first_name, last_name, ue.email FROM user AS u
+JOIN user_email AS ue ON u.id = ue.user_id
+WHERE id=:id AND ue.primary_address=1
+
+--name: select-user-id-by-badge-id
+SELECT user_id FROM badge WHERE id=:id

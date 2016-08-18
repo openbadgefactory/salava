@@ -10,6 +10,9 @@
                     :last-month-added-badges (s/maybe s/Int)
                     :pages (s/maybe s/Int)})
 
+(s/defschema User-name-and-email {:name s/Str
+                                  :email s/Str})
+
 (s/defschema Report {:description (s/maybe s/Str)
                      :report_type (s/enum "inappropriate" "bug" "mistranslation" "other" "fakebadge")
                      :item_content_id  (s/maybe s/Str)

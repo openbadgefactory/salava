@@ -5,7 +5,8 @@
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
-            [salava.core.time :refer [unix-time get-date-from-today]]))
+            [salava.core.time :refer [unix-time get-date-from-today]]
+            [salava.core.mail :as m]))
 
 (defqueries "sql/admin/queries.sql")
 
@@ -110,3 +111,41 @@
    "success"
    (catch Object _
      "error")))
+
+(def ctx {:db (hikari-cp.core/make-datasource {:adapter "mysql",
+                                               :username "root",
+                                               :password "isokala",
+                                               :database-name "salava4",
+                                               :server-name "localhost"})})
+
+(defn delete-badge! [ctx id subject message]
+  (try+
+   (let [user-id (select-user-id-by-badge-id {:id id}(into {:result-set-fn first :row-fn :user_id} (get-db ctx)))
+         user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+     (dump (:email user))
+     (m/send-mail ctx subject message [(:email user)])
+     (update-badge-deleted! {:id id} (get-db ctx))
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+
+(defn send-message [ctx user_id subject message]
+  (try+
+   (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
+     (dump (:email user))
+     (m/send-mail ctx subject message [(:email user)])
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+
+
+(defn get-user-name-and-primary-email [ctx user_id]
+  (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
+    (hash-map :name (str (:first_name user) " " (:last_name user))
+              :email (:email user))))
+
+

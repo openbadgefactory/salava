@@ -61,6 +61,34 @@
                    :current-user current-user
                    (ok (a/private-user! ctx id)))
 
+             (POST "/send_message/:user_id" []
+                   :return (s/enum "success" "error")
+                   :summary "send message to user"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str]
+                   :path-params [user_id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/send-message ctx user_id subject message)))
+
+             (GET "/user_name_and_email/:user_id" []
+                  :return schemas/User-name-and-email
+                  :path-params [user_id :- s/Int]
+                  :summary "Get user name and email"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (a/get-user-name-and-primary-email ctx user_id)))
+
+             (POST "/delete_badge/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete badge"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-badge! ctx id subject message)))
+
              (POST "/ticket" []
                    :return (s/enum "success" "error")
                    :summary "Create reporting ticket"
