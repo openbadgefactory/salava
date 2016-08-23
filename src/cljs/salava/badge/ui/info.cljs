@@ -128,16 +128,9 @@
              (if expired?
                [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
              [:h1.uppercase-header name]
-             [:div.row
-             (bh/issuer-image issuer_image)
-             (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
-             (bh/issuer-description issuer_description)]
-             (if creator_name
-             [:div.row
-              [:div.issuer-description [:h2.uppercase-header (t :badge/Createdby)]]
-              (bh/creator-image creator_image)
-              (bh/creator-label-and-link creator_name creator_url creator_email)
-              (bh/creator-description creator_description)])
+             (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+             (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+             
              (if (and issued_on (> issued_on 0))
                [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
