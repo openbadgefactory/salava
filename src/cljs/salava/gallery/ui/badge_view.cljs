@@ -6,6 +6,8 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.gallery.ui.badge-content :refer [badge-content]]
             [salava.core.ui.share :refer [share-buttons]]
+            [salava.admin.ui.admintool :refer [admintool]]
+            [salava.admin.ui.reporttool :refer [reporttool]]
             [salava.core.i18n :refer [t]]))
 
 (defn content [state]
@@ -15,7 +17,10 @@
      [:div.panel
       [:div.panel-body
        [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
-       [badge-content content]]]]))
+       [badge-content content]]
+      (reporttool badge-content-id name "badges")
+      (admintool nil)
+      ]]))
 
 (defn init-data [state badge-content-id]
   (ajax/GET

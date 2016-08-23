@@ -9,7 +9,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
-            [salava.admin.ui.admintool :refer [private-gallery-badge]]
+            [salava.admin.ui.admintool :refer [admin-gallery-badge]]
             [salava.core.helper :refer [dump]]))
 
 (defn open-modal [badge-content-id]
@@ -39,7 +39,6 @@
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
-    (.log js/console "meni nyt tänne niinkun piti")
     (ajax/POST
       (path-for (str "/obpv1/gallery/badges/" user-id))
       {:params  {:country   (trim country-selected)
@@ -140,8 +139,9 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       [:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
-       (private-gallery-badge badge-id "badges" state init-data)]]]))
+       [:div {:class "pull-left"}
+        [:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]]
+       (admin-gallery-badge badge-id "badges" state init-data)]]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)

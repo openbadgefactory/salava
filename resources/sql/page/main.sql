@@ -4,7 +4,7 @@
 SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime, GROUP_CONCAT(DISTINCT pb.badge_id) AS badges, GROUP_CONCAT(DISTINCT pt.tag) AS tags FROM page AS p
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
-       WHERE user_id = :user_id
+       WHERE user_id = :user_id AND p.deleted = 0
        GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, ctime, mtime
 
 -- name: insert-empty-page<!
@@ -16,7 +16,7 @@ INSERT INTO page (user_id, name, visibility, ctime, mtime) VALUES (:user_id, :na
 SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
        JOIN user AS u ON u.id = p.user_id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
-       WHERE p.id = :id
+       WHERE p.id = :id AND p.deleted = 0
        GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name
 
 -- name: select-pages-badge-blocks

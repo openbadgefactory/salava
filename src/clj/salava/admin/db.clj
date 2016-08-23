@@ -49,7 +49,6 @@
   [ctx]
   (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
-
 (defn get-stats [ctx]
   (try+
    {:register-users (register-users-count ctx)
@@ -112,17 +111,12 @@
    (catch Object _
      "error")))
 
-(def ctx {:db (hikari-cp.core/make-datasource {:adapter "mysql",
-                                               :username "root",
-                                               :password "isokala",
-                                               :database-name "salava4",
-                                               :server-name "localhost"})})
 
-(defn delete-badge! [ctx id subject message]
+
+(defn delete-badge! [ctx id  user-id subject message]
   (try+
    (let [user-id (select-user-id-by-badge-id {:id id}(into {:result-set-fn first :row-fn :user_id} (get-db ctx)))
          user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-     (dump (:email user))
      (m/send-mail ctx subject message [(:email user)])
      (update-badge-deleted! {:id id} (get-db ctx))
      )
@@ -130,6 +124,43 @@
    (catch Object _
      "error")))
 
+(defn delete-badges! [ctx badge-content-id subject message]
+  (try+
+   (let [user-ids (select-users-id-by-badge-content-id {:badge_content_id badge-content-id}(into {:row-fn :user_id} (get-db ctx)))
+         users-email (select-users-email {:user_id user-ids} (into {:result-set-fn vec :row-fn :email} (get-db ctx)))]     
+     (m/send-mail ctx subject message users-email)
+     (update-badge-deleted! {:badge_content_id badge-content-id} (get-db ctx))
+     
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn delete-page! [ctx id user-id subject message]
+  (try+
+   (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+     (dump (:email user))
+     (m/send-mail ctx subject message [(:email user)])
+     (update-page-deleted! {:id id} (get-db ctx))
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn delete-user! [ctx user-id subject message]
+  (try+
+   (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+     (dump (:email user))
+     (m/send-mail ctx subject message [(:email user)])
+     (update-user-pages-set-private! {:user_id user-id}(get-db ctx))
+     (update-user-badges-set-private! {:user_id user-id}(get-db ctx))
+     (delete-user-badge-congratulations! {:user_id user-id}(get-db ctx))
+     (delete-user-badge-views! {:user_id user-id}(get-db ctx))
+     (update-user-deleted! {:id user-id} (get-db ctx))
+     )
+   "success"
+   (catch Object _
+     "error")))
 
 (defn send-message [ctx user_id subject message]
   (try+

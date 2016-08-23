@@ -58,7 +58,7 @@ SELECT badge_url, issuer_verified, ctime, html_content, criteria_url, ic.name AS
 SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
        JOIN user AS u ON p.user_id = u.id
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
-       WHERE user_id = :user_id AND (visibility = 'public' OR visibility = :visibility)
+       WHERE user_id = :user_id AND p.deleted = 0  AND (visibility = 'public' OR visibility = :visibility) 
        GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name
        ORDER BY p.mtime DESC
        LIMIT 100

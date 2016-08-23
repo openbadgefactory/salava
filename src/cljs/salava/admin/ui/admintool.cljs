@@ -9,7 +9,8 @@
             [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker admin?]]))
+            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker admin?]]
+            [salava.admin.ui.admintool-content :refer [admin-modal]]))
 
 
 (defn message-form [mail]
@@ -46,6 +47,7 @@
 (defn admin-private-modal [item-type item-id state init-data]
   [:div
    [:div.modal-header
+    (t :admin/Private)
     [:button {:type "button"
               :class "close"
               :data-dismiss "modal"
@@ -65,15 +67,20 @@
               :data-dismiss "modal"}
      (t :admin/No)]]])
 
-(defn delete-item [item-type item-id message]
-  (let [message @message]
+(defn delete-item [item-type item-id message user-id state init-data]
+  (let [{:keys [subject message]} @message]
+
     (ajax/POST
      (path-for (str "/obpv1/admin/delete_"item-type"/" item-id))
      {:response-format :json
       :keywords?       true
-      :params          message
+      :params          {:subject subject
+                        :message message
+                        :user-id user-id}
       :handler         (fn [data]
-                         (navigate-to "/admin"))
+                         (if (not-empty (str init-data))
+                         (init-data state nil)
+                         (navigate-to "/admin")))
       :error-handler   (fn [{:keys [status status-text]}]
                         ; (.log js/console "Lol kek")
                          )}))
@@ -94,6 +101,21 @@
                          )}))
   )
 
+
+(defn delete-user [user-id message]
+  (let [message @message]
+    (ajax/POST
+     (path-for (str "/obpv1/admin/delete_user/" user-id ))
+     {:response-format :json
+      :keywords?       true
+      :params          message
+      :handler         (fn [data]
+                         ;(navigate-to "/admin")
+                         )
+      :error-handler   (fn [{:keys [status status-text]}]
+                         ;(.log js/console "Lol kek")
+                         )}))
+  )
 (defn get-user-name-and-email [user-id]
   (ajax/GET
    (path-for (str "/obpv1/admin/user_name_and_email/" user-id))
@@ -103,7 +125,8 @@
 
 (defn admin-send-message-modal [user-id mail]
   [:div
-     [:div.modal-header
+   [:div.modal-header
+    (t :admin/Sendmessage)
       [:button {:type         "button"
                 :class        "close"
                 :data-dismiss "modal"
@@ -125,24 +148,25 @@
                 :data-dismiss "modal"}
        (t :admin/No)]]])
 
-(defn admin-delete-modal [item-type item-id mail]
+(defn admin-delete-modal [item-type item-id mail user-id state init-data]
   [:div
-     [:div.modal-header
+   [:div.modal-header
+    (t :admin/Delete)
       [:button {:type         "button"
                 :class        "close"
                 :data-dismiss "modal"
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-     [:div.modal-body
+   [:div.modal-body
       (str  (t :admin/Deletethisitem) "?")
-       (message-form mail)
+      (message-form mail)
       ]
      [:div.modal-footer
       [:button {:type         "button"
                 :class        "btn btn-primary"
                 :data-dismiss "modal"
-                :on-click     #(delete-item item-type item-id mail)}
+                :on-click     #(delete-item item-type item-id mail user-id state init-data)}
        (t :admin/Yes)]
       [:button {:type         "button"
                 :class        "btn btn-primary"
@@ -150,9 +174,10 @@
        (t :admin/No)]]])
 
 
-(defn admin-lock-user-modal [item-type item-id state init-data]
+(defn admin-lock-user-modal [user-id mail]
   [:div
    [:div.modal-header
+    (t :admin/Lockuser)
     [:button {:type "button"
               :class "close"
               :data-dismiss "modal"
@@ -160,12 +185,15 @@
      [:span {:aria-hidden "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
-    (str  (t :admin/Privatethis) "?" (:user-id state))]
+    (str  (t :admin/Deletethisuser) "?")
+    (message-form mail)
+    ]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"
               :data-dismiss "modal"
-              :on-click #(set-private item-type item-id state init-data)}
+              :on-click #(delete-user user-id mail)
+              }
      (t :admin/Yes)]
     [:button {:type "button"
               :class "btn btn-primary"
@@ -194,37 +222,12 @@
               :data-dismiss "modal"}
      (t :admin/No)]]])
 
-(defn private-this-page[]
-   (if (admin?)  
-     (let [{:keys [item-type item-id]} (checker (current-path))
-           mail (atom {:subject ""
-                       :message ""})]
-       [:div.row
-        [m/modal-window]
-        [:div {:class "pull-right"}
-         [:div {:class "dropdown"}
-          [:button {:class "btn btn-default dropdown-toggle" :type "button" :id "admindropdownmenu" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "true"} "admin tools"
-           [:span.caret]]
-          [:ul {:class "dropdown-menu" :aria-labelledby "admindropdownmenu"}
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! [admin-send-message-modal item-type item-id mail]))}
-                 (t :admin/Sendmessage)]]
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! (admin-private-modal item-type item-id "" "")))}
-                 (t :admin/Private)]]
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! [admin-delete-modal item-type item-id mail]))}
-                 (t :admin/Delete)]]
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! [admin-lock-user-modal item-type item-id "" ""]))}
-                 (t :admin/Lockuser)]]]]]])))
 
 (defn admintool[user-id]
    (if (admin?)  
      (let [{:keys [item-type item-id]} (checker (current-path))
            mail (atom {:subject ""
                        :message ""})]
-       
        [:div.row
         [m/modal-window]
         [:div {:class "pull-right"}
@@ -232,30 +235,78 @@
           [:button {:class "btn btn-default dropdown-toggle" :type "button" :id "admindropdownmenu" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "true"} "admin tools"
            [:span.caret]]
           [:ul {:class "dropdown-menu" :aria-labelledby "admindropdownmenu"}
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! [admin-send-message-modal user-id  mail]))}
-                 (t :admin/Sendmessage)]]
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! (admin-private-modal item-type item-id "" "")))}
-                 (t :admin/Private)]]
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! [admin-delete-modal item-type item-id mail]))}
-                 (t :admin/Delete)]]
-           [:li [:a {:on-click #(do (.preventDefault %)
-                                    (m/modal! [admin-lock-user-modal item-type item-id "" ""]))}
-                 (t :admin/Lockuser)]]]]]])))
+           (if (not (= item-type "badges"))
+             [:li [:a {:on-click #(do (.preventDefault %)
+                                      (m/modal! [admin-send-message-modal user-id  mail]))}
+                   (t :admin/Sendmessage)]])
+           (if (not (= item-type "user"))
+               [:li [:a {:on-click #(do (.preventDefault %)
+                                        (m/modal! (admin-private-modal item-type item-id "" "")))}
+                     (t :admin/Private)]])
+           (if (not (= item-type "user"))
+             [:li [:a {:on-click #(do (.preventDefault %)
+                                      (m/modal! [admin-delete-modal item-type item-id mail user-id "" ""]))}
+                   (t :admin/Delete)]])
+           (if (not (= item-type "badges"))
+             [:li [:a {:on-click #(do (.preventDefault %)
+                                      (m/modal! [admin-lock-user-modal user-id mail]))}
+                   (t :admin/Lockuser)]])]]]])))
 
-(defn private-gallery-badge [item-id item-type state init-data]
+(defn admin-gallery-badge1 [item-id item-type state init-data]
   (if (admin?)
-    [:a {:class "bottom-link pull-right"
-         :on-click #(do (.preventDefault %)
-                        (m/modal! (admin-gallery-modal item-type item-id state init-data) ))}
-     [:i {:class "fa fa-lock"}] (t :admin/Private)]))
+    (let [mail (atom {:subject ""
+                      :message ""})]
+      [:div {:class "dropup"}
+       [:a {:class "bottom-link pull-right dropdown-toggle" :type "button" :id "admindropdownmenu" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "true"} 
+        "Admin tools" [:i {:class "fa fa-caret-up admintool-caret-up" :aria-hidden "true"}]]
+       [:ul {:class "dropdown-menu pull-right" :aria-labelledby "admindropdownmenu"}
+        
+        (if (not (= item-type "user"))
+          [:li [:a {:on-click #(do (.preventDefault %)
+                                   (m/modal! (admin-private-modal item-type item-id state init-data) ))}
+                (t :admin/Private)]])
+        (if (not (= item-type "user"))
+          [:li [:a {:on-click #(do (.preventDefault %)
+                                   (m/modal! [admin-delete-modal item-type item-id mail nil state init-data]))}
+                (t :admin/Delete)]])]])))
 
-(defn private-gallery-page [item-id item-type state init-data]
+(defn open-modal [item-id item-type state init-data mail]
+  (ajax/GET
+    (path-for (str "/obpv1/gallery/public_badge_content/" item-id))
+    {:handler (fn [data]
+                (m/modal! [admin-modal item-type item-id mail nil state init-data data] {:size :lg}))}))
+
+
+(defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
-    [:div.media-bottom-admin
-     [:a {:class "bottom-link pull-right"
-          :on-click #(do (.preventDefault %)
-                         (m/modal! (admin-gallery-modal item-type item-id state init-data) ))}
-      [:i {:class "fa fa-lock"}] (t :admin/Private)]]))
+    (let [mail (atom {:subject ""
+                      :message ""})]
+      [:div
+       [:a {:class "bottom-link pull-right"
+            :on-click #(do (.preventDefault %)
+                           (open-modal item-id item-type state init-data mail))}
+        [:i {:class "fa fa-lock"}] "admin tools"]])))
+
+
+
+(defn admintool-gallery-page [item-id item-type state init-data user-id]
+  (if (and (admin?) (not (= user-id (session/get-in [:user :id]))))
+    (let [mail (atom {:subject ""
+                      :message ""})]
+      [:div {:class "dropup media-bottom-admin"}
+       [:a {:class "bottom-link pull-right dropdown-toggle" :type "button" :id "admindropdownmenu" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "true"} 
+        "Admin tools" [:i {:class "fa fa-caret-up admintool-caret-up" :aria-hidden "true"}]]
+       [:ul {:class "dropdown-menu pull-right" :aria-labelledby "admindropdownmenu"}
+        [:li [:a {:on-click #(do (.preventDefault %)
+                                      (m/modal! [admin-send-message-modal user-id  mail]))}
+              (t :admin/Sendmessage)]]
+        [:li [:a {:on-click #(do (.preventDefault %)
+                                   (m/modal! (admin-private-modal item-type item-id state init-data) ))}
+                (t :admin/Private)]]
+        [:li [:a {:on-click #(do (.preventDefault %)
+                                   (m/modal! [admin-delete-modal item-type item-id mail user-id state init-data]))}
+                (t :admin/Delete)]]
+        
+        [:li [:a {:on-click #(do (.preventDefault %)
+                                      (m/modal! [admin-lock-user-modal user-id mail]))}
+                   (t :admin/Lockuser)]]]])))

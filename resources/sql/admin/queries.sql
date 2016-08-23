@@ -2,22 +2,22 @@
 SELECT language FROM user WHERE id = :id
 
 --name: total-user-count
-SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1;
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND deleted = 0;
 
 --name: count-logged-users-after-date
-SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time;
+SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login > :time AND deleted = 0;
 
 --name: count-registered-users-after-date
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :time;
 
 --name: count-all-badges
-SELECT COUNT(DISTINCT id) AS count FROM badge;
+SELECT COUNT(DISTINCT id) AS count FROM badge WHERE deleted = 0 AND status != 'declined';
 
 --name: count-all-badges-after-date
-SELECT COUNT(DISTINCT id) AS count FROM badge WHERE ctime > :time;
+SELECT COUNT(DISTINCT id) AS count FROM badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
 
 --name: count-all-pages
-SELECT COUNT(DISTINCT id) AS count FROM page;
+SELECT COUNT(DISTINCT id) AS count FROM page WHERE  deleted = 0;
 
 --name: select-user-admin
 SELECT role FROM user WHERE id= :id;
@@ -52,10 +52,40 @@ UPDATE report_ticket SET status  = 'closed', mtime = UNIX_TIMESTAMP() WHERE id =
 --name: update-badge-deleted!
 UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
+--name: update-page-deleted!
+UPDATE page SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: update-user-deleted!
+UPDATE user SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
 --name: select-user-and-email
 SELECT first_name, last_name, ue.email FROM user AS u
 JOIN user_email AS ue ON u.id = ue.user_id
-WHERE id=:id AND ue.primary_address=1
+WHERE id= :id AND ue.primary_address = 1
+
+--name: select-users-email
+SELECT email FROM user_email
+       WHERE user_id IN (:user_id) AND primary_address = 1
 
 --name: select-user-id-by-badge-id
 SELECT user_id FROM badge WHERE id=:id
+
+--name: select-users-id-by-badge-content-id
+select user_id from badge WHERE badge_content_id = :badge_content_id
+
+
+
+--name: update-user-pages-set-private!
+UPDATE page SET visibility = 'private' WHERE user_id = :user_id
+
+--name: update-user-badges-set-private!
+UPDATE badge SET visibility = 'private' WHERE user_id = :user_id
+
+--name: delete-user-badge-views!
+DELETE FROM badge_view WHERE user_id = :user_id
+
+--name: delete-user-badge-congratulations!
+DELETE FROM badge_congratulation WHERE user_id = :user_id
+
+--name: update-badge-deleted!
+UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_content_id = :badge_content_id

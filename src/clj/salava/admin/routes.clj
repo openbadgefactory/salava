@@ -83,11 +83,44 @@
                    :return (s/enum "success" "error")
                    :summary "Delete badge"
                    :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 user-id :- s/Int]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-badge! ctx id user-id subject message)))
+
+             (POST "/delete_badges/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete badge"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 user-id :- (s/maybe s/Int)]
+                   :path-params [id :- s/Str]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-badges! ctx id subject message)))
+
+             (POST "/delete_page/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete page"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 user-id :- s/Int]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-page! ctx id  user-id subject message)))
+
+             (POST "/delete_user/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete user"
+                   :body-params [subject :- s/Str
                                  message :- s/Str]
                    :path-params [id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/delete-badge! ctx id subject message)))
+                   (ok (a/delete-user! ctx id subject message)))
 
              (POST "/ticket" []
                    :return (s/enum "success" "error")

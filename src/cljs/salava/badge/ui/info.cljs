@@ -12,7 +12,7 @@
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
-            [salava.admin.ui.admintool :refer [private-this-page]]
+            [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn toggle-visibility [state]
@@ -84,8 +84,7 @@
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.col-sm-12
-             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
-           (private-this-page))
+             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
@@ -177,7 +176,8 @@
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
-        (if owner? ""(reporttool id name "badge"))]]])))
+         (if owner? "" (reporttool id name "badge"))
+         (admintool owner)]]])))
 
 (defn init-data [state id]
   (ajax/GET
