@@ -170,7 +170,7 @@
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
          (if owner? "" (reporttool id name "badge"))
-         (admintool owner)]]])))
+         (admintool)]]])))
 
 (defn init-data [state id]
   (ajax/GET

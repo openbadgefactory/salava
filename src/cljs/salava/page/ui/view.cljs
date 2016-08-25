@@ -82,7 +82,7 @@
      (if (:owner? page)
        ""
        (reporttool (:id page)  (:name page) "page"))
-     (admintool (:user_id page))
+     (admintool)
      ]))
 
 (defn content [state]

@@ -13,6 +13,49 @@
 (s/defschema User-name-and-email {:name s/Str
                                   :email s/Str})
 
+(s/defschema User {:name s/Str
+                   :image_file (s/maybe s/Str)
+                   :item_owner_id (s/maybe s/Int)
+                   :item_owner s/Str
+                   :info {:emails [(s/maybe s/Str)]
+                          :ctime s/Int
+                          :last_login s/Int}})
+
+(s/defschema Page {:name s/Str
+                   :image_file (s/maybe s/Str)
+                   :item_owner_id (s/maybe s/Int)
+                   :item_owner s/Str
+                   :info {}})
+
+
+(s/defschema Badge {:name s/Str
+                    :image_file (s/maybe s/Str)
+                    :item_owner_id (s/maybe s/Int)
+                    :item_owner s/Str
+                    :info {:issuer_content_name (s/maybe s/Str)
+                           :issuer_content_url  (s/maybe s/Str)
+                           :issuer_contact      (s/maybe s/Str)
+                           :issuer_image        (s/maybe s/Str)
+                           :creator_name        (s/maybe s/Str)
+                           :creator_url         (s/maybe s/Str)
+                           :creator_email       (s/maybe s/Str)
+                           :creator_image       (s/maybe s/Str)
+                           }})
+
+(s/defschema Badges {:name s/Str
+                     :image_file (s/maybe s/Str)
+                     :item_owner_id [(s/maybe s/Int)]
+                     :item_owner [s/Str]
+                     :info {:issuer_content_name (s/maybe s/Str)
+                            :issuer_content_url  (s/maybe s/Str)
+                            :issuer_contact      (s/maybe s/Str)
+                            :issuer_image        (s/maybe s/Str)
+                            :creator_name        (s/maybe s/Str)
+                            :creator_url         (s/maybe s/Str)
+                            :creator_email       (s/maybe s/Str)
+                            :creator_image       (s/maybe s/Str)
+                            }})
+
 (s/defschema Report {:description (s/maybe s/Str)
                      :report_type (s/enum "inappropriate" "bug" "mistranslation" "other" "fakebadge")
                      :item_content_id  (s/maybe s/Str)

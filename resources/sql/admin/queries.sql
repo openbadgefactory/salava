@@ -87,5 +87,5 @@ DELETE FROM badge_view WHERE user_id = :user_id
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
---name: update-badge-deleted!
+--name: update-badge-deleted-by-badge-content-id! 
 UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_content_id = :badge_content_id

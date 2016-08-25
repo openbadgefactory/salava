@@ -133,7 +133,7 @@
          [page-grid pages profile_picture]
          [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
       (reporttool user-id fullname "user")
-      (admintool user-id)]]))
+      (admintool)]]))
 
 (defn init-data [user-id state]
   (ajax/GET
