@@ -1,7 +1,9 @@
 (ns salava.admin.schemas
   (:require [schema.core :as s
              :include-macros true ;; cljs only
-             ]))
+             ]
+            [salava.core.countries :refer [all-countries]]
+            [salava.user.schemas :as u]))
 
 (s/defschema Stats {:register-users (s/maybe s/Int)
                     :last-month-active-users (s/maybe s/Int)
@@ -80,3 +82,22 @@
 
 (s/defschema Url-parser {:item-type (s/enum "badge" "page" "user")
                          :item-id   (s/maybe s/Int)})
+
+
+
+(s/defschema UserSearch {:name          (s/constrained s/Str #(and (>= (count %) 0)
+                                                                   (<= (count %) 255)))
+                         :country       (apply s/enum (conj (keys all-countries) "all"))
+                         :common_badges s/Bool
+                         :order_by      (s/enum "name" "ctime" "common_badge_count")})
+
+(s/defschema UserProfiles (-> u/User
+                              (select-keys [:first_name :last_name :country :deleted])
+                              (merge {:id s/Int
+                                      :ctime s/Int
+                                      :email (s/maybe s/Str)})))
+
+(s/defschema Countries (s/constrained [s/Str] (fn [c]
+                                                (and
+                                                  (some #(= (first c) %) (keys all-countries))
+                                                  (some #(= (second c) %) (vals all-countries))))))

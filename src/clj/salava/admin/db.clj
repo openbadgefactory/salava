@@ -6,6 +6,7 @@
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.core.time :refer [unix-time get-date-from-today]]
+            [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
             [salava.badge.main :as b]
             [salava.page.main :as p]
@@ -234,5 +235,43 @@
               :image_file (:profile_picture user)
               :item_owner_id (:user_id page)
               :item_owner (str (:first_name page) " " (:last_name page))
-              :info {}))
-  )
+              :info {})))
+
+(defn profile-countries [ctx user-id]
+  (let [current-country (g/user-country ctx user-id)
+        countries (g/select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (-> all-countries
+        (select-keys (conj countries current-country))
+        (sort-countries)
+        (seq))))
+
+(defn public-profiles
+  "Search public user profiles by user's name and country"
+  [ctx search-params user-id]
+  (let [{:keys [name country common_badges order_by]} search-params
+        where ""
+        order (case order_by
+                "ctime" " ORDER BY ctime DESC"
+                "name" " ORDER BY last_name, first_name"
+                "")
+        params []
+        [where params] (if-not (or (empty? country) (= country "all"))
+                         [(str where " AND country = ?") (conj params country)]
+                         [where params])
+        [where params] (if-not (empty? name)
+                         [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
+                         [where params])
+        query (str "SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email) AS email
+                    FROM user AS u
+                    JOIN user_email AS ue ON u.id = ue.user_id
+
+                    "
+                   where
+                   order
+                   "GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted"
+                   )
+        profiles (jdbc/with-db-connection
+                   [conn (:connection (get-db ctx))]
+                   (jdbc/query conn (into [query] params)))]
+    (->> profiles
+           (take 100))))

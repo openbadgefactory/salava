@@ -16,7 +16,8 @@
     (context "/admin" []
              (layout/main ctx "/")
              (layout/main ctx "/tickets")
-             (layout/main ctx "/statistics"))
+             (layout/main ctx "/statistics")
+             (layout/main ctx "/userlist"))
 
     (context "/obpv1/admin" []
              :tags ["admin"]
@@ -178,5 +179,15 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/close-ticket! ctx id)))
+
+             (POST "/profiles" []
+                   :return {:users [schemas/UserProfiles]
+                            :countries [schemas/Countries]}
+                   :body [search-params schemas/UserSearch]
+                   :summary "Get public user profiles"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok {:users     (a/public-profiles ctx search-params (:id current-user))
+                        :countries (a/profile-countries ctx (:id current-user))}))
 
              )))

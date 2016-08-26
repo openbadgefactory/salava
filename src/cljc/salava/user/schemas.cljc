@@ -34,7 +34,8 @@
                                                                (<= (count %) 50)))
                    :profile_visibility (s/enum "public" "internal")
                    :profile_picture (s/maybe s/Str)
-                   :about (s/maybe s/Str)})
+                   :about (s/maybe s/Str)
+                   :deleted (s/enum true false)})
 
 (s/defschema RegisterUser (dissoc User :password :password_verify :profile_visibility :profile_picture :about))
 
