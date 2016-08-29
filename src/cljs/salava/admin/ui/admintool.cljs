@@ -45,10 +45,10 @@
                        :item_owner_id nil
                        :image_file    nil
                        :name          ""
-                       :info          {:created     "20.2.2010"
-                                       :description "joo jee"}
+                       :info          {}
                        :gallery-state gallery-state
-                       :init-data init-data})]
+                       :init-data init-data
+                       :success ""})]
      (ajax/GET
       (path-for (str "/obpv1/admin/"item-type"/" item-id))
       {:handler (fn [data]
@@ -63,10 +63,12 @@
   (if (admin?)
     [:div
      [m/modal-window]
-     [:a {:class    "bottom-link pull-right"
-          :on-click #(do (.preventDefault %)
-                         (open-admintool-modal))}
-      [:i {:class "fa fa-lock"}] "admin tools"]]))
+     [:div {:id "buttons"
+            :class "text-right"}
+      [:button {:class    "btn btn-primary text-right"
+                :on-click #(do (.preventDefault %)
+                               (open-admintool-modal))}
+       "admintools"]]]))
 
 (defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)

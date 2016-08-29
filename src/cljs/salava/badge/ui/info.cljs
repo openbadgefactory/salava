@@ -84,7 +84,8 @@
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.col-sm-12
-             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]])
+             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
+           (admintool))
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
@@ -169,8 +170,7 @@
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
-         (if owner? "" (reporttool id name "badge"))
-         (admintool)]]])))
+         (if owner? "" (reporttool id name "badge"))]]])))
 
 (defn init-data [state id]
   (ajax/GET

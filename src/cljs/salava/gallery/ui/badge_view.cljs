@@ -16,10 +16,11 @@
     [:div {:id "badge-gallery-view"}
      [:div.panel
       [:div.panel-body
+       (admintool)
        [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
+       
        [badge-content content]]
       (reporttool badge-content-id name "badges")
-      (admintool)
       ]]))
 
 (defn init-data [state badge-content-id]

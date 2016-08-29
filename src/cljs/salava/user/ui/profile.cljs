@@ -88,7 +88,8 @@
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
-          [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)]]])
+          [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)]]]
+        (admintool))
       [:h1.uppercase-header fullname]
       [:div.row
        [:div {:class "col-md-4 col-sm-4 col-xs-12"}
@@ -132,8 +133,7 @@
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
          [page-grid pages profile_picture]
          [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
-      (reporttool user-id fullname "user")
-      (admintool)]]))
+      (reporttool user-id fullname "user")]]))
 
 (defn init-data [user-id state]
   (ajax/GET

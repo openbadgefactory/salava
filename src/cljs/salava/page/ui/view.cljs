@@ -77,12 +77,14 @@
                    :on-change #(toggle-visibility (:id page) visibility-atom)
                    :checked     (= @visibility-atom "public")}]
           (t :core/Publishandshare)]]
-        [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]])
+        [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]
+       (admintool)
+       
+       )
      [ph/view-page page]
      (if (:owner? page)
        ""
        (reporttool (:id page)  (:name page) "page"))
-     (admintool)
      ]))
 
 (defn content [state]
