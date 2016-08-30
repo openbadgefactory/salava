@@ -48,7 +48,7 @@
                        :info          {}
                        :gallery-state gallery-state
                        :init-data init-data
-                       :success ""})]
+                       :status ""})]
      (ajax/GET
       (path-for (str "/obpv1/admin/"item-type"/" item-id))
       {:handler (fn [data]
@@ -68,7 +68,7 @@
       [:button {:class    "btn btn-primary text-right"
                 :on-click #(do (.preventDefault %)
                                (open-admintool-modal))}
-       "admintools"]]]))
+      (t :admin/Admintools)]]]))
 
 (defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
@@ -77,7 +77,7 @@
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "badges" item-id state init-data))}
-      [:i {:class "fa fa-lock"}] "admin tools"]]))
+      [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
 
 (defn admintool-gallery-page [item-id item-type state init-data user-id]
   (if (admin?)
@@ -86,7 +86,7 @@
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "page" item-id state init-data))}
-      [:i {:class "fa fa-lock"}] "admin tools"]]))
+      [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
 
 
 

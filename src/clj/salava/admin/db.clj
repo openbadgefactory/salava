@@ -129,8 +129,10 @@
 (defn delete-badges! [ctx badge-content-id subject message]
   (try+
    (let [user-ids (select-users-id-by-badge-content-id {:badge_content_id badge-content-id}(into {:row-fn :user_id} (get-db ctx)))
-         users-email (select-users-email {:user_id user-ids} (into {:result-set-fn vec :row-fn :email} (get-db ctx)))]     
-     (m/send-mail ctx subject message users-email)
+         users-email (select-users-email {:user_id user-ids} (into {:result-set-fn vec :row-fn :email} (get-db ctx)))]
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message users-email))
+     
      (update-badge-deleted-by-badge-content-id! {:badge_content_id badge-content-id} (get-db ctx))
      
      )
@@ -142,7 +144,8 @@
   (try+
    (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
      (dump (:email user))
-     (m/send-mail ctx subject message [(:email user)])
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [(:email user)]))
      (update-page-deleted! {:id id} (get-db ctx))
      )
    "success"
@@ -153,7 +156,9 @@
   (try+
    (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
      (dump (:email user))
-     (m/send-mail ctx subject message [(:email user)])
+
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [(:email user)]))
      (update-user-pages-set-private! {:user_id user-id}(get-db ctx))
      (update-user-badges-set-private! {:user_id user-id}(get-db ctx))
      (delete-user-badge-congratulations! {:user_id user-id}(get-db ctx))
@@ -167,7 +172,8 @@
 (defn send-message [ctx user_id subject message]
   (try+
    (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
-     (m/send-mail ctx subject message [(:email user)])
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [(:email user)]))
      )
    "success"
    (catch Object _
