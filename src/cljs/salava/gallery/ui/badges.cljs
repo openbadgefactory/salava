@@ -124,7 +124,8 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (str "/" image_file)}]])
+          [:a {:href "#" :on-click #(open-modal badge-id) :title name}[:img {:src (str "/" image_file)
+                 :alt name}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(open-modal badge-id) :title name}
@@ -140,8 +141,9 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       [:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
-       (private-gallery-badge badge-id "badges" state init-data)]]]))
+       ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
+       ;(private-gallery-badge badge-id "badges" state init-data)
+       ]]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)

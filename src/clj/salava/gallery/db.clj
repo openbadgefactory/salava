@@ -43,7 +43,7 @@
                     LEFT JOIN user AS u ON b.user_id = u.id
                     WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())"
                    where
-                   " GROUP BY bc.id
+                   " GROUP BY bc.id, bc.name, bc.image_file, bc.description, b.mtime, ic.name, ic.url, badge_content_id, b.ctime 
                     ORDER BY b.ctime DESC
                     LIMIT 100")
         badgesearch (jdbc/with-db-connection

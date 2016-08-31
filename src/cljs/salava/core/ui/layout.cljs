@@ -48,8 +48,11 @@
   [:div {:class "navbar-header"}
    [:a {:class "logo pull-left"
         :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
-        :title (session/get :site-name)}
-    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
+        :title (session/get :site-name)
+        :aria-label "to index"}
+    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
+          :title "OBP logo"
+          :aria-label "OBP logo"}]
     [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]
   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
     [:span {:class "icon-bar"}]
@@ -70,18 +73,20 @@
           (t :user/Logout)]]]
    [:div.userpic
     [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
-     [:img {:src (profile-picture (session/get-in [:user :profile_picture]))}]]]])
+     [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
+            :alt "profile picture"}]]]])
 
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
      [:div {:class "container-fluid"}
       (top-navi-header)
+      (top-navi-right)
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (for [i items]
           (navi-link i))]
-       (top-navi-right)]]]))
+       ]]]))
 
 (defn top-navi-landing [site-navi]
   (let [items (top-navi-landing-list (:navi-items site-navi))]
@@ -90,9 +95,10 @@
       [:div {:class "navbar-header pull-left"}
        [:a {:class "logo"
             :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
-            :title (session/get :site-name)}
-        [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
-        [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]]
+            :title (session/get :site-name)
+            :aria-label "to index"}
+        [:div {:class "logo-image logo-image-url hidden-xs hidden-sm" :aria-label "OBP logo"}]
+        [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm" :aria-label "OBP logo"}]]]
       [:div {:id    "main-header"
               :class "navbar-header pull-right"}
         [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
@@ -129,10 +135,10 @@
 (defn breadcrumb [site-navi]
   (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))]
     (if matched-route
-      [:h2 (get-in site-navi [:navi-items matched-route :breadcrumb])])))
+      [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb])])))
 
 (defn default-0 [top-items sub-items heading content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi top-items)]
    (if-not (empty? heading)
@@ -147,7 +153,7 @@
 
 
 (defn default [site-navi content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi site-navi)]
    [:img {:id "print-logo" :src "/img/logo.png"}]
@@ -161,7 +167,7 @@
    (footer site-navi)])
 
 (defn default-no-sidebar [site-navi content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi site-navi)]
    [:div {:class "title-row"}
@@ -176,7 +182,7 @@
 
 
 (defn landing-page [site-navi content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi-landing site-navi)]
    [:div {:class "container main-container"}

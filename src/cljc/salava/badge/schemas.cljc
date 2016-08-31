@@ -63,7 +63,8 @@
                            (s/optional-key :assertion_url)       (s/maybe s/Str)
                            (s/optional-key :tags)                (s/maybe [s/Str])})
 
-(s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :email :assertion_url :tags]))
+(s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :email :assertion_url :tags :issuer_content_name 
+                    :issuer_url]))
 
 (s/defschema BadgeToImport {:status  (s/enum "ok" "invalid")
                             :message (s/maybe s/Str)

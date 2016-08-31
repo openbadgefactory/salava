@@ -65,6 +65,7 @@
    [upload-info]
    [:form {:id "form"}
     [:input {:type "file"
+             :aria-label "Choose file"
              :name "file"
              :on-change #(send-file)
              :accept "image/png, image/svg+xml"}]]])

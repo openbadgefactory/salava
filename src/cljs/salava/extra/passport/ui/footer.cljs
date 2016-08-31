@@ -16,4 +16,4 @@
      [:a {:class "bottom-link" :href "mailto:contact@openbadgefactory.com?Subject=Contact%20request" }
       "contact@openbadgefactory.com"]]
     [:p.text-muted
-     "Open Badge Factory ® is a registered trademark"]]])
+     "Open Badge Factory ® and Open Badge Passport ® are registered trademarks"]]])

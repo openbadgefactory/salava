@@ -365,7 +365,17 @@
                 :rating       rating}]
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id)
-      (send-badge-info-to-obf ctx badge-id user-id)
+      ;(send-badge-info-to-obf ctx badge-id user-id)
+      {:status "success"})
+    {:status "error"}))
+    
+(defn save-badge-raiting!
+  "Update badge raiting"
+  [ctx badge-id user-id rating]
+  (if (badge-owner? ctx badge-id user-id)
+    (let [data {:id          badge-id
+                :rating       rating}]
+      (update-badge-raiting! data (get-db ctx))
       {:status "success"})
     {:status "error"}))
 

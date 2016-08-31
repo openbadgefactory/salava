@@ -18,6 +18,7 @@
   [:input {:type        "text"
            :class       "form-control"
            :placeholder (t :badge/Typetag)
+           :id          "newtags"
            :value       @new-tag-atom
            :on-change   #(reset! new-tag-atom (-> % .-target .-value))
            :on-key-down #(if (= (.-which %) 13)

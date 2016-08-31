@@ -72,50 +72,100 @@
                 (m/modal! [s/settings-modal data state init-data]
                           {:size :lg}))}))
 
+(defn delete-badge [id state init-data]
+  (ajax/DELETE
+    (path-for (str "/obpv1/badge/" id))
+    {:handler
+      (fn []
+        (init-data state)
+        (m/close-modal!))}))
+        
+(defn num-days-left [timestamp]
+  (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400))
+)
+
+(defn delete-badge-modal [id state init-data]
+  [:div
+   [:div.modal-header
+    [:button {:type "button"
+              :class "close"
+              :data-dismiss "modal"
+              :aria-label "OK"}
+     [:span {:aria-hidden "true"
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+   [:div.modal-body
+    [:div {:class (str "alert alert-warning")}
+     (t :badge/Confirmdelete)]]
+   [:div.modal-footer
+    [:button {:type "button"
+              :class "btn btn-primary"
+              :data-dismiss "modal"}
+     (t :core/Cancel)]
+    [:button {:type "button"
+              :class "btn btn-warning"
+              :on-click #(delete-badge id state init-data)}
+     (t :core/Delete)]]])
+
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description visibility expires_on revoked]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
-      [:div {:class (str "media-content " (if expired? "media-expired"))}
+      [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
+      (cond
+        expired? [:div.icons
+                  [:div.lefticon [:i {:class "fa fa-history"}] (t :badge/Expired)]
+                  [:a.righticon {:class "righticon expired" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
+                                    {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]]
+        revoked  [:div.icons
+                  [:div.lefticon [:i {:class "fa fa-ban"}] (t :badge/Revoked)]
+                  [:a.righticon {:class "righticon revoked" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
+                                    {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]]
+        :else [:div.icons
+                [:a.visibility-icon {:on-click #(do (.preventDefault %) (show-settings-dialog id state)) :title (t :badge/Settings)}
+             (case visibility
+               "private" [:i {:class "fa fa-lock"}]
+               "internal" [:i {:class "fa fa-group"}]
+               "public" [:i {:class "fa fa-globe"}]
+               nil)]
+               (if expires_on
+                [:div.righticon
+                  [:i {:title (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))
+                       :class "fa fa-hourglass-half"}]])])
        (if image_file
          [:div.media-left
-          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)}]]])
+          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)
+                                                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href badge-link} name]]
-        [:div.visibility-icon
-         (case visibility
-           "private" [:i {:class "fa fa-lock"
-                          :title (t :badge/Private)}]
-           "internal" [:i {:class "fa fa-group"
-                           :title (t :badge/Shared)}]
-           "public" [:i {:class "fa fa-globe"
-                         :title (t :badge/Public)}]
-           nil)]
-        (if expires_on
-          [:div.media-expires (if expired? (t :badge/Expiredon) (t :badge/Expireson)) ": " (date-from-unix-time (* expires_on 1000))])
-        [:div.media-description
-         description]]]
-      [:div {:class "media-bottom"}
-       (cond
-         expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)
-                   [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
-                    [:i {:class "fa fa-cog"}]
-                    [:span (t :badge/Settings)]]]
-         revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)
-                  [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
-                   [:i {:class "fa fa-cog"}]
-                   [:span (t :badge/Settings)]]]
-         :else [:div
-                [:a {:class "bottom-link" :href (path-for (str "/badge/info/" id))}
-                 [:i {:class "fa fa-share-alt"}]
-                 [:span (t :badge/Share)]]
-                [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
-                 [:i {:class "fa fa-cog"}]
-                 [:span (t :badge/Settings)]]])]]]))
+         [:a.heading-link {:href badge-link :id (str id "-heading")} name]]
+        [:div.media-issuer
+         [:a {:href issuer_content_url
+              :target "_blank"
+              :title issuer_content_name} issuer_content_name]]
+          ;(if expires_on
+          ;[:div.media-expires (if expired? (t :badge/Expiredon) (t :badge/Expireson)) ": " (num-days-left (* expires_on 1000))])
+          ]]
+      ;[:div {:class "media-bottom"}
+      ; (cond
+      ;   expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)
+      ;             [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))
+      ;                  :aria-describedby name :title (t :badge/Delete)}
+      ;              [:i {:class "fa fa-trash"}]]]
+      ;   revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)
+      ;            [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))
+      ;                 :aria-describedby name :title (t :badge/Delete)}
+      ;             [:i {:class "fa fa-trash"}]]]
+      ;   :else [:div
+      ;          [:a {:class "bottom-link" :href (path-for (str "/badge/info/" id))
+      ;               :aria-labelledby (str id "-heading " id "-share") :title (t :badge/Share)}
+      ;           [:i {:class "fa fa-share-alt"}]]
+      ;          [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))
+      ;               :aria-describedby name :title (t :badge/Settings)}
+      ;           [:i {:class "fa fa-cog"}]]])]
+                 ]]))
 
 (defn badge-grid [state]
   (let [badges (:badges @state)

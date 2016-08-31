@@ -45,41 +45,46 @@
         (not= (.indexOf (.toLowerCase (:name element)) (.toLowerCase (:search @state))) -1))))
 
 (defn grid-element [element-data state]
-  (let [{:keys [id image_file name description visibility assertion_url]} element-data]
+  (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:img {:src (str "/" image_file)}]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.badge-link {:href (path-for (str "/badge/info/" id))}
-          name]]
-        [:div.visibility-icon
+      [:div.visibility-icon
          (case visibility
            "private" [:i {:class "fa fa-lock"}]
            "internal" [:i {:class "fa fa-group"}]
            "public" [:i {:class "fa fa-globe"}]
            nil)]
-        [:div.media-description description]]]
+       (if image_file
+         [:div.media-left
+          [:a {:href (path-for (str "/badge/info/" id))}[:img {:src (str "/" image_file)
+                 :alt name}]]])
+       [:div.media-body
+        [:div.media-heading
+         [:a.badge-link {:href (path-for (str "/badge/info/" id))}
+          name]]
+        [:div.media-issuer
+         [:a {:href issuer_content_url
+              :target "_blank"
+              :title issuer_content_name} issuer_content_name]]]]
       [:div {:class "media-bottom"}
        [:div.row
-        [:div.col-xs-8
+        [:div.col-xs-9
          (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
            [:div.checkbox
-            [:label
+            [:label {:for (str "checkbox-" id)}
              [:input {:type "checkbox"
+                      :id (str "checkbox-" id)
                       :on-change (fn []
                                    (if checked?
                                      (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
                                      (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
                       :checked checked?}]
-             (t :badge/Exporttobackpack)]])]
-        [:div {:class "col-xs-4 text-right"}
-         [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download"}
-          [:i {:class "fa fa-download"}]]]]]]]))
+              (t :badge/Export) [:span {:class "reader-only"} name ]]])]
+        [:div {:class "col-xs-3 text-right"}
+         [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download" :aria-label (str "export " name " to backpack")}
+          [:i {:class "fa fa-download" }]]]]]]]))
 
 (defn badge-grid [state]
   [:div {:class "row"

@@ -118,9 +118,10 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
+                        :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
-        [:img {:src (u/profile-picture profile_picture)}]]]
+        [:a {:href (path-for (str "/user/profile/" user_id))} [:img {:src (u/profile-picture profile_picture) :alt (str first_name " " last_name)}]]]]
       (private-gallery-page id "page" state init-data)]]))
 
 (defn page-gallery-grid [state]

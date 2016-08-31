@@ -15,11 +15,11 @@
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Badgeviews) ":"] " (" total-views ")"]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
-        [:table.table
+        [:table {:class "table" :summary (t :badge/Badgeviews)}
          [:thead
           [:tr
-           [:th]
-           [:th]
+           [:th (t :badge/Badge)]
+           [:th (t :badge/Name)]
            [:th (t :badge/Loggedinusers)]
            [:th (t :badge/Anonymoususers)]
            [:th (t :badge/Latestview)]]]
@@ -27,7 +27,8 @@
                (for [badge-views views
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:tr
-                  [:td [:img.badge-icon {:src (str "/" image_file)}]]
+                  [:td [:img.badge-icon {:src (str "/" image_file)
+                                         :alt name}]]
                   [:td.name [:a {:href (path-for (str "/badge/info/" id))} name]]
                   [:td reg_count]
                   [:td anon_count]
@@ -42,18 +43,19 @@
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Congratulations) ":"] " (" total-congratulations ")"]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
-        [:table.table
+        [:table {:class "table" :summary (t :badge/Congratulations)}
          [:thead
           [:tr
-           [:th]
-           [:th]
+           [:th (t :badge/Badge)]
+           [:th (t :badge/Name)]
            [:th (t :badge/Congratulations)]
            [:th (t :badge/Latestcongratulation)]]]
          (into [:tbody]
                (for [badge-congrats congratulations
                      :let [{:keys [id name image_file congratulation_count latest_congratulation]} badge-congrats]]
                  [:tr
-                  [:td [:img.badge-icon {:src (str "/"  image_file)}]]
+                  [:td [:img.badge-icon {:src (str "/"  image_file)
+                                         :alt name}]]
                   [:td.name [:a {:href (path-for (str "/badge/info/" id))} name]]
                   [:td congratulation_count]
                   [:td (if latest_congratulation (date-from-unix-time (* 1000 latest_congratulation)))]]))]])]))

@@ -7,12 +7,21 @@
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.badge.ui.assertion :as a]
+            [salava.badge.ui.settings :as se]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [private-this-page]]))
+
+(defn init-data [state id]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/info/" id))
+    {:handler (fn [data]
+                (reset! state (assoc data :id id
+                                          :show-link-or-embed-code nil
+                                          :initializing false)))}))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -36,11 +45,34 @@
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value}
        :handler (fn [] (swap! state assoc :show_evidence new-value))})))
+       
+(defn show-settings-dialog [badge-id state init-data]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings (hash-map :id badge-id
+                                                             :visibility (:visibility data)
+                                                             :tags (:tags data)
+                                                             :evidence-url (:evidence_url data)
+                                                             :rating (:rating data)
+                                                             :new-tag ""))
+                (m/modal! [se/settings-modal data state init-data true]
+                          {:size :lg}))}))
+
+(defn save-raiting [id state init-data raiting]
+    (ajax/POST
+      (path-for (str "/obpv1/badge/save_raiting/" id))
+      {:params   {:rating  (if (pos? raiting) raiting nil)}
+       :handler (fn []
+                  (init-data state id))}))
 
 (defn congratulate [state]
   (ajax/POST
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
+    
+(defn num-days-left [timestamp]
+  (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
 (defn content [state]
   (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner]} @state
@@ -56,34 +88,22 @@
         [:div.panel-body
          (if (and owner? (not expired?) (not revoked))
            [:div.row {:id "badge-share-inputs"}
-            [:div.col-sm-3
-             [:div.checkbox
-              [:label
-               [:input {:type      "checkbox"
-                        :on-change #(toggle-visibility state)
-                        :checked   (= visibility "public")}]
-               (t :core/Publishandshare)]]]
-            [:div.col-sm-3
-             [:div.checkbox
-              [:label
-               [:input {:type      "checkbox"
-                        :on-change #(toggle-recipient-name id show-recipient-name-atom)
-                        :checked   @show-recipient-name-atom}]
-               (t :badge/Showyourname)]]]
-            (if evidence_url
-              [:div.col-sm-3
-               [:div.checkbox
-                [:label
-                 [:input {:type      "checkbox"
-                          :on-change #(toggle-evidence state)
-                          :checked   show_evidence}]
-                 (t :badge/Showevidence)]]])
-            [:div {:class "col-sm-3 text-right"}
-             [:button {:class    "btn btn-primary"
+            [:div.pull-left
+             [:div {:class (str "checkbox " visibility)}
+              [:a {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
+               [:i {:class "fa"}]
+               (if (not (= visibility "public"))
+                (t :core/Publishandshare))]]]
+            [:div {:class "pull-right text-right"}
+             [:button {:class "btn btn-primary settings-btn"
+                       :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
+                       (t :badge/Settings)]
+             [:button {:class    "btn btn-primary print-btn"
                        :on-click #(.print js/window)}
               (t :core/Print)]]
-            [:div.col-sm-12
-             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
+            [:div {:class (str "share-wrapper " visibility)}
+             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed]) (str (session/get :site-url) "/" image_file)]]
+            ]
            (private-this-page))
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
@@ -98,7 +118,12 @@
              [:div.row {:id "badge-rating"}
               [:div.col-xs-12
                [:div.rating
-                [r/rate-it rating]]
+               [:div (t :badge/Rating)]
+                [:div
+                {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
+                [r/rate-it rating (cursor state [:badge-settings :rating])]]]
+               (if (and expires_on (not expired?))
+               [:div.expiresin [:i {:class "fa fa-hourglass-half"}] (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))])
                [:div.view-count
                 (cond
                   (= view_count 1) (t :badge/Viewedonce)
@@ -176,13 +201,7 @@
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])]]]]])))
 
-(defn init-data [state id]
-  (ajax/GET
-    (path-for (str "/obpv1/badge/info/" id))
-    {:handler (fn [data]
-                (reset! state (assoc data :id id
-                                          :show-link-or-embed-code nil
-                                          :initializing false)))}))
+
 
 
 (defn handler [site-navi params]
