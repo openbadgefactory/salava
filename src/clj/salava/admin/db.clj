@@ -5,7 +5,12 @@
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
-            [salava.core.time :refer [unix-time get-date-from-today]]))
+            [salava.core.time :refer [unix-time get-date-from-today]]
+            [salava.user.db :as u]
+            [salava.badge.main :as b]
+            [salava.page.main :as p]
+            [salava.core.mail :as m]
+            [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
 
@@ -47,7 +52,6 @@
   "Get count from all pages have been created"
   [ctx]
   (count-all-pages {} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
-
 
 (defn get-stats [ctx]
   (try+
@@ -110,3 +114,131 @@
    "success"
    (catch Object _
      "error")))
+
+(defn delete-badge! [ctx id  user-id subject message]
+  (try+
+   (let [user-id (select-user-id-by-badge-id {:id id}(into {:result-set-fn first :row-fn :user_id} (get-db ctx)))
+         user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+     (m/send-mail ctx subject message [(:email user)])
+     (update-badge-deleted! {:id id} (get-db ctx))
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn delete-badges! [ctx badge-content-id subject message]
+  (try+
+   (let [user-ids (select-users-id-by-badge-content-id {:badge_content_id badge-content-id}(into {:row-fn :user_id} (get-db ctx)))
+         users-email (select-users-email {:user_id user-ids} (into {:result-set-fn vec :row-fn :email} (get-db ctx)))]
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message users-email))
+     
+     (update-badge-deleted-by-badge-content-id! {:badge_content_id badge-content-id} (get-db ctx))
+     
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn delete-page! [ctx id user-id subject message]
+  (try+
+   (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+     (dump (:email user))
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [(:email user)]))
+     (update-page-deleted! {:id id} (get-db ctx))
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn delete-user! [ctx user-id subject message]
+  (try+
+   (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+     (dump (:email user))
+
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [(:email user)]))
+     (update-user-pages-set-private! {:user_id user-id}(get-db ctx))
+     (update-user-badges-set-private! {:user_id user-id}(get-db ctx))
+     (delete-user-badge-congratulations! {:user_id user-id}(get-db ctx))
+     (delete-user-badge-views! {:user_id user-id}(get-db ctx))
+     (update-user-deleted! {:id user-id} (get-db ctx))
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn send-message [ctx user_id subject message]
+  (try+
+   (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
+     (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [(:email user)]))
+     )
+   "success"
+   (catch Object _
+     "error")))
+
+
+
+(defn get-user-name-and-primary-email [ctx user_id]
+  (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
+    (hash-map :name (str (:first_name user) " " (:last_name user))
+              :email (:email user))))
+
+
+(defn get-user [ctx user_id]
+  (let [user (u/user-information-with-registered-and-last-login ctx user_id)
+        emails (vec (u/verified-email-addresses ctx user_id))]
+    (hash-map :name (str (:first_name user) " " (:last_name user))
+              :image_file (:profile_picture user)
+              :item_owner_id (:id user)
+              :item_owner (str (:first_name user) " " (:last_name user))
+              :info {:emails emails
+                     :last_login (:last_login user)
+                     :ctime (:ctime user)})))
+
+(defn get-badge-modal [ctx badgeid]
+  (let [badge  (b/get-badge ctx badgeid nil)]
+    (hash-map :name (:name badge)
+              :image_file (:image_file badge)
+              :item_owner_id (:owner badge) 
+              :item_owner (str (:first_name badge) " " (:last_name badge))
+              :info {:issuer_content_name (:issuer_content_name badge)
+                     :issuer_content_url (:issuer_content_url badge)
+                     :issuer_contact (:issuer_contact badge)
+                     :issuer_image (:issuer_image badge)
+                     :creator_name (:creator_name badge)
+                     :creator_url (:creator_url badge)
+                     :creator_email (:creator_email badge)
+                     :creator_image (:creator_image badge)
+                     })))
+
+(defn get-public-badge-content-modal [ctx badge-content-id]
+  (let [badge (g/select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
+        badge-content (g/select-badge-criteria-issuer-by-date {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
+        recipients (g/select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx))]
+    (hash-map :name (:name badge)
+              :image_file (:image_file badge)
+              :item_owner_id  (vec (map :id recipients))
+              :item_owner (vec (map (fn [x] (str (:first_name x) " " (:last_name x))) recipients))
+              :info {:issuer_content_name (:issuer_content_name badge-content)
+                     :issuer_content_url (:issuer_content_url badge-content)
+                     :issuer_contact (:issuer_contact badge-content)
+                     :issuer_image (:issuer_image badge-content)
+                     :creator_name (:creator_name badge-content)
+                     :creator_url (:creator_url badge-content)
+                     :creator_email (:creator_email badge-content)
+                     :creator_image (:creator_image badge-content)
+                     })))
+
+
+(defn get-page-modal [ctx pageid]
+  (let [page  (p/page-with-blocks ctx pageid)
+        user (u/user-information ctx (:user_id page))]
+    (hash-map :name (:name page)
+              :image_file (:profile_picture user)
+              :item_owner_id (:user_id page)
+              :item_owner (str (:first_name page) " " (:last_name page))
+              :info {}))
+  )

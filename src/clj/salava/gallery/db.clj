@@ -134,7 +134,7 @@
         query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
                     JOIN user AS u ON p.user_id = u.id
                     LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
-                    WHERE (visibility = 'public' OR visibility = 'internal')"
+                    WHERE (visibility = 'public' OR visibility = 'internal') AND p.deleted = 0"
                    where
                    " GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
                     ORDER BY p.mtime DESC
@@ -162,7 +162,7 @@
                          [where params])
         query (str "SELECT id, first_name, last_name, country, profile_picture, ctime
                     FROM user
-                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal')"
+                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0"
                    where
                    order)
         profiles (jdbc/with-db-connection

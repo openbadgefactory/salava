@@ -17,8 +17,8 @@
   (let [url-list (vec(re-seq #"\w+" (str url) ))
         type (get url-list 1)
         id  (get url-list 3)]
-    {:item-type (if (valid-item-type? type)  type nil )
-     :item-id (if (valid-item-id? id) id nil )}))
+    {:item-type (if (= type "gallery") "badges" type)
+     :item-id id}))
 
 (defn admin? []
   (let [role (session/get-in [:user :role])]

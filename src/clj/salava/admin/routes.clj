@@ -61,6 +61,99 @@
                    :current-user current-user
                    (ok (a/private-user! ctx id)))
 
+             (POST "/send_message/:user_id" []
+                   :return (s/enum "success" "error")
+                   :summary "send message to user"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str]
+                   :path-params [user_id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/send-message ctx user_id subject message)))
+
+             (GET "/user_name_and_email/:user_id" []
+                  :return schemas/User-name-and-email
+                  :path-params [user_id :- s/Int]
+                  :summary "Get user name and email"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (a/get-user-name-and-primary-email ctx user_id)))
+
+             (GET "/user/:user_id" []
+                  :return schemas/User
+                  :path-params [user_id :- s/Int]
+                  :summary "Get user name, profile image and verified emails"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (a/get-user ctx user_id)))
+
+             (GET "/badge/:id" []
+                  :return schemas/Badge
+                  :path-params [id :- s/Int]
+                  :summary "Get badge name, image and info"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (a/get-badge-modal ctx id)))
+
+             (GET "/badges/:id" []
+                  :return schemas/Badges
+                  :path-params [id :- s/Str]
+                  :summary "Get badges name, image and info"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (a/get-public-badge-content-modal ctx id)))
+             
+             (GET "/page/:id" []
+                  :return schemas/Page
+                  :path-params [id :- s/Int]
+                  :summary "Get page name, image and info"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (ok (a/get-page-modal ctx id)))
+
+             (POST "/delete_badge/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete badge"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 user-id :- s/Int]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-badge! ctx id user-id subject message)))
+
+             (POST "/delete_badges/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete badge"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 user-id :- [(s/maybe s/Int)]]
+                   :path-params [id :- s/Str]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-badges! ctx id subject message)))
+
+             (POST "/delete_page/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete page"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 user-id :- s/Int]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-page! ctx id  user-id subject message)))
+
+             (POST "/delete_user/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete user"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-user! ctx id subject message)))
+
              (POST "/ticket" []
                    :return (s/enum "success" "error")
                    :summary "Create reporting ticket"

@@ -8,7 +8,8 @@
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
-            [salava.admin.ui.reporttool :refer [reporttool]]))
+            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            ))
 
 (defn delete-page [id]
   (ajax/DELETE
@@ -182,7 +183,8 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]
    [:div {:class "modal-footer page-content"}
-   (reporttool (:id page) (:name page) "page") ]
+   ;(reporttool (:id page) (:name page) "page")
+    ]
    ])
 
 (defn view-page-modal [page]

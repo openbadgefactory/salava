@@ -11,7 +11,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.user.ui.helper :as u]
-            [salava.admin.ui.admintool :refer [private-gallery-page]]
+            [salava.admin.ui.admintool :refer [admintool-gallery-page]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
 
 (defn open-modal [page-id]
@@ -121,8 +121,8 @@
                         :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
-        [:a {:href (path-for (str "/user/profile/" user_id))} [:img {:src (u/profile-picture profile_picture) :alt (str first_name " " last_name)}]]]]
-      (private-gallery-page id "page" state init-data)]]))
+        [:img {:src (u/profile-picture profile_picture)}]]]
+      (admintool-gallery-page id "page" state init-data user_id)]]))
 
 (defn page-gallery-grid [state]
   (let [pages (:pages @state)

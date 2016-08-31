@@ -10,8 +10,7 @@
             [salava.core.ui.helper :refer [path-for unique-values]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.time :refer [date-from-unix-time]]
-            [salava.admin.ui.reporttool :refer [reporttool]]))
+            [salava.core.time :refer [date-from-unix-time]]))
 
 (defn init-data [state]
   (ajax/GET

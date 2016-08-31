@@ -196,7 +196,7 @@ SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_cont
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
        WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
-       ORDER BY ic.name bc.name, bc.image_file, b.issuer_content_id
+       ORDER BY b.id, bc.name, bc.image_file, b.issuer_content_id
 
 --name: update-badge-set-verified!
 --update verification status of the issuer of the badge

@@ -73,12 +73,20 @@
         badges-with-tags (map-badges-tags badges tags)]
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
+(def ctx {:db (hikari-cp.core/make-datasource {:adapter "mysql",
+                                               :username "root",
+                                               :password "isokala",
+                                               :database-name "salava4",
+                                               :server-name "localhost"})})
+
 (defn user-badges-to-export
   "Returns valid badges of a given user"
   [ctx user-id]
   (let [badges (select-user-badges-to-export {:user_id user-id} (get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (get-db ctx)))]
     (map-badges-tags badges tags)))
+
+(user-badges-to-export ctx 1)
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
@@ -443,7 +451,7 @@
      :expired_badge_count expired-badge-count
      :badge_views badge-views
      :badge_congratulations badge-congratulations
-     :badge_issuers issuer-stats}))
+     :badge_issuers issuer-stats})) 
 
 (defn meta-tags [ctx id]
   (let [badge (select-badge {:id id} (into {:result-set-fn first} (get-db ctx)))]

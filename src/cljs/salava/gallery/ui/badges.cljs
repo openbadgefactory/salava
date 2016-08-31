@@ -9,7 +9,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
-            [salava.admin.ui.admintool :refer [private-gallery-badge]]
+            [salava.admin.ui.admintool :refer [admin-gallery-badge]]
             [salava.core.helper :refer [dump]]))
 
 (defn open-modal [badge-content-id]
@@ -141,8 +141,8 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
-       ;(private-gallery-badge badge-id "badges" state init-data)
+       ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]          
+       (admin-gallery-badge badge-id "badges" state init-data)
        ]]]))
 
 (defn gallery-grid [state]

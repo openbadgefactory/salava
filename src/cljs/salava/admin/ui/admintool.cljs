@@ -1,98 +1,92 @@
 (ns salava.admin.ui.admintool
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [atom]]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.layout :as layout]
-            [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid?]]
+            [salava.core.ui.helper :refer [path-for current-path]]
             [salava.core.i18n :refer [t]]
-            [salava.core.helper :refer [dump]]
-            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker admin?]]))
-
-(defn set-private [item-type item-id state init-data]
-  (ajax/POST
-   (path-for (str "/obpv1/admin/private_"item-type"/" item-id))
-   {:response-format :json
-    :keywords? true
-    :params {:item-type item-type :item-id item-id}
-    :handler (fn [data]
-               (if (not-empty (str init-data))
-                 (init-data state nil)
-                 (navigate-to "/admin")))
-    :error-handler (fn [{:keys [status status-text]}]
-                     (.log js/console (str status " " status-text)))}))
-
-(defn admin-modal [item-type item-id state init-data]
-  [:div
-   [:div.modal-header
-    [:button {:type "button"
-              :class "close"
-              :data-dismiss "modal"
-              :aria-label "OK"}
-     [:span {:aria-hidden "true"
-             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-   [:div.modal-body
-    (str  (t :admin/Privatethis) "?" (:user-id state))]
-   [:div.modal-footer
-    [:button {:type "button"
-              :class "btn btn-primary"
-              :data-dismiss "modal"
-              :on-click #(set-private item-type item-id state init-data)}
-     (t :admin/Yes)]
-    [:button {:type "button"
-              :class "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :admin/No)]]])
-
-(defn admin-gallery-modal [item-type item-id state init-data]
-  [:div
-   [:div.modal-header
-    [:button {:type "button"
-              :class "close"
-              :data-dismiss "modal"
-              :aria-label "OK"}
-     [:span {:aria-hidden "true"
-             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-   [:div.modal-body
-    (str  (t :admin/Privatethis) "?" )]
-   [:div.modal-footer
-    [:button {:type "button"
-              :class "btn btn-primary"
-              :data-dismiss "modal"
-              :on-click #(set-private item-type item-id state init-data)}
-     (t :admin/Yes)]
-    [:button {:type "button"
-              :class "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :admin/No)]]])
+            [salava.admin.ui.helper :refer [checker admin?]]
+            [salava.admin.ui.admintool-content :refer [admin-modal]]))
 
 
+(defn open-admintool-modal
+  ([]
+   (let [{:keys [item-type item-id]} (checker (current-path))
+         state (atom {:mail          {:subject ""
+                                      :message ""}
+                      :visible_area  ""
+                      :item_type     item-type
+                      :item_id       item-id
+                      :item_owner    ""
+                      :item_owner_id nil
+                      :image_file    nil
+                      :name          ""
+                      :info          {:created     ""
+                                      :description ""}
+                      :gallery-state nil
+                      :init-data nil})]
+     (ajax/GET
+      (path-for (str "/obpv1/admin/"item-type"/" item-id))
+      {:handler (fn [data]
+                  (swap! state assoc :name (:name data)
+                         :image_file (:image_file data)
+                         :item_owner (:item_owner data)
+                         :item_owner_id (:item_owner_id data)
+                                                  :info (:info data))
+                  (m/modal! [admin-modal state nil nil] {:size :lg}))})))
+  ([item-type item-id gallery-state init-data]
+   (let [ state (atom {:mail          {:subject ""
+                                       :message ""}
+                       :visible_area  ""
+                       :item_type     item-type
+                       :item_id       item-id
+                       :item_owner    ""
+                       :item_owner_id nil
+                       :image_file    nil
+                       :name          ""
+                       :info          {}
+                       :gallery-state gallery-state
+                       :init-data init-data
+                       :status ""})]
+     (ajax/GET
+      (path-for (str "/obpv1/admin/"item-type"/" item-id))
+      {:handler (fn [data]
+                  (swap! state assoc :name (:name data)
+                         :image_file (:image_file data)
+                         :item_owner (:item_owner data)
+                         :item_owner_id (:item_owner_id data)
+                                                  :info (:info data))
+                  (m/modal! [admin-modal state] {:size :lg}))}))))
 
-
-(defn private-this-page[]
-   (if (admin?)  
-     (let [{:keys [item-type item-id]} (checker (current-path))]
-       [:div.row
-        [:div {:class "pull-right"}
-         [m/modal-window]
-         [:button {:type "button"
-                   :class "btn btn-danger"
-                   :on-click #(do (.preventDefault %)
-                                  (m/modal! (admin-modal item-type item-id "" "") ))} (t :admin/Private)]]])))
-
-(defn private-gallery-badge [item-id item-type state init-data]
+(defn admintool []
   (if (admin?)
-    [:a {:class "bottom-link pull-right"
-         :on-click #(do (.preventDefault %)
-                        (m/modal! (admin-gallery-modal item-type item-id state init-data) ))}
-     [:i {:class "fa fa-lock"}] (t :admin/Private)]))
+    [:div
+     [m/modal-window]
+     [:div {:id "buttons"
+            :class "text-right"}
+      [:button {:class    "btn btn-primary text-right"
+                :on-click #(do (.preventDefault %)
+                               (open-admintool-modal))}
+      (t :admin/Admintools)]]]))
 
-(defn private-gallery-page [item-id item-type state init-data]
+(defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
-    [:div.media-bottom-admin
-     [:a {:class "bottom-link pull-right"
+    [:div
+     [m/modal-window]
+     [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
-                         (m/modal! (admin-gallery-modal item-type item-id state init-data) ))}
-      [:i {:class "fa fa-lock"}] (t :admin/Private)]]))
+                         (open-admintool-modal "badges" item-id state init-data))}
+      [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
+
+(defn admintool-gallery-page [item-id item-type state init-data user-id]
+  (if (admin?)
+    [:div
+     [m/modal-window]
+     [:a {:class    "bottom-link pull-right"
+          :on-click #(do (.preventDefault %)
+                         (open-admintool-modal "page" item-id state init-data))}
+      [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
+
+
+

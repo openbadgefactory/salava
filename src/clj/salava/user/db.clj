@@ -181,6 +181,11 @@
   [ctx user-id]
   (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx))))
 
+(defn user-information-with-registered-and-last-login
+  "Get user data by user-id "
+  [ctx user-id]
+  (select-user-with-register-last-login {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+
 (defn user-profile
   "Get user profile fields"
   [ctx user-id]
