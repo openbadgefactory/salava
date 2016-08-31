@@ -27,15 +27,11 @@
       [:h3 (t :page/Pages)]
        [:div [:label (t :admin/Totalpages)]  pages]
        ]]]))
-
 (defn init-data [state]
   (ajax/GET 
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
                (reset! state data))}))
-
-
-
 
 (defn handler [site-navi]
   (let [state (atom {:register-users nil

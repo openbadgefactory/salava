@@ -1,0 +1,10 @@
+(
+  {:table "report_ticket"
+   :data {:description "Example description"
+                     :report_type "bug"
+                     :item_content_id  nil
+                     :item_id  1
+                     :item_url ""
+                     :item_name "sample page"
+                     :item_type "page"
+                     :reporter_id 1}})

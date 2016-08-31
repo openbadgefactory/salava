@@ -7,7 +7,8 @@
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.file.icons :refer [file-icon]]))
+            [salava.file.icons :refer [file-icon]]
+            [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn delete-page [id]
   (ajax/DELETE
@@ -36,7 +37,7 @@
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
 
-(defn badge-block [{:keys [format image_file name description issuer_image issued_on criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description html_content creator_name creator_url creator_email creator_image creator_description]}]
+(defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description html_content creator_name creator_url creator_email creator_image creator_description]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
@@ -52,11 +53,10 @@
       (bh/issued-on issued_on)]]
      [:div.row
       [:div.col-md-12
-       (bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_email)
-       (bh/issuer-description issuer_description)
-       [:div          (bh/creator-image creator_image)
-        (bh/creator-label-and-link creator_name creator_url creator_email)
-        (bh/creator-description creator_description)]]]
+       (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+       
+       (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+       ]]
 
     [:div.row
      [:div {:class "col-md-12 description"} description]]
@@ -180,7 +180,10 @@
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
-   [view-page page]])
+   [view-page page]
+   [:div {:class "modal-footer page-content"}
+   (reporttool (:id page) (:name page) "page") ]
+   ])
 
 (defn view-page-modal [page]
   (create-class {:reagent-render (fn [] (render-page-modal page))

@@ -22,7 +22,9 @@
 
 (defn get-assertion-from-png [file]
   (let [data (get-png-metadata file)
+        url? (re-find #"^https?:\/\/.+" data)
         hosted? (re-find #"\{" data)]
-    (if hosted?
-      (get-in (json/read-str data :key-fn keyword) [:verify :url])
-      (signed-assertion data))))
+    (cond
+      url? data
+      hosted? (get-in (json/read-str data :key-fn keyword) [:verify :url])
+      :else (signed-assertion data))))

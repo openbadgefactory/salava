@@ -15,7 +15,6 @@
   (let [admin (select-user-admin {:id user-id} (into {:result-set-fn first :row-fn :role} (get-db ctx)))]
     (= admin "admin")))
 
-
 (defn register-users-count
   "Get count from all active and registered users"
   [ctx]
@@ -32,7 +31,6 @@
   [ctx]
   (let [date (get-date-from-today -1 0 0)]
     (count-registered-users-after-date {:time date} (into {:result-set-fn first :row-fn :count} (get-db ctx)))))
-
 
 (defn badges-count
   "Get count from all badges"
@@ -93,3 +91,22 @@
    (catch Object _
      "error"
      )))
+
+(defn ticket [ctx description report_type item_id item_url item_name item_type reporter_id item_content_id]
+  (try+
+   (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error"
+     )))
+
+(defn get-tickets [ctx]
+  (let [tickets (select-tickets {} (get-db ctx))]
+    tickets))
+
+(defn close-ticket! [ctx id]
+  (try+
+   (update-ticket-status! {:id id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error")))

@@ -228,7 +228,7 @@ button {
 
     margin-bottom: 3px;
     .issuer-links{
-        margin-left: 20px;
+        margin-left: 5px;
     }
 }
 
@@ -252,3 +252,8 @@ button {
           margin-bottom: 20px;
 }
 
+.metabadge {
+    label {
+        margin-right: 5px;
+    }
+}

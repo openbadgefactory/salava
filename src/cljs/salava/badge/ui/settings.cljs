@@ -63,37 +63,16 @@
                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
       [:div.row
        [:div {:class "col-md-3 badge-image modal-left"}
+
         [:img {:src (str "/" image_file) :alt name}]
         [:h1.uppercase-header name]]
-       ;[:div {:class "col-md-9 badge-content"}
-       ; [:div {:class "row" :id "badge-info"}
-       ;  [:div {:class "col-md-12 badge-info"}
-          ;[:div.row
-          ;[:div.col-md-12
-          ;(bh/issuer-image issuer_image)]]
-          ;(if revoked
-          ;  [:div.revoked (t :badge/Revoked)])
-          ;(if expired?
-          ;  [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
-          ;(bh/issuer-label-and-link issuer_content_name issuer_content_url issuer_contact)
-          ;(bh/issuer-description  issuer_description)
-          ;(if (> issued_on 0)
-           ; [:div.issued-on
-            ; [:legend {:class "col-md-12 sub-heading"} (t :badge/Issuedon)]
-            ; [:span (date-from-unix-time (* 1000 issued_on))]])
-          ;[:div.row
-           ;[:div.col-md-12 description]
-           ;]
-          ; ]]]
-           ;]
-      ;[:div {:class "row modal-form"}
-       ;[:div {:class "col-md-3 modal-left"}
-        ;]
+
        [:div {:class "col-md-9 settings-content"}
        (if revoked
             [:div.revoked (t :badge/Revoked)])
           (if expired?
             [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
+
         [:form {:class "form-horizontal"}
          (if (and (not expired?) (not revoked))
            [:div
@@ -171,14 +150,7 @@
                           :on-change #(toggle-evidence state)
                           :checked   show_evidence}]
                  (t :badge/Showevidence)]]])
-           ; [:div {:class "row"}
-           ;  [:div {:class "col-md-12 sub-heading"}
-           ;   (t :badge/Rating)]]
-           ; [:div.row
-           ;  [:div.col-md-12
-           ;   [r/rate-it (get-in @state [:badge-settings :rating]) (cursor state [:badge-settings :rating])]]
-           ;  [:div {:class "col-md-12 rating-help"}
-           ;   (t :badge/Tellushowvaluableorusefullyouthinkthisbadgeis)]]
+
               ])]
      [:div.modal-footer
       (if (and (not expired?) (not revoked ))
