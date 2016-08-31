@@ -8,7 +8,7 @@
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [salava.admin.ui.admintool :refer [admintool]]
-            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool]]
             ))
 
 (defn check-password [password-atom page-id state]
@@ -58,6 +58,7 @@
 
 (defn page-content [page state]
   (let [show-link-or-embed-atom (cursor state [:show-link-or-embed-code])
+        reporttool-atom (cursor state [:reporttool])
         visibility-atom (cursor state [:page :visibility])]
     [:div {:id "page-view"}
      
@@ -83,7 +84,7 @@
        
        )
      [ph/view-page page]
-     ;(if (:owner? page)""(reporttool (:id page)  (:name page) "page"))
+     (if (:owner? page) "" (reporttool (:id page)  (:name page) "page" reporttool-atom))
      ]))
 
 (defn content [state]
@@ -112,7 +113,16 @@
                      :ask-password false
                      :password ""
                      :password-error false
-                     :show-link-or-embed-code nil})
+                     :show-link-or-embed-code nil
+                     :reporttool {:description ""
+                                  :report-type "bug"
+                                  :item-id ""
+                                  :item-content-id ""
+                                  :item-url   ""
+                                  :item-name "" ;
+                                  :item-type "" ;badge/user/page/badges
+                                  :reporter-id ""
+                                  :status "false"}})
         user (session/get :user)]
     (init-data state id)
     (fn []

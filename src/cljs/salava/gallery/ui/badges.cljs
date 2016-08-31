@@ -13,10 +13,21 @@
             [salava.core.helper :refer [dump]]))
 
 (defn open-modal [badge-content-id]
-  (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
-    {:handler (fn [data]
-                (m/modal! [badge-content-modal data] {:size :lg}))}))
+  (let [reporttool (atom {:description     ""
+                          :report-type     "bug"
+                          :item-id         ""
+                          :item-content-id ""
+                          :item-url        ""
+                          :item-name       "" ;
+                          :item-type       "" ;badge/user/page/badges
+                          :reporter-id     ""
+                          :status          "false"})]
+    (ajax/GET
+     (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+     {:handler (fn [data]
+                 (do
+                   (dump "ajax get")
+                   (m/modal! [badge-content-modal data reporttool] {:size :lg})))})))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -126,7 +137,9 @@
           [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:on-click #(open-modal badge-id) :title name}
+         [:a.heading-link {:on-click #(do
+                                        (.preventDefault %)
+                                        (open-modal badge-id)) :title name}
           name]]
         [:div.media-issuer
          [:a {:href issuer_content_url

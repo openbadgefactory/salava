@@ -13,7 +13,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
-            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool]]
             ))
 
 (defn toggle-visibility [state]
@@ -47,7 +47,8 @@
 (defn content [state]
   (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner]} @state
         expired? (bh/badge-expired? expires_on)
-        show-recipient-name-atom (cursor state [:show_recipient_name])]
+        show-recipient-name-atom (cursor state [:show_recipient_name])
+        reporttool-atom (cursor state [:reporttool])]
     (if (:initializing @state)
       [:div.ajax-message
        [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -171,21 +172,32 @@
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
-        ; (if owner? "" (reporttool id name "badge"))
+         (if owner? "" (reporttool id name "badge" reporttool-atom))
          ]]])))
 
 (defn init-data [state id]
-  (ajax/GET
+  (let [reporttool-init {:description ""
+                         :report-type "bug"
+                         :item-id ""
+                         :item-content-id ""
+                         :item-url   ""
+                         :item-name "" ;
+                         :item-type "" ;badge/user/page/badges
+                         :reporter-id ""
+                         :status "false"}]
+   (ajax/GET
     (path-for (str "/obpv1/badge/info/" id))
     {:handler (fn [data]
                 (reset! state (assoc data :id id
-                                          :show-link-or-embed-code nil
-                                          :initializing false)))}))
+                                     :show-link-or-embed-code nil
+                                     :initializing false
+                                     :reporttool reporttool-init)))})))
 
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
-        state (atom {:initializing true})
+        state (atom {:initializing true
+                     :reporttool {}})
         user (session/get :user)]
     (init-data state id)
     (fn []
