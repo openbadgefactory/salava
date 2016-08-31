@@ -22,8 +22,8 @@
                       :item_owner_id nil
                       :image_file    nil
                       :name          ""
-                      :info          {:created     "20.2.2010"
-                                      :description "joo jee"}
+                      :info          {:created     ""
+                                      :description ""}
                       :gallery-state nil
                       :init-data nil})]
      (ajax/GET

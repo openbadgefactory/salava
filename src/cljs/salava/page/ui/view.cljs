@@ -8,7 +8,8 @@
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [salava.admin.ui.admintool :refer [admintool]]
-            [salava.admin.ui.reporttool :refer [reporttool]]))
+            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            ))
 
 (defn check-password [password-atom page-id state]
   (ajax/POST
@@ -82,9 +83,7 @@
        
        )
      [ph/view-page page]
-     (if (:owner? page)
-       ""
-       (reporttool (:id page)  (:name page) "page"))
+     ;(if (:owner? page)""(reporttool (:id page)  (:name page) "page"))
      ]))
 
 (defn content [state]

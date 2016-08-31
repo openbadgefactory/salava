@@ -10,7 +10,8 @@
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
-            [salava.admin.ui.reporttool :refer [reporttool]]))
+            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            ))
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
@@ -133,7 +134,8 @@
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
          [page-grid pages profile_picture]
          [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
-      (reporttool user-id fullname "user")]]))
+     ; (reporttool user-id fullname "user")
+      ]]))
 
 (defn init-data [user-id state]
   (ajax/GET
