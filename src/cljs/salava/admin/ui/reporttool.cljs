@@ -11,7 +11,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.admin.schemas :as schemas]
-            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker]]))
+            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id?]]))
 
 (defn save-report [state status]
   (let [{:keys [description report-type item-id item-url item-name item-type reporter-id item-content-id]} @state]
