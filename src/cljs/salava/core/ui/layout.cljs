@@ -27,7 +27,7 @@
     (filtered-navi-list navi key-list)))
 
 (defn sub-navi-list [parent navi]
-  (let [key-list (filter #(and (get-in navi [% :site-navi]) (= parent (navi-parent %))) (keys navi))]
+  (let [key-list (filter #(or (= "dropdowntitle" (navi-parent %)) (and (get-in navi [% :site-navi]) (= parent (navi-parent %)))) (keys navi))]
     (when parent
       (filtered-navi-list navi key-list))))
 
@@ -43,6 +43,14 @@
   [:li {:class (when active "active")
         :key target}
    [:a {:href target} title]])
+
+(defn navi-dropdown []
+  [:li {:class "dropdown"
+        :key "target"}  
+   [:a {:href ""} "kissa"]
+   [:ul {:class "dropdown-menu"}
+    [:li [:a "jee"]]
+    [:li [:a "joo"]]]])
 
 (defn top-navi-header []
   [:div {:class "navbar-header"}
@@ -105,8 +113,10 @@
       
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
+        (navi-dropdown)
         (for [i items]
-          (navi-link i))]
+          (navi-link i))
+        ]
        ]]]))
 
 (defn get-footer-item [navi]
@@ -122,6 +132,7 @@
 
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi))]
+    (dump items)
     [:ul {:class "side-links"}
      (for [i items]
        (navi-link i))]))

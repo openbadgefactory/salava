@@ -26,9 +26,11 @@
 (defn ^:export navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
-   (str (base-path context) "/badge/import") {:weight 21 :title (t :badge/Import)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Import)}
-   (str (base-path context) "/badge/upload") {:weight 22 :title (t :badge/Upload)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Upload)}
-   (str (base-path context) "/badge/export") {:weight 23 :title (t :badge/Export)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Export)}
-   (str (base-path context) "/badge/stats") {:weight 24 :title (t :badge/Stats)    :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Stats)}
+   "badge/dropdowntitle" {:weight 21 :title "prööt" :site-navi true :breadcrumb "jeejoo" :items {
+                                                                                                 (str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Import)}}}
+   
+   (str (base-path context) "/badge/upload") {:weight 23 :title (t :badge/Upload)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Upload)}
+   (str (base-path context) "/badge/export") {:weight 24 :title (t :badge/Export)   :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Export)}
+   (str (base-path context) "/badge/stats") {:weight 25 :title (t :badge/Stats)    :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Stats)}
    (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}})
 
