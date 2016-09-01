@@ -15,7 +15,7 @@ $icon-color: #a28f9b;
 body {
     color: $text-color;
 }
-a {
+a, #badge-info a {
     color: $link-color;
     font-weight: 600;
     &:hover, &:focus, &:active {
@@ -98,7 +98,7 @@ a#login-button {
 ul.navbar-nav{
 margin-right:auto;
 margin-left:auto;
-width:420px;
+width:480px;
 padding-left:0px;
 float:none;
     li{
@@ -112,6 +112,9 @@ float:none;
     &.active a {
         color: #4a4348;
     }
+    }
+    @media (max-width:770px){
+        width:auto;
     }
 }
 #grid-filter button, #buttons .col-xs-8 .btn {
@@ -555,8 +558,7 @@ fieldset legend {
     }
     .media-bottom{
         border-top:none;
-        margin-top:-15px;
-        padding-top:2px;
+        padding-top:5px;
         a.bottom-link {
             color:$button-color; //#99a2d4;//$title-color; //$badge-link;
             i.fa {
@@ -704,10 +706,16 @@ fieldset legend {
 #export-badges {
     #grid .grid-container{
         height: 285px;
+        .media-bottom {
+            padding-top:0px;
+        }
     }
  }
- .import-badges #grid.row .grid-container .media-bottom {
+.import-badges #grid.row .grid-container{
+    height:280px;
+    .media-bottom {
     border-top: 2px dashed #bfbfbf;
+    }
  }
  #user-badges {
     #grid .grid-container{
@@ -879,6 +887,10 @@ fieldset legend {
         background-color: #f9f9f9;
     }
     }
+    #grid.row .grid-container .media-bottom {
+        float:right;
+        margin-top:-15px;
+    }
 }
 #page-gallery .modal-dialog .modal-footer {
     background-color: transparent;
@@ -920,5 +932,31 @@ fieldset legend {
         &.fa-google-plus-square {
             color:#db4437;
         }
+    }
+}
+.admin-modal, #badge-info .admin-modal {
+    .sub-heading{
+    a{
+        font-weight: 300;
+        font-size: 24px;
+        //color: $title-color;
+        line-height: 30px;
+        &:before {
+            font-family: "FontAwesome";
+            content: '\f105';
+            margin-right: 12px;
+        }
+        &.opened:before{
+            content: '\f107';
+            margin-right: 5px;
+        }
+        }
+        margin:5px 0px;
+    }
+    label {
+        min-width: 120px;
+    }
+    .issuer-image img {
+        margin-left:5px;
     }
 }

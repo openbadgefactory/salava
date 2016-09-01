@@ -46,7 +46,7 @@
          mail (cursor state [:mail])]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-item" @visible_area) "" "delete-item")))} (t :core/Delete) ]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-item" @visible_area) "" "delete-item"))) :class (if (= "delete-item" @visible_area) "opened" "")} (t :core/Delete) ]]
      (if (= @visible_area "delete-item")
        [:div.col-md-12
         
@@ -84,7 +84,7 @@
     
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))}(t :admin/Sendmessage)]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message"))) :class (if (= "send-message" @visible_area) "opened" "")}(t :admin/Sendmessage)]]
      (if (= @visible_area "send-message")
        [:div.col-md-12
         (str (t :admin/Sendmessageforuser) " " item_owner)
@@ -148,7 +148,7 @@
   (let [{:keys [item_type item_id gallery-state init-data name]} @state]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "private-item" @visible_area) "" "private-item")))} (t :admin/Privatethis)]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "private-item" @visible_area) "" "private-item"))) :class (if (= "private-item" @visible_area) "opened" "")} (t :admin/Privatethis)]]
      (if (= @visible_area "private-item")
        [:div.col-md-12
         (str (t :admin/Privatethis) " "  item_owner " " name " " (t (keyword (str "admin/" item_type))) "?" )
@@ -171,9 +171,9 @@
 (defn lock-user [state visible_area item_owner]
   (let [{:keys [mail item_owner_id gallery-state init-data]} @state
         mail (cursor state [:mail])]
-    [:div {:class "row"}
+    [:div.row
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "lock-user" @visible_area) "" "lock-user")))} (t :admin/Lockuser) ]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "lock-user" @visible_area) "" "lock-user"))) :class (if (= "lock-user" @visible_area) "opened" "")} (t :admin/Lockuser) ]]
      (if (= @visible_area "lock-user")
        [:div.col-md-12
         (str (t :admin/Lockuser) " " item_owner "?")
@@ -207,7 +207,7 @@
       [:div {:class "col-sm-3 badge-image modal-left"}
        [:img {:src (profile-picture image_file)} ]]
       [:div {:class "col-sm-9 badge-info"}
-       [:div.row
+       [:div {:class "row info"}
         [:div {:class "col-md-12"}
          [:h1.uppercase-header name]
          (info-block info item_type)]]
