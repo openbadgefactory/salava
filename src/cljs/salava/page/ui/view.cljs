@@ -80,9 +80,7 @@
                    :checked     (= @visibility-atom "public")}]
           [:i.fa](t :core/Publishandshare)]]
         [:div {:class (str "share-wrapper " @visibility-atom)} [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
-       (admintool)
-       
-       )
+       (admintool (:id page) "page"))
      [ph/view-page page]
      (if (:owner? page) "" (reporttool (:id page)  (:name page) "page" reporttool-atom))
      ]))

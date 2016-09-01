@@ -6,14 +6,13 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for current-path]]
             [salava.core.i18n :refer [t]]
-            [salava.admin.ui.helper :refer [checker admin?]]
+            [salava.admin.ui.helper :refer [admin?]]
             [salava.admin.ui.admintool-content :refer [admin-modal]]))
 
 
 (defn open-admintool-modal
-  ([]
-   (let [{:keys [item-type item-id]} (checker (current-path))
-         state (atom {:mail          {:subject ""
+  ([item-id item-type]
+   (let [state (atom {:mail          {:subject ""
                                       :message ""}
                       :visible_area  ""
                       :item_type     item-type
@@ -59,7 +58,7 @@
                                                   :info (:info data))
                   (m/modal! [admin-modal state] {:size :lg}))}))))
 
-(defn admintool []
+(defn admintool [item-id item-type]
   (if (admin?)
     [:div
      [m/modal-window]
@@ -67,7 +66,7 @@
             :class "text-right"}
       [:button {:class    "btn btn-primary text-right admin-btn"
                 :on-click #(do (.preventDefault %)
-                               (open-admintool-modal))}
+                               (open-admintool-modal item-id item-type))}
       (t :admin/Admintools)]]]))
 
 (defn admin-gallery-badge [item-id item-type state init-data]

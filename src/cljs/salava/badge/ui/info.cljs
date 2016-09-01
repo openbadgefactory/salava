@@ -116,7 +116,7 @@
               (t :core/Print)]]
             [:div.share-wrapper
              [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
-           (admintool))
+           (admintool id "badge"))
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
