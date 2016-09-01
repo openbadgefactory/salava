@@ -18,12 +18,22 @@
             ))
 
 (defn init-data [state id]
-  (ajax/GET
+  (let [reporttool-init {:description ""
+                         :report-type "bug"
+                         :item-id ""
+                         :item-content-id ""
+                         :item-url   ""
+                         :item-name "" ;
+                         :item-type "" ;badge/user/page/badges
+                         :reporter-id ""
+                         :status "false"}]
+   (ajax/GET
     (path-for (str "/obpv1/badge/info/" id))
     {:handler (fn [data]
                 (reset! state (assoc data :id id
-                                          :show-link-or-embed-code nil
-                                          :initializing false)))}))
+                                     :show-link-or-embed-code nil
+                                     :initializing false
+                                     :reporttool reporttool-init)))})))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -198,24 +208,6 @@
           ]]
          (if owner? "" (reporttool id name "badge" reporttool-atom))
          ]]])))
-
-(defn init-data [state id]
-  (let [reporttool-init {:description ""
-                         :report-type "bug"
-                         :item-id ""
-                         :item-content-id ""
-                         :item-url   ""
-                         :item-name "" ;
-                         :item-type "" ;badge/user/page/badges
-                         :reporter-id ""
-                         :status "false"}]
-   (ajax/GET
-    (path-for (str "/obpv1/badge/info/" id))
-    {:handler (fn [data]
-                (reset! state (assoc data :id id
-                                     :show-link-or-embed-code nil
-                                     :initializing false
-                                     :reporttool reporttool-init)))})))
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
