@@ -344,7 +344,7 @@ footer.footer a {
          border-color:  $orange-hover;
     }
 }
-.settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary {
+.settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
     padding:4px 12px;
     line-height: 22px;
     &:before {
@@ -368,6 +368,9 @@ footer.footer a {
 }
 .view-btn.btn.btn-primary:before {
     content: '\f016';
+}
+.admin-btn.btn.btn-primary:before{
+    content: '\f0ad';
 }
 #grid-filter legend.control-label, .issued-on legend {
     display: inline-block;
@@ -552,7 +555,7 @@ fieldset legend {
     }
     .media-bottom{
         border-top:none;
-        margin-top:0px;
+        margin-top:-15px;
         padding-top:2px;
         a.bottom-link {
             color:$button-color; //#99a2d4;//$title-color; //$badge-link;
@@ -756,6 +759,19 @@ fieldset legend {
         }
     }
 }
+#page-gallery #grid {
+    a.bottom-link.pull-right {
+        margin-top:15px;
+        cursor: pointer;
+        i.fa {
+            font-size: 20px;
+            color:$button-color;
+            &:hover {
+                color:$menu-active;
+            }
+        }
+    }
+}
 .admin-stats{
     h3 {
         font-weight: 300;
@@ -805,8 +821,84 @@ fieldset legend {
     }
 }
 
-#profile h2.user-profile-header{
-    padding-bottom:10px
+#profile, #badge-gallery, #page-gallery, #badge-info, #page-view {
+    .row.report-form {
+        a#open-reportform-button {
+            padding-top:15px;
+        }
+        h4 {
+            font-weight: 300;
+            font-size: 24px;
+            line-height: 40px;
+            color: #7f7179;
+        }
+        .form-group > label {
+            margin-right: 20px;
+        }
+        .radio {
+            display: inline-block;
+            margin:0px 10px;
+        }
+    }
+    a#open-reportform-button{
+        float:right;
+        display: block;
+        padding-bottom:3px;
+    }
+}
+#profile {
+    #user-pages {
+        margin-bottom: 15px;
+    }
+    h2.user-profile-header{
+        padding-bottom:10px
+    }
+    .row.report-form {
+        background-color:#f9f9f9;
+        border-top: 1px solid #f0f0f0;
+        a#open-reportform-button {
+            float:none;
+            margin-left:-3px;
+            margin-right: -2px;
+            text-align: right;
+            background-color:#f9f9f9;
+        }
+    }
+}
+
+#badge-gallery{
+    .modal-footer.reporttool {
+        margin-left: 0px;
+        margin-bottom: 20px;
+    }
+    .row.report-form {
+    margin-right: 15px;
+    margin-left:15px;
+    #reportform {
+        border: 1px solid #f0f0f0;
+        background-color: #f9f9f9;
+    }
+    }
+}
+#page-gallery .modal-dialog .modal-footer {
+    background-color: transparent;
+    #reportform {
+        border: 1px solid #f0f0f0;
+    }
+}
+#page-view {
+    .row.report-form {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+    #reportform {
+        border: 1px solid #f0f0f0;
+    }
+}
+#badge-info {
+    #reportform {
+        border: 1px solid #f0f0f0;
+    }
 }
 #share #share-buttons {
     i {

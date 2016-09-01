@@ -76,9 +76,10 @@
     [:button {:type         "button"
               :class        "btn btn-primary"
               :data-dismiss "modal"}
-     (t :core/Close)]
-    (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
-    ]])
+     (t :core/Close)]]
+     [:div {:class "modal-footer reporttool"}
+      (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
+     ]])
 
 (defn badge-content-modal [modal-data reporttool-atom]
   (dump "badge-content-modal")
