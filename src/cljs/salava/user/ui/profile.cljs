@@ -94,7 +94,7 @@
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)]]]
-        (admintool))
+        (admintool user-id "user"))
       [:h1.uppercase-header fullname]
       [:div.row
        [:div {:class "col-md-4 col-sm-4 col-xs-12"}

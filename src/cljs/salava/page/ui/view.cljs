@@ -80,7 +80,7 @@
                    :checked     (= @visibility-atom "public")}]
           (t :core/Publishandshare)]]
         [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]
-       (admintool)
+       (admintool (:id page) "page")
        
        )
      [ph/view-page page]
