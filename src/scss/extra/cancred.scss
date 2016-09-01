@@ -87,3 +87,47 @@ ul#secondary-menu-links li a i.fa {
         background-color: #189fb5;
     }
 }
+#my-badges #grid .grid-container .media-content .icons{
+    text-align:left;
+    .visibility-icon{
+        width:30px;
+        font-size: 20px;
+        padding-bottom: 5px;
+        display: inline-block;
+        text-align: left;
+        i{
+            cursor: pointer;
+        }
+    }
+    .righticon {
+        text-align: right;
+        float:right;
+        font-size: 18px;
+        display: inline-block;
+        line-height: 1em;
+        &.revoked, &.expired {
+            cursor: pointer;
+            color:#8c2e0b;
+        }
+    }
+    .lefticon {
+            color:#8c2e0b;
+            font-size: 14px;
+            text-transform: uppercase;
+            display: inline-block;
+            i {
+                font-size: 20px;
+                margin-right: 8px;
+                vertical-align:middle;
+                display: inline-block;
+                color:#8c2e0b;
+            }
+       }
+}
+legend, .form-horizontal legend.control-label {
+    text-align:left;
+    color:inherit;
+    font-size: inherit;
+    border:none;
+    font-weight: bold;
+}

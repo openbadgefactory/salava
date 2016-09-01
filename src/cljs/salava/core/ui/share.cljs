@@ -37,7 +37,12 @@
      (if is-badge?
       [:a {:href (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
            :target "_blank"}
-        [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]])]
+        [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
+      [:div.share-button
+     [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title 
+"&summary=" (js/encodeURIComponent (str "Open Badge Passport: " title)) "&source=OpenBadgePassport") :target "_blank"}
+      [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
+        )]
     [:div.share-button
      [google-plus url]]
     [:div.share-button
@@ -74,6 +79,6 @@
                                           (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
                                           (.getScript (js* "$") "//platform.twitter.com/widgets.js")
                                           (js* "delete IN")
-                                          (.getScript (js* "$") "//platform.linkedin.com/in.js")
+                                          ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
                                           (.getScript (js* "$") "https://apis.google.com/js/platform.js")))}))
 

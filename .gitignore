@@ -22,3 +22,4 @@ tags
 figwheel_server.log
 
 src/scss/.sass-cache/
+src/scss/extra/.sass-cache/

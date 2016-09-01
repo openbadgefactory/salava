@@ -103,7 +103,7 @@
              [:button {:class    "btn btn-primary print-btn"
                        :on-click #(.print js/window)}
               (t :core/Print)]]
-            [:div.col-sm-12
+            [:div.share-wrapper
              [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
            (admintool))
          (if (or verified_by_obf issued_by_obf)
