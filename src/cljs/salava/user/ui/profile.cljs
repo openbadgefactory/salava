@@ -9,16 +9,18 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
+            [salava.core.helper :refer [dump]]
             [salava.admin.ui.admintool :refer [admintool]]
-            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool]]
             ))
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
-    (path-for "/obpv1/user/profile/set_visibility")
-    {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
-     :handler (fn [new-value]
-                (reset! visibility-atom new-value))}))
+     (path-for "/obpv1/user/profile/set_visibility")
+     {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
+      :handler (fn [new-value]
+                 (reset! visibility-atom new-value)
+                 )}))
 
 (defn profile-visibility-input [visibility-atom]
   [:div.col-xs-12
@@ -85,9 +87,11 @@
 
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
+        reporttool-atom (cursor state [:reporttool])
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
+    
     [:div.panel {:id "profile"}
      [:div.panel-body
       (if owner?
@@ -142,19 +146,31 @@
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
          [page-grid pages profile_picture]
          [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
-     ; (reporttool user-id fullname "user")
+      (reporttool user-id fullname "user" reporttool-atom)
       ]]))
 
 (defn init-data [user-id state]
-  (ajax/GET
-    (path-for (str "/obpv1/user/profile/" user-id) true)
-    {:handler (fn [data]
-                (reset! state (assoc data :user-id user-id
-                                          :show-link-or-embed-code nil)))}))
+  (let [reporttool-init {:description ""
+                         :report-type "bug"
+                         :item-id ""
+                         :item-content-id ""
+                         :item-url   ""
+                         :item-name "" ;
+                         :item-type "" ;badge/user/page/badges
+                         :reporter-id ""
+                         :status "false"}]
+    
+    (ajax/GET
+     (path-for (str "/obpv1/user/profile/" user-id) true)
+     {:handler (fn [data]
+                 (reset! state (assoc data :user-id user-id
+                                      :show-link-or-embed-code nil
+                                      :reporttool reporttool-init)))})))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
-        state (atom {:user-id user-id})
+        state (atom {:user-id user-id
+                     :reporttool {}})
         user (session/get :user)]
     (init-data user-id state)
     (fn []

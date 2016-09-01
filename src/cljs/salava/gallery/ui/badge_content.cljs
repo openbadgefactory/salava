@@ -6,7 +6,7 @@
             [salava.user.ui.helper :refer [profile-link-inline]]
             [salava.core.ui.rate-it :as r]
             [salava.core.helper :refer [dump]]
-            ;[salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool]]
             ))
 
 (defn badge-content [{:keys [badge public_users private_user_count]}]
@@ -59,7 +59,7 @@
                [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]]))
 
-(defn badge-content-modal-render [data]
+(defn badge-content-modal-render [data reporttool-atom]
   [:div {:id "badge-content"}
    [:div.modal-body
     [:div.row
@@ -77,9 +77,10 @@
               :class        "btn btn-primary"
               :data-dismiss "modal"}
      (t :core/Close)]
-    ;(reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges")
+    (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
     ]])
 
-(defn badge-content-modal [modal-data]
-  (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data))
+(defn badge-content-modal [modal-data reporttool-atom]
+  (dump "badge-content-modal")
+  (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data reporttool-atom))
                  :component-will-unmount (fn [] (close-modal!))}))
