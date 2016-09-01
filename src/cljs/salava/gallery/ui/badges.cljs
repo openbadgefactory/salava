@@ -9,8 +9,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
-            [salava.admin.ui.admintool :refer [admin-gallery-badge]]
-            [salava.core.helper :refer [dump]]))
+            [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
 (defn open-modal [badge-content-id]
   (let [reporttool (atom {:description     ""
@@ -26,7 +25,7 @@
      (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
      {:handler (fn [data]
                  (do
-                   (dump "ajax get")
+                   
                    (m/modal! [badge-content-modal data reporttool] {:size :lg})))})))
 
 (defn ajax-stop [ajax-message-atom]

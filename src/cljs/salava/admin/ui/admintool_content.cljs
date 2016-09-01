@@ -12,7 +12,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker admin?]]))
+            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? admin?]]))
 
 (defn status-handler [status item_type]
   (cond

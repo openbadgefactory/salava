@@ -81,6 +81,5 @@
     ]])
 
 (defn badge-content-modal [modal-data reporttool-atom]
-  (dump "badge-content-modal")
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data reporttool-atom))
                  :component-will-unmount (fn [] (close-modal!))}))

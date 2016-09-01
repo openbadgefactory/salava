@@ -16,7 +16,7 @@
     [:div {:id "badge-gallery-view"}
      [:div.panel
       [:div.panel-body
-       (admintool)
+       (admintool badge-content-id "badges")
        [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
        
        [badge-content content]]
