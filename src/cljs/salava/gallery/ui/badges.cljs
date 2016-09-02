@@ -128,8 +128,7 @@
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
         badge-id (or badge_content_id id)]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
+    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
        (if image_file
@@ -155,7 +154,9 @@
       [:div.media-bottom
        ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]          
        (admin-gallery-badge badge-id "badges" state init-data)
-       ]]]))
+       ]]
+       ;]
+       ))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)

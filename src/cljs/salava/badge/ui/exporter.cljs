@@ -46,8 +46,7 @@
 
 (defn grid-element [element-data state]
   (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
+    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
       [:div.visibility-icon
@@ -84,7 +83,9 @@
               (t :badge/Export) [:span {:class "reader-only"} name ]]])]
         [:div {:class "col-xs-3 text-right"}
          [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download" :aria-label (str "export " name " to backpack")}
-          [:i {:class "fa fa-download" }]]]]]]]))
+          [:i {:class "fa fa-download" }]]]]]]
+          ;]
+          ))
 
 (defn badge-grid [state]
   [:div {:class "row"

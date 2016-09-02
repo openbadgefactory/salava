@@ -34,8 +34,7 @@
 
 (defn badge-grid-element [element-data]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url]} element-data]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
+    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
        (if image_file
@@ -50,7 +49,9 @@
         [:div.media-issuer
          [:a {:href issuer_content_url
               :target "_blank"
-              :title issuer_content_name} issuer_content_name]]]]]]))
+              :title issuer_content_name} issuer_content_name]]]]]
+              ;]
+              ))
 
 (defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data

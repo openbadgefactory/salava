@@ -160,6 +160,7 @@ float:none;
     }
     .checkbox {
         margin-right: 15px;
+        margin-bottom:0px;
         i {
             font-size: 20px;
             margin-right: 8px;
@@ -188,6 +189,18 @@ float:none;
     }
     #badge-share-inputs {
         padding-bottom: 20px;
+        .linkinput, .form-horizontal{
+            margin-left: -150px;
+            margin-right: -220px;
+        }
+        @media (max-width:550px){
+            .pull-right.text-right {
+                float:none !important;
+            }
+            .linkinput, .form-horizontal{
+                margin:0px;
+            }
+        }
     }
     .expiresin {
         i {
@@ -202,8 +215,9 @@ float:none;
     .share-wrapper {
         margin-right: 220px;
         margin-left:150px;
-        &.public {
-            margin-left:30px;
+        @media (max-width:550px){
+            margin:0px;
+            width: 100%;
         }
     }
     .issuer-data .issuer-links{
@@ -216,7 +230,6 @@ float:none;
         float:right;
     }
     .checkbox {
-        float:left;
         margin-top:0px;
         padding-top:5px;
         color:$link-color;
@@ -224,12 +237,19 @@ float:none;
     .share-wrapper {
         margin-left:150px;
         margin-right: 220px;
+        @media (max-width:550px){
+            margin:0px;
+            width: 100%;
+            float:none;
+            clear:left;
+        }
     }
     #share-buttons {
         padding-left: 5px;
         padding-top:5px;
     }
     .checkbox {
+        float:left;
         margin-right: 15px;
         i {
             font-size: 20px;
@@ -254,6 +274,18 @@ float:none;
             padding-left:0px;
         }
     }
+    .linkinput, .form-horizontal{
+            margin-left: -150px;
+            margin-right: -220px;
+        }
+        @media (max-width:550px){
+            #buttons.text-right {
+                margin-bottom: 0px;
+            }
+            .linkinput, .form-horizontal{
+                margin:0px;
+            }
+        }
 }
 fieldset.checkbox{
     padding-left: 0px;
@@ -512,6 +544,8 @@ fieldset legend {
     height: 270px;
     max-width: 200px;
     min-width: 200px;
+    float: left;
+    margin-right: 20px;
     .media-content {
         text-align: center;
         height: auto;

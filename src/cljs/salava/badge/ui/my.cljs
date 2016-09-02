@@ -111,8 +111,7 @@
   (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
+    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
       (cond
@@ -172,7 +171,9 @@
       ;          [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))
       ;               :aria-describedby name :title (t :badge/Settings)}
       ;           [:i {:class "fa fa-cog"}]]])]
-                 ]]))
+                 ]
+                 ;]
+                 ))
 
 (defn badge-grid [state]
   (let [badges (:badges @state)

@@ -86,7 +86,7 @@
                     :else "error")
         badge-link (if (= invalidtype "duplicate") (path-for (str "/badge/info/" id)))
         ]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4" :key key}
+    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key key}
      [:div {:class (str "media grid-container " invalidtype)}
       [:div.media-content
        (if image_file
@@ -122,7 +122,9 @@
          [:div
           [:span {:id (str "err" key)} error]]
          [:div (t (keyword message))]
-        ))]]]))
+        ))]]
+        ;]
+        ))
 
 (defn badge-grid [state]
   (into [:div {:class "row"
