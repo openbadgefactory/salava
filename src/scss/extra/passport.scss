@@ -918,11 +918,30 @@ fieldset legend {
             background-color:#f9f9f9;
         }
     }
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: 3px solid #5cb85c;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #f9f9f9;
+            }
+    }
 }
 
 #badge-gallery{
     .modal-footer.reporttool {
         margin-left: 0px;
+       > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: 3px solid #5cb85c;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #f9f9f9;
+
+            }
+        }
     }
     .row.report-form {
     margin-right: 15px;
@@ -942,6 +961,18 @@ fieldset legend {
     background-color: transparent;
     #reportform {
         border: 1px solid #f0f0f0;
+        input[type=radio]{
+            margin-top: 3px;
+        }
+    }
+    > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: 3px solid #5cb85c;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
     }
 }
 #page-view {
@@ -952,10 +983,28 @@ fieldset legend {
     #reportform {
         border: 1px solid #f0f0f0;
     }
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: 3px solid #5cb85c;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
+    }
 }
 #badge-info {
     #reportform {
         border: 1px solid #f0f0f0;
+    }
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: 3px solid #5cb85c;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
     }
 }
 #share #share-buttons {
