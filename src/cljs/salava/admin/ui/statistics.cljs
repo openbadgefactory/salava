@@ -16,12 +16,6 @@
     [:div
      [:h1 (t :admin/Statistics)]
      [:div.row
-      [:li {:class "dropdown"
-            :key "target"}  
-       [:a {:href "dropdown-toggle" :data-toggle "dropdown" :role "button" :aria-haspopup true :aria-expanded true} "kissa"]
-       [:ul {:class "dropdown-menu"}
-        [:li [:a "jee"]]
-        [:li [:a "joo"]]]]
       [:div {:class "col-md-12"}
        [:div [:label (t :admin/Registeredusers)] ": " register-users]
        [:div [:label (t :admin/Totalbadges)] ": " all-badges]
