@@ -71,12 +71,11 @@
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
     (badge-content data)]
-   [:div.modal-footer
-    
-    [:button {:type         "button"
-              :class        "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :core/Close)]]
+   ;[:div.modal-footer
+    ;[:button {:type         "button"
+    ;          :class        "btn btn-primary"
+    ;          :data-dismiss "modal"}
+    ; (t :core/Close)]]
      [:div {:class "modal-footer reporttool"}
       (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
      ]])

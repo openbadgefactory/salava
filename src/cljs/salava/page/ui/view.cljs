@@ -78,7 +78,10 @@
                    :type      "checkbox"
                    :on-change #(toggle-visibility (:id page) visibility-atom)
                    :checked     (= @visibility-atom "public")}]
-          [:i.fa](t :core/Publishandshare)]]
+          [:i.fa]
+          (if (= @visibility-atom "public")
+            (t :page/Public)
+            (t :core/Publishandshare))]]
         [:div {:class (str "share-wrapper " @visibility-atom)} [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
        (admintool (:id page) "page"))
      [ph/view-page page]

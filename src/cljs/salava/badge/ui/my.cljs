@@ -125,7 +125,13 @@
                   [:a.righticon {:class "righticon revoked" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
                                     {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]]
         :else [:div.icons
-                [:a.visibility-icon {:on-click #(do (.preventDefault %) (show-settings-dialog id state)) :title (t :badge/Settings)}
+                [:a.visibility-icon {:on-click #(do (.preventDefault %) (show-settings-dialog id state))
+                :title
+                (case visibility
+                  "private" (str (t :badge/Badgevisibility) ": " (t :badge/Private))
+                  "internal" (str (t :badge/Badgevisibility) ": " (t :badge/Shared))
+                  "public" (str (t :badge/Badgevisibility) ": " (t :badge/Public))
+                  nil)}
              (case visibility
                "private" [:i {:class "fa fa-lock"}]
                "internal" [:i {:class "fa fa-group"}]

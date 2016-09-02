@@ -106,7 +106,9 @@
               [:a {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
                [:i {:class "fa"}]
                (if (not (= visibility "public"))
-                (t :core/Publishandshare))]]]
+                (t :core/Publishandshare)
+                (t :badge/Public)
+                )]]]
             [:div {:class "pull-right text-right"}
              [:button {:class "btn btn-primary settings-btn"
                        :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
@@ -169,20 +171,20 @@
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
              
              (if (and issued_on (> issued_on 0))
-               [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
+               [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
-               [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
+               [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
             (if assertion
               [:div {:id "assertion-link"}
-               [:label (t :badge/Metadata)] ": "
+               [:label (t :badge/Metadata)": "]
                [:a {:href     "#"
                     :on-click #(do (.preventDefault %)
                                    (m/modal! [a/assertion-modal assertion] {:size :lg}))}
                 (t :badge/Openassertion) "..."]])
             (if @show-recipient-name-atom
               (if (and user-logged-in? (not owner?))
-                [:div [:label (t :badge/Recipient)] ": " [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
-                [:div [:label (t :badge/Recipient)] ": " first_name " " last_name])
+                [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
+                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
               )
             [:div.description description]
             [:h2.uppercase-header (t :badge/Criteria)]

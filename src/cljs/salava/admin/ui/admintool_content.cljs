@@ -54,7 +54,7 @@
         [:br]
         (message-form mail)
         [:button {:type         "button"
-                  :class        "btn btn-primary pull-right"
+                  :class        "btn btn-primary"
                   :data-dismiss "modal"
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/delete_"item_type"/" item_id))
@@ -90,7 +90,7 @@
         (str (t :admin/Sendmessageforuser) " " item_owner)
         (message-form mail)
         [:button {:type         "button"
-                  :class        "btn btn-primary pull-right"
+                  :class        "btn btn-primary"
                   :disabled (if-not (and
                                      (< 1 (count (:subject @mail)))
                                      (< 1 (count (:message @mail))))
@@ -151,9 +151,9 @@
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "private-item" @visible_area) "" "private-item"))) :class (if (= "private-item" @visible_area) "opened" "")} (t :admin/Privatethis)]]
      (if (= @visible_area "private-item")
        [:div.col-md-12
-        (str (t :admin/Privatethis) " "  item_owner " " name " " (t (keyword (str "admin/" item_type))) "?" )
-        [:button {:type         "button"
-                  :class        "btn btn-primary pull-right"
+        [:div.privateitem (str (t :admin/Privatethis) " "  item_owner " " name " " (t (keyword (str "admin/" item_type))) "?" ) ]
+        [:div [:button {:type         "button"
+                  :class        "btn btn-primary"
                   :data-dismiss "modal"
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/private_"item_type"/" item_id))
@@ -166,7 +166,7 @@
                                                         (navigate-to "/admin")))
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)))})}
-         (t :core/Yes)]])]))
+         (t :core/Yes)]]])]))
 
 (defn lock-user [state visible_area item_owner]
   (let [{:keys [mail item_owner_id gallery-state init-data]} @state
@@ -179,7 +179,7 @@
         (str (t :admin/Lockuser) " " item_owner "?")
         (message-form mail)
         [:button {:type         "button"
-                  :class        "btn btn-primary pull-right"
+                  :class        "btn btn-primary"
                   :data-dismiss "modal"
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/delete_user/" item_owner_id ))
@@ -211,6 +211,7 @@
         [:div {:class "col-md-12"}
          [:h1.uppercase-header name]
          (info-block info item_type)]]
+        [:div.actions
        (if (not (= item_type "badges"))
          (send-message state visible_area item_owner))
        (if (not (= item_type "user"))
@@ -218,7 +219,7 @@
        (if (not (= item_type "user"))
          (delete-item state visible_area item_owner))
        (if (not (= item_type "badges"))
-         (lock-user state visible_area item_owner))]]]))
+         (lock-user state visible_area item_owner))]]]]))
 
 (defn admin-modal [state]
   [:div
@@ -233,7 +234,8 @@
     (admin-modal-container state)
       ]
      [:div.modal-footer
-      [:button {:type         "button"
-                :class        "btn btn-primary"
-                :data-dismiss "modal"}
-       (t :core/Close)]]])
+      ;[:button {:type         "button"
+      ;          :class        "btn btn-primary"
+      ;          :data-dismiss "modal"}
+      ; (t :core/Close)]
+      ]])

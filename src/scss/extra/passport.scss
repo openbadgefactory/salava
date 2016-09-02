@@ -80,10 +80,10 @@ ul#secondary-menu-links li a{
 a#login-button {
     height: 36px;
     width: 125px;
-    background-color: #f8a152;
+    background-color: $orange-color;
     color: #fff !important;
     text-transform: uppercase;
-    border: 1px solid #dc8538;
+    border: 1px solid $orange-hover;
     border-radius: 3px;
     box-shadow: 0px 1px 1px #c7b6a2;
     -webkit-box-shadow: 0px 1px 1px #c7b6a2;
@@ -91,6 +91,16 @@ a#login-button {
     text-align: center;
     display: inline-block;
     padding: 8px 0 0 0 !important;
+    &:hover {
+        background-color:$orange-hover;
+    }
+}
+#login-page .btn-primary {
+    background-color: $orange-color;
+    border: 1px solid $orange-hover;
+    &:hover {
+        background-color:$orange-hover;
+    }
 }
 #navbar-collapse {
     text-align: center;
@@ -145,7 +155,8 @@ float:none;
 }
 #badge-info {
     .badge-info label{
-    color: $text-color;
+        color: $text-color;
+        min-width: 100px;
     }
     .checkbox {
         margin-right: 15px;
@@ -195,6 +206,9 @@ float:none;
             margin-left:30px;
         }
     }
+    .issuer-data .issuer-links{
+        margin-left: 0px;
+    }
 }
 #page-buttons-share {
     padding-bottom:20px;
@@ -205,13 +219,11 @@ float:none;
         float:left;
         margin-top:0px;
         padding-top:5px;
+        color:$link-color;
     }
     .share-wrapper {
         margin-left:150px;
         margin-right: 220px;
-        &.public {
-            margin-left: 30px;
-        }
     }
     #share-buttons {
         padding-left: 5px;
@@ -226,9 +238,6 @@ float:none;
         &.public {
             i:before {
                 content:'\f0ac';
-            }
-            span {
-                display: none;
             }
         }
         &.internal i:before {
@@ -413,7 +422,8 @@ fieldset legend {
         font-weight: 600;
         color: $menu-active;
         font-size: 15px;
-        padding-top:5px;
+        padding-top:10px;
+        padding-bottom: 5px;
         margin-left:0px;
         width: 100%;
     }
@@ -833,6 +843,7 @@ fieldset legend {
     .row.report-form {
         a#open-reportform-button {
             padding-top:15px;
+            cursor: pointer;
         }
         h4 {
             font-weight: 300;
@@ -852,6 +863,7 @@ fieldset legend {
         float:right;
         display: block;
         padding-bottom:3px;
+        cursor: pointer;
     }
 }
 #profile {
@@ -877,11 +889,11 @@ fieldset legend {
 #badge-gallery{
     .modal-footer.reporttool {
         margin-left: 0px;
-        margin-bottom: 20px;
     }
     .row.report-form {
     margin-right: 15px;
     margin-left:15px;
+    margin-bottom:20px;
     #reportform {
         border: 1px solid #f0f0f0;
         background-color: #f9f9f9;
@@ -937,8 +949,8 @@ fieldset legend {
 .admin-modal, #badge-info .admin-modal {
     .sub-heading{
     a{
-        font-weight: 300;
-        font-size: 24px;
+        font-weight: 400;
+        font-size: 20px;
         //color: $title-color;
         line-height: 30px;
         &:before {
@@ -959,4 +971,27 @@ fieldset legend {
     .issuer-image img {
         margin-left:5px;
     }
+    .actions .col-md-12:not(.sub-heading) {
+        line-height: 30px;
+        font-size: 13px;
+        padding-left: 35px;
+        button {
+            margin-bottom: 25px;
+        }
+        .privateitem {
+            padding-bottom: 10px;
+        }
+    }
+}
+#badge-gallery .modal-dialog:not(.modal-lg){
+    width:800px;
+    .modal-content{
+        background: #F9F9F9;
+    }
+}
+#page-gallery .modal-dialog:not(.modal-lg) {
+    width:800px;
+}
+.close {
+    opacity: 0.4;
 }

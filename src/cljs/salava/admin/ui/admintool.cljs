@@ -33,7 +33,7 @@
                          :item_owner (:item_owner data)
                          :item_owner_id (:item_owner_id data)
                                                   :info (:info data))
-                  (m/modal! [admin-modal state nil nil] {:size :lg}))})))
+                  (m/modal! [admin-modal state nil nil] ))})))
   ([item-type item-id gallery-state init-data]
    (let [ state (atom {:mail          {:subject ""
                                        :message ""}
@@ -56,7 +56,7 @@
                          :item_owner (:item_owner data)
                          :item_owner_id (:item_owner_id data)
                                                   :info (:info data))
-                  (m/modal! [admin-modal state] {:size :lg}))}))))
+                  (m/modal! [admin-modal state] ))}))))
 
 (defn admintool [item-id item-type]
   (if (admin?)
