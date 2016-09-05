@@ -23,11 +23,11 @@
                   :query-params [{code :- s/Str nil}
                                  {error :- s/Str nil}]
                   :current-user current-user
-                  (let [{:keys [status user-id message]} (f/facebook-login ctx code (:id current-user) error)]
+                  (let [{:keys [status user-id message role]} (f/facebook-login ctx code (:id current-user) error)]
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/badge/mybadges")) [:session :identity :id] user-id))
+                        (assoc-in (redirect (str (get-base-path ctx) "/badge/mybadges"))[:session :identity] {:id user-id :role role} ))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
@@ -47,11 +47,11 @@
                                  {error :- s/Str nil}]
                   :current-user current-user
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
-                        {:keys [status user-id message]} r]
+                        {:keys [status user-id message role]} r]
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/badge/mybadges")) [:session :identity :id] user-id))
+                        (assoc-in (redirect (str (get-base-path ctx) "/badge/mybadges")) [:session :identity] {:id user-id :role role}))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
