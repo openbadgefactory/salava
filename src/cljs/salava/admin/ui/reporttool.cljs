@@ -11,11 +11,9 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.admin.schemas :as schemas]
-            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? checker]]))
+            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id?]]))
 
-(def opened-atom (atom "false"))
-
-(defn save-report [state]
+(defn save-report [state status]
   (let [{:keys [description report-type item-id item-url item-name item-type reporter-id item-content-id]} @state]
     (ajax/POST
      (path-for (str "/obpv1/admin/ticket"))
@@ -30,24 +28,24 @@
                :item_type item-type
                :reporter_id reporter-id}
       :handler (fn [data]
-                 (reset! opened-atom "sent")
-                 (reset! state {:description ""
+                 (reset! state {:status "sent"
+                                :description ""
                                 :report-type "bug"}))
       :error-handler (fn [{:keys [status status-text]}]
                        )})))
 
-(defn open-reportform-button [closed?]
+(defn open-reportform-button [closed? status]
   [:a {:class "pull-right"
        :id "open-reportform-button"
        :on-click #(do
                     (.preventDefault %)
-                    (reset! opened-atom(if (= "true" @opened-atom) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :admin/Close))])
+                    (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :admin/Close))])
 
-(defn reportform [state]
+(defn reportform [state status]
   (let [description-atom (cursor state [:description]) 
         report-type-atom (cursor state [:report-type])]
     [:div  
-     (open-reportform-button false)
+     (open-reportform-button false status)
      [:div {:class "col-xs-12" :id "reportform"}
       [:h4 (t :admin/Reportproblem)]
        [:div.form-group
@@ -102,22 +100,13 @@
         [:button {:class    "btn btn-primary"
                   :on-click #(do
                                (.preventDefault %)
-                               (save-report state)
+                               (save-report state status)
                                )}
          (t :admin/Send)]]]]))
 
-(def seconds-elapsed (atom 0))
-
-(defn confirmedtext-timer []
-  (js/setTimeout #(swap! seconds-elapsed inc) 1000)
-  (if (=@seconds-elapsed 5)
-    (do
-      (reset! opened-atom "false")
-      (reset! seconds-elapsed 0))))
 
 (defn confirmedtext []
   [:div {:id "reportform"}
-   (confirmedtext-timer)
    [:div (t :admin/Confirmedtext)]])
 
 (defn url-creator [item-type id]
@@ -126,17 +115,8 @@
     (= item-type "page") (path-for (str "/page/view/" id))
     :else (current-path)))
 
-(def init-state (atom {:description ""
-                       :report-type "bug"
-                       :item-id ""
-                       :item-content-id ""
-                       :item-url   ""
-                       :item-name "" ;
-                       :item-type "" ;badge/user/page/badges
-                       :reporter-id ""}))
-
-(defn reporttool [id item-name item-type]
-  (let [state init-state
+(defn reporttool [id item-name item-type state]
+  (let [status (cursor state [:status])
         item-url (url-creator item-type id)
         reporter-id (session/get-in [:user :id])
         item-content-id (if (= item-type "badges") id nil)
@@ -152,7 +132,7 @@
     
     [:div
      (cond
-       (= @opened-atom "false") (open-reportform-button true)
-       (= @opened-atom "true") (reportform state)
-       (= @opened-atom "sent") (confirmedtext) 
+       (= @status "false") (open-reportform-button true status)
+       (= @status "true") (reportform state status)
+       (= @status "sent") (confirmedtext) 
        :else "")]))

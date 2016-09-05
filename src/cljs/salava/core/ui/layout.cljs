@@ -38,11 +38,20 @@
   (ajax/POST
     (path-for "/obpv1/user/logout")
     {:handler (fn [] (navigate-to "/user/login"))}))
-
+ 
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
         :key target}
    [:a {:href target} title]])
+
+(defn navi-dropdown [{:keys [target title active items]}]
+  (let [subitems (sub-navi-list (navi-parent (current-path)) items)
+        subitemactive  (some :active subitems)]
+    [:li {:key target}
+     [:a {:data-toggle "collapse" :data-target (str "#"(hash target))}  title]
+     [:ul {:id (hash target) :class (if subitemactive "collapse in" "collapse")}
+      (doall (for [i subitems]
+               (navi-link i)))]]))
 
 (defn top-navi-header []
   [:div {:class "navbar-header"}
@@ -79,8 +88,8 @@
       (top-navi-header)
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
-        (for [i items]
-          (navi-link i))]
+        (doall (for [i items]
+                 (navi-link i)))]
        (top-navi-right)]]]))
 
 (defn top-navi-landing [site-navi]
@@ -105,8 +114,9 @@
       
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
-        (for [i items]
-          (navi-link i))]
+        (doall (for [i items]
+                 (navi-link i)))
+        ]
        ]]]))
 
 (defn get-footer-item [navi]
@@ -123,13 +133,22 @@
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi))]
     [:ul {:class "side-links"}
-     (for [i items]
-       (navi-link i))]))
+     (doall (for [i items](if (:dropdown i)
+                            (navi-dropdown i)
+                            (navi-link i))))]))
+
+
+(defn get-dropdown-breadcrumb [site-navi]
+  (let [dropdowns  (filter #(:dropdown %) (vals (:navi-items site-navi)))
+        dropdownitems (into {} (map #(:items %) dropdowns))
+        matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys dropdownitems)))]
+    [:h2 (get-in dropdownitems [matched-route :breadcrumb])]))
 
 (defn breadcrumb [site-navi]
   (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))]
     (if matched-route
-      [:h2 (get-in site-navi [:navi-items matched-route :breadcrumb])])))
+      [:h2 (get-in site-navi [:navi-items matched-route :breadcrumb])]
+      (get-dropdown-breadcrumb site-navi))))
 
 (defn default-0 [top-items sub-items heading content]
   [:div

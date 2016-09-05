@@ -6,14 +6,13 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for current-path]]
             [salava.core.i18n :refer [t]]
-            [salava.admin.ui.helper :refer [checker admin?]]
+            [salava.admin.ui.helper :refer [admin?]]
             [salava.admin.ui.admintool-content :refer [admin-modal]]))
 
 
 (defn open-admintool-modal
-  ([]
-   (let [{:keys [item-type item-id]} (checker (current-path))
-         state (atom {:mail          {:subject ""
+  ([item-id item-type]
+   (let [state (atom {:mail          {:subject ""
                                       :message ""}
                       :visible_area  ""
                       :item_type     item-type
@@ -22,8 +21,8 @@
                       :item_owner_id nil
                       :image_file    nil
                       :name          ""
-                      :info          {:created     "20.2.2010"
-                                      :description "joo jee"}
+                      :info          {:created     ""
+                                      :description ""}
                       :gallery-state nil
                       :init-data nil})]
      (ajax/GET
@@ -45,10 +44,10 @@
                        :item_owner_id nil
                        :image_file    nil
                        :name          ""
-                       :info          {:created     "20.2.2010"
-                                       :description "joo jee"}
+                       :info          {}
                        :gallery-state gallery-state
-                       :init-data init-data})]
+                       :init-data init-data
+                       :status ""})]
      (ajax/GET
       (path-for (str "/obpv1/admin/"item-type"/" item-id))
       {:handler (fn [data]
@@ -59,32 +58,32 @@
                                                   :info (:info data))
                   (m/modal! [admin-modal state] {:size :lg}))}))))
 
-(defn admintool []
+(defn admintool [item-id item-type]
   (if (admin?)
     [:div
      [m/modal-window]
-     [:a {:class    "bottom-link pull-right"
-          :on-click #(do (.preventDefault %)
-                         (open-admintool-modal))}
-      [:i {:class "fa fa-lock"}] "admin tools"]]))
+     [:div {:id "buttons"
+            :class "text-right"}
+      [:button {:class    "btn btn-primary text-right"
+                :on-click #(do (.preventDefault %)
+                               (open-admintool-modal item-id item-type))}
+      (t :admin/Admintools)]]]))
 
 (defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
     [:div
-     [m/modal-window]
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "badges" item-id state init-data))}
-      [:i {:class "fa fa-lock"}] "admin tools"]]))
+      [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
 
 (defn admintool-gallery-page [item-id item-type state init-data user-id]
   (if (admin?)
     [:div
-     [m/modal-window]
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "page" item-id state init-data))}
-      [:i {:class "fa fa-lock"}] "admin tools"]]))
+      [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
 
 
 

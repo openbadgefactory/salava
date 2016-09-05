@@ -8,7 +8,8 @@
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
-            [salava.admin.ui.reporttool :refer [reporttool]]))
+            [salava.admin.ui.reporttool :refer [reporttool]]
+            ))
 
 (defn delete-page [id]
   (ajax/DELETE
@@ -169,7 +170,7 @@
                       "tag" (tag-block block)
                       nil)]))]]]])]))
 
-(defn render-page-modal [page]
+(defn render-page-modal [page reporttool-atom]
   [:div {:id "badge-content"}
    [:div.modal-body
     [:div.row
@@ -182,11 +183,12 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]
    [:div {:class "modal-footer page-content"}
-   (reporttool (:id page) (:name page) "page") ]
+   (reporttool (:id page) (:name page) "page" reporttool-atom)
+    ]
    ])
 
-(defn view-page-modal [page]
-  (create-class {:reagent-render (fn [] (render-page-modal page))
+(defn view-page-modal [page reporttool-atom]
+  (create-class {:reagent-render (fn [] (render-page-modal page reporttool-atom))
                  :component-will-unmount (fn [] (m/close-modal!))}))
 
 (defn edit-page-header [header]
