@@ -10,6 +10,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]
+            [reagent-modals.modals :as m]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
@@ -86,6 +87,7 @@
         fullname (str first_name " " last_name)]
     
     [:div.panel {:id "profile"}
+     [m/modal-window]
      [:div.panel-body
       (if owner?
         [:div.row

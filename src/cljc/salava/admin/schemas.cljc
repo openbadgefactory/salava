@@ -21,7 +21,8 @@
                    :item_owner s/Str
                    :info {:emails [(s/maybe s/Str)]
                           :ctime s/Int
-                          :last_login s/Int}})
+                          :last_login s/Int
+                          :deleted s/Bool}})
 
 (s/defschema Page {:name s/Str
                    :image_file (s/maybe s/Str)
@@ -88,14 +89,20 @@
 (s/defschema UserSearch {:name          (s/constrained s/Str #(and (>= (count %) 0)
                                                                    (<= (count %) 255)))
                          :country       (apply s/enum (conj (keys all-countries) "all"))
-                         :common_badges s/Bool
-                         :order_by      (s/enum "name" "ctime" "common_badge_count")})
+                         
+                         :order_by      (s/enum "name" "ctime" "common_badge_count")
+                         :filter   (s/enum  "all" "deleted")})
 
-(s/defschema UserProfiles (-> u/User
-                              (select-keys [:first_name :last_name :country :deleted])
-                              (merge {:id s/Int
-                                      :ctime s/Int
-                                      :email (s/maybe s/Str)})))
+(s/defschema UserProfiles {:first_name (s/constrained s/Str #(and (>= (count %) 1)
+                                                                  (<= (count %) 255)))
+                           :last_name  (s/constrained s/Str #(and (>= (count %) 1)
+                                                          (<= (count %) 255)))
+                           :country    (apply s/enum (keys all-countries))
+                              
+                           :ctime s/Int
+                           :id s/Int
+                           :deleted (s/enum true false)
+                           :email (s/maybe s/Str)})
 
 (s/defschema Countries (s/constrained [s/Str] (fn [c]
                                                 (and

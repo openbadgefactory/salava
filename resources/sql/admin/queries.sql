@@ -58,6 +58,9 @@ UPDATE page SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 --name: update-user-deleted!
 UPDATE user SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
+--name: update-user-undeleted!
+UPDATE user SET deleted = 0, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
 --name: select-user-and-email
 SELECT first_name, last_name, ue.email FROM user AS u
 JOIN user_email AS ue ON u.id = ue.user_id
@@ -97,3 +100,4 @@ JOIN user_email AS ue ON u.id = ue.user_id
 --name: select-email-by-user-ids
 SELECT user_id, GROUP_CONCAT(email, primary_address) AS email from user_email where user_id IN (:ids)
 GROUP BY user_id
+

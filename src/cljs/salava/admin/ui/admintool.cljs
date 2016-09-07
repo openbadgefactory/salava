@@ -7,6 +7,7 @@
             [salava.core.ui.helper :refer [path-for current-path]]
             [salava.core.i18n :refer [t]]
             [salava.admin.ui.helper :refer [admin?]]
+            [salava.core.helper :refer [dump]]
             [salava.admin.ui.admintool-content :refer [admin-modal]]))
 
 
@@ -21,6 +22,7 @@
                       :item_owner_id nil
                       :image_file    nil
                       :name          ""
+                      :selected-email ""
                       :info          {:created     ""
                                       :description ""}
                       :gallery-state nil
@@ -28,11 +30,13 @@
      (ajax/GET
       (path-for (str "/obpv1/admin/"item-type"/" item-id))
       {:handler (fn [data]
-                  (swap! state assoc :name (:name data)
-                         :image_file (:image_file data)
-                         :item_owner (:item_owner data)
-                         :item_owner_id (:item_owner_id data)
-                                                  :info (:info data))
+                  (do
+                    (swap! state assoc :name (:name data)
+                           :image_file (:image_file data)
+                           :item_owner (:item_owner data)
+                           :item_owner_id (:item_owner_id data)
+                           :info (:info data))
+                    )
                   (m/modal! [admin-modal state nil nil] {:size :lg}))})))
   ([item-type item-id gallery-state init-data]
    (let [ state (atom {:mail          {:subject ""
@@ -51,17 +55,19 @@
      (ajax/GET
       (path-for (str "/obpv1/admin/"item-type"/" item-id))
       {:handler (fn [data]
-                  (swap! state assoc :name (:name data)
-                         :image_file (:image_file data)
-                         :item_owner (:item_owner data)
-                         :item_owner_id (:item_owner_id data)
-                                                  :info (:info data))
+                  (do
+                    (swap! state assoc :name (:name data)
+                           :image_file (:image_file data)
+                           :item_owner (:item_owner data)
+                           :item_owner_id (:item_owner_id data)
+                           :info (:info data))
+                    (if (= "user" item-type)
+                      (swap! state assoc :selected-email (first (get-in data [:info :emails])))))
                   (m/modal! [admin-modal state] {:size :lg}))}))))
 
 (defn admintool [item-id item-type]
   (if (admin?)
     [:div
-     [m/modal-window]
      [:div {:id "buttons"
             :class "text-right"}
       [:button {:class    "btn btn-primary text-right"
@@ -86,4 +92,13 @@
       [:i {:class "fa fa-lock"}](t :admin/Admintools)]]))
 
 
+(defn admintool-admin-page [item-id item-type state init-data]
 
+(if (admin?)
+    [:div
+     [:div {:id "buttons"
+            :class "text-right"}
+      [:button {:class    "btn btn-primary text-right"
+                :on-click #(do (.preventDefault %)
+                               (open-admintool-modal item-type item-id state  init-data))}
+      (t :admin/Admintools)]]]))

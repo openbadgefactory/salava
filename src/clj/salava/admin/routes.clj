@@ -6,6 +6,7 @@
             [schema.core :as s]
             [salava.core.util :refer [get-base-path]]
             [salava.admin.db :as a]
+            [salava.core.helper :refer [dump]]
             [salava.core.access :as access]
             [salava.admin.schemas :as schemas]
             salava.core.restructure))
@@ -154,6 +155,14 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/delete-user! ctx id subject message)))
+             
+             (POST "/undelete_user/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Undelete user"
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/undelete-user! ctx id)))
 
              (POST "/ticket" []
                    :return (s/enum "success" "error")
@@ -183,11 +192,19 @@
              (POST "/profiles" []
                    :return {:users [schemas/UserProfiles]
                             :countries [schemas/Countries]}
-                   :body [search-params schemas/UserSearch]
-                   :summary "Get public user profiles"
+                   :body [search-params {:name (s/maybe s/Str)
+                                         :country (s/maybe s/Str)
+                                         :order_by (s/enum "name" "ctime" "common_badge_count")
+                                         :email (s/maybe s/Str)
+                                         :filter (s/enum 1 0)}
+                          ]
+                   :summary "Gwarawret public user profiles"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok {:users     (a/public-profiles ctx search-params (:id current-user))
-                        :countries (a/profile-countries ctx (:id current-user))}))
+                   (let [users (a/all-profiles ctx search-params (:id current-user))
+                         countries (a/profile-countries ctx (:id current-user))]
+                     
+                     (ok {:users     (vec users)
+                          :countries (vec countries)})))
 
              )))
