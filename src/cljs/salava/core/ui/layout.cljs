@@ -49,7 +49,7 @@
         subitemactive  (some :active subitems)]
     [:li {:key target}
      [:a {:data-toggle "collapse" :data-target (str "#"(hash target))}  title]
-     [:ul {:id (hash target) :class (if subitemactive "collapse in" "collapse")}
+     [:ul {:id (hash target) :class (if subitemactive "collapse in side-dropdown-links" "collapse side-dropdown-links")}
       (doall (for [i subitems]
                (navi-link i)))]]))
 

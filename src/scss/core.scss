@@ -284,6 +284,22 @@ ul.side-links {
     }
 }
 
+ul.side-dropdown-links {
+    //list-style-type: none;
+    //padding: 0;
+    li {
+        a {
+            @extend %navi-link;
+            color: $green-link;
+        }
+    }
+    li.active {
+        a {
+            color: $light-green-link;
+        }
+    }
+}
+
 .main-container {
     margin-top: 15px;
     margin-bottom: 30px;

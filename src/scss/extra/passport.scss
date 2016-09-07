@@ -66,10 +66,22 @@ ul.side-links > li > a {
     }
 }
 
+ul.side-dropdown-links > li > a {
+    color:#7b7076;//$orange-color;//#f59f48;
+    font-size: 14px;
+    &:hover {
+        color: #4a4348;//$orange-hover;
+    }
+}
+
+
 ul.side-links > li.active > a {
     color: #4a4348;//$text-color;//#ea7d45;
 }
 
+ul.side-dropdown-links > li.active > a {
+    color: #4a4348;//$text-color;//#ea7d45;
+}
 ul#secondary-menu-links li a{
     font-weight: normal;
     i.fa {

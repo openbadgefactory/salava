@@ -72,7 +72,7 @@
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text))
                                                       )})}
-         (t :core/Yes)]
+         (t :core/Delete)]
         ])])
   )
 
@@ -166,7 +166,7 @@
                                                         (navigate-to "/admin")))
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)))})}
-         (t :core/Yes)]]])]))
+         (t :admin/Private)]]])]))
 
 (defn lock-user [state visible_area item_owner]
   (let [{:keys [mail item_owner_id gallery-state init-data]} @state
@@ -193,7 +193,7 @@
                                                       )
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
-         (t :core/Yes)]]
+         (t :admin/Lock)]]
        )]))
 
 (defn admin-modal-container [state]
