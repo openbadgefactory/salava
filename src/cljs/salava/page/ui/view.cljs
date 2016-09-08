@@ -7,6 +7,7 @@
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
+            [reagent-modals.modals :as m]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
@@ -61,7 +62,7 @@
         reporttool-atom (cursor state [:reporttool])
         visibility-atom (cursor state [:page :visibility])]
     [:div {:id "page-view"}
-     
+     [m/modal-window]
      (if (:owner? page)
        [:div {:id "page-buttons-share"}
         [:div {:id "buttons"

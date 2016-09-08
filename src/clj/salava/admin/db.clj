@@ -6,6 +6,7 @@
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.core.time :refer [unix-time get-date-from-today]]
+            [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
             [salava.badge.main :as b]
             [salava.page.main :as p]
@@ -143,7 +144,6 @@
 (defn delete-page! [ctx id user-id subject message]
   (try+
    (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-     (dump (:email user))
      (if (and (< 1 (count subject)) (< 1 (count message)))
        (m/send-mail ctx subject message [(:email user)]))
      (update-page-deleted! {:id id} (get-db ctx))
@@ -155,7 +155,6 @@
 (defn delete-user! [ctx user-id subject message]
   (try+
    (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-     (dump (:email user))
 
      (if (and (< 1 (count subject)) (< 1 (count message)))
        (m/send-mail ctx subject message [(:email user)]))
@@ -165,6 +164,13 @@
      (delete-user-badge-views! {:user_id user-id}(get-db ctx))
      (update-user-deleted! {:id user-id} (get-db ctx))
      )
+   "success"
+   (catch Object _
+     "error")))
+
+(defn undelete-user! [ctx user-id]
+  (try+
+   (update-user-undeleted! {:id user-id} (get-db ctx))
    "success"
    (catch Object _
      "error")))
@@ -187,6 +193,7 @@
               :email (:email user))))
 
 
+
 (defn get-user [ctx user_id]
   (let [user (u/user-information-with-registered-and-last-login ctx user_id)
         emails (vec (u/verified-email-addresses ctx user_id))]
@@ -196,7 +203,8 @@
               :item_owner (str (:first_name user) " " (:last_name user))
               :info {:emails emails
                      :last_login (:last_login user)
-                     :ctime (:ctime user)})))
+                     :ctime (:ctime user)
+                     :deleted (:deleted user)})))
 
 (defn get-badge-modal [ctx badgeid]
   (let [badge  (b/get-badge ctx badgeid nil)]
@@ -240,5 +248,53 @@
               :image_file (:profile_picture user)
               :item_owner_id (:user_id page)
               :item_owner (str (:first_name page) " " (:last_name page))
-              :info {}))
-  )
+              :info {})))
+
+(defn profile-countries [ctx user-id]
+  (let [current-country (g/user-country ctx user-id)
+        countries (g/select-profile-countries {} (into {:row-fn :country} (get-db ctx)))]
+    (-> all-countries
+        (select-keys (conj countries current-country))
+        (sort-countries)
+        (seq))))
+
+
+(defn all-profiles
+  "Search all user profiles by user's name, email and country"
+  [ctx search-params user-id]
+  (let [{:keys [name country order_by email filter]} search-params
+        where ""
+        order (case order_by
+                "ctime" " ORDER BY ctime DESC"
+                "name" " ORDER BY last_name, first_name"
+                "")
+        params []
+        [where params] (if-not (or (empty? country) (= country "all"))
+                         [(str where " AND country = ?") (conj params country)]
+                         [where params])
+        [where params] (if-not (empty? name)
+                         [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
+                         [where params])
+        [where params] (if-not (empty? email)
+                         [(str where " AND u.id in (SELECT user_id from user_email WHERE email LIKE ?)") (conj params (str "%" email "%"))]
+                         [where params]
+                         )
+        [where params] (if (pos? filter)
+                         [(str where " AND u.deleted = ?") (conj params filter)]
+                         [where params])
+        query (str "SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email FROM user AS u
+JOIN user_email AS ue ON ue.user_id = u.id
+WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
+                   where
+                   " GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted "
+                   order
+                   " LIMIT 50"
+                   )
+        profiles (jdbc/with-db-connection
+                   [conn (:connection (get-db ctx))]
+                   (jdbc/query conn (into [query] params)))]
+    (->> profiles
+         (take 50))))
+
+
+

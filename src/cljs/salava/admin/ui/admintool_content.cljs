@@ -168,6 +168,65 @@
                                                       (.log js/console (str status " " status-text)))})}
          (t :admin/Private)]]])]))
 
+
+(defn unlock-user [state visible_area item_owner]
+  (let [{:keys [item_type item_owner_id gallery-state init-data name]} @state]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "unlock-user" @visible_area) "" "unlock-user")))} (t :admin/Unlockuser)]]
+     (if (= @visible_area "unlock-user")
+       [:div.col-md-12
+        (str (t :admin/Unlockuser) " "   item_owner "?" )
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/undelete_user/" item_owner_id))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :handler         (fn [data]
+                                                      (if init-data
+                                                        (init-data gallery-state)
+                                                        (navigate-to "/admin")))
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)))})}
+         (t :core/Yes)]])]))
+
+
+(defn password-reset [state visible_area item_owner]
+  (let [{:keys [item_type item_owner_id gallery-state init-data name info]} @state
+        email-atom (cursor state [:selected-email])]
+    [:div {:class "row"}
+     [:div {:class "col-xs-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "password-reset" @visible_area) "" "password-reset")))} (t :admin/Sendpasswordreset)]]
+     (if (= @visible_area "password-reset")
+       [:div.col-xs-12.row
+        [:div {:class "form-group col-xs-8"}
+         
+         [:select {:class "form-control"
+                   :id "emails"
+                   :value @email-atom
+                   :on-change #(reset! email-atom (.-target.value %))
+                   }
+          (doall
+           (for [element-data (:emails info)]
+             [:option {:key (hash element-data) :value element-data} element-data])) ]]
+        [:button {:type         "button"
+                  :class        "btn btn-primary"
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/user/reset/"))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :params          {:email @email-atom}
+                                   :handler         (fn [data]
+                                                      (if init-data
+                                                        (init-data gallery-state)
+                                                        (navigate-to "/admin")))
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)))})}
+         [:span (t :admin/Sendresetlink)]]])]))
+
 (defn lock-user [state visible_area item_owner]
   (let [{:keys [mail item_owner_id gallery-state init-data]} @state
         mail (cursor state [:mail])]
@@ -219,7 +278,11 @@
        (if (not (= item_type "user"))
          (delete-item state visible_area item_owner))
        (if (not (= item_type "badges"))
-         (lock-user state visible_area item_owner))]]]]))
+         (if (:deleted info)
+           (unlock-user state visible_area item_owner)
+           (lock-user state visible_area item_owner)))
+       (if (not (= item_type "badges"))
+         (password-reset state visible_area item_owner))]]]]))
 
 (defn admin-modal [state]
   [:div

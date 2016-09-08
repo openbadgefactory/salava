@@ -27,7 +27,7 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime FROM user WHERE id = :id AND deleted = 0
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted FROM user WHERE id = :id
 
 --name: select-user-password
 SELECT pass FROM user WHERE id = :id 

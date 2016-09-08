@@ -1,7 +1,9 @@
 (ns salava.admin.schemas
   (:require [schema.core :as s
              :include-macros true ;; cljs only
-             ]))
+             ]
+            [salava.core.countries :refer [all-countries]]
+            [salava.user.schemas :as u]))
 
 (s/defschema Stats {:register-users (s/maybe s/Int)
                     :last-month-active-users (s/maybe s/Int)
@@ -19,7 +21,8 @@
                    :item_owner s/Str
                    :info {:emails [(s/maybe s/Str)]
                           :ctime s/Int
-                          :last_login s/Int}})
+                          :last_login s/Int
+                          :deleted s/Bool}})
 
 (s/defschema Page {:name s/Str
                    :image_file (s/maybe s/Str)
@@ -80,3 +83,28 @@
 
 (s/defschema Url-parser {:item-type (s/enum "badge" "page" "user")
                          :item-id   (s/maybe s/Int)})
+
+
+
+(s/defschema UserSearch {:name          (s/constrained s/Str #(and (>= (count %) 0)
+                                                                   (<= (count %) 255)))
+                         :country       (apply s/enum (conj (keys all-countries) "all"))
+                         
+                         :order_by      (s/enum "name" "ctime" "common_badge_count")
+                         :filter   (s/enum  "all" "deleted")})
+
+(s/defschema UserProfiles {:first_name (s/constrained s/Str #(and (>= (count %) 1)
+                                                                  (<= (count %) 255)))
+                           :last_name  (s/constrained s/Str #(and (>= (count %) 1)
+                                                          (<= (count %) 255)))
+                           :country    (apply s/enum (keys all-countries))
+                              
+                           :ctime s/Int
+                           :id s/Int
+                           :deleted (s/enum true false)
+                           :email (s/maybe s/Str)})
+
+(s/defschema Countries (s/constrained [s/Str] (fn [c]
+                                                (and
+                                                  (some #(= (first c) %) (keys all-countries))
+                                                  (some #(= (second c) %) (vals all-countries))))))
