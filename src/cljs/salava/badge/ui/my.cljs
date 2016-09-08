@@ -129,7 +129,7 @@
                 (case visibility
                   "private" (str (t :badge/Badgevisibility) ": " (t :badge/Private))
                   "internal" (str (t :badge/Badgevisibility) ": " (t :badge/Shared))
-                  "public" (str (t :badge/Badgevisibility) ": " (t :badge/Public))
+                  "public" (str (t :badge/Badgevisibility) ": " (t :core/Public))
                   nil)}
              (case visibility
                "private" [:i {:class "fa fa-lock"}]

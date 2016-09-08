@@ -107,7 +107,7 @@
                [:i {:class "fa"}]
                (if (not (= visibility "public"))
                 (t :core/Publishandshare)
-                (t :badge/Public)
+                (t :core/Public)
                 )]]]
             [:div {:class "pull-right text-right"}
              [:button {:class "btn btn-primary settings-btn"
