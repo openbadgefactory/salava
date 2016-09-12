@@ -10,13 +10,118 @@
             [salava.core.ui.helper :refer [path-for unique-values]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
+            [salava.admin.ui.helper :refer [message-form email-select status-handler]]
             [salava.core.time :refer [date-from-unix-time]]))
+
+(defn text-shorter [text length]
+  (let [sorted-text (subs text 0 (min (count text) length))
+        show-atom (atom true)]
+    (fn []
+      (if @show-atom
+        [:p sorted-text " " [:a {:href "#" :on-click #(do
+                                                        (reset! show-atom false)
+                                                        (.preventDefault %))} "Show more"]]
+        [:div text " " [:a {:href "#" :on-click #(do                                  
+                                                   (reset! show-atom true)
+                                                   (.preventDefault %))} "Show less"] ]))
+    ))
+
+
+(defn ticket-send-message [state name]
+(let [{:keys [user_id gallery-state init-data info]} @state
+        mail (cursor state [:mail])
+        status (cursor state [:status])
+        email-atom (cursor state [:selected-email])
+        ]
+    
+  [:div {:class "row"}
+   [:div {:class "col-xs-12"}
+    (str (t :admin/Sendmessagetoreporter) " " name)
+      [:div.form-group
+        [:label 
+         (str (t :user/Email) ":")]
+        (email-select (:emails info) email-atom) ]
+      (message-form mail)
+      [:button {:type         "button"
+                :class        "btn btn-primary pull-right"
+                :disabled (if-not (and
+                                   (< 1 (count (:subject @mail)))
+                                   (< 1 (count (:message @mail))))
+                            "disabled")
+                :on-click     #(ajax/POST
+                                (path-for (str "/obpv1/admin/send_message/" user_id ))
+                                {:response-format :json
+                                 :keywords?       true
+                                 :params        {:subject (:subject @mail)
+                                                 :message (:message @mail)
+                                                 :email  @email-atom}  
+                                 :handler         (fn [data]
+                                                    (reset! status data)
+                                                    (reset! mail {:subject ""
+                                                                  :message ""})
+                                                      )
+                                 :error-handler   (fn [{:keys [status status-text]}]
+                                                    (.log js/console (str status " " status-text))
+                                                    )})
+                }
+       (t :admin/Sendmessage)]
+       (status-handler status "user")]
+     ])
+  )
+
+
+(defn ticket-modal-container [state]
+  (let [{:keys [user user_id info email]} @state]
+    [:div {:class "admin-modal"}
+     [:div.row
+      [:div {:class "col-sm-12 badge-info"}
+       [:div {:class "col-xs-12"}
+        (ticket-send-message state user)]]]]))
+
+
+(defn ticket-modal [state]
+  [:div
+   [:div.modal-header
+      [:button {:type         "button"
+                :class        "close"
+                :data-dismiss "modal"
+                :aria-label   "OK"}
+       [:span {:aria-hidden             "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+   [:div.modal-body
+    (ticket-modal-container state)
+      ]])
 
 (defn init-data [state]
   (ajax/GET
    (path-for "/obpv1/admin/tickets/")
    {:handler (fn [tickets]
                (swap! state assoc :tickets tickets))}))
+
+(defn open-ticket-modal [user-id name gallery-state init-data]
+  (let [state (atom {:mail          {:subject ""
+                                     :message ""}
+                     :user    ""
+                     :user_id ""
+                     :image_file    nil
+                     :info          {}
+                     :gallery-state gallery-state
+                     :init-data init-data
+                     :status ""})]
+    (ajax/GET
+      (path-for (str "/obpv1/admin/user/" user-id))
+      {:handler (fn [data]
+                  (do
+                    (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]                      
+                      (swap! state assoc :name (:name data)
+                             :image_file (:image_file data)
+                             :user (:item_owner data)
+                             :user_id (:item_owner_id data)
+                             :selected-email (:email primary-email)
+                             :info (:info data))))
+                  (m/modal! [ticket-modal state init-data]))})))
+
+
 
 (defn ticket [ticket-data state]
   (let [{:keys [item_type item_id item_name first_name last_name item_url reporter_id description ctime report_type id]} ticket-data]
@@ -30,9 +135,16 @@
         [:a {:href item_url :target "_blank"}
          (str (t (keyword (str "admin/" item_type))) " - " item_name)]]]
       [:div.media-descriprtion
-       [:div.col-xs-12
-        [:div [:label (str (t :admin/Description) ": ")] " " description]
+       [:div.col-xs-12 
+        [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description) ]
         [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/user/profile/" reporter_id))}(str first_name " " last_name)]]]
+
+       [:button {:class    "btn btn-primary"
+                 :on-click #(do
+                              (.preventDefault %)
+                              (open-ticket-modal reporter_id (str first_name " " last_name) init-data state)
+                              )}
+        (t :admin/Sendmessagetoreporter)]
        [:button {:class    "btn btn-primary pull-right"
                  :on-click #(do
                               (.preventDefault %)
@@ -89,14 +201,17 @@
 
 (defn content [state]
   (let [tickets (:tickets @state)]
-    [:div {:id "grid-filter"
-           :class "form-horizontal"}
-     [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]
-     [:div
-      (into [:div {:class "row"}]
-            (for [data tickets]
-              (if (ticket-visible? data state)
-                (ticket data state))))]]))
+    [:div
+     [:div {:id    "grid-filter"
+            :class "form-horizontal"}
+      
+      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]
+      [:div
+       (into [:div {:class "row"}]
+             (for [data tickets]
+               (if (ticket-visible? data state)
+                 (ticket data state))))]]
+     [m/modal-window]]))
 
 (defn handler [site-navi]
   (let [state (atom {:tickets []
