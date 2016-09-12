@@ -12,33 +12,9 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? admin?]]))
+            [salava.admin.ui.helper :refer [valid-item-type? valid-item-id? admin? message-form email-select status-handler]]))
 
-(defn status-handler [status item_type]
-  (cond
-    (= "success" @status)[:div {:class "alert alert-success col-xs-6 cos-md-8"}
-                         (t :admin/Messagesentsuccessfully) ]
-    (= "error" @status) [:div {:class "alert alert-warning col-xs-6 cos-md-8"}
-                        (t :admin/Somethingwentwrong)]
-    :else ""))
 
-(defn message-form [mail]
-  (let [message (cursor mail [:message])
-        subject (cursor mail [:subject])]
-    [:div
-     [:div.form-group
-      [:label 
-       (str (t :admin/Subjectforitemowner) ":")]
-      [:input {:class    "form-control"
-               :value    @subject
-               :onChange #(reset! subject (.-target.value %)) }]]
-     [:div.form-group
-      [:label 
-       (str (t :admin/Messageforitemowner) ":")]
-      [:textarea {:class    "form-control"
-                  :rows     "5"
-                  :value    @message
-                  :onChange #(reset! message (.-target.value %))}]]]))
 
 
 (defn delete-item [state visible_area item_owner]
@@ -77,17 +53,27 @@
   )
 
 (defn send-message [state visible_area item_owner]
-  (let [{:keys [item_owner_id gallery-state init-data item_type]} @state
+  (let [{:keys [item_owner_id gallery-state init-data item_type info]} @state
         mail (cursor state [:mail])
         status (cursor state [:status])
+        email-atom (cursor state [:selected-email])
         ]
     
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message"))) :class (if (= "send-message" @visible_area) "opened" "")}(t :admin/Sendmessage)]]
+      [:a
+       {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))}
+       
+       (if (or (= item_type "badge") (= item_type "page"))
+         (t :admin/Sendmessagetoowner)
+         (t :admin/Sendmessage))]]
      (if (= @visible_area "send-message")
        [:div.col-md-12
         (str (t :admin/Sendmessageforuser) " " item_owner)
+        [:div.form-group
+         [:label 
+          (str (t :user/Email) ":")]
+         (email-select (:emails info) email-atom) ]
         (message-form mail)
         [:button {:type         "button"
                   :class        "btn btn-primary"
@@ -99,7 +85,9 @@
                                   (path-for (str "/obpv1/admin/send_message/" item_owner_id ))
                                   {:response-format :json
                                    :keywords?       true
-                                   :params          @mail
+                                   :params        {:subject (:subject @mail)
+                                                   :message (:message @mail)
+                                                   :email  @email-atom}  
                                    :handler         (fn [data]
                                         ;(navigate-to "/admin")
                                                       (reset! status data)
@@ -114,21 +102,38 @@
        (status-handler status item_type)]
        )]))
 
+(defn label-text [label text]
+  [:div {:class "issuer-data clearfix"}
+   [:label.pull-left  label ":"]
+   [:div {:class "issuer-links pull-left"}
+    [:a {:href "#"} " " text]]])
 
-(defn badge-info-block [info]
+
+(defn badge-info-block [info owner owner_id]
   (let [{:keys [issuer_content_name issuer_content_url issuer_contact issuer_image creator_name creator_url creator_email creator_image]} info]
     [:div
      (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-     (bh/creator-label-image-link creator_name creator_url creator_email creator_image)]))
+     (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+     (if (and owner owner_id)
+       [:div {:class "issuer-data clearfix"}
+        [:label.pull-left  (t :admin/Owner) ":"]
+        [:div {:class "issuer-links pull-left"}
+         [:a {:target "_blank" :href (path-for (str "/user/profile/" owner_id))} owner]]])
+     ]))
+
+
 
 
 (defn user-info-block [info]
  [:div
    [:div {:class "clearfix"}
     [:label.pull-left (t :user/Email) ":"]
-    (into [:div {:class "row"}]
-          (for [element-data (:emails info)]
-            [:div element-data]))]
+    (doall
+      (for [element-data (:emails info)]
+        [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]
+        ))
+    
+    ]
   [:div {:class "clearfix"}
     [:label.pull-left (t :admin/Created) ":"]
    
@@ -137,12 +142,21 @@
     [:label.pull-left (t :admin/Lastlogin) ":"]
    (date-from-unix-time (* 1000 (:last_login info)) "minutes")]])
 
-(defn info-block [info item_type]
-  (cond
-    (or (= "badge" item_type) (= "badges" item_type)) (badge-info-block info)
-    (= "user" item_type) (user-info-block info)
-    (= "page" item_type) ""
-    :else ""))
+(defn page-info-block [owner owner_id]
+  [:div {:class "issuer-data clearfix"}
+        [:label.pull-left  (t :admin/Owner) ":"]
+        [:div {:class "issuer-links pull-left"}
+         [:a {:target "_blank" :href (path-for (str "/user/profile/" owner_id))} owner]]])
+
+
+(defn info-block [state item_type]
+  (let [{:keys [info item_owner item_owner_id]} @state]
+    (cond
+      (= "badge" item_type) (badge-info-block info item_owner item_owner_id)
+      (= "badges" item_type) (badge-info-block info "" "")
+      (= "user" item_type)                              (user-info-block info)
+      (= "page" item_type)                              (page-info-block item_owner item_owner_id)
+      :else                                             "")))
 
 (defn private-item [state visible_area item_owner]
   (let [{:keys [item_type item_id gallery-state init-data name]} @state]
@@ -193,6 +207,10 @@
          (t :core/Yes)]])]))
 
 
+
+
+
+
 (defn password-reset [state visible_area item_owner]
   (let [{:keys [item_type item_owner_id gallery-state init-data name info]} @state
         email-atom (cursor state [:selected-email])]
@@ -201,16 +219,11 @@
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "password-reset" @visible_area) "" "password-reset")))} (t :admin/Sendpasswordreset)]]
      (if (= @visible_area "password-reset")
        [:div.col-xs-12.row
-        [:div {:class "form-group col-xs-8"}
+        [:div {:class "form-group col-sm-8 col-xs-12"}
+         (email-select (:emails info) email-atom)
          
-         [:select {:class "form-control"
-                   :id "emails"
-                   :value @email-atom
-                   :on-change #(reset! email-atom (.-target.value %))
-                   }
-          (doall
-           (for [element-data (:emails info)]
-             [:option {:key (hash element-data) :value element-data} element-data])) ]]
+         
+         ]
         [:button {:type         "button"
                   :class        "btn btn-primary"
                   :data-dismiss "modal"
@@ -228,14 +241,19 @@
          [:span (t :admin/Sendresetlink)]]])]))
 
 (defn lock-user [state visible_area item_owner]
-  (let [{:keys [mail item_owner_id gallery-state init-data]} @state
-        mail (cursor state [:mail])]
-    [:div.row
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        mail (cursor state [:mail])
+        email-atom (cursor state [:selected-email])]
+    [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "lock-user" @visible_area) "" "lock-user"))) :class (if (= "lock-user" @visible_area) "opened" "")} (t :admin/Lockuser) ]]
      (if (= @visible_area "lock-user")
        [:div.col-md-12
         (str (t :admin/Lockuser) " " item_owner "?")
+        [:div.form-group
+         [:label 
+          (str (t :user/Email) ":")]
+         (email-select (:emails info) email-atom) ]
         (message-form mail)
         [:button {:type         "button"
                   :class        "btn btn-primary"
@@ -244,7 +262,9 @@
                                   (path-for (str "/obpv1/admin/delete_user/" item_owner_id ))
                                   {:response-format :json
                                    :keywords?       true
-                                   :params          @mail
+                                   :params          {:subject (:subject @mail)
+                                                     :message (:message @mail)
+                                                     :email  @email-atom}
                                    :handler         (fn [data]
                                                       (if (and (= "success" data) init-data)
                                                         (init-data gallery-state)
@@ -259,7 +279,6 @@
   (let [{:keys [item_type item_id item_owner_id image_file name info item_owner gallery-state init-data]} @state
         visible_area (cursor state [:visible_area])
         item_owner (if (and (vector? item_owner) (< 1 (count item_owner))) (str (count item_owner) " " (t :admin/Earners)  ) (if (vector? item_owner) (first item_owner) item_owner))
-     
         mail (cursor state [:mail])]
     [:div {:class "admin-modal"}
      [:div.row
@@ -269,7 +288,8 @@
        [:div {:class "row info"}
         [:div {:class "col-md-12"}
          [:h1.uppercase-header name]
-         (info-block info item_type)]]
+         (info-block state item_type)
+         ]]
         [:div.actions
        (if (not (= item_type "badges"))
          (send-message state visible_area item_owner))
@@ -277,11 +297,11 @@
          (private-item state visible_area item_owner))
        (if (not (= item_type "user"))
          (delete-item state visible_area item_owner))
-       (if (not (= item_type "badges"))
+       (if (= item_type "user")
          (if (:deleted info)
            (unlock-user state visible_area item_owner)
            (lock-user state visible_area item_owner)))
-       (if (not (= item_type "badges"))
+       (if (= item_type "user")
          (password-reset state visible_area item_owner))]]]]))
 
 (defn admin-modal [state]

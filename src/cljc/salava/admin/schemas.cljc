@@ -19,7 +19,12 @@
                    :image_file (s/maybe s/Str)
                    :item_owner_id (s/maybe s/Int)
                    :item_owner s/Str
-                   :info {:emails [(s/maybe s/Str)]
+                   :info {:emails [{:email            s/Str
+                                    :verified         s/Bool
+                                    :primary_address  s/Bool
+                                    :backpack_id      (s/maybe s/Int)
+                                    :ctime            s/Int
+                                    :mtime            s/Int}]
                           :ctime s/Int
                           :last_login s/Int
                           :deleted s/Bool}})
@@ -28,7 +33,12 @@
                    :image_file (s/maybe s/Str)
                    :item_owner_id (s/maybe s/Int)
                    :item_owner s/Str
-                   :info {}})
+                   :info {:emails [{:email            s/Str
+                                    :verified         s/Bool
+                                    :primary_address  s/Bool
+                                    :backpack_id      (s/maybe s/Int)
+                                    :ctime            s/Int
+                                    :mtime            s/Int}]}})
 
 
 (s/defschema Badge {:name s/Str
@@ -43,7 +53,12 @@
                            :creator_url         (s/maybe s/Str)
                            :creator_email       (s/maybe s/Str)
                            :creator_image       (s/maybe s/Str)
-                           }})
+                           :emails [{:email            s/Str
+                                    :verified         s/Bool
+                                    :primary_address  s/Bool
+                                    :backpack_id      (s/maybe s/Int)
+                                    :ctime            s/Int
+                                    :mtime            s/Int}]}})
 
 (s/defschema Badges {:name s/Str
                      :image_file (s/maybe s/Str)

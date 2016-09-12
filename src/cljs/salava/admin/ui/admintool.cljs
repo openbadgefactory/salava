@@ -63,7 +63,8 @@
                            :item_owner_id (:item_owner_id data)
                            :info (:info data))
                     (if (= "user" item-type)
-                      (swap! state assoc :selected-email (first (get-in data [:info :emails])))))
+                      (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]
+                        (swap! state assoc :selected-email (:email primary-email)))))
                   (m/modal! [admin-modal state] {:size :lg}))}))))
 
 (defn admintool [item-id item-type]

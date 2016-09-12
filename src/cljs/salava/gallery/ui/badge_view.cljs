@@ -7,6 +7,7 @@
             [salava.gallery.ui.badge-content :refer [badge-content]]
             [salava.core.ui.share :refer [share-buttons]]
             [salava.admin.ui.admintool :refer [admintool]]
+            [reagent-modals.modals :as m]
             ;[salava.admin.ui.reporttool :refer [reporttool]]
             [salava.core.i18n :refer [t]]))
 
@@ -14,6 +15,7 @@
   (let [{content :content badge-content-id :badge-content-id} @state
         {{name :name} :badge} content]
     [:div {:id "badge-gallery-view"}
+     [m/modal-window]
      [:div.panel
       [:div.panel-body
        (admintool badge-content-id "badges")

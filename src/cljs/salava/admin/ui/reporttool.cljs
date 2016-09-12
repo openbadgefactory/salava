@@ -39,7 +39,7 @@
        :id "open-reportform-button"
        :on-click #(do
                     (.preventDefault %)
-                    (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :admin/Close))])
+                    (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :core/Close))])
 
 (defn reportform [state status]
   (let [description-atom (cursor state [:description]) 

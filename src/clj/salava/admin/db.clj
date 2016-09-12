@@ -152,18 +152,15 @@
    (catch Object _
      "error")))
 
-(defn delete-user! [ctx user-id subject message]
+(defn delete-user! [ctx user-id subject message email]
   (try+
-   (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-
-     (if (and (< 1 (count subject)) (< 1 (count message)))
-       (m/send-mail ctx subject message [(:email user)]))
-     (update-user-pages-set-private! {:user_id user-id}(get-db ctx))
-     (update-user-badges-set-private! {:user_id user-id}(get-db ctx))
-     (delete-user-badge-congratulations! {:user_id user-id}(get-db ctx))
-     (delete-user-badge-views! {:user_id user-id}(get-db ctx))
-     (update-user-deleted! {:id user-id} (get-db ctx))
-     )
+   (if (and (< 1 (count subject)) (< 1 (count message)))
+     (m/send-mail ctx subject message [email]))
+   (update-user-pages-set-private! {:user_id user-id}(get-db ctx))
+   (update-user-badges-set-private! {:user_id user-id}(get-db ctx))
+   (delete-user-badge-congratulations! {:user_id user-id}(get-db ctx))
+   (delete-user-badge-views! {:user_id user-id}(get-db ctx))
+   (update-user-deleted! {:id user-id} (get-db ctx))
    "success"
    (catch Object _
      "error")))
@@ -175,12 +172,10 @@
    (catch Object _
      "error")))
 
-(defn send-message [ctx user_id subject message]
+(defn send-message [ctx user_id subject message email]
   (try+
-   (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
-     (if (and (< 1 (count subject)) (< 1 (count message)))
-       (m/send-mail ctx subject message [(:email user)]))
-     )
+   (if (and (< 1 (count subject)) (< 1 (count message)))
+       (m/send-mail ctx subject message [email]))
    "success"
    (catch Object _
      "error")))
@@ -196,7 +191,7 @@
 
 (defn get-user [ctx user_id]
   (let [user (u/user-information-with-registered-and-last-login ctx user_id)
-        emails (vec (u/verified-email-addresses ctx user_id))]
+        emails (vec (u/email-addresses ctx user_id))]
     (hash-map :name (str (:first_name user) " " (:last_name user))
               :image_file (:profile_picture user)
               :item_owner_id (:id user)
@@ -206,8 +201,11 @@
                      :ctime (:ctime user)
                      :deleted (:deleted user)})))
 
+
+
 (defn get-badge-modal [ctx badgeid]
-  (let [badge  (b/get-badge ctx badgeid nil)]
+  (let [badge  (b/get-badge ctx badgeid nil)
+        emails (vec (u/email-addresses ctx (:owner badge)))]
     (hash-map :name (:name badge)
               :image_file (:image_file badge)
               :item_owner_id (:owner badge) 
@@ -220,7 +218,7 @@
                      :creator_url (:creator_url badge)
                      :creator_email (:creator_email badge)
                      :creator_image (:creator_image badge)
-                     })))
+                     :emails emails})))
 
 (defn get-public-badge-content-modal [ctx badge-content-id]
   (let [badge (g/select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
@@ -243,12 +241,13 @@
 
 (defn get-page-modal [ctx pageid]
   (let [page  (p/page-with-blocks ctx pageid)
-        user (u/user-information ctx (:user_id page))]
+        user (u/user-information ctx (:user_id page))
+        emails (vec (u/email-addresses ctx (:user_id page)))]
     (hash-map :name (:name page)
               :image_file (:profile_picture user)
               :item_owner_id (:user_id page)
               :item_owner (str (:first_name page) " " (:last_name page))
-              :info {})))
+              :info {:emails emails})))
 
 (defn profile-countries [ctx user-id]
   (let [current-country (g/user-country ctx user-id)

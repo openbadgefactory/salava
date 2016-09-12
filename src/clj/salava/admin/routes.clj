@@ -67,11 +67,12 @@
                    :return (s/enum "success" "error")
                    :summary "send message to user"
                    :body-params [subject :- s/Str
-                                 message :- s/Str]
+                                 message :- s/Str
+                                 email   :- s/Str]
                    :path-params [user_id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/send-message ctx user_id subject message)))
+                   (ok (a/send-message ctx user_id subject message email)))
 
              (GET "/user_name_and_email/:user_id" []
                   :return schemas/User-name-and-email
@@ -150,11 +151,12 @@
                    :return (s/enum "success" "error")
                    :summary "Delete user"
                    :body-params [subject :- s/Str
-                                 message :- s/Str]
+                                 message :- s/Str
+                                 email   :- s/Str]
                    :path-params [id :- s/Int]
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/delete-user! ctx id subject message)))
+                   (ok (a/delete-user! ctx id subject message email)))
              
              (POST "/undelete_user/:id" []
                    :return (s/enum "success" "error")
