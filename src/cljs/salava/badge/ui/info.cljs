@@ -14,6 +14,7 @@
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.social.ui.badge-message :refer [badge-message-handler]]
             ))
 
 (defn toggle-visibility [state]
@@ -173,6 +174,7 @@
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
          (if owner? "" (reporttool id name "badge" reporttool-atom))
+         [badge-message-handler]
          ]]])))
 
 (defn init-data [state id]

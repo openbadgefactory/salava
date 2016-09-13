@@ -1,0 +1,24 @@
+#message-list{
+    height: 300px;
+    overflow-y: scroll;
+    border: 1px solid silver;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: white;
+    border-radius: 2px;
+}
+
+.message-profile-img{
+    height: 54px;
+    border: 1px solid #aea1aa;
+    border-radius: 3px;
+}
+
+.message-item{
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dddddd;
+    h4{
+	font-size: 14px;
+    }
+    font-size: 14px;
+}
