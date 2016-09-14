@@ -203,3 +203,7 @@
      content]]
   (footer site-navi)])
 
+
+(defn embed-page [content]
+  [:div
+   content])
