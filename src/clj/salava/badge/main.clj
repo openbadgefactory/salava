@@ -348,8 +348,10 @@
   (if (badge-owner? ctx badge-id user-id)
     (let [data {:id          badge-id
                 :visibility   visibility
-                :evidence_url evidence-url
+                :evidence_url (if (blank? evidence-url) nil evidence-url)
                 :rating       rating}]
+      
+      (if (blank? evidence-url) (toggle-show-evidence! ctx badge-id 0 user-id))
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id)
       {:status "success"})
