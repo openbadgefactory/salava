@@ -41,6 +41,17 @@
                                      (subs uri 0 (dec (count uri)))
                                      uri))))))
 
+(def remove-x-frame-routes
+  ["/badge/info/(\\d+)/embed"])
+
+(defn remove-x-frame-options [handler]
+  (fn [request]
+    (let [uri (:uri request)]
+      (if-let [response (handler request)]
+        (if (some #(re-find (re-pattern %) (str uri)) remove-x-frame-routes)
+          (update-in response [:headers] dissoc "X-Frame-Options")
+          response)))))
+
 (defn wrap-middlewares [ctx routes]
   (let [config (get-in ctx [:config :core])]
     (-> routes
@@ -51,6 +62,7 @@
                            (assoc-in [:session] false)
                            (assoc-in [:static :files] (get-data-dir ctx))
                            ))
+        (remove-x-frame-options)
         (wrap-flash)
         (wrap-app-session config))))
 
