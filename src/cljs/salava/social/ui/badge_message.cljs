@@ -98,62 +98,7 @@
     :ctime "1472646908"
     :mtime "1472646908"
     :id 10}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Sain tämän merkin! Se oli yllättävän helppoa."
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 11}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Pihalla on tähän vuoden aikaan aika paljon lehtiä vielä puissa."
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 12}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Varmasti pitää paikkansa"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 13}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "JEE TESTI LOLOL aa"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 14}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "En kyllä yhtään ymmärrä miksi pitää aina olla jotain kommentoitavaa"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 15}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Minun mielestä tämä teksti tässä kentässä on siisti ja kaikkien pitiäisi nähdä aina tämä kenttä. NYt se kun on vain jossain piilossa"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 16}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "JEE TESTI kenttä joopa jee"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 17}])
+  ])
 
 
 
@@ -170,7 +115,7 @@
   )
 
 (defn message-list [messages]
-  [:div {:id "message-list"}
+  [:div {:id ""}
    (doall
     (for [item messages]
       (message-list-item item)))])
