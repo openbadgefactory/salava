@@ -62,6 +62,18 @@ button {
     }
 }
 
+.badge-image-embed-pic {
+    text-align: center;
+    height:320px;
+    width:90%;
+    img {
+        display: inline-block;
+        max-width: 90%;
+        height: 320px;
+        padding: 4px;
+    }
+}
+
 .ajax-message {
     i.fa {
         font-size: 20px;
@@ -176,6 +188,7 @@ button {
             margin-bottom: 5px;
         }
     }
+ 
     .description {
         font-weight: bold;
         margin: 20px 0 5px 0;

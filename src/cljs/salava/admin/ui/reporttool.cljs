@@ -133,9 +133,11 @@
            :item-url item-url
            :reporter-id reporter-id)
     
-    [:div
-     (cond
-       (= @status "false") (open-reportform-button true status)
-       (= @status "true") (reportform state status)
-       (= @status "sent") (confirmedtext) 
-       :else "")]))
+    (if reporter-id
+      [:div
+       (cond
+         (= @status "false") (open-reportform-button true status)
+         (= @status "true")  (reportform state status)
+         (= @status "sent")  (confirmedtext) 
+         :else               "")]
+      "")))

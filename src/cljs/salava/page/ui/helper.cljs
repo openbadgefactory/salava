@@ -38,7 +38,7 @@
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
 
-(defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description html_content creator_name creator_url creator_email creator_image creator_description]}]
+(defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description html_content creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url]}]
   [:div {:class "row badge-block"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
@@ -73,7 +73,12 @@
     (if (= format "long")
       [:div.row
        [:div {:class "col-md-12"
-              :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]])]])
+              :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]])
+    (if (and show_evidence evidence_url)
+            [:div.row
+             [:div.col-md-12
+              [:h2.uppercase-header (t :badge/Evidence)]
+              [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]])
 
 (defn html-block [{:keys [content]}]
   [:div.html-block

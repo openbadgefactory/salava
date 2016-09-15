@@ -20,10 +20,10 @@
       (if @show-atom
         [:p sorted-text " " [:a {:href "#" :on-click #(do
                                                         (reset! show-atom false)
-                                                        (.preventDefault %))} "Show more"]]
+                                                        (.preventDefault %))} (t :admin/Showmore)]]
         [:div text " " [:a {:href "#" :on-click #(do                                  
                                                    (reset! show-atom true)
-                                                   (.preventDefault %))} "Show less"] ]))
+                                                   (.preventDefault %))} (t :admin/Showless)] ]))
     ))
 
 

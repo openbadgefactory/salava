@@ -3,6 +3,8 @@
             [salava.core.ui.helper :refer [base-path]]
             [salava.badge.ui.my :as my]
             [salava.badge.ui.info :as info]
+            [salava.badge.ui.embed :as embed]
+            [salava.badge.ui.embed-pic :as embed-pic]
             [salava.badge.ui.importer :as imp]
             [salava.badge.ui.exporter :as exp]
             [salava.badge.ui.upload :as up]
@@ -16,12 +18,14 @@
 
 (defn ^:export routes [context]
   {(str (base-path context) "/badge") [["" my/handler]
-                                      ["/mybadges" my/handler]
-                                      [["/info/" :badge-id] info/handler]
-                                      ["/import" imp/handler]
-                                      ["/upload" up/handler]
-                                      ["/export" exp/handler]
-                                      ["/stats" stats/handler]]})
+                                       ["/mybadges" my/handler]
+                                       [["/info/" :badge-id] info/handler]
+                                       [["/info/" :badge-id "/embed"] embed/handler]
+                                       [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
+                                       ["/import" imp/handler]
+                                       ["/upload" up/handler]
+                                       ["/export" exp/handler]
+                                       ["/stats" stats/handler]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}

@@ -41,6 +41,15 @@
                                      (subs uri 0 (dec (count uri)))
                                      uri))))))
 
+(defn remove-x-frame-options [handler]
+  "Remove X-Frame-Options header if route ends with '/embed'"
+  (fn [request]
+    (let [uri (:uri request)]
+      (if-let [response (handler request)]
+        (if (re-find (re-pattern "/embed$") (str uri))
+          (update-in response [:headers] dissoc "X-Frame-Options")
+          response)))))
+
 (defn wrap-middlewares [ctx routes]
   (let [config (get-in ctx [:config :core])]
     (-> routes
@@ -51,6 +60,7 @@
                            (assoc-in [:session] false)
                            (assoc-in [:static :files] (get-data-dir ctx))
                            ))
+        (remove-x-frame-options)
         (wrap-flash)
         (wrap-app-session config))))
 

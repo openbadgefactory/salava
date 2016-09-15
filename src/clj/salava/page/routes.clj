@@ -15,6 +15,7 @@
              (layout/main ctx "/")
              (layout/main ctx "/mypages")
              (layout/main-meta ctx "/view/:id" :page)
+             (layout/main-meta ctx "/view/:id/embed" :page)
              (layout/main ctx "/edit/:id")
              (layout/main ctx "/edit_theme/:id")
              (layout/main ctx "/settings/:id")
