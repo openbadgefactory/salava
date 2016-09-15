@@ -5,6 +5,7 @@
             [salava.page.ui.my :as my]
             [salava.page.ui.edit :as edit]
             [salava.page.ui.view :as view]
+            [salava.page.ui.embed :as embed]
             [salava.page.ui.theme :as theme]
             [salava.page.ui.settings :as settings]
             [salava.page.ui.preview :as preview]))
@@ -12,7 +13,8 @@
 (defn ^:export routes [context]
   {(str (base-path context) "/page") [["" my/handler]
                                      ["/mypages" my/handler]
-                                     [["/view/" :page-id] view/handler]
+                                      [["/view/" :page-id] view/handler]
+                                      [["/view/" :page-id "/embed"] embed/handler]
                                      [["/edit/" :page-id] edit/handler]
                                      [["/edit_theme/" :page-id] theme/handler]
                                      [["/settings/" :page-id] settings/handler]
