@@ -41,14 +41,12 @@
                                      (subs uri 0 (dec (count uri)))
                                      uri))))))
 
-(def remove-x-frame-routes
-  ["/badge/info/(\\d+)/embed"])
-
 (defn remove-x-frame-options [handler]
+  "Remove X-Frame-Options header if route ends with '/embed'"
   (fn [request]
     (let [uri (:uri request)]
       (if-let [response (handler request)]
-        (if (some #(re-find (re-pattern %) (str uri)) remove-x-frame-routes)
+        (if (re-find (re-pattern "/embed$") (str uri))
           (update-in response [:headers] dissoc "X-Frame-Options")
           response)))))
 
