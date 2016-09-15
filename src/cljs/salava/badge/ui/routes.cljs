@@ -21,7 +21,7 @@
                                        ["/mybadges" my/handler]
                                        [["/info/" :badge-id] info/handler]
                                        [["/info/" :badge-id "/embed"] embed/handler]
-                                       [["/info/" :badge-id "/embed/pic"] embed-pic/handler]
+                                       [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
                                        ["/import" imp/handler]
                                        ["/upload" up/handler]
                                        ["/export" exp/handler]

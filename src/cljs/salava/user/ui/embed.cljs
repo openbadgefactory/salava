@@ -44,7 +44,7 @@
           [:img {:src (str "/" image_file)}]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/badge/info/" id))}
+         [:a.heading-link {:target "_blank" :href (path-for (str "/badge/info/" id))}
           name]]
         [:div.media-description description]]]]]))
 
@@ -56,7 +56,7 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/page/view/" id))} name]]
+         [:a.heading-link {:target "_blank" :href (path-for (str "/page/view/" id))} name]]
         [:div.media-content
          [:div.page-owner
           [:a {:href "#"} first_name " " last_name]]
@@ -125,12 +125,12 @@
         [:div {:id "user-badges"}
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentbadges)]
          [badge-grid badges]
-         [:div [:a {:href (path-for (str "/gallery/badges/" user-id))} (t :user/Showmore)]]])
+         [:div [:a {:target "_blank" :href (path-for (str "/gallery/badges/" user-id))} (t :user/Showmore)]]])
       (if (not-empty pages)
         [:div {:id "user-pages"}
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
          [page-grid pages profile_picture]
-         [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
+         [:div [:a {:target "_blank" :href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
       
       ]]))
 
