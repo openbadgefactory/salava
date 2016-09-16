@@ -36,7 +36,6 @@
     
   [:div {:class "row"}
    [:div {:class "col-xs-12"}
-    (str (t :admin/Sendmessagetoreporter) " " name)
       [:div.form-group
         [:label 
          (str (t :user/Email) ":")]
@@ -87,7 +86,8 @@
                 :data-dismiss "modal"
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    [:h4 {:class "modal-title"} (t :admin/Sendmessagetoreporter)]]
    [:div.modal-body
     (ticket-modal-container state)
       ]])

@@ -48,7 +48,7 @@
      (open-reportform-button false status)
      [:div {:class "col-xs-12" :id "reportform"}
       [:h4 (t :admin/Reportproblem)]
-      [:div
+      [:div.form-group
        (t :admin/Reportinstructions)]
       [:br]
        [:div.form-group

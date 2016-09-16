@@ -126,18 +126,19 @@
 
 (defn user-info-block [info]
  [:div
-   [:div {:class "clearfix"}
-    [:label.pull-left (t :user/Email) ":"]
-    (doall
+   [:div {:class "row"}
+    [:label.col-xs-2 (t :user/Email) ":"]
+    [:div.col-xs-8
+     (doall
       (for [element-data (:emails info)]
         [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]
-        ))
+        ))]
     
     ]
-  [:div {:class "clearfix"}
-    [:label.pull-left (t :admin/Created) ":"]
-   
-   (date-from-unix-time (* 1000 (:ctime info)) "minutes")]
+  [:div {:class "row"}
+   [:label.col-xs-2 (t :admin/Created) ":"]
+   [:div.col-xs-8
+    (date-from-unix-time (* 1000 (:ctime info)) "minutes")]]
   [:div {:class "clearfix"}
     [:label.pull-left (t :admin/Lastlogin) ":"]
    (date-from-unix-time (* 1000 (:last_login info)) "minutes")]])
@@ -153,7 +154,7 @@
   (let [{:keys [info item_owner item_owner_id]} @state]
     (cond
       (= "badge" item_type) (badge-info-block info item_owner item_owner_id)
-      (= "badges" item_type) (badge-info-block info "" "")
+      (= "badges" item_type) (badge-info-block info nil nil)
       (= "user" item_type)                              (user-info-block info)
       (= "page" item_type)                              (page-info-block item_owner item_owner_id)
       :else                                             "")))

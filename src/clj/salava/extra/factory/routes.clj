@@ -2,6 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [schema.core :as s]
+            [salava.core.layout :as layout]
             [clojure.string :refer [split]]
             [buddy.core.codecs :refer [base64->str]]
             [salava.extra.factory.db :as f]))
@@ -20,22 +21,26 @@
           (handler request))))))
 
 (defn route-def [ctx]
-  (context "/obpv1/factory" []
-           :tags ["factory"]
+  (routes
+   (context "/gallery" []
+            (layout/main ctx "/application"))
+   
+   (context "/obpv1/factory" []
+            :tags ["factory"]
 
-           (POST "/backpack_email_list" []
-                 :header-params [authorization :- s/Str]
-                 :body-params [emails :- [s/Str]]
-                 :middleware [#(wrap-basic-auth % ctx)]
-                 (ok (f/get-user-emails ctx emails)))
+            (POST "/backpack_email_list" []
+                  :header-params [authorization :- s/Str]
+                  :body-params [emails :- [s/Str]]
+                  :middleware [#(wrap-basic-auth % ctx)]
+                  (ok (f/get-user-emails ctx emails)))
 
-           (POST "/users_badges" []
-                 :header-params [authorization :- s/Str]
-                 :body-params [assertions :- s/Any]
-                 :middleware [#(wrap-basic-auth % ctx)]
-                 (ok (f/save-assertions-for-emails ctx assertions)))
+            (POST "/users_badges" []
+                  :header-params [authorization :- s/Str]
+                  :body-params [assertions :- s/Any]
+                  :middleware [#(wrap-basic-auth % ctx)]
+                  (ok (f/save-assertions-for-emails ctx assertions)))
 
-           (GET "/get_updates" []
-                :query-params [user :- s/Int
-                               badge :- s/Int]
-                (ok (f/get-badge-updates ctx user badge)))))
+            (GET "/get_updates" []
+                 :query-params [user :- s/Int
+                                badge :- s/Int]
+                 (ok (f/get-badge-updates ctx user badge))))))

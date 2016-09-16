@@ -275,6 +275,7 @@ ul.side-links {
         a {
             @extend %navi-link;
             color: $green-link;
+	    cursor: pointer;
         }
     }
     li.active {
@@ -286,7 +287,7 @@ ul.side-links {
 
 ul.side-dropdown-links {
     //list-style-type: none;
-    //padding: 0;
+    padding-left: 30px;
     li {
         a {
             @extend %navi-link;
