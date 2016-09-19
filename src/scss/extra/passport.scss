@@ -30,7 +30,6 @@ a, #badge-info a {
     background-image: url("/img/extra/passport/logo.png");
 }
 
-
 .logo-image-icon-url {
     width: 48px;
     height: 48px;
@@ -895,6 +894,9 @@ fieldset legend {
     .row.report-form {
         a#open-reportform-button {
             padding-top:15px;
+            @media (max-width:1530px){
+                padding-right: 15px;
+            }
             cursor: pointer;
         }
         h4 {
@@ -909,6 +911,9 @@ fieldset legend {
         .radio {
             display: inline-block;
             margin:0px 10px;
+        }
+        @media (max-width:1530px){
+            padding: 0px 2px;
         }
     }
     a#open-reportform-button{
@@ -1075,7 +1080,7 @@ fieldset legend {
     }
     .actions .col-md-12:not(.sub-heading) {
         line-height: 30px;
-        font-size: 13px;
+        font-size: 12px;
         padding-left: 35px;
         button {
             margin-bottom: 25px;
@@ -1097,3 +1102,17 @@ fieldset legend {
 .close {
     opacity: 0.4;
 }
+@media (max-width:992px){
+    .badge-image img {
+        max-width: 200px;
+        max-height: 200px;
+    }
+    #profile.panel img.profile-picture {
+        max-width: 220px;
+    }
+    .badge-image.modal-left img {
+        max-width: 100%;
+    }
+}
+
+
