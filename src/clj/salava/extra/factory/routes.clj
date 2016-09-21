@@ -22,9 +22,6 @@
 
 (defn route-def [ctx]
   (routes
-   (context "/gallery" []
-            (layout/main ctx "/application"))
-   
    (context "/obpv1/factory" []
             :tags ["factory"]
 
