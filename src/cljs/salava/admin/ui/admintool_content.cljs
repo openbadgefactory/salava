@@ -134,17 +134,16 @@
     [:label.pull-left (t :user/Email) ":"]
     (doall
       (for [element-data (:emails info)]
-        [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]
-        ))
-    
-    ]
+        [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]))]
   [:div {:class "clearfix"}
     [:label.pull-left (t :admin/Created) ":"]
    
    (date-from-unix-time (* 1000 (:ctime info)) "minutes")]
   [:div {:class "clearfix"}
     [:label.pull-left (t :admin/Lastlogin) ":"]
-   (date-from-unix-time (* 1000 (:last_login info)) "minutes")]])
+   (if (:last_login info)
+     (date-from-unix-time (* 1000 (:last_login info)) "minutes")
+     "")]])
 
 (defn page-info-block [owner owner_id]
   [:div {:class "issuer-data clearfix"}
