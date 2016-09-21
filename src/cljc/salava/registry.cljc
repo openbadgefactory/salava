@@ -14,4 +14,5 @@
                 [salava.core.ui.routes]
                 [salava.admin.ui.routes]
                 [salava.extra.cancred.ui.routes]
+                [salava.extra.application.ui.routes]
                 [salava.extra.passport.ui.routes]])))

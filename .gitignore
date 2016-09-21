@@ -10,6 +10,7 @@ pom.xml.asc
 .hgignore
 .hg/
 /resources/config/*.edn
+/resources/config/extra/*.edn
 /resources/test_config/*.edn
 /resources/public/file
 /resources/i18n/dict.clj
