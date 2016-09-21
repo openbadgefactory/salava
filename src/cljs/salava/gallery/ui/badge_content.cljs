@@ -7,6 +7,7 @@
             [salava.core.ui.rate-it :as r]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.social.ui.badge-message :refer [badge-message-handler]]
             ))
 
 (defn badge-content [{:keys [badge public_users private_user_count]}]
@@ -77,6 +78,7 @@
               :class        "btn btn-primary"
               :data-dismiss "modal"}
      (t :core/Close)]
+    [badge-message-handler (get-in data [:badge :badge_content_id])]
     (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
     ]])
 

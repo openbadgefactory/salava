@@ -14,102 +14,35 @@
             
             ))
 
+(defn init-data [state]
+  (ajax/GET
+   (path-for (str "/obpv1/social/messages/" (:badge_content_id @state)))
+   {:handler (fn [data]
+              (swap! state assoc :messages data
+                                 :message ""))})
+  )
 
 
+(defn save-message [state]
+  (let [{:keys [message user_id badge_content_id]} @state]
+    (ajax/POST
+     (path-for (str "/obpv1/social/messages/" badge_content_id))
+     {:response-format :json
+      :keywords? true
+      :params {:message message
+               :user_id user_id}
+      :handler (fn [data]
+                 (do
+                   (init-data state)))
+      :error-handler (fn [{:keys [status status-text]}]
+                       )})))
 
-(def dummy-messages
-  [{:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Kukaan muu saanut tätä merkkiä kahdesti?"
-    :user {:name "Kaapo kukkonen"
-           :image_url nil
-           :user_id 3 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 1}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "JEE TESTI LOLOL 324"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 2}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "sama juttu"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 3}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "minäkin sain"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 4}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "JEE TESTI LOLOL aa"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 5}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "JEE TESTI LOLOL aa"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 6}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Olinpa hyvä kun sain tämän merkin."
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 7}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message " piste"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 8}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Haluaisin avautua teille tästä merkistä: Pidän tätä merkkiä jotenkin ikonina ihmiskunnalle. Merkki symboloi ihmisten nälänhätää ja kaipausta kivikaudelle. Myös viikinkien sukupuuttoon kuoleminen on vaikuttanut vahvasti marjanpoimintaan."
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 9}
-   {:badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-    :message "Minun mielestä tämä merkki on ok"
-    :user {:name "Leo vainio"
-           :image_url "file/7/3/9/4/73945210848d01d315cb99beeeb5050efd0a90b425626a6713e0e60b2e8c3841.jpg"
-           :user_id 1 }
-    :ctime "1472646908"
-    :mtime "1472646908"
-    :id 10}
-  ])
-
-
-
-
-
-(defn message-list-item [{:keys [message user ctime id]}]
+(defn message-list-item [{:keys [message first_name last_name ctime id profile_picture]}]
   [:div {:class "media message-item" :key id}
    [:span {:class "pull-left"}
-    [:img {:class "message-profile-img" :src (profile-picture (:image_url user))}]]
+    [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
-    [:h4 {:class "media-heading"} (str (:name user) " " (date-from-unix-time (* 1000 ctime) "minutes"))]
+    [:h4 {:class "media-heading"} (str first_name " "last_name " " (date-from-unix-time (* 1000 ctime) "minutes"))]
     [:span message]]
    ]
   )
@@ -121,32 +54,43 @@
       (message-list-item item)))])
 
 (defn message-textarea [state]
-  [:div
-    [:div {:class "form-group"}
-     [:textarea {:class "form-control"}]]
-    [:div {:class "form-group pull-right"}
-     [:button {:class "btn btn-primary"} "Post new"]]])
+  (let [message-atom (cursor state [:message])]
+    [:div
+     [:div {:class "form-group"}
+      [:textarea {:class    "form-control"
+                  :rows     "5"
+                  :value    @message-atom
+                  :onChange #(reset! message-atom (.-target.value %))} ]]
+     [:div {:class "form-group"}
+      [:button {:class    "btn btn-primary"
+                :on-click #(do
+                             (save-message state)
+                             (.preventDefault %))} 
+       "Post new"]]]))
 
 
-(defn refresh-button []
-  [:a {:href "#" :class "pull-right"} "Refresh"])
+(defn refresh-button [state]
+  [:a {:href "#" 
+       :class "pull-right" 
+       :on-click #(do
+                    (init-data state)
+                    (.preventDefault %))} "Refresh"])
 
 (defn content [state]
   (let [{:keys [messages]} @state]
     [:div
      [:h2 "Message board:"]
      (message-list messages)
-     (refresh-button)
+     (refresh-button state)
      (message-textarea state)]))
 
-(defn init-data [state]
-  (swap! state assoc :messages dummy-messages))
 
-(defn badge-message-handler []
+
+(defn badge-message-handler [badge_content_id]
   (let [state (atom {:messages [] 
-                     :user-id ""
-                     :user-name ""
-                     :text ""})]
+                     :user_id (session/get-in [:user :id])
+                     :message ""
+                     :badge_content_id badge_content_id})]
     (init-data state)
     (fn []
       (content state)

@@ -5,7 +5,9 @@ INSERT INTO badge_message (badge_content_id, user_id, message, ctime, mtime)
 
 --name: select-badge-messages
 --get badge's messages
-SELECT bm.id, bm.badge_content_id, bm.message, bm.ctime, bm.user_id, u.first_name, u.last_name FROM badge_message bm
+SELECT bm.id, bm.badge_content_id, bm.message, bm.ctime, bm.user_id, u.first_name, u.last_name, u.profile_picture FROM badge_message bm
        JOIN user AS u ON (u.id = bm.user_id)
-       WHERE badge_content_id = :badge_content_id AND deleted=0
+       WHERE badge_content_id = :badge_content_id AND bm.deleted=0
        ORDER BY bm.ctime DESC
+
+

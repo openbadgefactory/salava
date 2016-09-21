@@ -174,7 +174,7 @@
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
          (if owner? "" (reporttool id name "badge" reporttool-atom))
-         [badge-message-handler]
+         [badge-message-handler badge_content_id]
          ]]])))
 
 (defn init-data [state id]
