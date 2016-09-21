@@ -61,8 +61,8 @@
     
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a
-       {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))
+       :class (if (= "send-message" @visible_area) "opened" "")}
        
        (if (or (= item_type "badge") (= item_type "page"))
          (t :admin/Sendmessagetoowner)
@@ -127,8 +127,8 @@
 (defn user-info-block [info]
  [:div
    [:div {:class "row"}
-    [:label.col-xs-2 (t :user/Email) ":"]
-    [:div.col-xs-8
+    [:label.col-xs-4 (t :user/Email) ":"]
+    [:div.col-xs-6
      (doall
       (for [element-data (:emails info)]
         [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]
@@ -136,12 +136,13 @@
     
     ]
   [:div {:class "row"}
-   [:label.col-xs-2 (t :admin/Created) ":"]
-   [:div.col-xs-8
+   [:label.col-xs-4 (t :admin/Created) ":"]
+   [:div.col-xs-6
     (date-from-unix-time (* 1000 (:ctime info)) "minutes")]]
-  [:div {:class "clearfix"}
-    [:label.pull-left (t :admin/Lastlogin) ":"]
-   (date-from-unix-time (* 1000 (:last_login info)) "minutes")]])
+  [:div {:class "clearfix row"}
+    [:label.col-xs-4 (t :admin/Lastlogin) ":"]
+    [:div.col-xs-6
+   (date-from-unix-time (* 1000 (:last_login info)) "minutes")]]])
 
 (defn page-info-block [owner owner_id]
   [:div {:class "issuer-data clearfix"}
@@ -188,7 +189,8 @@
   (let [{:keys [item_type item_owner_id gallery-state init-data name]} @state]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "unlock-user" @visible_area) "" "unlock-user")))} (t :admin/Unlockuser)]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "unlock-user" @visible_area) "" "unlock-user")))
+           :class (if (= "unlock-user" @visible_area) "opened" "")} (t :admin/Unlockuser)]]
      (if (= @visible_area "unlock-user")
        [:div.col-md-12
         (str (t :admin/Unlockuser) " "   item_owner "?" )
@@ -217,7 +219,8 @@
         email-atom (cursor state [:selected-email])]
     [:div {:class "row"}
      [:div {:class "col-xs-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "password-reset" @visible_area) "" "password-reset")))} (t :admin/Sendpasswordreset)]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "password-reset" @visible_area) "" "password-reset")))
+           :class (if (= "password-reset" @visible_area) "opened" "")} (t :admin/Sendpasswordreset)]]
      (if (= @visible_area "password-reset")
        [:div.col-xs-12.row
         [:div {:class "form-group col-sm-8 col-xs-12"}

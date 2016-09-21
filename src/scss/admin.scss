@@ -37,23 +37,23 @@
 }
 .title-bar {
     padding-left: 5px;
-    border-left: 3px solid transparent;
+    //border-left: 3px solid transparent;
 }
 
 .title-bar-bug {
-    border-color: #5cb85c;
+   // border-color: #5cb85c;
 }
 .title-bar-inappropriate {
-    border-color: yellow;
+    //border-color: yellow;
 }
 .title-bar-mistranslation {
-    border-color: green;
+   // border-color: green;
 }
 .title-bar-other {
-    border-color: gray;
+   // border-color: gray;
 }
 .title-bar-fakebadge {
-    border-color: blue;
+   // border-color: blue;
 }
 .media-bottom-admin{
             margin-top: 5px;
@@ -99,4 +99,52 @@
                 line-height: 25px;
             }
 }
+#ticket-container {
+    border-left:3px solid;
+    &.inappropriate {
+        border-left-color: purple;
+    }
+    &.bug {
+        border-left-color: red;
+    }
+    &.fakebadge {
+        border-left-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: DarkCyan;
+    }
 
+    h4.media-heading{
+        font-weight: 400;
+        line-height: 30px;
+        font-size: 16px;
+    }
+    h3.media-heading {
+        font-size: 18px;
+        u {
+            text-decoration: none;
+        }
+        
+    }
+    &.inappropriate u{
+        color: purple;
+    }
+    &.bug u{
+        color: red;
+    }
+    &.fakebadge u{
+        color: orange;
+    }
+    &.mistranslation u{
+        color: DarkCyan;
+    }
+    .btn.btn-primary{
+        background-color: #4a5aac;
+        border-color: #353b75;
+        box-shadow: 0px 2px #d8d8d8;
+        &:hover {
+            background-color: #353b75;
+            border-color: #353b75;
+        }
+    }
+}

@@ -125,7 +125,7 @@
 
 (defn ticket [ticket-data state]
   (let [{:keys [item_type item_id item_name first_name last_name item_url reporter_id description ctime report_type id]} ticket-data]
-    [:div {:class "media" :id "ticket-container"}
+    [:div {:class (str "media " report_type) :id "ticket-container"}
      [:div.media-body
       [:div {:class (str "title-bar title-bar-" report_type ) }
        [:div {:class "pull-right"} (date-from-unix-time (* 1000 ctime) "minutes")]
@@ -185,7 +185,7 @@
         (for [button buttons]
           (let [value button
                 checked? (boolean (some #(= value %) buttons-checked))]
-            [:button {:class    (str "btn btn-default " (if checked? "btn-active"))
+            [:button {:class    (str "btn btn-default " value " " (if checked? "btn-active"))
                       :key      value
                       :on-click (fn []
                                   (swap! state assoc (keyword all-key) false)
