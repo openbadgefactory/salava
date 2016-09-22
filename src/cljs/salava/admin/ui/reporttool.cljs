@@ -37,6 +37,7 @@
 (defn open-reportform-button [closed? status]
   [:a {:class "pull-right"
        :id "open-reportform-button"
+       :href "#"
        :on-click #(do
                     (.preventDefault %)
                     (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :admin/Close))])

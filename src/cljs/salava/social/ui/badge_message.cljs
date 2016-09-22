@@ -1,5 +1,5 @@
 (ns salava.social.ui.badge-message
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [atom cursor create-class]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
@@ -47,11 +47,20 @@
    ]
   )
 
+(defn scroll-bottom []
+  (let [div (. js/document getElementById "message-list") ]
+    (set! (. div -scrollTop) (. div -scrollHeight))))
+
+
 (defn message-list [messages]
-  [:div {:id ""}
-   (doall
-    (for [item messages]
-      (message-list-item item)))])
+  (create-class {:reagent-render (fn [messages]
+                                   [:div {:id ""}
+                                    (doall
+                                     (for [item messages]
+                                       (message-list-item item)))])
+                 ;:component-did-mount #(scroll-bottom)
+                 ;:component-did-update #(scroll-bottom)
+                 }))
 
 (defn message-textarea [state]
   (let [message-atom (cursor state [:message])]
@@ -79,10 +88,24 @@
 (defn content [state]
   (let [{:keys [messages]} @state]
     [:div
-     [:h2 "Message board:"]
-     (message-list messages)
+     (message-textarea state)
      (refresh-button state)
-     (message-textarea state)]))
+     [message-list messages]
+     
+     ]))
+
+(defn aacontent [state]
+  (let [show-atom (cursor state [:show])]
+    [:div
+     [:h2 "Message board:"]
+     [:a {:href "#"
+          :on-click #(do
+                       (reset! show-atom (if (= true @show-atom) nil true))
+                       (.preventDefault %))}
+      (if @show-atom "hide messages" "show messages")]
+     (if @show-atom 
+      ; (messages state)
+       "")]))
 
 
 
@@ -90,7 +113,8 @@
   (let [state (atom {:messages [] 
                      :user_id (session/get-in [:user :id])
                      :message ""
-                     :badge_content_id badge_content_id})]
+                     :badge_content_id badge_content_id
+                     :show false})]
     (init-data state)
     (fn []
       (content state)

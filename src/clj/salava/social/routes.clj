@@ -27,7 +27,7 @@
                             :ctime            s/Int
                             :first_name       s/Str
                             :last_name        s/Str
-                            :profile_picture  s/Str}]
+                            :profile_picture  (s/maybe s/Str)}]
                    :summary "Get all tickets with open status"
                    :path-params [badge_content_id :- s/Str]
                    :auth-rules access/admin
