@@ -20,3 +20,15 @@
 (defn get-badge-messages [ctx badge_content_id]
   (let [badge-messages (select-badge-messages {:badge_content_id badge_content_id} (get-db ctx))]
     badge-messages))
+
+(defn get-badge-message-count [ctx badge_content_id]
+  (let [badge-messages-count (select-badge-messages-count {:badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :count} (get-db ctx)) )]
+    badge-messages-count))
+
+(defn get-badge-messages-limit [ctx badge_content_id page_count]
+  (let [limit 10
+        offset (* limit page_count)
+        badge-messages (select-badge-messages-limit {:badge_content_id badge_content_id :limit limit :offset offset} (get-db ctx))
+        messages-left (- (get-badge-message-count ctx badge_content_id) (* limit (+ page_count 1)))]
+    {:messages badge-messages
+     :messages_left (if (pos? messages-left) messages-left 0)}))

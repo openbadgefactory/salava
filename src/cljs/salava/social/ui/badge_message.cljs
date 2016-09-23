@@ -1,5 +1,5 @@
 (ns salava.social.ui.badge-message
-  (:require [reagent.core :refer [atom cursor create-class]]
+  (:require [reagent.core :refer [atom cursor create-class dom-node props]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
@@ -16,10 +16,12 @@
 
 (defn init-data [state]
   (ajax/GET
-   (path-for (str "/obpv1/social/messages/" (:badge_content_id @state)))
+   (path-for (str "/obpv1/social/messages/" (:badge_content_id @state) "/" (:page_count @state)))
    {:handler (fn [data]
-              (swap! state assoc :messages data
-                                 :message ""))})
+               (swap! state assoc :messages (into (:messages @state) (:messages data))
+                                 :message ""
+                                 :page_count (inc (:page_count @state))
+                                 :messages_left (:messages_left data)))})
   )
 
 
@@ -33,6 +35,8 @@
                :user_id user_id}
       :handler (fn [data]
                  (do
+                   (swap! state assoc :messages []
+                                      :page_count 0)
                    (init-data state)))
       :error-handler (fn [{:keys [status status-text]}]
                        )})))
@@ -47,17 +51,32 @@
    ]
   )
 
+(defn message-list-load-more [state]
+  (if (pos? (:messages_left @state))
+    [:div {:class "media message-item"}
+     [:div {:class "media-body"}
+      [:span [:a {:href     "#" 
+                  :class    "pull-right" 
+                  :on-click #(do
+                               (init-data state)
+                               (.preventDefault %))} (str "-- Load more: " (:messages_left @state)  " messages left --")]]]
+     ]
+[:div]))
+
+
 (defn scroll-bottom []
   (let [div (. js/document getElementById "message-list") ]
     (set! (. div -scrollTop) (. div -scrollHeight))))
 
 
-(defn message-list [messages]
+(defn message-list [messages state]
   (create-class {:reagent-render (fn [messages]
                                    [:div {:id ""}
                                     (doall
                                      (for [item messages]
-                                       (message-list-item item)))])
+                                       (message-list-item item)))
+                                    (message-list-load-more state)
+                                    ])
                  ;:component-did-mount #(scroll-bottom)
                  ;:component-did-update #(scroll-bottom)
                  }))
@@ -89,10 +108,8 @@
   (let [{:keys [messages]} @state]
     [:div
      (message-textarea state)
-     (refresh-button state)
-     [message-list messages]
-     
-     ]))
+     ;(refresh-button state)
+     [message-list messages state]]))
 
 (defn aacontent [state]
   (let [show-atom (cursor state [:show])]
@@ -114,7 +131,9 @@
                      :user_id (session/get-in [:user :id])
                      :message ""
                      :badge_content_id badge_content_id
-                     :show false})]
+                     :show false
+                     :page_count 0
+                     :messages_left 0})]
     (init-data state)
     (fn []
       (content state)

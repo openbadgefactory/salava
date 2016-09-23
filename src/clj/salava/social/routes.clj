@@ -36,6 +36,25 @@
                      (ok (so/get-badge-messages ctx badge_content_id)
                       )))
 
+             (GET "/messages/:badge_content_id/:page_count" []
+                  :return {:messages [{:id               s/Int
+                                       :user_id          s/Int
+                                       :badge_content_id s/Str 
+                                       :message          s/Str 
+                                       :ctime            s/Int
+                                       :first_name       s/Str
+                                       :last_name        s/Str
+                                       :profile_picture  (s/maybe s/Str)}]
+                           :messages_left s/Int}
+                   :summary "Get all tickets with open status"
+                   :path-params [badge_content_id :- s/Str
+                                 page_count :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (do
+                     (ok (so/get-badge-messages-limit ctx badge_content_id page_count)
+                      )))
+
              (POST "/messages/:badge_content_id" []
                    :return (s/enum "success" "error")
                    :summary "Create new message"

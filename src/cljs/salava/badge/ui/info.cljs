@@ -44,7 +44,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         reporttool-atom (cursor state [:reporttool])]
@@ -121,7 +121,8 @@
                            :on-click #(congratulate state)}
                   [:i {:class "fa fa-heart"}]
                   (str " " (t :badge/Congratulations) "!")])
-               )]]]
+               )]]
+           [:a {:href (path-for (str "/gallery/badges/" owner "/" badge_content_id))} (str "messages (" message_count ")")]]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
             [:div {:class "col-md-12"}

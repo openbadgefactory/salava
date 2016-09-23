@@ -1,5 +1,5 @@
 (ns salava.gallery.ui.badges
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [atom cursor create-class]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
@@ -8,10 +8,11 @@
             [salava.core.ui.grid :as g]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
+            [salava.core.helper :refer [dump]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
-(defn open-modal [badge-content-id]
+(defn open-modal [badge-content-id messages?]
   (let [reporttool (atom {:description     ""
                           :report-type     "bug"
                           :item-id         ""
@@ -26,7 +27,7 @@
      {:handler (fn [data]
                  (do
                    
-                   (m/modal! [badge-content-modal data reporttool] {:size :lg})))})))
+                   (m/modal! [badge-content-modal data reporttool messages?] {:size :lg})))})))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -138,7 +139,7 @@
         [:div.media-heading
          [:a.heading-link {:on-click #(do
                                         (.preventDefault %)
-                                        (open-modal badge-id)) :title name}
+                                        (open-modal badge-id nil)) :title name}
           name]]
         [:div.media-issuer
          [:a {:href issuer_content_url
@@ -166,20 +167,31 @@
           (for [element-data badges]
             (badge-grid-element element-data state)))))
 
-(defn content [state]
-  [:div {:id "badge-gallery"}
-   [m/modal-window]
-   [gallery-grid-form state]
-   (if (:ajax-message @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (:ajax-message @state)]]
-     [gallery-grid state])])
+(defn content [state badge_content_id]
+(create-class {:reagent-render (fn []
+                                 [:div {:id "badge-gallery"}
+                                  [m/modal-window]
+                                  [gallery-grid-form state]
+                                  (if (:ajax-message @state)
+                                    [:div.ajax-message
+                                     [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                     [:span (:ajax-message @state)]]
+                                    [gallery-grid state])]
+                                   )
+                 :component-did-mount (fn []
+                                        (if badge_content_id
+                                          (open-modal badge_content_id true)
+                                          )
+                                        )
+                 ;:component-did-update #(scroll-bottom)
+                 })
+  )
 
 
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
+        badge_content_id (:badge_content_id params)
         state (atom {:user-id user-id
                      :badges []
                      :countries []
@@ -194,5 +206,5 @@
     (init-data state user-id)
     (fn []
       (if (session/get :user)
-        (layout/default site-navi (content state))
-        (layout/landing-page site-navi (content state))))))
+        (layout/default site-navi [content state badge_content_id])
+        (layout/landing-page site-navi [content state badge_content_id])))))
