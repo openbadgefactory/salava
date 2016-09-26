@@ -49,7 +49,7 @@
                    :summary "Get all tickets with open status"
                    :path-params [badge_content_id :- s/Str
                                  page_count :- s/Int]
-                   :auth-rules access/admin
+                   :auth-rules access/authenticated
                    :current-user current-user
                    (do
                      (ok (so/get-badge-messages-limit ctx badge_content_id page_count)
@@ -66,5 +66,14 @@
                    (let [{:keys [message user_id]} content]
                      (ok (so/message! ctx badge_content_id user_id message)
                       )))
+
+             (POST "/delete_message/:message_id" []
+                   :return (s/enum "success" "error")
+                   :summary "Create new message"
+                   :path-params [message_id :- s/Int]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/delete-message! ctx message_id (:id current-user)))
+                   )
              
              )))

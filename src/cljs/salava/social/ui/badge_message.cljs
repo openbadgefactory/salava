@@ -41,12 +41,57 @@
       :error-handler (fn [{:keys [status status-text]}]
                        )})))
 
-(defn message-list-item [{:keys [message first_name last_name ctime id profile_picture]}]
+(defn delete-message [id state]
+(ajax/POST
+     (path-for (str "/obpv1/social/delete_message/" id))
+     {:response-format :json
+      :keywords? true 
+      :handler (fn [data]
+                 (do
+                   (let [filtered-messages (filter #(not (= id (:id %))) (:messages @state))]
+                     (swap! state assoc :messages filtered-messages))
+                   ))
+      :error-handler (fn [{:keys [status status-text]}]
+                       )})
+)
+
+(defn delete-message-button [id state]
+  (let [delete-clicked (atom nil)]
+    (fn []
+      [:div
+       [:button {:type       "button"
+                 :class      "close"
+                 :aria-label "OK"
+                 :on-click   #(do
+                                (reset! delete-clicked (if (= true @delete-clicked) nil true))
+                                (.preventDefault %))
+                 }
+        [:span {:aria-hidden "true"
+                
+                :dangerouslySetInnerHTML {:__html "&times;"}}]]
+       (if @delete-clicked
+         [:div
+          [:div {:class "alert alert-warning"}
+           (t :badge/Confirmdelete)]
+          [:button {:type  "button"
+                    :class "btn btn-primary"
+                    :on-click #(reset! delete-clicked nil)
+                    }
+           (t :badge/Cancel)]
+          [:button {:type  "button"
+                    :class "btn btn-warning"
+                    :on-click     #(delete-message id state)
+                    }
+           (t :badge/Delete)]])])))
+
+(defn message-list-item [{:keys [message first_name last_name ctime id profile_picture user_id]} state]
   [:div {:class "media message-item" :key id}
    [:span {:class "pull-left"}
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
-    [:h4 {:class "media-heading"} (str first_name " "last_name " " (date-from-unix-time (* 1000 ctime) "minutes"))]
+    [:h4 {:class "media-heading"} (str first_name " "last_name " " (date-from-unix-time (* 1000 ctime) "minutes")) 
+     (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
+       [delete-message-button id state])]
     [:span message]]
    ]
   )
@@ -56,10 +101,11 @@
     [:div {:class "media message-item"}
      [:div {:class "media-body"}
       [:span [:a {:href     "#" 
-                  :class    "pull-right" 
+                  :class    "" 
                   :on-click #(do
                                (init-data state)
-                               (.preventDefault %))} (str "-- Load more: " (:messages_left @state)  " messages left --")]]]
+                               (.preventDefault %))}
+              (str "-- "(t :social/Loadmore) ": " (:messages_left @state) " " (t :social/Messagesleft) " --")]]]
      ]
 [:div]))
 
@@ -74,7 +120,7 @@
                                    [:div {:id ""}
                                     (doall
                                      (for [item messages]
-                                       (message-list-item item)))
+                                       (message-list-item item state)))
                                     (message-list-load-more state)
                                     ])
                  ;:component-did-mount #(scroll-bottom)
@@ -94,7 +140,7 @@
                 :on-click #(do
                              (save-message state)
                              (.preventDefault %))} 
-       "Post new"]]]))
+      (t :social/Postnew)]]]))
 
 
 (defn refresh-button [state]
@@ -111,24 +157,11 @@
      ;(refresh-button state)
      [message-list messages state]]))
 
-(defn aacontent [state]
-  (let [show-atom (cursor state [:show])]
-    [:div
-     [:h2 "Message board:"]
-     [:a {:href "#"
-          :on-click #(do
-                       (reset! show-atom (if (= true @show-atom) nil true))
-                       (.preventDefault %))}
-      (if @show-atom "hide messages" "show messages")]
-     (if @show-atom 
-      ; (messages state)
-       "")]))
-
-
 
 (defn badge-message-handler [badge_content_id]
   (let [state (atom {:messages [] 
                      :user_id (session/get-in [:user :id])
+                     :user_role (session/get-in [:user :role])
                      :message ""
                      :badge_content_id badge_content_id
                      :show false

@@ -31,12 +31,12 @@
                :on-click #(do
                             (reset! show-messages (if (= true @show-messages) nil true))
                             (.preventDefault %))}
-           (if @show-messages "hide messages" (str "messages (" message_count ")"))]]]
+           (if @show-messages (t :social/Showinfo) (str (t :social/Messages) " (" message_count ")"))]]]
         [:div {:class "col-md-9 badge-info"}
          
          (if @show-messages
            [:div.row
-            [:h1.uppercase-header (str name " - MESSAGES")]
+            [:h1.uppercase-header (str name " - " (t :social/Messages))]
             [badge-message-handler badge_content_id]]
            [:div.row
             [:h1.uppercase-header name]

@@ -23,4 +23,8 @@ SELECT bm.id, bm.badge_content_id, bm.message, bm.ctime, bm.user_id, u.first_nam
 --get badge's messages
 SELECT COUNT(id) AS Count FROM badge_message WHERE badge_content_id = :badge_content_id AND deleted=0
        
+--name: update-badge-message-deleted!
+UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :message_id
 
+--name: select-badge-message-owner
+SELECT user_id FROM badge_message where id = :message_id
