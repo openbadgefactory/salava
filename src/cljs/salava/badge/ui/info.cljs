@@ -13,6 +13,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
+            [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn toggle-visibility [state]
@@ -122,7 +123,7 @@
                   [:i {:class "fa fa-heart"}]
                   (str " " (t :badge/Congratulations) "!")])
                )]]
-           [:a {:href (path-for (str "/gallery/badges/" owner "/" badge_content_id))} (str (t :social/Messages)  " (" (:all-messages message_count) ") "  ) (if (pos? (:new-messages message_count)) (str (:new-messages message_count) " " (t :social/Newmessages )))]]
+           [badge-message-link message_count  badge_content_id]]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
             [:div {:class "col-md-12"}
