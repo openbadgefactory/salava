@@ -48,34 +48,42 @@
 (defn content [state]
   [:div {:id "cancel-account"}
    [:h1.uppercase-header (t :user/Cancelaccount)]
-   [:div {:id "cancel-info"}
-    [:p (t :user/Cancelaccountinstructions1)]
-    [:p (t :user/Cancelaccountinstructions2) ":"]
-    [:p (t :user/Cancelaccountinstructions3) ":"]
-    [:ul
-     [:li (t :user/Goto) " " [:a {:href (path-for "/badge/export")} (t :user/Badgeexport)] " " (t :user/page)]
-     [:li {:dangerouslySetInnerHTML
-         {:__html (t :user/Cancelaccountinstructions4)}}]]
-    [:p (t :user/Cancelaccountinstructions5) ":"]
-    [:ul
-     [:li (t :user/Goto) " " [:a {:href (path-for "/badge/export")} (t :user/Badgeexport)] " " (t :user/page)]
-     [:li {:dangerouslySetInnerHTML
-         {:__html (t :user/Cancelaccountinstructions6)}}]
-     [:li {:dangerouslySetInnerHTML
-         {:__html (t :user/Cancelaccountinstructions7)}}]
-     [:li  (t :user/Cancelaccountinstructions8)]]
-    [:p [:b (t :user/Cancelaccountinstructions9)]]]
-   [:div {:class "panel"}
-    [:div.panel-body
-     (cancel-form state)]]])
+   (if (:has-password? @state)
+     [:div
+      [:div {:id "cancel-info"}
+       [:p (t :user/Cancelaccountinstructions1)]
+       [:p (t :user/Cancelaccountinstructions2) ":"]
+       [:p (t :user/Cancelaccountinstructions3) ":"]
+       [:ul
+        [:li (t :user/Goto) " " [:a {:href (path-for "/badge/export")} (t :user/Badgeexport)] " " (t :user/page)]
+        [:li {:dangerouslySetInnerHTML
+              {:__html (t :user/Cancelaccountinstructions4)}}]]
+       [:p (t :user/Cancelaccountinstructions5) ":"]
+       [:ul
+        [:li (t :user/Goto) " " [:a {:href (path-for "/badge/export")} (t :user/Badgeexport)] " " (t :user/page)]
+        [:li {:dangerouslySetInnerHTML
+              {:__html (t :user/Cancelaccountinstructions6)}}]
+        [:li {:dangerouslySetInnerHTML
+              {:__html (t :user/Cancelaccountinstructions7)}}]
+        [:li  (t :user/Cancelaccountinstructions8)]]
+       [:p [:b (t :user/Cancelaccountinstructions9)]]]
+      [:div {:class "panel"}
+       [:div.panel-body
+        (cancel-form state)]]]
+     [:div {:class "panel"}
+      [:span (t :oauth/Cannotunlink) " " (t :oauth/Setpasswordfrom)
+                " " [:a {:href (path-for "/user/edit")} (t :oauth/accountsettings)] "."]])])
 
-(defn init-data []
+(defn init-data [state]
   (ajax/GET
-    (path-for "/obpv1/user/test")
-    {:handler (fn [])}))
+    (path-for "/obpv1/user/edit" true)
+    {:handler (fn [data]
+                (swap! state assoc :has-password? (get-in data [:user :password?])))}))
 
 (defn handler [site-navi]
-  (let [state (atom {:password "" :error-message nil})]
-    (init-data)
+  (let [state (atom {:password ""
+                     :error-message nil
+                     :has-password? nil})]
+    (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
