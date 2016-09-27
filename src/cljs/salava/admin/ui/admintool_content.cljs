@@ -132,9 +132,7 @@
      (doall
       (for [element-data (:emails info)]
         [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]
-        ))]
-    
-    ]
+        ))]]
   [:div {:class "row"}
    [:label.col-xs-4 (t :admin/Created) ":"]
    [:div.col-xs-6
@@ -143,6 +141,7 @@
     [:label.col-xs-4 (t :admin/Lastlogin) ":"]
     [:div.col-xs-6
    (date-from-unix-time (* 1000 (:last_login info)) "minutes")]]])
+
 
 (defn page-info-block [owner owner_id]
   [:div {:class "issuer-data clearfix"}

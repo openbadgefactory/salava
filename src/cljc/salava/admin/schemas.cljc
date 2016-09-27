@@ -26,7 +26,7 @@
                                     :ctime            s/Int
                                     :mtime            s/Int}]
                           :ctime s/Int
-                          :last_login s/Int
+                          :last_login (s/maybe s/Int)
                           :deleted s/Bool}})
 
 (s/defschema Page {:name s/Str

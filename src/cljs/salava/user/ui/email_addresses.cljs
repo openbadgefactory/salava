@@ -19,7 +19,7 @@
                     (swap! state assoc :emails (conj emails new-email)
                            :new-address ""
                            :message {:class "alert-success" :content (str (t :user/Emailaddress) " " (:email new-email) " " (t :user/added))}))
-                  (swap! state assoc :message {:class "alert-danger" :content (t :user/Erroraddingemailaddress)})))}))
+                  (swap! state assoc :message {:class "alert-danger" :content (t (keyword message))})))}))
 
 (defn set-primary-email [email state]
   (ajax/POST
