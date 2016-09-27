@@ -116,9 +116,12 @@
                                    (add-badge-selection key state)))}]
            (t :badge/Savebadge)]]
         (if (= invalidtype "error")
-         [:div
-          [:span {:id (str "err" key)} error]]
-         [:div (t (keyword message))]
+          [:div
+           
+          [:span {:id (str "err" key)} error]
+          ]
+          [:div
+           (t (keyword message))]
         ))]]]))
 
 (defn badge-grid [state]
@@ -179,7 +182,7 @@
                                  (= (count (:badges-selected @state)) 0))}
           (t :badge/Saveselected)]]))]
    (if-not (nil? (:error @state))
-     [:div {:class "alert alert-warning"} (:error @state)])
+     [:div {:class "alert alert-warning"} (t (keyword (:error @state)))])
    [badge-grid state]])
 
 (defn init-data []
