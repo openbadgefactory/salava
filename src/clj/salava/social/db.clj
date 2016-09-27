@@ -10,6 +10,14 @@
 
 (defqueries "sql/social/queries.sql")
 
+(defn messages-viewed
+ "Save information about viewing messages."
+ [ctx badge_content_id user_id]
+  (try+
+   (replace-badge-message-view! {:badge_content_id badge_content_id :user_id user_id} (get-db ctx))
+   (catch Object _
+     "error")))
+
 (defn message! [ctx badge_content_id user_id message]
   (try+
    (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
@@ -18,19 +26,28 @@
      "error"
      )))
 
-(defn get-badge-messages [ctx badge_content_id]
+(defn get-badge-messages [ctx badge_content_id user_id]
   (let [badge-messages (select-badge-messages {:badge_content_id badge_content_id} (get-db ctx))]
-    badge-messages))
+    (do
+      (messages-viewed ctx badge_content_id user_id)
+      badge-messages
+      )))
 
-(defn get-badge-message-count [ctx badge_content_id]
-  (let [badge-messages-count (select-badge-messages-count {:badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :count} (get-db ctx)) )]
-    badge-messages-count))
+(defn get-badge-message-count [ctx badge_content_id user-id]
+  (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_content_id badge_content_id} (get-db ctx))
+        last-viewed (select-badge-message-last-view {:badge_content_id badge_content_id :user_id user-id} (into {:result-set-fn first :row-fn :mtime} (get-db ctx)))
+        new-messages (if last-viewed (filter #(and (not= user-id (:user_id %)) (< last-viewed (:ctime %))) badge-messages-user-id-ctime) ())]
+    {:new-messages (count new-messages)
+     :all-messages (count badge-messages-user-id-ctime)}))
 
-(defn get-badge-messages-limit [ctx badge_content_id page_count]
+
+(defn get-badge-messages-limit [ctx badge_content_id page_count user_id]
   (let [limit 10
         offset (* limit page_count)
         badge-messages (select-badge-messages-limit {:badge_content_id badge_content_id :limit limit :offset offset} (get-db ctx))
-        messages-left (- (get-badge-message-count ctx badge_content_id) (* limit (+ page_count 1)))]
+        messages-left (- (:all-messages (get-badge-message-count ctx badge_content_id user_id)) (* limit (+ page_count 1)))]
+    (if (= 0  page_count)
+      (messages-viewed ctx badge_content_id user_id))
     {:messages badge-messages
      :messages_left (if (pos? messages-left) messages-left 0)}))
 
@@ -49,3 +66,9 @@
    (catch Object _
      "error"
      )))
+
+
+
+
+
+

@@ -122,7 +122,7 @@
                   [:i {:class "fa fa-heart"}]
                   (str " " (t :badge/Congratulations) "!")])
                )]]
-           [:a {:href (path-for (str "/gallery/badges/" owner "/" badge_content_id))} (str (t :social/Messages)  " (" message_count ")")]]
+           [:a {:href (path-for (str "/gallery/badges/" owner "/" badge_content_id))} (str (t :social/Messages)  " (" (:all-messages message_count) ") "  ) (if (pos? (:new-messages message_count)) (str (:new-messages message_count) " " (t :social/Newmessages )))]]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
             [:div {:class "col-md-12"}

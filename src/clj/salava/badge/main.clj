@@ -145,7 +145,7 @@
   [ctx badge-id user-id]
   (let [badge (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
         owner? (= user-id (:owner badge))
-        badge-message-count (so/get-badge-message-count ctx (:badge_content_id badge))
+        badge-message-count (so/get-badge-message-count ctx (:badge_content_id badge) user-id)
         all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (get-db ctx)))
         user-congratulation? (and user-id
                                   (not owner?)

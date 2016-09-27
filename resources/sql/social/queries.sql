@@ -21,10 +21,17 @@ SELECT bm.id, bm.badge_content_id, bm.message, bm.ctime, bm.user_id, u.first_nam
 
 --name: select-badge-messages-count
 --get badge's messages
-SELECT COUNT(id) AS Count FROM badge_message WHERE badge_content_id = :badge_content_id AND deleted=0
+SELECT ctime, user_id FROM badge_message WHERE badge_content_id = :badge_content_id AND deleted=0
        
 --name: update-badge-message-deleted!
 UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :message_id
 
 --name: select-badge-message-owner
 SELECT user_id FROM badge_message where id = :message_id
+
+--name: replace-badge-message-view!
+REPLACE INTO badge_message_view (user_id, badge_content_id, mtime)
+       VALUES (:user_id, :badge_content_id, UNIX_TIMESTAMP())
+
+--name: select-badge-message-last-view
+SELECT mtime FROM badge_message_view where badge_content_id = :badge_content_id AND user_id = :user_id

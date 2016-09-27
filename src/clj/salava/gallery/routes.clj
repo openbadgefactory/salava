@@ -67,7 +67,8 @@
                                                 :verified_by_obf     s/Bool
                                                 :issued_by_obf       s/Bool
                                                 :issuer_verified     (s/maybe s/Bool)
-                                                :message_count       (s/maybe s/Int)
+                                                :message_count       {:new-messages (s/maybe s/Int)
+                                                                      :all-messages (s/maybe s/Int)}
                                                 :obf_url             s/Str}
                            :public_users       (s/maybe [{:id         s/Int
                                                           :first_name s/Str

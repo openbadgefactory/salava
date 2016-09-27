@@ -28,12 +28,12 @@
                             :first_name       s/Str
                             :last_name        s/Str
                             :profile_picture  (s/maybe s/Str)}]
-                   :summary "Get all tickets with open status"
+                   :summary "Get all messages"
                    :path-params [badge_content_id :- s/Str]
                    :auth-rules access/admin
                    :current-user current-user
                    (do
-                     (ok (so/get-badge-messages ctx badge_content_id)
+                     (ok (so/get-badge-messages ctx badge_content_id (:id current-user))
                       )))
 
              (GET "/messages/:badge_content_id/:page_count" []
@@ -46,13 +46,13 @@
                                        :last_name        s/Str
                                        :profile_picture  (s/maybe s/Str)}]
                            :messages_left s/Int}
-                   :summary "Get all tickets with open status"
+                   :summary "Get 10 messages. Page_count tells OFFSET "
                    :path-params [badge_content_id :- s/Str
                                  page_count :- s/Int]
                    :auth-rules access/authenticated
                    :current-user current-user
                    (do
-                     (ok (so/get-badge-messages-limit ctx badge_content_id page_count)
+                     (ok (so/get-badge-messages-limit ctx badge_content_id page_count (:id current-user))
                       )))
 
              (POST "/messages/:badge_content_id" []
@@ -69,7 +69,7 @@
 
              (POST "/delete_message/:message_id" []
                    :return (s/enum "success" "error")
-                   :summary "Create new message"
+                   :summary "Delete message"
                    :path-params [message_id :- s/Int]
                    :auth-rules access/authenticated
                    :current-user current-user

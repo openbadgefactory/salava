@@ -103,7 +103,7 @@
         badge-data (or recipient-badge-data (select-badge-criteria-issuer-by-date {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx))))
         rating (select-common-badge-rating {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
         recipients (if user-id (select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx)))
-        badge-message-count {:message_count (so/get-badge-message-count ctx badge-content-id)}
+        badge-message-count {:message_count (so/get-badge-message-count ctx badge-content-id user-id)}
         badge (merge badge-content badge-data rating badge-message-count)]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
               :public_users (->> recipients
