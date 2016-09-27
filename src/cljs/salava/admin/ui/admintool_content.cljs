@@ -134,7 +134,7 @@
     [:label.pull-left (t :user/Email) ":"]
     (doall
       (for [element-data (:emails info)]
-        [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") }  (:email element-data)]))]
+        [:div  {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") } (str (:email element-data) " ") (if (:verified element-data) [:i {:class "fa fa-check"}])]))]
   [:div {:class "clearfix"}
     [:label.pull-left (t :admin/Created) ":"]
    

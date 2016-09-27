@@ -47,8 +47,8 @@
 
 
 (defn email-select [emails email-atom]
-  (let [primary-email (first (filter #(:primary_address %) emails))
-        secondary-emails (filter #(not (:primary_address %)) emails)]
+  (let [primary-email (first (filter #(and (:verified %) (:primary_address %)) emails))
+        secondary-emails (filter #(and (:verified %) (not (:primary_address %))) emails)]
     (if (not (pos? (count secondary-emails)))
       [:div (:email primary-email) ]
       [:select {:class     "form-control"
