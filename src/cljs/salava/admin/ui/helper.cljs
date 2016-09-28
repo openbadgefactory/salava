@@ -1,6 +1,6 @@
 (ns salava.admin.ui.helper
   (:require
-   [reagent.core :refer [atom cursor]]
+   [reagent.core :refer [atom cursor create-class]]
    [reagent.session :as session]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.helper :refer [input-valid?]]
@@ -54,21 +54,31 @@
       [:select {:class     "form-control"
                 :id        "emails"
                 :value     @email-atom
-                :on-change #(reset! email-atom (.-target.value %))
-                }
+                :on-change #(reset! email-atom (.-target.value %))}
        [:optgroup {:label (str (t :admin/Primaryemail) ":")}
-        [:option {:key (hash (:email primary-email)) :value (:email primary-email)} (:email primary-email) ]]
+        [:option {:key (hash (:email primary-email)) :value (:email primary-email)} (:email primary-email)]]
        [:optgroup {:label (str (t :admin/Secondaryemail) ":")}
         (doall
          (for [element-data secondary-emails]
-           [:option {:key (hash (:email element-data)) :value (:email element-data)} (:email element-data) ]))
-        ] ])))
+           [:option {:key (hash (:email element-data)) :value (:email element-data)} (:email element-data)]))]])))
+
+(defn no-verified-email-select [emails email-atom]
+  (let [emails (filter #(and (not (:verified %)) (not (:primary_address %))) emails)]
+    (create-class {:component-did-mount (fn []
+                                          (reset! email-atom (:email (first emails))))
+                   :reagent-render      (fn [] [:select {:class     "form-control"
+                                                         :id        "emails"
+                                                         :value     @email-atom
+                                                         :on-change #(reset! email-atom (.-target.value %))}
+                                                (doall
+                                                 (for [element-data emails]
+                                                   [:option {:key (hash (:email element-data)) :value (:email element-data)} (:email element-data)]))])})))
 
 
 (defn status-handler [status item_type]
   (cond
     (= "success" @status)[:div {:class "alert alert-success col-xs-6 cos-md-8"}
-                         (t :admin/Messagesentsuccessfully) ]
+                          (t :admin/Messagesentsuccessfully)]
     (= "error" @status) [:div {:class "alert alert-warning col-xs-6 cos-md-8"}
-                        (t :admin/Somethingwentwrong)]
+                         (t :admin/Somethingwentwrong)]
     :else ""))

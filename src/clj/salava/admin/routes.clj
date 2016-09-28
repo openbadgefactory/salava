@@ -85,7 +85,7 @@
              (GET "/user/:user_id" []
                   :return schemas/User
                   :path-params [user_id :- s/Int]
-                  :summary "Get user name, profile image and verified emails"
+                  :summary "Get user name, profile image and emails"
                   :auth-rules access/admin
                   :current-user current-user
                   (ok (a/get-user ctx user_id)))
@@ -157,6 +157,23 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/delete-user! ctx id subject message email)))
+
+             (POST "/delete_no_activated_user/:user_id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete no activated user "
+                   :path-params [user_id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-no-activated-user ctx user_id)))
+
+             (POST "/delete_no_verified_address/:user_id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete users no verified address"
+                   :body-params [email   :- s/Str]
+                   :path-params [user_id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-no-verified-adress ctx user_id email)))
              
              (POST "/undelete_user/:id" []
                    :return (s/enum "success" "error")
@@ -198,15 +215,11 @@
                                          :country (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
                                          :email (s/maybe s/Str)
-                                         :filter (s/enum 1 0)}
-                          ]
+                                         :filter (s/enum 1 0)}]
                    :summary "Gwarawret public user profiles"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (let [users (a/all-profiles ctx search-params (:id current-user))
-                         countries (a/profile-countries ctx (:id current-user))]
-                     
+                         countries (a/profile-countries ctx (:id current-user))]         
                      (ok {:users     (vec users)
-                          :countries (vec countries)})))
-
-             )))
+                          :countries (vec countries)})))))
