@@ -158,10 +158,10 @@
      [userlist-table state])])
 
 (defn init-data [state]
-  (let [country (session/get-in [:user :country] "all")]
+  (let [country "all"]
     (ajax/POST
       (path-for (str "/obpv1/admin/profiles/"))
-      {:params {:country country
+      {:params {:country "all"
                 :name ""
                 :order_by "ctime"
                 :email ""

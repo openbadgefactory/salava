@@ -27,7 +27,8 @@
                                     :mtime            s/Int}]
                           :ctime s/Int
                           :last_login (s/maybe s/Int)
-                          :deleted s/Bool}})
+                          :deleted s/Bool
+                          :activated  s/Bool}})
 
 (s/defschema Page {:name s/Str
                    :image_file (s/maybe s/Str)

@@ -101,3 +101,12 @@ JOIN user_email AS ue ON u.id = ue.user_id
 SELECT user_id, GROUP_CONCAT(email, primary_address) AS email from user_email where user_id IN (:ids)
 GROUP BY user_id
 
+
+--name: delete-email-addresses!
+DELETE FROM user_email WHERE user_id = :user_id
+
+--name: delete-no-activated-user!
+DELETE FROM user WHERE id = :id and activated = 0
+
+-- name: delete-email-no-verified-address!
+DELETE FROM user_email WHERE email = :email AND user_id = :user_id AND primary_address = 0 AND verified = 0
