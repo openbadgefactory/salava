@@ -123,7 +123,7 @@
     [:tr {:key id}
      [:td
       (if deleted
-        [:div first_name " " last_name]
+        [:div [:i {:class "fa fa-ban" :aria-hidden "true"}] (str " " first_name " " last_name) ]
         [:a {:href (path-for (str "/user/profile/" id))} first_name " " last_name])]
      [:td
       (doall
