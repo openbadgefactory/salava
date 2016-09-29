@@ -217,7 +217,7 @@
                                          :email (s/maybe s/Str)
                                          :filter (s/enum 1 0)}]
                    :summary "Gwarawret public user profiles"
-                   :auth-rules access/authenticated
+                   :auth-rules access/admin
                    :current-user current-user
                    (let [users (a/all-profiles ctx search-params (:id current-user))
                          countries (a/profile-countries ctx (:id current-user))]         

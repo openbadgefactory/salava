@@ -322,7 +322,9 @@
     [:div {:class "admin-modal"}
      [:div.row
       [:div {:class "col-sm-3 badge-image modal-left"}
-       [:img {:src (profile-picture image_file)} ]]
+       [:img {:src (profile-picture image_file)} ]
+       (if (:deleted info)
+         [:h4 (t :admin/Deleteduser) ])]
       [:div {:class "col-sm-9 badge-info"}
        [:div {:class "row info"}
         [:div {:class "col-md-12"}
@@ -339,7 +341,7 @@
            (if (:deleted info)
              (unlock-user state visible_area item_owner)
              (lock-user state visible_area item_owner)))
-         (if (and (= item_type "user") (:activated info))
+         (if (and (= item_type "user") (:activated info) (not (:deleted info)))
            (password-reset state visible_area item_owner))
          (if (and (= item_type "user") (not (:activated info)))
            (delete-no-activated-user state visible_area item_owner))
@@ -359,8 +361,5 @@
 
     (admin-modal-container state)]
    [:div.modal-footer
-    [:button {:type         "button"
-              :class        "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :core/Close)]]])
 
+    ]])

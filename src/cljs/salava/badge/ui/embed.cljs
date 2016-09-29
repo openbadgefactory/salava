@@ -25,16 +25,16 @@
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
-          [:div {:class "col-xs-5 badge-image"}
+          [:div {:class "col-sm-5 badge-image"}
            [:div.row
             [:div.col-xs-12
              [:img {:src (str "/" image_file)}]]]
            
          
            ]
-          [:div {:class "col-xs-7 badge-info"}
+          [:div {:class "col-sm-7 badge-info"}
            [:div.row
-            [:div {:class "col-md-12"}
+            [:div {:class "col-sm-12"}
              (if revoked
                [:div.revoked (t :badge/Revoked)])
              (if expired?
@@ -44,17 +44,17 @@
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
              
              (if (and issued_on (> issued_on 0))
-               [:div [:label (t :badge/Issuedon)] ": " (date-from-unix-time (* 1000 issued_on))])
+               [:div [:label (str (t :badge/Issuedon)": ")]  (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
-               [:div [:label (t :badge/Expireson)] ": " (date-from-unix-time (* 1000 expires_on))])
+               [:div [:label (str (t :badge/Expireson) ": ")]  (date-from-unix-time (* 1000 expires_on))])
             (if assertion
               [:div {:id "assertion-link"}
-               [:label (t :badge/Metadata)] ": "
+               [:label (str (t :badge/Metadata) ": ")] 
                [:a {:href     "#"
                     :on-click #(do (.preventDefault %)
                                    (m/modal! [a/assertion-modal assertion] {:size :lg}))}
                 (t :badge/Openassertion) "..."]])
-             [:div [:label (t :badge/Recipient)] ": " first_name " " last_name]
+             [:div [:label (str (t :badge/Recipient) ": ") ]  first_name " " last_name]
             
             [:div.description description]
             [:h2.uppercase-header (t :badge/Criteria)]
@@ -67,7 +67,6 @@
              [:div.col-md-12
               [:h2.uppercase-header (t :badge/Evidence)]
               [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]]]]])))
-
 (defn init-data [state id]
   (ajax/GET
     (path-for (str "/obpv1/badge/info/" id))
