@@ -4,7 +4,7 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
@@ -301,3 +301,24 @@ WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
    "success"
    (catch Object _
      "error")))
+
+
+
+(defn send-user-activation-message
+  "Send activation message to user"
+  [ctx user-id]
+  (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+        language (:language user)
+        email (:email user)
+        first-name (:first_name user)
+        last-name (:last_name user)
+        site-url (get-site-url ctx)
+        base-path (get-base-path ctx)
+        activation_code (:verification_key user)]
+    (try+
+     (if (not (:activated user))
+       (m/send-activation-message ctx site-url (u/activation-link site-url base-path user-id activation_code language) (u/login-link site-url base-path) (str first-name " " last-name) email language)
+      (throw+ "error") )
+     "success"
+     (catch Object _
+     "error"))))

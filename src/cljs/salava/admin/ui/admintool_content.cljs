@@ -276,6 +276,30 @@
                                                       (.log js/console (str status " " status-text)) )})}
          (t :core/Yes)]])]))
 
+(defn send-activation-message [state visible_area item_owner]
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        status (cursor state [:status])
+        email (:email (first (:emails info)))]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-activation-message" @visible_area) "" "send-activation-message")))}  (t :admin/Sendactivationlink) ]]
+     (if (= @visible_area "send-activation-message")
+       [:div.col-md-12
+        (str (t :admin/Sendactivationlink) " " email)
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/send_activation_message/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true         
+                                   :handler         (fn [data]
+                                                      (reset! status data)
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+         (t :core/Yes)]
+        (status-handler status "")])]))
+
 (defn delete-no-activated-user [state visible_area item_owner]
   (let [{:keys [mail item_owner_id gallery-state init-data info]} @state]
     [:div {:class "row"}
@@ -332,7 +356,9 @@
        (if (and (= item_type "user") (not (:activated info)))
          (delete-no-activated-user state visible_area item_owner))
        (if (and (= item_type "user") (:activated info) no-verified-emails)
-         (delete-no-verified-email state visible_area item_owner))]]]))
+         (delete-no-verified-email state visible_area item_owner))
+       (if  (and (= item_type "user") (not (:activated info))) 
+         (send-activation-message state visible_area item_owner))]]]))
 
 (defn admin-modal [state]
   [:div
