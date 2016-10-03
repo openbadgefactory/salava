@@ -4,6 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? path-for]]
             [salava.core.ui.layout :as layout]
+            [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t translate-text]]
             [salava.user.schemas :as schemas]))
 
@@ -23,16 +24,18 @@
                  :password_verify password-verify}
        :handler (fn [data]
                   (if (= (:status data) "error")
-                    (swap! state assoc :error-message (:message data))
-                    (swap! state assoc :account-activated true)))})))
+                    (swap! state assoc :message (:message data)
+                                       :status "error")
+                    (swap! state assoc :account-activated true
+                                       :message (:message data))))})))
 
 (defn activation-form [state]
   (let [password-atom (cursor state [:password])
         password-verify-atom (cursor state [:password-verify])]
     [:div {:class "form-horizontal"}
-     (if (:error-message @state)
+     (if (= "error" (:status @state))
        [:div {:class "alert alert-danger" :role "alert"}
-        (translate-text (:error-message @state))])
+        (translate-text (:message @state))])
      [:div.form-group
       [:label {:class "col-xs-4"
                :for "input-password"}
@@ -76,8 +79,8 @@
      (if (:account-activated @state)
        [:div {:class "alert alert-success"
               :role "alert"}
-        (t :user/Accountactivatedsuccessfully) ". "
-        [:a {:href (path-for "/user/login")} (t :user/Clickheretologin)]]
+        (translate-text (:message @state)) ". "
+        [:a {:href (path-for "/user/login")} (str (t :user/Clickheretologin) ".")]]
        (activation-form state))]]])
 
 (defn handler [site-navi params]
@@ -85,7 +88,7 @@
                      :password-verify ""
                      :user-id (:user-id params)
                      :code (:code params)
-                     :error-message nil
+                     :message nil
                      :account-activated false})
         lang (:lang params)]
     (when (and lang (some #(= lang %) (session/get :languages)))

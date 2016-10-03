@@ -3,6 +3,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
+            [salava.core.helper :refer [dump]]
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
             [salava.file.db :as f]
@@ -91,7 +92,7 @@
                 (update-password! {:pass (hash-password password) :id user-id} (get-db ctx))
                 (update-verify-email-address! {:user_id user-id :email email} (get-db ctx)))
             )
-            {:status "success" :message ""}))))))
+            {:status "success" :message (if activated "user/Accountpasswordchangedsuccessfully" "user/Accountactivatedsuccessfully")}))))))
 
 (defn login-user
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
