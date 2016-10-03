@@ -18,7 +18,6 @@
   (let [{:keys [item_id mail item_owner_id gallery-state init-data name item_type]} @state
         mail (cursor state [:mail])
         item_ownertext (if (= 1 (count item_owner_id)) (str (t :admin/Earners) " " item_owner) item_owner)]
-    (dump item_owner_id)
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-item" @visible_area) "" "delete-item")))} (t :core/Delete) ]]
