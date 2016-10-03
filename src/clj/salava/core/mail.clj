@@ -9,7 +9,7 @@
   (try+
     (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
           data {:from    (get-in ctx [:config :core :mail-sender])
-                :to      recipients
+                :bcc      recipients
                 :subject subject
                 :body    [{:type    "text/plain; charset=utf-8"
                            :content message}]}]

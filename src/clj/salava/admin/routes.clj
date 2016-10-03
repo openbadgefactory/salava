@@ -208,6 +208,14 @@
                    :current-user current-user
                    (ok (a/close-ticket! ctx id)))
 
+             (POST "/send_activation_message/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Send activation message to user"
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/send-user-activation-message ctx id)))
+
              (POST "/profiles" []
                    :return {:users [schemas/UserProfiles]
                             :countries [schemas/Countries]}

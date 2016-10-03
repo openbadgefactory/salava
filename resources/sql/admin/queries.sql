@@ -62,9 +62,9 @@ UPDATE user SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 UPDATE user SET deleted = 0, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: select-user-and-email
-SELECT first_name, last_name, ue.email FROM user AS u
+SELECT u.first_name, u.last_name, ue.email, u.language, u.activated, ue.verification_key  FROM user AS u
 JOIN user_email AS ue ON u.id = ue.user_id
-WHERE id= :id AND ue.primary_address = 1
+WHERE u.id= :id AND ue.primary_address = 1
 
 --name: select-users-email
 SELECT email FROM user_email
@@ -74,7 +74,7 @@ SELECT email FROM user_email
 SELECT user_id FROM badge WHERE id=:id
 
 --name: select-users-id-by-badge-content-id
-select user_id from badge WHERE badge_content_id = :badge_content_id
+select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted = 0
 
 
 

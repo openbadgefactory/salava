@@ -3,6 +3,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
+            [salava.core.helper :refer [dump]]
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
             [salava.file.db :as f]
@@ -91,18 +92,20 @@
                 (update-password! {:pass (hash-password password) :id user-id} (get-db ctx))
                 (update-verify-email-address! {:user_id user-id :email email} (get-db ctx)))
             )
-            {:status "success" :message ""}))))))
+            {:status "success" :message (if activated "user/Accountpasswordchangedsuccessfully" "user/Accountactivatedsuccessfully")}))))))
 
 (defn login-user
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
   (try+
-   (let [{:keys [id pass activated verified primary_address role]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-     (if (and id pass activated verified (check-password plain-password pass))
+   (let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+     (if (and id pass activated verified (not deleted) (check-password plain-password pass))
        (do
          (update-user-last_login! {:id id} (get-db ctx))
          {:status "success" :id id :role role})
-       {:status "error" :message  "user/Loginfailed"}))
+       (if (and id pass activated verified deleted (check-password plain-password pass))
+         {:status "error" :message "user/Accountdeleted"}
+         {:status "error" :message "user/Loginfailed"})))
    (catch Object _
      {:status "error" :message "user/Loginfailed"})))
 
