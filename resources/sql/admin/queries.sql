@@ -74,7 +74,7 @@ SELECT email FROM user_email
 SELECT user_id FROM badge WHERE id=:id
 
 --name: select-users-id-by-badge-content-id
-select user_id from badge WHERE badge_content_id = :badge_content_id
+select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted = 0
 
 
 
