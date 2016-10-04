@@ -18,7 +18,7 @@
 (defn delete-item [state visible_area item_owner]
   (let [{:keys [item_id mail item_owner_id gallery-state init-data name item_type]} @state
         mail (cursor state [:mail])
-        item_ownertext (if (or (= "page" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earners) " " item_owner) item_owner)
+        item_ownertext (if (or (= "page" item_type) (= "badge" item_type) (= 1 (count item_owner_id))) (str (t :admin/Earners) " " item_owner) item_owner)
         ]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
@@ -151,7 +151,7 @@
 
 (defn private-item [state visible_area item_owner]
   (let [{:keys [item_type item_id item_owner_id  gallery-state init-data name]} @state
-        item_ownertext (if (or (= "page" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earners) " " item_owner) item_owner)
+        item_ownertext (if (or (= "page" item_type) (= "badge" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earners) " " item_owner) item_owner)
         ]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
