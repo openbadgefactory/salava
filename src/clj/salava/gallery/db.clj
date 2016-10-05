@@ -131,13 +131,14 @@
         [where params] (if-not (empty? owner)
                          [(str where " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?") (conj params (str "%" owner "%"))]
                          [where params])
-        query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
-                    JOIN user AS u ON p.user_id = u.id
-                    LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
-                    WHERE (visibility = 'public' OR visibility = 'internal') AND p.deleted = 0"
+        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, badge_content_id  FROM badge AS b
+                    JOIN badge_content AS bc ON b.badge_content_id = bc.id
+                    JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+                    LEFT JOIN user AS u ON b.user_id = u.id
+                    WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())"
                    where
-                   " GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
-                    ORDER BY p.mtime DESC
+                   " GROUP BY bc.id, bc.name, bc.image_file, bc.description, ic.name, ic.url, b.badge_content_id
+                    ORDER BY ctime DESC
                     LIMIT 100")
         pages (jdbc/with-db-connection
                 [conn (:connection (get-db ctx))]

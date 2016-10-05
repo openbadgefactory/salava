@@ -34,7 +34,7 @@
                  [clojurewerkz/propertied "1.2.0"]
                  [com.draines/postal "2.0.0" :exclusions [commons-codec]]
 
-                 [clj-http "2.2.0"]
+                 [clj-http "3.3.0"]
                  [enlive "1.1.6"]
                  [markdown-clj "0.9.89"]
                  [ar.com.hjg/pngj "2.1.0"]
