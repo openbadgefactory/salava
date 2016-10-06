@@ -61,8 +61,9 @@
                                                                                                        :block_order s/Int)
                                                           #(= (:type %) "badge") (merge
                                                                                    (assoc BadgeBlock :id s/Int
+                                                                                                     :show_evidence (s/maybe s/Bool)
                                                                                                      :block_order s/Int)
-                                                                                   (select-keys Badge [:name :html_content :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url :issuer_image :creator_email :creator_name :creator_url :creator_image]))
+                                                                                   (select-keys Badge [:name :html_content :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url :issuer_image :creator_email :creator_name :creator_url :creator_image :evidence_url :show_evidence]))
                                                           #(= (:type %) "html") (assoc HtmlBlock :id s/Int
                                                                                                  :block_order
                                                                                                  s/Int)

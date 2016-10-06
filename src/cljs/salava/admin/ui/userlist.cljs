@@ -123,7 +123,7 @@
     [:tr {:key id}
      [:td
       (if deleted
-        [:div first_name " " last_name]
+        [:div [:i {:class "fa fa-ban" :aria-hidden "true"}] (str " " first_name " " last_name) ]
         [:a {:href (path-for (str "/user/profile/" id))} first_name " " last_name])]
      [:td
       (doall
@@ -158,10 +158,10 @@
      [userlist-table state])])
 
 (defn init-data [state]
-  (let [country (session/get-in [:user :country] "all")]
+  (let [country "all"]
     (ajax/POST
       (path-for (str "/obpv1/admin/profiles/"))
-      {:params {:country country
+      {:params {:country "all"
                 :name ""
                 :order_by "ctime"
                 :email ""

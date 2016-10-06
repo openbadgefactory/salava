@@ -26,6 +26,7 @@
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
              (layout/main-meta ctx "/profile/:id" :user)
+             (layout/main-meta ctx "/profile/:id/embed" :user)
              (layout/main ctx "/edit/profile")
              (layout/main ctx "/cancel")
              (layout/main ctx "/remote/facebook")

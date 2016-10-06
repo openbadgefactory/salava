@@ -108,6 +108,9 @@ button {
 /* FORM */
 .form-control {
     border-radius: 3px;
+    -webkit-appearance:none;
+    -moz-appearance: none;
+    -o-appearance: none;
     &:focus {
         border-color: #bdbdc0;
         -webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);

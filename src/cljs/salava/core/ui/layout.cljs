@@ -9,7 +9,7 @@
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
-  (let [path (s/replace (str path) (re-pattern (base-path)) "")
+  (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
         sections (s/split path #"/")]
     (second sections)))
 
@@ -53,13 +53,16 @@
       (doall (for [i subitems]
                (navi-link i)))]]))
 
+(defn logo []
+  [:a {:class "logo pull-left"
+       :href  (if (session/get :user) (path-for "/badge") (base-path))
+       :title (session/get :site-name)}
+   [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
+   [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]] )
+
 (defn top-navi-header []
   [:div {:class "navbar-header"}
-   [:a {:class "logo pull-left"
-        :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
-        :title (session/get :site-name)}
-    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
-    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]
+   (logo)
   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
     [:span {:class "icon-bar"}]
     [:span {:class "icon-bar"}]
@@ -92,17 +95,24 @@
                  (navi-link i)))]
        (top-navi-right)]]]))
 
+(defn top-navi-embed []
+  [:nav {:class "navbar"}
+   [:div {:class "container-fluid"}
+    [:div {:class "navbar-header"}
+     [:a {:class "logo"
+          :target "_blank"
+          :href  (path-for "/user/login")
+          :title (session/get :site-name)}
+        [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
+        [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]]]])
+
 (defn top-navi-landing [site-navi]
   (let [items (top-navi-landing-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
      [:div {:class "container-fluid"}
       [:div {:class "navbar-header pull-left"}
-       [:a {:class "logo"
-            :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
-            :title (session/get :site-name)}
-        [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
-        [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]]
-      [:div {:id    "main-header"
+       (logo)]
+      [:div {:id "main-header"
               :class "navbar-header pull-right"}
         [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
          (t :user/Login)]
@@ -115,9 +125,7 @@
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (doall (for [i items]
-                 (navi-link i)))
-        ]
-       ]]]))
+                 (navi-link i)))]]]]))
 
 (defn get-footer-item [navi]
   (let [key-list (filter #(get-in navi [% :footer]) (keys navi))
@@ -203,3 +211,11 @@
      content]]
   (footer site-navi)])
 
+
+(defn embed-page [content]
+  [:div
+   [:header {:id "navbar"}
+    (top-navi-embed)]
+   [:div {:class "container main-container"}
+    [:div {:id "content"}
+     content]]])

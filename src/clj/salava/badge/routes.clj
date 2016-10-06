@@ -16,6 +16,8 @@
              (layout/main ctx "/")
              (layout/main ctx "/mybadges")
              (layout/main-meta ctx "/info/:id" :badge)
+             (layout/main-meta ctx "/info/:id/embed" :badge)
+             (layout/main-meta ctx "/info/:id/pic/embed" :badge)
              (layout/main ctx "/import")
              (layout/main ctx "/export")
              (layout/main ctx "/upload")

@@ -40,14 +40,14 @@
         [where params] (if (and (not (empty? issuer-name)) (empty? recipient-name)) ;if issuer name is present but recipient name is not, search also private badges
                          [where params]
                          [(str where default-visibility) params])
-        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, b.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, badge_content_id  FROM badge AS b
+        query (str "SELECT bc.id, bc.name, bc.image_file, bc.description, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, badge_content_id  FROM badge AS b
                     JOIN badge_content AS bc ON b.badge_content_id = bc.id
                     JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
                     LEFT JOIN user AS u ON b.user_id = u.id
                     WHERE b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())"
                    where
-                   " GROUP BY bc.id, bc.name, bc.image_file, bc.description, b.mtime, issuer_content_name, issuer_content_url, badge_content_id
-                    ORDER BY b.ctime DESC
+                   " GROUP BY bc.id, bc.name, bc.image_file, bc.description, ic.name, ic.url, b.badge_content_id
+                    ORDER BY ctime DESC
                     LIMIT 100")
         badgesearch (jdbc/with-db-connection
                   [conn (:connection (get-db ctx))]
@@ -57,8 +57,6 @@
         recipientsmap (reduce #(assoc %1 (:badge_content_id %2) (:recipients %2)) {} recipients)
         assochelper (fn [user recipients] (assoc user  :recipients (get recipientsmap (:badge_content_id user))))]
     (map assochelper badgesearch recipients)))
-
-
 
 (defn user-country
   "Return user's country id"

@@ -14,9 +14,9 @@ SELECT user_id FROM user_email WHERE email = :email
 
 -- name: select-user-by-email-address
 -- get user data by email address
-SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, role, profile_picture, country FROM user AS u
+SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, role, profile_picture, country, deleted FROM user AS u
        JOIN user_email AS ue ON ue.user_id = u.id
-       WHERE email = :email AND u.deleted = 0
+       WHERE email = :email
 
 -- name: select-user-by-id
 -- get user data by user id
@@ -27,7 +27,7 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted FROM user WHERE id = :id
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated FROM user WHERE id = :id
 
 --name: select-user-password
 SELECT pass FROM user WHERE id = :id 

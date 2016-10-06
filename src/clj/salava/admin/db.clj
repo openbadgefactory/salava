@@ -4,7 +4,7 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
@@ -53,11 +53,11 @@
 (defn get-stats [ctx]
   (try+
    {:register-users (register-users-count ctx)
-   :last-month-active-users (last-month-users-login-count ctx)
-   :last-month-registered-users (last-month-users-registered-count ctx)
-   :all-badges (badges-count ctx)
-   :last-month-added-badges (last-month-added-badges-count ctx)
-   :pages (pages-count ctx)}
+    :last-month-active-users (last-month-users-login-count ctx)
+    :last-month-registered-users (last-month-users-registered-count ctx)
+    :all-badges (badges-count ctx)
+    :last-month-added-badges (last-month-added-badges-count ctx)
+    :pages (pages-count ctx)}
    (catch Object _
      "error")))
 
@@ -90,16 +90,14 @@
    (update-user-visibility! {:id id} (get-db ctx))
    "success"
    (catch Object _
-     "error"
-     )))
+     "error")))
 
 (defn ticket [ctx description report_type item_id item_url item_name item_type reporter_id item_content_id]
   (try+
    (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))
    "success"
    (catch Object _
-     "error"
-     )))
+     "error")))
 
 (defn get-tickets [ctx]
   (let [tickets (select-tickets {} (get-db ctx))]
@@ -117,8 +115,7 @@
    (let [user-id (select-user-id-by-badge-id {:id id}(into {:result-set-fn first :row-fn :user_id} (get-db ctx)))
          user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
      (m/send-mail ctx subject message [(:email user)])
-     (update-badge-deleted! {:id id} (get-db ctx))
-     )
+     (update-badge-deleted! {:id id} (get-db ctx)))
    "success"
    (catch Object _
      "error")))
@@ -129,10 +126,7 @@
          users-email (select-users-email {:user_id user-ids} (into {:result-set-fn vec :row-fn :email} (get-db ctx)))]
      (if (and (< 1 (count subject)) (< 1 (count message)))
        (m/send-mail ctx subject message users-email))
-     
-     (update-badge-deleted-by-badge-content-id! {:badge_content_id badge-content-id} (get-db ctx))
-     
-     )
+     (update-badge-deleted-by-badge-content-id! {:badge_content_id badge-content-id} (get-db ctx)))
    "success"
    (catch Object _
      "error")))
@@ -142,8 +136,7 @@
    (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
      (if (and (< 1 (count subject)) (< 1 (count message)))
        (m/send-mail ctx subject message [(:email user)]))
-     (update-page-deleted! {:id id} (get-db ctx))
-     )
+     (update-page-deleted! {:id id} (get-db ctx)))
    "success"
    (catch Object _
      "error")))
@@ -171,18 +164,16 @@
 (defn send-message [ctx user_id subject message email]
   (try+
    (if (and (< 1 (count subject)) (< 1 (count message)))
-       (m/send-mail ctx subject message [email]))
+     (m/send-mail ctx subject message [email]))
    "success"
    (catch Object _
      "error")))
-
 
 
 (defn get-user-name-and-primary-email [ctx user_id]
   (let [user (select-user-and-email {:id user_id} (into {:result-set-fn first} (get-db ctx)))]
     (hash-map :name (str (:first_name user) " " (:last_name user))
               :email (:email user))))
-
 
 
 (defn get-user [ctx user_id]
@@ -195,8 +186,8 @@
               :info {:emails emails
                      :last_login (:last_login user)
                      :ctime (:ctime user)
-                     :deleted (:deleted user)})))
-
+                     :deleted (:deleted user)
+                     :activated (:activated user)})))
 
 
 (defn get-badge-modal [ctx badgeid]
@@ -231,8 +222,7 @@
                      :creator_name (:creator_name badge-content)
                      :creator_url (:creator_url badge-content)
                      :creator_email (:creator_email badge-content)
-                     :creator_image (:creator_image badge-content)
-                     })))
+                     :creator_image (:creator_image badge-content)})))
 
 
 (defn get-page-modal [ctx pageid]
@@ -272,8 +262,10 @@
                          [where params])
         [where params] (if-not (empty? email)
                          [(str where " AND u.id in (SELECT user_id from user_email WHERE email LIKE ?)") (conj params (str "%" email "%"))]
-                         [where params]
-                         )
+                         [where params])
+        [where params] (if (pos? filter)
+                         [(str where " AND u.deleted = ?") (conj params filter)]
+                         [where params])
         [where params] (if (pos? filter)
                          [(str where " AND u.deleted = ?") (conj params filter)]
                          [where params])
@@ -283,8 +275,7 @@ WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
                    where
                    " GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted "
                    order
-                   " LIMIT 50"
-                   )
+                   " LIMIT 50")
         profiles (jdbc/with-db-connection
                    [conn (:connection (get-db ctx))]
                    (jdbc/query conn (into [query] params)))]
@@ -292,4 +283,38 @@ WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
          (take 50))))
 
 
+(defn delete-no-verified-adress [ctx user-id email]
+  (try+
+   (delete-email-no-verified-address! {:user_id user-id :email email} (get-db ctx))
+   "success"
+   (catch Object _
+     "error")))
 
+(defn delete-no-activated-user [ctx user-id]
+  (try+
+   (delete-email-addresses! {:user_id user-id} (get-db ctx))
+   (delete-no-activated-user! {:id user-id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error")))
+
+
+
+(defn send-user-activation-message
+  "Send activation message to user"
+  [ctx user-id]
+  (let [user (select-user-and-email {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+        language (:language user)
+        email (:email user)
+        first-name (:first_name user)
+        last-name (:last_name user)
+        site-url (get-site-url ctx)
+        base-path (get-base-path ctx)
+        activation_code (:verification_key user)]
+    (try+
+     (if (not (:activated user))
+       (m/send-activation-message ctx site-url (u/activation-link site-url base-path user-id activation_code language) (u/login-link site-url base-path) (str first-name " " last-name) email language)
+      (throw+ "error") )
+     "success"
+     (catch Object _
+     "error"))))

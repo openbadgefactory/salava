@@ -5,6 +5,7 @@
             [salava.user.ui.login :as login]
             [salava.user.ui.activate :as password]
             [salava.user.ui.profile :as profile]
+            [salava.user.ui.embed :as embed]
             [salava.user.ui.register :as register]
             [salava.user.ui.reset :as reset]
             [salava.user.ui.edit :as edit]
@@ -18,6 +19,7 @@
 
 (defn ^:export routes [context]
   {(str (base-path context) "/user") [[["/profile/" [#"\d+" :user-id]] profile/handler]
+                                      [["/profile/" [#"\d+" :user-id] "/embed"] embed/handler]
                                       ["/login" login/handler]
                                       [["/login/" :lang] login/handler]
                                       [["/activate/" :user-id "/" :timestamp "/" :code] password/handler]
