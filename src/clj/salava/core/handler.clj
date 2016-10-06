@@ -90,5 +90,5 @@
 
         (legacy-routes ctx)
 
-        (route/not-found "404 Not found")))))
+        (ANY "*" [] (route/not-found "404 Not found"))))))
 
