@@ -9,7 +9,7 @@
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
-  (let [path (s/replace (str path) (re-pattern (base-path)) "")
+  (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
         sections (s/split path #"/")]
     (second sections)))
 

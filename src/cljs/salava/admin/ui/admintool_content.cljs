@@ -18,8 +18,7 @@
 (defn delete-item [state visible_area item_owner]
   (let [{:keys [item_id mail item_owner_id gallery-state init-data name item_type]} @state
         mail (cursor state [:mail])
-        item_ownertext (if (or (= "page" item_type) (= "badge" item_type) (= 1 (count item_owner_id))) (str (t :admin/Earners) " " item_owner) item_owner)
-        ]
+        item_ownertext (if (or (= "page" item_type) (= "badge" item_type) (= 1 (count item_owner_id))) (str (t :admin/Earner) " " item_owner) item_owner)]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-item" @visible_area) "" "delete-item"))) :class (if (= "delete-item" @visible_area) "opened" "")} (t :core/Delete) ]]
@@ -61,7 +60,7 @@
          (t :admin/Sendmessage))]]
      (if (= @visible_area "send-message")
        [:div.col-md-12
-        (str (t :admin/Sendmessageforuser) " " item_owner)
+        (str (t :admin/Sendmessageforuser) " " item_owner ".")
         [:div.form-group
          [:label 
           (str (t :user/Email) ":")]
@@ -151,29 +150,30 @@
 
 (defn private-item [state visible_area item_owner]
   (let [{:keys [item_type item_id item_owner_id  gallery-state init-data name]} @state
-        item_ownertext (if (or (= "page" item_type) (= "badge" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earners) " " item_owner) item_owner)
-        ]
+        item_ownertext (if (or (= "page" item_type) (= "badge" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earner) " " item_owner) item_owner)]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "private-item" @visible_area) "" "private-item"))) :class (if (= "private-item" @visible_area) "opened" "")} (t :admin/Privatethis)]]
      (if (= @visible_area "private-item")
        [:div.col-md-12
         (str (t :admin/Privatethis) " "  item_ownertext " " (t (keyword (str "admin/" item_type))) " "  name  "?" )
-        [:button {:type         "button"
-                  :class        "btn btn-primary"
-                  :data-dismiss "modal"
-                  :on-click     #(ajax/POST
-                                  (path-for (str "/obpv1/admin/private_"item_type"/" item_id))
-                                  {:response-format :json
-                                   :keywords?       true
-                                   :params          {:item-type item_type :item-id item_id}
-                                   :handler         (fn [data]
-                                                      (if init-data
-                                                        (init-data gallery-state)
-                                                        (navigate-to "/admin")))
-                                   :error-handler   (fn [{:keys [status status-text]}]
-                                                      (.log js/console (str status " " status-text)))})}
-         (t :admin/Private)]])]))
+
+        [:div.row.col-xs-12
+         [:button {:type         "button"
+                   :class        "btn btn-primary"
+                   :data-dismiss "modal"
+                   :on-click     #(ajax/POST
+                                   (path-for (str "/obpv1/admin/private_"item_type"/" item_id))
+                                   {:response-format :json
+                                    :keywords?       true
+                                    :params          {:item-type item_type :item-id item_id}
+                                    :handler         (fn [data]
+                                                       (if init-data
+                                                         (init-data gallery-state)
+                                                         (navigate-to "/admin")))
+                                    :error-handler   (fn [{:keys [status status-text]}]
+                                                       (.log js/console (str status " " status-text)))})}
+          (t :admin/Private)]]])]))
 
 
 (defn unlock-user [state visible_area item_owner]
@@ -341,14 +341,17 @@
          (t :core/Yes)]])]))
 
 
+(defn item-owner-creator [item_owner item_type]
+  (cond
+    (and (vector? item_owner) (< 1 (count item_owner))) (str (count item_owner) " " (t :admin/Earners))
+    (and (= 1 (count item_owner)) (vector? item_owner)) (first item_owner)
+    :else item_owner) )
+
 (defn admin-modal-container [state]
   (let [{:keys [item_type item_id item_owner_id image_file name info item_owner gallery-state init-data]} @state
         visible_area (cursor state [:visible_area])
-        item_owner (if (and (vector? item_owner) (< 1 (count item_owner)))
-                     (str (count item_owner) " " (t :admin/Earners))
-                     (if (vector? item_owner)
-                       (first item_owner)
-                       item_owner))
+        item_owner (item-owner-creator item_owner item_type)
+        
         mail (cursor state [:mail])
         no-verified-emails (some #(not (:verified %)) (:emails info))]
     [:div {:class "admin-modal"}
