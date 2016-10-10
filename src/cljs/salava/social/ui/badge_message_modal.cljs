@@ -71,3 +71,12 @@
    (str (t :social/Messages)  " (" (:all-messages message-count) ") "  )
    (if (pos? (:new-messages message-count))
      (str (:new-messages message-count) " " (t :social/Newmessages )))])
+
+
+(defn badge-message-stream-link [message-count badge-content-id]
+  [:a {:href     "#"
+       :on-click #(do
+                    (open-modal badge-content-id)
+                    (.preventDefault %) )}
+   (str (:new-messages message-count) " new " (t :social/Messages)   )
+   ])
