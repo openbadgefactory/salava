@@ -145,7 +145,8 @@
   [ctx badge-id user-id]
   (let [badge (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
         owner? (= user-id (:owner badge))
-        badge-message-count (so/get-badge-message-count ctx (:badge_content_id badge) user-id)
+        badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
+        followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))
         all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (get-db ctx)))
         user-congratulation? (and user-id
                                   (not owner?)
@@ -159,6 +160,7 @@
                  :view_count view-count
                  :recipient_count recipient-count
                  :message_count badge-message-count
+                 :followed? followed?
                  :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
                  :assertion (parse-assertion-json (:assertion_json badge))
                  :qr_code (str->qr-base64 (badge-url ctx badge-id)))))

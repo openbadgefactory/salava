@@ -67,6 +67,37 @@
      "error"
      )))
 
+(defn is-connected? [ctx user_id badge_content_id]
+  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+    (= badge_content_id id)))
+
+(defn create-connection-badge! [ctx user_id  badge_content_id]
+  (try+
+   (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+   {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
+   (catch Object _
+     {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
+     )))
+
+
+(defn delete-connection-badge! [ctx user_id  badge_content_id]
+  (try+
+   (delete-connect-badge! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+   "success"
+   {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
+   (catch Object _
+     "error"
+     {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
+     )))
+
+
+(defn get-connections-badge [ctx user_id]
+  (select-user-connections-badge {:user_id user_id} (get-db ctx))
+  )
+
+(defn is-connected? [ctx user_id badge_content_id]
+  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+    (= badge_content_id id)))
 
 
 

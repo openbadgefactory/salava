@@ -9,10 +9,12 @@
             [salava.badge.ui.assertion :as a]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
+            [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
+            [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool]]))
 
@@ -45,7 +47,7 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count followed?]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         reporttool-atom (cursor state [:reporttool])]
@@ -81,13 +83,15 @@
                           :on-change #(toggle-evidence state)
                           :checked   show_evidence}]
                  (t :badge/Showevidence)]]])
-            [:div {:class "col-sm-3 text-right"}
+            [:div {:class "col-sm-3 text-right row"}
+             [follow-badge badge_content_id followed?]
              [:button {:class    "btn btn-primary"
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.col-sm-12
              [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
            (admintool id "badge"))
+         
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row

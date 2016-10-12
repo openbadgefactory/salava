@@ -7,6 +7,7 @@
             [salava.core.ui.rate-it :as r]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
             ))
 
@@ -85,12 +86,14 @@
    [:div.modal-body
     [:div.row
      [:div.col-md-12
-      [:button {:type         "button"
-                :class        "close"
-                :data-dismiss "modal"
-                :aria-label   "OK"}
-       [:span {:aria-hidden             "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+      [:div {:class "text-right"}
+       [follow-badge (get-in data [:badge :badge_content_id]) (get-in data [:badge :followed?])]
+       [:button {:type         "button"
+                 :class        "close"
+                 :data-dismiss "modal"
+                 :aria-label   "OK"}
+        [:span {:aria-hidden             "true"
+                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
     [badge-content data messages?]]
    [:div.modal-footer
     

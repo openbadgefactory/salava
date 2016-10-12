@@ -13,12 +13,12 @@
 (defn route-def [ctx]
   (routes
     (context "/social" []
-             (layout/main ctx "/"))
+             (layout/main ctx "/")
+             (layout/main ctx "/connections")
+             (layout/main ctx "/stream"))
 
     (context "/obpv1/social" []
              :tags ["social"]
-             
-
              (GET "/messages/:badge_content_id" []
                   :return [{:id               s/Int
                             :user_id          s/Int
@@ -75,5 +75,31 @@
                    :current-user current-user
                    (ok (so/delete-message! ctx message_id (:id current-user)))
                    )
+
+             (POST "/delete_connection_badge/:badge_content_id" []
+                   :return {:status (s/enum "success" "error") :connected? s/Bool}
+                   :summary "Delete message"
+                   :path-params [badge_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/delete-connection-badge! ctx (:id current-user) badge_content_id))
+                   )
+             
+             (POST "/create_connection_badge/:badge_content_id" []
+                   :return {:status (s/enum "success" "error") :connected? s/Bool}
+                   :summary "Delete message"
+                   :path-params [badge_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/create-connection-badge! ctx (:id current-user) badge_content_id))
+                   )
+
+
+             (GET "/connections_badge" []
+                   :summary ""
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (do
+                     (ok (so/get-connections-badge ctx (:id current-user)))))
              
              )))
