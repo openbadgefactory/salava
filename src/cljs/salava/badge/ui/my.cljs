@@ -11,6 +11,7 @@
             [salava.core.ui.grid :as g]
             [salava.badge.ui.settings :as s]
             [salava.badge.ui.helper :as bh]
+            [salava.core.helper :refer [dump]]
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
@@ -241,25 +242,27 @@
           (badge-pending badge state))))
 
 (defn welcome-text []
-  [:div.panel
-   [:div.panel-body
-    [:h1.uppercase-header (t :core/WelcometoOpenBadgePassport)]
-    [:div.text
-     [:p (t :badge/Welcometext1) ":"]
-     [:ol.welcome-text
-      [:li
-       (t :badge/Add) " " [:a {:href (path-for "/user/edit/profile")} (t :badge/Profilepicture)]
-       "," (t :badge/Welcometextinfo1) " "
-       [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))} "profile"] "."]
-      [:li
-       (t :badge/Welcometextinfo2) " "
-       [:a {:href (path-for "/badge/import")} (t :badge/Importyourbages)]
-       " "(t :badge/Toopenbagdgepassport) ". "
-       [:b (t :badge/Rememberaddyouremail) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/Mailaddresses)] "."]]
-      [:li
-       [:a {:href (path-for "/page/mypages")} (t :badge/Createpage)]
-       " "(t :badge/Welcometextinfo3) " "
-       [:a {:href (path-for "/gallery/pages")} (t :badge/Ingallery)] "."]]]]])
+  
+  (let [site-name (session/get :site-name)]
+    [:div.panel
+     [:div.panel-body
+      [:h1.uppercase-header (str (t :core/Welcometo) " " site-name (t :core/Service))]
+      [:div.text
+       [:p (t :badge/Welcometext1) ":"]
+       [:ol.welcome-text
+        [:li
+         (t :badge/Add) " " [:a {:href (path-for "/user/edit/profile")} (t :badge/Profilepicture)]
+         "," (t :badge/Welcometextinfo1) " "
+         [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))} "profile"] "."]
+        [:li
+         (t :badge/Welcometextinfo2) " "
+         [:a {:href (path-for "/badge/import")} (t :badge/Importyourbages)]
+         " "(t :badge/Toopenbagdgepassport) ". "
+         [:b (t :badge/Rememberaddyouremail) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/Mailaddresses)] "."]]
+        [:li
+         [:a {:href (path-for "/page/mypages")} (t :badge/Createpage)]
+         " "(t :badge/Welcometextinfo3) " "
+         [:a {:href (path-for "/gallery/pages")} (t :badge/Ingallery)] "."]]]]]))
 
 (defn content [state]
   [:div {:id "my-badges"}

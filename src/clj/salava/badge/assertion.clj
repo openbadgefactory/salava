@@ -6,7 +6,7 @@
             [slingshot.slingshot :refer :all]
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
-            [salava.core.util :refer [hex-digest]]
+            [salava.core.util :refer [hex-digest str->epoch]]
             [salava.core.time :refer [iso8601-to-unix-time]] ;cljc
             [salava.core.i18n :refer [t]]                   ;cljc
             [salava.badge.png :as p]))
@@ -125,17 +125,10 @@
         uid (or (:uid assertion) nil)
         evidence (or (:evidence assertion) nil)
         verify (or (:verify assertion) {:type "hosted"
-                                        :url  assertion-url})
-        issued-on-raw (or (:issuedOn assertion) (:issued-on assertion) nil)
-        issued-on (cond
-                    (re-find #"\D" (str issued-on-raw)) (iso8601-to-unix-time issued-on-raw)
-                    (string? issued-on-raw) (read-string issued-on-raw)
-                    :else issued-on-raw)
-        expires-raw (:expires assertion)
-        expires (cond
-                  (re-find #"\D" (str expires-raw)) (iso8601-to-unix-time expires-raw)
-                  (string? expires-raw) (read-string expires-raw)
-                  :else expires-raw)
+                                        :url assertion-url})
+        issued-on (str->epoch (or (:issuedOn assertion) (:issued-on assertion)))
+        expires   (str->epoch (:expires assertion))
+
         recipient (if (string? (:recipient assertion))
                     (merge
                       {:identity (:recipient assertion)

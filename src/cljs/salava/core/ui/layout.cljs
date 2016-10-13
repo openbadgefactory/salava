@@ -55,7 +55,7 @@
 
 (defn logo []
 [:a {:class "logo pull-left"
-        :href  (if (session/get :user) (path-for "/badge") (path-for "/user/login"))
+        :href  (if (session/get :user) (path-for "/badge") (session/get :site-url))
         :title (session/get :site-name)
         :aria-label "to index"}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"

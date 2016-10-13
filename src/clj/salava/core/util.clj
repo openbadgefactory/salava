@@ -5,6 +5,7 @@
             [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
             [clj.qrgen :as q]
+            [clj-time.coerce :as tc]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [buddy.core.codecs :refer [base64->bytes base64->str bytes->base64]]))
 
@@ -135,3 +136,12 @@
     (catch Object _
       ;(TODO: (log "could not generate QR-code for string:" text)
       )))
+
+(defn str->epoch
+  "Convert string to unix epoch timestamp"
+  [s]
+  (cond
+    (integer? s) s
+    (str/blank? s) nil
+    (re-find #"^[0-9]+$" (str/trim s)) (Long. s)
+    :else (tc/to-long s)))

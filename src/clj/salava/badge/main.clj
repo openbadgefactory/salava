@@ -7,10 +7,10 @@
             [clojure.string :refer [blank? split upper-case lower-case capitalize]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
-            [salava.core.time :refer [unix-time iso8601-to-unix-time date-from-unix-time]]
+            [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64]]
+            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64 str->epoch]]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
@@ -133,16 +133,8 @@
   [assertion-json]
   (try+
     (let [assertion (json/read-str assertion-json :key-fn keyword)
-          issued-on-raw (or (:issuedOn assertion) (:issued-on assertion))
-          issued-on (cond
-                      (re-find #"\D" (str issued-on-raw)) (iso8601-to-unix-time issued-on-raw)
-                      (string? issued-on-raw) (read-string issued-on-raw)
-                      :else issued-on-raw)
-          expires-raw (or (:expires assertion))
-          expires (cond
-                    (re-find #"\D" (str expires-raw)) (iso8601-to-unix-time issued-on-raw)
-                    (string? expires-raw) (read-string expires-raw)
-                    :else expires-raw)]
+          issued-on (str->epoch (or (:issuedOn assertion) (:issued-on assertion)))
+          expires   (str->epoch (:expires assertion))]
       (assoc (dissoc assertion :issued_on) :issuedOn (if issued-on (date-from-unix-time (* 1000 issued-on)) "-")
                                            :expires (if expires (date-from-unix-time (* 1000 expires)) "-")))
     (catch Object _
