@@ -10,6 +10,20 @@
 
 (defqueries "sql/social/queries.sql")
 
+;; STREAM ;;
+(defn insert-event! [ctx, subject, verb, object, type]
+  (try+
+   (let [event-id (insert-social-event<! {:subject subject :verb verb :object object :type type} (get-db ctx))
+         connected-users  (if (= type "badge") (select-users-from-connections-badge {:badge_content_id object} (get-db ctx)))
+         query (vec (map #(assoc % :event_id (:generated_key event-id)) connected-users))]
+     (jdbc/insert-multi! (:connection (get-db ctx)) :social_event_owners query)
+     {:status "success"}) 
+   (catch Object _
+     {:status "error"})))
+
+
+;; MESSAGES ;;
+
 (defn messages-viewed
  "Save information about viewing messages."
  [ctx badge_content_id user_id]
@@ -21,6 +35,7 @@
 (defn message! [ctx badge_content_id user_id message]
   (try+
    (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
+   (insert-event! ctx user_id "message" badge_content_id "badge")
    "success"
    (catch Object _
      "error"
@@ -83,10 +98,10 @@
 (defn delete-connection-badge! [ctx user_id  badge_content_id]
   (try+
    (delete-connect-badge! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
-   "success"
+   
    {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
    (catch Object _
-     "error"
+     
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
      )))
 
@@ -98,6 +113,11 @@
 (defn is-connected? [ctx user_id badge_content_id]
   (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (= badge_content_id id)))
+
+
+
+
+
 
 
 

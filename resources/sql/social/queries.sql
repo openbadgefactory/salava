@@ -62,3 +62,13 @@ SELECT bc.id, bc.name, bc.image_file, bc.description, ic.name AS issuer_content_
       GROUP BY bc.id, bc.name, bc.image_file, bc.description, ic.name, ic.url, b.badge_content_id
       ORDER BY ctime DESC
 
+
+--name: insert-social-event<!
+INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, :verb, :object, :type, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: insert-event-owners!
+INSERT INTO social_event_owners (owner, event_id) VALUES (:owner, :event_id) 
+
+
+--name: select-users-from-connections-badge
+SELECT user_id AS owner from social_connections_badge where badge_content_id = :badge_content_id

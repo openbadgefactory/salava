@@ -19,7 +19,7 @@
                          :error-handler   (fn [{:keys [status status-text]}]
                                             (.log js/console (str status " " status-text))
                                             )})}
-   (str (t :social/Follow) " ") ])
+   [:i {:class "fa fa-plus" :aria-hidden "true"}] (str " " (t :social/Follow)) ])
 
 (defn unfollow-button-badge [badge-content-id followed?]
   [:button {:class    "btn btn-primary text-right"
@@ -33,7 +33,7 @@
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text))
                                                       )})}
-   [:i {:class "fa fa-check" :aria-hidden "true"}] (str " " (t :social/Unfollow)) ])
+    (str " " (t :social/Unfollow)) ])
 
 (defn follow-badge [badge-content-id init-followed?]
   (let [followed? (atom init-followed?)
