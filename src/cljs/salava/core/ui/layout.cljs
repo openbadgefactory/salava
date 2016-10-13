@@ -55,7 +55,7 @@
 
 (defn logo []
   [:a {:class "logo pull-left"
-       :href  (if (session/get :user) (path-for "/badge") (base-path))
+       :href  (if (session/get :user) (path-for "/badge") (session/get :site-url))
        :title (session/get :site-name)}
    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]] )

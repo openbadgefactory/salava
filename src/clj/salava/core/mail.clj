@@ -22,8 +22,9 @@
 
 (defn send-activation-message [ctx site-url activation-link login-link fullname email-address lng]
   (let [subject (str (t :core/Emailactivation1 lng) "!")
+        site-name (get-in ctx [:config :core :site-name])
         message (str fullname
-                     ",\n\n" (t :core/Emailactivation2 lng) " " site-url ". "(t :core/Emailactivation3 lng) "\n" (t :core/Emailactivation4 lng) ":\n\n"
+                     ",\n\n" (t :core/Emailactivation2 lng) " " site-url  ".\n" (t :core/Emailactivation4 lng) ":\n\n"
                      activation-link
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailactivation7 lng) "\n"
                      login-link
@@ -31,12 +32,13 @@
     (send-mail ctx subject message [email-address])))
 
 (defn send-password-reset-message [ctx site-url activation-link fullname email-address lng]
-  (let [subject (str (t :core/Emailresetheader lng))
+  (let [site-name (get-in ctx [:config :core :site-name])
+        subject (str  site-name " " (t :core/Emailresetheader lng))
         message (str fullname ",\n\n" (t :core/Emailresetmessage1 lng) " " site-url
                      ".\n\n" (t :core/Emailactivation4 lng)":\n\n"
                      activation-link
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n--  "
-                     (t :core/Obpteam lng))]
+                      site-name "-"(t :core/Team lng))]
     (send-mail ctx subject message [email-address])))
 
 (defn send-verification [ctx site-url email-verification-link fullname email lng]
