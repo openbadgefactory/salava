@@ -20,6 +20,7 @@ $background-color: #f9f9f9;
 
 body {
     color: $text-color;
+    background-color: $background-color;
 }
 a, #badge-info a {
     color: $link-color;
@@ -95,6 +96,7 @@ ul.side-dropdown-links > li.active > a {
 }
 ul#secondary-menu-links li a{
     font-weight: normal;
+    color: $title-color;
     i.fa {
         color: $orange-color;
     }
@@ -464,6 +466,9 @@ fieldset legend {
     font-weight: bold;
     color:inherit;
     border:none;
+}
+#content .uppercase-header {
+    color: $title-color;
 }
 #badge-settings  {
     h1.uppercase-header {
