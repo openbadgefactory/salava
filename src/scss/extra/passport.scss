@@ -346,18 +346,32 @@ fieldset.checkbox{
 }
 
 
-#badge-stats .panel .panel-heading{
-    a {
-        font-family: 'Open Sans';
-        font-weight: 400;
-        text-transform: none;
-        color: $title-color;
-        &:hover {
-            text-decoration: none;
-            color:$menu-active;
+#badge-stats {
+    h3 {
+        padding-bottom: 10px;
+    }
+    .panel {
+        table th:nth-child(2) {
+            text-align: left;
         }
-        &:active, &:focus{
-            text-decoration: none;
+        .panel-heading{
+            a {
+                font-family: 'Open Sans';
+                font-weight: 400;
+                font-size: 22px;
+                text-transform: none;
+                color: $link-color;
+                &:hover {
+                    text-decoration: none;
+                    color:$link-hover;
+                }
+                &:active, &:focus{
+                    text-decoration: none;
+                }
+            }
+            h3 {
+                font-size: 22px;
+            }
         }
     }
 }
@@ -495,13 +509,16 @@ fieldset legend {
             font-size: 18px;
         }
     }
-    .modal-footer{
+    .settings-content .modal-footer{
         margin-left:0px;
         padding-left: 0px;
         padding-top:15px;
         > button.btn-primary {
             margin-right: 20px;
         }
+    }
+    #assertion-info {
+        margin:5px;
     }
     .delete-confirm {
         padding-top:20px;
@@ -747,31 +764,43 @@ fieldset legend {
     }
     }
 }
-#my-badges #grid .grid-container .media-content .icons{
-    text-align:left;
-    .visibility-icon{
-        width:30px;
-        padding-bottom: 5px;
-        display: inline-block;
-        text-align: left;
-        i{
-            cursor: pointer;
-            color:  $title-color;
-            &:hover {
-                color:$menu-active;
+#my-badges {
+    #grid .grid-container .media-content .icons{
+        text-align:left;
+        .visibility-icon{
+            width:30px;
+            padding-bottom: 5px;
+            display: inline-block;
+            text-align: left;
+            i{
+                cursor: pointer;
+                color:  $title-color;
+                &:hover {
+                    color:$menu-active;
+                }
+            }
+        }
+        .righticon {
+            text-align: right;
+            float:right;
+            font-size: 18px;
+            display: inline-block;
+            line-height: 1em;
+            color: $icon-color;
+            &.revoked, &.expired {
+                color: $dark-red;
+                cursor: pointer;
             }
         }
     }
-    .righticon {
-        text-align: right;
-        float:right;
-        font-size: 18px;
-        display: inline-block;
-        line-height: 1em;
-        color: $icon-color;
-        &.revoked, &.expired {
-            color: $dark-red;
-            cursor: pointer;
+    #pending-badges {
+        .pull-left {
+            padding-right:25px;
+            .badge-image {
+                box-shadow:none;
+                -webkit-box-shadow: none;
+                border:none;
+            }
         }
     }
 }
@@ -962,6 +991,7 @@ fieldset legend {
                 margin-top:25px;
             }
     }
+
 }
 
 #badge-gallery{
@@ -1124,5 +1154,41 @@ fieldset legend {
         max-width: 100%;
     }
 }
-
-
+.alert {
+    //border: 1px solid #d2d2d2;
+    border:none;
+    background: #ececec;
+    border-radius: 0px;
+    font-size: 15px;
+    font-weight: 600;
+    padding:8px 15px;
+    box-shadow: none;
+    width: 100%;
+    color:$text-color;
+}
+.modal-body > .alert {
+    margin-top:15px;
+}
+.alert-success {
+    border-left: 3px solid $green;
+}
+.alert-warning, .alert-danger {
+    border-left: 3px solid red;
+}
+.alert-info {
+    border-left: 3px solid $link-color;
+}
+.actions .alert {
+    width: 100%;
+}
+@-moz-document url-prefix() {
+    select, select:-moz-focusring, select::-moz-focus-inner {
+       color: transparent !important;
+       text-shadow: 0 0 0 $text-color !important;
+    }
+}
+@media (min-width: 992px){
+    .modal-content .modal-footer {
+        margin-left:0px;
+    }
+}
