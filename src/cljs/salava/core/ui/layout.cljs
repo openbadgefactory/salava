@@ -49,16 +49,20 @@
         subitemactive  (some :active subitems)]
     [:li {:key target}
      [:a {:data-toggle "collapse" :data-target (str "#"(hash target))}  title]
-     [:ul {:id (hash target) :class (if subitemactive "collapse in" "collapse")}
+     [:ul {:id (hash target) :class (if subitemactive "collapse in side-dropdown-links" "collapse side-dropdown-links")}
       (doall (for [i subitems]
                (navi-link i)))]]))
 
 (defn logo []
-  [:a {:class "logo pull-left"
-       :href  (if (session/get :user) (path-for "/badge") (base-path))
-       :title (session/get :site-name)}
-   [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
-   [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]] )
+[:a {:class "logo pull-left"
+     :title (session/get :site-name)
+     :aria-label "to index" 
+     :href  (if (session/get :user) (path-for "/badge") "#")
+     :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url))  "")}
+    [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
+          :title "OBP logo"
+          :aria-label "OBP logo"}]
+    [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]] )
 
 (defn top-navi-header []
   [:div {:class "navbar-header"}
@@ -82,29 +86,31 @@
           (t :user/Logout)]]]
    [:div.userpic
     [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
-     [:img {:src (profile-picture (session/get-in [:user :profile_picture]))}]]]])
+     [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
+            :alt "profile picture"}]]]])
 
 (defn top-navi [site-navi]
   (let [items (top-navi-list (:navi-items site-navi))]
     [:nav {:class "navbar"}
      [:div {:class "container-fluid"}
       (top-navi-header)
+      (top-navi-right)
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
-        (doall (for [i items]
-                 (navi-link i)))]
-       (top-navi-right)]]]))
+       (doall (for [i items]
+          (navi-link i)))]
+       ]]]))
 
 (defn top-navi-embed []
   [:nav {:class "navbar"}
    [:div {:class "container-fluid"}
     [:div {:class "navbar-header"}
-     [:a {:class "logo"
-          :target "_blank"
-          :href  (path-for "/user/login")
+     [:a {:class "logo pull-left"
+          :href  (if (session/get :user) (path-for "/badge") "#")
+          :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url)) "") 
           :title (session/get :site-name)}
-        [:div {:class "logo-image logo-image-url hidden-xs hidden-sm"}]
-        [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm"}]]]]])
+      [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
+      [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]]]])
 
 (defn top-navi-landing [site-navi]
   (let [items (top-navi-landing-list (:navi-items site-navi))]
@@ -150,16 +156,16 @@
   (let [dropdowns  (filter #(:dropdown %) (vals (:navi-items site-navi)))
         dropdownitems (into {} (map #(:items %) dropdowns))
         matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys dropdownitems)))]
-    [:h2 (get-in dropdownitems [matched-route :breadcrumb])]))
+    [:h1 (get-in dropdownitems [matched-route :breadcrumb])]))
 
 (defn breadcrumb [site-navi]
   (let [matched-route (first (filter (fn [r] (re-matches (re-pattern r) (current-path))) (keys (:navi-items site-navi))))]
     (if matched-route
-      [:h2 (get-in site-navi [:navi-items matched-route :breadcrumb])]
+      [:h1 (get-in site-navi [:navi-items matched-route :breadcrumb])]
       (get-dropdown-breadcrumb site-navi))))
 
 (defn default-0 [top-items sub-items heading content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi top-items)]
    (if-not (empty? heading)
@@ -174,7 +180,7 @@
 
 
 (defn default [site-navi content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi site-navi)]
    [:img {:id "print-logo" :src "/img/logo.png"}]
@@ -188,7 +194,7 @@
    (footer site-navi)])
 
 (defn default-no-sidebar [site-navi content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi site-navi)]
    [:div {:class "title-row"}
@@ -203,7 +209,7 @@
 
 
 (defn landing-page [site-navi content]
-  [:div
+  [:div {:role "main"}
    [:header {:id "navbar"}
     (top-navi-landing site-navi)]
    [:div {:class "container main-container"}
