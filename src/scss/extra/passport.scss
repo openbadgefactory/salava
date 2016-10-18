@@ -1,19 +1,26 @@
-$brand-color: #5C5258;
-$menu-active: #4a4348;
+$titlebar-color: #5a5257;
+$text-color: #5a5257;
+$menu-color: #756A70;
+$menu-active: darken($menu-color, 18%);
+$title-color: $menu-color;//#7f7179;
+
 $orange-color: #dc5c10;
 $orange-hover:#bf4f0e;
-$text-color: #5a5257;
-$title-color: #7f7179;
-$button-color: #82717d;
-$badge-title:$orange-color;//#4a4348;//#353b75;//#4a4348;// #4a5aac;//#353b75
-$badge-link:#353b75;
-$badge-title-hover:$orange-hover;// #353b75; //#2b3060
-$dark-red: #8c2e0b;
-$link-color:#4a5aac; //$badge-title;
-$link-hover: #353b75;//$badge-title-hover;
+$badge-title:$orange-color;
+$badge-title-hover:$orange-hover;
+$link-color:#4a5aac;
+$link-hover: #353b75;
 $icon-color: #a28f9b;
+//error messages
+$dark-red: #8c2e0b;
+//success messages
+$green: #5cb85c;
+
+$background-color: #f9f9f9;
+
 body {
     color: $text-color;
+    background-color: $background-color;
 }
 a, #badge-info a {
     color: $link-color;
@@ -49,19 +56,19 @@ a, #badge-info a {
 }
 
 #no-sidebar {
-    background: url('/img/bg_subpage.png') no-repeat scroll #f9f9f9;
+    background: url('/img/bg_subpage.png') no-repeat scroll $background-color;
 }
 
 .title-row {
-    background-color:$brand-color; //#2F4858;////#9dbe5f;
+    background-color:$titlebar-color;
     border: none;
 }
 
 ul.side-links > li > a {
-    color:#7b7076;
+    color:$menu-color;
     font-size: 14px;
     &:hover {
-        color: #4a4348;
+        color: $menu-active;
     }
 }
 
@@ -70,10 +77,10 @@ ul.side-dropdown-links {
     > li {
         list-style: none;
         > a {
-            color:#7b7076;
+            color:$menu-color;
             font-size: 12.5px;
             &:hover {
-                color: #4a4348;
+                color: $menu-active;
             }
         }
     }
@@ -81,16 +88,17 @@ ul.side-dropdown-links {
 
 
 ul.side-links > li.active > a {
-    color: #4a4348;
+    color: $menu-active;
 }
 
 ul.side-dropdown-links > li.active > a {
-    color: #4a4348;
+    color: $menu-active;
 }
 ul#secondary-menu-links li a{
     font-weight: normal;
+    color: $title-color;
     i.fa {
-        color: #f8a152;
+        color: $orange-color;
     }
 }
 
@@ -130,14 +138,14 @@ padding-left:0px;
 float:none;
     li{
     a {
-        color: #7b7076;
+        color: $menu-color;
         font-size: 14px;
         &:hover {
-            color: #4a4348;
+            color: $menu-active;
         }
     }
     &.active a {
-        color: #4a4348;
+        color: $menu-active;
     }
     }
     @media (max-width:770px){
@@ -145,12 +153,12 @@ float:none;
     }
 }
 #grid-filter button, #buttons .col-xs-8 .btn {
-    background-color: #82717d; //#776871;
-    border: 1px solid #776871;
+    background-color:$title-color;
+    border: 1px solid darken($title-color, 5%); //#776871;
     font-weight: 600;
     &.btn-active, &:hover {
-        background-color: #463c44;
-        border-color: #443f43;
+        background-color: $menu-active; //#463c44;
+        border-color: lighten($menu-active, 10%);
         box-shadow: 0px 2px #030102;
     }
 }
@@ -167,7 +175,7 @@ float:none;
 #page-gallery .page-create-date, .pages #grid .grid-container .page-create-date, #profile-gallery .media .media-content .media-profile .join-date,
 #badge-gallery #grid .grid-container .media-content .media-issuer a, #grid .grid-container .media-content .media-body .media-issuer a,
 #user-pages .page-create-date{
-    color: $title-color;//#749c3b;
+    color: $title-color;
     font-size: 13px;
 }
 #badge-info {
@@ -338,18 +346,32 @@ fieldset.checkbox{
 }
 
 
-#badge-stats .panel .panel-heading{
-    a {
-        font-family: 'Open Sans';
-        font-weight: 400;
-        text-transform: none;
-        color: $title-color;
-        &:hover {
-            text-decoration: none;
-            color:$menu-active;
+#badge-stats {
+    h3 {
+        padding-bottom: 10px;
+    }
+    .panel {
+        table th:nth-child(2) {
+            text-align: left;
         }
-        &:active, &:focus{
-            text-decoration: none;
+        .panel-heading{
+            a {
+                font-family: 'Open Sans';
+                font-weight: 400;
+                font-size: 22px;
+                text-transform: none;
+                color: $link-color;
+                &:hover {
+                    text-decoration: none;
+                    color:$link-hover;
+                }
+                &:active, &:focus{
+                    text-decoration: none;
+                }
+            }
+            h3 {
+                font-size: 22px;
+            }
         }
     }
 }
@@ -459,6 +481,9 @@ fieldset legend {
     color:inherit;
     border:none;
 }
+#content .uppercase-header {
+    color: $title-color;
+}
 #badge-settings  {
     h1.uppercase-header {
         font-size: 16px;
@@ -484,13 +509,16 @@ fieldset legend {
             font-size: 18px;
         }
     }
-    .modal-footer{
+    .settings-content .modal-footer{
         margin-left:0px;
         padding-left: 0px;
         padding-top:15px;
         > button.btn-primary {
             margin-right: 20px;
         }
+    }
+    #assertion-info {
+        margin:5px;
     }
     .delete-confirm {
         padding-top:20px;
@@ -571,7 +599,7 @@ fieldset legend {
             font-size: 20px;
             text-align: left;
             line-height: 1em;
-            color: #a28f9b;
+            color: $icon-color;
         }
         .media-body{
             .media-description, .badge-description, .media-expires  {
@@ -621,15 +649,15 @@ fieldset legend {
         border-top:none;
         padding-top:5px;
         a.bottom-link, a.badge-download {
-            color:$title-color; //#99a2d4;//$title-color; //$badge-link;
+            color:$title-color;
             i.fa {
-                color:$title-color;//#99a2d4;//$title-color; //$badge-link;
+                color:$title-color;
                 padding-right: 0px;
             }
             &:hover {
-                color:$menu-active;//$badge-title-hover;
+                color:$menu-active;
                 i.fa {
-                    color:$menu-active; //$badge-title-hover;
+                    color:$menu-active;
                 }
             }
         }
@@ -719,12 +747,12 @@ fieldset legend {
                     color:$text-color;
                 }
                 i.fa {
-                    color:$dark-red;//#c2c2c2;
+                    color:$dark-red;
                 }
             }
             .expired {
                 i.fa {
-                    color:$dark-red;//#c2c2c2;
+                    color:$dark-red;
                 }
             }
         }
@@ -736,31 +764,43 @@ fieldset legend {
     }
     }
 }
-#my-badges #grid .grid-container .media-content .icons{
-    text-align:left;
-    .visibility-icon{
-        width:30px;
-        padding-bottom: 5px;
-        display: inline-block;
-        text-align: left;
-        i{
-            cursor: pointer;
-            color:  $title-color;//#717fc2;
-            &:hover {
-                color:$menu-active;
+#my-badges {
+    #grid .grid-container .media-content .icons{
+        text-align:left;
+        .visibility-icon{
+            width:30px;
+            padding-bottom: 5px;
+            display: inline-block;
+            text-align: left;
+            i{
+                cursor: pointer;
+                color:  $title-color;
+                &:hover {
+                    color:$menu-active;
+                }
+            }
+        }
+        .righticon {
+            text-align: right;
+            float:right;
+            font-size: 18px;
+            display: inline-block;
+            line-height: 1em;
+            color: $icon-color;
+            &.revoked, &.expired {
+                color: $dark-red;
+                cursor: pointer;
             }
         }
     }
-    .righticon {
-        text-align: right;
-        float:right;
-        font-size: 18px;
-        display: inline-block;
-        line-height: 1em;
-        color: $icon-color;
-        &.revoked, &.expired {
-            color: $dark-red;
-            cursor: pointer;
+    #pending-badges {
+        .pull-left {
+            padding-right:25px;
+            .badge-image {
+                box-shadow:none;
+                -webkit-box-shadow: none;
+                border:none;
+            }
         }
     }
 }
@@ -814,9 +854,9 @@ fieldset legend {
     .media-bottom{
         border-top:none;
         a.bottom-link {
-            color:$title-color;//$badge-title;
+            color:$title-color;
             i.fa {
-                color:$title-color; //$badge-title;
+                color:$title-color;
                 padding-right: 0px;
             }
             &:hover {
@@ -860,7 +900,7 @@ fieldset legend {
         line-height: 30px;
         font: 300 28px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
-        color: #7f7179;
+        color: $title-color;
         font-size: 40px;
     }
     #buttons #buttons-right {
@@ -903,7 +943,7 @@ fieldset legend {
             font-weight: 300;
             font-size: 24px;
             line-height: 40px;
-            color: #7f7179;
+            color: $title-color;
         }
         .form-group > label {
             margin-right: 20px;
@@ -931,26 +971,27 @@ fieldset legend {
         padding-bottom:10px
     }
     .row.report-form {
-        background-color:#f9f9f9;
+        background-color:$background-color;
         border-top: 1px solid #f0f0f0;
         a#open-reportform-button {
             float:none;
             margin-left:-3px;
             margin-right: -2px;
             text-align: right;
-            background-color:#f9f9f9;
+            background-color:$background-color;
         }
     }
     div#reportform {
            > div:not(.form-group) {
-                border-left: 3px solid #5cb85c;
+                border-left: 3px solid $green;
                 font-size: 15px;
                 padding:10px 20px;
                 font-weight: 600;
-                background-color: #f9f9f9;
-		margin-top:25px;
+                background-color: $background-color;
+                margin-top:25px;
             }
     }
+
 }
 
 #badge-gallery{
@@ -958,11 +999,11 @@ fieldset legend {
         margin-left: 0px;
        > div > div#reportform {
            > div:not(.report-form) {
-                border-left: 3px solid #5cb85c;
+                border-left: 3px solid $green;
                 font-size: 15px;
                 padding:10px 20px;
                 font-weight: 600;
-                background-color: #f9f9f9;
+                background-color: $background-color;
 
             }
         }
@@ -973,7 +1014,7 @@ fieldset legend {
     margin-bottom:20px;
     #reportform {
         border: 1px solid #f0f0f0;
-        background-color: #f9f9f9;
+        background-color: $background-color;
     }
     }
     #grid.row .grid-container .media-bottom {
@@ -991,7 +1032,7 @@ fieldset legend {
     }
     > div > div#reportform {
            > div:not(.report-form) {
-                border-left: 3px solid #5cb85c;
+                border-left: 3px solid $green;
                 font-size: 15px;
                 padding:10px 20px;
                 font-weight: 600;
@@ -1009,7 +1050,7 @@ fieldset legend {
     }
     div#reportform {
            > div:not(.form-group) {
-                border-left: 3px solid #5cb85c;
+                border-left: 3px solid $green;
                 font-size: 15px;
                 padding:10px 20px;
                 font-weight: 600;
@@ -1023,7 +1064,7 @@ fieldset legend {
     }
     div#reportform {
            > div:not(.form-group) {
-                border-left: 3px solid #5cb85c;
+                border-left: 3px solid $green;
                 font-size: 15px;
                 padding:10px 20px;
                 font-weight: 600;
@@ -1058,7 +1099,6 @@ fieldset legend {
     a{
         font-weight: 400;
         font-size: 18px;
-        //color: $title-color;
         line-height: 30px;
         &:before {
             font-family: "FontAwesome";
@@ -1093,7 +1133,7 @@ fieldset legend {
 #badge-gallery .modal-dialog:not(.modal-lg){
     width:800px;
     .modal-content{
-        background: #F9F9F9;
+        background: $background-color;
     }
 }
 #page-gallery .modal-dialog:not(.modal-lg) {
@@ -1114,5 +1154,41 @@ fieldset legend {
         max-width: 100%;
     }
 }
-
-
+.alert {
+    //border: 1px solid #d2d2d2;
+    border:none;
+    background: #ececec;
+    border-radius: 0px;
+    font-size: 15px;
+    font-weight: 600;
+    padding:8px 15px;
+    box-shadow: none;
+    width: 100%;
+    color:$text-color;
+}
+.modal-body > .alert {
+    margin-top:15px;
+}
+.alert-success {
+    border-left: 3px solid $green;
+}
+.alert-warning, .alert-danger {
+    border-left: 3px solid red;
+}
+.alert-info {
+    border-left: 3px solid $link-color;
+}
+.actions .alert {
+    width: 100%;
+}
+@-moz-document url-prefix() {
+    select, select:-moz-focusring, select::-moz-focus-inner {
+       color: transparent !important;
+       text-shadow: 0 0 0 $text-color !important;
+    }
+}
+@media (min-width: 992px){
+    .modal-content .modal-footer {
+        margin-left:0px;
+    }
+}
