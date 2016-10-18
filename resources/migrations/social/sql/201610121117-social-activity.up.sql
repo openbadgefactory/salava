@@ -12,5 +12,6 @@ CREATE TABLE `social_event` (
 CREATE TABLE `social_event_owners` (
   `owner` bigint(20) unsigned NOT NULL,  
   `event_id` bigint(20) unsigned NOT NULL,
+  `hidden` boolean DEFAULT 0,	
   PRIMARY KEY (`owner`, `event_id` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

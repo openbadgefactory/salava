@@ -7,7 +7,9 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
-            [salava.social.ui.badge-message :refer [badge-message-handler]]))
+            [salava.social.ui.badge-message :refer [badge-message-handler]]
+            ;[salava.gallery.ui.badges :as b]
+            ))
 
 
 
@@ -47,18 +49,23 @@
               :data-dismiss "modal"}
      (t :core/Close)]]])
 
-(defn badge-message-content-modal [modal-data]
+(defn badge-message-content-modal [modal-data init-data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data))
-                 :component-will-unmount (fn [] (close-modal!))}))
+                 :component-will-unmount (fn [] (do (close-modal!)
+                                                    (if (and init-data state)
+                                                      (init-data state))))}))
 
 
-(defn open-modal [badge-content-id]
-  
-  (ajax/GET
-     (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
-     {:handler (fn [data]
-                 (do
-                   (m/modal! [badge-message-content-modal data] {:size :lg})))}))
+(defn open-modal
+  ([badge-content-id]
+   (open-modal badge-content-id nil nil))
+  ([badge-content-id init-data state]
+   
+   (ajax/GET
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+    {:handler (fn [data]
+                (do
+                  (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
 
 
 
@@ -73,10 +80,10 @@
      (str (:new-messages message-count) " " (t :social/Newmessages )))])
 
 
-(defn badge-message-stream-link [message-count badge-content-id]
+(defn badge-message-stream-link [new-messages badge-content-id init-data state]
   [:a {:href     "#"
        :on-click #(do
-                    (open-modal badge-content-id)
+                    (open-modal badge-content-id init-data state)
                     (.preventDefault %) )}
-   (str (:new-messages message-count) " new " (t :social/Messages)   )
+   (str  " read more " (if (pos? new-messages) (str "(" new-messages " new messages)")))
    ])

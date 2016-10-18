@@ -75,10 +75,9 @@ SELECT user_id AS owner from social_connections_badge where badge_content_id = :
 
 
 --name: select-user-events
-SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, bc.name, bc.image_file, bmv.mtime AS last_viewed FROM social_event_owners AS seo
+SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN badge_content AS bc ON se.object = bc.id
-     JOIN badge_message_view AS bmv ON se.object = bmv.badge_content_id AND :user_id =  bmv.user_id
      WHERE owner = :user_id AND se.type = 'badge'  AND se.subject != :user_id
      ORDER BY se.ctime DESC
      LIMIT 1000
@@ -102,4 +101,7 @@ WHERE bm.badge_content_id IN (:badge_content_ids)
 ORDER BY bm.ctime DESC
 LIMIT 100
 
+
+--name: update-hide-user-event!
+UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner = :user_id
 

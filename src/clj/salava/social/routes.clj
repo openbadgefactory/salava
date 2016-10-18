@@ -84,6 +84,15 @@
                    :current-user current-user
                    (ok (so/delete-connection-badge! ctx (:id current-user) badge_content_id))
                    )
+
+             (POST "/hide_event/:event_id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete message"
+                   :path-params [event_id :- s/Int]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/hide-user-event! ctx (:id current-user) event_id))
+                   )
              
              (POST "/create_connection_badge/:badge_content_id" []
                    :return {:status (s/enum "success" "error") :connected? s/Bool}

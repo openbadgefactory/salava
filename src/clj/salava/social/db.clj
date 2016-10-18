@@ -12,6 +12,7 @@
 (defqueries "sql/social/queries.sql")
 
 ;; STREAM ;;
+
 (defn insert-event!
   "Creates event and adds event for every users who are connected with event"
   [ctx, subject, verb, object, type]
@@ -28,24 +29,24 @@
 
 
 (defn badge-events-reduce [events]
-  (vals
-   (let [helper (fn [current item]
+  (let [helper (fn [current item]
                   (let [key [(:verb item) (:object item)]]
                     (-> current
                         (assoc  key item)
                         ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
-                        )))]
-     (reduce helper {} events))))
+                        )))
+        reduced-events (vals (reduce helper {} (reverse events)))]
+    (filter #(false? (:hidden %)) reduced-events)))
 
 
 
 (defn badge-message-map [messages]
   (let [message-helper (fn [current item]
                          (let [key  (:badge_content_id item)
-                               new-messages-count (get-in current [key :new_message ] 0)]
+                               new-messages-count (get-in current [key :new_messages] 0)]
                            (-> current
                                (assoc key item)
-                               (assoc-in [key :new_message] (if (> (:ctime item) (:last_viewed item))
+                               (assoc-in [key :new_messages] (if (> (:ctime item) (:last_viewed item))
                                                               (inc new-messages-count)
                                                               new-messages-count)))))]
     (reduce message-helper {} (reverse messages))))
@@ -55,11 +56,18 @@
   (let [events (select-user-events {:user_id user_id} (get-db ctx))
                 reduced-events (badge-events-reduce events)
         messages (select-messages-with-badge-content-id {:badge_content_ids (map #(:object %) reduced-events) :user_id user_id} (get-db ctx))
-        messages-map (badge-message-map messages)]
+        messages-map (badge-message-map messages)
+        badge-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) reduced-events)]
+    (sort-by :ctime #(> %1 %2) (vec badge-events))
     
-    (map (fn [event] (assoc event :message (get messages-map (:object event)))) reduced-events)))
+    ))
 
-
+(defn hide-user-event! [ctx user_id event_id]
+  (try+
+   (update-hide-user-event! {:user_id user_id :event_id event_id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error")))
 
 ;; MESSAGES ;;
 

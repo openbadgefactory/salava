@@ -10,6 +10,12 @@
              [salava.user.ui.helper :refer [profile-picture]]
              [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
 
+(defn init-data [state]
+  (ajax/GET
+    (path-for "/obpv1/social/events" true)
+    {:handler (fn [data]
+                (swap! state assoc :events data))}))
+
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
   [:div {:class "media" :key id}
@@ -20,26 +26,38 @@
    ]
   )
 
-(defn stream-item [subject verb object image_file message]
-  [:div {:class "media message-item"}
-   [:div.media-left
-    [:a {:href "#"}
-     [:img {:src  (str "/" image_file)} ]]]
-   [:div.media-body
-    [:h3 {:class "media-heading"}
-     [:a {:href "#"} subject]]
-    [:button {:type       "button"
-                 :class      "close"
-                 :aria-label "OK"
-                 :on-click   #(do
-                                (.preventDefault %))
-                 }
-        [:span {:aria-hidden "true"
-                
-                :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    (message-item message)
-    object
-    ]])
+
+
+(defn stream-item [event object state]
+  (let [{:keys [subject verb image_file message event_id name]}  event]
+    [:div {:class "media message-item"}
+     [:div.media-left
+      [:a {:href "#"}
+       [:img {:src (str "/" image_file)} ]]]
+     [:div.media-body
+      [:h3 {:class "media-heading"}
+       [:a {:href "#"} name]]
+      [:button {:type       "button"
+                :class      "close"
+                :aria-label "OK"
+                :on-click   #(do
+                               (ajax/POST
+                                (path-for (str "/obpv1/social/hide_event/" event_id))
+                                {:response-format :json
+                                 :keywords?       true          
+                                 :handler         (fn [data]
+                                                    (do
+                                                      (init-data state)))
+                                 :error-handler   (fn [{:keys [status status-text]}]
+                                                    )})
+                               (.preventDefault %))
+                }
+       [:span {:aria-hidden "true"
+               
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+      (message-item message)
+      object
+      ]]))
 
 (defn content [state]
   (let [events (:events @state)]
@@ -48,13 +66,9 @@
      (into [:div {:class "row"}]
            (for [event events]
              (do
-               (stream-item (:name event) (:verb event) [badge-message-stream-link {:new-messages (:count event)}  (:object event)]  (:image_file event) (:message event)))))]))
+               (stream-item event  [badge-message-stream-link (get-in event [:message :new_messages]) (:object event) init-data state] state))))]))
 
-(defn init-data [state]
-  (ajax/GET
-    (path-for "/obpv1/social/events" true)
-    {:handler (fn [data]
-                (swap! state assoc :events data))}))
+
 
 (defn handler [site-navi]
   (let [state (atom {:events []})]
