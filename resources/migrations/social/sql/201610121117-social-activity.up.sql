@@ -1,7 +1,7 @@
 CREATE TABLE `social_event` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `subject` bigint(20) unsigned NOT NULL,
-  `verb` enum ('message', 'follow', 'publish') DEFAULT 'message',
+  `verb` enum ('message', 'follow', 'publish', 'delete_message') DEFAULT 'message',
   `object` varchar(255) NOT NULL,
   `type` enum ('badge', 'user', 'page') DEFAULT 'badge',
   `ctime` bigint(20) unsigned NOT NULL,

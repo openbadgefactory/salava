@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor create-class dom-node props]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
-            [clojure.string :refer [trim]]
+            [clojure.string :refer [trim blank?]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
@@ -137,6 +137,7 @@
                   :onChange #(reset! message-atom (.-target.value %))} ]]
      [:div {:class "form-group"}
       [:button {:class    "btn btn-primary"
+                :disabled (if (blank? @message-atom) "disabled" "")
                 :on-click #(do
                              (save-message state)
                              (.preventDefault %))} 

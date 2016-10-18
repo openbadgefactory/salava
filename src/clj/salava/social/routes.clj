@@ -96,10 +96,17 @@
 
 
              (GET "/connections_badge" []
-                   :summary ""
+                   :summary "Return users all badge connections"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (do
                      (ok (so/get-connections-badge ctx (:id current-user)))))
+
+             (GET "/events" []
+                   :summary "Returns users events"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (do
+                     (ok (so/get-user-badge-events ctx (:id current-user)))))
              
              )))

@@ -72,3 +72,34 @@ INSERT INTO social_event_owners (owner, event_id) VALUES (:owner, :event_id)
 
 --name: select-users-from-connections-badge
 SELECT user_id AS owner from social_connections_badge where badge_content_id = :badge_content_id
+
+
+--name: select-user-events
+SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, bc.name, bc.image_file, bmv.mtime AS last_viewed FROM social_event_owners AS seo
+     JOIN social_event AS se ON seo.event_id = se.id
+     JOIN badge_content AS bc ON se.object = bc.id
+     JOIN badge_message_view AS bmv ON se.object = bmv.badge_content_id AND :user_id =  bmv.user_id
+     WHERE owner = :user_id AND se.type = 'badge'  AND se.subject != :user_id
+     ORDER BY se.ctime DESC
+     LIMIT 1000
+
+
+
+
+--name: select-user-new-messages
+SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message_view AS bmv
+       JOIN badge_message AS bm ON bmv.badge_content_id = bm.badge_content_id AND bm.deleted = 0
+       JOIN user AS u ON (u.id = bm.user_id)
+       where bmv.user_id = :user_id
+       ORDER BY bm.ctime ASC
+
+
+--name: select-messages-with-badge-content-id
+SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
+JOIN user AS u ON (u.id = bm.user_id)
+JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND :user_id =  bmv.user_id
+WHERE bm.badge_content_id IN (:badge_content_ids)
+ORDER BY bm.ctime DESC
+LIMIT 100
+
+

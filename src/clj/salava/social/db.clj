@@ -6,12 +6,15 @@
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.admin.helper :as ah]
+            [clojure.string :refer [blank?]]
             [salava.core.time :refer [unix-time get-date-from-today]]))
 
 (defqueries "sql/social/queries.sql")
 
 ;; STREAM ;;
-(defn insert-event! [ctx, subject, verb, object, type]
+(defn insert-event!
+  "Creates event and adds event for every users who are connected with event"
+  [ctx, subject, verb, object, type]
   (try+
    (let [event-id (insert-social-event<! {:subject subject :verb verb :object object :type type} (get-db ctx))
          connected-users  (if (= type "badge") (select-users-from-connections-badge {:badge_content_id object} (get-db ctx)))
@@ -20,6 +23,42 @@
      {:status "success"}) 
    (catch Object _
      {:status "error"})))
+
+
+
+
+(defn badge-events-reduce [events]
+  (vals
+   (let [helper (fn [current item]
+                  (let [key [(:verb item) (:object item)]]
+                    (-> current
+                        (assoc  key item)
+                        ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
+                        )))]
+     (reduce helper {} events))))
+
+
+
+(defn badge-message-map [messages]
+  (let [message-helper (fn [current item]
+                         (let [key  (:badge_content_id item)
+                               new-messages-count (get-in current [key :new_message ] 0)]
+                           (-> current
+                               (assoc key item)
+                               (assoc-in [key :new_message] (if (> (:ctime item) (:last_viewed item))
+                                                              (inc new-messages-count)
+                                                              new-messages-count)))))]
+    (reduce message-helper {} (reverse messages))))
+
+
+(defn get-user-badge-events [ctx user_id]
+  (let [events (select-user-events {:user_id user_id} (get-db ctx))
+                reduced-events (badge-events-reduce events)
+        messages (select-messages-with-badge-content-id {:badge_content_ids (map #(:object %) reduced-events) :user_id user_id} (get-db ctx))
+        messages-map (badge-message-map messages)]
+    
+    (map (fn [event] (assoc event :message (get messages-map (:object event)))) reduced-events)))
+
 
 
 ;; MESSAGES ;;
@@ -34,9 +73,12 @@
 
 (defn message! [ctx badge_content_id user_id message]
   (try+
-   (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
-   (insert-event! ctx user_id "message" badge_content_id "badge")
-   "success"
+   (if (not (blank? message))
+     (do 
+       (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
+       (insert-event! ctx user_id "message" badge_content_id "badge")
+       "success")
+     "error")
    (catch Object _
      "error"
      )))
@@ -113,13 +155,6 @@
 (defn is-connected? [ctx user_id badge_content_id]
   (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (= badge_content_id id)))
-
-
-
-
-
-
-
 
 
 
