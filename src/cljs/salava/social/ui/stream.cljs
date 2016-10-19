@@ -60,7 +60,7 @@
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-      (if (pos? new_messages)[:span.new  (str new_messages " new")]) 
+      (if (pos? new_messages)[:span.new  (str new_messages " new")])
        [:a {:href "#"} name]]
       (message-item message)
       object

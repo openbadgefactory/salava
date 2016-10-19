@@ -45,11 +45,12 @@
         [:div {:class "col-md-9 badge-info"}
          
          (if @show-messages
-           [:div.row
+           [:div {:class " messages"}
             [:h1.uppercase-header (str name " - " (t :social/Messages))]
             [badge-message-handler badge_content_id]]
            [:div.row
-            [:h1.uppercase-header name]
+           [:div {:class "col-md-12"}
+            [:h1.uppercase-header name]]
             [:div {:class "col-md-12"}
              (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
@@ -66,9 +67,9 @@
                   [:div.row
                    [:div.col-md-12
                     {:dangerouslySetInnerHTML {:__html html_content}}]]]]
-             ]
+            ]
             (if (or (> (count public_users) 0) (> private_user_count 0))
-              [:div.row
+              [:div
                [:div.col-md-12
                 [:h2.uppercase-header (t :gallery/Allrecipients)]]
                [:div {:class "col-md-12"}
