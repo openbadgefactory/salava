@@ -53,13 +53,14 @@
 			font-size: 13px;
 			color: #5a5257;
 			font-weight: 400;
+			padding-left:2px
 		}
 	}
 	.media-left {
 		padding-right: 30px;
 		padding-top:25px;
 		~ .media-body {
-			padding-top:15px;
+			padding-top:10px;
 			.media-body {
 				font-size: 13px;
 			}
@@ -70,6 +71,6 @@
 		color: #756A70;
 		font-size: 13px;
 		font-family: Arial;
-		margin:5px 10px 0px 10px;
+		margin:5px 15px 0px 10px;
 	}
 }
