@@ -15,11 +15,7 @@
 
 (defqueries "sql/admin/queries.sql")
 
-(defn user-admin?
-  "Check if user is admin"
-  [ctx user-id]
-  (let [admin (select-user-admin {:id user-id} (into {:result-set-fn first :row-fn :role} (get-db ctx)))]
-    (= admin "admin")))
+
 
 (defn register-users-count
   "Get count from all active and registered users"

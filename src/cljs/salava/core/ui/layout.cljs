@@ -55,9 +55,10 @@
 
 (defn logo []
 [:a {:class "logo pull-left"
-        :href  (if (session/get :user) (path-for "/badge") (session/get :site-url))
-        :title (session/get :site-name)
-        :aria-label "to index"}
+     :title (session/get :site-name)
+     :aria-label "to index" 
+     :href  (if (session/get :user) (path-for "/badge") "#")
+     :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url))  "")}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
           :title "OBP logo"
           :aria-label "OBP logo"}]
@@ -105,7 +106,8 @@
    [:div {:class "container-fluid"}
     [:div {:class "navbar-header"}
      [:a {:class "logo pull-left"
-          :href  (if (session/get :user) (path-for "/badge") (base-path))
+          :href  (if (session/get :user) (path-for "/badge") "#")
+          :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url)) "") 
           :title (session/get :site-name)}
       [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
       [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]]]])

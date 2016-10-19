@@ -10,12 +10,14 @@
             [salava.badge.ui.settings :as se]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
+            [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
-            ))
+            [salava.social.ui.follow :refer [follow-badge]]
+            [salava.social.ui.badge-message-modal :refer [badge-message-link]]
+            [salava.admin.ui.reporttool :refer [reporttool]]))
 
 (defn init-data [state id]
   (let [reporttool-init {:description ""
@@ -87,7 +89,7 @@
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count followed?]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         reporttool-atom (cursor state [:reporttool])]
@@ -110,16 +112,19 @@
                 (t :core/Public)
                 )]]]
             [:div {:class "pull-right text-right"}
+             [follow-badge badge_content_id followed?]
              [:button {:class "btn btn-primary settings-btn"
                        :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
                        (t :badge/Settings)]
              [:button {:class    "btn btn-primary print-btn"
+
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.share-wrapper
              [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
            (if (and (not expired?) (not revoked))
              (admintool id "badge")))
+
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
@@ -159,7 +164,8 @@
                            :on-click #(congratulate state)}
                   [:i {:class "fa fa-heart"}]
                   (str " " (t :badge/Congratulations) "!")])
-               )]]]
+               )]]
+           [badge-message-link message_count  badge_content_id]]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
             [:div {:class "col-md-12"}
@@ -209,8 +215,7 @@
                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
           ]]
-         (if owner? "" (reporttool id name "badge" reporttool-atom))
-         ]]])))
+         (if owner? "" (reporttool id name "badge" reporttool-atom))]]])))
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)

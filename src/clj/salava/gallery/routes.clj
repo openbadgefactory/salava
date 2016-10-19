@@ -14,6 +14,7 @@
              (layout/main ctx "/")
              (layout/main ctx "/badges")
              (layout/main ctx "/badges/:user-id")
+             (layout/main ctx "/badges/:user-id/:badge_content_id")
              (layout/main-meta ctx "/badgeview/:id" :gallery)
              (layout/main ctx "/pages")
              (layout/main ctx "/pages/:user-id")
@@ -66,6 +67,9 @@
                                                 :verified_by_obf     s/Bool
                                                 :issued_by_obf       s/Bool
                                                 :issuer_verified     (s/maybe s/Bool)
+                                                :message_count       {:new-messages (s/maybe s/Int)
+                                                                      :all-messages (s/maybe s/Int)}
+                                                :followed?           s/Bool
                                                 :obf_url             s/Str}
                            :public_users       (s/maybe [{:id         s/Int
                                                           :first_name s/Str

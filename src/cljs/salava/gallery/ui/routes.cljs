@@ -13,12 +13,13 @@
 
 (defn ^:export routes [context]
   {(str (base-path context) "/gallery") [["" b/handler]
-                                       ["/badges" b/handler]
-                                       [["/badges/" :user-id] b/handler]
-                                       ["/pages" p/handler]
-                                       [["/pages/" :user-id] p/handler]
-                                       ["/profiles" u/handler]
-                                       [["/badgeview/" :badge-content-id] bv/handler]]})
+                                         ["/badges" b/handler]
+                                         [["/badges/" :user-id] b/handler]
+                                         [["/badges/" :user-id "/" :badge_content_id] b/handler]
+                                         ["/pages" p/handler]
+                                         [["/pages/" :user-id] p/handler]
+                                         ["/profiles" u/handler]
+                                         [["/badgeview/" :badge-content-id] bv/handler]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/gallery")                {:weight 40 :title (t :gallery/Gallery) :top-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}

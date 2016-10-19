@@ -63,7 +63,11 @@
                            (s/optional-key :assertion_url)       (s/maybe s/Str)
                            (s/optional-key :tags)                (s/maybe [s/Str])
                            (s/optional-key :meta_badge)          (s/maybe s/Bool)
-                           (s/optional-key :meta_badge_req)      (s/maybe s/Bool)})
+                           (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
+                           (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
+                                                                  :all-messages (s/maybe s/Int)
+                          } })
+                           
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :email :assertion_url :tags :issuer_content_name 
                     :issuer_url]))
