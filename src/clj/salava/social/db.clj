@@ -18,7 +18,7 @@
   [ctx, subject, verb, object, type]
   (try+
    (let [event-id (insert-social-event<! {:subject subject :verb verb :object object :type type} (get-db ctx))
-         connected-users  (if (= type "badge") (select-users-from-connections-badge {:badge_content_id object} (get-db ctx)))
+         connected-users  (if (or (= type "badge")) (select-users-from-connections-badge {:badge_content_id object} (get-db ctx)))
          query (vec (map #(assoc % :event_id (:generated_key event-id)) connected-users))]
      (jdbc/insert-multi! (:connection (get-db ctx)) :social_event_owners query)
      {:status "success"}) 
@@ -40,7 +40,9 @@
 
 
 
-(defn badge-message-map [messages]
+(defn badge-message-map
+  "returns newest message and count new messages"
+  [messages]
   (let [message-helper (fn [current item]
                          (let [key  (:badge_content_id item)
                                new-messages-count (get-in current [key :new_messages] 0)]
@@ -52,15 +54,37 @@
     (reduce message-helper {} (reverse messages))))
 
 
-(defn get-user-badge-events [ctx user_id]
-  (let [events (select-user-events {:user_id user_id} (get-db ctx))
-                reduced-events (badge-events-reduce events)
-        messages (select-messages-with-badge-content-id {:badge_content_ids (map #(:object %) reduced-events) :user_id user_id} (get-db ctx))
+
+
+
+
+
+
+(defn filter-badge-message-events [events]
+  (filter #(= "message" (:verb %)) events))
+
+(defn filter-own-events [events user_id]
+  (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events) )
+
+(defn get-user-badge-events
+  "get users badge  message and follow events"
+  [ctx user_id]
+  (let [events (select-user-events {:user_id user_id} (get-db ctx)) ;get all events where type = badge
+        reduced-events (badge-events-reduce events) ;bundle events together with object and verb
+        badge-content-ids (map #(:object %) reduced-events)
+        messages (if (not (empty? badge-content-ids)) (select-messages-with-badge-content-id {:badge_content_ids badge-content-ids :user_id user_id} (get-db ctx)) ())
         messages-map (badge-message-map messages)
-        badge-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) reduced-events)]
+        message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
+        follow-events (filter-own-events reduced-events user_id)
+       badge-events (into follow-events message-events)]
     (sort-by :ctime #(> %1 %2) (vec badge-events))
-    
+                       ; messages
+    ;(empty? badge-content-id)
     ))
+
+
+
+
 
 (defn hide-user-event! [ctx user_id event_id]
   (try+
@@ -124,26 +148,40 @@
 (defn delete-message! [ctx message_id user_id]
   (try+
    (let [message-owner (message-owner? ctx message_id user_id)
-         admin (ah/user-admin? ctx user_id) ]
+         admin (ah/user-admin? ctx user_id)
+         ;badge-content-id (select-badge-content-id-by-message-id {:message_id message_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))
+         ]
      (if (or message-owner admin)
-       (update-badge-message-deleted! {:message_id message_id} (get-db ctx))))
+       (do
+         (update-badge-message-deleted! {:message_id message_id} (get-db ctx))
+         )))
    "success"
    (catch Object _
      "error"
      )))
 
+
 (defn is-connected? [ctx user_id badge_content_id]
   (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (= badge_content_id id)))
 
+
+(defn insert-connection-badge! [ctx user_id badge_content_id]
+  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx)))
+
 (defn create-connection-badge! [ctx user_id  badge_content_id]
   (try+
-   (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+   (insert-connection-badge! ctx user_id badge_content_id)
+   (insert-event! ctx user_id "follow" badge_content_id "badge")   
    {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
      )))
-
+(defn delete-connection-badge-by-badge-id! [ctx user_id badge_id]
+ (try+
+   (delete-connect-badge-by-badge-id! {:user_id user_id :badge_id badge_id} (get-db ctx))
+   (catch Object _
+     )))
 
 (defn delete-connection-badge! [ctx user_id  badge_content_id]
   (try+
@@ -160,9 +198,7 @@
   (select-user-connections-badge {:user_id user_id} (get-db ctx))
   )
 
-(defn is-connected? [ctx user_id badge_content_id]
-  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
-    (= badge_content_id id)))
+
 
 
 

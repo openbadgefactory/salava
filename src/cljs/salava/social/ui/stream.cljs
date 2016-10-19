@@ -31,9 +31,39 @@
    ]
   )
 
+(defn stream-follow-item [event object state]
+  (let [{:keys [subject verb image_file message ctime event_id name]}  event]
+    [:div {:class "media message-item"}
+    [:button {:type       "button"
+                :class      "close"
+                :aria-label "OK"
+                :on-click   #(do
+                               (ajax/POST
+                                (path-for (str "/obpv1/social/hide_event/" event_id))
+                                {:response-format :json
+                                 :keywords?       true          
+                                 :handler         (fn [data]
+                                                    (do
+                                                      (init-data state)))
+                                 :error-handler   (fn [{:keys [status status-text]}]
+                                                    )})
+                               (.preventDefault %))
+                }
+       [:span {:aria-hidden "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+     [:div.media-left
+      [:a {:href "#"}
+       [:img {:src (str "/" image_file)} ]]]
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:h3 {:class "media-heading"}
+       
+       [:a {:href "#"} (str  name)]]
+      "FOLLOW ITEM"
+      object
+      ]]))
 
-
-(defn stream-item [event object state]
+(defn stream-message-item [event object state]
   (let [{:keys [subject verb image_file message ctime event_id name]}  event
           new_messages  (get-in event [:message :new_messages])]
     [:div {:class (if (pos? new_messages) "media message-item new " "media message-item" )}
@@ -72,8 +102,10 @@
      [m/modal-window]
      (into [:div {:class "row"}]
            (for [event events]
-             (do
-               (stream-item event  [badge-message-stream-link (get-in event [:message :new_messages]) (:object event) init-data state] state))))]))
+             (cond
+               (= "follow" (:verb event)) (stream-follow-item event  [badge-message-stream-link (get-in event [:message :new_messages]) (:object event) init-data state] state)
+               (= "message" (:verb event)) (stream-message-item event  [badge-message-stream-link (get-in event [:message :new_messages]) (:object event) init-data state] state)
+               :else "")))]))
 
 
 (defn handler [site-navi]
