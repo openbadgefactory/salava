@@ -223,7 +223,8 @@
               :deleted             0
               :revoked             0
               :issuer_verified     issuer-verified}]
-    (insert-badge<! data (get-db ctx))))
+    (insert-badge<! data (get-db ctx))
+    (so/insert-connection-badge! ctx user-id badge-content-id)))
 
 (defn save-issuer-content!
   "Save issuer-data"
@@ -368,6 +369,7 @@
     (jdbc/with-db-transaction
       [tr-cn (get-datasource ctx)]
       (delete-badge-with-db! {:connection tr-cn} badge-id))
+    (so/delete-connection-badge-by-badge-id! ctx user-id badge-id )
     {:status "success" :message "Badge deleted"}
     (catch Object _ {:status "error" :message ""})))
 

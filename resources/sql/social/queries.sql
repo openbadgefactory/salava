@@ -39,11 +39,14 @@ SELECT mtime FROM badge_message_view where badge_content_id = :badge_content_id 
 
 --name: insert-connect-badge<!
 --add new connect with badge
-INSERT INTO social_connections_badge (user_id, badge_content_id, ctime)
+INSERT IGNORE INTO social_connections_badge (user_id, badge_content_id, ctime)
                    VALUES (:user_id, :badge_content_id, UNIX_TIMESTAMP())
 
 --name: delete-connect-badge!
 DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_content_id = :badge_content_id
+
+--name: delete-connect-badge-by-badge-id!
+DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_content_id =  (SELECT badge_content_id from badge where id = :badge_id AND user_id = :user_id) 
 
 --name: select-connection-badge
 SELECT badge_content_id FROM social_connections_badge WHERE user_id = :user_id AND badge_content_id = :badge_content_id
@@ -78,7 +81,8 @@ SELECT user_id AS owner from social_connections_badge where badge_content_id = :
 SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN badge_content AS bc ON se.object = bc.id
-     WHERE owner = :user_id AND se.type = 'badge'  AND se.subject != :user_id
+     JOIN social_connections_badge AS scb ON :user_id = scb.user_id
+     WHERE owner = :user_id AND se.type = 'badge' AND se.object = scb.badge_content_id
      ORDER BY se.ctime DESC
      LIMIT 1000
 
@@ -104,4 +108,9 @@ LIMIT 100
 
 --name: update-hide-user-event!
 UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner = :user_id
+
+
+--name: select-badge-content-id-by-message-id
+SELECT badge_content_id from badge_message where id = :message_id
+
 
