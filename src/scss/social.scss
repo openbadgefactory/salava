@@ -15,10 +15,61 @@
 }
 
 .message-item{
-    padding-bottom: 15px;
+    padding-bottom: 20px;
     border-bottom: 1px solid #dddddd;
     h4{
 	font-size: 14px;
     }
     font-size: 14px;
+}
+
+.message-item.media {
+	margin-top:5px;
+	h3.media-heading {
+		a { font-size: 16px;
+			color:#dc5c10;
+	    }
+		.new {
+			background-color: #756A70;
+			color:#FFF;
+			border-radius: 5px;
+			font-size: 10px;
+			text-transform: uppercase;
+			font-weight: 700;
+			padding:2px 8px;
+			margin-right: 10px;
+		}
+	}
+	h4.media-heading{
+		a{
+			font-weight: 600;
+			font-size: 14px;
+			color: #453e42;
+			&:hover {
+				color: #756A70;
+			}
+		}
+		span {
+			font-size: 13px;
+			color: #5a5257;
+			font-weight: 400;
+		}
+	}
+	.media-left {
+		padding-right: 30px;
+		padding-top:25px;
+		~ .media-body {
+			padding-top:15px;
+			.media-body {
+				font-size: 13px;
+			}
+		}
+	}
+	.date {
+		float:right;
+		color: #756A70;
+		font-size: 13px;
+		font-family: Arial;
+		margin:5px 10px 0px 10px;
+	}
 }
