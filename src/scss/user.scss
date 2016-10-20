@@ -93,16 +93,23 @@
 
     img.profile-picture {
         display: inline-block;
-        width: 100%;
+        width: auto;
         height: auto;
+		float:none;
+		max-width: 100%;
         padding: 4px;
         background-color: #ffffff;
         border: 1px solid #dddddd;
         border-radius: 4px;
     }
+	.profile-picture-wrapper {
+		max-width: 250px;
+		margin-bottom: 15px;
+	}
 
     .about {
         margin-bottom: 15px;
+		margin-right: 30px;
     }
 
     .table {
@@ -177,6 +184,7 @@
 #edit-user {
     #cancel-button {
         margin-left: 10px;
+		font-size: 13px;
     }
     .alert-danger {
 	margin:15px;

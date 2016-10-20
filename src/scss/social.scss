@@ -21,6 +21,9 @@
 	font-size: 14px;
     }
     font-size: 14px;
+	&:last-child{
+		border-bottom: none;
+	}
 }
 
 .message-item.media {
@@ -28,6 +31,9 @@
 	h3.media-heading {
 		a { font-size: 16px;
 			color:#dc5c10;
+			&:hover {
+				color:#bf4f0e;
+			}
 	    }
 		.new {
 			background-color: #756A70;
@@ -74,18 +80,57 @@
 		margin:5px 15px 0px 10px;
 	}
 }
-#badge-contents  .message-item {
-	.pull-left {
-		padding-top:10px;
-		padding-right:20px;
+#badge-content{
+	.btn-primary.follow, .btn-primary.unfollow {
+		margin-right: 15px;
+		margin-top:15px;
 	}
-	.media-body {
-		padding-top:10px;
+	#badge-contents  .message-item {
+		.pull-left {
+			padding-top:10px;
+			padding-right:20px;
+		}
+		.media-body {
+			padding-top:10px;
+		}
+		.date {
+			margin-top:2px;
+		}
+		.message {
+			padding-top:10px;
+		}
+		a#loadmore {
+			color:#dc5c10;
+			&:hover {
+				color:#bf4f0e;
+			}
+		}
+		a:hover{
+			color:#353b75;
+		}
 	}
-	.date {
-		margin-top:2px;
+}
+.btn-primary.follow, .btn-primary.unfollow{
+	padding: 4px 12px;
+    line-height: 22px;
+	&:before {
+		content:"\f005";
+		font-weight: normal;
+		font-family: FontAwesome;
+		text-rendering: auto;
+		margin-right: 5px;
+		font-size: 16px;
+		display: block;
+		float: left;
 	}
-	.message {
-		padding-top:10px;
+}
+.btn-primary.unfollow{
+	background-color: lighten(#756A70, 10%);
+	border-color: #756A70;
+	&:before {
+		content:"\f006";
+	}
+	&:hover {
+		background-color:#756A70;
 	}
 }

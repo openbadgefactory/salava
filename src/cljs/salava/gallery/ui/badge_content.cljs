@@ -98,10 +98,10 @@
     [badge-content data messages?]]
    [:div.modal-footer
     
-    [:button {:type         "button"
-              :class        "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :core/Close)]
+    ;[:button {:type         "button"
+    ;          :class        "btn btn-primary"
+    ;          :data-dismiss "modal"}
+    ;(t :core/Close)]
     (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
     ]])
 
