@@ -178,7 +178,7 @@ float:none;
     color: $title-color;
     font-size: 13px;
 }
-#badge-info {
+#badge-info, #badge-content {
     .badge-info label{
         color: $text-color;
         min-width: 100px;
@@ -1148,9 +1148,6 @@ fieldset legend {
         max-width: 200px;
         max-height: 200px;
     }
-    #profile.panel img.profile-picture {
-        max-width: 220px;
-    }
     .badge-image.modal-left img {
         max-width: 100%;
     }
@@ -1181,6 +1178,17 @@ fieldset legend {
 }
 .actions .alert {
     width: 100%;
+}
+.issuer-image img {
+    border:none;
+    margin-right: 10px;
+    margin-left:0px;
+}
+.checkbox input[type="checkbox"]{
+    margin-top:4.5px;
+    ~ span {
+        margin-left: 5px;
+    }
 }
 @-moz-document url-prefix() {
     select, select:-moz-focusring, select::-moz-focus-inner {
