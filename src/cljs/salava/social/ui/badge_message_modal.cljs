@@ -8,7 +8,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
-            ;[salava.gallery.ui.badges :as b]
+            [salava.gallery.ui.badges :as b]
             ))
 
 
@@ -80,10 +80,9 @@
      (str (:new-messages message-count) " " (t :social/Newmessages )))])
 
 
-(defn badge-message-stream-link [new-messages badge-content-id init-data state]
+(defn badge-message-stream-link [message badge-content-id init-data state]
   [:a {:href     "#"
        :on-click #(do
-                    (open-modal badge-content-id init-data state)
+                    (b/open-modal badge-content-id true init-data state)
                     (.preventDefault %) )}
-   (str  " read more " (if (pos? new-messages) (str "(" new-messages " new messages)")))
-   ])
+   message])

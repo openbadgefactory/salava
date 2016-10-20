@@ -8,6 +8,7 @@
              [salava.core.helper :refer [dump]]
              [salava.core.time :refer [date-from-unix-time]]
              [salava.user.ui.helper :refer [profile-picture]]
+             [salava.gallery.ui.badges :as b]
              [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
 
 (defn init-data [state]
@@ -31,8 +32,9 @@
    ]
   )
 
-(defn stream-follow-item [event object state]
-  (let [{:keys [subject verb image_file message ctime event_id name]}  event]
+(defn stream-follow-item [event state]
+  (let [{:keys [subject verb image_file message ctime event_id name object]}  event
+        modal-message (str "messages")]
     [:div {:class "media message-item"}
     [:button {:type       "button"
                 :class      "close"
@@ -52,21 +54,28 @@
        [:span {:aria-hidden "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]
      [:div.media-left
-      [:a {:href "#"}
+      [:a {:href "#"
+           :on-click #(do
+                        (b/open-modal object false init-data state)
+                        (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
        
-       [:a {:href "#"} (str  name)]]
-      "FOLLOW ITEM"
-      object
+       [:a {:href "#"
+           :on-click #(do
+                        (b/open-modal object false init-data state)
+                        (.preventDefault %) )} (str  name)]]
+      "FOLLOW ITEM "
+      [badge-message-stream-link modal-message (:object event) init-data state]
       ]]))
 
-(defn stream-message-item [event object state]
-  (let [{:keys [subject verb image_file message ctime event_id name]}  event
-          new_messages  (get-in event [:message :new_messages])]
-    [:div {:class (if (pos? new_messages) "media message-item new " "media message-item" )}
+(defn stream-message-item [event state]
+  (let [{:keys [subject verb image_file message ctime event_id name object]}  event
+        new-messages  (get-in event [:message :new_messages])
+        modal-message (str  " read more " (if (pos? new-messages) (str "(" new-messages " new messages)")))]
+    [:div {:class (if (pos? new-messages) "media message-item new " "media message-item" )}
     [:button {:type       "button"
                 :class      "close"
                 :aria-label "OK"
@@ -85,15 +94,21 @@
        [:span {:aria-hidden "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]
      [:div.media-left
-      [:a {:href "#"}
+      [:a {:href "#"
+           :on-click #(do
+                        (b/open-modal object false init-data state)
+                        (.preventDefault %) )} 
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-      (if (pos? new_messages)[:span.new  (str new_messages " new")])
-       [:a {:href "#"} name]]
+      (if (pos? new-messages) [:span.new  (str new-messages " new")])
+       [:a {:href "#"
+           :on-click #(do
+                        (b/open-modal object false init-data state)
+                        (.preventDefault %) )} name]]
       (message-item message)
-      object
+      [badge-message-stream-link modal-message (:object event) init-data state]
       ]]))
 
 (defn content [state]
@@ -103,8 +118,8 @@
      (into [:div {:class "row"}]
            (for [event events]
              (cond
-               (= "follow" (:verb event)) (stream-follow-item event  [badge-message-stream-link (get-in event [:message :new_messages]) (:object event) init-data state] state)
-               (= "message" (:verb event)) (stream-message-item event  [badge-message-stream-link (get-in event [:message :new_messages]) (:object event) init-data state] state)
+               (= "follow" (:verb event)) (stream-follow-item event state)
+               (= "message" (:verb event)) (stream-message-item event state)
                :else "")))]))
 
 
