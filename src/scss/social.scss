@@ -21,6 +21,9 @@
 	font-size: 14px;
     }
     font-size: 14px;
+	&:last-child{
+		border-bottom: none;
+	}
 }
 
 .message-item.media {
@@ -74,18 +77,43 @@
 		margin:5px 15px 0px 10px;
 	}
 }
-#badge-contents  .message-item {
-	.pull-left {
-		padding-top:10px;
-		padding-right:20px;
+#badge-content{
+	.btn-primary.follow, .btn-primary.unfollow {
+		margin-right: 15px;
+		margin-top:15px;
 	}
-	.media-body {
-		padding-top:10px;
+	#badge-contents  .message-item {
+		.pull-left {
+			padding-top:10px;
+			padding-right:20px;
+		}
+		.media-body {
+			padding-top:10px;
+		}
+		.date {
+			margin-top:2px;
+		}
+		.message {
+			padding-top:10px;
+		}
+		a#loadmore {
+			color:#dc5c10;
+			&:hover {
+				color:#bf4f0e;
+			}
+		}
+		a:hover{
+			color:#353b75;
+		}
 	}
-	.date {
-		margin-top:2px;
+}
+.btn-primary.follow:before {
+	content:"\f005";
+	font-family: "FontAwesome";
+	margin-right:3px;
 	}
-	.message {
-		padding-top:10px;
-	}
+.btn-primary.unfollow:before {
+	content:"\f006";
+	font-family: "FontAwesome";
+	margin-right:3px;
 }

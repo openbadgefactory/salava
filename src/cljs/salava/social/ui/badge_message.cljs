@@ -104,13 +104,13 @@
     [:div {:class "media message-item"}
      [:div {:class "media-body"}
       [:span [:a {:href     "#" 
-                  :class    "" 
+                  :id    "loadmore"
                   :on-click #(do
                                (init-data state)
                                (.preventDefault %))}
-              (str "-- "(t :social/Loadmore) ": " (:messages_left @state) " " (t :social/Messagesleft) " --")]]]
+              (str (t :social/Loadmore) " (" (:messages_left @state) " " (t :social/Messagesleft) ")")]]]
      ]
-[:div]))
+))
 
 
 (defn scroll-bottom []
