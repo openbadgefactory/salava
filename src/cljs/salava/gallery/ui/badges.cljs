@@ -12,22 +12,23 @@
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
-(defn open-modal [badge-content-id messages?]
-  (let [reporttool (atom {:description     ""
-                          :report-type     "bug"
-                          :item-id         ""
-                          :item-content-id ""
-                          :item-url        ""
-                          :item-name       "" ;
-                          :item-type       "" ;badge/user/page/badges
-                          :reporter-id     ""
-                          :status          "false"})]
-    (ajax/GET
-     (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
-     {:handler (fn [data]
-                 (do
-                   
-                   (m/modal! [badge-content-modal data reporttool messages?] {:size :lg})))})))
+(defn open-modal ([badge-content-id messages?]
+                  (open-modal badge-content-id messages? nil nil))
+  ([badge-content-id messages? init-data state]
+   (let [reporttool (atom {:description     ""
+                           :report-type     "bug"
+                           :item-id         ""
+                           :item-content-id ""
+                           :item-url        ""
+                           :item-name       "" ;
+                           :item-type       "" ;badge/user/page/badges
+                           :reporter-id     ""
+                           :status          "false"})]
+     (ajax/GET
+      (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+      {:handler (fn [data]
+                  (do
+                    (m/modal! [badge-content-modal data reporttool messages? init-data state] {:size :lg})))}))))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
