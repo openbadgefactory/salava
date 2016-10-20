@@ -102,7 +102,7 @@
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-      (if (pos? new-messages)[:span.new  (str new-messages " new")]) 
+      (if (pos? new-messages) [:span.new  (str new-messages " new")])
        [:a {:href "#"
            :on-click #(do
                         (b/open-modal object false init-data state)
