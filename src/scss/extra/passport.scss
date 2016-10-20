@@ -930,7 +930,7 @@ fieldset legend {
     }
 }
 
-#profile, #badge-gallery, #page-gallery, #badge-info, #page-view {
+#profile, #badge-gallery, #page-gallery, #badge-info, #page-view, #badge-content {
     .row.report-form {
         a#open-reportform-button {
             padding-top:15px;
@@ -994,7 +994,7 @@ fieldset legend {
 
 }
 
-#badge-gallery{
+#badge-gallery, #badge-content{
     .modal-footer.reporttool {
         margin-left: 0px;
        > div > div#reportform {
@@ -1072,12 +1072,7 @@ fieldset legend {
             }
     }
 }
-.modal-content #badge-contents .col-md-9.badge-info {
-    h1.uppercase-header {
-        padding-left:15px;
-    }
-    
-}
+
 #share #share-buttons {
     i {
         cursor: pointer;

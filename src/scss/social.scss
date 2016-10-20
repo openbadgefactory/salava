@@ -31,6 +31,9 @@
 	h3.media-heading {
 		a { font-size: 16px;
 			color:#dc5c10;
+			&:hover {
+				color:#bf4f0e;
+			}
 	    }
 		.new {
 			background-color: #756A70;

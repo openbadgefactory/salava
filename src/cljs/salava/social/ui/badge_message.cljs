@@ -92,7 +92,7 @@
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
-      [:a {:href (str "/user/profile/" user_id)} (str first_name " "last_name)]
+      [:a {:href (path-for (str "/user/profile/" user_id))} (str first_name " "last_name)]
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]
     ]
     [:div.message message]]
