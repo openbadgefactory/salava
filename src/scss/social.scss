@@ -110,13 +110,27 @@
 		}
 	}
 }
-.btn-primary.follow:before {
-	content:"\f005";
-	font-family: "FontAwesome";
-	margin-right:3px;
+.btn-primary.follow, .btn-primary.unfollow{
+	padding: 4px 12px;
+    line-height: 22px;
+	&:before {
+		content:"\f005";
+		font-weight: normal;
+		font-family: FontAwesome;
+		text-rendering: auto;
+		margin-right: 5px;
+		font-size: 16px;
+		display: block;
+		float: left;
 	}
-.btn-primary.unfollow:before {
-	content:"\f006";
-	font-family: "FontAwesome";
-	margin-right:3px;
+}
+.btn-primary.unfollow{
+	background-color: lighten(#756A70, 10%);
+	border-color: #756A70;
+	&:before {
+		content:"\f006";
+	}
+	&:hover {
+		background-color:#756A70;
+	}
 }
