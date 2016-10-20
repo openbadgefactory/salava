@@ -26,8 +26,6 @@
      {:status "error"})))
 
 
-
-
 (defn badge-events-reduce [events]
   (let [helper (fn [current item]
                   (let [key [(:verb item) (:object item)]]
@@ -54,12 +52,6 @@
     (reduce message-helper {} (reverse messages))))
 
 
-
-
-
-
-
-
 (defn filter-badge-message-events [events]
   (filter #(= "message" (:verb %)) events))
 
@@ -78,9 +70,8 @@
         follow-events (filter-own-events reduced-events user_id)
        badge-events (into follow-events message-events)]
     (sort-by :ctime #(> %1 %2) (vec badge-events))
-                       ; messages
-    ;(empty? badge-content-id)
     ))
+
 
 
 
@@ -172,7 +163,8 @@
 (defn create-connection-badge! [ctx user_id  badge_content_id]
   (try+
    (insert-connection-badge! ctx user_id badge_content_id)
-   (insert-event! ctx user_id "follow" badge_content_id "badge")   
+   (insert-event! ctx user_id "follow" badge_content_id "badge")
+   (messages-viewed ctx badge_content_id user_id)
    {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
