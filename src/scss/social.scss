@@ -53,16 +53,18 @@
 			padding-left: 6px;
 			padding-top:3px;
 			position: absolute;
-			left:22px;
+			left:23px;
 			top:-2px;
 		}
 		&:before{
 			content: "\f0e6";
 			font-family: "FontAwesome";
-			margin-right: 21px;
-			margin-left:5px;
 			font-size: 30px;
 			color: #dc5c10;
+			display: inline-block;
+			width:42px;
+			text-align: center;
+			margin-right: 15px;
 		}
 	}
 	&.new {
