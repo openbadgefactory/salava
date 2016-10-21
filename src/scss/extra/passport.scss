@@ -619,6 +619,7 @@ fieldset legend {
                 color: $badge-title;
                 font-size: 16px;
                 font-weight: 600;
+                line-height: 2.2em;
                 a {
                     font-size: 16px;
                     font-weight: 600;
@@ -630,6 +631,7 @@ fieldset legend {
             }
             .media-issuer {
                 padding-top:3px;
+                line-height: 1.2em;
                 height: 2.8em;
                  a:hover {
                     color:$menu-active;
