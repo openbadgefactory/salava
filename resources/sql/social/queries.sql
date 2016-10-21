@@ -101,7 +101,7 @@ SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.l
 SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
 JOIN user AS u ON (u.id = bm.user_id)
 JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND :user_id =  bmv.user_id
-WHERE bm.badge_content_id IN (:badge_content_ids)
+WHERE bm.badge_content_id IN (:badge_content_ids) AND bm.deleted = 0
 ORDER BY bm.ctime DESC
 LIMIT 100
 

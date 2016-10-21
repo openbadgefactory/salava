@@ -69,8 +69,7 @@
            :on-click #(do
                         (b/open-modal object false init-data state)
                         (.preventDefault %) )} (str  name)]]
-      "FOLLOW ITEM "
-      [badge-message-stream-link modal-message (:object event) init-data state]
+       (t :social/Youstartedfollowbadge)
       ]]))
 
 (defn stream-message-item [event state]
