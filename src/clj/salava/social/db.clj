@@ -69,12 +69,8 @@
         message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
         follow-events (filter-own-events reduced-events user_id)
        badge-events (into follow-events message-events)]
-    (sort-by :ctime #(> %1 %2) (vec badge-events))
+    (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))
     ))
-
-
-
-
 
 
 (defn hide-user-event! [ctx user_id event_id]

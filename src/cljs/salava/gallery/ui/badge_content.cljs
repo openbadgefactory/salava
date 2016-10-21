@@ -14,9 +14,11 @@
 (defn badge-content [{:keys [badge public_users private_user_count]} messages?]
   (let [{:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description html_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge
         show-messages (atom messages?)
-        all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")
+        all-messages (str (:all-messages message_count) " " (if (= 1 (:all-messages message_count))
+                                                              (t :social/Comment)
+                                                              (t :social/Comments)))
         new-messages (if (pos? (:new-messages message_count))
-                       (str (:new-messages message_count) " " (t :social/Newmessages ))
+                       (str " (" (:new-messages message_count) " " (if (= 1 (:new-messages message_count)) (t :social/New) (t :social/News)) ") ")
                        "")
         all-messages (str all-messages new-messages)]
     (fn []
