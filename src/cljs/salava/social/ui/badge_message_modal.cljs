@@ -75,9 +75,12 @@
        :on-click #(do
                     (open-modal badge-content-id)
                     (.preventDefault %) )}
-   (str (t :social/Messages)  " (" (:all-messages message-count) ") "  )
+   (str (:all-messages message-count) " " (if (= 1 (:all-messages message-count))
+                                                              (t :social/Comment)
+                                                              (t :social/Comments)))
    (if (pos? (:new-messages message-count))
-     (str (:new-messages message-count) " " (t :social/Newmessages )))])
+                       (str " (" (:new-messages message-count) " " (if (= 1 (:new-messages message-count)) (t :social/New) (t :social/News)) ") ")
+                       "")])
 
 
 (defn badge-message-stream-link [message badge-content-id init-data state]
