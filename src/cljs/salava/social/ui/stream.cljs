@@ -25,8 +25,8 @@
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
-    [:a {:href (path-for (str "/user/profile/" user_id)) }(str first_name " "last_name)]
-    [:span (str (t :social/Commented) ":") ]
+    [:a {:href (path-for (str "/user/profile/" user_id)) :target "_blank"}(str first_name " "last_name)]
+    ;[:span (str (t :social/Commented) ":") ]
     ]
 ;(date-from-unix-time (* 1000 ctime) "minutes")
 
@@ -76,7 +76,11 @@
 (defn stream-message-item [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         new-messages  (get-in event [:message :new_messages])
-        modal-message (str  (t :social/Readmore) (if (pos? new-messages) (str " (" new-messages " " (if (= 1 new-messages) (t :social/Newmessage) (t :social/Newmessages)) ")")))]
+        modal-message (if (pos? new-messages)
+                              [:span (t :social/Newmessages) [:span.badge new-messages]]
+                              (t :social/Readmore))
+        ;(str  (t :social/Readmore) (if (pos? new-messages) (str " (" new-messages " " (if (= 1 new-messages) (t :social/Newmessage) (t :social/Newmessages)) ")")))
+        ]
     [:div {:class (if (pos? new-messages) "media message-item new " "media message-item" )}
     [:button {:type       "button"
                 :class      "close"

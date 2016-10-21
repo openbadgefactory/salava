@@ -9,13 +9,14 @@
 }
 
 .message-profile-img{
-    height: 54px;
-    border: 1px solid #aea1aa;
+    width: 54px;
+	height: auto;
+    border: 1px solid silver;
     border-radius: 3px;
 }
 
 .message-item{
-    padding-bottom: 20px;
+    padding-bottom: 15px;
     border-bottom: 1px solid #dddddd;
     h4{
 	font-size: 14px;
@@ -52,24 +53,32 @@
 			padding-left: 6px;
 			padding-top:3px;
 			position: absolute;
-			left:17px;
+			left:22px;
 			top:-2px;
 		}
 		&:before{
 			content: "\f0e6";
 			font-family: "FontAwesome";
-			margin-right: 12px;
+			margin-right: 21px;
+			margin-left:5px;
 			font-size: 30px;
+			color: #dc5c10;
 		}
 	}
 	&.new {
 		h3.media-heading:before{
 			content: "\f086";
+			color:  #5a5257;
 		}
 	}
 	&.follow {
-		h3.media-heading:before{
-			content:"\f006";
+		h3.media-heading{
+			&:before{
+				content:"\f006";
+			}
+			~ span {
+				padding-left: 6px;
+			}
 		}
 	}
 	h4.media-heading{
@@ -95,6 +104,20 @@
 			padding-top:10px;
 			.media-body {
 				font-size: 13px;
+				padding-bottom: 20px;
+			}
+			.pull-left {
+				padding-right: 15px;
+				padding-bottom: 20px;
+				img.message-profile-img {
+					width: 42px;
+					height:auto;
+				}
+			}
+			.badge {
+					background-color:#dc5c10;
+					margin-left: 10px;
+					display: inline-block
 			}
 		}
 	}
