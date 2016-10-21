@@ -133,8 +133,8 @@ a#login-button {
 ul.navbar-nav{
 margin-right:auto;
 margin-left:auto;
-width:480px;
-padding-left:0px;
+width:550px;
+padding-left:0px !important;
 float:none;
     li{
     a {
@@ -148,8 +148,13 @@ float:none;
         color: $menu-active;
     }
     }
-    @media (max-width:770px){
+    @media (max-width:1280px){
         width:auto;
+    }
+    @media (max-width:870px){
+        li a {
+            padding: 10px 10px;
+        }
     }
 }
 #grid-filter button, #buttons .col-xs-8 .btn {

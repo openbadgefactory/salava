@@ -29,6 +29,7 @@
 .message-item.media {
 	margin-top:5px;
 	h3.media-heading {
+		position: relative;
 		a { font-size: 16px;
 			color:#dc5c10;
 			&:hover {
@@ -36,14 +37,36 @@
 			}
 	    }
 		.new {
-			background-color: #756A70;
+			background-color: #dc5c10;
 			color:#FFF;
-			border-radius: 5px;
-			font-size: 10px;
+			border-radius: 50%;
+			height: 18px;
+			width: 18px;
+			display: inline-block;
+			font-size: 11px;
 			text-transform: uppercase;
 			font-weight: 700;
-			padding:2px 8px;
-			margin-right: 10px;
+			padding-left: 6px;
+			padding-top:3px;
+			position: absolute;
+			left:17px;
+			top:-2px;
+		}
+		&:before{
+			content: "\f0e6";
+			font-family: "FontAwesome";
+			margin-right: 12px;
+			font-size: 30px;
+		}
+	}
+	&.new {
+		h3.media-heading:before{
+			content: "\f086";
+		}
+	}
+	&.follow {
+		h3.media-heading:before{
+			content:"\f006";
 		}
 	}
 	h4.media-heading{

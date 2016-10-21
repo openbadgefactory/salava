@@ -35,7 +35,7 @@
 (defn stream-follow-item [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         modal-message (str "messages")]
-    [:div {:class "media message-item"}
+    [:div {:class "media message-item follow"}
     [:button {:type       "button"
                 :class      "close"
                 :aria-label "OK"
@@ -102,7 +102,8 @@
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-      (if (pos? new-messages) [:span.new  (str new-messages " ") (if (= 1 new-messages) (t :social/New) (t :social/News))])
+      ;(if (pos? new-messages) [:span.new  (str new-messages " ") (if (= 1 new-messages) (t :social/New) (t :social/News))])
+      (if (pos? new-messages) [:span.new  new-messages])
        [:a {:href "#"
            :on-click #(do
                         (b/open-modal object false init-data state)
