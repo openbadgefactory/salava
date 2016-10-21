@@ -74,7 +74,7 @@
 (defn stream-message-item [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         new-messages  (get-in event [:message :new_messages])
-        modal-message (str  (t :social/Readmore) (if (pos? new-messages) (str "(" new-messages " " (if (= 1 new-messages) (t :social/Newmessage) (t :social/Newmessages)) " )")))]
+        modal-message (str  (t :social/Readmore) (if (pos? new-messages) (str " (" new-messages " " (if (= 1 new-messages) (t :social/Newmessage) (t :social/Newmessages)) ")")))]
     [:div {:class (if (pos? new-messages) "media message-item new " "media message-item" )}
     [:button {:type       "button"
                 :class      "close"

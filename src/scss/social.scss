@@ -32,6 +32,9 @@
 		position: relative;
 		a { font-size: 16px;
 			color:#dc5c10;
+			display: inline-block;
+			vertical-align: top;
+			padding-top: 9px;
 			&:hover {
 				color:#bf4f0e;
 			}
@@ -87,7 +90,7 @@
 	}
 	.media-left {
 		padding-right: 30px;
-		padding-top:25px;
+		padding-top:10px;
 		~ .media-body {
 			padding-top:10px;
 			.media-body {
