@@ -63,7 +63,7 @@ SELECT bc.id, bc.name, bc.image_file, bc.description, ic.name AS issuer_content_
 	     AND b.revoked = 0
 	     AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
       GROUP BY bc.id, bc.name, bc.image_file, bc.description, ic.name, ic.url, b.badge_content_id
-      ORDER BY ctime DESC
+      ORDER BY bc.name ASC
 
 
 --name: insert-social-event<!

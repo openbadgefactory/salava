@@ -4,6 +4,7 @@
              [salava.core.ui.ajax-utils :as ajax]
              [reagent.core :refer [atom cursor]]
              [salava.social.ui.badge-message-modal :refer [badge-message-stream-link]]
+             [salava.user.ui.helper :refer [profile-picture]]
              [reagent-modals.modals :as m]
              [salava.core.helper :refer [dump]]
              [salava.core.time :refer [date-from-unix-time]]
@@ -20,7 +21,8 @@
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
   [:div {:class "media" :key id}
-   
+   [:span {:class "pull-left"}
+    [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
     [:a {:href (path-for (str "/user/profile/" user_id)) }(str first_name " "last_name)]
@@ -96,7 +98,7 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (b/open-modal object false init-data state)
+                        (b/open-modal object true init-data state)
                         (.preventDefault %) )} 
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -106,7 +108,7 @@
       (if (pos? new-messages) [:span.new  new-messages])
        [:a {:href "#"
            :on-click #(do
-                        (b/open-modal object false init-data state)
+                        (b/open-modal object true init-data state)
                         (.preventDefault %) )} name]]
       (message-item message)
       [badge-message-stream-link modal-message (:object event) init-data state]
