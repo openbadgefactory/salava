@@ -53,18 +53,17 @@ SELECT badge_content_id FROM social_connections_badge WHERE user_id = :user_id A
 
 -- name: select-user-connections-badge
 -- get users badge connections
-SELECT bc.id, bc.name, bc.image_file, bc.description, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, badge_content_id  FROM badge AS b
+SELECT DISTINCT bc.id, bc.name, bc.image_file, bc.description, scb.badge_content_id FROM social_connections_badge AS scb
+       JOIN badge AS b ON scb.badge_content_id=b.badge_content_id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id	
-       LEFT JOIN user AS u ON b.user_id = u.id
-       WHERE b.badge_content_id IN (SELECT badge_content_id FROM social_connections_badge where user_id = :user_id)
+       WHERE scb.user_id = :user_id
 	     AND b.status = 'accepted'
        	     AND b.deleted = 0
 	     AND b.revoked = 0
 	     AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
-      GROUP BY bc.id, bc.name, bc.image_file, bc.description, ic.name, ic.url, b.badge_content_id
+      GROUP BY bc.id, bc.name, bc.image_file, bc.description, scb.badge_content_id
       ORDER BY bc.name ASC
-
 
 --name: insert-social-event<!
 INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, :verb, :object, :type, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
@@ -112,5 +111,6 @@ UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner =
 
 --name: select-badge-content-id-by-message-id
 SELECT badge_content_id from badge_message where id = :message_id
+
 
 

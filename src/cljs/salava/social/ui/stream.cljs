@@ -28,9 +28,9 @@
     [:a {:href (path-for (str "/user/profile/" user_id)) :target "_blank"}(str first_name " "last_name)]
     ;[:span (str (t :social/Commented) ":") ]
     ]
-;(date-from-unix-time (* 1000 ctime) "minutes")
-
-    [:span message]]
+                                        ;(date-from-unix-time (* 1000 ctime) "minutes")
+    (into [:div] (for [ item (clojure.string/split-lines message)]
+                   [:p item]))]
    ]
   )
 
