@@ -1,6 +1,7 @@
 (ns salava.gallery.ui.badge-content
   (:require [reagent.core :refer [atom create-class]]
             [reagent-modals.modals :refer [close-modal!]]
+            [reagent.session :as session]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.user.ui.helper :refer [profile-link-inline]]
@@ -41,7 +42,7 @@
                             (.preventDefault %))}
            (if @show-messages
              (t :social/Showinfo)
-             all-messages
+             (if (session/get-in [:user :id]) all-messages "")
              
              )]]]
         [:div {:class "col-md-9 badge-info"}

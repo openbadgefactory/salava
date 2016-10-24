@@ -101,8 +101,8 @@
         badge-data (or recipient-badge-data (select-badge-criteria-issuer-by-date {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx))))
         rating (select-common-badge-rating {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
         recipients (if user-id (select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx)))
-        badge-message-count (if user-id {:message_count (so/get-badge-message-count ctx badge-content-id user-id)})
-        followed? (if user-id {:followed? (so/is-connected? ctx user-id badge-content-id)})
+        badge-message-count (if user-id {:message_count (so/get-badge-message-count ctx badge-content-id user-id)} {:message_count {:new-messages nil :all-messages nil}})
+        followed? (if user-id {:followed? (so/is-connected? ctx user-id badge-content-id)} {:followed? nil})
         badge (merge badge-content badge-data rating badge-message-count followed?)]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
               :public_users (->> recipients
