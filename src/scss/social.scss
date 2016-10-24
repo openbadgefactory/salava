@@ -31,6 +31,7 @@
 	margin-top:5px;
 	h3.media-heading {
 		position: relative;
+		margin-right: 105px;
 		a { font-size: 16px;
 			color:#dc5c10;
 			display: inline-block;
@@ -107,6 +108,7 @@
 			.media-body {
 				font-size: 13px;
 				padding-bottom: 20px;
+				padding-right:25px;
 			}
 			.pull-left {
 				padding-right: 15px;
@@ -128,7 +130,15 @@
 		color: #756A70;
 		font-size: 13px;
 		font-family: Arial;
-		margin:5px 15px 0px 10px;
+		margin:5px 25px 0px 10px;
+	}
+	button.close {
+		color:#dc5c10;
+		opacity: 0.8;
+		margin-top:-3px;
+		&:hover {
+			opacity: 1;
+		}
 	}
 }
 #badge-content{
@@ -138,11 +148,11 @@
 	}
 	#badge-contents  .message-item {
 		.pull-left {
-			padding-top:10px;
+			padding-top:13px;
 			padding-right:20px;
 		}
 		.media-body {
-			padding-top:10px;
+			padding-top:13px;
 		}
 		.date {
 			margin-top:2px;
