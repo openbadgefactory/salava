@@ -96,7 +96,7 @@
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]
      ]
     (into [:div] (for [ item (clojure.string/split-lines message)]
-                   [:div.message item]))
+                   [:p.msg item]))
     ]
    ]
   )

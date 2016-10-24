@@ -28,7 +28,7 @@
 }
 
 .message-item.media {
-	margin-top:5px;
+	margin:5px 15px 0px 15px;
 	h3.media-heading {
 		position: relative;
 		margin-right: 105px;
@@ -142,6 +142,9 @@
 	}
 }
 #badge-content{
+	.message-item.media {
+		margin:5px 0px 0px 0px;
+	}
 	.btn-primary.follow, .btn-primary.unfollow {
 		margin-right: 15px;
 		margin-top:15px;
@@ -157,9 +160,6 @@
 		.date {
 			margin-top:2px;
 		}
-		.message {
-			padding-top:10px;
-		}
 		a#loadmore {
 			color:#dc5c10;
 			&:hover {
@@ -168,6 +168,9 @@
 		}
 		a:hover{
 			color:#353b75;
+		}
+		.btn-warning {
+			font-size: 13px;
 		}
 	}
 }
