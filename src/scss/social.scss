@@ -31,12 +31,11 @@
 	margin:5px 15px 0px 15px;
 	h3.media-heading {
 		position: relative;
-		margin-right: 105px;
+		//margin-right: 105px;
 		a { font-size: 16px;
 			color:#dc5c10;
-			display: inline-block;
-			vertical-align: top;
-			padding-top: 9px;
+			vertical-align: middle;
+			line-height: 34px;
 			&:hover {
 				color:#bf4f0e;
 			}
@@ -62,10 +61,12 @@
 			font-family: "FontAwesome";
 			font-size: 30px;
 			color: #dc5c10;
-			display: inline-block;
+			display:block;
+			float:left;
 			width:42px;
 			text-align: center;
 			margin-right: 15px;
+			vertical-align: top;
 		}
 	}
 	&.new {
@@ -140,6 +141,33 @@
 			opacity: 1;
 		}
 	}
+	@media (max-width:480px){
+		.media-left{
+			display: block;
+			text-align: center;
+			padding-right: 0px;
+			position: absolute;
+			right:10px;
+			img {
+				width: 55px;
+				margin-bottom: -60px;
+			}
+			~ .media-body {
+				padding-top:0px;
+				.media-body {
+					padding-right:0px;
+				}
+			}
+		}
+		.date {
+			float:none;
+			margin-left:0px;
+			margin-bottom:10px;
+		}
+		h3.media-heading {
+			margin-right: 45px;
+		}
+	}
 }
 #badge-content{
 	.message-item.media {
@@ -171,6 +199,18 @@
 		}
 		.btn-warning {
 			font-size: 13px;
+		}
+	}
+	@media (max-width:500px){
+		#badge-contents {
+			margin:0px;
+			.date {
+				display: block;
+				float:left;
+				width: 100%;
+				margin-left: 0px;
+				margin-bottom:10px;
+			}
 		}
 	}
 }
