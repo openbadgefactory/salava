@@ -51,7 +51,6 @@
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
-    (.log js/console "meni nyt tänne niinkun piti")
     (ajax/POST
       (path-for (str "/obpv1/gallery/badges/" user-id))
       {:params  {:country   (trim country-selected)

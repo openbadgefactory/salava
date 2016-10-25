@@ -12,6 +12,7 @@
             [salava.core.ui.share :as s]
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
+            [salava.gallery.ui.badges :as b]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
@@ -152,7 +153,10 @@
            (if (> recipient_count 1)
              [:div.row {:id "badge-views"}
               [:div.col-xs-12
-               [:a {:href (path-for (str "/gallery/badgeview/" badge_content_id))} (t :badge/Otherrecipients)]]])
+               [:a {:href "#"
+                    :on-click #(do
+                                 (b/open-modal badge_content_id false nil nil)
+                                 (.preventDefault %))} (t :badge/Otherrecipients)]]]) ;tähän
            [:div.row
             [:div.col-xs-12 {:id "badge-congratulated"}
              (if (and user-logged-in? (not owner?))
