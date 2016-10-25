@@ -53,10 +53,10 @@ SELECT badge_content_id FROM social_connections_badge WHERE user_id = :user_id A
 
 -- name: select-user-connections-badge
 -- get users badge connections
-SELECT DISTINCT  bc.name, bc.image_file, bc.description, scb.badge_content_id FROM social_connections_badge AS scb
+SELECT DISTINCT bc.id, bc.name, bc.image_file, bc.description FROM social_connections_badge AS scb
        JOIN badge_content AS bc ON scb.badge_content_id = bc.id
-       WHERE scb.user_id = 10822
-      GROUP BY bc.name, bc.image_file, bc.description, scb.badge_content_id
+       WHERE scb.user_id = :user_id
+      GROUP BY bc.id, bc.name, bc.image_file, bc.description
       ORDER BY bc.name ASC
 
 
