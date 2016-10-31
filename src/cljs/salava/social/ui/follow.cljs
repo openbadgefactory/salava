@@ -43,7 +43,7 @@
         user (session/get :user)]
     
     (fn []
-      (if (and user social-plugin?)
+      (if (and user (social-plugin?))
         (if @followed?
           (unfollow-button-badge badge-content-id followed?)
           (follow-button-badge badge-content-id followed?))))))
