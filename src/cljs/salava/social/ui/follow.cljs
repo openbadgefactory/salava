@@ -3,12 +3,15 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for current-path]]
+            [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]))
 
 
+
+
 (defn follow-button-badge [badge-content-id followed?]
-  [:button {:class    "btn btn-primary text-right"
+  [:button {:class    "btn btn-primary follow"
             :on-click #(ajax/POST
                         (path-for (str "/obpv1/social/create_connection_badge/" badge-content-id))
                         {:response-format :json
@@ -19,10 +22,10 @@
                          :error-handler   (fn [{:keys [status status-text]}]
                                             (.log js/console (str status " " status-text))
                                             )})}
-   [:i {:class "fa fa-plus" :aria-hidden "true"}] (str " " (t :social/Follow)) ])
+    (str " " (t :social/Follow)) ])
 
 (defn unfollow-button-badge [badge-content-id followed?]
-  [:button {:class    "btn btn-primary text-right"
+  [:button {:class    "btn btn-primary unfollow"
             :on-click #(ajax/POST
                         (path-for (str "/obpv1/social/delete_connection_badge/" badge-content-id))
                                   {:response-format :json
@@ -38,8 +41,9 @@
 (defn follow-badge [badge-content-id init-followed?]
   (let [followed? (atom init-followed?)
         user (session/get :user)]
+    
     (fn []
-      (if user
+      (if (and user social-plugin?)
         (if @followed?
           (unfollow-button-badge badge-content-id followed?)
           (follow-button-badge badge-content-id followed?))))))

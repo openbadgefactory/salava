@@ -9,16 +9,13 @@
             [salava.admin.ui.reporttool :refer [reporttool]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
+            [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
             ))
 
 (defn badge-content [{:keys [badge public_users private_user_count]} messages?]
   (let [{:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description html_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge
         show-messages (atom messages?)
-        all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")
-        new-messages (if (pos? (:new-messages message_count))
-                       (str (:new-messages message_count) " " (t :social/Newmessages ))
-                       "")
-        all-messages (str all-messages new-messages)]
+        ]
     (fn []
       [:div {:id "badge-contents"}
        (if (or verified_by_obf issued_by_obf)
@@ -33,15 +30,8 @@
                     (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                     (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
          [:div
-          [:a {:href     "#"
-               :on-click #(do
-                            (reset! show-messages (if (= true @show-messages) nil true))
-                            (.preventDefault %))}
-           (if @show-messages
-             (t :social/Showinfo)
-             all-messages
-             
-             )]]]
+          [gallery-modal-message-info-link show-messages badge_content_id]
+          ]]
         [:div {:class "col-md-9 badge-info"}
          
          (if @show-messages
@@ -104,6 +94,8 @@
     (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
     ]])
 
-(defn badge-content-modal [modal-data reporttool-atom messages?]
+(defn badge-content-modal [modal-data reporttool-atom messages? init-data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data reporttool-atom messages?))
-                 :component-will-unmount (fn [] (close-modal!))}))
+                 :component-will-unmount (fn [] (do (close-modal!)
+                                                    (if (and init-data state)
+                                                      (init-data state))))}))

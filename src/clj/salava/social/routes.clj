@@ -53,6 +53,17 @@
                    :current-user current-user
                    (do
                      (ok (so/get-badge-messages-limit ctx badge_content_id page_count (:id current-user))
+                         )))
+
+             (GET "/messages_count/:badge_content_id" []
+                  :return {:new-messages s/Int
+                           :all-messages s/Int}
+                   :summary "Returns count of not viewed messages and all messages"
+                   :path-params [badge_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (do
+                     (ok (so/get-badge-message-count ctx badge_content_id (:id current-user))
                       )))
 
              (POST "/messages/:badge_content_id" []

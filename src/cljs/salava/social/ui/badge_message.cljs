@@ -86,13 +86,18 @@
 
 (defn message-list-item [{:keys [message first_name last_name ctime id profile_picture user_id]} state]
   [:div {:class "media message-item" :key id}
+  (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
+       [delete-message-button id state])
    [:span {:class "pull-left"}
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
-    [:h4 {:class "media-heading"} (str first_name " "last_name " " (date-from-unix-time (* 1000 ctime) "minutes")) 
-     (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
-       [delete-message-button id state])]
-    [:span message]]
+    [:h4 {:class "media-heading"}
+      [:a {:href (path-for (str "/user/profile/" user_id)) :target "_blank"} (str first_name " "last_name)]
+      [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]
+     ]
+    (into [:div] (for [ item (clojure.string/split-lines message)]
+                   [:p.msg item]))
+    ]
    ]
   )
 
@@ -101,13 +106,13 @@
     [:div {:class "media message-item"}
      [:div {:class "media-body"}
       [:span [:a {:href     "#" 
-                  :class    "" 
+                  :id    "loadmore"
                   :on-click #(do
                                (init-data state)
                                (.preventDefault %))}
-              (str "-- "(t :social/Loadmore) ": " (:messages_left @state) " " (t :social/Messagesleft) " --")]]]
+              (str (t :social/Loadmore) " (" (:messages_left @state) " " (t :social/Messagesleft) ")")]]]
      ]
-[:div]))
+))
 
 
 (defn scroll-bottom []

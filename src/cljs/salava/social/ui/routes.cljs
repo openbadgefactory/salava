@@ -11,6 +11,6 @@
                                         ["/connections" c/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/social")                 {:weight 10 :title (t :social/Social) :top-navi true :breadcrumb (t :social/Social " / " :social/Connections)}
+  {(str (base-path context) "/social")                 {:weight 35 :title (t :social/Social) :top-navi true :breadcrumb (t :social/Social " / " :social/Stream)}
    (str (base-path context) "/social/stream")         {:weight 11 :title (t :social/Stream) :site-navi true :breadcrumb (t :social/Social " / " :social/Stream)}
    (str (base-path context) "/social/connections")         {:weight 12 :title (t :social/Connections) :site-navi true :breadcrumb (t :social/Social " / " :social/Connections)}})
