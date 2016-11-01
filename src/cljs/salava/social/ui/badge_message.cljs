@@ -84,6 +84,26 @@
                     }
            (t :badge/Delete)]])])))
 
+(defn hyperlink [text]
+  (let [url (if (or (re-find #"^https?://" (str text)) (re-find #"^http?://" (str text))) text (str "http://" text))]
+    [:a {:href url
+         :target "_blank"} (str text)]))
+
+(defn blank-reduce [a-seq]
+  (let [str-space (fn [str1 str2]
+                    (do
+                      (let [current (conj str1 " ")]
+                        (conj current str2))))]
+      (reduce str-space ()  a-seq)))
+
+(defn search-and-replace-www [item]
+  (let [split-words (clojure.string/split item #" ")
+        helper (fn [current item]
+                 (if (or (re-find #"www." item) (re-find #"^https?://" item) (re-find #"^http?://" item))
+                     (conj current (hyperlink item))
+                     (conj current (str item))))]
+    (blank-reduce (reduce helper () split-words))))
+
 (defn message-list-item [{:keys [message first_name last_name ctime id profile_picture user_id]} state]
   [:div {:class "media message-item" :key id}
   (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
@@ -96,10 +116,7 @@
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]
      ]
     (into [:div] (for [ item (clojure.string/split-lines message)]
-                   [:p.msg item]))
-    ]
-   ]
-  )
+                   (into [:p.msg] (search-and-replace-www item))))]])
 
 (defn message-list-load-more [state]
   (if (pos? (:messages_left @state))
@@ -110,9 +127,7 @@
                   :on-click #(do
                                (init-data state)
                                (.preventDefault %))}
-              (str (t :social/Loadmore) " (" (:messages_left @state) " " (t :social/Messagesleft) ")")]]]
-     ]
-))
+              (str (t :social/Loadmore) " (" (:messages_left @state) " " (t :social/Messagesleft) ")")]]]]))
 
 
 (defn scroll-bottom []
