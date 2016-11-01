@@ -4,7 +4,7 @@ button {
     display: inline-block;
     margin: 0 2px 2px 2px;
 }
-
+/* PENDING BADGES */
 #pending-badges {
     margin-bottom: 10px;
 }
@@ -94,14 +94,8 @@ button {
 .delete-buttons {
     margin-top: 20px;
 }
-
+/* BADGE SETTINGS */
 #badge-settings {
-    .badge-content {
-        label {
-            margin-right: 5px;
-            color: #83a04b;
-        }
-    }
     .settings-content {
         label {
             margin-left: 5px;
@@ -109,19 +103,91 @@ button {
             margin-right: 20px;
         }
     }
-    .sub-heading {
-        font-weight: bold;
-        color: #7f7179;
-        font-size: 15px;
+}
+#badge-settings  {
+    h1.uppercase-header {
+        font-size: 16px;
+        font-weight: 400;
+        color: $grid-link;
+        text-transform: none;
+        font-family: 'Open Sans';
     }
-    .rating-help {
-        font-size: 13px;
+    .settings-content .sub-heading, label.sub-heading, legend.sub-heading {
+        font-weight: bold;
+        color: $text-color;
+        font-size: 15px;
+        padding-top:10px;
+        padding-bottom: 5px;
+        margin-left:0px;
+        width: 100%;
+    }
+    .delete-button {
+        cursor: pointer;
+        color: $dark-red;
+        i {
+            margin-right: 5px;
+            font-size: 18px;
+        }
+    }
+    .settings-content .modal-footer{
+        margin-left:0px;
+        padding-left: 0px;
+        padding-top:15px;
+        > button.btn-primary {
+            margin-right: 20px;
+        }
+    }
+    #assertion-info {
+        margin:5px;
+    }
+    .delete-confirm {
+        padding-top:20px;
+        .alert-warning {
+            display: inline-block;
+        }
+    }
+    .form-group {
+        margin-bottom: 5px;
+    }
+    .form-group.visibility {
+        margin-bottom: 0px;
+        input {
+            opacity: 0;
+            position: absolute;
+            width: 35px;
+        }
+        div.col-md-12 {
+            i {
+                font-size: 18px;
+                color:$icon-color;
+                width: 35px;
+                text-align: center;
+            }
+            label, i, input {
+                cursor: pointer
+            }
+
+            &.public .fa-globe, &.internal .fa-group, &.private .fa-lock{
+                color:$link-color;
+            }
+        }
+    }
+    label {
+        margin-bottom: 0px;
+    }
+    .revoked, .expired {
+        color:$dark-red;
+        font-size: 18px;
+        line-height: 100px;
+        font-weight: 600;
     }
 }
-
+/* BADGE STATS */
 #badge-stats {
     h3 {
         font-weight: 300;
+        padding-bottom: 10px;
+        font: 400 20px "Open Sans",sans-serif;
     }
     .panel {
         border:none;
@@ -133,11 +199,23 @@ button {
             border-bottom: 1px solid #dddddd;
             h3 {
                 line-height: 30px;
-                font: 300 28px "Open Sans Condensed",sans-serif;
+                font: 300 24px "Open Sans Condensed",sans-serif;
                 text-transform: uppercase;
                 text-decoration: none;
-                color: #7f7179;
+                color: $text-color;
                 margin: 0px;
+                padding:0px;
+            }
+            a {
+                color: $text-color;
+                font-weight: 300;
+                &:hover {
+                    text-decoration: none;
+                    color:$menu-active;
+                }
+                &:active, &:focus{
+                    text-decoration: none;
+                }
             }
         }
         .panel-body {
@@ -150,6 +228,9 @@ button {
                     vertical-align: middle;
                 }
                 td.name {
+                    text-align: left;
+                }
+                th:nth-child(2) {
                     text-align: left;
                 }
             }
@@ -165,7 +246,7 @@ button {
         }
     }
 }
-
+/* BADGE INFO */
 #badge-info {
     a {
         color: $link-color;
@@ -175,7 +256,7 @@ button {
         padding: 15px 0 0 0;
     }
     .expired, .revoked {
-        color: #8c2e0b;
+        color: $dark-red;
         font-weight: bold;
         font-size: 20px;
     }
@@ -184,7 +265,7 @@ button {
     }
     .badge-info {
         label {
-            color: #83a04b;
+            color: $green;
             margin-bottom: 5px;
         }
     }
@@ -194,7 +275,7 @@ button {
         margin: 20px 0 5px 0;
     }
     .congratulated-header > i {
-        color: #ea7d45;
+        color: $grid-link-hover;
     }
     .panel {
         background-color: transparent;
@@ -206,6 +287,112 @@ button {
     }
     #badge-share-inputs .col-sm-3.text-right {
         float:right;
+    }
+
+    #reportform {
+        border: 1px solid #f0f0f0;
+    }
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: 3px solid $green;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
+    }
+}
+#badge-info, #badge-content {
+    .badge-info label{
+        color: $text-color;
+        min-width: 100px;
+    }
+    .checkbox {
+        margin-right: 15px;
+        margin-bottom:0px;
+        i {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        &.public i:before {
+            content:'\f0ac';
+        }
+        &.internal i:before {
+            content:'\f0c0';
+        }
+        &.private i:before {
+            content:'\f023';
+        }
+    }
+    .publishshare {
+        opacity: 0;
+        position: absolute;
+    }
+    .fa-share-alt {
+        font-size: 20px;
+        margin-right: 5px;
+        color: $orange-color;
+        &:hover {
+            color:$orange-hover;
+        }
+    }
+    #badge-share-inputs {
+        padding-bottom: 20px;
+        .linkinput, .form-horizontal{
+            margin-left: -150px;
+            margin-right: -220px;
+        }
+        @media (max-width:550px){
+            .pull-right.text-right {
+                float:none !important;
+            }
+            .linkinput, .form-horizontal{
+                margin:0px;
+            }
+        }
+    }
+    .expiresin {
+        i {
+            font-size: 18px;
+            color: $icon-color;
+            margin-right: 5px;
+        }
+    }
+    .rating {
+       padding-top:10px;
+    }
+    .share-wrapper {
+        margin-right: 340px;
+        margin-left:150px;
+        @media (max-width:550px){
+            margin:0px;
+            width: 100%;
+        }
+    }
+    .issuer-data .issuer-links{
+        margin-left: 0px;
+    }
+}
+#share #share-buttons {
+    i {
+        cursor: pointer;
+        font-size: 22px;
+        margin-right: 6px;
+        &.fa-twitter-square{
+            color: #1b95e0;
+        }
+        &.fa-linkedin-square {
+            color: #0077b5;
+        }
+        &.fa-facebook-square {
+            color: #3b5998;
+        }
+        &.fa-pinterest-square {
+            color: #bd081c;
+        }
+        &.fa-google-plus-square {
+            color:#db4437;
+        }
     }
 }
 
@@ -225,11 +412,7 @@ button {
     }
 }
 
-#export-badges {
-    a.badge-download {
-        color: #766d72;
-    }
-}
+
 
 .issued-on {
     label {
@@ -250,9 +433,9 @@ button {
                 width: 50px;
                 height: 50px;
                 padding: 3px;
-                border: 1px solid #dddddd;
                 border-radius: 4px;
-                margin-left: 20px;
+                margin-right: 10px;
+                margin-left: 0px;
                 margin-bottom: 10px;
 
             }
@@ -265,3 +448,231 @@ button {
           margin-bottom: 20px;
 }
 
+/* BADGE GRID */
+#badge-gallery, #my-badges, #export-badges, .import-badges, #user-badges {
+    #grid .grid-container {
+        background-color: #ffffff;
+        border: 1px solid #d2d2d2;
+        box-shadow: 0px 4px 0px #dcdcdc;
+        -webkit-box-shadow: 0px 4px 0px #dcdcdc;
+        margin-bottom: 20px;
+        margin-top:0px;
+        line-height: 1.4;
+        padding:10px;
+        height: 270px;
+        max-width: 200px;
+        min-width: 200px;
+        float: left;
+        margin-right: 20px;
+    .media-content {
+        text-align: center;
+        height: auto;
+        .icons {
+            text-align: left;
+        }
+        .visibility-icon {
+            font-size: 20px;
+            width:30px;
+            text-align: left;
+            line-height: 1em;
+            color: $icon-color;
+            i {
+                cursor: pointer;
+            }
+        }
+        .media-body{
+            .media-description, .badge-description, .media-expires  {
+                display: none;
+            }
+            .media-recipients {
+                padding-top:5px;
+                color: $title-color;
+                font-size: 12px;
+                font-weight: bold;
+                margin-top: 3px;
+                line-height: 12px;
+            }
+            .media-heading{
+                margin:15px 0px 5px 0px;
+                color: $badge-title;
+                font-size: 16px;
+                line-height: 1.2em;
+                height: 2.3em;
+                a {
+                    cursor: pointer;
+                    font-size: 16px;
+                    color: $badge-title;
+                    &:hover {
+                    color:$badge-title-hover;
+                    }
+                }
+            }
+            .media-issuer {
+                padding-top:3px;
+                line-height: 1.2em;
+                height: 2.8em;
+                overflow-y: hidden;
+                font-size: 12px;
+                    a {
+                        color:$text-color;
+                        font-size: 13px;
+                    }
+            }
+        }
+        .media-left {
+            float:none;
+            display: block;
+            padding:0px;
+            min-height: 130px;
+            min-width: 130px;
+            img {
+                height:130px;
+                width: 130px;
+                margin-top:0px;
+            }
+        }
+    }
+    .media-bottom{
+        border-top:none;
+        a.bottom-link, a.badge-download {
+            color:$title-color;
+            font-size: 20px;
+            i.fa {
+                color:$title-color;
+                padding-right: 0px;
+            }
+            &:hover {
+                color:$menu-active;
+                i.fa {
+                    color:$menu-active;
+                }
+            }
+        }
+        .checkbox {
+            color: $grid-link;
+            font-size: 14px;
+            margin: 0;
+            input{
+                margin:0px;
+                position: relative;
+                margin-bottom:5px;
+            }
+            label {
+                padding-left:0px;
+                span {
+                    padding-left:8px;
+                    display: inline-block;
+                    vertical-align: bottom;
+                    line-height: 25px;
+                }
+            }
+        }
+        .badge-download:hover {
+            color: $menu-active;
+        }
+    }
+    #add-element-link {
+        color: $orange-color;
+        font-weight: bold;
+    }
+    .media-content.media-expired,  .media-content.media-revoked, &.error .media-content, &.duplicate .media-content {
+        opacity: 1;
+        .media-left {
+            opacity: 0.3;
+        }
+        .media-body {
+            .media-expires{
+               color: #757575;
+            }
+            .media-description, .media-heading a, .media-heading, .badge-description, .media-issuer a {
+                color:#757575;
+                font-weight: normal;
+            }
+        }
+        .visibility-icon, .lefticon {
+            color:$dark-red;
+            font-size: 14px;
+            text-transform: uppercase;
+            i {
+                font-size: 20px;
+                margin-right: 8px;
+                vertical-align:middle;
+                display: inline-block;
+                color:$dark-red;
+            }
+        }
+        .icons {
+            text-align: left;
+            .visibility-icon {
+                text-align:right;
+                float:right;
+                i {
+                    margin-right:0px;
+                }
+            }
+        }
+        .lefticon {
+            display: inline-block;
+        }
+        &~.media-bottom{
+            line-height: 1em;
+            padding-top:8px;
+            div:before{
+                font-size: 20px;
+                padding-right: 7px;
+                display: block;
+                float: left;
+                padding-top: 3px;
+                line-height: 18px;
+            }
+            a.bottom-link {
+                color:#757575;
+                &:hover {
+                    color:$text-color;
+                }
+                i.fa {
+                    color:$dark-red;
+                }
+            }
+            .expired {
+                i.fa {
+                    color:$dark-red;
+                }
+            }
+        }
+    }
+    &.expired .media-content{
+        &~.media-bottom{
+            line-height: 30px;
+        }
+    }
+    }
+}
+/* MY BADGES */
+#my-badges #grid .grid-container .media-content .visibility-icon i {
+    color: $text-color;
+    &:hover {
+        color:$menu-active;
+    }
+}
+/* IMPORT BADGES */
+.import-badges #grid.row .grid-container{
+    height:280px;
+    .media-bottom {
+        border-top: 2px dashed #bfbfbf;
+        margin-top: 5px;
+        padding-top:5px;
+    }
+    &.error, &.duplicate{
+        .media-bottom {
+            color: $dark-red;
+            font-size: 12px;
+            line-height: 1em;
+            text-transform: uppercase;
+        }
+    }
+}
+/* EXPORT BADGES */
+#export-badges #grid .grid-container {
+    height: 285px;
+}

@@ -263,7 +263,7 @@
         [:div {:class "col-xs-4 field-remove"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button"}
-          [:i {:class "fa fa-close"}]]]]
+          [:i {:class "fa fa-trash"}]]]]
        (case type
          ("heading" "sub-heading") [edit-block-text block-atom]
          ("badge") [edit-block-badges block-atom badges]

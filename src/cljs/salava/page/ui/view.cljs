@@ -67,23 +67,24 @@
        [:div {:id "page-buttons-share"}
         [:div {:id "buttons"
                :class "text-right"}
-         [:a {:class "btn btn-primary"
+         [:a {:class "btn btn-primary edit-btn"
               :href  (path-for (str "/page/edit/" (:id page)))}
           (t :page/Edit)]
-         [:button {:class "btn btn-primary"
+         [:button {:class "btn btn-primary print-btn"
                    :on-click #(.print js/window)}
           (t :core/Print)]]
-        [:div.checkbox
+        [:div {:class (str "checkbox " @visibility-atom)}
          [:label
           [:input {:name      "visibility"
                    :type      "checkbox"
                    :on-change #(toggle-visibility (:id page) visibility-atom)
                    :checked     (= @visibility-atom "public")}]
-          (t :core/Publishandshare)]]
-        [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]
-       (admintool (:id page) "page")
-       
-       )
+          [:i.fa]
+          (if (= @visibility-atom "public")
+            (t :page/Public)
+            (t :core/Publishandshare))]]
+        [:div {:class (str "share-wrapper " @visibility-atom)} [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
+       (admintool (:id page) "page"))
      [ph/view-page page]
      (if (:owner? page) "" (reporttool (:id page)  (:name page) "page" reporttool-atom))
      ]))

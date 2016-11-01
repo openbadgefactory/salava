@@ -1,3 +1,5 @@
+@import 'variables';
+/* TICKETS */
 #ticket-container{
     background-color: #ffffff;
     border: 1px solid #d2d2d2;
@@ -7,6 +9,48 @@
     margin-bottom: 20px;
     margin-top: 0;
     line-height: 1.4;
+}
+#ticket-container {
+    border-left:3px solid;
+    &.inappropriate {
+        border-left-color: purple;
+    }
+    &.bug {
+        border-left-color: red;
+    }
+    &.fakebadge {
+        border-left-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: DarkCyan;
+    }
+
+    h4.media-heading a{
+        font-weight: 400;
+        line-height: 30px;
+        font-size: 16px;
+    }
+    h3.media-heading {
+            font-size: 18px;
+        u {
+            text-decoration: none;
+        }
+    }
+    &.inappropriate u{
+        color: purple;
+    }
+    &.bug u{
+        color: red;
+    }
+    &.fakebadge u{
+        color: orange;
+    }
+    &.mistranslation u{
+        color: DarkCyan;
+    }
+    .btn.btn-primary{
+        margin-top:15px;
+    }
 }
 
 .admintool-caret-up{
@@ -20,45 +64,20 @@
 
 .sub-heading {
     font-weight: bold;
-    color: #7f7179;
+    color: $text-color;
     font-size: 15px;
 }
-
-#reportform{
-    background-color: white;
-}
-#open-reportform-button {
-    padding-bottom: 20px ;
-    
-}
-
 .primary-address{
     font-weight: 600;
 }
 .title-bar {
     padding-left: 5px;
-    border-left: 3px solid transparent;
-}
-
-.title-bar-bug {
-    border-color: #5cb85c;
-}
-.title-bar-inappropriate {
-    border-color: yellow;
-}
-.title-bar-mistranslation {
-    border-color: green;
-}
-.title-bar-other {
-    border-color: gray;
-}
-.title-bar-fakebadge {
-    border-color: blue;
+    //border-left: 3px solid transparent;
 }
 .media-bottom-admin{
             margin-top: 5px;
             padding-top: 10px;
-            color: #766d72;
+            color: $text-color;
             font-size: 12px;
             min-height: 35px;
             text-transform: uppercase;
@@ -69,10 +88,10 @@
                 padding-top:3px;
             }
             a.bottom-link {
-                color: #766d72;
+                color: $text-color;
                 cursor: pointer;
                 i.fa {
-                    color: #b1a1ab;
+                    color: $icon-color;
                     padding-right:10px;
                 }
                 span {
@@ -86,7 +105,7 @@
             }
             .expired {
                 text-transform: uppercase;
-                color: #8c2e0b;
+                color: $dark-red;
                 span {
                     vertical-align: top;
                     line-height: 25px;
@@ -100,3 +119,194 @@
             }
 }
 
+/* Admin stats */
+.admin-stats{
+    h3 {
+        font-weight: 300;
+    }
+    label {
+        width:40%;
+    }
+    span {
+        font-size: 16px;
+    }
+}
+/* REPORT FORM */
+#reportform{
+    background-color: white;
+}
+#profile, #badge-gallery, #page-gallery, #badge-info, #page-view, #badge-content {
+    .row.report-form {
+        a#open-reportform-button {
+            padding-top:15px;
+            @media (max-width:1530px){
+                padding-right: 15px;
+            }
+            cursor: pointer;
+        }
+        h4 {
+            font-weight: 300;
+            font-size: 24px;
+            line-height: 40px;
+            color: $title-color;
+        }
+        .form-group > label {
+            margin-right: 20px;
+        }
+        .radio {
+            display: inline-block;
+            margin:0px 10px;
+        }
+        @media (max-width:1530px){
+            padding: 0px 2px;
+        }
+    }
+    a#open-reportform-button{
+        float:right;
+        display: block;
+        padding-bottom:3px;
+        cursor: pointer;
+        padding-bottom: 20px ;
+    }
+}
+#profile {
+    .row.report-form {
+        background-color:$background-color;
+        border-top: 1px solid #f0f0f0;
+        margin-right:-16px;
+        margin-left:-16px;
+        a#open-reportform-button {
+            float:none;
+            margin-left:-5px;
+            margin-right: -5px;
+            text-align: right;
+            background-color:$background-color;
+        }
+    }
+    div#reportform {
+        border-top: 1px solid #f0f0f0;
+           > div:not(.form-group) {
+                border-left: 3px solid $green;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: $background-color;
+                margin-top:25px;
+            }
+    }
+}
+
+#badge-gallery{
+    .modal-footer {
+        margin-left: 0px;
+       > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: 3px solid $green;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                //background-color: $background-color;
+            }
+        }
+    }
+    .row.report-form {
+        margin-right: 15px;
+        margin-left:15px;
+        margin-bottom:20px;
+        #reportform {
+            border: 1px solid #f0f0f0;
+            background-color: $background-color;
+        }
+    }
+}
+#page-gallery .modal-dialog .modal-footer {
+    background-color: transparent;
+    #reportform {
+        background-color: #FFFFFF;
+        border: 1px solid #f0f0f0;
+        input[type=radio]{
+            margin-top: 3px;
+        }
+    }
+    > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: 3px solid $green;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
+    }
+}
+#page-view {
+    .row.report-form {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+    #reportform {
+        border: 1px solid #f0f0f0;
+    }
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: 3px solid $green;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
+    }
+}
+#badge-info {
+    #reportform {
+        border: 1px solid #f0f0f0;
+    }
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: 3px solid $green;
+                font-size: 15px;
+                padding:10px 20px;
+                font-weight: 600;
+                background-color: #FFFFFF;
+            }
+    }
+}
+/* ADMIN MODALS */
+.admin-modal, #badge-info .admin-modal {
+    .sub-heading{
+    a{
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 30px;
+        &:hover, &:focus, &:active {
+            text-decoration: none;
+        }
+        &:before {
+            font-family: "FontAwesome";
+            content: '\f105';
+            margin-right: 12px;
+        }
+        &.opened:before{
+            content: '\f107';
+            margin-right: 5px;
+        }
+        }
+        margin:5px 0px;
+    }
+    label {
+        min-width: 120px;
+    }
+    .issuer-image img {
+        margin-left:5px;
+    }
+    .actions .col-md-12:not(.sub-heading) {
+        line-height: 30px;
+        font-size: 12px;
+        padding-left: 35px;
+        button {
+            margin-bottom: 25px;
+        }
+        .privateitem {
+            padding-bottom: 10px;
+        }
+    }
+}
