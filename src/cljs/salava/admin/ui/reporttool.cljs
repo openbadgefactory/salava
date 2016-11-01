@@ -35,7 +35,7 @@
                        )})))
 
 (defn open-reportform-button [closed? status]
-  [:a {:class "pull-right"
+  [:a {:class "reportform-button"
        :id "open-reportform-button"
        :on-click #(do
                     (.preventDefault %)
@@ -44,7 +44,7 @@
 (defn reportform [state status]
   (let [description-atom (cursor state [:description]) 
         report-type-atom (cursor state [:report-type])]
-    [:div  
+    [:div  {:class "row report-form"}
      (open-reportform-button false status)
      [:div {:class "col-xs-12" :id "reportform"}
       [:h4 (t :admin/Reportproblem)]

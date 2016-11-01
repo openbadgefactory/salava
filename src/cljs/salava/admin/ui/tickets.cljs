@@ -87,7 +87,8 @@
                 :data-dismiss "modal"
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    [:h4 {:class "modal-title"} (t :admin/Sendmessagetoreporter)]]
    [:div.modal-body
     (ticket-modal-container state)
       ]])
@@ -125,7 +126,7 @@
 
 (defn ticket [ticket-data state]
   (let [{:keys [item_type item_id item_name first_name last_name item_url reporter_id description ctime report_type id]} ticket-data]
-    [:div {:class "media" :id "ticket-container"}
+    [:div {:class (str "media " report_type) :id "ticket-container"}
      [:div.media-body
       [:div {:class (str "title-bar title-bar-" report_type ) }
        [:div {:class "pull-right"} (date-from-unix-time (* 1000 ctime) "minutes")]
@@ -205,12 +206,12 @@
      [:div {:id    "grid-filter"
             :class "form-horizontal"}
       
-      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]
+      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]]
       [:div
        (into [:div {:class "row"}]
              (for [data tickets]
                (if (ticket-visible? data state)
-                 (ticket data state))))]]
+                 (ticket data state))))]
      [m/modal-window]]))
 
 (defn handler [site-navi]

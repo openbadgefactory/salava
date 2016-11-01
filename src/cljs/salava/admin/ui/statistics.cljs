@@ -13,17 +13,20 @@
 
 (defn content [state]
   (let [{:keys [register-users last-month-active-users last-month-registered-users all-badges last-month-added-badges pages]} @state]
-    [:div
-     [:h1 (t :admin/Statistics)]
+    [:div {:class "admin-stats"}
+     [:h1 {:class "uppercase-header"} (t :admin/Statistics)]
      [:div.row
       [:div {:class "col-md-12"}
-       [:div [:label (t :admin/Registeredusers)] ": " register-users]
-       [:div [:label (t :admin/Totalbadges)] ": " all-badges]
-       [:div [:label (t :admin/Numberofmonthlyaddedbadges) ] ": " last-month-added-badges]
-       [:div [:label (t :admin/Totalpages)] ": " pages]
-       [:div [:label (t :admin/Numberofmonthlyactiveuser)] ": " last-month-active-users]
-       [:div [:label (t :admin/Numberofmonthlyregisteredusers)] ": " last-month-registered-users]]]]))
-
+      [:h3 (t :admin/Users)]
+       [:div [:label (t :admin/Registeredusers)]  register-users]
+       [:div [:label (t :admin/Numberofmonthlyactiveuser)] last-month-active-users]
+       [:div [:label (t :admin/Numberofmonthlyregisteredusers)]  last-month-registered-users]
+      [:h3 (t :badge/Badges)]
+       [:div [:label (t :admin/Totalbadges)]  all-badges]
+       [:div [:label (t :admin/Numberofmonthlyaddedbadges) ]  last-month-added-badges]
+      [:h3 (t :page/Pages)]
+       [:div [:label (t :admin/Totalpages)]  pages]
+       ]]]))
 (defn init-data [state]
   (ajax/GET 
    (path-for "/obpv1/admin/stats")

@@ -18,8 +18,7 @@
 (defn delete-item [state visible_area item_owner]
   (let [{:keys [item_id mail item_owner_id gallery-state init-data name item_type]} @state
         mail (cursor state [:mail])
-        item_ownertext (if (or (= "page" item_type) (= "badge" item_type) (= 1 (count item_owner_id))) (str (t :admin/Earner) " " item_owner) item_owner)
-        ]
+        item_ownertext (if (or (= "page" item_type) (= "badge" item_type) (= 1 (count item_owner_id))) (str (t :admin/Earner) " " item_owner) item_owner)]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-item" @visible_area) "" "delete-item"))) :class (if (= "delete-item" @visible_area) "opened" "")} (t :core/Delete) ]]
@@ -55,7 +54,8 @@
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a
-       {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))}
+       {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))
+       :class (if (= "send-message" @visible_area) "opened" "")}
        (if (or (= item_type "badge") (= item_type "page"))
          (t :admin/Sendmessagetoowner)
          (t :admin/Sendmessage))]]
@@ -151,14 +151,14 @@
 
 (defn private-item [state visible_area item_owner]
   (let [{:keys [item_type item_id item_owner_id  gallery-state init-data name]} @state
-        item_ownertext (if (or (= "page" item_type) (= "badge" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earner) " " item_owner) item_owner)
-        ]
+        item_ownertext (if (or (= "page" item_type) (= "badge" item_type)  (= 1 (count item_owner_id))) (str (t :admin/Earner) " " item_owner) item_owner)]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "private-item" @visible_area) "" "private-item"))) :class (if (= "private-item" @visible_area) "opened" "")} (t :admin/Privatethis)]]
      (if (= @visible_area "private-item")
        [:div.col-md-12
         (str (t :admin/Privatethis) " "  item_ownertext " " (t (keyword (str "admin/" item_type))) " "  name  "?" )
+
         [:div.row.col-xs-12
          [:button {:type         "button"
                    :class        "btn btn-primary"
@@ -235,7 +235,8 @@
         email-atom (cursor state [:selected-email])]
     [:div {:class "row"}
      [:div {:class "col-xs-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-verified-email" @visible_area) "" "delete-no-verified-email")))} (t :admin/Deletenoverifiedemail)]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-verified-email" @visible_area) "" "delete-no-verified-email")))
+          :class (if (= "delete-no-verified-email" @visible_area) "opened" "")} (t :admin/Deletenoverifiedemail)]]
      (if (= @visible_area "delete-no-verified-email")
        [:div.col-xs-12.row
         [:div {:class "form-group col-sm-8 col-xs-12"}
@@ -299,7 +300,8 @@
         email (:email (first (:emails info)))]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-activation-message" @visible_area) "" "send-activation-message")))}  (t :admin/Sendactivationlink) ]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-activation-message" @visible_area) "" "send-activation-message")))
+      :class (if (= "send-activation-message" @visible_area) "opened" "")}  (t :admin/Sendactivationlink) ]]
      (if (= @visible_area "send-activation-message")
        [:div.col-md-12
         (str (t :admin/Sendactivationlink) " " email)
@@ -321,7 +323,8 @@
   (let [{:keys [mail item_owner_id gallery-state init-data info]} @state]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-activated-user" @visible_area) "" "delete-no-activated-user")))}  (t :admin/Deletenoactivateduser) ]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-activated-user" @visible_area) "" "delete-no-activated-user")))
+      :class (if (= "delete-no-activated-user" @visible_area) "opened" "")}  (t :admin/Deletenoactivateduser) ]]
      (if (= @visible_area "delete-no-activated-user")
        [:div.col-md-12
         (str (t :admin/Deletenoactivateduser) " " item_owner "?")
@@ -347,8 +350,6 @@
     (and (vector? item_owner) (< 1 (count item_owner))) (str (count item_owner) " " (t :admin/Earners))
     (and (= 1 (count item_owner)) (vector? item_owner)) (first item_owner)
     :else item_owner) )
-
-
 
 (defn admin-modal-container [state]
   (let [{:keys [item_type item_id item_owner_id image_file name info item_owner gallery-state init-data]} @state

@@ -223,11 +223,13 @@
      (t "4." :page/Preview)]]
    [:div {:class "col-xs-4"
           :id "buttons-right"}
-    [:a {:class "btn btn-primary"
+    [:a {:class "delete-link"
+         :title (t :page/Delete)
+         :on-click #(m/modal! (delete-page-modal id))}
+      [:i {:class "fa fa-trash"}]
+     (t :page/Delete)]
+    [:a {:class "btn btn-primary view-btn"
          :on-click #(do (.preventDefault %) (save-function (str "/page/view/" id)))
          :href "#"}
-     (t :page/View)]
-    [:a {:class "btn btn-warning"
-         :on-click #(m/modal! (delete-page-modal id))}
-     (t :page/Delete)]]
+     (t :page/View)]]
    [m/modal-window]])
