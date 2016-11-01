@@ -96,8 +96,8 @@
                         (conj current str2))))]
       (reduce str-space ()  a-seq)))
 
-(defn search-and-replace-www [item]
-  (let [split-words (clojure.string/split item #" ")
+(defn search-and-replace-www [text]
+  (let [split-words (clojure.string/split text #" ")
         helper (fn [current item]
                  (if (or (re-find #"www." item) (re-find #"^https?://" item) (re-find #"^http?://" item))
                      (conj current (hyperlink item))
@@ -116,7 +116,9 @@
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]
      ]
     (into [:div] (for [ item (clojure.string/split-lines message)]
-                   (into [:p.msg] (search-and-replace-www item))))]])
+                   (into [:p.msg] (if (or (re-find #"www." item) (re-find #"^https?://" item) (re-find #"^http?://" item)) 
+                                    (search-and-replace-www item)
+                                    item))))]])
 
 (defn message-list-load-more [state]
   (if (pos? (:messages_left @state))
