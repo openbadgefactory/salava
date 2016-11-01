@@ -6,6 +6,7 @@
             [salava.core.ui.helper :refer [current-path navigate-to path-for base-path]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.footer :refer [base-footer]]
+            [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
@@ -57,7 +58,7 @@
 [:a {:class "logo pull-left"
      :title (session/get :site-name)
      :aria-label "to index" 
-     :href  (if (session/get :user) (path-for "/badge") "#")
+     :href  (if (session/get :user) (path-for (if (social-plugin?) "/social" "/badge")) "#")
      :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url))  "")}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
           :title "OBP logo"
@@ -106,7 +107,7 @@
    [:div {:class "container-fluid"}
     [:div {:class "navbar-header"}
      [:a {:class "logo pull-left"
-          :href  (if (session/get :user) (path-for "/badge") "#")
+          :href  (if (session/get :user) (path-for (if (social-plugin?) "/social" "/badge")) "#")
           :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url)) "") 
           :title (session/get :site-name)}
       [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
