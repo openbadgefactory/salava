@@ -22,7 +22,7 @@ $green: #89a338;
 $link-color: #4264a2;
 $link-hover: $link-color;
 $button-color: #587ab3;
-
+$box-shadow: #d8d8d8;
 
 @mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {
     -webkit-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);

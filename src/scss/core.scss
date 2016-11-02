@@ -16,7 +16,7 @@ body {
 }
 
 #no-sidebar {
-    background: url('/img/bg_subpage.png') no-repeat scroll #f9f9f9;
+    background: url('/img/bg_subpage.png') no-repeat scroll $background-color;
 }
 
 /* LINKS */
@@ -42,7 +42,7 @@ button {
 .btn {
     margin-right: 3px;
     background: none;
-    box-shadow: 0px 2px #969696;
+    box-shadow: 0px 2px $box-shadow;
     border-radius: 4px;
     border: 1px solid;
     font-size: 13px;
@@ -62,16 +62,16 @@ button {
     margin: 0 3px 6px 0;
     &.btn-active, &.btn:hover{
         color: #ffffff;
-        background-color: #463c44;
-        border-color: #443f43;
-        box-shadow: 0px 2px #030102;
+        background-color: darken($text-color,20% );//#463c44;
+        border-color: darken($text-color,25% );
+        box-shadow: 0px 2px $box-shadow;
     }
 }
 
 .btn-primary {
     background-color: $button-color;
     border-color: $link-color;
-    box-shadow: 0px 2px #d8d8d8;
+    box-shadow: 0px 2px $box-shadow;
     &:hover {
         background-color: $link-color;
         border-color: darken($link-color, 10%);
@@ -86,23 +86,23 @@ button {
 
 .btn-warning {
     background-color: $orange-color;
-    border-color: #d08a4f;
-    box-shadow: 0px 2px #d8d8d8;
+    border-color: darken($orange-color, 5%);
+    box-shadow: 0px 2px $box-shadow;
     &:hover {
         background-color: $orange-hover;
-        border-color: #d08a4f;
-        box-shadow: 0px 2px #d8d8d8;
+        border-color: darken($orange-color, 5%);
+        box-shadow: 0px 2px $box-shadow;
     }
 }
 
 .btn-success {
     background-color: $titlebar-color;
     border-color: $green;
-    box-shadow: 0px 2px #d8d8d8;
+    box-shadow: 0px 2px $box-shadow;
     &:hover {
         background-color: $green;
         border-color: $green;
-        box-shadow: 0px 2px #d8d8d8;
+        box-shadow: 0px 2px $box-shadow;
     }
     &:focus, &:active:hover {
         background-color: $titlebar-color;
@@ -117,13 +117,13 @@ button {
 
 a#login-button {
     margin-top: 5px;
-    height: 36px; 
+    height: 36px;
     width: 125px;
     background-color: $grid-link;
     text-transform: uppercase;
-    border: 1px solid darken($grid-link, 5%); 
-    box-shadow: 0px 1px 1px #c7b6a2;
-    -webkit-box-shadow: 0px 1px 1px #c7b6a2;
+    border: 1px solid darken($grid-link, 5%);
+    box-shadow: 0px 1px 1px $box-shadow;
+    -webkit-box-shadow: 0px 1px 1px $box-shadow;
     font-weight: bold;
     font-size: 12px;
     padding: 8px 0 0 0;
@@ -166,7 +166,7 @@ a#login-button {
     -moz-appearance: none;
     -o-appearance: none;
     &:focus {
-        border-color: #bdbdc0;
+        border-color: $box-shadow;
         -webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);
         box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);
     }
@@ -194,6 +194,42 @@ legend.sub-heading {
 }
 fieldset.checkbox {
     padding-left: 0px;
+}
+.tag-labels {
+    .label {
+        margin-right: 5px;
+        margin-bottom: 5px;
+        font-size: 12px;
+        padding:0px 0.4em;
+        line-height: 25px;
+        padding-bottom:1px;
+        vertical-align: middle;
+        background-color: #f5f5f5;
+        color: $text-color;
+        border: 1px solid $box-shadow;
+        display: inline-block;
+        a.remove-tag {
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: 5px;
+            line-height: 25px;
+            vertical-align: middle;
+        }
+    }
+}
+
+.form-bar {
+    padding-right: 5px;
+    border-right: 3px solid transparent;
+}
+
+.form-bar-success {
+    border-color: $green;
+}
+
+.form-bar-error {
+    border-color: #d9534f;
 }
 /* NAVI */
 header#navbar {
@@ -365,7 +401,7 @@ ul.side-dropdown-links {
         line-height: 30px;
         font: 300 28px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
-        color: #7f7179;
+        color: $text-color;
         font-size: 40px;
         padding-bottom: 15px;
         margin: 0px;
@@ -394,46 +430,7 @@ ul.side-dropdown-links {
     padding-right: 20px;
 }}
 
-.tag-labels {
-    .label {
-        margin-right: 5px;
-        margin-bottom: 5px;
-        font-size: 12px;
-        padding:0px 0.4em;
-        line-height: 25px;
-        padding-bottom:1px;
-        vertical-align: middle;
-        background-color: #f5f5f5;
-        color: #555555;
-        border: 1px solid #bbbbbb;
-        display: inline-block;
-        a.remove-tag {
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            margin-left: 5px;
-            color: #bbbbbb;
-            line-height: 25px;
-            vertical-align: middle;
-            &:hover {
-                color: #888888;
-            }
-        }
-    }
-}
 
-.form-bar {
-    padding-right: 5px;
-    border-right: 3px solid transparent;
-}
-
-.form-bar-success {
-    border-color: #5cb85c;
-}
-
-.form-bar-error {
-    border-color: #d9534f;
-}
 
 ol.welcome-text li {
     padding-top: 10px;
@@ -494,90 +491,7 @@ ol.welcome-text li {
     margin-bottom: 20px;
 }
 
-#page-edit {
-    margin-top: 25px;
-    .form-group {
-        margin-bottom: 0px;
-    }
-    .field {
-        position: relative;
-        background-color: #ffffff;
-        border: 1px solid #cccccc;
-        box-shadow: 0px 4px 0px #ececec;
-        margin-bottom: 15px;
-        .field-move {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 25px;
-            height: 100%;
-            .move-arrows {
-                position: relative;
-                height: 100%;
-                .move-up, .move-down {
-                    position: absolute;
-                    text-align: center;
-                    color: #f59f48;
-                    cursor: pointer;
-                }
-                .move-up {
-                    top: 0;
-                    padding: 0 5px 10px 5px;
-                }
-                .move-down {
-                    bottom: 0;
-                    padding: 10px 5px 0 5px;
-                }
-            }
-        }
-        .field-content {
-            border-left: 1px solid #cccccc;
-            margin-left: 25px;
-            padding: 20px 25px;
-            padding-bottom: 5px;
-            .field-remove {
-                text-align: right;
-                span.remove-button {
-                    display: inline-block;
-                    padding: 6px 8px;
-                    background-color: #ea8241;
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: #ffffff;
-                    cursor: pointer;
-                    line-height: 1;
-                    &:hover {
-                        background-color: #df6519;
-                    }
-                }
-            }
-            .form-group:last-of-type {
-                margin-bottom: 0;
-            }
-            .form-control {
-                margin-bottom: 10px;
-            }
-            .badge-image {
-                padding-right: 40px;
-                text-align: right;
-                img {
-                    width: 70px;
-                }
-            }
-        }
-    }
-}
 
-.add-field-after {
-    margin-bottom: 15px;
-    text-align: center;
-    .btn-success:before{
-        content:'\f067';
-        font-family: FontAwesome;
-        font-size: 15px;
-        padding-right: 10px;
-    }
-}
 .modal-content {
     border-radius: 0px;
     border: 1px solid #bdbdc0;
@@ -625,11 +539,11 @@ ol.welcome-text li {
     //max-width: 100%;
 }
 .alert-warning, .alert-danger{
-    color:#8c2e0b;
+    color:$dark-red;
     font-weight: bold;
     background: transparent;
     border:none;
-    border-left:3px solid #8c2e0b;
+    border-left:3px solid $dark-red;
     border-radius: 0px;
     box-shadow: none;
     font-size: 14px;
