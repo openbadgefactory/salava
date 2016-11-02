@@ -21,7 +21,7 @@
        (admintool badge-content-id "badges")
        [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
        
-       [badge-content content]]
+       [badge-content content false]]
       ;(reporttool badge-content-id name "badges")
       ]]))
 

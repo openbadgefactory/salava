@@ -1,36 +1,37 @@
 @import 'variables';
 
+/*BADGE GALLERY*/
 #badge-gallery {
-    #grid {
-        .grid-container {
-            height: 187px;
-            .media-content {
-                height: 132px;
-                .media-issuer {
-                    font-size: 12px;
-                    a {
-                        color: $green-link;
-                    }
-                }
-                .media-recipients {
-                    font-size: 12px;
-                    font-weight: bold;
-                    margin-top:3px;
-                    line-height: 12px;
-                }
-                .media-heading {
-                    margin-right: 5px;
-                    margin-bottom:3px;
-                }
-                .media-body .media-description {
-                    height: 3.6em;
-                }
-            }
-        }
+    #grid.row .grid-container .media-bottom {
+        float:right;
+        margin-top:-20px;
+        border-top: none;
+        padding-top: 5px;
     }
 }
-
-#page-gallery {
+#badge-gallery-view, #badge-content {
+    .panel {
+        background-color: transparent;
+        box-shadow: none;
+        a {
+            color: $link-color;
+        }
+    }
+    #badge-contents a {
+         color: $link-color;
+    }
+    font-size: 13px;
+    .description {
+        font-weight: bold;
+        margin: 20px 0 5px 0;
+    }
+    h2.uppercase-header {
+        padding: 15px 0 0 0;
+        font-size: 30px;
+    }
+}
+/*PAGE GALLERY*/
+#page-gallery, #user-pages #grid .grid-container {
     .page-owner {
         font-weight: bold;
         padding: 5px 0;}
@@ -70,8 +71,8 @@
         margin-right:0px;
     }
 }
-
-#profile-gallery {
+/*PROFILE GALLERY*/
+#profile-gallery #grid {
     .media {
         height: auto;
         padding: 10px 15px;
@@ -79,6 +80,8 @@
             height: 65px;
             .media-heading {
                 font-weight: bold;
+                margin-right:0px;
+                margin-top:10px;
             }
             .media-left {
                 img {
@@ -89,12 +92,13 @@
                     padding: 3px;
                     border: 1px solid #ddd;
                     border-radius: 4px;
+                    margin-top:10px;
                 }
             }
             .media-profile {
                 font-size: 12px;
                 .join-date {
-                    color: #9dbe5f;
+                    color: $green;
                 }
             }
         }
@@ -105,24 +109,3 @@
     }
 }
 
-#badge-gallery-view, #badge-content {
-    .panel {
-        background-color: transparent;
-        box-shadow: none;
-        a {
-            color: $link-color;
-        }
-    }
-    #badge-contents a {
-         color: $link-color;
-    }
-    font-size: 13px;
-    .description {
-        font-weight: bold;
-        margin: 20px 0 5px 0;
-    }
-    h2.uppercase-header {
-        padding: 15px 0 0 0;
-        font-size: 30px;
-    }
-}

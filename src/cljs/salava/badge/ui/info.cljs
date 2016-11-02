@@ -81,6 +81,26 @@
        :handler (fn []
                   (init-data state id))}))
 
+(defn show-settings-dialog [badge-id state init-data]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings (hash-map :id badge-id
+                                                             :visibility (:visibility data)
+                                                             :tags (:tags data)
+                                                             :evidence-url (:evidence_url data)
+                                                             :rating (:rating data)
+                                                             :new-tag ""))
+                (m/modal! [se/settings-modal data state init-data true]
+                          {:size :lg}))}))
+
+(defn save-raiting [id state init-data raiting]
+    (ajax/POST
+      (path-for (str "/obpv1/badge/save_raiting/" id))
+      {:params   {:rating  (if (pos? raiting) raiting nil)}
+       :handler (fn []
+                  (init-data state id))}))
+
 (defn congratulate [state]
   (ajax/POST
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
@@ -89,8 +109,11 @@
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
+(defn num-days-left [timestamp]
+  (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
+
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count followed?]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         reporttool-atom (cursor state [:reporttool])]
@@ -109,16 +132,15 @@
               [:a {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
                [:i {:class "fa"}]
                (if (not (= visibility "public"))
-                (t :core/Publishandshare)
-                (t :core/Public)
-                )]]]
+                 (t :core/Publishandshare)
+                 (t :core/Public)
+                 )]]]
             [:div {:class "pull-right text-right"}
-             [follow-badge badge_content_id followed?]
+             [follow-badge badge_content_id]
              [:button {:class "btn btn-primary settings-btn"
                        :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
-                       (t :badge/Settings)]
+              (t :badge/Settings)]
              [:button {:class    "btn btn-primary print-btn"
-
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.share-wrapper
@@ -176,7 +198,7 @@
              (if revoked
                [:div.revoked (t :badge/Revoked)])
              (if expired?
-               [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
+               [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
              [:h1.uppercase-header name]
              (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)

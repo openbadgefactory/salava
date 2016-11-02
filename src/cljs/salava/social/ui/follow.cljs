@@ -3,8 +3,11 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for current-path]]
+            [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]))
+
+
 
 
 (defn follow-button-badge [badge-content-id followed?]
@@ -35,11 +38,22 @@
                                                       )})}
     (str " " (t :social/Unfollow)) ])
 
+(defn init-data [followed? badge-content-id]
+  (ajax/GET
+   (path-for (str "/obpv1/social/connected/" badge-content-id))
+   {:handler (fn [data]
+               (reset! followed? data)
+                )})
+  )
+
+
 (defn follow-badge [badge-content-id init-followed?]
   (let [followed? (atom init-followed?)
         user (session/get :user)]
+    
+    (init-data followed? badge-content-id)
     (fn []
-      (if user
+      (if (and user (social-plugin?))
         (if @followed?
           (unfollow-button-badge badge-content-id followed?)
           (follow-button-badge badge-content-id followed?))))))

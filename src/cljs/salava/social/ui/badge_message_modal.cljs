@@ -5,11 +5,11 @@
             [salava.core.i18n :refer [t]]
             [salava.core.ui.rate-it :as r]
             [salava.core.helper :refer [dump]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
-            [salava.social.ui.badge-message :refer [badge-message-handler]]
-            [salava.gallery.ui.badges :as b]
-            ))
+            [salava.social.ui.helper :refer [social-plugin?]]
+            [salava.social.ui.badge-message :refer [badge-message-handler]]))
 
 
 
@@ -67,25 +67,49 @@
                 (do
                   (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
 
-
+(defn get-messages [badge-content-id data-atom]
+  (ajax/GET
+   (path-for (str "/obpv1/social/messages_count/" badge-content-id))
+   {:handler (fn [data]
+               (reset! data-atom data))}))
 
 
 (defn badge-message-link [message-count badge-content-id]
-  [:a {:href     "#"
-       :on-click #(do
-                    (open-modal badge-content-id)
-                    (.preventDefault %) )}
-   (str (:all-messages message-count) " " (if (= 1 (:all-messages message-count))
-                                                              (t :social/Comment)
-                                                              (t :social/Comments)))
-   (if (pos? (:new-messages message-count))
-                       (str " (" (:new-messages message-count) " " (if (= 1 (:new-messages message-count)) (t :social/New) (t :social/News)) ") ")
-                       "")])
+  (if (social-plugin?)
+    (let [message-count (atom {:new-messages 0
+                          :all-messages 0})]
+      (get-messages badge-content-id message-count)
+      (fn []
+        
+        [:a {:href     "#"
+         :on-click #(do
+                      (open-modal badge-content-id)
+                      (.preventDefault %) )}
+     (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
+                                              (t :social/Comment)
+                                              (t :social/Comments)))
+     (if (pos? (:new-messages @message-count))
+       (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
+       "")]))))
 
 
-(defn badge-message-stream-link [message badge-content-id init-data state]
-  [:a {:href     "#"
-       :on-click #(do
-                    (b/open-modal badge-content-id true init-data state)
-                    (.preventDefault %) )}
-   message])
+(defn gallery-modal-message-info-link [show-messages badge-content-id]
+  (if (social-plugin?)
+    (let [message-count (atom {:new-messages 0
+                               :all-messages 0})]
+      (get-messages badge-content-id message-count)
+      (fn []
+        
+        (let [all-messages (str (t :social/Messages)  " (" (:all-messages @message-count) ") ")
+              new-messages (if (pos? (:new-messages @message-count))
+                             (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
+                             "")
+              all-messages (str all-messages new-messages)]
+          [:a {:href     "#"
+               :on-click #(do
+                            (reset! show-messages (if (= true @show-messages) nil true))
+                            (.preventDefault %))}
+           (if @show-messages
+             (t :social/Showinfo)
+             all-messages)])))))
+

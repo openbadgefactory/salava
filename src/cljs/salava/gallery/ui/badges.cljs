@@ -12,6 +12,7 @@
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
+
 (defn open-modal ([badge-content-id messages?]
                   (open-modal badge-content-id messages? nil nil))
   ([badge-content-id messages? init-data state]
@@ -29,6 +30,7 @@
       {:handler (fn [data]
                   (do
                     (m/modal! [badge-content-modal data reporttool messages? init-data state] {:size :lg})))}))))
+
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -129,7 +131,6 @@
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
         badge-id (or badge_content_id id)]
-    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
        (if image_file
@@ -153,11 +154,10 @@
                             (t :gallery/recipients))])
         [:div.media-description description]]]
       [:div.media-bottom
-       ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]          
-       (admin-gallery-badge badge-id "badges" state init-data)
-       ]]
-       ;]
-       ))
+       [:div {:class "pull-left"}
+        ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
+        ]
+       (admin-gallery-badge badge-id "badges" state init-data)]]))
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)

@@ -54,7 +54,8 @@
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
       [:a
-       {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))}
+       {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-message" @visible_area) "" "send-message")))
+       :class (if (= "send-message" @visible_area) "opened" "")}
        (if (or (= item_type "badge") (= item_type "page"))
          (t :admin/Sendmessagetoowner)
          (t :admin/Sendmessage))]]
@@ -234,7 +235,8 @@
         email-atom (cursor state [:selected-email])]
     [:div {:class "row"}
      [:div {:class "col-xs-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-verified-email" @visible_area) "" "delete-no-verified-email")))} (t :admin/Deletenoverifiedemail)]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-verified-email" @visible_area) "" "delete-no-verified-email")))
+          :class (if (= "delete-no-verified-email" @visible_area) "opened" "")} (t :admin/Deletenoverifiedemail)]]
      (if (= @visible_area "delete-no-verified-email")
        [:div.col-xs-12.row
         [:div {:class "form-group col-sm-8 col-xs-12"}
@@ -298,7 +300,8 @@
         email (:email (first (:emails info)))]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-activation-message" @visible_area) "" "send-activation-message")))}  (t :admin/Sendactivationlink) ]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "send-activation-message" @visible_area) "" "send-activation-message")))
+      :class (if (= "send-activation-message" @visible_area) "opened" "")}  (t :admin/Sendactivationlink) ]]
      (if (= @visible_area "send-activation-message")
        [:div.col-md-12
         (str (t :admin/Sendactivationlink) " " email)
@@ -320,7 +323,8 @@
   (let [{:keys [mail item_owner_id gallery-state init-data info]} @state]
     [:div {:class "row"}
      [:div {:class "col-md-12 sub-heading"}
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-activated-user" @visible_area) "" "delete-no-activated-user")))}  (t :admin/Deletenoactivateduser) ]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "delete-no-activated-user" @visible_area) "" "delete-no-activated-user")))
+      :class (if (= "delete-no-activated-user" @visible_area) "opened" "")}  (t :admin/Deletenoactivateduser) ]]
      (if (= @visible_area "delete-no-activated-user")
        [:div.col-md-12
         (str (t :admin/Deletenoactivateduser) " " item_owner "?")

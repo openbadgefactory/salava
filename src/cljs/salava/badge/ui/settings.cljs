@@ -107,7 +107,7 @@
               [:i {:class "fa fa-lock" }]
               [:label {:for "visibility-private"}
                (t :badge/Private)]]]]])
-            (if (and (not revoked) (not expired?))   
+            (if (and (not revoked) (not expired?))
                [:div.form-group
              [:fieldset {:class "col-md-12 checkbox"}
              [:legend {:class "col-md-12 sub-heading"}
@@ -118,7 +118,7 @@
                         :on-change #(toggle-recipient-name id show-recipient-name-atom)
                         :checked   @show-recipient-name-atom}]
                (t :badge/Showyourname)]]]])
-            
+
          (if (and (not revoked) (not expired?))
            [:div
             [:div {:class "row"}
@@ -145,10 +145,10 @@
                [:fieldset {:class "checkbox"}
                [:legend {:class "sub-heading"}
               (t :badge/Evidencevisibility)]
-                [:div [:label
+                [:div [:label {:class (str show_evidence)}
                  [:input {:type      "checkbox"
                           :on-change #(toggle-evidence state)
-                          :checked   show_evidence}]
+                          :checked   (:show_evidence @state)}]
                  (t :badge/Showevidence)]]])
 
               ])]
@@ -159,7 +159,6 @@
                   :data-dismiss "modal"
                   :on-click     #(save-settings state init-data)}
          (t :badge/Save)])
-         
          (if (get-in @state [:badge-settings :confirm-delete?])
            [:div {:class "delete-confirm"}
             [:div {:class "alert alert-warning"}

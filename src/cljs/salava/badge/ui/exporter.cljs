@@ -49,12 +49,12 @@
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
-      [:div.visibility-icon
-         (case visibility
-           "private" [:i {:class "fa fa-lock"}]
-           "internal" [:i {:class "fa fa-group"}]
-           "public" [:i {:class "fa fa-globe"}]
-           nil)]
+        [:div.visibility-icon
+           (case visibility
+             "private" [:i {:class "fa fa-lock"}]
+             "internal" [:i {:class "fa fa-group"}]
+             "public" [:i {:class "fa fa-globe"}]
+             nil)]
        (if image_file
          [:div.media-left
           [:a {:href (path-for (str "/badge/info/" id))}[:img {:src (str "/" image_file)
@@ -63,7 +63,7 @@
         [:div.media-heading
          [:a.badge-link {:href (path-for (str "/badge/info/" id))}
           name]]
-        [:div.media-issuer
+      [:div.media-issuer
          [:a {:href issuer_content_url
               :target "_blank"
               :title issuer_content_name} issuer_content_name]]]]
@@ -80,12 +80,11 @@
                                      (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
                                      (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
                       :checked checked?}]
-              (t :badge/Export) [:span {:class "reader-only"} name ]]])]
+
+             (t :badge/Exporttobackpack)]])]
         [:div {:class "col-xs-3 text-right"}
-         [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download" :aria-label (str "export " name " to backpack")}
-          [:i {:class "fa fa-download" }]]]]]]
-          ;]
-          ))
+         [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download"}
+          [:i {:class "fa fa-download"}]]]]]]))
 
 (defn badge-grid [state]
   [:div {:class "row"

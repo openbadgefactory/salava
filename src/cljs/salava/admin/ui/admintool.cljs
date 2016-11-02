@@ -83,7 +83,9 @@
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "badges" item-id state init-data))}
-      [:i {:class "fa fa-wrench" :title (t :admin/Admintools)}]]]))
+      [:i {:class "fa fa-wrench"}]
+      ;(t :admin/Admintools)
+      ]]))
 
 (defn admintool-gallery-page [item-id item-type state init-data user-id]
   (if (admin?)
@@ -91,7 +93,7 @@
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "page" item-id state init-data))}
-      [:i {:class "fa fa-wrench" :title (t :admin/Admintools)}]]]))
+      [:i {:class "fa fa-wrench"}](t :admin/Admintools)]]))
 
 
 (defn admintool-admin-page [item-id item-type state init-data]

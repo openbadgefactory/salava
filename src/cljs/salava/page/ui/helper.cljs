@@ -231,6 +231,5 @@
     [:a {:class "btn btn-primary view-btn"
          :on-click #(do (.preventDefault %) (save-function (str "/page/view/" id)))
          :href "#"}
-     (t :page/View)]
-    ]
+     (t :page/View)]]
    [m/modal-window]])
