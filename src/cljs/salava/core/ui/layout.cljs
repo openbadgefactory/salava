@@ -99,7 +99,12 @@
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
        (doall (for [i items]
-          (navi-link i)))]
+          (navi-link i)))
+          [:li.usermenu [:a {:href (path-for "/user/edit")}
+                (t :user/Myaccount)]]
+          [:li.usermenu [:a {:href     "#"
+                    :on-click #(logout)}
+                (t :user/Logout)]]]
        ]]]))
 
 (defn top-navi-embed []

@@ -296,6 +296,11 @@ ul#secondary-menu-links {
         }
     }
 }
+@media (max-width:767px){
+    #main-header-right {
+        display: none;
+    }
+}
 
 .userpic {
     float: right;
@@ -312,8 +317,14 @@ ul.navbar-nav {
     margin-right:auto;
     margin-left:auto;
     float:none;
-    width:340px;
+    //width:50%;
+    text-align: center;
+    .center {
+        text-align: center;
+    }
     li {
+        display: inline-block;
+        float:none;
         a {
             @extend %navi-link;
             color: $icon-color;
@@ -327,6 +338,21 @@ ul.navbar-nav {
     li.active {
         a {
             color: $text-color;
+        }
+    }
+    @media (max-width:870px){
+        li a {
+            padding: 10px 12px;
+        }
+    }
+    @media (max-width:767px){
+        li {
+            display: block;
+        }
+    }
+    @media (min-width:768px){
+        li.usermenu {
+            display: none;
         }
     }
 }
@@ -347,6 +373,7 @@ ul.side-links {
         a {
             @extend %navi-link;
             color: $grid-link;
+            cursor: pointer;
             &:hover {
                 color:$grid-link-hover;
             }
