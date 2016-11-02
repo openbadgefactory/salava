@@ -39,3 +39,8 @@
     (s/validate schema input)
     (catch :default e
       false)))
+
+(defn hyperlink [text]
+  (let [url (if (or (re-find #"^https?://" (str text)) (re-find #"^http?://" (str text))) text (str "http://" text))]
+    [:a {:href url
+         :target "_blank"} (str text)]))

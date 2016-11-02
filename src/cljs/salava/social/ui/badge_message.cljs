@@ -7,7 +7,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid?]]
+            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid? hyperlink]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.core.time :refer [date-from-unix-time]]
@@ -83,11 +83,6 @@
                     :on-click     #(delete-message id state)
                     }
            (t :badge/Delete)]])])))
-
-(defn hyperlink [text]
-  (let [url (if (or (re-find #"^https?://" (str text)) (re-find #"^http?://" (str text))) text (str "http://" text))]
-    [:a {:href url
-         :target "_blank"} (str text)]))
 
 (defn blank-reduce [a-seq]
   (let [str-space (fn [str1 str2]

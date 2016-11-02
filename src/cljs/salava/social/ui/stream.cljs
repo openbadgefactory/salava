@@ -33,11 +33,8 @@
    ]
   )
 
-(defn stream-follow-item [event state]
-  (let [{:keys [subject verb image_file message ctime event_id name object]}  event
-        modal-message (str "messages")]
-    [:div {:class "media message-item follow"}
-    [:button {:type       "button"
+(defn hide-event [event_id state]
+  [:button {:type       "button"
                 :class      "close"
                 :aria-label "OK"
                 :on-click   #(do
@@ -53,7 +50,13 @@
                                (.preventDefault %))
                 }
        [:span {:aria-hidden "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+               :dangerouslySetInnerHTML {:__html "&times;"}}]])
+
+(defn follow-event [event state]
+  (let [{:keys [subject verb image_file message ctime event_id name object]}  event
+        modal-message (str "messages")]
+    [:div {:class "media message-item follow"}
+    (hide-event event_id state)
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
@@ -71,7 +74,7 @@
        (t :social/Youstartedfollowbadge)
       ]]))
 
-(defn stream-message-item [event state]
+(defn message-event [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         new-messages  (get-in event [:message :new_messages])
         modal-message (if (pos? new-messages)
@@ -80,23 +83,7 @@
         ;(str  (t :social/Readmore) (if (pos? new-messages) (str " (" new-messages " " (if (= 1 new-messages) (t :social/Newmessage) (t :social/Newmessages)) ")")))
         ]
     [:div {:class (if (pos? new-messages) "media message-item new " "media message-item" )}
-    [:button {:type       "button"
-                :class      "close"
-                :aria-label "OK"
-                :on-click   #(do
-                               (ajax/POST
-                                (path-for (str "/obpv1/social/hide_event/" event_id))
-                                {:response-format :json
-                                 :keywords?       true          
-                                 :handler         (fn [data]
-                                                    (do
-                                                      (init-data state)))
-                                 :error-handler   (fn [{:keys [status status-text]}]
-                                                    )})
-                               (.preventDefault %))
-                }
-       [:span {:aria-hidden "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    (hide-event event_id state)
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
@@ -106,7 +93,6 @@
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-      ;(if (pos? new-messages) [:span.new  (str new-messages " ") (if (= 1 new-messages) (t :social/New) (t :social/News))])
       (if (pos? new-messages) [:span.new  new-messages])
        [:a {:href "#"
            :on-click #(do
@@ -117,9 +103,10 @@
        :on-click #(do
                     (b/open-modal (:object event) true init-data state)
                     (.preventDefault %) )}
-   modal-message]
-      
-      ]]))
+   modal-message]]]))
+
+
+
 
 (defn content [state]
   (let [events (:events @state)]
@@ -128,8 +115,8 @@
      (into [:div {:class "row"}]
            (for [event events]
              (cond
-               (= "follow" (:verb event)) (stream-follow-item event state)
-               (= "message" (:verb event)) (stream-message-item event state)
+               (= "follow" (:verb event)) (follow-event event state)
+               (= "message" (:verb event)) (message-event event state)
                :else "")))]))
 
 
