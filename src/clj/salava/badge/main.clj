@@ -8,6 +8,7 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
+            [salava.social.db :as so]
             [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64 str->epoch]]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
@@ -136,6 +137,8 @@
   [ctx badge-id user-id]
   (let [badge (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
         owner? (= user-id (:owner badge))
+        ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
+        ;followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))
         all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (get-db ctx)))
         user-congratulation? (and user-id
                                   (not owner?)
@@ -144,11 +147,12 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_content_id (:badge_content_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (get-db ctx)))]
-    ;(dump badge)
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count
                  :recipient_count recipient-count
+                 ;:message_count badge-message-count
+                 ;:followed? followed?
                  :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
                  :assertion (parse-assertion-json (:assertion_json badge))
                  :qr_code (str->qr-base64 (badge-url ctx badge-id)))))
@@ -219,7 +223,9 @@
               :deleted             0
               :revoked             0
               :issuer_verified     issuer-verified}]
-    (insert-badge<! data (get-db ctx))))
+    (insert-badge<! data (get-db ctx))
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/insert-connection-badge! ctx user-id badge-content-id))))
 
 (defn save-issuer-content!
   "Save issuer-data"
@@ -364,6 +370,8 @@
     (jdbc/with-db-transaction
       [tr-cn (get-datasource ctx)]
       (delete-badge-with-db! {:connection tr-cn} badge-id))
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
     {:status "success" :message "Badge deleted"}
     (catch Object _ {:status "error" :message ""})))
 

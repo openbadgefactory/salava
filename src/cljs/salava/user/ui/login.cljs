@@ -7,6 +7,7 @@
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
+            [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn follow-up-url []
@@ -14,7 +15,8 @@
         site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
     (if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
-      "/badge/mybadges"
+      (if (social-plugin?) "/social/stream" "/badge/mybadges")
+      
       path)))
 
 (defn login [state]

@@ -12,4 +12,5 @@
                 [salava.displayer.ui.routes]
                 [salava.oauth.ui.routes]
                 [salava.core.ui.routes]
+                [salava.social.ui.routes]
                 [salava.admin.ui.routes]])))

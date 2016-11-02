@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for hyperlink]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
@@ -127,13 +127,14 @@
                      [:tr
                       [:td.profile-field (t key) ":"]
                       [:td (cond
-                             (or (re-find #"www." (str value)) (re-find #"^https?://" (str value))) [:a {:href value :target "_blank"} (t value)]
+                             (or (re-find #"www." (str value)) (re-find #"^https?://" (str value)) (re-find #"^http?://" (str value))) (hyperlink value)
                              (and (re-find #"@" (str value)) (= "twitter" field)) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
                              (and (re-find #"@" (str value)) (= "email" field)) [:a {:href (str "mailto:" value)} (t value)]
                              (and  (empty? (re-find #" " (str value))) (= "facebook" field)) [:a {:href (str "https://www.facebook.com/" value) :target "_blank" } (t value)]
                              (= "twitter" field) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
                              (and  (empty? (re-find #" " (str value))) (= "pinterest" field)) [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
                              (and  (empty? (re-find #" " (str value))) (= "instagram" field)) [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
+                             (= "blog" field) (hyperlink value)
                              :else (t value))]]))]]]
           )]]
       (if (not-empty badges)

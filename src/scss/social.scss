@@ -1,0 +1,240 @@
+#message-list{
+    height: 300px;
+    overflow-y: scroll;
+    border: 1px solid silver;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: white;
+    border-radius: 2px;
+}
+
+.message-profile-img{
+    width: 54px;
+	height: auto;
+    border: 1px solid silver;
+    border-radius: 3px;
+}
+
+.message-item{
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dddddd;
+    h4{
+	font-size: 14px;
+    }
+    font-size: 14px;
+	&:last-child{
+		border-bottom: none;
+	}
+}
+
+.message-item.media {
+	margin:5px 15px 0px 15px;
+	h3.media-heading {
+		position: relative;
+		//margin-right: 105px;
+		a { font-size: 16px;
+			color:#dc5c10;
+			vertical-align: middle;
+			line-height: 34px;
+			&:hover {
+				color:#bf4f0e;
+			}
+	    }
+		.new {
+			background-color: #dc5c10;
+			color:#FFF;
+			border-radius: 50%;
+			height: 18px;
+			width: 18px;
+			display: inline-block;
+			font-size: 11px;
+			text-transform: uppercase;
+			font-weight: 700;
+			text-align: center;
+			padding-top:3px;
+			position: absolute;
+			left:23px;
+			top:-2px;
+		}
+		&:before{
+			content: "\f0e6";
+			font-family: "FontAwesome";
+			font-size: 30px;
+			color: #dc5c10;
+			display:block;
+			float:left;
+			width:42px;
+			text-align: center;
+			margin-right: 15px;
+			vertical-align: top;
+		}
+	}
+	&.new {
+		h3.media-heading:before{
+			content: "\f086";
+			color:  #5a5257;
+		}
+	}
+	&.follow {
+		h3.media-heading{
+			&:before{
+				content:"\f006";
+			}
+			~ span {
+				padding-left: 57px;
+			}
+		}
+	}
+	h4.media-heading{
+		a{
+			font-weight: 600;
+			font-size: 14px;
+			color: #453e42;
+			&:hover {
+				color: #756A70;
+			}
+		}
+		span {
+			font-size: 13px;
+			color: #5a5257;
+			font-weight: 400;
+			padding-left:2px
+		}
+	}
+	.media-left {
+		padding-right: 30px;
+		padding-top:10px;
+		~ .media-body {
+			padding-top:10px;
+			.media-body {
+				font-size: 13px;
+				padding-bottom: 20px;
+				padding-right:25px;
+			}
+			.pull-left {
+				padding-right: 15px;
+				padding-bottom: 20px;
+				img.message-profile-img {
+					width: 42px;
+					height:auto;
+				}
+			}
+			.badge {
+					background-color:#dc5c10;
+					margin-left: 10px;
+					display: inline-block
+			}
+		}
+	}
+	.date {
+		float:right;
+		color: #756A70;
+		font-size: 13px;
+		font-family: Arial;
+		margin:5px 25px 0px 10px;
+	}
+	button.close {
+		color:#dc5c10;
+		opacity: 0.8;
+		margin-top:-3px;
+		&:hover {
+			opacity: 1;
+		}
+	}
+	@media (max-width:480px){
+		.media-left{
+			display: block;
+			text-align: center;
+			padding-right: 0px;
+			position: absolute;
+			right:10px;
+			img {
+				width: 55px;
+				margin-bottom: -60px;
+			}
+			~ .media-body {
+				padding-top:0px;
+				.media-body {
+					padding-right:0px;
+				}
+			}
+		}
+		.date {
+			float:none;
+			margin-left:0px;
+			margin-bottom:10px;
+		}
+		h3.media-heading {
+			margin-right: 45px;
+		}
+	}
+}
+#badge-content{
+	.message-item.media {
+		margin:5px 0px 0px 0px;
+	}
+	.btn-primary.follow, .btn-primary.unfollow {
+		margin-right: 15px;
+		margin-top:15px;
+	}
+	#badge-contents  .message-item {
+		.pull-left {
+			padding-top:13px;
+			padding-right:20px;
+		}
+		.media-body {
+			padding-top:13px;
+		}
+		.date {
+			margin-top:2px;
+		}
+		a#loadmore {
+			color:#dc5c10;
+			&:hover {
+				color:#bf4f0e;
+			}
+		}
+		a:hover{
+			color:#353b75;
+		}
+		.btn-warning {
+			font-size: 13px;
+		}
+	}
+	@media (max-width:500px){
+		#badge-contents {
+			margin:0px;
+			.date {
+				display: block;
+				float:left;
+				width: 100%;
+				margin-left: 0px;
+				margin-bottom:10px;
+			}
+		}
+	}
+}
+.btn-primary.follow, .btn-primary.unfollow{
+	padding: 4px 12px;
+    line-height: 22px;
+	&:before {
+		content:"\f005";
+		font-weight: normal;
+		font-family: FontAwesome;
+		text-rendering: auto;
+		margin-right: 5px;
+		font-size: 16px;
+		display: block;
+		float: left;
+	}
+}
+.btn-primary.unfollow{
+	background-color: lighten(#756A70, 10%);
+	border-color: #756A70;
+	&:before {
+		content:"\f006";
+	}
+	&:hover {
+		background-color:#756A70;
+	}
+}
