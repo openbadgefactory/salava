@@ -389,6 +389,25 @@ ul.side-links {
     li.active a{
         color:$grid-link-hover;
     }
+    @media (max-width:767px){
+        margin-bottom:20px;
+        li {
+            display:inline;
+        }
+        li a{
+            padding:10px 15px;
+            display:inline-block;
+            width: auto;
+            vertical-align: bottom;
+        }
+        li.active a{
+                background-color:$grid-link;
+                color:#FFF;
+                border:1px solid $box-shadow;
+                border-bottom: 0px;
+                margin-bottom: -1px;
+            }
+    }
 }
 
 ul.side-dropdown-links {
