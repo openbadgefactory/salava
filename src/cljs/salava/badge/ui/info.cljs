@@ -89,7 +89,7 @@
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
 (defn content [state]
-  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count followed?]} @state
+  (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url html_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count]} @state
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         reporttool-atom (cursor state [:reporttool])]
@@ -112,7 +112,7 @@
                  (t :core/Public)
                  )]]]
             [:div {:class "pull-right text-right"}
-             [follow-badge badge_content_id followed?]
+             [follow-badge badge_content_id]
              [:button {:class "btn btn-primary settings-btn"
                        :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
               (t :badge/Settings)]

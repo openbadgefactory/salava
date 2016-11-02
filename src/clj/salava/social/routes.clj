@@ -128,5 +128,16 @@
                    :current-user current-user
                    (do
                      (ok (so/get-user-badge-events ctx (:id current-user)))))
+
+             (GET "/connected/:badge_content_id" []
+                  :return s/Bool
+                   :summary "Returns Bool if user has connected with asked badge-content-id"
+                   :path-params [badge_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (do
+                     (ok (so/is-connected? ctx (:id current-user) badge_content_id)
+                      )))
              
              )))
+

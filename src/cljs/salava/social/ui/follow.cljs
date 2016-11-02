@@ -38,10 +38,20 @@
                                                       )})}
     (str " " (t :social/Unfollow)) ])
 
+(defn init-data [followed? badge-content-id]
+  (ajax/GET
+   (path-for (str "/obpv1/social/connected/" badge-content-id))
+   {:handler (fn [data]
+               (reset! followed? data)
+                )})
+  )
+
+
 (defn follow-badge [badge-content-id init-followed?]
   (let [followed? (atom init-followed?)
         user (session/get :user)]
     
+    (init-data followed? badge-content-id)
     (fn []
       (if (and user (social-plugin?))
         (if @followed?
