@@ -111,9 +111,9 @@
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]
      ]
     (into [:div] (for [ item (clojure.string/split-lines message)]
-                   (into [:p.msg] (if (or (re-find #"www." item) (re-find #"^https?://" item) (re-find #"^http?://" item)) 
-                                    (search-and-replace-www item)
-                                    item))))]])
+                   (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item)) 
+                                      (search-and-replace-www item)
+                                      item))))]])
 
 (defn message-list-load-more [state]
   (if (pos? (:messages_left @state))
