@@ -77,7 +77,7 @@
     [:div.row
      [:div.col-md-12
       [:div {:class "text-right"}
-       [follow-badge (get-in data [:badge :badge_content_id]) (get-in data [:badge :followed?])]
+       [follow-badge (get-in data [:badge :badge_content_id])]
        [:button {:type         "button"
                  :class        "close"
                  :data-dismiss "modal"
