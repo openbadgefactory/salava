@@ -1,3 +1,4 @@
+@import 'variables';
 #message-list{
     height: 300px;
     overflow-y: scroll;
@@ -31,17 +32,18 @@
 	margin:5px 15px 0px 15px;
 	h3.media-heading {
 		position: relative;
+		color:$badge-title;
 		//margin-right: 105px;
 		a { font-size: 16px;
-			color:#dc5c10;
+			color:$badge-title;
 			vertical-align: middle;
 			line-height: 34px;
 			&:hover {
-				color:#bf4f0e;
+				color:$badge-title-hover;
 			}
 	    }
 		.new {
-			background-color: #dc5c10;
+			background-color: $badge-title;
 			color:#FFF;
 			border-radius: 50%;
 			height: 18px;
@@ -60,7 +62,6 @@
 			content: "\f0e6";
 			font-family: "FontAwesome";
 			font-size: 30px;
-			color: #dc5c10;
 			display:block;
 			float:left;
 			width:42px;
@@ -72,7 +73,7 @@
 	&.new {
 		h3.media-heading:before{
 			content: "\f086";
-			color:  #5a5257;
+			color:  $text-color;
 		}
 	}
 	&.follow {
@@ -89,14 +90,14 @@
 		a{
 			font-weight: 600;
 			font-size: 14px;
-			color: #453e42;
+			color: $link-color;
 			&:hover {
-				color: #756A70;
+				color: $link-hover;
 			}
 		}
 		span {
 			font-size: 13px;
-			color: #5a5257;
+			color: $text-color;
 			font-weight: 400;
 			padding-left:2px
 		}
@@ -120,7 +121,7 @@
 				}
 			}
 			.badge {
-					background-color:#dc5c10;
+					background-color:$badge-title;
 					margin-left: 10px;
 					display: inline-block
 			}
@@ -131,7 +132,7 @@
 	}
 	.date {
 		float:right;
-		color: #756A70;
+		color: $menu-color;
 		font-size: 13px;
 		font-family: Arial;
 		margin:5px 25px 0px 10px;
@@ -192,13 +193,13 @@
 			margin-top:2px;
 		}
 		a#loadmore {
-			color:#dc5c10;
+			color:$badge-title;
 			&:hover {
-				color:#bf4f0e;
+				color:$badge-title-hover;
 			}
 		}
 		a:hover{
-			color:#353b75;
+			color:$link-hover;
 		}
 		.btn-warning {
 			font-size: 13px;
