@@ -235,8 +235,7 @@
               :meta_badge          0
               :meta_badge_req      0}]
     (insert-badge<! data (get-db ctx))
-    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
-      (so/insert-connection-badge! ctx user-id badge-content-id))))
+    ))
 
 
 (defn save-issuer-content!
@@ -316,7 +315,10 @@
   "Set badge status"
   [ctx badge-id status user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (update-status! {:id badge-id :status status} (get-db ctx))))
+    (update-status! {:id badge-id :status status} (get-db ctx)))
+  (if (= "accepted" status)
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/create-connection-badge-by-badge-id! ctx user-id badge-id)) ))
 
 (defn toggle-show-recipient-name!
   "Toggle recipient name visibility"

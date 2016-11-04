@@ -108,5 +108,7 @@ UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner =
 --name: select-badge-content-id-by-message-id
 SELECT badge_content_id from badge_message where id = :message_id
 
+--name: select-badge-content-id-by-badge-id
+SELECT badge_content_id from badge where id = :badge_id
 
 

@@ -43,6 +43,12 @@ a, #badge-info a {
     background-image: url("/img/extra/passport/logo_icon.png");
 }
 
+.system-image-url {
+    width: 64px;
+    height: 64px;
+    background-image: url("/img/extra/passport/system_icon.png");
+}
+
 .issuedbyobf-image-url{
    width: 195px;
     height: 50px;
@@ -625,7 +631,7 @@ fieldset legend {
                 color: $badge-title;
                 font-size: 16px;
                 font-weight: 600;
-                line-height: 2.2em;
+                line-height: 1.2em;
                 a {
                     font-size: 16px;
                     font-weight: 600;

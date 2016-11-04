@@ -32,7 +32,7 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (do
-                    (f/save-pending-assertions ctx (:id current-user))
+                    ;(f/save-pending-assertions ctx (:id current-user))
                     (ok (b/user-badges-all ctx (:id current-user)))))
 
              (GET "/info/:badgeid" []

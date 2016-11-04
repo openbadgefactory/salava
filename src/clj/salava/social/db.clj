@@ -68,7 +68,7 @@
         messages-map (badge-message-map messages)
         message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
         follow-events (filter-own-events reduced-events user_id)
-       badge-events (into follow-events message-events)]
+        badge-events (into follow-events message-events)]
     (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))
     ))
 
@@ -152,7 +152,6 @@
   (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (= badge_content_id id)))
 
-
 (defn insert-connection-badge! [ctx user_id badge_content_id]
   (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx)))
 
@@ -165,6 +164,17 @@
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
      )))
+
+(defn create-connection-badge-by-badge-id! [ctx user_id badge_id]
+  (let [badge_content_id (select-badge-content-id-by-badge-id {:badge_id badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+    (try+
+     (insert-connection-badge! ctx user_id badge_content_id)
+     (insert-event! ctx user_id "follow" badge_content_id "badge")
+     (messages-viewed ctx badge_content_id user_id)
+     (catch Object _
+       ))))
+
+
 (defn delete-connection-badge-by-badge-id! [ctx user_id badge_id]
  (try+
    (delete-connect-badge-by-badge-id! {:user_id user_id :badge_id badge_id} (get-db ctx))
@@ -186,7 +196,12 @@
   (select-user-connections-badge {:user_id user_id} (get-db ctx))
   )
 
-
+(defn get-user-tips [ctx user_id]
+  (let [profile-tip true
+        welcome-tip true]
+    {:profile-tip profile-tip
+     :welcome-tip welcome-tip}
+    ))
 
 
 

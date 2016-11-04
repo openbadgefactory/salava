@@ -1,21 +1,25 @@
 (ns salava.social.ui.stream
-   (:require [salava.core.ui.layout :as layout]
-             [salava.core.i18n :as i18n :refer [t]]
-             [salava.core.ui.ajax-utils :as ajax]
-             [reagent.core :refer [atom cursor]]
-             [salava.user.ui.helper :refer [profile-picture]]
-             [reagent-modals.modals :as m]
-             [salava.core.helper :refer [dump]]
-             [salava.core.time :refer [date-from-unix-time]]
-             [salava.user.ui.helper :refer [profile-picture]]
-             [salava.gallery.ui.badges :as b]
-             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
+  (:require [salava.core.ui.layout :as layout]
+            [reagent.session :as session]
+            [salava.core.i18n :as i18n :refer [t]]
+            [salava.core.ui.ajax-utils :as ajax]
+            [reagent.core :refer [atom cursor]]
+            [salava.user.ui.helper :refer [profile-picture]]
+            [reagent-modals.modals :as m]
+            [salava.core.helper :refer [dump]]
+            [salava.core.time :refer [date-from-unix-time]]
+            [salava.user.ui.helper :refer [profile-picture]]
+            [salava.gallery.ui.badges :as b]
+            [salava.badge.ui.helper :as bh]
+            [salava.social.ui.helper :refer [system-image]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
 
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/social/events" true)
     {:handler (fn [data]
-                (swap! state assoc :events data))}))
+                (swap! state assoc :events (:events data)
+                                   :pending-badges (:pending-badges data)))}))
 
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
@@ -32,6 +36,59 @@
                    [:p item]))]
    ]
   )
+
+(defn update-status [id new-status state]
+  (ajax/POST
+     (path-for (str "/obpv1/badge/set_status/" id))
+     {:response-format :json
+      :keywords? true
+      :params {:status new-status} 
+      :handler (fn []
+                 (init-data state)
+                 )
+      :error-handler (fn [{:keys [status status-text]}]
+                       )}))
+
+(defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
+  [:div.row {:key id}
+   [:div.col-md-12
+    [:div.badge-container-pending
+     (if (or verified_by_obf issued_by_obf)
+       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+     [:div.row
+      [:div.col-md-12
+       [:div.media
+        [:div.pull-left
+         [:img.badge-image {:src (str "/" image_file)}]]
+        [:div.media-body
+         [:h4.media-heading
+          name]
+         [:div
+          [:a {:href issuer_content_url :target "_blank"} issuer_content_name]]
+         [:div (date-from-unix-time (* 1000 issued_on))]
+
+         ;METABADGE
+         [:div (bh/meta-badge meta_badge meta_badge_req)]
+
+         [:div
+          description]]]]]
+     [:div {:class "row button-row"}
+      [:div.col-md-12
+       [:button {:class "btn btn-primary"
+                 :on-click #(do
+                              (update-status id "accepted" state)
+                              (.preventDefault %))}
+        (t :badge/Acceptbadge)]
+       [:button {:class "btn btn-warning"
+                 :on-click #(do
+                              (update-status id "declined" state)
+                              (.preventDefault %))}
+        (t :badge/Declinebadge)]]]]]])
+
+(defn badges-pending [state]
+  (into [:div {:id "pending-badges"}]
+        (for [badge (:pending-badges @state)]
+          (badge-pending badge state))))
 
 
 (defn hide-event [event_id state]
@@ -103,21 +160,60 @@
        :on-click #(do
                     (b/open-modal (:object event) true init-data state)
                     (.preventDefault %) )}
-   modal-message]]]))
+       modal-message]]]))
 
 
+(defn edit-profile-event [event_id state]
+  (let [profile_picture (session/get-in [:user :profile_picture])
+        site-name (session/get :site-name)
+        ]
+    [:div {:class "media message-item tips"}
+    (hide-event event_id state)
+     [:div.media-left
+      (system-image)]
+     [:div.media-body
+      ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:h3 {:class "media-heading"}
+       [:a {:href (path-for "/user/edit/profile")}  "Tililtäsi puuttuu viel vaikka mitä"]]
+      [:div.media-body
+       (t :badge/Add) " "  (t :badge/Profilepicture)
+       ", " (t :badge/Welcometextinfo1) " "]
+      [:a {:href (path-for "/user/edit/profile")} "Profiilin asetuksiin"]
+      ]]))
 
+(defn get-first-badge-event [event_id state]
+  (let [profile_picture (session/get-in [:user :profile_picture])
+        site-name (session/get :site-name)]
+    [:div {:class "media message-item tips"}
+    (hide-event event_id state)
+     [:div.media-left
+      (system-image)]
+     [:div.media-body
+      ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:h3 {:class "media-heading"}
+       [:a {:href (path-for "/gallery/application")}  (str (t :core/Welcometo) " " site-name (t :core/Service))]]
+      [:div.media-body
+       "Näyttää vahvasti siltä ettei sinulla ole merkin merkkiä!"]
+      [:a {:href (path-for "/gallery/application")}
+       "Get your first badge"]]]))
 
 (defn content [state]
   (let [events (:events @state)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
+     [badges-pending state]
+     (get-first-badge-event 1 state)
+     (edit-profile-event 2 state)
+     
+     ;
+     ;
      (into [:div {:class "row"}]
            (for [event events]
              (cond
                (= "follow" (:verb event)) (follow-event event state)
                (= "message" (:verb event)) (message-event event state)
                :else "")))]))
+
 
 
 (defn handler [site-navi]

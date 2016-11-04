@@ -85,6 +85,13 @@
 			}
 		}
 	}
+	&.tips {
+	    h3.media-heading{
+			&:before{
+				content:"\f0eb";
+			}
+	    }
+	}
 	h4.media-heading{
 		a{
 			font-weight: 600;
@@ -113,6 +120,7 @@
 			}
 			.pull-left {
 				padding-right: 15px;
+
 				padding-bottom: 20px;
 				img.message-profile-img {
 					width: 42px;
