@@ -1,7 +1,7 @@
 (ns salava.social.ui.stream
   (:require [salava.core.ui.layout :as layout]
             [reagent.session :as session]
-            [salava.core.i18n :as i18n :refer [t]]
+            [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.ui.ajax-utils :as ajax]
             [reagent.core :refer [atom cursor]]
             [salava.user.ui.helper :refer [profile-picture]]
@@ -164,29 +164,41 @@
        modal-message]]]))
 
 
-(defn edit-profile-event [event_id state]
-  (let [profile_picture (session/get-in [:user :profile_picture])
-        site-name (session/get :site-name)
+(defn edit-profile-event [{:keys [header body button link]} state]
+  (let [site-name (session/get :site-name)
         ]
     [:div {:class "media message-item tips"}
-    (hide-event event_id state)
      [:div.media-left
       (system-image)]
      [:div.media-body
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-       [:a {:href (path-for "/user/edit/profile")}  "Tililtäsi puuttuu viel vaikka mitä"]]
+       [:a {:href (path-for "/user/edit/profile")} (t :social/Profiletipheader)]]
       [:div.media-body
        (t :badge/Add) " "  (t :badge/Profilepicture)
-       ", " (t :badge/Welcometextinfo1) " "]
-      [:a {:href (path-for "/user/edit/profile")} "Profiilin asetuksiin"]
+       "."  ]
+      [:a {:href (path-for "/user/edit/profile")} (t :social/Profiletipbutton)]
       ]]))
 
-(defn get-first-badge-event [event_id state]
-  (let [profile_picture (session/get-in [:user :profile_picture])
-        site-name (session/get :site-name)]
+(defn tip-event [{:keys [header body button link]} state]
+  (let [site-name (session/get :site-name)
+        ]
     [:div {:class "media message-item tips"}
-    (hide-event event_id state)
+     [:div.media-left
+      (system-image)]
+     [:div.media-body
+      ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:h3 {:class "media-heading"}
+       [:a {:href (path-for link)} (translate-text header)]]
+      [:div.media-body
+       (translate-text body)"."]
+      (if button
+        [:a {:href (path-for link)} (translate-text button) ])
+      ]]))
+
+(defn get-first-badge-event [state]
+  (let [site-name (session/get :site-name)]
+    [:div {:class "media message-item tips"}
      [:div.media-left
       (system-image)]
      [:div.media-body
@@ -198,19 +210,43 @@
       [:a {:href (path-for "/gallery/application")}
        (t :social/Getyourfirstbadge)]]]))
 
+(defn profile-picture-tip []
+  {:header (t :social/Profilepictureheader)  
+   :body  (t :social/Profilepicturebody)
+   :button (t :social/Profiletipbutton)
+   :link "/user/edit/profile"} )
+
+(defn profile-description-tip []
+  {:header (t :social/Profiledescriptiontipheader)  
+   :body  (t :social/Profiledescriptionbody)
+   :button (t :social/Profiletipbutton)
+   :link "/user/edit/profile"} )
+
+
+(defn get-your-first-badge-tip []
+  (let [site-name (session/get :site-name)]
+    {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
+     :body  (t :social/Youdonthaveanyanybadgesyet)
+     :button (t :social/Getyourfirstbadge)
+     :link   "/gallery/application"}))
+
+(defn tips-container [tips state]
+  [:div
+   (if (:welcome-tip tips)
+     (tip-event (get-your-first-badge-tip) state))
+   (if (:profile-picture-tip tips)
+     (tip-event (profile-picture-tip) state))])
+
 (defn content [state]
   (let [events (:events @state)
-        tips (:tips @state)]
+        tips (:tips @state)
+        tip (get-your-first-badge-tip)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
      [badges-pending state]
-     (if (:welcome-tip tips) 
-       (get-first-badge-event 1 state))
-     (if (:profile-tip tips)
-       (edit-profile-event 2 state))
      
-     ;
-     ;
+     (tips-container tips state)
+     
      (into [:div {:class "row"}]
            (for [event events]
              (cond

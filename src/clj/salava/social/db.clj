@@ -194,9 +194,10 @@
   (select-user-connections-badge {:user_id user_id} (get-db ctx))
   )
 
+
 (defn get-user-tips [ctx user_id]
   (let [welcome-tip (= 0 (select-user-badge-count {:user_id user_id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
-        profile-tip (if (not welcome-tip) (nil? (select-user-profile-picture {:user_id user_id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))) false)]
-    {:profile-tip profile-tip
+        profile-picture-tip (if (not welcome-tip) (nil? (select-user-profile-picture {:user_id user_id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))) false)]
+    {:profile-picture-tip profile-picture-tip
      :welcome-tip welcome-tip}
     ))
