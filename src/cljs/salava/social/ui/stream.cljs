@@ -19,7 +19,8 @@
     (path-for "/obpv1/social/events" true)
     {:handler (fn [data]
                 (swap! state assoc :events (:events data)
-                                   :pending-badges (:pending-badges data)))}))
+                       :pending-badges (:pending-badges data)
+                       :tips (:tips data)))}))
 
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
@@ -193,17 +194,20 @@
       [:h3 {:class "media-heading"}
        [:a {:href (path-for "/gallery/application")}  (str (t :core/Welcometo) " " site-name (t :core/Service))]]
       [:div.media-body
-       "Näyttää vahvasti siltä ettei sinulla ole merkin merkkiä!"]
+       (str (t :social/Youdonthaveanyanybadgesyet) ".")]
       [:a {:href (path-for "/gallery/application")}
-       "Get your first badge"]]]))
+       (t :social/Getyourfirstbadge)]]]))
 
 (defn content [state]
-  (let [events (:events @state)]
+  (let [events (:events @state)
+        tips (:tips @state)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
      [badges-pending state]
-     (get-first-badge-event 1 state)
-     (edit-profile-event 2 state)
+     (if (:welcome-tip tips) 
+       (get-first-badge-event 1 state))
+     (if (:profile-tip tips)
+       (edit-profile-event 2 state))
      
      ;
      ;

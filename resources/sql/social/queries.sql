@@ -111,4 +111,8 @@ SELECT badge_content_id from badge_message where id = :message_id
 --name: select-badge-content-id-by-badge-id
 SELECT badge_content_id from badge where id = :badge_id
 
+--name: select-user-badge-count
+SELECT COUNT(*) AS count from badge where user_id = :user_id AND status = 'accepted' AND deleted=0
 
+--name: select-user-profile-picture
+SELECT profile_picture from user where id = :user_id

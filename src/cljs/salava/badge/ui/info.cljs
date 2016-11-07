@@ -81,34 +81,11 @@
        :handler (fn []
                   (init-data state id))}))
 
-(defn show-settings-dialog [badge-id state init-data]
-  (ajax/GET
-    (path-for (str "/obpv1/badge/settings/" badge-id) true)
-    {:handler (fn [data]
-                (swap! state assoc :badge-settings (hash-map :id badge-id
-                                                             :visibility (:visibility data)
-                                                             :tags (:tags data)
-                                                             :evidence-url (:evidence_url data)
-                                                             :rating (:rating data)
-                                                             :new-tag ""))
-                (m/modal! [se/settings-modal data state init-data true]
-                          {:size :lg}))}))
-
-(defn save-raiting [id state init-data raiting]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/save_raiting/" id))
-      {:params   {:rating  (if (pos? raiting) raiting nil)}
-       :handler (fn []
-                  (init-data state id))}))
-
 (defn congratulate [state]
   (ajax/POST
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
     
-(defn num-days-left [timestamp]
-  (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
-
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 

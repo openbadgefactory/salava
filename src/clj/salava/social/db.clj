@@ -153,13 +153,13 @@
     (= badge_content_id id)))
 
 (defn insert-connection-badge! [ctx user_id badge_content_id]
-  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx)))
+  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+  (insert-event! ctx user_id "follow" badge_content_id "badge")
+  (messages-viewed ctx badge_content_id user_id))
 
 (defn create-connection-badge! [ctx user_id  badge_content_id]
   (try+
    (insert-connection-badge! ctx user_id badge_content_id)
-   (insert-event! ctx user_id "follow" badge_content_id "badge")
-   (messages-viewed ctx badge_content_id user_id)
    {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
@@ -169,8 +169,6 @@
   (let [badge_content_id (select-badge-content-id-by-badge-id {:badge_id badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (try+
      (insert-connection-badge! ctx user_id badge_content_id)
-     (insert-event! ctx user_id "follow" badge_content_id "badge")
-     (messages-viewed ctx badge_content_id user_id)
      (catch Object _
        ))))
 
@@ -197,11 +195,8 @@
   )
 
 (defn get-user-tips [ctx user_id]
-  (let [profile-tip true
-        welcome-tip true]
+  (let [welcome-tip (= 0 (select-user-badge-count {:user_id user_id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+        profile-tip (if (not welcome-tip) (nil? (select-user-profile-picture {:user_id user_id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))) false)]
     {:profile-tip profile-tip
      :welcome-tip welcome-tip}
     ))
-
-
-

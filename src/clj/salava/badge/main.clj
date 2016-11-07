@@ -208,6 +208,8 @@
   (let [issuer-url (get-in badge [:assertion :badge :issuer_url])
         issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
         hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
+        add-connection (if (= "accepted" (get-in badge [:_status]))
+                         (so/insert-connection-badge! ctx user-id badge-content-id))
         data {:user_id             user-id
               :email               recipient-email
               :assertion_url       (if hosted? (get-in badge [:assertion :verify :url]))
@@ -291,7 +293,8 @@
           original-creator-image-path (if (not (empty? original-creator-image))
                                         (file-from-url ctx original-creator-image))
           creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
-          criteria-content-id (save-criteria-content! ctx assertion)]
+          criteria-content-id (save-criteria-content! ctx assertion)
+          badge (assoc badge :_status "accepted")]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
         (throw+ "badge/Alreadyowned"))
       (if-not recipient-email
