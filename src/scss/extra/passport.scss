@@ -574,10 +574,6 @@ fieldset legend {
     }
 }
 
-.title-row h1 {
-    font-size: 25px;
-    margin: 14px 0;
-}
 .reader-only {
     position:absolute; 
     left:-10000px; 
@@ -625,7 +621,7 @@ fieldset legend {
                 color: $badge-title;
                 font-size: 16px;
                 font-weight: 600;
-                line-height: 2.2em;
+                height: 2.2em;
                 a {
                     font-size: 16px;
                     font-weight: 600;

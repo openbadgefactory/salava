@@ -148,7 +148,7 @@
                 [:div [:label
                  [:input {:type      "checkbox"
                           :on-change #(toggle-evidence state)
-                          :checked   show_evidence}]
+                          :checked   (:show_evidence @state)}]
                  (t :badge/Showevidence)]]])
 
               ])]

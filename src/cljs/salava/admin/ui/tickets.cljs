@@ -205,12 +205,12 @@
      [:div {:id    "grid-filter"
             :class "form-horizontal"}
       
-      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]
+      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]]
       [:div
        (into [:div {:class "row"}]
              (for [data tickets]
                (if (ticket-visible? data state)
-                 (ticket data state))))]]
+                 (ticket data state))))]
      [m/modal-window]]))
 
 (defn handler [site-navi]

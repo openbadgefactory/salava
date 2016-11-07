@@ -176,7 +176,7 @@
              (if revoked
                [:div.revoked (t :badge/Revoked)])
              (if expired?
-               [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))])
+               [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
              [:h1.uppercase-header name]
              (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
