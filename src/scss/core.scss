@@ -48,6 +48,8 @@ button {
     font-size: 13px;
     font-weight: normal;
     text-shadow: none;
+    margin-top:5px;
+    margin-bottom:5px;
     &:active, &:focus, &:active:focus {
         color: #FFF;
         text-decoration: none;
@@ -440,17 +442,21 @@ ul.side-dropdown-links {
 .main-container {
     margin-top: 15px;
     margin-bottom: 30px;
+    
 }
 
 #content {
     .uppercase-header {
         line-height: 30px;
-        font: 300 28px "Open Sans Condensed",sans-serif;
+        font: 300 40px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
-        color: $text-color;
+        color: $title-color;
         font-size: 40px;
         padding-bottom: 15px;
         margin: 0px;
+        @media (max-width:992px){
+            font: 300 28px "Open Sans Condensed",sans-serif;
+        }
     }
 
     h2.uppercase-header {
@@ -464,6 +470,7 @@ ul.side-dropdown-links {
     label {
         text-align: left;
     }
+    
 }
 #grid.row {
     margin:0px;
@@ -554,6 +561,9 @@ ol.welcome-text li {
                     line-height: 24px;
                 }
             }
+        }
+        @media (max-width:992px){
+            margin:0px -15px;
         }
     }
     #badge-contents {

@@ -58,7 +58,7 @@
 (defn delete-message-button [id state]
   (let [delete-clicked (atom nil)]
     (fn []
-      [:div
+      [:div.deletemessage
        [:button {:type       "button"
                  :class      "close"
                  :aria-label "OK"
@@ -101,8 +101,8 @@
 
 (defn message-list-item [{:keys [message first_name last_name ctime id profile_picture user_id]} state]
   [:div {:class "media message-item" :key id}
-  (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
-       [delete-message-button id state])
+  
+   [:div.msgcontent
    [:span {:class "pull-left"}
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
@@ -113,7 +113,9 @@
     (into [:div] (for [ item (clojure.string/split-lines message)]
                    (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item)) 
                                       (search-and-replace-www item)
-                                      item))))]])
+                                      item))))]]
+    (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
+        [delete-message-button id state])])
 
 (defn message-list-load-more [state]
   (if (pos? (:messages_left @state))

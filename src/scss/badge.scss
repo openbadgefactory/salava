@@ -244,6 +244,43 @@ button {
                     }
                 }
             }
+            label {
+                display: none;
+            }
+            .row.header {
+                font-weight: 600;
+                text-align: center;
+            }
+            .row.body {
+                text-align: center;
+                .col-md-5 {
+                    text-align: left;
+                }
+                .col-md-12 {
+                    padding-bottom: 10px;
+                }
+            }
+            @media (max-width:992px){
+                .row.body{
+                    text-align: left;
+                    padding:10px 0px;
+                    label {
+                        display: inline-block;
+                        width:68%;
+                        font-weight: 600;
+                    }
+                    .col-md-1, .col-md-5 {
+                        display: inline-block;
+                        width: auto;
+                        margin-bottom:10px;
+                        
+                    }
+                }
+                .row.header {
+                    display: none;
+                }
+            }
+            
         }
     }
 }
@@ -269,6 +306,9 @@ button {
             color: $green;
             margin-bottom: 5px;
         }
+        @media (max-width:992px){
+            padding:0px;
+        }
     }
  
     .description {
@@ -284,6 +324,9 @@ button {
         -webkit-box-shadow: none;
         .panel-body {
             padding-top:0px;
+            @media (max-width:992px){
+                
+            }
         }
     }
     #badge-share-inputs .col-sm-3.text-right {
@@ -674,6 +717,8 @@ button {
     }
 }
 /* EXPORT BADGES */
-#export-badges #grid .grid-container {
-    height: 285px;
+#export-badges{
+    #grid .grid-container {
+        height: 285px;
+    }
 }
