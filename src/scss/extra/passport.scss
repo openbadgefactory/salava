@@ -177,11 +177,19 @@ ul#secondary-menu-links li a{
             color:$badge-title-hover;
         }
     }
-	.media-bottom a.bottom-link i.fa{
-		color: $title-color;
-		&:hover {
-			color: $menu-active;
+	.media-bottom{
+		a.bottom-link i.fa{
+			color: $title-color;
+			&:hover {
+				color: $menu-active;
+			}
 		}
+	}
+	a.bottom-link.pull-right i.fa{
+		color: $title-color;
+			&:hover {
+				color: $menu-active;
+			}
 	}
 }
 #page-gallery, #user-pages, .pages {
