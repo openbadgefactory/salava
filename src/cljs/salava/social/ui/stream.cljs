@@ -233,7 +233,7 @@
 (defn not-verified-email [email]
   {:header (t :social/Confirmyouremailheader)
    :body  (str (t :user/Confirmyouremailbody1) " " email (t :user/Confirmyouremailbody2) )
-   :button nil
+   :button (t :social/Readmore)
    :link   "/user/edit/email-addresses"})
 
 (defn tips-container [tips state]
