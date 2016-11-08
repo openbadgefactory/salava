@@ -36,8 +36,8 @@ a, #badge-info a {
 }
 
 .system-image-url {
-    width: 64px;
-    height: 64px;
+    width: 90px;
+    height: 90px;
     background-image: url("/img/extra/passport/system_icon.png");
 }
 
@@ -198,7 +198,33 @@ ul#secondary-menu-links li a{
     }
 }
 
-
+.alert {
+    //border: 1px solid #d2d2d2;
+    border:none;
+    background: #ececec;
+    border-radius: 0px;
+    font-size: 15px;
+    font-weight: 600;
+    padding:8px 15px;
+    box-shadow: none;
+    width: 100%;
+    color:$text-color;
+}
+.modal-body > .alert {
+    margin-top:15px;
+}
+.alert-success {
+    border-left: 3px solid $green;
+}
+.alert-warning, .alert-danger {
+    border-left: 3px solid red;
+}
+.alert-info {
+    border-left: 3px solid $link-color;
+}
+.actions .alert {
+    width: 100%;
+}
 
 
 .reader-only {

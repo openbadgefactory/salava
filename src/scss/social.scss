@@ -23,12 +23,13 @@
 	font-size: 14px;
     }
     font-size: 14px;
-	&:last-child{
+	&:not(.tips):last-child{
 		border-bottom: none;
 	}
 }
 
 .message-item.media {
+	position: relative;
 	margin:5px 15px 0px 15px;
 	h3.media-heading {
 		position: relative;
@@ -91,6 +92,9 @@
 			&:before{
 				content:"\f0eb";
 			}
+			~ .media-body {
+				padding-left:57px;
+			}
 	    }
 	}
 	h4.media-heading{
@@ -110,7 +114,7 @@
 		}
 	}
 	.media-left {
-		padding-right: 30px;
+		padding-right: 40px;
 		padding-top:10px;
 		~ .media-body {
 			padding-top:10px;
@@ -133,6 +137,9 @@
 					margin-left: 10px;
 					display: inline-block
 			}
+			.media ~ a {
+				padding-left: 57px;
+			}
 		}
 		img {
 			max-height: 90px;
@@ -146,12 +153,17 @@
 		margin:5px 25px 0px 10px;
 	}
 	button.close {
+		position: absolute;
+		top:-3px;
+		right:0px;
 		color:#dc5c10;
 		opacity: 0.8;
-		margin-top:-3px;
 		&:hover {
 			opacity: 1;
 		}
+	}
+	.deletemessage .alert-warning{
+		margin-top:15px;
 	}
 	@media (max-width:480px){
 		.media-left{
@@ -215,7 +227,7 @@
 	}
 	@media (max-width:500px){
 		#badge-contents {
-			margin:0px;
+			margin:0px 0px;
 			.date {
 				display: block;
 				float:left;

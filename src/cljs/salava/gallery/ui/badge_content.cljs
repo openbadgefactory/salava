@@ -36,13 +36,13 @@
         [:div {:class "col-md-9 badge-info"}
          
          (if @show-messages
-           [:div {:class " messages"}
+           [:div.rowmessage
             [:h1.uppercase-header (str name " - " (t :social/Messages))]
             [badge-message-handler badge_content_id]]
-           [:div.row
-           [:div {:class "col-md-12"}
-            [:h1.uppercase-header name]]
-            [:div {:class "col-md-12"}
+            
+           [:div.rowcontent
+            [:h1.uppercase-header name]
+            [:div
              (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
              [:div.row
@@ -60,10 +60,11 @@
                     {:dangerouslySetInnerHTML {:__html html_content}}]]]]
             ]
             (if (or (> (count public_users) 0) (> private_user_count 0))
-              [:div
-               [:div.col-md-12
+              [:div.recipients
+               [:div
+
                 [:h2.uppercase-header (t :gallery/Allrecipients)]]
-               [:div {:class "col-md-12"}
+               [:div
                 (into [:div]
                       (for [user public_users
                             :let [{:keys [id first_name last_name profile_picture]} user]]
@@ -71,7 +72,8 @@
                 (if (> private_user_count 0)
                   (if (> (count public_users) 0)
                     [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
-                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])]]])))
+                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
+        ]]])))
 
 (defn badge-content-modal-render [data reporttool-atom messages?]
   [:div {:id "badge-content"}
