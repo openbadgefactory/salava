@@ -208,8 +208,6 @@
   (let [issuer-url (get-in badge [:assertion :badge :issuer_url])
         issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
         hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
-        add-connection (if (= "accepted" (get-in badge [:_status]))
-                         (so/insert-connection-badge! ctx user-id badge-content-id))
         data {:user_id             user-id
               :email               recipient-email
               :assertion_url       (if hosted? (get-in badge [:assertion :verify :url]))
@@ -236,6 +234,8 @@
               :issuer_verified     issuer-verified
               :meta_badge          0
               :meta_badge_req      0}]
+    (if (= "accepted" (get-in badge [:_status]))
+      (so/insert-connection-badge! ctx user-id badge-content-id))
     (insert-badge<! data (get-db ctx))
     ))
 
@@ -293,8 +293,7 @@
           original-creator-image-path (if (not (empty? original-creator-image))
                                         (file-from-url ctx original-creator-image))
           creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
-          criteria-content-id (save-criteria-content! ctx assertion)
-          badge (assoc badge :_status "accepted")]
+          criteria-content-id (save-criteria-content! ctx assertion)]
       (if (user-owns-badge? ctx (:assertion badge) user-id)
         (throw+ "badge/Alreadyowned"))
       (if-not recipient-email
@@ -358,12 +357,13 @@
       (assoc-badge-tags badge tags))))
 
 (defn send-badge-info-to-obf [ctx badge-id user-id]
-  (let [obf-url (get-in ctx [:config :core :obf :url])]
+  (let [obf-url (get-in ctx [:config :core :obf :url])
+        site-url (get-in ctx [:config :core :site-url])]
     (if (string? obf-url)
       (let [assertion-url (select-badge-assertion-url {:id badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (get-db ctx)))]
         (if (re-find (re-pattern obf-url) (str assertion-url))
           (try+
-            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" badge-id "user" user-id}})
+            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" badge-id "user" user-id "url" site-url}})
             (catch Object _
               (log/error "send-badge-info-to-obf: " _))))))))
 
@@ -379,7 +379,7 @@
       (if (blank? evidence-url) (toggle-show-evidence! ctx badge-id 0 user-id))
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id)
-      ;(send-badge-info-to-obf ctx badge-id user-id)
+      (send-badge-info-to-obf ctx badge-id user-id)
       {:status "success"})
     {:status "error"}))
     

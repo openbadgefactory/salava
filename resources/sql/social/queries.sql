@@ -116,3 +116,6 @@ SELECT COUNT(*) AS count from badge where user_id = :user_id AND status = 'accep
 
 --name: select-user-profile-picture
 SELECT profile_picture from user where id = :user_id
+
+--name: select-user-not-verified-emails
+SELECT email FROM user_email WHERE user_id = :user_id AND verified= 0;

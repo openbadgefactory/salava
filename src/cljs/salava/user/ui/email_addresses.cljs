@@ -2,10 +2,11 @@
   (:require [reagent.core :refer [atom cursor]]
             [reagent-modals.modals :as modal]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? path-for]]
+            [salava.core.ui.helper :refer [input-valid? path-for str-cat]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]
+            [salava.core.helper :refer [dump]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
@@ -119,11 +120,17 @@
                              (add-email-address state))}
         (t :core/Add)]]]]))
 
+
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/user/email-addresses" true)
     {:handler (fn [data]
-                (swap! state assoc :emails data))}))
+                (do
+                  (swap! state assoc :emails data)
+                  (if (filter #(not (:verified %)) data)
+                    (let [not-verified-emails (map #(:email %) (filter #(not (:verified %)) data))]
+                      (swap! state assoc :message {:class "alert alert-warning" :content (str (if (= 1 (count not-verified-emails)) (t :user/Confirmemailaddress) (t :user/Confirmemailaddresses)) " " (str-cat not-verified-emails) )}))
+                    )))}))
 
 (defn handler [site-navi]
   (let [state (atom {:emails []
