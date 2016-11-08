@@ -232,7 +232,7 @@
 
 (defn not-verified-email [email]
   {:header (t :social/Confirmyouremailheader)
-   :body  (str (t :user/Confirmemailaddress) " " email)
+   :body  (str (t :social/Confirmyouremailbody1) " " email " "(t :social/Confirmyouremailbody2) )
    :button nil
    :link   nil})
 

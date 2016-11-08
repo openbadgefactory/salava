@@ -390,6 +390,7 @@
     (let [data {:id          badge-id
                 :rating       rating}]
       (update-badge-raiting! data (get-db ctx))
+      (send-badge-info-to-obf ctx badge-id user-id)
       {:status "success"})
     {:status "error"}))
 

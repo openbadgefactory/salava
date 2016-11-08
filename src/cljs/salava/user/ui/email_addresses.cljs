@@ -19,7 +19,7 @@
                   (let [emails (:emails @state)]
                     (swap! state assoc :emails (conj emails new-email)
                            :new-address ""
-                           :message {:class "alert-success" :content (str (t :user/Emailaddress) " " (:email new-email) " " (t :user/added))}))
+                           :message {:class "alert-success" :content (str (t :user/Emailaddress) " " (:email new-email) " " (t :user/added) ". ")}))
                   (swap! state assoc :message {:class "alert-danger" :content (t (keyword message))})))}))
 
 (defn set-primary-email [email state]
@@ -127,7 +127,7 @@
     {:handler (fn [data]
                 (do
                   (swap! state assoc :emails data)
-                  (if (filter #(not (:verified %)) data)
+                  (if (not-empty (filter #(not (:verified %)) data))
                     (let [not-verified-emails (map #(:email %) (filter #(not (:verified %)) data))]
                       (swap! state assoc :message {:class "alert alert-warning" :content (str (if (= 1 (count not-verified-emails)) (t :user/Confirmemailaddress) (t :user/Confirmemailaddresses)) " " (str-cat not-verified-emails) )}))
                     )))}))
