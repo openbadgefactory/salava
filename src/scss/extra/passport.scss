@@ -251,6 +251,16 @@ ul#secondary-menu-links li a{
     width:auto;
     height:auto;
 }
+.add-field-after {
+	text-align: center;
+	margin-bottom:10px;
+    button:before {
+        display: inline-block;
+		content: '\f067';
+		font-family: FontAwesome;
+		padding-right: 10px;
+    }
+}
 /*
 a#login-button {
     height: 36px;
