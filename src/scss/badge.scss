@@ -16,14 +16,12 @@ button {
     margin-bottom: 10px;
 
     .pull-left {
-        padding-right: 10px;
+        padding-right: 25px;
         img {
             width: 125px;
             padding: 10px;
-            box-shadow: 1px 4px 3px #ececec;
-            -webkit-box-shadow: 1px 4px 3px #ececec;
-            border: 1px solid #f2f2f2;
-            border-radius: 6px;
+            box-shadow: none;
+            border: none;
             margin-bottom: 15px;
         }
     }
@@ -521,7 +519,7 @@ button {
             line-height: 1em;
             color: $icon-color;
             i {
-                cursor: pointer;
+               // cursor: pointer;
             }
         }
         .media-body{
@@ -658,6 +656,13 @@ button {
         .lefticon {
             display: inline-block;
         }
+        .righticon {
+            float: right;
+            font-size: 18px;
+            line-height: 1em;
+            color: $dark-red;
+            cursor: pointer;
+        }
         &~.media-bottom{
             line-height: 1em;
             padding-top:8px;
@@ -695,6 +700,7 @@ button {
 /* MY BADGES */
 #my-badges #grid .grid-container .media-content .visibility-icon i {
     color: $text-color;
+    cursor: pointer;
     &:hover {
         color:$menu-active;
     }
@@ -707,12 +713,39 @@ button {
         margin-top: 5px;
         padding-top:5px;
     }
-    &.error, &.duplicate{
+    &.error{
         .media-bottom {
             color: $dark-red;
             font-size: 12px;
             line-height: 1em;
             text-transform: uppercase;
+            div:before{
+                font-family: FontAwesome;
+                content: "\f071";
+                font-size: 20px;
+                padding-right: 7px;
+                display: block;
+                float: left;
+                padding-top: 3px;
+                margin-bottom: 9px;
+            }
+        }
+    }
+    &.duplicate{
+        .media-bottom {
+            color: #757575;
+            font-size: 12px;
+            line-height: 1em;
+            text-transform: uppercase;
+            div:before {
+                content: '\f0c5';
+                font-family: FontAwesome;
+                font-size: 20px;
+                padding-right: 7px;
+                display: inline-block;
+                padding-top: 3px;
+                vertical-align: bottom;
+            }
         }
     }
 }
