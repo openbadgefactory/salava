@@ -115,6 +115,10 @@ button {
     border-radius: 2px;
 }
 
+button.close {
+    opacity: 0.4;
+}
+
 a#login-button {
     margin-top: 5px;
     height: 36px;
@@ -182,12 +186,13 @@ input[type=checkbox], input[type=radio] {
 .checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline {
     margin-left:15px;
 }
-fieldset legend {
+fieldset legend, .form-group legend, .form-horizontal .form-group legend {
     font-size: inherit;
     font: inherit;
     font-weight: bold;
     color: inherit;
     border: none;
+    text-align: inherit;
 }
 legend.sub-heading {
     margin-bottom: 0px;
@@ -297,7 +302,7 @@ ul#secondary-menu-links {
             color: $text-color;
             text-decoration: none;
             i.fa {
-                color: $grid-link;
+                color: $badge-title;
                 padding-right: 10px;
             }
         }
@@ -455,7 +460,7 @@ ul.side-dropdown-links {
         line-height: 30px;
         font: 300 28px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
-        color: $text-color;
+        color: $title-color;
         font-size: 40px;
         padding-bottom: 15px;
         margin: 0px;

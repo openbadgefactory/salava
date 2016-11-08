@@ -1,27 +1,5 @@
-$titlebar-color: #5a5257;
-$text-color: #5a5257;
-$menu-color: #756A70;
-$menu-active: darken($menu-color, 18%);
-$title-color: $menu-color;//#7f7179;
-
-$orange-color: #dc5c10;
-$orange-hover:#bf4f0e;
-$badge-title:$orange-color;
-$badge-title-hover:$orange-hover;
-$link-color:#4a5aac;
-$link-hover: #353b75;
-$icon-color: #a28f9b;
-//error messages
-$dark-red: #8c2e0b;
-//success messages
-$green: #5cb85c;
-
-$background-color: #f9f9f9;
-
-body {
-    color: $text-color;
-    background-color: $background-color;
-}
+@import '../variables';
+/* LINKS */
 a, #badge-info a {
     color: $link-color;
     font-weight: 600;
@@ -30,7 +8,21 @@ a, #badge-info a {
         text-decoration: none;
     }
 }
+.message-item.media h4.media-heading a {
+	color: $menu-active;
+	&:hover {
+		color:$title-color;
+	}
+}
+.btn {
+	font-weight: 600;
+}
+.btn-primary:hover {
+	background-color:$link-hover;
+}
 
+
+/* LOGO */
 .logo-image-url{
     width: 326px;
     height: 48px;
@@ -60,54 +52,169 @@ a, #badge-info a {
     height: 44px;
     background-image: url("/img/extra/passport/verifiedissuedbyobf.png");
 }
-
-#no-sidebar {
-    background: url('/img/bg_subpage.png') no-repeat scroll $background-color;
+/* MENU */
+ul.side-links{
+	 li {
+		 a {
+			color:$menu-color;
+			font-size: 14px;
+			&:hover {
+				color: $menu-active;
+			}
+		}
+		&.active a {
+			color: $menu-active;
+		}
+	}
+	ul.side-dropdown-links li a {
+		font-size: 12.5px;
+	}
 }
-
-.title-row {
-    background-color:$titlebar-color;
-    border: none;
-}
-
-ul.side-links > li > a {
-    color:$menu-color;
+ul.navbar-nav li {
+	a {
+	color: $menu-color;
     font-size: 14px;
-    &:hover {
-        color: $menu-active;
-    }
-}
-
-ul.side-dropdown-links {
-    padding-left: 18px;
-    > li {
-        list-style: none;
-        > a {
-            color:$menu-color;
-            font-size: 12.5px;
-            &:hover {
-                color: $menu-active;
-            }
+        &:hover {
+            color: $menu-active;
         }
-    }
+	}
+	&.active a {
+		color: $menu-active;
+	}
 }
 
-
-ul.side-links > li.active > a {
-    color: $menu-active;
-}
-
-ul.side-dropdown-links > li.active > a {
-    color: $menu-active;
-}
 ul#secondary-menu-links li a{
     font-weight: normal;
+}
+/* BUTTONS */
+#grid-filter .btn, #buttons .col-xs-8 .btn {
+    background-color:lighten($title-color, 3%);
+    border: 1px solid $title-color;
+    font-weight: 600;
+}
+.btn-success {
+    background-color:$orange-color;
+    border-color:  $orange-hover;
+    &:active, &:hover{
+         background-color: $orange-hover;
+         border-color:  $orange-hover;
+    }
+}
+#page-edit .field .field-move .move-arrows{
+	.move-up, .move-down {
+		color: $badge-title;
+	}
+}
+
+/* GRID */
+#my-badges #grid .grid-container .media-content .visibility-icon i {
+	color:  $title-color;
+	&:hover {
+		color:$menu-active;
+	}
+}
+#page-gallery #grid .media-content .page-create-date,
+.pages #grid .grid-container .page-create-date,
+#profile-gallery #grid .media .media-content .media-profile .join-date,
+#badge-gallery #grid .grid-container .media-content .media-issuer,
+#my-badges #grid .grid-container .media-content .media-body .media-issuer,
+#user-badges #grid .grid-container .media-content .media-body .media-issuer,
+#export-badges #grid .grid-container .media-content .media-body .media-issuer,
+.import-badges #grid .grid-container .media-content .media-body .media-issuer,
+#user-pages #grid .grid-container .page-create-date{
     color: $title-color;
-    i.fa {
-        color: $orange-color;
+	font-weight: 400;
+	a {
+		color: $title-color;
+		font-weight: 400;
+	}
+	a:hover {
+		color:$menu-active;
+	}
+}
+
+#export-badges, .import-badges {
+	#grid .grid-container {
+		.media-bottom .checkbox{
+			color:$link-color;
+		}
+		.media-heading{
+			font-weight: 600;
+		}
+	}
+}
+#badge-settings {
+	.settings-content legend.sub-heading, label.sub-heading, h1.uppercase-header {
+		font-weight: 600;
+	}
+}
+.pages #grid, #page-gallery #grid, #my-files #grid, #profile-gallery #grid {
+    a#add-element-link, .add-element-link {
+        color:$orange-color;
+        font-weight: bold;
+		text-transform: uppercase;
+        &:hover, &:focus, &:active {
+            color: $orange-hover;
+            text-decoration: none;
+        }
+    }
+    #grid-file-upload:hover ~ .grid-container{
+        a#add-element-link{
+            color: $orange-hover;
+        }
+    }
+    .grid-container .media-content .media-body .media-heading {
+        font-size: 16px;
+		height: 2.5em;
+		line-height: 1.2em;
+		a {
+			color: $badge-title;
+		}
+        a:hover {
+            color:$badge-title-hover;
+        }
+    }
+	.media-bottom a.bottom-link i.fa{
+		color: $title-color;
+		&:hover {
+			color: $menu-active;
+		}
+	}
+}
+#page-gallery, #user-pages, .pages {
+    .page-owner a{
+        font-weight: 600;
+        color: $title-color;
+        &:hover {
+            color:$menu-active;
+            text-decoration: none;
+        }
+    }
+    .page-badges img{
+        border:none;
+    }
+    .page-badges{
+        margin-top:10px;
     }
 }
 
+
+
+
+.reader-only {
+    position:absolute;
+    left:-10000px;
+    top:auto;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+}
+.reader-only:focus {
+    position:static;
+    width:auto;
+    height:auto;
+}
+/*
 a#login-button {
     height: 36px;
     width: 125px;
@@ -580,19 +687,7 @@ fieldset legend {
     }
 }
 
-.reader-only {
-    position:absolute; 
-    left:-10000px; 
-    top:auto; 
-    width:1px; 
-    height:1px; 
-    overflow:hidden;
-}
-.reader-only:focus {
-    position:static; 
-    width:auto; 
-    height:auto; 
-}
+
 .inprofile {
     height: 20px;
 }
@@ -1216,4 +1311,4 @@ fieldset legend {
     .modal-content .modal-footer {
         margin-left:0px;
     }
-}
+}*/
