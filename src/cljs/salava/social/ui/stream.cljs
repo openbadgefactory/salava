@@ -237,12 +237,12 @@
    :link   "/user/edit/email-addresses"})
 
 (defn tips-container [tips state]
-  [:div
+  [:div.row
    (if (:welcome-tip tips)
      (tip-event (get-your-first-badge-tip) state))
    (if (:profile-picture-tip tips)
      (tip-event (profile-picture-tip) state))
-   (into [:div {:class "row"}]
+   (into [:div ]
          (for [email (:not-verified-emails tips)]
            (tip-event (not-verified-email (:email email)) state) 
            ))])
