@@ -16,8 +16,11 @@ a, #badge-info a {
 }
 .btn {
 	font-weight: 600;
+	&:hover{
+		color:#FFF;
+	}
 }
-.btn-primary:hover {
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:active:focus {
 	background-color:$link-hover;
 }
 
@@ -95,7 +98,7 @@ ul#secondary-menu-links li a{
 .btn-success {
     background-color:$orange-color;
     border-color:  $orange-hover;
-    &:active, &:hover{
+    &:active, &:hover, &:focus, &:active:focus{
          background-color: $orange-hover;
          border-color:  $orange-hover;
     }
