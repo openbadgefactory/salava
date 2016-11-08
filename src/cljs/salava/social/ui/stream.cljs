@@ -189,11 +189,11 @@
      [:div.media-body
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-       [:a {:href (path-for link)} (translate-text header)]]
+       [:a {:href (if link (path-for link) "#")} (translate-text header)]]
       [:div.media-body
        (translate-text body)"."]
       (if button
-        [:a {:href (path-for link)} (translate-text button) ])
+        [:a {:href (if link (path-for link) "#")} (translate-text button) ])
       ]]))
 
 (defn get-first-badge-event [state]
@@ -230,23 +230,30 @@
      :button (t :social/Getyourfirstbadge)
      :link   "/gallery/application"}))
 
+(defn not-verified-email [email]
+  {:header (t :social/Confirmyouremailheader)
+   :body  (str (t :user/Confirmemailaddress) " " email)
+   :button nil
+   :link   nil})
+
 (defn tips-container [tips state]
   [:div
    (if (:welcome-tip tips)
      (tip-event (get-your-first-badge-tip) state))
    (if (:profile-picture-tip tips)
-     (tip-event (profile-picture-tip) state))])
+     (tip-event (profile-picture-tip) state))
+   (into [:div {:class "row"}]
+         (for [email (:not-verified-emails tips)]
+           (tip-event (not-verified-email (:email email)) state) 
+           ))])
 
 (defn content [state]
   (let [events (:events @state)
-        tips (:tips @state)
-        tip (get-your-first-badge-tip)]
+        tips (:tips @state)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
      [badges-pending state]
-     
      (tips-container tips state)
-     
      (into [:div {:class "row"}]
            (for [event events]
              (cond

@@ -1,8 +1,8 @@
 (ns salava.social.db
- (:require [yesql.core :refer [defqueries]]
+  (:require [yesql.core :refer [defqueries]]
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
-            [salava.core.helper :refer [dump]]
+            ;[salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.admin.helper :as ah]
@@ -194,10 +194,14 @@
   (select-user-connections-badge {:user_id user_id} (get-db ctx))
   )
 
+(defn get-users-not-verified-emails [ctx user_id]
+  (select-user-not-verified-emails {:user_id user_id} (get-db ctx)))
 
 (defn get-user-tips [ctx user_id]
   (let [welcome-tip (= 0 (select-user-badge-count {:user_id user_id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
         profile-picture-tip (if (not welcome-tip) (nil? (select-user-profile-picture {:user_id user_id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))) false)]
     {:profile-picture-tip profile-picture-tip
-     :welcome-tip welcome-tip}
+     :welcome-tip welcome-tip
+     :not-verified-emails (get-users-not-verified-emails ctx user_id)}
     ))
+

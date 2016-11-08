@@ -203,7 +203,7 @@
 
 (defn no-badges-text []
   [:div
-   (t :badge/Youhavenobadgesyet)] )
+   (t :badge/Youhavenobadgesyet) (str " ") [:a {:href (path-for "/gallery/application") } (t :badge/Gohere)] (str ".") ] )
 
 (defn content [state]
   [:div {:id "my-badges"}

@@ -357,12 +357,13 @@
       (assoc-badge-tags badge tags))))
 
 (defn send-badge-info-to-obf [ctx badge-id user-id]
-  (let [obf-url (get-in ctx [:config :core :obf :url])]
+  (let [obf-url (get-in ctx [:config :core :obf :url])
+        site-url (get-in ctx [:config :core :site-url])]
     (if (string? obf-url)
       (let [assertion-url (select-badge-assertion-url {:id badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (get-db ctx)))]
         (if (re-find (re-pattern obf-url) (str assertion-url))
           (try+
-            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" badge-id "user" user-id}})
+            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" badge-id "user" user-id "url" site-url}})
             (catch Object _
               (log/error "send-badge-info-to-obf: " _))))))))
 
@@ -378,7 +379,7 @@
       (if (blank? evidence-url) (toggle-show-evidence! ctx badge-id 0 user-id))
       (update-badge-settings! data (get-db ctx))
       (save-badge-tags! ctx tags badge-id)
-      ;(send-badge-info-to-obf ctx badge-id user-id)
+      (send-badge-info-to-obf ctx badge-id user-id)
       {:status "success"})
     {:status "error"}))
     
