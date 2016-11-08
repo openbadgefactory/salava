@@ -23,7 +23,7 @@
 	font-size: 14px;
     }
     font-size: 14px;
-	&:last-child{
+	&:not(.tips):last-child{
 		border-bottom: none;
 	}
 }
@@ -91,6 +91,9 @@
 			&:before{
 				content:"\f0eb";
 			}
+			~ .media-body {
+				padding-left:57px;
+			}
 	    }
 	}
 	h4.media-heading{
@@ -132,6 +135,9 @@
 					background-color:$badge-title;
 					margin-left: 10px;
 					display: inline-block
+			}
+			.media ~ a {
+				padding-left: 57px;
 			}
 		}
 		img {
