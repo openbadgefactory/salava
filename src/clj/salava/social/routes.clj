@@ -5,6 +5,7 @@
             [schema.core :as s]
             [salava.core.access :as access]
             [salava.social.db :as so]
+            [salava.badge.main :as b]
             salava.core.restructure))
 
 
@@ -127,7 +128,12 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (do
-                     (ok (so/get-user-badge-events ctx (:id current-user)))))
+                     (ok (let [badge-events (so/get-user-badge-events ctx (:id current-user))
+                               pending-badges (b/user-badges-pending ctx (:id current-user))
+                               tips  (so/get-user-tips ctx (:id current-user))]
+                           {:tips tips
+                            :events badge-events
+                            :pending-badges pending-badges}))))
 
              (GET "/connected/:badge_content_id" []
                   :return s/Bool

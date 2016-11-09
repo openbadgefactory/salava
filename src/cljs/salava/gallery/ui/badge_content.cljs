@@ -1,6 +1,7 @@
 (ns salava.gallery.ui.badge-content
   (:require [reagent.core :refer [atom create-class]]
             [reagent-modals.modals :refer [close-modal!]]
+            [reagent.session :as session]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
             [salava.user.ui.helper :refer [profile-link-inline]]
@@ -57,10 +58,11 @@
                   [:div.row
                    [:div.col-md-12
                     {:dangerouslySetInnerHTML {:__html html_content}}]]]]
-             ]
+            ]
             (if (or (> (count public_users) 0) (> private_user_count 0))
               [:div.recipients
                [:div
+
                 [:h2.uppercase-header (t :gallery/Allrecipients)]]
                [:div
                 (into [:div]

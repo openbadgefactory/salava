@@ -23,7 +23,7 @@
 	font-size: 14px;
     }
     font-size: 14px;
-	&:last-child{
+	&:not(.tips):last-child{
 		border-bottom: none;
 	}
 }
@@ -87,6 +87,16 @@
 			}
 		}
 	}
+	&.tips {
+	    h3.media-heading{
+			&:before{
+				content:"\f0eb";
+			}
+			~ .media-body {
+				padding-left:57px;
+			}
+	    }
+	}
 	h4.media-heading{
 		a{
 			font-weight: 600;
@@ -115,6 +125,7 @@
 			}
 			.pull-left {
 				padding-right: 15px;
+
 				padding-bottom: 20px;
 				img.message-profile-img {
 					width: 42px;
@@ -125,6 +136,9 @@
 					background-color:$badge-title;
 					margin-left: 10px;
 					display: inline-block
+			}
+			.media ~ a, .media-body ~ a {
+				padding-left: 57px;
 			}
 		}
 		img {
@@ -179,6 +193,10 @@
 		}
 	}
 }
+
+@media (max-width: 480px){
+    .message-item.media.tips .media-left .system-image-url {width:55px; height:55px;}}
+
 #badge-content{
 	.message-item.media {
 		margin:5px 0px 0px 0px;

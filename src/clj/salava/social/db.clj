@@ -1,8 +1,8 @@
 (ns salava.social.db
- (:require [yesql.core :refer [defqueries]]
+  (:require [yesql.core :refer [defqueries]]
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
-            [salava.core.helper :refer [dump]]
+            ;[salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.admin.helper :as ah]
@@ -68,7 +68,7 @@
         messages-map (badge-message-map messages)
         message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
         follow-events (filter-own-events reduced-events user_id)
-       badge-events (into follow-events message-events)]
+        badge-events (into follow-events message-events)]
     (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))
     ))
 
@@ -152,19 +152,27 @@
   (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (= badge_content_id id)))
 
-
 (defn insert-connection-badge! [ctx user_id badge_content_id]
-  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx)))
+  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+  (insert-event! ctx user_id "follow" badge_content_id "badge")
+  (messages-viewed ctx badge_content_id user_id))
 
 (defn create-connection-badge! [ctx user_id  badge_content_id]
   (try+
    (insert-connection-badge! ctx user_id badge_content_id)
-   (insert-event! ctx user_id "follow" badge_content_id "badge")
-   (messages-viewed ctx badge_content_id user_id)
    {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
      )))
+
+(defn create-connection-badge-by-badge-id! [ctx user_id badge_id]
+  (let [badge_content_id (select-badge-content-id-by-badge-id {:badge_id badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+    (try+
+     (insert-connection-badge! ctx user_id badge_content_id)
+     (catch Object _
+       ))))
+
+
 (defn delete-connection-badge-by-badge-id! [ctx user_id badge_id]
  (try+
    (delete-connect-badge-by-badge-id! {:user_id user_id :badge_id badge_id} (get-db ctx))
@@ -186,7 +194,14 @@
   (select-user-connections-badge {:user_id user_id} (get-db ctx))
   )
 
+(defn get-users-not-verified-emails [ctx user_id]
+  (select-user-not-verified-emails {:user_id user_id} (get-db ctx)))
 
-
-
+(defn get-user-tips [ctx user_id]
+  (let [welcome-tip (= 0 (select-user-badge-count {:user_id user_id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
+        profile-picture-tip (if (not welcome-tip) (nil? (select-user-profile-picture {:user_id user_id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))) false)]
+    {:profile-picture-tip profile-picture-tip
+     :welcome-tip welcome-tip
+     :not-verified-emails (get-users-not-verified-emails ctx user_id)}
+    ))
 

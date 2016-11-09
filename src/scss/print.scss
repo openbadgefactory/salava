@@ -7,15 +7,16 @@ a[href]::after{
 }
 
 #print-logo {
-    display: block;
+    //display: block; TODO theme specific image ?!
 }
+
 
 #print-qr-code {
     display:  inline-block;
 }
 
 #badge-info {
-    #badge-share-inputs, #badge-rating, #badge-views , #badge-congratulations, #badge-congratulated, #assertion-link {
+    #badge-share-inputs, #badge-rating, #badge-views , #badge-congratulations, #badge-congratulated, #assertion-link{
         display: none;
     }
 
@@ -54,4 +55,7 @@ a[href]::after{
         width: 70%;
         float: left;
     }
+}
+footer.footer {
+    display: none;
 }

@@ -188,12 +188,13 @@ input[type=checkbox], input[type=radio] {
 .checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline {
     margin-left:15px;
 }
-fieldset legend {
+fieldset legend, .form-group legend, .form-horizontal .form-group legend {
     font-size: inherit;
     font: inherit;
     font-weight: bold;
     color: inherit;
     border: none;
+    text-align: inherit;
 }
 legend.sub-heading {
     margin-bottom: 0px;
@@ -254,6 +255,13 @@ nav.navbar {
     padding: 10px 0;
 }
 
+//MAIN HEADER - right navbar margin
+#main-header{
+    @media (max-width: 1100px) and (min-width: 768px){
+        margin-right: 3px;
+    }
+}
+
 button.navbar-toggle {
     border: 1px solid $grid-link-hover;
     margin: 8px 0;
@@ -296,7 +304,7 @@ ul#secondary-menu-links {
             color: $text-color;
             text-decoration: none;
             i.fa {
-                color: $grid-link;
+                color: $badge-title;
                 padding-right: 10px;
             }
         }
@@ -323,7 +331,7 @@ ul.navbar-nav {
     margin-right:auto;
     margin-left:auto;
     float:none;
-    //width:50%;
+    margin-right:280px;
     text-align: center;
     .center {
         text-align: center;
@@ -441,6 +449,7 @@ ul.side-dropdown-links {
 #print-qr-code {
     display: none;
 }
+
 
 /* CONTENT */
 .main-container {
@@ -701,6 +710,12 @@ body.anon {
 .logo-image-icon-url {
     width: 48px;
     height: 48px;
+    background-image: url("/img/logo_icon.png");
+}
+
+.system-image-url {
+    width: 90px;
+    height: 90px;
     background-image: url("/img/logo_icon.png");
 }
 

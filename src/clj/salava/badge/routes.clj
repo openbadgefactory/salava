@@ -145,6 +145,15 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
+                   
+             (POST "/save_raiting/:badgeid" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [badgeid :- Long]
+                   :body-params [rating :- (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))]
+                   :summary "Save badge raiting"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (b/save-badge-raiting! ctx badgeid (:id current-user) rating)))
 
              (DELETE "/:badgeid" []
                      :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}

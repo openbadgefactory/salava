@@ -71,9 +71,11 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
+                        :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
-        [:img {:src (profile-picture profile_picture)}]]]]]))
+        [:img {:src (profile-picture profile_picture)
+               :alt (str first_name " " last_name)}]]]]]))
 
 (defn badge-grid [badges]
   (into [:div {:class "row" :id "grid"}]
@@ -106,7 +108,9 @@
       [:h1.uppercase-header fullname]
       [:div.row
        [:div {:class "col-md-4 col-sm-4 col-xs-12"}
-        [:img.profile-picture {:src (profile-picture profile_picture)}]]
+        [:div.profile-picture-wrapper
+        [:img.profile-picture {:src (profile-picture profile_picture)
+                               :alt fullname}]]]
        [:div {:class "col-md-8 col-sm-8 col-xs-12"}
         (if (not-empty about)
           [:div {:class "row about"}

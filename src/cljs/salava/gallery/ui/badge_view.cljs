@@ -8,6 +8,7 @@
             [salava.core.ui.share :refer [share-buttons]]
             [salava.admin.ui.admintool :refer [admintool]]
             [reagent-modals.modals :as m]
+            [salava.core.helper :refer [dump]]
             ;[salava.admin.ui.reporttool :refer [reporttool]]
             [salava.core.i18n :refer [t]]))
 
@@ -20,8 +21,9 @@
       [:div.panel-body
        (admintool badge-content-id "badges")
        [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
-       
-       [badge-content content false]]
+
+       (if (:content @state)
+         [badge-content (:content @state) false])]
       ;(reporttool badge-content-id name "badges")
       ]]))
 

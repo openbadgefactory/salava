@@ -43,10 +43,10 @@
          [:div {:class "alert alert-warning"}
           (translate-text @error-message-atom)])
        [:form
+        [:div.form-group {:aria-label "email"}
+         [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email) :aria-label (t :user/Email)}]]
         [:div.form-group
-         [input/text-field {:name "email" :atom email-atom :placeholder (t :user/Email)}]]
-        [:div.form-group
-         [input/text-field {:name "password" :atom password-atom :placeholder (t :user/Password) :password? true}]]
+         [input/text-field {:name "password" :atom password-atom :placeholder (t :user/Password) :aria-label (t :user/Password) :password? true}]]
         [:button {:class    "btn btn-primary"
                   :on-click #(do (.preventDefault %) (login state))
                   :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}

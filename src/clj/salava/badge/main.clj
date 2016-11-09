@@ -355,6 +355,17 @@
       {:status "success"})
     {:status "error"}))
 
+(defn save-badge-raiting!
+  "Update badge raiting"
+  [ctx badge-id user-id rating]
+  (if (badge-owner? ctx badge-id user-id)
+    (let [data {:id          badge-id
+                :rating       rating}]
+      (update-badge-raiting! data (get-db ctx))
+      {:status "success"})
+    {:status "error"}))
+
+
 (defn delete-badge-with-db! [db badge-id]
   (delete-badge-tags! {:badge_id badge-id} db)
   (delete-badge-views! {:badge_id badge-id} db)

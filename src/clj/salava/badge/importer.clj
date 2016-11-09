@@ -179,6 +179,7 @@
           assertion (a/create-assertion assertion-url {})
           emails (u/verified-email-addresses ctx user-id)
           data {:assertion assertion}
+          data (assoc data :_status "accepted")
           badge-id (b/save-badge-from-assertion! ctx data user-id emails)]
       {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"})
     (catch Object _

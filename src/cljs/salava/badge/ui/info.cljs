@@ -12,6 +12,7 @@
             [salava.core.ui.share :as s]
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
+            [salava.gallery.ui.badges :as b]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
@@ -59,7 +60,7 @@
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value}
        :handler (fn [] (swap! state assoc :show_evidence new-value))})))
-
+       
 (defn show-settings-dialog [badge-id state init-data]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
@@ -84,7 +85,7 @@
   (ajax/POST
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
-
+    
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
@@ -117,13 +118,13 @@
                        :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
               (t :badge/Settings)]
              [:button {:class    "btn btn-primary print-btn"
-                       
                        :on-click #(.print js/window)}
               (t :core/Print)]]
             [:div.share-wrapper
              [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
-           (admintool id "badge"))
-         
+           (if (and (not expired?) (not revoked))
+             (admintool id "badge")))
+
          (if (or verified_by_obf issued_by_obf)
            (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
@@ -151,7 +152,10 @@
            (if (> recipient_count 1)
              [:div.row {:id "badge-views"}
               [:div.col-xs-12
-               [:a {:href (path-for (str "/gallery/badgeview/" badge_content_id))} (t :badge/Otherrecipients)]]])
+               [:a {:href "#"
+                    :on-click #(do
+                                 (b/open-modal badge_content_id false nil nil)
+                                 (.preventDefault %))} (t :badge/Otherrecipients)]]]) ;tähän
            [:div.row
             [:div.col-xs-12 {:id "badge-congratulated"}
              (if (and user-logged-in? (not owner?))

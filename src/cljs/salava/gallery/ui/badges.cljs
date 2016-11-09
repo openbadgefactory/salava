@@ -131,12 +131,12 @@
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
         badge-id (or badge_content_id id)]
-   ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:img {:src (str "/" image_file)}]])
+          [:a {:href "#" :on-click #(open-modal badge-id nil) :title name}[:img {:src (str "/" image_file)
+                 :alt name}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(do

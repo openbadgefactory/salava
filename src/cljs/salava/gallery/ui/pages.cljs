@@ -127,6 +127,7 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
+                        :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]
        [:div {:class "media-right"}
         [:img {:src (u/profile-picture profile_picture)}]]]

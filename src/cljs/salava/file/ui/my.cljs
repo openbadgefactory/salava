@@ -139,18 +139,18 @@
           (date-from-unix-time (* 1000 ctime) "minutes")]]]]
       [:div {:class "media-bottom"}
        [:a {:class "bottom-link"
+            :title (t :file/Edittags)
             :on-click (fn []
                         (m/modal! [edit-file-modal tags-atom new-tag-atom]
                                   {:size :lg :hide #(save-tags file-atom)}))}
-        [:i {:class "fa fa-tags"}]
-        [:span (t :file/Edittags)]]
+        [:i {:class "fa fa-tags"}]]
        (if-not (= path profile-picture-path)
          [:a {:class "bottom-link pull-right"
+              :title (t :file/Delete)
               :on-click (fn []
                           (m/modal! [delete-file-modal id files-atom]
                                     {:size :lg}))}
-          [:i {:class "fa fa-trash"}]
-          [:span (t :file/Delete)]])]]]))
+          [:i {:class "fa fa-trash"}]])]]]))
 
 (defn file-visible? [file-tags tags-selected tags-all]
   (boolean

@@ -201,7 +201,7 @@ button {
                 font: 300 24px "Open Sans Condensed",sans-serif;
                 text-transform: uppercase;
                 text-decoration: none;
-                color: $text-color;
+                color: $title-color;
                 margin: 0px;
                 padding:0px;
             }
@@ -518,9 +518,6 @@ button {
             text-align: left;
             line-height: 1em;
             color: $icon-color;
-            i {
-               // cursor: pointer;
-            }
         }
         .media-body{
             .media-description, .badge-description, .media-expires  {
@@ -540,6 +537,7 @@ button {
                 font-size: 16px;
                 line-height: 1.2em;
                 height: 2.3em;
+		overflow: hidden;
                 a {
                     cursor: pointer;
                     font-size: 16px;
@@ -749,7 +747,7 @@ button {
         }
     }
 }
-/* EXPORT BADGES */
+
 #export-badges{
     #grid .grid-container {
         height: 285px;

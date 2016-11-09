@@ -118,6 +118,7 @@
                         :on-change #(toggle-recipient-name id show-recipient-name-atom)
                         :checked   @show-recipient-name-atom}]
                (t :badge/Showyourname)]]]])
+
          (if (and (not revoked) (not expired?))
            [:div
             [:div {:class "row"}

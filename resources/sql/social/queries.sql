@@ -53,17 +53,12 @@ SELECT badge_content_id FROM social_connections_badge WHERE user_id = :user_id A
 
 -- name: select-user-connections-badge
 -- get users badge connections
-SELECT bc.id, bc.name, bc.image_file, bc.description, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime, badge_content_id  FROM badge AS b
-       JOIN badge_content AS bc ON b.badge_content_id = bc.id
-       JOIN issuer_content AS ic ON b.issuer_content_id = ic.id	
-       LEFT JOIN user AS u ON b.user_id = u.id
-       WHERE b.badge_content_id IN (SELECT badge_content_id FROM social_connections_badge where user_id = :user_id)
-	     AND b.status = 'accepted'
-       	     AND b.deleted = 0
-	     AND b.revoked = 0
-	     AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
-      GROUP BY bc.id, bc.name, bc.image_file, bc.description, ic.name, ic.url, b.badge_content_id
-      ORDER BY ctime DESC
+SELECT DISTINCT bc.id, bc.name, bc.image_file, bc.description FROM social_connections_badge AS scb
+       JOIN badge_content AS bc ON scb.badge_content_id = bc.id
+       WHERE scb.user_id = :user_id
+      GROUP BY bc.id, bc.name, bc.image_file, bc.description
+      ORDER BY bc.name ASC
+
 
 
 --name: insert-social-event<!
@@ -101,7 +96,7 @@ SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.l
 SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
 JOIN user AS u ON (u.id = bm.user_id)
 JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND :user_id =  bmv.user_id
-WHERE bm.badge_content_id IN (:badge_content_ids)
+WHERE bm.badge_content_id IN (:badge_content_ids) AND bm.deleted = 0
 ORDER BY bm.ctime DESC
 LIMIT 100
 
@@ -113,4 +108,14 @@ UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner =
 --name: select-badge-content-id-by-message-id
 SELECT badge_content_id from badge_message where id = :message_id
 
+--name: select-badge-content-id-by-badge-id
+SELECT badge_content_id from badge where id = :badge_id
 
+--name: select-user-badge-count
+SELECT COUNT(*) AS count from badge where user_id = :user_id AND status = 'accepted' AND deleted=0
+
+--name: select-user-profile-picture
+SELECT profile_picture from user where id = :user_id
+
+--name: select-user-not-verified-emails
+SELECT email FROM user_email WHERE user_id = :user_id AND verified= 0;

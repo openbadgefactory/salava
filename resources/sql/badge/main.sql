@@ -7,9 +7,9 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
        WHERE user_id = :user_id AND deleted = 0 AND status != 'declined'
 
 -- name: select-user-badges-to-export
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, badge.email, assertion_url, issuer_url, ic.name AS issuer_content_name FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, badge.email, assertion_url, issuer_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-	   JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
+       JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL AND deleted = 0 AND revoked = 0
 
 -- name: select-user-badges-pending
@@ -116,6 +116,10 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
 --name: update-badge-settings!
 --update badge settings
 UPDATE badge SET visibility = :visibility, rating = :rating, evidence_url = :evidence_url WHERE id = :id
+
+--name: update-badge-raiting!
+--update badge raiting
+UPDATE badge SET rating = :rating WHERE id = :id
 
 --name: update-badge-set-deleted!
 UPDATE badge SET deleted = 1, visibility = 'private' WHERE id = :id

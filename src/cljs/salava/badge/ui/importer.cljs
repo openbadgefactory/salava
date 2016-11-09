@@ -84,6 +84,7 @@
                     (= "badge/Badgeisexpired" message) "expired"
                     (= "badge/Savethisbadge" message) "ok"
                     :else "error")
+
         badge-link (if (= invalidtype "duplicate") (path-for (str "/badge/info/" id)))]
      [:div {:class (str "media grid-container " invalidtype)}
       [:div.media-content
@@ -91,7 +92,8 @@
          [:div.media-left
           [:img {:src (if-not (re-find #"http" image_file)
                         (str "/" image_file)
-                        image_file)}]])
+                        image_file)
+                 :alt name}]])
        [:div.media-body
         [:div.media-heading
           (if badge-link
@@ -105,15 +107,18 @@
       [:div {:class "media-bottom"}
        (if (= status "ok")
          [:div.checkbox
-          [:label
-           [:input {:type "checkbox"
+         [:label {:for (str "checkbox-" key)}
+          [:input {:type "checkbox"
+                    :id (str "checkbox-" key)
+                    :name "checkbox"
                     :checked checked?
                     :on-change (fn []
                                  (if checked?
                                    (remove-badge-selection key state)
-                                   (add-badge-selection key state)))}]
-           (t :badge/Savebadge)]]
+                                   (add-badge-selection key state)))}]     
+           (t :badge/Savebadge) [:span {:class "reader-only"} name ]]]
         (if (= invalidtype "error")
+
           [:div
            
           [:span {:id (str "err" key)} error]

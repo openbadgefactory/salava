@@ -9,8 +9,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
             [salava.social.ui.helper :refer [social-plugin?]]
-            [salava.social.ui.badge-message :refer [badge-message-handler]]
-            ))
+            [salava.social.ui.badge-message :refer [badge-message-handler]]))
 
 
 
@@ -97,7 +96,7 @@
 (defn gallery-modal-message-info-link [show-messages badge-content-id]
   (if (social-plugin?)
     (let [message-count (atom {:new-messages 0
-                          :all-messages 0})]
+                               :all-messages 0})]
       (get-messages badge-content-id message-count)
       (fn []
         
@@ -113,3 +112,4 @@
            (if @show-messages
              (t :social/Showinfo)
              all-messages)])))))
+
