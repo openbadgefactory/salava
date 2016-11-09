@@ -27,7 +27,7 @@
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/badge/mybadges"))[:session :identity] {:id user-id :role role} ))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role} ))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
@@ -51,7 +51,7 @@
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/badge/mybadges")) [:session :identity] {:id user-id :role role}))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream")) [:session :identity] {:id user-id :role role}))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))

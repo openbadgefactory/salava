@@ -193,6 +193,10 @@
 		}
 	}
 }
+
+@media (max-width: 480px){
+    .message-item.media.tips .media-left .system-image-url {width:55px; height:55px;}}
+
 #badge-content{
 	.message-item.media {
 		margin:5px 0px 0px 0px;
