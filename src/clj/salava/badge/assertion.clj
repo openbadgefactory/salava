@@ -44,16 +44,17 @@
       {:error (t :badge/Failedfetchsigned)})))
 
 (defn get-criteria-markdown [criteria-url]
-  "Get criteria markdown."
-  (try+
-    (let [html (html/html-resource (java.net.URL. criteria-url))
+  "Get criteria markdown, if available."
+  (try
+    (let [html  (html/html-resource (io/input-stream (.getBytes (http-get criteria-url))))
           links (filter #(and (= (get-in % [:attrs :rel]) "alternate")
                               (= (get-in % [:attrs :type]) "text/x-markdown")) (html/select html [:head :link]))
           href (first (map #(get-in % [:attrs :href]) links))]
       (if href
-        (slurp href)))
-    (catch Object _
-      ; TODO: log error
+        (http-get href)))
+    (catch Exception ex
+      (log/error "get-criteria-markdown: failed to fetch content")
+      (log/error (.getMessage ex))
       "")))
 
 (defn new-badge-assertion [badge-assertion-url]
