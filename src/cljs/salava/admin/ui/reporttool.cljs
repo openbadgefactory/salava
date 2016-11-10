@@ -40,7 +40,7 @@
        :href "#"
        :on-click #(do
                     (.preventDefault %)
-                    (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :admin/Close))])
+                    (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :core/Close))])
 
 (defn reportform [state status]
   (let [description-atom (cursor state [:description]) 
@@ -49,9 +49,10 @@
      (open-reportform-button false status)
      [:div {:class "col-xs-12" :id "reportform"}
       [:h4 (t :admin/Reportproblem)]
-      (t :admin/Reportinfo)
-      
       [:div.form-group
+       (t :admin/Reportinstructions)]
+      [:br]
+       [:div.form-group
         [:label
          (str (t :admin/Problemconcerns) ":")]
         [:div.radio

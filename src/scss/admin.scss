@@ -118,7 +118,21 @@
                 line-height: 25px;
             }
 }
-
+#ticket-container {
+    border-left:3px solid;
+    &.inappropriate {
+        border-left-color: purple;
+    }
+    &.bug {
+        border-left-color: red;
+    }
+    &.fakebadge {
+        border-left-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: DarkCyan;
+    }
+}
 /* Admin stats */
 .admin-stats{
     h3 {

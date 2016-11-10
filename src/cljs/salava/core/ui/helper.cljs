@@ -44,3 +44,10 @@
   (let [url (if (or (re-find #"^https?://" (str text)) (re-find #"^http?://" (str text))) text (str "http://" text))]
     [:a {:href url
          :target "_blank"} (str text)]))
+
+(defn str-cat [a-seq]
+  (if (empty? a-seq)
+    ""
+    (let [str-space (fn [str1 str2]
+                      (str str1 ", " str2))]
+      (reduce str-space a-seq))))

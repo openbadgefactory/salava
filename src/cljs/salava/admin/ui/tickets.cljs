@@ -36,7 +36,6 @@
     
   [:div {:class "row"}
    [:div {:class "col-xs-12"}
-    (str (t :admin/Sendmessagetoreporter) " " name)
       [:div.form-group
         [:label 
          (str (t :user/Email) ":")]
@@ -186,7 +185,7 @@
         (for [button buttons]
           (let [value button
                 checked? (boolean (some #(= value %) buttons-checked))]
-            [:button {:class    (str "btn btn-default " (if checked? "btn-active"))
+            [:button {:class    (str "btn btn-default " value " " (if checked? "btn-active"))
                       :key      value
                       :on-click (fn []
                                   (swap! state assoc (keyword all-key) false)

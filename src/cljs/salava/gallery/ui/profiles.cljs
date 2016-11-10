@@ -126,7 +126,8 @@
      [:div {:class "media grid-container"}
       [:div.media-content
        [:div.media-left
-        [:img {:src (profile-picture profile_picture)}]]
+        [:img {:src (profile-picture profile_picture)
+               :alt (str first_name " " last_name)}]]
        [:div.media-body
         [:div {:class "media-heading profile-heading"}
          [:a {:href (path-for (str "/user/profile/" id))} first_name " " last_name]]

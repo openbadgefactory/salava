@@ -38,6 +38,7 @@
                            :info (:info data))
                     )
                   (m/modal! [admin-modal state nil nil] {:size :lg}))})))
+
   ([item-type item-id gallery-state init-data]
    (let [ state (atom {:mail          {:subject ""
                                        :message ""}
@@ -71,7 +72,7 @@
     [:div
      [:div {:id "buttons"
             :class "text-right"}
-      [:button {:class    "btn btn-primary text-right"
+      [:button {:class    "btn btn-primary text-right admin-btn"
                 :on-click #(do (.preventDefault %)
                                (open-admintool-modal item-id item-type))}
       (t :admin/Admintools)]]]))

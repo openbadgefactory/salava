@@ -66,8 +66,8 @@
 
      
 
-     [:div.form-group
-      [:label {:class "col-sm-4"
+     [:fieldset.form-group
+      [:legend {:class "col-sm-4"
                :for "input-language"}
        (t :user/Language)
        [:span.form-required " *"]]

@@ -85,6 +85,7 @@
      [:div.col-xs-8
       [:div.badge-select
        [:select {:class "form-control"
+                 :aria-label "select badge group"
                  :value badge-id
                  :on-change #(select-badge block-atom @badges (js/parseInt (.-target.value %)))}
         [:option {:value 0} (t "-" :page/none "-")]
@@ -94,6 +95,7 @@
            (:name badge)])]]
       [:div.badge-select
        [:select {:class "form-control"
+                 :aria-label "select blocktype"
                  :value format
                  :on-change #(update-block-value block-atom :format (.-target.value %))}
         [:option {:value "short"} (t :page/Short)]
@@ -112,6 +114,7 @@
      [:div.col-xs-8
       [:div.badge-select
        [:select {:class "form-control"
+                 :aria-label "select badge"
                  :value tag
                  :on-change #(select-tag block-atom @tags (.-target.value %))}
         [:option {:value ""} (t "-" :page/none "-")]
@@ -119,12 +122,14 @@
           [:option {:value tag :key tag} tag])]]
       [:div.badge-select
        [:select {:class "form-control"
+                 :aria-label "select badge format"
                  :value format
                  :on-change #(update-block-value block-atom :format (.-target.value %))}
         [:option {:value "short"} (t :page/Short)]
         [:option {:value "long"} (t :page/Long)]]]
       [:div.badge-select
        [:select {:class "form-control"
+                 :aria-label "select sorting"
                  :value sort-by
                  :on-change #(update-block-value block-atom :sort (.-target.value %))}
         [:option {:value "name"} (t :page/Byname)]
@@ -262,7 +267,7 @@
          [block-type block-atom]]
         [:div {:class "col-xs-4 field-remove"
                :on-click #(f/remove-field blocks index)}
-         [:span {:class "remove-button"}
+         [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
        (case type
          ("heading" "sub-heading") [edit-block-text block-atom]

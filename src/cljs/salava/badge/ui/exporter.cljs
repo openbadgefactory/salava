@@ -4,6 +4,7 @@
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [unique-values path-for]]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]))
@@ -57,7 +58,8 @@
              nil)]
        (if image_file
          [:div.media-left
-          [:img {:src (str "/" image_file)}]])
+          [:a {:href (path-for (str "/badge/info/" id))}[:img {:src (str "/" image_file)
+                 :alt name}]]])
        [:div.media-body
         [:div.media-heading
          [:a.badge-link {:href (path-for (str "/badge/info/" id))}
@@ -71,13 +73,15 @@
         [:div.col-xs-9
          (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
            [:div.checkbox
-            [:label
+            [:label {:for (str "checkbox-" id)}
              [:input {:type "checkbox"
+                      :id (str "checkbox-" id)
                       :on-change (fn []
                                    (if checked?
                                      (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
                                      (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
                       :checked checked?}]
+
              (t :badge/Exporttobackpack)]])]
         [:div {:class "col-xs-3 text-right"}
          [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download"}

@@ -95,7 +95,7 @@
                                                                                                          :block_order s/Int))]}
                               :badges [{:id         s/Int
                                         :name       s/Str
-                                        :image_file s/Str
+                                        :image_file (s/maybe s/Str)
                                         :tags       (s/maybe [s/Str])}]
                               :tags   (s/maybe [s/Str])
                               :files  [(dissoc PageFile :file_order)]})

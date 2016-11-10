@@ -4,7 +4,7 @@
 
 (defn grid-buttons [title buttons key all-key state]
   [:div.form-group
-   [:label {:class "control-label col-sm-2"} title]
+   [:legend {:class "control-label col-sm-2"} title]
    [:div.col-sm-10
     (let [all-checked? (= ((keyword all-key) @state) true)
           buttons-checked ((keyword key) @state)]
@@ -61,8 +61,8 @@
 
 (defn grid-radio-buttons [title name radio-buttons key state]
   (let [checked (get @state key)]
-    [:div.form-group
-     [:label {:class "control-label col-sm-2"} title]
+    [:fieldset.form-group
+     [:legend {:class "control-label col-sm-2"} title]
      [:div.col-sm-10
       (for [button radio-buttons]
         [:label {:class "radio-inline"

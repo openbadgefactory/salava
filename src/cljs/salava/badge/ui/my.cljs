@@ -1,5 +1,6 @@
 (ns salava.badge.ui.my
-  (:require [reagent.core :refer [atom]]
+  (:require
+            [reagent.core :refer [atom]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :as set :refer [intersection]]
@@ -19,7 +20,7 @@
     (path-for "/obpv1/badge" true)
     {:handler (fn [data]
                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                                   :pending (filter #(= "pending" (:status %)) data)
+                                   :pending () ;(filter #(= "pending" (:status %)) data)
                                    :initializing false))}))
 
 (defn visibility-select-values []
@@ -81,6 +82,7 @@
         (init-data state)
         (m/close-modal!))}))
 
+
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400))
 )
@@ -111,7 +113,6 @@
   (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))]
-
      [:div {:class "media grid-container"}
       [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
       (cond
@@ -142,14 +143,16 @@
                        :class "fa fa-hourglass-half"}]])])
        (if image_file
          [:div.media-left
-          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)}]]])
+          [:a {:href badge-link} [:img.badge-img {:src (str "/" image_file)
+                                                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href badge-link} name]]
+         [:a.heading-link {:href badge-link :id (str id "-heading")} name]]
         [:div.media-issuer
          [:a {:href issuer_content_url
               :target "_blank"
               :title issuer_content_name} issuer_content_name]]
+
         ;(if expires_on
          ; [:div.media-expires (if expired? (t :badge/Expiredon) (t :badge/Expireson)) ": " (date-from-unix-time (* expires_on 1000))])[:div.media-description description]
          ]]
@@ -190,71 +193,17 @@
             (if (badge-visible? element-data state)
               (badge-grid-element element-data state))))))
 
-(defn update-status [id new-status state]
-  (ajax/POST
-    (path-for (str "/obpv1/badge/set_status/" id) true)
-    {:params  {:status new-status}
-     :handler (fn []
-                (let [badge (first (filter #(= id (:id %)) (:pending @state)))]
-                  (swap! state assoc :pending (remove #(= badge %) (:pending @state)))
-                  (if (= new-status "accepted")
-                    (swap! state assoc :badges (conj (:badges @state) badge)))))}))
 
-(defn badge-pending [{:keys [id image_file name description issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
-  [:div.row {:key id}
-   [:div.col-md-12
-    [:div.badge-container-pending
-     (if (or verified_by_obf issued_by_obf)
-       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-     [:div.row
-      [:div.col-md-12
-       [:div.media
-        [:div.pull-left
-         [:img.badge-image {:src (str "/" image_file)}]]
-        [:div.media-body
-         [:h4.media-heading
-          name]
-         [:div
-          [:a {:href issuer_content_url :target "_blank"} issuer_content_name]]
-         [:div (date-from-unix-time (* 1000 issued_on))]
-         [:div
-          description]]]]]
-     [:div {:class "row button-row"}
-      [:div.col-md-12
-       [:button {:class "btn btn-primary"
-                 :on-click #(update-status id "accepted" state)}
-        (t :badge/Acceptbadge)]
-       [:button {:class "btn btn-warning"
-                 :on-click #(update-status id "declined" state)}
-        (t :badge/Declinebadge)]]]]]])
 
-(defn badges-pending [state]
-  (into [:div {:id "pending-badges"}]
-        (for [badge (:pending @state)]
-          (badge-pending badge state))))
 
-(defn welcome-text []
-  
-  (let [site-name (session/get :site-name)]
-    [:div.panel
-     [:div.panel-body
-      [:h1.uppercase-header (str (t :core/Welcometo) " " site-name (t :core/Service))]
-      [:div.text
-       [:p (t :badge/Welcometext1) ":"]
-       [:ol.welcome-text
-        [:li
-         (t :badge/Add) " " [:a {:href (path-for "/user/edit/profile")} (t :badge/Profilepicture)]
-         "," (t :badge/Welcometextinfo1) " "
-         [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))} "profile"] "."]
-        [:li
-         (t :badge/Welcometextinfo2) " "
-         [:a {:href (path-for "/badge/import")} (t :badge/Importyourbages)]
-         " "(t :badge/Toopenbagdgepassport) ". "
-         [:b (t :badge/Rememberaddyouremail) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/Mailaddresses)] "."]]
-        [:li
-         [:a {:href (path-for "/page/mypages")} (t :badge/Createpage)]
-         " "(t :badge/Welcometextinfo3) " "
-         [:a {:href (path-for "/gallery/pages")} (t :badge/Ingallery)] "."]]]]]))
+
+
+
+
+
+(defn no-badges-text []
+  [:div
+   (t :badge/Youhavenobadgesyet) (str " ") [:a {:href (path-for "/gallery/application") } (t :badge/Gohere)] (str ".") ] )
 
 (defn content [state]
   [:div {:id "my-badges"}
@@ -263,12 +212,13 @@
      [:div.ajax-message
       [:i {:class "fa fa-cog fa-spin fa-2x "}]
       [:span (str (t :core/Loading) "...")]]
-     (if (and (empty? (:pending @state)) (empty? (:badges @state)))
-       [welcome-text]
-       [:div
-        [badges-pending state]
-        [badge-grid-form state]
-        [badge-grid state]]))])
+     [:div
+      [badge-grid-form state]
+      (if (empty? (:badges @state))
+        [no-badges-text]
+        [badge-grid state])
+      ]
+     )])
 
 
 

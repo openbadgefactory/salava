@@ -126,6 +126,7 @@
                   :on-click #(do
                                (init-data state)
                                (.preventDefault %))}
+
               (str (t :social/Loadmore) " (" (:messages_left @state) " " (t :social/Messagesleft) ")")]]]]))
 
 

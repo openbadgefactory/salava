@@ -58,16 +58,21 @@
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
+                        :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]]
       [:div {:class "media-bottom"}
        [:a {:class "bottom-link"
+            :title (t :page/Edit)
             :href  (path-for (str "/page/edit/" id))}
         [:i {:class "fa fa-pencil"}]
-        [:span (t :page/Edit)]]
+        ;[:span (t :page/Edit)]
+        ]
        [:a {:class "bottom-link pull-right"
+            :title (t :page/Settings)
             :href  (path-for (str "/page/settings/" id))}
         [:i {:class "fa fa-cog"}]
-        [:span (t :page/Settings)]]]]]))
+        ;[:span ]
+        ]]]]))
 
 (defn page-visible? [element state]
   (if (and
@@ -99,7 +104,7 @@
             :id "add-element"
             :key "new-page"}
       [:div {:class "media grid-container"}
-       [:a {:id "add-element-link"
+       [:a {:class "add-element-link"
             :href "#"
             :on-click #(create-page)}
         [:div.media-content
