@@ -1,12 +1,11 @@
 (ns salava.badge.assertion
-  (:require [clj-http.client :as client]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [slingshot.slingshot :refer :all]
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
-            [salava.core.util :refer [hex-digest str->epoch]]
+            [salava.core.util :refer [hex-digest str->epoch http-get]]
             [salava.core.time :refer [iso8601-to-unix-time]] ;cljc
             [salava.core.i18n :refer [t]]                    ;cljc
             [salava.badge.png :as p]))
@@ -14,15 +13,7 @@
 
 (defn fetch-json-data [url]
   (try+
-    (:body
-      (client/request
-        {:method         :get
-         :url            url
-         :as             :json
-         :throw-entire-message? true
-         :socket-timeout 30000
-         :conn-timeout   30000}))
-
+    (json/read-str (http-get url {:accept :json :throw-entire-message? true}) :key-fn keyword)
     (catch :status e
       (let [{:keys [status body]} e
             body-map (try+
