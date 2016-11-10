@@ -27,20 +27,23 @@
               :data-dismiss "modal"}
      "OK"]]])
 
-(defn send-file []
+(defn send-file [state]
   (let [file (-> (.querySelector js/document "input")
                  .-files
                  (.item 0))
         form-data (doto
                     (js/FormData.)
                     (.append "file" file (.-name file)))]
+    (swap! state assoc :status "loading")
     (ajax/POST
       (path-for "/obpv1/badge/upload")
       {:body    form-data
        :handler (fn [data]
-                  (m/modal! (upload-modal data)
-                            (if (= (:status data) "success")
-                              {:hide #(navigate-to "/badge")})))})))
+                  (do
+                    (swap! state assoc :status "form")
+                    (m/modal! (upload-modal data)
+                              (if (= (:status data) "success")
+                                {:hide #(navigate-to "/badge")}))))})))
 
 (defn upload-info []
   [:div
@@ -58,22 +61,33 @@
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
-(defn content []
-  [:div {:class "badge-upload"}
-   [m/modal-window]
-   [:h1.uppercase-header (t :badge/Uploadbadgesfrom)]
-   [upload-info]
-   [:form {:id "form"}
-    [:input {:type "file"
-             :aria-label "Choose file"
-             :name "file"
-             :on-change #(send-file)
-             :accept "image/png, image/svg+xml"}]]])
+(defn content [state]
+  (let [status  (:status @state)] 
+    [:div {:class "badge-upload"}
+     [m/modal-window]
+     [:h1.uppercase-header (t :badge/Uploadbadgesfrom)]
+     [upload-info]
+
+     (cond 
+       (= "loading" status) [:div.ajax-message
+                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                             [:span (str (t :core/Loading) "...")]]
+       :else [:form {:id "form"}
+              [:input {:type       "file"
+                       :aria-label "Choose file"
+                       :name       "file"
+                       :on-change  #(send-file state)
+                       :accept     "image/png, image/svg+xml"}]] )
+     
+     
+     
+     ]))
 
 (defn init-data []
       (ajax/GET (path-for "/obpv1/user/test") {}))
 
 (defn handler [site-navi]
-  (fn []
-    (init-data)
-    (layout/default site-navi (content))))
+  (let [state (atom {:status "form"})]
+    (fn []
+      (init-data)
+      (layout/default site-navi (content state)))))
