@@ -1,9 +1,11 @@
 (ns salava.core.util
-  (:require [clojure.java.io :as io]
+  (:require [clojure.tools.logging :as log]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [digest :as d]
             [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
+            [clojure.java.shell :refer [sh]]
             [clj.qrgen :as q]
             [clj-time.coerce :as tc]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
@@ -51,7 +53,22 @@
   [coll]
   (hex-digest "sha256" (apply str (flat-coll coll))))
 
-(defn file-extension [filename]
+
+(defn http-get
+  "Run simple HTTP GET request. Uses clj-http.client with curl as fallback. Returns body of the response as string."
+  ([url] (http-get url {}))
+  ([url opt]
+   (try
+     (:body (client/get url (dissoc opt :as)))
+     (catch Exception ex
+       (log/error "clj-http client request failed, falling back to curl")
+       (log/error "URL:" url)
+       (let [res (sh "/usr/bin/curl" "-f" "-s" "-L" "-m30" url)]
+         (if (= (:exit res) 0)
+           (:out res)
+           (throw ex)))))))
+
+(defn- file-extension [filename]
   (try+
     (let [file (if (re-find #"https?" (str filename)) (java.net.URL. filename) filename)]
       (-> file
@@ -74,23 +91,10 @@
     (let [content (slurp filename)]
       (public-path-from-content content extension))))
 
-(defn fetch-file-content [url]
-  "Fetch file content from url"
-  (try+
-    (:body
-      (client/get url {:as :byte-array}))
-    (catch Object _
-      (throw+ (str "Error fetching file from: " url)))))
 
-(defn trim-path [path]
-  (if (re-find #"\?" path)
-    (subs path 0 (.lastIndexOf path "?"))
-    path))
-
-(defn save-file-data
-  [ctx content path]
-  (let [filename (trim-path path)
-        data-dir (get-data-dir ctx)
+(defn- save-file-data
+  [ctx content filename]
+  (let [data-dir (get-data-dir ctx)
         fullpath (str data-dir "/" filename)]
     (try+
       (if-not (.exists (io/as-file data-dir))
@@ -103,10 +107,12 @@
       (catch Object _
         (throw+ (str "Error copying file: " _))))))
 
+
 (defn save-file-from-http-url
   [ctx url]
-  (let [content (fetch-file-content url)
-        path (public-path url)]
+  (let [content   (.getBytes (http-get url))
+        extension (-> content mime-type-of extension-for-name)
+        path (public-path-from-content content extension)]
     (save-file-data ctx content path)))
 
 (defn save-file-from-data-url
@@ -122,20 +128,20 @@
 (defn file-from-url
   [ctx url]
   (cond
-    (re-find #"https?" (str url)) (save-file-from-http-url ctx url)
-    (re-find #"data?" (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
+    (re-find #"^https?" (str url)) (save-file-from-http-url ctx url)
+    (re-find #"^data"   (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw+ (str "Error in file url: " url))))
 
 (defn str->qr-base64 [text]
-  (try+
+  (try
     (-> text
         str
         (q/from)
         (q/as-bytes)
         (bytes->base64))
-    (catch Object _
-      ;(TODO: (log "could not generate QR-code for string:" text)
-      )))
+    (catch Exception ex
+      (log/error "str->qr->base64: failed to generate QR-code")
+      (log/error (.getMessage ex)))))
 
 (defn str->epoch
   "Convert string to unix epoch timestamp"
