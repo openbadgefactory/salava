@@ -5,13 +5,16 @@
             [salava.user.schemas :as schemas]))
 
 (defn text-field [input-data]
-  (let [{:keys [name atom placeholder password?]} input-data]
+  (let [{:keys [name atom placeholder password? error-message-atom]} input-data]
     [:input {:class       "form-control"
              :id          (str "input-" name)
              :name        name
              :type        (if password? "password" "text")
              :placeholder placeholder
-             :on-change   #(reset! atom (.-target.value %))
+             :on-change   #(do
+                             (reset! atom (.-target.value %))
+                             (if error-message-atom
+                               (reset! error-message-atom (:message ""))))
              :value       @atom}]))
 
 (defn radio-button-selector [values atom]

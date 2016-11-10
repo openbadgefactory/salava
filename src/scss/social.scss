@@ -94,6 +94,7 @@
 			}
 			~ .media-body {
 				padding-left:57px;
+				font-size: 14px;
 			}
 	    }
 	}
@@ -137,7 +138,7 @@
 					margin-left: 10px;
 					display: inline-block
 			}
-			.media ~ a, .media-body ~ a {
+			.media-heading ~ a {
 				padding-left: 57px;
 			}
 		}
@@ -167,35 +168,81 @@
 	}
 	@media (max-width:480px){
 		.media-left{
-			display: block;
-			text-align: center;
 			padding-right: 0px;
 			position: absolute;
-			right:10px;
+			padding-top:15px;
 			img {
 				width: 55px;
-				margin-bottom: -60px;
+				margin-bottom: -80px;
 			}
 			~ .media-body {
 				padding-top:0px;
 				.media-body {
 					padding-right:0px;
 				}
+				.pull-left{
+					display: none;
+				}
+				h3.media-heading {
+					margin-bottom:10px;
+					&:before{
+						font-size: 26px;
+						display: block;
+						float: left;
+						width: 100%;
+						margin-right: 0px;
+						margin-top:-26px;
+					}
+					a {
+						line-height: 23px;
+						margin-left:70px;
+						display: inline-block;
+						padding-top:15px;
+						min-height:60px;
+					}
+					 ~ a {
+						padding-left:0px;
+					}
+					.new {
+						top:-30px;
+						left:50%;
+					}
+				}
 			}
 		}
 		.date {
 			float:none;
 			margin-left:0px;
-			margin-bottom:10px;
+			margin-bottom:0px;
+			margin-top:0px;
+			line-height: 35px;
 		}
-		h3.media-heading {
-			margin-right: 45px;
+		button.close{
+			top:3px;
 		}
+		
 	}
 }
 
 @media (max-width: 480px){
-    .message-item.media.tips .media-left .system-image-url {width:55px; height:55px;}}
+    .message-item.media.tips{
+		.media-left{
+			padding-top:35px;
+			~ .media-body h3.media-heading{
+				&:before{
+				margin-top:0px;
+				}
+				~ .media-body {
+					padding-left:0px;
+				}
+			}
+		}
+		.media-left .system-image-url {width:55px; height:55px;}
+	}
+	.message-item.media.follow h3.media-heading ~ span {
+		padding-left:0px;
+	}
+}
 
 #badge-content{
 	.message-item.media {
