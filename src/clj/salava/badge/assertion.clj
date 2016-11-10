@@ -1,7 +1,13 @@
 (ns salava.badge.assertion
+  (:import [ar.com.hjg.pngj PngReader])
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
+            [clojure.string :as string]
             [clojure.data.json :as json]
+            [clojure.xml :as xml]
+            [buddy.core.codecs :as codecs]
+            [buddy.sign.jws :as jws]
+            [buddy.core.keys :as keys]
             [slingshot.slingshot :refer :all]
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
@@ -143,3 +149,55 @@
      :recipient        recipient
      :badge            badge
      :error            error}))
+
+
+
+(defmulti assertion (fn [input]
+                      (cond
+                        (map? input) :map
+                        (and (string? input) (re-find #"^https?://" input)) :url
+                        (and (string? input) (re-find #"\{" input))         :json
+                        (and (string? input) (re-find #".+\..+\..+" input)) :jws
+                        :else :blank)))
+
+(defmethod assertion :map [input]
+  (create-assertion input {}))
+
+(defmethod assertion :json [input]
+  (assertion (json/read-str input :key-fn keyword)))
+
+(defmethod assertion :url [input]
+  (assertion (http-get input)))
+
+(defmethod assertion :jws [input]
+  (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
+        header (-> raw-header codecs/safebase64->str (json/read-str :key-fn keyword))
+        payload (-> raw-payload codecs/safebase64->str (json/read-str :key-fn keyword))
+        public-key (-> (get-in payload [:verify :url])
+                       http-get
+                       keys/str->public-key)]
+    (assertion (jws/unsign input public-key {:alg (keyword (:alg header))}))))
+
+(defmethod assertion :blank [_]
+  (throw (Exception. "badge/Invalidassertion")))
+
+(defmethod assertion :default [_]
+  (throw (Exception. "badge/Invalidassertion")))
+
+;;;
+
+(defmulti baked-image :content-type)
+
+(defmethod baked-image "image/png" [upload]
+  (let [m (.getMetadata (doto (PngReader. (:tempfile upload)) (.readSkippingAllRows)))]
+    (assertion (string/trim (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge") "")))))
+
+(defmethod baked-image "image/svg+xml" [upload]
+  (some->> (xml/parse (:tempfile upload))
+           :content
+           (filter #(= :openbadges:assertion (:tag %)))
+           first :content first string/trim
+           assertion))
+
+(defmethod baked-image :default [_]
+  (throw (Exception. "badge/Invalidfiletype")))

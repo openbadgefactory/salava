@@ -255,7 +255,7 @@
 (defn check-recipient [user-emails assertion]
   (let [recipient (:recipient assertion)]
     (if (empty? user-emails)
-      (throw+ "Badge is not issued to user"))
+      (throw (Exception. "badge/Userdoesnotownthisbadge")))
     (loop [emails user-emails
            checked-email (check-email recipient (first emails))]
       (cond
@@ -265,27 +265,26 @@
 
 (defn save-badge-from-assertion!
   [ctx badge user-id emails]
-  (try+
-    (if (and (get-in badge [:assertion :expires]) (< (get-in badge [:assertion :expires]) (unix-time)))
-      (throw+ "badge/Badgeexpired"))
-    (let [assertion (:assertion badge)
-          recipient-email (check-recipient emails assertion)
-          badge-image-path (file-from-url ctx (get-in assertion [:badge :image]))
-          badge-content-id (save-badge-content! ctx assertion badge-image-path)
-          issuer-image (get-in assertion [:badge :issuer :image])
-          issuer-image-path (if-not (empty? issuer-image)
-                              (file-from-url ctx issuer-image))
-          issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
-          original-creator-image (get-in assertion [:badge :OriginalCreator :image])
-          original-creator-image-path (if (not (empty? original-creator-image))
-                                        (file-from-url ctx original-creator-image))
-          creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
-          criteria-content-id (save-criteria-content! ctx assertion)]
-      (if (user-owns-badge? ctx (:assertion badge) user-id)
-        (throw+ "badge/Alreadyowned"))
-      (if-not recipient-email
-        (throw+ "badge/Userdoesnotownthisbadge"))
-      (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id)))))
+  (if (and (get-in badge [:assertion :expires]) (< (get-in badge [:assertion :expires]) (unix-time)))
+    (throw (Exception. "badge/Badgeexpired")))
+  (let [assertion (:assertion badge)
+        recipient-email (check-recipient emails assertion)
+        badge-image-path (file-from-url ctx (get-in assertion [:badge :image]))
+        badge-content-id (save-badge-content! ctx assertion badge-image-path)
+        issuer-image (get-in assertion [:badge :issuer :image])
+        issuer-image-path (if-not (empty? issuer-image)
+                            (file-from-url ctx issuer-image))
+        issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
+        original-creator-image (get-in assertion [:badge :OriginalCreator :image])
+        original-creator-image-path (if (not (empty? original-creator-image))
+                                      (file-from-url ctx original-creator-image))
+        creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
+        criteria-content-id (save-criteria-content! ctx assertion)]
+    (if (user-owns-badge? ctx (:assertion badge) user-id)
+      (throw (Exception. "badge/Alreadyowned")))
+    (if-not recipient-email
+      (throw (Exception. "badge/Userdoesnotownthisbadge")))
+    (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id))))
 
 (defn save-badge-tags!
   "Save tags associated to badge. Delete existing tags."
