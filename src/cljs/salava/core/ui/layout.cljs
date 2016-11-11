@@ -14,23 +14,27 @@
         sections (s/split path #"/")]
     (second sections)))
 
-(defn filtered-navi-list [navi key-list]
+(defn filtered-navi-list [navi key-list type]
   (let [map-fn (fn [[tr nv]]
-                 (assoc nv :target tr :active (= tr (current-path))))]
-    (sort-by :weight (map map-fn (select-keys navi key-list)))))
+                 (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (re-find (re-pattern (str tr)) (current-path))))))
+        navi-list (sort-by :weight (map map-fn (select-keys navi key-list)))]
+    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (count (re-seq #"\w+" (current-path) )))) 
+      (assoc-in (vec navi-list) [0 :active] true)
+      navi-list)
+    ))
 
 (defn top-navi-list [navi]
   (let [key-list (filter #(get-in navi [% :top-navi]) (keys navi))]
-    (filtered-navi-list navi key-list)))
+    (filtered-navi-list navi key-list "top")))
 
 (defn top-navi-landing-list [navi]
   (let [key-list (filter #(get-in navi [% :top-navi-landing]) (keys navi))]
-    (filtered-navi-list navi key-list)))
+    (filtered-navi-list navi key-list "top")))
 
-(defn sub-navi-list [parent navi]
+(defn sub-navi-list [parent navi type]
   (let [key-list (filter #(and (get-in navi [% :site-navi]) (= parent (navi-parent %))) (keys navi))]
     (when parent
-      (filtered-navi-list navi key-list))))
+      (filtered-navi-list navi key-list type))))
 
 (defn current-heading [parent headings]
   (str (get headings parent)))
@@ -46,7 +50,7 @@
    [:a {:href target} title]])
 
 (defn navi-dropdown [{:keys [target title active items]}]
-  (let [subitems (sub-navi-list (navi-parent (current-path)) items)
+  (let [subitems (sub-navi-list (navi-parent (current-path)) items "sub-subnavi")
         subitemactive  (some :active subitems)]
     [:li {:key target}
      [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#"(hash target))}  title]
@@ -151,7 +155,7 @@
       (base-footer))))
 
 (defn sidebar [site-navi]
-  (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi))]
+  (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi) "subnavi")]
     [:ul {:class "side-links"}
      (doall (for [i items](if (:dropdown i)
                             (navi-dropdown i)
