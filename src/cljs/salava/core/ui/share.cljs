@@ -69,7 +69,7 @@
         [:div.form-group
          [:label.col-xs-3 (t :core/Imageonly) ":"]
          [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"320\" src=\" src=\""url"/pic/embed\"  frameborder=\"0\"></iframe>")}]]]]
-       [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"\" frameborder=\"0\"></iframe>")}]]))])
+       [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))])
 
 
 (defn share-buttons [url title public? is-badge? link-or-embed-atom image-file]

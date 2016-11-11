@@ -168,7 +168,9 @@
                   [:i {:class "fa fa-heart"}]
                   (str " " (t :badge/Congratulations) "!")])
                )]]
-           [badge-message-link message_count  badge_content_id]]
+           (if (session/get :user)
+             [badge-message-link message_count  badge_content_id])
+           ]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
             [:div {:class "col-md-12"}

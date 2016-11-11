@@ -8,6 +8,7 @@
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
+            [salava.core.helper :refer [dump]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
 
@@ -67,13 +68,14 @@
     [:div.row
      [:div.col-md-12
       [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage)]]]
-    [:div {:class "row criteria-html"}
-     [:div.col-md-12
-      {:dangerouslySetInnerHTML {:__html html_content}}]]
     (if (= format "long")
-      [:div.row
-       [:div {:class "col-md-12"
-              :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]])
+      [:div
+       [:div {:class "row criteria-html"}
+        [:div.col-md-12
+         {:dangerouslySetInnerHTML {:__html html_content}}]]
+       [:div.row
+        [:div {:class                   "col-md-12"
+               :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
     (if (and show_evidence evidence_url)
             [:div.row
              [:div.col-md-12
