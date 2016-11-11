@@ -21,6 +21,11 @@
            uri)
          js/window.location.search)))
 
+(defn current-route-path []
+  (if (base-path)
+    (subs (current-path) (count (base-path)))
+    (current-path)))
+
 (defn base-url []
   (str (.-location.protocol js/window) "//" (.-location.host js/window)))
 
