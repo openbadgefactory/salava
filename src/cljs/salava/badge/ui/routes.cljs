@@ -44,14 +44,17 @@
                            :items {(str (base-path context) "/badge/import") {:weight 1
                                                                               :title (t :badge/Import)
                                                                               :site-navi true
+                                                                              :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Import)}
                                    (str (base-path context) "/badge/upload") {:weight 2
                                                                               :title (t :badge/Upload)
                                                                               :site-navi true
+                                                                              :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Upload)}
                                    (str (base-path context) "/badge/export") {:weight 3
                                                                               :title (t :badge/Export)
-                                                                              :site-navi true
+                                                                              :site-navi true                                                                              
+                                                                              :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Export)}}}
                                    
    (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}})

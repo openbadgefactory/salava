@@ -8,6 +8,7 @@
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
+            [clojure.tools.logging :as log]
             [salava.badge.main :as b]
             [salava.page.main :as p]
             [salava.core.mail :as m]
