@@ -149,5 +149,5 @@
   (cond
     (integer? s) s
     (str/blank? s) nil
-    (re-find #"^[0-9]+$" (str/trim s)) (Long. s)
-    :else (tc/to-long s)))
+    (re-find #"^[0-9]+$" s) (Long. s)
+    (re-find #"^\d{4}-\d\d-\d\d" s) (some-> (tc/to-long s) (quot 1000))))
