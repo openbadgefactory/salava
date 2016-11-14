@@ -97,11 +97,11 @@
             color: $icon-color;
         }
         #add-element-link, .add-element-link {
-            color: $grid-link;
+            color: $orange-color;
             text-decoration: none;
             text-transform: uppercase;
             &:hover {
-                color: $grid-link-hover;
+                color: $orange-hover;
             }
         }
     }
