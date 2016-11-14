@@ -24,11 +24,11 @@ a:hover, a:active, a:visited, a:focus {
     text-decoration: none;
 }
 a {
-    color:$grid-link;
+    color:$link-color;
 }
 a:hover, a:focus, a:active {
     text-decoration: underline;
-    color: $grid-link-hover;
+    color: $link-hover;
 }
 
 
@@ -75,8 +75,8 @@ button {
     border-color: $link-color;
     box-shadow: 0px 2px $box-shadow;
     &:hover {
-        background-color: $link-color;
-        border-color: darken($link-color, 10%);
+        background-color: $button-hover;
+        border-color: darken($button-hover, 10%);
     }
 }
 .btn-primary[disabled]{
@@ -529,7 +529,7 @@ ol.welcome-text li {
             display: inline-block;
             margin-left: 10px;
             a {
-                color: #7f7179;
+                color: $text-color;
                 font-weight: bold;
                 font-size: 12px;
             }
@@ -627,7 +627,7 @@ footer.footer {
     width: 100%;
     clear:both;
     a {
-	color: #7f7179;
+	color: $text-color;
     }
     .footer-container {
 	text-align: center;
@@ -641,7 +641,7 @@ footer.footer {
     color: #777;
 }
 body.anon {
-    background: #f9f9f9 url("/img/bg_subpage.png") no-repeat scroll center 70px;
+    background: $background-color url("/img/bg_subpage.png") no-repeat scroll center 70px;
     #badge-info, #badge-gallery-view{
         .panel {
             background-color: #FFF;

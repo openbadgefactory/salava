@@ -96,7 +96,7 @@
             font-size: 70px;
             color: $icon-color;
         }
-        a#add-element-link {
+        #add-element-link, .add-element-link {
             color: $grid-link;
             text-decoration: none;
             text-transform: uppercase;
