@@ -72,7 +72,7 @@ button {
 
 .btn-primary {
     background-color: $button-color;
-    border-color: $link-color;
+    border-color: darken($button-color, 10%);
     box-shadow: 0px 2px $box-shadow;
     &:hover {
         background-color: $button-hover;
@@ -98,17 +98,13 @@ button {
 }
 
 .btn-success {
-    background-color: $titlebar-color;
-    border-color: $green;
+    background-color: $green;
+    border-color: darken($green, 5%);
     box-shadow: 0px 2px $box-shadow;
-    &:hover {
-        background-color: $green;
+    &:hover, &:focus, &:active:hover  {
+        background-color: darken($green, 5%);
         border-color: $green;
         box-shadow: 0px 2px $box-shadow;
-    }
-    &:focus, &:active:hover {
-        background-color: $titlebar-color;
-        border-color: $green;
     }
 }
 
