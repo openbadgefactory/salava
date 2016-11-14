@@ -1,3 +1,11 @@
+/*special buttons*/
+$orange-color: #ea8241;
+$orange-hover:#df6519;
+/*error warnings*/
+$dark-red: #8c2e0b;
+/*success warnings*/
+$green: #89a338;
+
 $titlebar-color: #9dbe5f;
 $background-color: #f9f9f9;
 
@@ -5,23 +13,19 @@ $text-color:#7f7179;
 $icon-color: #b1a1ab;
 $title-color: $text-color;
 
+$link-color: #4264a2;
+$link-hover: $link-color;
 $grid-link: #f59f48;
-$badge-title:$grid-link;
 $grid-link-hover: #ea7d45;
 
+$badge-title:$grid-link;
 $badge-title-hover:$grid-link-hover;
+
 $menu-color: $grid-link;
 $menu-active:$grid-link-hover;
 
-
-$orange-color: #ea8241;
-$orange-hover:#df6519;
-$dark-red: #8c2e0b;
-$green: #89a338;
-
-$link-color: #4264a2;
-$link-hover: $link-color;
 $button-color: #587ab3;
+$button-hover: $link-color;
 $box-shadow: #d8d8d8;
 
 @mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {

@@ -42,7 +42,8 @@
     (send-mail ctx subject message [email-address])))
 
 (defn send-verification [ctx site-url email-verification-link fullname email lng]
-  (let [subject (str (t :core/Emailverification1 lng))
+  (let [site-name (get-in ctx [:config :core :site-name])
+        subject (str (t :core/Emailverification1 lng) " " site-name )
         message (str fullname "\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-url".\n" (t :core/Emailverification4 lng) ":\n\n"
                      email-verification-link
                      "\n\n" (t :core/Emailverification6 lng)".\n")]

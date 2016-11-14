@@ -43,7 +43,7 @@ button {
             background: none;
             background-color: #ffffff;
             border: none;
-            color: #476099;
+            color: $button-color;
             box-shadow: none;
             -webkit-box-shadow: none;
         }
@@ -582,9 +582,9 @@ button {
                 padding-right: 0px;
             }
             &:hover {
-                color:$menu-active;
+                color:$icon-color;
                 i.fa {
-                    color:$menu-active;
+                    color:$icon-color;
                 }
             }
         }
@@ -700,7 +700,7 @@ button {
     color: $text-color;
     cursor: pointer;
     &:hover {
-        color:$menu-active;
+        color:$icon-color;
     }
 }
 /* IMPORT BADGES */
