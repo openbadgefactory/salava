@@ -33,7 +33,7 @@
 /*PAGE GALLERY*/
 #page-gallery, #user-pages #grid .grid-container {
     .page-owner {
-        font-weight: bold;
+        font-weight: 600;
         padding: 5px 0;}
     .media-right img {
         max-width: 55px;
@@ -47,7 +47,7 @@
     .modal-dialog {
         width: 80%;
         .modal-content {
-            background-color: #F9F9F9;
+            background-color: $background-color;
         }
         .page-content {
             background-color: #FFF;
@@ -64,7 +64,7 @@
         }
     }
     .page-create-date {
-        color: #9dbe5f;
+        color: $green;
         font-size: 12px;
     }
     .grid-container .media-content .media-body .media-heading {
@@ -79,7 +79,7 @@
         .media-content {
             height: 65px;
             .media-heading {
-                font-weight: bold;
+                font-weight:600;
                 margin-right:0px;
                 margin-top:10px;
             }
