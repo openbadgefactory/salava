@@ -58,15 +58,22 @@
   "Run simple HTTP GET request. Uses clj-http.client with curl as fallback. Returns body of the response as string."
   ([url] (http-get url {}))
   ([url opt]
+   (if (str/blank? url)
+     (throw (Exception. "http-get: missing url parameter")))
    (try
      (:body (client/get url (dissoc opt :as)))
      (catch Exception ex
-       (log/error "clj-http client request failed, falling back to curl")
-       (log/error "URL:" url)
+       (log/error "http-get: clj-http client request failed")
+       (log/error "url:" url)
+       (log/error (.toString ex))
+       (log/error "falling back to curl")
        (let [res (sh "/usr/bin/curl" "-f" "-s" "-L" "-m30" url)]
          (if (= (:exit res) 0)
-           (:out res)
-           (throw ex)))))))
+           (do
+             (log/info "curl request ok")
+             (:out res))
+           (throw (Exception. (str "GET request to " url " failed")))))))))
+
 
 (defn- file-extension [filename]
   (try+
@@ -128,9 +135,10 @@
 (defn file-from-url
   [ctx url]
   (cond
+    (str/blank? url) (throw (Exception. "file-from-url: url parameter missing"))
     (re-find #"^https?" (str url)) (save-file-from-http-url ctx url)
     (re-find #"^data"   (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
-    :else (throw+ (str "Error in file url: " url))))
+    :else (throw (Exception. (str "Error in file url: " url)))))
 
 (defn str->qr-base64 [text]
   (try
@@ -141,7 +149,7 @@
         (bytes->base64))
     (catch Exception ex
       (log/error "str->qr->base64: failed to generate QR-code")
-      (log/error (.getMessage ex)))))
+      (log/error (.toString ex)))))
 
 (defn str->epoch
   "Convert string to unix epoch timestamp"

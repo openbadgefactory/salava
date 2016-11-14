@@ -11,15 +11,14 @@
             [slingshot.slingshot :refer :all]
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
-            [salava.core.util :refer [hex-digest str->epoch http-get]]
-            [salava.core.time :refer [iso8601-to-unix-time]] ;cljc
-            [salava.core.i18n :refer [t]]                    ;cljc
-            [salava.badge.png :as p]))
+            [salava.core.util :refer [hex-digest str->epoch http-get]]))
 
 
 (defn fetch-json-data [url]
-  (try+
-    (json/read-str (http-get url {:accept :json :throw-entire-message? true}) :key-fn keyword)
+  (log/info "fetch-json-data: GET" url)
+  (json/read-str (http-get url {:accept :json :throw-entire-message? true}) :key-fn keyword)
+
+  #_(try+
     (catch :status e
       (let [{:keys [status body]} e
             body-map (try+
@@ -28,8 +27,8 @@
                          {:raw body}))]
         {:error "badge/Errorfetchingjson" :status status :body body-map}))
 
-    (catch Object e
-      {:error "badge/Errorfetchingjson" :body e})))
+    (catch Throwable ex
+      {:error "badge/Errorfetchingjson" :body (.toString ex)})))
 
 
 (defn copy-to-file [output-file url]
@@ -47,7 +46,7 @@
       assertion)
     (catch Object _
       (log/error (str  "Failed to fetch signed assertion from " image-url))
-      {:error (t :badge/Failedfetchsigned)})))
+      {:error "badge/Failedfetchsigned})))"})))
 
 (defn get-criteria-markdown [criteria-url]
   "Get criteria markdown, if available."
@@ -150,38 +149,135 @@
      :badge            badge
      :error            error}))
 
+(defn domain [url]
+  (last (re-find #"^https?://([^/]+)" url)))
+
+(defn badge-image [input]
+  (let [image (get-in input [:badge :image] "")]
+    (if-let [match (re-find #"(?s)^data.+,(.+)" image)]
+      (codecs/base64->bytes (last match))
+      (try
+        (http-get image)
+        (catch Throwable ex
+          (if (contains? (meta input) :image)
+            (:image (meta input))
+            (throw (Exception. "badge/Missingimage"))))))))
 
 
 (defmulti assertion (fn [input]
-                      (cond
-                        (map? input) :map
-                        (and (string? input) (re-find #"^https?://" input)) :url
-                        (and (string? input) (re-find #"\{" input))         :json
-                        (and (string? input) (re-find #".+\..+\..+" input)) :jws
-                        :else :blank)))
+                      :in-progress
 
-(defmethod assertion :map [input]
+                      #_(cond
+                          (map? (:badge input)) :v0.5.0
+                          (and (contains? input :id) (contains? input :type)) :v1.1
+                          :else :v1.0)))
+
+
+; Refactored assertion parsing functions are not yet ready.
+; Use previous implementation for now.
+(defmethod assertion :in-progress [input]
   (create-assertion input {}))
 
-(defmethod assertion :json [input]
-  (assertion (json/read-str input :key-fn keyword)))
 
-(defmethod assertion :url [input]
-  (assertion (http-get input)))
+; See https://github.com/mozilla/openbadges-backpack/wiki/Assertion-Specification-Changes
 
-(defmethod assertion :jws [input]
+#_(def sample-v0.5
+  {:recipient "sha256$6d4956a8aec8d801cebb573282ee47c6988cff9991cd9a5fae745b3362db240e",
+   :badge  {:version "0.5.0"
+            :name "Badges 101"
+            :image "https://github.com/toolness/openbadges.org/raw/master/static/img/index/101badge.png",
+            :description "You really get badges!"
+            :criteria "http://badges-101.openbadges.org/"
+            :issuer {:origin "http://www.openbadges.org"
+                     :name "Open Badges"
+                     :org "Mozilla Foundation"
+                     :contact "hai2u@openbadges.org"}}
+   :verify {:type "hosted"
+            :url "http://poof.hksr.us/jnfmxvyu"}} 
+
+(defmethod assertion :v0.5.0 [input]
+  (let [q-url (fn [url]
+                (if (re-find #"^/" (str url))
+                  (str (get-in input [:badge :issuer :origin]) url) url))]
+
+    {:recipient {:identity (:recipient input)
+                 :type "email"
+                 :salt (get input :salt "")
+                 :hashed (not (boolean (re-find #"\@" (:recipient input))))}
+     :badge {:name         (get-in input [:badge :name])
+             :image        (badge-image (q-url (get-in input [:badge :image])))
+             :description  (get-in input [:badge :description])
+             :criteria     (q-url (get-in input [:badge :criteria]))
+             :issuer {:name  (str (get-in input [:badge :issuer :name])
+                                  ": "
+                                  (get-in input [:badge :issuer :org]))
+                      :url   (get-in input [:badge :issuer :origin])
+                      :email (get-in input [:badge :issuer :contact])}}
+     :evidence (q-url (:evidence input))
+     :expires  (str->epoch (:expires input))
+     :issuedOn (str->epoch (or (:issued_on input) (:issuedOn input)))
+     :verify {:type "hosted"
+              :url  (get-in input [:verify :url])}}))
+
+
+(defmethod assertion :default [input]
+  (if (contains? (meta input) :assertion_url)
+    (if (not= (get-in input [:verify :url]) (:assertion_url (meta input)))
+      (throw (Exception. "badge/VerifyURLMismatch"))))
+
+  (if (not= (domain (get-in input [:verify :url])) (domain (:badge input)))
+    (throw (Exception. "badge/VerifyURLMismatch")))
+
+  (let [badge  (json/read-str (http-get (:badge input)))
+        issuer (json/read-str (http-get (:issuer badge)))]
+    (-> input
+        (assoc :expires  (str->epoch (:expires input)))
+        (assoc :issuedOn (str->epoch (:issuedOn input)))
+        (assoc :badge badge)
+        (assoc-in [:badge :image] (badge-image input))
+        (assoc-in [:badge :issuer] issuer))))
+
+
+
+
+
+;;;
+
+(defmulti assertion-map (fn [input]
+                      (cond
+                        (string/blank? input) :blank
+                        (and (string? input) (re-find #"^https?://" input)) :url
+                        (and (string? input) (re-find #"\{" input))         :json
+                        (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
+
+
+(defmethod assertion-map :json [input]
+  (let [meta (or (meta input) {})]
+    (with-meta (assertion (json/read-str input :key-fn keyword)) (assoc meta :assertion_json input))))
+
+(defmethod assertion-map :url [input]
+  (let [meta (or (meta input) {})]
+    (with-meta (assertion-map (http-get input)) (assoc meta :assertion_url input))))
+
+(defmethod assertion-map :jws [input]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
         header (-> raw-header codecs/safebase64->str (json/read-str :key-fn keyword))
         payload (-> raw-payload codecs/safebase64->str (json/read-str :key-fn keyword))
         public-key (-> (get-in payload [:verify :url])
                        http-get
-                       keys/str->public-key)]
-    (assertion (jws/unsign input public-key {:alg (keyword (:alg header))}))))
+                       keys/str->public-key)
+        asr (jws/unsign input public-key {:alg (keyword (:alg header))})
+        meta (or (meta input) {})]
+    (with-meta (assertion asr) (-> meta
+                                   (assoc :assertion_jws  input)
+                                   (assoc :assertion_json (codecs/safebase64->str raw-payload))))))
 
-(defmethod assertion :blank [_]
-  (throw (Exception. "badge/Invalidassertion")))
+(defmethod assertion-map :blank [_]
+  (throw (Exception. "badge/MissingAssertion")))
 
-(defmethod assertion :default [_]
+(defmethod assertion-map :default [_]
+  (log/error "assertion-map: got unsupported assertion data")
+  (log/error (pr-str _))
   (throw (Exception. "badge/Invalidassertion")))
 
 ;;;
@@ -189,15 +285,17 @@
 (defmulti baked-image :content-type)
 
 (defmethod baked-image "image/png" [upload]
-  (let [m (.getMetadata (doto (PngReader. (:tempfile upload)) (.readSkippingAllRows)))]
-    (assertion (string/trim (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge") "")))))
+  (let [m (.getMetadata (doto (PngReader. (:tempfile upload)) (.readSkippingAllRows)))
+        asr (string/trim (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge") ""))]
+    (with-meta (assertion-map asr) {:image (slurp (:tempfile upload))})))
 
 (defmethod baked-image "image/svg+xml" [upload]
-  (some->> (xml/parse (:tempfile upload))
-           :content
-           (filter #(= :openbadges:assertion (:tag %)))
-           first :content first string/trim
-           assertion))
+  (let [asr (some->> (xml/parse (:tempfile upload))
+                     :content
+                     (filter #(= :openbadges:assertion (:tag %)))
+                     first :content first string/trim)]
+    (with-meta (assertion-map asr) {:image (slurp (:tempfile upload))})))
 
 (defmethod baked-image :default [_]
+  (log/error "baked-image: unsupported file type" (:content-type _))
   (throw (Exception. "badge/Invalidfiletype")))
