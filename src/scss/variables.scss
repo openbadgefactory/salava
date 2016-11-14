@@ -34,4 +34,5 @@ $box-shadow: #d8d8d8;
     box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
 }
 
+//@import 'extra/cancred_variables';
 @import 'extra/passport_variables';

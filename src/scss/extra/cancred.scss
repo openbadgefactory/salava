@@ -1,3 +1,4 @@
+@import '../variables';
 .logo-image-url{
     width: 350px;
     height: 48px;
@@ -23,35 +24,14 @@
 }
 
 
-header {
-    box-shadow: -1px 7px 5px -3px #cecccd;
-    .container-fluid {
-        padding: 0;
-        margin: 0;
+a#login-button {
+    background-color: $button-color;
+    border-color: $button-color;
+    &:hover {
+        background-color: $button-hover;
     }
 }
 
-button.navbar-toggle {
-    .icon-bar {
-        background-color: #afa2a9;
-    }
-    border-color: #afa2a9;
-}
-
-#login-button {
-    width: 125px;
-    background-color: #00739a;
-    text-transform: uppercase;
-    border: 1px solid #00739a;
-    font: bold 12px "Open Sans",sans-serif;
-    padding: 10px 0;
-}
-
-.ul.navbar-nav li a {
-        &:first-of-type {
-        margin-left: 40px;
-    }
-}
 
 //NAVBAR FIXED TOP
  .navbar-fixed-top {
@@ -62,32 +42,24 @@ button.navbar-toggle {
     height: 48px;
 }
 
-.title-row {
-    background-color: #00739a;
+/*.title-row {
     border-bottom-color: #9DBE5F;
-}
+}*/
 
 ul.side-links {
     li a {
         color: #189fb5;
     }
-    li.active a {
+    li.active a, li a:hover {
         color: #00739A;
     }
 }
 
 ul#secondary-menu-links li a i.fa {
-    color: #189fb5;
+    color: $button-hover;
 }
 
-.btn-primary {
-    background-color: #00739a;
-    border-color: #00739a;
-    &:hover {
-        background-color: #189fb5;
-    }
-}
-#my-badges #grid .grid-container .media-content .icons{
+/*#my-badges #grid .grid-container .media-content .icons{
     text-align:left;
     .visibility-icon{
         width:30px;
@@ -130,4 +102,4 @@ legend, .form-horizontal legend.control-label {
     font-size: inherit;
     border:none;
     font-weight: bold;
-}
+}*/
