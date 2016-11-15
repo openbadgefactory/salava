@@ -11,6 +11,7 @@
             [slingshot.slingshot :refer :all]
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
+            [salava.badge.png :as p]
             [salava.core.util :refer [hex-digest str->epoch http-get]]))
 
 
@@ -181,20 +182,6 @@
 
 ; See https://github.com/mozilla/openbadges-backpack/wiki/Assertion-Specification-Changes
 
-#_(def sample-v0.5
-  {:recipient "sha256$6d4956a8aec8d801cebb573282ee47c6988cff9991cd9a5fae745b3362db240e",
-   :badge  {:version "0.5.0"
-            :name "Badges 101"
-            :image "https://github.com/toolness/openbadges.org/raw/master/static/img/index/101badge.png",
-            :description "You really get badges!"
-            :criteria "http://badges-101.openbadges.org/"
-            :issuer {:origin "http://www.openbadges.org"
-                     :name "Open Badges"
-                     :org "Mozilla Foundation"
-                     :contact "hai2u@openbadges.org"}}
-   :verify {:type "hosted"
-            :url "http://poof.hksr.us/jnfmxvyu"}} 
-
 (defmethod assertion :v0.5.0 [input]
   (let [q-url (fn [url]
                 (if (re-find #"^/" (str url))
@@ -236,10 +223,6 @@
         (assoc :badge badge)
         (assoc-in [:badge :image] (badge-image input))
         (assoc-in [:badge :issuer] issuer))))
-
-
-
-
 
 ;;;
 
@@ -297,5 +280,5 @@
     (with-meta (assertion-map asr) {:image (slurp (:tempfile upload))})))
 
 (defmethod baked-image :default [_]
-  (log/error "baked-image: unsupported file type" (:content-type _))
+  (log/error "unsupported badge file:" (:content-type _))
   (throw (Exception. "badge/Invalidfiletype")))
