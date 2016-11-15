@@ -123,7 +123,7 @@
                    :return schemas/Upload
                    :multipart-params [file :- upload/TempFileUpload]
                    :middleware [upload/wrap-multipart-params]
-                   :summary "Upload badge PNG-file"
+                   :summary "Upload badge PNG or SVG file"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (i/upload-badge ctx file (:id current-user))))

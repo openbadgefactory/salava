@@ -7,6 +7,7 @@
         margin-top:-20px;
         border-top: none;
         padding-top: 5px;
+        cursor: pointer;
     }
 }
 #badge-gallery-view, #badge-content {
@@ -73,7 +74,7 @@
 }
 /*PROFILE GALLERY*/
 #profile-gallery #grid {
-    .media {
+    .media.grid-container {
         height: auto;
         padding: 10px 15px;
         .media-content {
