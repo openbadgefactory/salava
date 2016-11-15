@@ -175,7 +175,7 @@
   (try
     (log/info "upload-badge: got new upload from user id" user-id)
     (b/save-badge-from-assertion! ctx
-                                  {:assertion (a/baked-image uploaded-file)}
+                                  {:assertion (a/baked-image uploaded-file) :_status "accepted"}
                                   user-id
                                   (u/verified-email-addresses ctx user-id))
     {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
