@@ -76,10 +76,13 @@
                 color: $text-color;
                 cursor: pointer;
                 i.fa {
-                    color: $icon-color;
+                    color: inherit;
                     padding-right:0px;
                     font-size: 20px;
                     padding-top:3px;
+                }
+                &:hover{
+                    color: $icon-color;
                 }
                 span {
                     display: none;
@@ -110,8 +113,11 @@
     a.bottom-link.pull-right {
         margin-top:15px;
         cursor: pointer;
+        color:$text-color;
         i.fa {
             font-size: 20px;
+        }
+        &:hover {
             color:$icon-color;
         }
         span {
