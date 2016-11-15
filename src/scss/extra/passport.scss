@@ -1,3 +1,6 @@
+/* VARIABLES OVERWRITE */
+@import 'passport_variables';
+
 @import '../admin';
 @import '../badge';
 @import '../core';
@@ -5,10 +8,9 @@
 @import '../gallery';
 @import '../oauth';
 @import '../page';
-@import '../print';
 @import '../social';
 @import '../user';
-@import 'passport_variables';
+
 /* LINKS */
 a, #badge-info a {
     color: $link-color;
