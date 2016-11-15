@@ -17,7 +17,7 @@
 
 (defn fetch-json-data [url]
   (log/info "fetch-json-data: GET" url)
-  (json/read-str (http-get url {:accept :json :throw-entire-message? true}) :key-fn keyword)
+  (http-get url {:as :json :accept :json :throw-entire-message? true})
 
   #_(try+
     (catch :status e
@@ -52,7 +52,7 @@
 (defn get-criteria-markdown [criteria-url]
   "Get criteria markdown, if available."
   (try
-    (let [html  (html/html-resource (io/input-stream (.getBytes (http-get criteria-url))))
+    (let [html  (html/html-resource (io/input-stream (http-get criteria-url {:as :byte-array})))
           links (filter #(and (= (get-in % [:attrs :rel]) "alternate")
                               (= (get-in % [:attrs :type]) "text/x-markdown")) (html/select html [:head :link]))
           href (first (map #(get-in % [:attrs :href]) links))]
@@ -60,7 +60,7 @@
         (http-get href)))
     (catch Exception ex
       (log/error "get-criteria-markdown: failed to fetch content")
-      (log/error (.getMessage ex))
+      (log/error (.toString ex))
       "")))
 
 (defn new-badge-assertion [badge-assertion-url]

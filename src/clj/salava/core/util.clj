@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.data.json :as json]
             [digest :as d]
             [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
@@ -53,6 +54,25 @@
   [coll]
   (hex-digest "sha256" (apply str (flat-coll coll))))
 
+(defn- curl [url opt]
+  (let [accept (case (:accept opt)
+                 :json "-H'Accept: application/json, */*'"
+                 nil   "-H'Accept: */*'")
+        out-fn (case (:as opt)
+                 :json #(json/read-str % :key-fn keyword)
+                 :byte-array identity
+                 nil         identity)
+        out-enc (case (:as opt)
+                  :byte-array :bytes
+                  :json "UTF-8"
+                  nil   "UTF-8")
+        res (sh "/usr/bin/curl" "-f" "-s" "-L" "-m30" accept url :out-enc out-enc)]
+    (if (= (:exit res) 0)
+      (do
+        (log/info "curl request ok")
+        (out-fn (:out res)))
+      (throw (Exception. (str "GET request to " url " failed"))))))
+
 
 (defn http-get
   "Run simple HTTP GET request. Uses clj-http.client with curl as fallback. Returns body of the response as string."
@@ -61,18 +81,13 @@
    (if (str/blank? url)
      (throw (Exception. "http-get: missing url parameter")))
    (try
-     (:body (client/get url (dissoc opt :as)))
+     (:body (client/get url opt))
      (catch Exception ex
        (log/error "http-get: clj-http client request failed")
        (log/error "url:" url)
        (log/error (.toString ex))
        (log/error "falling back to curl")
-       (let [res (sh "/usr/bin/curl" "-f" "-s" "-L" "-m30" url)]
-         (if (= (:exit res) 0)
-           (do
-             (log/info "curl request ok")
-             (:out res))
-           (throw (Exception. (str "GET request to " url " failed")))))))))
+       (curl url opt)))))
 
 
 (defn- file-extension [filename]
@@ -117,10 +132,11 @@
 
 (defn save-file-from-http-url
   [ctx url]
-  (let [content   (.getBytes (http-get url))
+  (let [content   (http-get url {:as :byte-array})
         extension (-> content mime-type-of extension-for-name)
         path (public-path-from-content content extension)]
     (save-file-data ctx content path)))
+
 
 (defn save-file-from-data-url
   [ctx data-str comma-pos]
