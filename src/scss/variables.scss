@@ -1,38 +1,35 @@
 /*special buttons*/
-$orange-color: #ea8241;
-$orange-hover:#df6519;
+$orange-color: #ea8241 !default;
+$orange-hover:#df6519 !default;
 /*error warnings*/
-$dark-red: #8c2e0b;
+$dark-red: #8c2e0b !default;
 /*success warnings*/
-$green: #89a338;
+$green: #89a338 !default;
 
-$titlebar-color: #9dbe5f;
-$background-color: #f9f9f9;
+$titlebar-color: #9dbe5f !default;
+$background-color: #f9f9f9 !default;
 
-$text-color:#7f7179;
-$icon-color: #b1a1ab;
-$title-color: $text-color;
+$text-color:#7f7179 !default;
+$icon-color: #b1a1ab !default;
+$title-color: $text-color !default;
 
-$link-color: #4264a2;
-$link-hover: $link-color;
-$grid-link: #f59f48;
-$grid-link-hover: #ea7d45;
+$link-color: #4264a2 !default;
+$link-hover: $link-color !default;
+$grid-link: #f59f48 !default;
+$grid-link-hover: #ea7d45 !default;
 
-$badge-title:$grid-link;
-$badge-title-hover:$grid-link-hover;
+$badge-title:$grid-link !default;
+$badge-title-hover:$grid-link-hover !default;
 
-$menu-color: $grid-link;
-$menu-active:$grid-link-hover;
+$menu-color: $grid-link !default;
+$menu-active:$grid-link-hover !default;
 
-$button-color: #587ab3;
-$button-hover: $link-color;
-$box-shadow: #d8d8d8;
+$button-color: #587ab3 !default;
+$button-hover: $link-color !default;
+$box-shadow: #d8d8d8 !default;
 
 @mixin inner-shadow($h-shadow, $v-shadow, $blur, $spread, $opacity) {
     -webkit-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
     -moz-box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
     box-shadow: inset $h-shadow $v-shadow $blur $spread rgba(0,0,0,$opacity);
 }
-
-//@import 'extra/cancred_variables';
-@import 'extra/passport_variables';

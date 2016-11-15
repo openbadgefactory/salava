@@ -1,4 +1,16 @@
-@import '../variables';
+/* VARIABLES OVERWRITE */
+@import 'cancred_variables';
+
+@import '../admin';
+@import '../badge';
+@import '../core';
+@import '../file';
+@import '../gallery';
+@import '../oauth';
+@import '../page';
+@import '../social';
+@import '../user';
+
 .logo-image-url{
     width: 350px;
     height: 48px;
@@ -8,6 +20,12 @@
 .logo-image-icon-url {
     width: 48px;
     height: 48px;
+    background-image: url("/img/extra/cancred/logo_icon.png");
+}
+
+.system-image-url {
+    width: 90px;
+    height: 90px;
     background-image: url("/img/extra/cancred/logo_icon.png");
 }
 
@@ -48,10 +66,19 @@ a#login-button {
 
 ul.side-links {
     li a {
-        color: #189fb5;
+        color: $button-hover;
     }
     li.active a, li a:hover {
         color: #00739A;
+    }
+    @media (max-width: 767px){
+        li.active a {
+            background-color: $button-hover;
+            color: #FFF;
+            //border: 1px solid #d8d8d8;
+            border-bottom: 0px;
+            margin-bottom: -1px;
+        }
     }
 }
 
