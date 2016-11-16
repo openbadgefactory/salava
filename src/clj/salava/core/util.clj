@@ -9,6 +9,7 @@
             [clojure.java.shell :refer [sh]]
             [clj.qrgen :as q]
             [clj-time.coerce :as tc]
+            [salava.core.helper :refer [plugin-str]]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [buddy.core.codecs :refer [base64->bytes base64->str bytes->base64]]))
 
@@ -29,6 +30,9 @@
 
 (defn get-base-path [ctx]
   (get-in ctx [:config :core :base-path] ""))
+
+(defn get-plugins [ctx]
+  (get-in ctx [:config :core :plugins] []))
 
 (defn hex-digest [algo string]
   (case algo
@@ -175,3 +179,17 @@
     (str/blank? s) nil
     (re-find #"^[0-9]+$" s) (Long. s)
     (re-find #"^\d{4}-\d\d-\d\d" s) (some-> (tc/to-long s) (quot 1000))))
+
+(def plugin-fun
+  (memoize
+    (fn [plugins nspace name]
+      (let [fun (fn [p]
+                  (try
+                    (let [sym (symbol (str "salava." p "." nspace "/" name))]
+                      (require (symbol (namespace sym)))
+                      (resolve sym))
+                    (catch Throwable _)))]
+        (->> plugins
+             (map #(str/replace (plugin-str %) #"/" "."))
+             (map fun)
+             (filter #(not (nil? %))))))))
