@@ -2,4 +2,6 @@
   (:require [buddy.hashers :as hashers]))
 
 (defn check-password [password hash]
-  (hashers/check password hash))
+  (if (re-find #"^pbkdf2" hash)
+    (hashers/check password hash)
+    false))
