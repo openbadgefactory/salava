@@ -14,8 +14,7 @@
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.core.mail :as m])
-  (:import [salava LegacyPassword]))
+            [salava.core.mail :as m]))
 
 (defqueries "sql/user/main.sql")
 
@@ -38,9 +37,7 @@
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
 
 (defn check-password [password hash]
-  (if (= (subs hash 0 3) "$S$")
-    (LegacyPassword/checkPassword password hash)
-    (hashers/check password hash)))
+  (hashers/check password hash))
 
 (defn verified-email-addresses
   "Get list of user's verified email addresses by user id"
