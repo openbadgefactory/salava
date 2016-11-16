@@ -8,7 +8,8 @@
 
  :languages [:en :fi]
 
- :plugins [:badge :page :gallery :file :user :social :admin :extra/factory :displayer :extra/application]
+ :plugins [:badge :page :gallery :file :user :social :admin :displayer
+           :extra/factory :extra/application :extra/legacy]
 
  :datasource {:adapter "mysql"
               :username "salava"
