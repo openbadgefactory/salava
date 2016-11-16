@@ -8,58 +8,63 @@
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/tools.nrepl "0.2.12"]
 
+                 ; Dependecy conflict overrides
+                 [org.clojure/tools.reader "1.0.0-beta3"]
+                 [clj-stacktrace "0.2.8"]
+                 [org.apache.commons/commons-compress "1.11"]
+
                  ; Google Core Libraries for Java
-                 [com.google.guava/guava "19.0"]
+                 [com.google.guava/guava "20.0"]
 
                  ; Database
-                 [org.clojure/java.jdbc "0.6.1"]
-                 [hikari-cp "1.7.1"]
-                 [mysql/mysql-connector-java "5.1.39"]
+                 [org.clojure/java.jdbc "0.6.2-alpha3"]
+                 [hikari-cp "1.7.5"]
+                 [mysql/mysql-connector-java "5.1.40"]
                  [yesql "0.5.3"]
-                 [migratus "0.8.26"]
+                 [migratus "0.8.32"]
 
                  ; Server side
-                 [http-kit "2.1.19"]
-                 [ring/ring-core "1.5.0" :exclusions [org.clojure/tools.reader]]
+                 [http-kit "2.2.0"]
+                 [ring/ring-core "1.5.0"]
                  [ring/ring-devel "1.5.0"]
                  [ring/ring-defaults "0.2.1"]
                  [ring-webjars "0.1.1"]
                  [compojure "1.5.1"]
-                 [org.clojure/core.memoize "0.5.8"]
-                 [metosin/compojure-api "1.1.3"]
+                 [org.clojure/core.memoize "0.5.9"]
+                 [metosin/compojure-api "1.1.9"]
                  [hiccup "1.0.5"]
                  [org.clojure/data.json "0.2.6"]
-                 [clj-time "0.12.0"]
-                 [prismatic/schema "1.1.2"]
+                 [clj-time "0.12.2"]
+                 [prismatic/schema "1.1.3"]
                  [clojurewerkz/propertied "1.2.0"]
-                 [com.draines/postal "2.0.0" :exclusions [commons-codec]]
+                 [com.draines/postal "2.0.2" :exclusions [commons-codec]]
 
                  [clj-http "3.3.0"]
                  [enlive "1.1.6"]
-                 [markdown-clj "0.9.89"]
+                 [markdown-clj "0.9.91"]
                  [ar.com.hjg/pngj "2.1.0"]
                  [com.novemberain/pantomime "2.8.0" :exclusions [org.bouncycastle/bcprov-jdk15on]]
                  [com.github.kyleburton/clj-xpath "1.4.5"]
-                 [digest "1.4.4"]
+                 [digest "1.4.5"]
                  [org.clojure/tools.cli "0.3.5"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]
 
                  ; Client side
-                 [org.clojure/clojurescript "1.9.89" :exclusions [com.google.code.findbugs/jsr305]]
-                 [reagent "0.5.1"]
-                 [reagent-utils "0.1.9"]
-                 [bidi "2.0.9"]
+                 [org.clojure/clojurescript "1.9.293" :exclusions [com.google.code.findbugs/jsr305]]
+                 [reagent "0.6.0"]
+                 [reagent-utils "0.2.0"]
+                 [bidi "2.0.14"]
                  [kibu/pushy "0.3.6"]
-                 [com.taoensso/tower "3.1.0-beta3" :exclusions  [com.taoensso/encore]]
+                 [com.taoensso/tower "3.1.0-beta3"]
                  [cljs-ajax "0.5.8"]
-                 [org.clojars.frozenlock/reagent-modals "0.2.5"]
+                 [org.clojars.frozenlock/reagent-modals "0.2.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
                  [org.webjars/font-awesome "4.6.3"]
-                 [org.webjars/es5-shim "4.1.14"]
+                 [org.webjars/es5-shim "4.5.9"]
                  [org.webjars/es6-shim "0.20.2"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
@@ -74,7 +79,7 @@
                  [midje "1.8.3"]
 
                  ; Auth
-                 [buddy "0.9.0"]
+                 [buddy "1.2.0"]
 
                  ]
 
@@ -82,16 +87,16 @@
   :java-source-paths ["src/java"]
   :test-paths ["test/clj" "test/cljs" "test/cljc"]
   :profiles {:dev {:source-paths ["src/dev-clj"]
-                   :dependencies [[figwheel "0.5.4-5"]
+                   :dependencies [[figwheel "0.5.8"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [lein-midje "3.2"]
-                                  [reloaded.repl "0.2.2"]]
+                                  [lein-midje "3.2.1"]
+                                  [reloaded.repl "0.2.3"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :plugins [[lein-pdo "0.1.1"]
-                             [lein-cljsbuild "1.1.3" :exclusions  [org.clojure/clojure]]
-                             [lein-scss "0.2.4"]
-                             [lein-figwheel "0.5.4-5"]]
+                             [lein-cljsbuild "1.1.4" :exclusions [org.clojure/clojure]]
+                             [lein-scss "0.3.0"]
+                             [lein-figwheel "0.5.8"]]
                    :resource-paths ["target/generated"]}
              :uberjar {:resource-paths  ["target/adv"]
                        :main  salava.core.main
