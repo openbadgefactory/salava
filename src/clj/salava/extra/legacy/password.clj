@@ -41,7 +41,7 @@
     (throw (Exception. "unsupported password format")))
   [(hash-rounds (subs input 3 4)) (subs input 4 12) (subs input 12)])
 
-(defn- compare [a-bytes b-bytes]
+(defn- pw-compare [a-bytes b-bytes]
   (if (not= (count a-bytes) (count b-bytes))
     (throw (Exception. "string comparison length mismatch")))
   (= 0 (reduce bit-or (map bit-xor (.getBytes a-bytes) (.getBytes b-bytes)))))
@@ -50,4 +50,4 @@
   (if (or (s/blank? we-have) (s/blank? they-sent))
     (throw (Exception. "missing input strings")))
   (let [[rounds salt our-hash] (unpack we-have)]
-    (compare our-hash (pw-hash rounds salt they-sent))))
+    (pw-compare our-hash (pw-hash rounds salt they-sent))))
