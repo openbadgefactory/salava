@@ -7,6 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
+            [salava.core.helper :refer [dump]]
             [salava.core.access :as access]
             salava.core.restructure))
 
@@ -51,7 +52,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity] {:id (:id login-status) :role (:role login-status)})
+                       (assoc-in (ok login-status) [:session :identity] {:id (:id login-status) :role (:role login-status) :private (:private login-status)})
                        (ok login-status))))
 
              (POST "/logout" []
@@ -186,4 +187,13 @@
              (GET "/test" []
                   :summary "Test is user authenticated"
                   :auth-rules access/authenticated
-                  (ok)))))
+                  (ok))
+             
+             (GET "/public-access" []
+                  :summary "Test is user authenticated and in private mode"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (if (:private current-user)
+                    (forbidden)
+                    (ok))
+                  ))))

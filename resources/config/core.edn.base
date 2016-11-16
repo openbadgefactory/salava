@@ -10,6 +10,8 @@
 
  :plugins [:badge :page :gallery :file :user :displayer :social :admin]
 
+ :private false
+
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"

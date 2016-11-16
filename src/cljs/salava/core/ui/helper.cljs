@@ -56,3 +56,6 @@
     (let [str-space (fn [str1 str2]
                       (str str1 ", " str2))]
       (reduce str-space a-seq))))
+
+(defn private? []
+  (session/get-in [:user :private] false))

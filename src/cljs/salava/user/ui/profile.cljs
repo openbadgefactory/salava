@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for hyperlink]]
+            [salava.core.ui.helper :refer [path-for hyperlink private?]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
@@ -99,7 +99,8 @@
      [:div.panel-body
       (if owner?
         [:div.row
-         (profile-visibility-input visibility-atom)
+         (if-not (private?)
+           (profile-visibility-input visibility-atom))
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12

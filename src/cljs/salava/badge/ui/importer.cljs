@@ -188,8 +188,9 @@
      [:div {:class "alert alert-warning"} (t (keyword (:error @state)))])
    [badge-grid state]])
 
+
 (defn init-data []
-  (ajax/GET (path-for "/obpv1/user/test") {}))
+  (ajax/GET (path-for "/obpv1/user/public-access") {}))
 
 (defn handler [site-navi params]
   (let [state (atom {:badges []

@@ -84,7 +84,7 @@
      ]))
 
 (defn init-data []
-      (ajax/GET (path-for "/obpv1/user/test") {}))
+      (ajax/GET (path-for "/obpv1/user/public-access") {}))
 
 (defn handler [site-navi]
   (let [state (atom {:status "form"})]

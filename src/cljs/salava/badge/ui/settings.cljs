@@ -5,8 +5,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
             [salava.core.ui.rate-it :as r]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [private? navigate-to path-for]]
             [salava.badge.ui.helper :as bh]))
 
 (defn set-visibility [visibility state]
@@ -80,15 +79,16 @@
             [:legend {:class "col-md-12 sub-heading"}
               (t :badge/Badgevisibility)]
              [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
-              [:div [:input {:id              "visibility-public"
-                       :name            "visibility"
-                       :value           "public"
-                       :type            "radio"
-                       :on-change       #(set-visibility "public" state)
-                       :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
-              [:i {:class "fa fa-globe" }]
-              [:label {:for "visibility-public"}
-               (t :badge/Public)]]
+              (if-not (private?)
+                [:div [:input {:id              "visibility-public"
+                               :name            "visibility"
+                               :value           "public"
+                               :type            "radio"
+                               :on-change       #(set-visibility "public" state)
+                               :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
+                 [:i {:class "fa fa-globe" }]
+                 [:label {:for "visibility-public"}
+                  (t :badge/Public)]])
               [:div [:input {:id              "visibility-internal"
                        :name            "visibility"
                        :value           "internal"

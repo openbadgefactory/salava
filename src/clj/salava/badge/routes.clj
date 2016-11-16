@@ -52,7 +52,9 @@
                           (b/badge-viewed ctx badgeid user-id))
                         (ok (assoc badge :owner? owner?
                                          :user-logged-in? (boolean user-id))))
-                      (unauthorized))))
+                      (if (and (not user-id) (= visibility "internal"))
+                        (unauthorized)
+                        (not-found)))))
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
@@ -100,7 +102,10 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (let [emails (i/user-backpack-emails ctx (:id current-user))]
-                    (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))})))
+                    (if (:private current-user)
+                    (forbidden)
+                    (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))}))
+                    ))
 
              (GET "/import" []
                   :return schemas/Import

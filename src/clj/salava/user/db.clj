@@ -98,11 +98,12 @@
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
   (try+
-   (let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+   (let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
+         private (get-in ctx [:config :core :private] false)]
      (if (and id pass activated verified (not deleted) (check-password plain-password pass))
        (do
          (update-user-last_login! {:id id} (get-db ctx))
-         {:status "success" :id id :role role})
+         {:status "success" :id id :role role :private private})
        (if (and id pass activated verified deleted (check-password plain-password pass))
          {:status "error" :message "user/Accountdeleted"}
          {:status "error" :message "user/Loginfailed"})))
@@ -182,7 +183,10 @@
 (defn user-information
   "Get user data by user-id"
   [ctx user-id]
-  (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+  (let [select-user (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+        private (get-in ctx [:config :core :private] false)
+        user (assoc select-user :private private)]
+    user))
 
 (defn user-information-with-registered-and-last-login
   "Get user data by user-id "
