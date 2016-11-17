@@ -143,7 +143,7 @@
   :pedantic? :abort
 
   :aliases {"develop"         ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
-            "uberjar"         ["with-profile" "uberjar" "do" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
+            "uberjar"         ["with-profile" "uberjar" "do" "clean" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
             "translate"       ["run" "-m" "salava.core.translator/translate"]
 
