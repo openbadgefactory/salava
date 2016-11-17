@@ -1,4 +1,5 @@
 (ns salava.core.util
+  (:import [java.util Base64])
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.string :as str]
@@ -10,8 +11,7 @@
             [clj.qrgen :as q]
             [clj-time.coerce :as tc]
             [salava.core.helper :refer [plugin-str]]
-            [pantomime.mime :refer [extension-for-name mime-type-of]]
-            [buddy.core.codecs :refer [base64->bytes base64->str bytes->base64]]))
+            [pantomime.mime :refer [extension-for-name mime-type-of]]))
 
 (defn get-db [ctx]
   {:connection {:datasource (:db ctx)}})
@@ -33,6 +33,23 @@
 
 (defn get-plugins [ctx]
   (get-in ctx [:config :core :plugins] []))
+
+
+(defn base64->bytes [input]
+  (.decode (Base64/getDecoder) input))
+
+(defn url-base64->bytes [input]
+  (.decode (Base64/getUrlDecoder) input))
+
+(defn base64->str [input]
+  (String. (base64->bytes input) "UTF-8"))
+
+(defn url-base64->str [input]
+  (String. (url-base64->bytes input) "UTF-8"))
+
+(defn bytes->base64 [input]
+  (.encodeToString (Base64/getEncoder) input))
+
 
 (defn hex-digest [algo string]
   (case algo
@@ -114,8 +131,8 @@
   "Calculate checksum for file and use it as a filename under public dir"
   ([filename] (public-path filename (file-extension filename)))
   ([filename extension]
-    (let [content (slurp filename)]
-      (public-path-from-content content extension))))
+   (let [content (slurp filename)]
+     (public-path-from-content content extension))))
 
 
 (defn- save-file-data

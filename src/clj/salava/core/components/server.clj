@@ -1,5 +1,6 @@
 (ns salava.core.components.server
-  (:require [org.httpkit.server :as http-kit]
+  (:require [clojure.tools.logging :as log]
+            [org.httpkit.server :as http-kit]
             [com.stuartsierra.component :as component]))
 
 (defrecord Server [config handler http-kit]
@@ -13,8 +14,10 @@
       (assoc this :http-kit server)))
 
   (stop [this]
-    (if http-kit
-      (http-kit))
+    (when http-kit
+      (log/info "Stopping http-kit...")
+      (http-kit :timeout 10000)
+      (log/info "Stopped"))
     (assoc this :http-kit nil)))
 
 (defn create []

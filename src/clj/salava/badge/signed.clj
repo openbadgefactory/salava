@@ -2,7 +2,7 @@
   (:require [slingshot.slingshot :refer :all]
             [clj-http.client :as http]
             [clojure.data.json :as json]
-            [buddy.core.codecs :as codecs]
+            [salava.core.util :as u]
             [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]))
 
@@ -20,9 +20,9 @@
 
 (defn signed-assertion [metadata]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split metadata #"\.")
-        header (-> raw-header codecs/safebase64->str (json/read-str :key-fn keyword))
+        header (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         alg (:alg header)
-        payload (-> raw-payload codecs/safebase64->str (json/read-str :key-fn keyword))
+        payload (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
         public-key (fetch-public-key (get-in payload [:verify :url]))]
     (if-not (and (map? header) (contains? header :alg))
       (throw+ "Invalid signed badge header"))

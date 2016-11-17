@@ -2,13 +2,13 @@
   (:require [ring.util.http-response :refer [unauthorized forbidden]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.cookie :refer [cookie-store]]
-            [buddy.auth.backends.session :refer [session-backend]]
+            [buddy.auth.backends :as backends]
             [buddy.auth.accessrules :refer [wrap-access-rules]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]))
 
 (def auth-backend
   ; By default responds with 401 or 403 if unauthorized
-  (session-backend))
+  (backends/session))
 
 (defn wrap-app-session [routes config]
   (-> routes
