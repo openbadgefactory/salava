@@ -4,7 +4,7 @@
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for private?]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [reagent-modals.modals :as m]
@@ -73,16 +73,17 @@
          [:button {:class "btn btn-primary print-btn"
                    :on-click #(.print js/window)}
           (t :core/Print)]]
-        [:div {:class (str "checkbox " @visibility-atom)}
-         [:label
-          [:input {:name      "visibility"
-                   :type      "checkbox"
-                   :on-change #(toggle-visibility (:id page) visibility-atom)
-                   :checked     (= @visibility-atom "public")}]
-          [:i.fa]
-          (if (= @visibility-atom "public")
-            (t :page/Public)
-            (t :core/Publishandshare))]]
+        (if-not (private?)
+          [:div {:class (str "checkbox " @visibility-atom)}
+           [:label
+            [:input {:name      "visibility"
+                     :type      "checkbox"
+                     :on-change #(toggle-visibility (:id page) visibility-atom)
+                     :checked   (= @visibility-atom "public")}]
+            [:i.fa]
+            (if (= @visibility-atom "public")
+              (t :page/Public)
+              (t :core/Publishandshare))]])
         [:div {:class (str "share-wrapper " @visibility-atom)} [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
        (admintool (:id page) "page"))
      [ph/view-page page]

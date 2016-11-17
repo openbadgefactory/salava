@@ -75,8 +75,7 @@
 
 (defn share-buttons [url title public? is-badge? link-or-embed-atom image-file]
   (if (private?)
-    [:div {:id "share"}
-     [:div {:id "share-buttons" :class "share-disabled"}]]
+    [:div ]
     (create-class {:reagent-render      (fn [url title public? is-badge?]
                                           (share-buttons-element url title public? is-badge? link-or-embed-atom image-file))
                    :component-did-mount (fn []

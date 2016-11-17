@@ -7,13 +7,16 @@
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump private?]]
             [salava.social.db :as so]
+            [clojure.tools.logging :as log]
             [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64 str->epoch]]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
- 
+
+
+
 (defn badge-url [ctx badge-id]
   (str (get-site-url ctx) (get-base-path ctx) "/badge/info/" badge-id))
 
@@ -343,17 +346,23 @@
 (defn save-badge-settings!
   "Update badge settings"
   [ctx badge-id user-id visibility evidence-url rating tags]
-  (if (badge-owner? ctx badge-id user-id)
-    (let [data {:id          badge-id
-                :visibility   visibility
-                :evidence_url (if (blank? evidence-url) nil evidence-url)
-                :rating       rating}]
-      
-      (if (blank? evidence-url) (toggle-show-evidence! ctx badge-id 0 user-id))
-      (update-badge-settings! data (get-db ctx))
-      (save-badge-tags! ctx tags badge-id)
-      {:status "success"})
-    {:status "error"}))
+  (try+
+   (if (badge-owner? ctx badge-id user-id)
+     (let [data {:id          badge-id
+                 :visibility   visibility
+                 :evidence_url (if (blank? evidence-url) nil evidence-url)
+                 :rating       rating}]
+       (if (and (private? ctx) (= "public" visibility))
+         (throw+ {:status "error" :badge-id badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
+       (if (blank? evidence-url) (toggle-show-evidence! ctx badge-id 0 user-id))
+       (update-badge-settings! data (get-db ctx))
+       (save-badge-tags! ctx tags badge-id)
+       {:status "success"})
+     (throw+ {:status "error"}))
+   (catch Object ex
+     (log/error "trying save badge visibilty as public in private mode: " ex)
+     {:status "error"}))
+  )
 
 (defn save-badge-raiting!
   "Update badge raiting"

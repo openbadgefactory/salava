@@ -155,7 +155,9 @@
                    :summary "Update profile visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (u/set-profile-visibility ctx visibility (:id current-user))))
+                   (if (:private current-user)
+                     (forbidden)
+                     (ok (u/set-profile-visibility ctx visibility (:id current-user)))))
 
              (POST "/profile" []
                    ;:return

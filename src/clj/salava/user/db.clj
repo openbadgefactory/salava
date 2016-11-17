@@ -3,7 +3,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump private?]]
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
             [salava.file.db :as f]
@@ -230,17 +230,27 @@
 (defn set-profile-visibility
   "Set user profile visibility."
   [ctx visibility user-id]
-  (update-user-visibility! {:profile_visibility visibility :id user-id} (get-db ctx))
-  visibility)
+  (try+
+   (if (and (private? ctx) (= "public" visibility))
+     (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
+   (update-user-visibility! {:profile_visibility visibility :id user-id} (get-db ctx))
+   visibility
+   (catch Object _
+     "error")))
 
 (defn save-user-profile
   "Save user's profile"
   [ctx visibility picture about fields user-id]
-  (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
-  (doseq [index (range 0 (count fields))
-        :let [{:keys [field value]} (get fields index)]]
-    (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
-  (update-user-visibility-picture-about! {:profile_visibility visibility :profile_picture picture :about about :id user-id} (get-db ctx)))
+  (try+
+   (if (and (private? ctx) (= "public" visibility))
+     (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
+   (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
+   (doseq [index (range 0 (count fields))
+           :let [{:keys [field value]} (get fields index)]]
+     (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
+   (update-user-visibility-picture-about! {:profile_visibility visibility :profile_picture picture :about about :id user-id} (get-db ctx))
+   (catch Object _
+     "error")))
 
 
 (defn send-password-reset-link

@@ -7,9 +7,10 @@
             [autoclave.core :refer :all]
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump private?]]
             [salava.core.util :refer [get-db get-datasource get-site-url get-base-path str->qr-base64]]
             [salava.badge.main :as b]
+            [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
             [salava.file.db :as f]))
 
@@ -269,10 +270,13 @@
                                    (empty? password))
                             "private"
                             visibility)]
+      (if (and (private? ctx) (= "public" visibility))
+         (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
       (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
       (save-page-tags! ctx page-id tags)
       {:status "success" :message "page/Pagesavedsuccessfully"})
-    (catch Object _
+    (catch Object ex
+      (log/error "trying save badge visibilty as public in private mode: " ex)
       {:status "error" :message "page/Errorwhilesavingpage"})))
 
 (defn remove-files-blocks-and-content! [db page-id]

@@ -13,7 +13,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.gallery.ui.badges :as b]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -104,14 +104,15 @@
         [:div.panel-body
          (if (and owner? (not expired?) (not revoked))
            [:div.row {:id "badge-share-inputs"}
-            [:div.pull-left
-             [:div {:class (str "checkbox " visibility)}
-              [:a {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
-               [:i {:class "fa"}]
-               (if (not (= visibility "public"))
-                 (t :core/Publishandshare)
-                 (t :core/Public)
-                 )]]]
+            (if-not (private?)
+              [:div.pull-left
+               [:div {:class (str "checkbox " visibility)}
+                [:a {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
+                 [:i {:class "fa"}]
+                 (if (not (= visibility "public"))
+                   (t :core/Publishandshare)
+                   (t :core/Public)
+                   )]]])
             [:div {:class "pull-right text-right"}
              [follow-badge badge_content_id]
              [:button {:class "btn btn-primary settings-btn"
