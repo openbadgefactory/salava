@@ -31,14 +31,19 @@
 
 
 (defn css-list [ctx]
-  (->> [:config :core :plugins]
-       (get-in ctx)
-       (cons :core)
-       (map plugin-str)
-       (map    #(str "/css/" % ".css"))
-       (filter #(io/resource (str "public" %)))
-       (concat asset-css)
-       (map #(with-version ctx %))))
+  (let [plugins (get-in ctx [:config :core :plugins])
+        coll (mapcat #(get-in ctx [:config % :css] []) plugins)]
+    (if-not (empty? coll)
+      ; If any plugin defines a list of css files, use those as-is
+      (map #(with-version ctx %) (concat asset-css coll))
+      ; Otherwise, create the list using plugin names
+      (->> plugins
+           (cons :core)
+           (map plugin-str)
+           (map    #(str "/css/" % ".css"))
+           (filter #(io/resource (str "public" %)))
+           (concat asset-css)
+           (map #(with-version ctx %))))))
 
 
 (defn js-list [ctx]

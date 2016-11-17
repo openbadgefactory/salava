@@ -7,6 +7,7 @@
         margin-top:-20px;
         border-top: none;
         padding-top: 5px;
+        cursor: pointer;
     }
 }
 #badge-gallery-view, #badge-content {
@@ -33,7 +34,7 @@
 /*PAGE GALLERY*/
 #page-gallery, #user-pages #grid .grid-container {
     .page-owner {
-        font-weight: bold;
+        font-weight: 600;
         padding: 5px 0;}
     .media-right img {
         max-width: 55px;
@@ -47,7 +48,7 @@
     .modal-dialog {
         width: 80%;
         .modal-content {
-            background-color: #F9F9F9;
+            background-color: $background-color;
         }
         .page-content {
             background-color: #FFF;
@@ -64,7 +65,7 @@
         }
     }
     .page-create-date {
-        color: #9dbe5f;
+        color: $green;
         font-size: 12px;
     }
     .grid-container .media-content .media-body .media-heading {
@@ -73,13 +74,13 @@
 }
 /*PROFILE GALLERY*/
 #profile-gallery #grid {
-    .media {
+    .media.grid-container {
         height: auto;
         padding: 10px 15px;
         .media-content {
             height: 65px;
             .media-heading {
-                font-weight: bold;
+                font-weight:600;
                 margin-right:0px;
                 margin-top:10px;
             }
