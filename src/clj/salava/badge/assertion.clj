@@ -5,19 +5,18 @@
             [clojure.string :as string]
             [clojure.data.json :as json]
             [clojure.xml :as xml]
-            [buddy.core.codecs :as codecs]
             [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]
             [slingshot.slingshot :refer :all]
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
             [salava.badge.png :as p]
-            [salava.core.util :refer [hex-digest str->epoch http-get]]))
+            [salava.core.util :as u]))
 
 
 (defn fetch-json-data [url]
   (log/info "fetch-json-data: GET" url)
-  (http-get url {:as :json :accept :json :throw-entire-message? true})
+  (u/http-get url {:as :json :accept :json :throw-entire-message? true})
 
   #_(try+
     (catch :status e
@@ -52,12 +51,12 @@
 (defn get-criteria-markdown [criteria-url]
   "Get criteria markdown, if available."
   (try
-    (let [html  (html/html-resource (io/input-stream (http-get criteria-url {:as :byte-array})))
+    (let [html  (html/html-resource (io/input-stream (u/http-get criteria-url {:as :byte-array})))
           links (filter #(and (= (get-in % [:attrs :rel]) "alternate")
                               (= (get-in % [:attrs :type]) "text/x-markdown")) (html/select html [:head :link]))
           href (first (map #(get-in % [:attrs :href]) links))]
       (if href
-        (http-get href)))
+        (u/http-get href)))
     (catch Exception ex
       (log/error "get-criteria-markdown: failed to fetch content")
       (log/error (.toString ex))
@@ -75,13 +74,13 @@
         original-creator (if (not-empty original-creator-url)
                            (fetch-json-data original-creator-url))]
     (assoc badge-data
-      :badge_url badge-assertion-url
-      :issuer_url issuer-url
-      :issuer issuer-data
-      :criteria_url criteria
-      :criteria_markdown criteria-markdown
-      :criteria_html criteria-html
-      :OriginalCreator (assoc original-creator :json-url original-creator-url))))
+           :badge_url badge-assertion-url
+           :issuer_url issuer-url
+           :issuer issuer-data
+           :criteria_url criteria
+           :criteria_markdown criteria-markdown
+           :criteria_html criteria-html
+           :OriginalCreator (assoc original-creator :json-url original-creator-url))))
 
 (defn old-badge-assertion [assertion issued-on]
   (let [image-path (:image assertion)
@@ -94,12 +93,12 @@
                    criteria-path)
         criteria-markdown (or (get-criteria-markdown criteria) "")
         criteria-html (md/md-to-html-string criteria-markdown)
-        badge-url (str "dummy://" (hex-digest "sha1"
-                                              (str
-                                                issued-on
-                                                (:name assertion)
-                                                (:image assertion)
-                                                (:criteria assertion))))
+        badge-url (str "dummy://" (u/hex-digest "sha1"
+                                                (str
+                                                  issued-on
+                                                  (:name assertion)
+                                                  (:image assertion)
+                                                  (:criteria assertion))))
         original-creator-url (get-in assertion [:extensions:OriginalCreator :url])
         original-creator (if (not-empty original-creator-url)
                            (fetch-json-data original-creator-url))]
@@ -125,8 +124,8 @@
         evidence (or (:evidence assertion) nil)
         verify (or (:verify assertion) {:type "hosted"
                                         :url assertion-url})
-        issued-on (str->epoch (or (:issuedOn assertion) (:issued-on assertion)))
-        expires   (str->epoch (:expires assertion))
+        issued-on (u/str->epoch (or (:issuedOn assertion) (:issued-on assertion)))
+        expires   (u/str->epoch (:expires assertion))
 
         recipient (if (string? (:recipient assertion))
                     (merge
@@ -156,9 +155,9 @@
 (defn badge-image [input]
   (let [image (get-in input [:badge :image] "")]
     (if-let [match (re-find #"(?s)^data.+,(.+)" image)]
-      (codecs/base64->bytes (last match))
+      (u/base64->bytes (last match))
       (try
-        (http-get image)
+        (u/http-get image)
         (catch Throwable ex
           (if (contains? (meta input) :image)
             (:image (meta input))
@@ -201,8 +200,8 @@
                       :url   (get-in input [:badge :issuer :origin])
                       :email (get-in input [:badge :issuer :contact])}}
      :evidence (q-url (:evidence input))
-     :expires  (str->epoch (:expires input))
-     :issuedOn (str->epoch (or (:issued_on input) (:issuedOn input)))
+     :expires  (u/str->epoch (:expires input))
+     :issuedOn (u/str->epoch (or (:issued_on input) (:issuedOn input)))
      :verify {:type "hosted"
               :url  (get-in input [:verify :url])}}))
 
@@ -215,11 +214,11 @@
   (if (not= (domain (get-in input [:verify :url])) (domain (:badge input)))
     (throw (Exception. "badge/VerifyURLMismatch")))
 
-  (let [badge  (json/read-str (http-get (:badge input)))
-        issuer (json/read-str (http-get (:issuer badge)))]
+  (let [badge  (json/read-str (u/http-get (:badge input)))
+        issuer (json/read-str (u/http-get (:issuer badge)))]
     (-> input
-        (assoc :expires  (str->epoch (:expires input)))
-        (assoc :issuedOn (str->epoch (:issuedOn input)))
+        (assoc :expires  (u/str->epoch (:expires input)))
+        (assoc :issuedOn (u/str->epoch (:issuedOn input)))
         (assoc :badge badge)
         (assoc-in [:badge :image] (badge-image input))
         (assoc-in [:badge :issuer] issuer))))
@@ -227,11 +226,11 @@
 ;;;
 
 (defmulti assertion-map (fn [input]
-                      (cond
-                        (string/blank? input) :blank
-                        (and (string? input) (re-find #"^https?://" input)) :url
-                        (and (string? input) (re-find #"\{" input))         :json
-                        (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
+                          (cond
+                            (string/blank? input) :blank
+                            (and (string? input) (re-find #"^https?://" input)) :url
+                            (and (string? input) (re-find #"\{" input))         :json
+                            (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
 
 
 (defmethod assertion-map :json [input]
@@ -240,20 +239,23 @@
 
 (defmethod assertion-map :url [input]
   (let [meta (or (meta input) {})]
-    (with-meta (assertion-map (http-get input)) (assoc meta :assertion_url input))))
+    (with-meta (assertion-map (u/http-get input)) (assoc meta :assertion_url input))))
 
 (defmethod assertion-map :jws [input]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
-        header (-> raw-header codecs/safebase64->str (json/read-str :key-fn keyword))
-        payload (-> raw-payload codecs/safebase64->str (json/read-str :key-fn keyword))
+        header (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
+        payload (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
         public-key (-> (get-in payload [:verify :url])
-                       http-get
+                       u/http-get
                        keys/str->public-key)
-        asr (jws/unsign input public-key {:alg (keyword (:alg header))})
+        asr (-> input
+                (jws/unsign public-key {:alg (keyword (:alg header))})
+                (String. "UTF-8")
+                (json/read-str :key-fn keyword))
         meta (or (meta input) {})]
     (with-meta (assertion asr) (-> meta
                                    (assoc :assertion_jws  input)
-                                   (assoc :assertion_json (codecs/safebase64->str raw-payload))))))
+                                   (assoc :assertion_json (u/url-base64->str raw-payload))))))
 
 (defmethod assertion-map :blank [_]
   (throw (Exception. "badge/MissingAssertion")))
