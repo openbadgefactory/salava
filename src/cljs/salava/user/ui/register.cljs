@@ -104,7 +104,8 @@
 (defn registeration-content [state]
   [:div
    (oauth-registration-form)
-   [:div {:class "or"} (t :user/or)]
+   (if (some #(= % "oauth") (session/get-in [:plugins :all]))
+       [:div {:class "or"} (t :user/or)])
    (registration-form state)])
 
 (defn content [state]

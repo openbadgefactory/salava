@@ -4,7 +4,7 @@
             [schema.core :as s]
             [clojure.java.io :as io]
             [clojure.data.json :as json]
-            [salava.core.helper :refer [dump plugin-str]]
+            [salava.core.helper :refer [dump plugin-str private?]]
             [salava.core.util :refer [get-site-url]]
             [salava.user.db :as u]
             [salava.badge.main :as b]
@@ -59,7 +59,9 @@
                  :base-path       (get-in ctx [:config :core :base-path])
                  :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
                  :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
-                 :languages       (map name (get-in ctx [:config :core :languages]))}]
+                 :languages       (map name (get-in ctx [:config :core :languages]))
+                 :private         (private? ctx)
+                 }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 
