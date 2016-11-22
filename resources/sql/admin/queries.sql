@@ -114,9 +114,9 @@ DELETE FROM user_email WHERE email = :email AND user_id = :user_id AND primary_a
 
 --name: insert-config<!
 --Add or update config
-INSERT IGNORE INTO config (name, value)
+REPLACE INTO config (name, value)
                    VALUES (:name, :value)
 
 
 --name: select-name-value-config
-SELECT name, value FROM config WHERE name = :name AND value = :value
+SELECT name, value FROM config WHERE name = :name

@@ -14,8 +14,36 @@
   (-> (make-random-uuid)
       (uuid-string)))
 
-(defn make-register-url []
-  (str (session/get :site-url) "/user/register/token/" (random-key)))
+(defn make-register-url [token]
+  (str (session/get :site-url) "/user/register/token/" token))
+
+(defn post-register-token [token state]
+  (ajax/POST
+   (path-for (str "/obpv1/registerlink/register-token/" token))
+   {:response-format :json
+    :keywords? true
+    :handler (fn [data]
+               (do
+                 (swap! state assoc :url (make-register-url token )
+                        :token token)))
+    :error-handler (fn [{:keys [status status-text]}]
+                     )}))
+
+
+(defn post-register-active [active state]
+  (dump active)
+  (ajax/POST
+   (path-for (str "/obpv1/registerlink/register-active"))
+   {:response-format :json
+    :keywords? true
+    :params {:active active}
+    :handler (fn [data]
+               (do
+                 (swap! state assoc :active active)))
+    :error-handler (fn [{:keys [status status-text]}]
+                     )})
+  )
+
 
 (defn content [state]
   (let [url-atom (cursor state [:url])
@@ -35,14 +63,16 @@
       [:label
        [:input {:name      "visibility"
                 :type      "checkbox"
-                :on-change #(reset! active-atom (if @active-atom false true))
+                :on-change #(do
+                              (post-register-active (if @active-atom false true) state)
+                              (.preventDefault %))
                 :checked   @active-atom}]
        (t :user/Publishandshare)]]
 
      
      [:button {:class "btn btn-primary"
                :on-click #(do
-                            (reset! url-atom (make-register-url))
+                            (post-register-token (random-key) state)
                             (.preventDefault %))}
      (t :admin/Reset)]
      
@@ -51,13 +81,19 @@
 
 (defn init-data [state]
   (ajax/GET 
-   (path-for "/obpv1/admin/stats")
+   (path-for "/obpv1/registerlink/register-token")
    {:handler (fn [data]
-               (reset! state data))}))
+               (dump data)
+               (swap! state assoc :url (make-register-url (:token data) )
+                      :token (:token data)
+                      :active (:active data))
+               ;(reset! state data)
+               )}))
 
 (defn handler [site-navi]
-  (let [state (atom {:url (make-register-url)
+  (let [state (atom {:url ""
+                     :token nil
                      :active false})]
-    ;(init-data state)
+    (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

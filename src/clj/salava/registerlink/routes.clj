@@ -7,11 +7,11 @@
             [salava.core.util :refer [get-base-path]]
             [salava.core.helper :refer [dump]]
             [salava.core.access :as access]
+            [salava.registerlink.db :as rl]
             salava.core.restructure))
 
 
 (defn route-def [ctx]
-  (dump "JEE")
   (routes
    (context "/admin" []
             (layout/main ctx "/register-link"))
@@ -19,15 +19,38 @@
             (layout/main ctx "/register/token/:token"))
 
    (context "/obpv1/registerlink" []
-            :tags ["admin"]
+            :tags ["registerlink"]
             (GET "/register/:token" []
-                 :summary "Get languages"
+                 :summary "Get languages if token is same as saved token"
                  :path-params [token :- s/Str]
-                 (dump token)
-                 (if (= token "jeejooo")
-                   (ok {:languages (get-in ctx [:config :core :languages])})
-                   (forbidden)))
+                 (let [active-token (rl/get-token-active ctx)]
+                   (if (= (:token active-token) token)
+                     (ok {:languages (get-in ctx [:config :core :languages])})
+                     (forbidden))))
+
+            (POST "/register-token/:token" []
+                   :return (s/enum "success" "error")
+                   :path-params [token :- s/Str]
+                   :summary "Set url-token"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (rl/create-register-token! ctx token)))
+
+            (POST "/register-active" []
+                   :return (s/enum "success" "error")
+                   :summary "Set url-token"
+                   :body [content {:active s/Bool}]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (rl/create-register-active! ctx (:active content))))
             
-             )
+            (GET "/register-token" []
+                 :return {:token (s/maybe s/Str)
+                          :active (s/maybe s/Bool)}
+                 :summary "get url-token"
+                 :auth-rules access/admin
+                 :current-user current-user
+                 (do
+                   (ok (rl/get-token-active ctx)))))
    
     ))
