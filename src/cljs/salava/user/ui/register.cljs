@@ -3,6 +3,7 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
+            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
@@ -120,15 +121,18 @@
         (t :user/Welcomemessagesent) "."]
        (registeration-content state))]]])
 
+
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/user/register" true)
     {:handler (fn [data]
                 (let [{:keys [languages]} data]
-                  (swap! state assoc :languages languages)))}))
+                  (swap! state assoc :languages languages :permission true)))}
+    (fn [] (swap! state assoc :permission false))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:email ""
+  (let [state (atom {:permission nil
+                     :email ""
                      :first-name ""
                      :last-name ""
                      :language ""
@@ -140,9 +144,12 @@
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
       (swap! state assoc :language lang))
-    (init-data state)    
+    (init-data state)
+    
     (fn []
+      (layout/landing-page site-navi [:div])
       (if (:permission @state)
-        (layout/landing-page site-navi (content state))
-        (layout/landing-page site-navi  (err/error-content)))
+          (layout/landing-page site-navi (content state))
+          (layout/landing-page site-navi  (err/error-content)))
+      
       )))

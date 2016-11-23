@@ -39,7 +39,7 @@
                                      :initializing false
                                      :permission true
                                      :reporttool reporttool-init)))}
-    (swap! state assoc :permission false))))
+    (fn [] (swap! state assoc :permission false)))))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -228,11 +228,12 @@
 (defn handler [site-navi params]
   (let [id (:badge-id params)
         state (atom {:initializing true
-                     :permission true
+                     :permission nil
                      :reporttool {}})
         user (session/get :user)]
     (init-data state id)
     (fn []
+      [:div]
       (cond
         (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
         (not (:permission @state)) (layout/landing-page site-navi (err/error-content))

@@ -23,8 +23,7 @@
                 (let [{:keys [languages]} data]
                   (swap! state assoc :languages languages
                                      :permission true)))}
-    (do
-      (swap! state assoc :permission false))))
+    (fn [] (swap! state assoc :permission false))))
 
 (defn handler [site-navi params]
   (let [state (atom {:permission nil
@@ -44,6 +43,7 @@
 
     
     (fn []
+      (layout/landing-page site-navi [:div])
       (if (:permission @state)
         (layout/landing-page site-navi (r/content state))
         (layout/landing-page site-navi (content))

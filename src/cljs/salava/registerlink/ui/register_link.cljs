@@ -31,7 +31,6 @@
 
 
 (defn post-register-active [active state]
-  (dump active)
   (ajax/POST
    (path-for (str "/obpv1/registerlink/register-active"))
    {:response-format :json
@@ -83,7 +82,6 @@
   (ajax/GET 
    (path-for "/obpv1/registerlink/register-token")
    {:handler (fn [data]
-               (dump data)
                (swap! state assoc :url (make-register-url (:token data) )
                       :token (:token data)
                       :active (:active data))

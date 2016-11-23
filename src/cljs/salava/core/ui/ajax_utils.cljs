@@ -9,7 +9,7 @@
                     (do
                       (if (= status 401)
                         (navigate-to "/user/login")
-                        additional-error-fn)
+                        (additional-error-fn))
                       ))})
 
 (defn loading-message []
