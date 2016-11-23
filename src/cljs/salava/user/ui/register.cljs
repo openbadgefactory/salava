@@ -7,6 +7,7 @@
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.i18n :refer [t translate-text]]
+            [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]))
 
 (defn send-registration [state]
@@ -104,7 +105,8 @@
 (defn registeration-content [state]
   [:div
    (oauth-registration-form)
-   [:div {:class "or"} (t :user/or)]
+   (if (some #(= % "oauth") (session/get-in [:plugins :all]))
+       [:div {:class "or"} (t :user/or)])
    (registration-form state)])
 
 (defn content [state]
@@ -140,4 +142,7 @@
       (swap! state assoc :language lang))
     (init-data state)    
     (fn []
-      (layout/landing-page site-navi (content state)))))
+      (if (:permission @state)
+        (layout/landing-page site-navi (content state))
+        (layout/landing-page site-navi  (err/error-content)))
+      )))

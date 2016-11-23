@@ -8,11 +8,17 @@
             salava.core.restructure))
 
 (defn route-def [ctx]
-  (GET "/" []
-       :current-user current-user
-       (if current-user
-         (temporary-redirect (str (get-base-path ctx) "/badge"))
-         (temporary-redirect (str (get-base-path ctx) "/user/login")))))
+  (routes
+   (context "/" []
+            (layout/main ctx "/error/:status")
+            )
+   (context "/" []
+            (GET "/" []
+                 :current-user current-user
+                 (if current-user
+                   (temporary-redirect (str (get-base-path ctx) "/social"))
+                   (temporary-redirect (str (get-base-path ctx) "/user/login"))))))
+  )
 
 (defn legacy-routes [ctx]
   (routes

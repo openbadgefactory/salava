@@ -6,7 +6,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for private?]]
             [salava.file.ui.my :as file]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]))
@@ -135,21 +135,23 @@
      [:div.panel-body
       [:div.row [:div.col-xs-12 [:a {:href (path-for (str "/user/profile/" (:user_id @state)))} (t :user/Viewprofile)]]]
       [:form.form-horizontal
-       [:div.row [:label.col-xs-12 (t :user/Profilevisibility)]]
-       [:div.radio {:id "visibility-radio-internal"}
-        [:label [:input {:name "visibility"
-                         :value "internal"
-                         :type "radio"
-                         :checked (= "internal" @visibility-atom)
-                         :on-change #(reset! visibility-atom (.-target.value %))}]
-         (t :user/Visibleonlytoregistered)]]
-       [:div.radio
-        [:label [:input {:name "visibility"
-                         :value "public"
-                         :type "radio"
-                         :checked (= "public" @visibility-atom)
-                         :on-change #(reset! visibility-atom (.-target.value %))}                               ]
-         (t :core/Public)]]
+       (if-not (private?)
+         [:div
+          [:div.row [:label.col-xs-12 (t :user/Profilevisibility)]]
+          [:div.radio {:id "visibility-radio-internal"}
+           [:label [:input {:name      "visibility"
+                            :value     "internal"
+                            :type      "radio"
+                            :checked   (= "internal" @visibility-atom)
+                            :on-change #(reset! visibility-atom (.-target.value %))}]
+            (t :user/Visibleonlytoregistered)]]
+          [:div.radio
+           [:label [:input {:name      "visibility"
+                            :value     "public"
+                            :type      "radio"
+                            :checked   (= "public" @visibility-atom)
+                            :on-change #(reset! visibility-atom (.-target.value %))}                               ]
+            (t :core/Public)]]])
        [profile-picture-gallery pictures-atom profile-picture-atom]
        [:div.form-group
         [:label.col-xs-12 (t :user/Aboutme)]

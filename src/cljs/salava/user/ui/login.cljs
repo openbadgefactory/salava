@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.ui.helper :refer [base-path navigate-to path-for]]
+            [salava.core.ui.helper :refer [base-path navigate-to path-for private?]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t translate-text]]))
@@ -14,11 +14,11 @@
   (let [referrer js/document.referrer
         site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
-    (if (social-plugin?) "/social/stream" "/badge/mybadges")
-    ;(if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
-     ;"badge/mybadges" 
-   ; path)
-  ))
+                                        ;(if (social-plugin?) "/social/stream" "/badge/mybadges")
+    (if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
+      "/social/stream"
+      path)
+    ))
 
 (defn login [state]
   (let [{:keys [email password]} @state]
@@ -52,13 +52,14 @@
                   :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
          (t :user/Login)]
         [:div {:class "row login-links"}
-         [:div {:class "col-xs-6"}
-          [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]]
-         [:div {:class "col-sm-6"}
-          [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
-        [:div {:class "row oauth-buttons"}
-         [:div {:class "col-xs-6"} (facebook-link false)]
-         [:div.col-sm-6 (linkedin-link nil nil)]]]]]]))
+         (if-not (private?)
+           [:div {:class "col-xs-6"}
+            [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
+         [:div {:class (if (private?) "col-xs-12" "col-sm-6")}
+          [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]
+         [:div {:class "row oauth-buttons"}
+          [:div {:class "col-xs-6"} (facebook-link false)]
+          [:div.col-sm-6 (linkedin-link nil nil)]]]]]]]))
 
 (defn handler [site-navi params]
   (let [flash-message (t (keyword (session/get! :flash-message)))

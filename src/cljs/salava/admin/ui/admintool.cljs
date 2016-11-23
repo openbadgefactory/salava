@@ -93,7 +93,7 @@
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "page" item-id state init-data))}
-      [:i {:class "fa fa-wrench"}](t :admin/Admintools)]]))
+      [:i {:class "fa fa-wrench"}]]]))
 
 
 (defn admintool-admin-page [item-id item-type state init-data]

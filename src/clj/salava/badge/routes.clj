@@ -54,7 +54,9 @@
                           (b/badge-viewed ctx badgeid user-id))
                         (ok (assoc badge :owner? owner?
                                          :user-logged-in? (boolean user-id))))
-                      (unauthorized))))
+                      (if (and (not user-id) (= visibility "internal"))
+                        (unauthorized)
+                        (not-found)))))
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
@@ -62,7 +64,9 @@
                    :summary "Set badge visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user)))))
+                   (if (:private current-user)
+                     (forbidden)
+                     (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user))))))
 
              (POST "/set_status/:badgeid" []
                    :path-params [badgeid :- Long]
@@ -102,14 +106,19 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (let [emails (i/user-backpack-emails ctx (:id current-user))]
-                    (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))})))
+                    (if (:private current-user)
+                    (forbidden)
+                    (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))}))
+                    ))
 
              (GET "/import" []
                   :return schemas/Import
                   :summary "Fetch badges from Mozilla Backpack to import"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (i/badges-to-import ctx (:id current-user))))
+                  (if (:private current-user)
+                    (forbidden)
+                    (ok (i/badges-to-import ctx (:id current-user)))))
 
              (POST "/import_selected" []
                    ;:return {:errors (s/maybe s/Str)
@@ -117,7 +126,9 @@
                    :summary "Import selected badges from Mozilla Backpack"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (i/do-import ctx (:id current-user) keys)))
+                   (if (:private current-user)
+                     (forbidden)
+                     (ok (i/do-import ctx (:id current-user) keys))))
 
              (POST "/upload" []
                    :return schemas/Upload
@@ -126,7 +137,9 @@
                    :summary "Upload badge PNG or SVG file"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (i/upload-badge ctx file (:id current-user))))
+                   (if (:private current-user)
+                     (forbidden)
+                     (ok (i/upload-badge ctx file (:id current-user)))))
 
              (GET "/settings/:badgeid" []
                   ;return schemas/badgeContent

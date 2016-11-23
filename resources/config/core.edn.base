@@ -11,6 +11,8 @@
  :plugins [:badge :page :gallery :file :user :social :admin :displayer
            :extra/factory :extra/application :extra/legacy]
 
+ :private false
+
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"

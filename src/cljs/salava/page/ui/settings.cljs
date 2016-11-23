@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.tag :as tag]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for private?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
@@ -43,13 +43,14 @@
                   :checked (= @visibility-atom "private")
                   :on-click #(reset! visibility-atom "private")}]
          (t :page/Private)]]
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @visibility-atom "password")
-                  :on-click #(reset! visibility-atom "password")}]
-         (t :page/Passwordprotected)]]
+       (if-not (private?)
+         [:div.radio
+          [:label
+           [:input {:type     "radio"
+                    :name     "visibility"
+                    :checked  (= @visibility-atom "password")
+                    :on-click #(reset! visibility-atom "password")}]
+           (t :page/Passwordprotected)]])
        [:div.radio
         [:label
          [:input {:type "radio"
@@ -57,13 +58,14 @@
                   :checked (= @visibility-atom "internal")
                   :on-click #(reset! visibility-atom "internal")}]
          (t :page/Forregistered)]]
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @visibility-atom "public")
-                  :on-click #(reset! visibility-atom "public")}]
-         (t :page/Public)]]]
+       (if-not (private?)
+         [:div.radio
+          [:label
+           [:input {:type     "radio"
+                    :name     "visibility"
+                    :checked  (= @visibility-atom "public")
+                    :on-click #(reset! visibility-atom "public")}]
+           (t :page/Public)]])]
       (if (some #(= @visibility-atom %) ["public" "password"])
         [:div.form-group
          [:input {:class     "form-control"

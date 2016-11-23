@@ -6,6 +6,9 @@
   #?(:clj (pprint data)
      :cljs (.log js/console (pr-str data))))
 
+(defn private? [data]
+  #?(:clj (get-in data [:config :core :private] false)
+     :cljs false))
 
 (defn plugin-str [plugin]
   (if (keyword? plugin)

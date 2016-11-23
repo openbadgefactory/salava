@@ -16,7 +16,7 @@
                                        ["/statistics" s/handler]
                                        ["/userlist" u/handler]]})
 
-(defn admin-view [context]
+(defn admin-navi [context]
   {(str (base-path context) "/admin")         {:weight 50 :title (t :admin/Admin) :top-navi true :breadcrumb (t :admin/Admin)}
    (str (base-path context) "/admin/statistics") {:weight 51 :title (t :admin/Statistics) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Statistics)}
    (str (base-path context) "/admin/tickets") {:weight 52 :title (t :admin/Tickets) :site-navi true :breadcrumb (t :admin/Admin " / "  :admin/Tickets)}
@@ -25,5 +25,5 @@
 
 (defn ^:export navi [context]
   (if (= "admin" (get-in context [:user :role]))
-    (admin-view context)
+    (admin-navi context)
     {}))

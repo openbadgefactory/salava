@@ -7,6 +7,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [unique-values path-for]]
             [salava.core.ui.grid :as g]
+            [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t]]))
 
 (defn email-options [state]
@@ -137,10 +138,12 @@
     (path-for "/obpv1/badge/export" true)
     {:handler (fn [{:keys [badges emails]} data]
                 (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
-                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false)))}))
+                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false)))}
+    (swap! state assoc :permission false)))
 
 (defn handler [site-navi]
-  (let [state (atom {:badges []
+  (let [state (atom {:permission true
+                     :badges []
                      :emails []
                      :email-selected ""
                      :visibility "all"
@@ -152,4 +155,7 @@
                      :initializing true})]
     (init-data state)
     (fn []
+      (if (:permission @state)
+        (layout/default site-navi (content state))
+        (layout/default site-navi (err/error-content)))
       (layout/default site-navi (content state)))))

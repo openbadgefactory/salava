@@ -114,7 +114,7 @@
 (defn follow-event [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         modal-message (str "messages")]
-    [:div {:class "media message-item follow"}
+    [:div {:class "media message-item tips"}
     (hide-event event_id state)
      [:div.media-left
       [:a {:href "#"
@@ -129,7 +129,8 @@
            :on-click #(do
                         (b/open-modal object false init-data state)
                         (.preventDefault %) )} (str  name)]]
-       (t :social/Youstartedfollowbadge)
+      [:div.media-body
+       (t :social/Youstartedfollowbadge)]
       ]]))
 
 (defn message-event [event state]
@@ -204,7 +205,7 @@
      [:div.media-body
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:h3 {:class "media-heading"}
-       [:a {:href (path-for "/gallery/application")}  (str (t :core/Welcometo) " " site-name (t :core/Service)"!")]]
+       [:a {:href (path-for "/gallery/application")}  (str (t :core/Welcometo) " " site-name (t :core/Service))]]
       [:div.media-body
        (str (t :social/Youdonthaveanyanybadgesyet) ".")]
       [:a {:href (path-for "/gallery/application")}
@@ -225,7 +226,7 @@
 
 (defn get-your-first-badge-tip []
   (let [site-name (session/get :site-name)]
-    {:header (str (t :core/Welcometo) " " site-name (t :core/Service)"!")
+    {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
      :body  (t :social/Youdonthaveanyanybadgesyet)
      :button (t :social/Getyourfirstbadge)
      :link   "/gallery/application"}))

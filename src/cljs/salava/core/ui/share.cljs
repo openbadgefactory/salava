@@ -1,5 +1,6 @@
 (ns salava.core.ui.share
   (:require [reagent.core :refer [create-class]]
+            [salava.core.ui.helper :refer [private?]]
             [salava.core.i18n :refer [t]]))
 
 (defn google-plus [url]
@@ -73,13 +74,15 @@
 
 
 (defn share-buttons [url title public? is-badge? link-or-embed-atom image-file]
-  (create-class {:reagent-render      (fn [url title public? is-badge?]
-                                        (share-buttons-element url title public? is-badge? link-or-embed-atom image-file))
-                 :component-did-mount (fn []
-                                        (do
-                                          (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
-                                          (.getScript (js* "$") "//platform.twitter.com/widgets.js")
-                                          (js* "delete IN")
-                                          ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
-                                          (.getScript (js* "$") "https://apis.google.com/js/platform.js")))}))
+  (if (private?)
+    [:div ]
+    (create-class {:reagent-render      (fn [url title public? is-badge?]
+                                          (share-buttons-element url title public? is-badge? link-or-embed-atom image-file))
+                   :component-did-mount (fn []
+                                          (do
+                                            (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
+                                            (.getScript (js* "$") "//platform.twitter.com/widgets.js")
+                                            (js* "delete IN")
+                                        ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
+                                            (.getScript (js* "$") "https://apis.google.com/js/platform.js")))})))
 
