@@ -116,7 +116,7 @@
                                  (if checked?
                                    (remove-badge-selection key state)
                                    (add-badge-selection key state)))}]     
-           (t :badge/Savebadge) [:span {:class "reader-only"} name ]]]
+           (t :badge/Savebadge)]]
         (if (= invalidtype "error")
 
           [:div
