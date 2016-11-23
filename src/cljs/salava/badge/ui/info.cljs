@@ -17,6 +17,7 @@
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
+            [salava.core.ui.error :as err]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool]]))
 
@@ -36,7 +37,9 @@
                 (reset! state (assoc data :id id
                                      :show-link-or-embed-code nil
                                      :initializing false
-                                     :reporttool reporttool-init)))})))
+                                     :permission true
+                                     :reporttool reporttool-init)))}
+    (swap! state assoc :permission false))))
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -94,19 +97,15 @@
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         reporttool-atom (cursor state [:reporttool])]
-    (if (:initializing @state)
-      [:div.ajax-message
-       [:i {:class "fa fa-cog fa-spin fa-2x "}]
-       [:span (str (t :core/Loading) "...")]]
-      [:div {:id "badge-info"}
-       [m/modal-window]
-       [:div.panel
-        [:div.panel-body
-         (if (and owner? (not expired?) (not revoked))
-           [:div.row {:id "badge-share-inputs"}
-            (if-not (private?)
-              [:div.pull-left
-               [:div {:class (str "checkbox " visibility)}
+    [:div {:id "badge-info"}
+     [m/modal-window]
+     [:div.panel
+      [:div.panel-body
+       (if (and owner? (not expired?) (not revoked))
+         [:div.row {:id "badge-share-inputs"}
+          (if-not (private?)
+            [:div.pull-left
+             [:div {:class (str "checkbox " visibility)}
                 [:a {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
                  [:i {:class "fa"}]
                  (if (not (= visibility "public"))
@@ -121,13 +120,13 @@
              [:button {:class    "btn btn-primary print-btn"
                        :on-click #(.print js/window)}
               (t :core/Print)]]
-            [:div.share-wrapper
-             [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
-           (if (and (not expired?) (not revoked))
-             (admintool id "badge")))
-
-         (if (or verified_by_obf issued_by_obf)
-           (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+          [:div.share-wrapper
+           [s/share-buttons (str (session/get :site-url) (path-for (str "/badge/info/" id))) name (= "public" visibility) true (cursor state [:show-link-or-embed])]]]
+         (if (and (not expired?) (not revoked))
+           (admintool id "badge")))
+       
+       (if (or verified_by_obf issued_by_obf)
+         (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
           [:div {:class "col-md-3 badge-image"}
            [:div.row
@@ -139,12 +138,12 @@
              [:div.row {:id "badge-rating"}
               [:div.col-xs-12
                [:div.rating
-               [:div (t :badge/Rating)]
+                [:div (t :badge/Rating)]
                 [:div
                 {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
-                [r/rate-it rating (cursor state [:badge-settings :rating])]]]
+                 [r/rate-it rating (cursor state [:badge-settings :rating])]]]
                (if (and expires_on (not expired?))
-               [:div.expiresin [:i {:class "fa fa-hourglass-half"}] (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))])
+                 [:div.expiresin [:i {:class "fa fa-hourglass-half"}] (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))])
                [:div.view-count
                 (cond
                   (= view_count 1) (t :badge/Viewedonce)
@@ -187,50 +186,57 @@
                [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
-            (if assertion
-              [:div {:id "assertion-link"}
-               [:label (t :badge/Metadata)": "]
+             (if assertion
+               [:div {:id "assertion-link"}
+                [:label (t :badge/Metadata)": "]
                [:a {:href     "#"
                     :on-click #(do (.preventDefault %)
                                    (m/modal! [a/assertion-modal assertion] {:size :lg}))}
                 (t :badge/Openassertion) "..."]])
-            (if @show-recipient-name-atom
-              (if (and user-logged-in? (not owner?))
-                [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
-                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
-              )
-            [:div.description description]
-            [:h2.uppercase-header (t :badge/Criteria)]
+             (if @show-recipient-name-atom
+               (if (and user-logged-in? (not owner?))
+                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
+                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
+               )
+             [:div.description description]
+             [:h2.uppercase-header (t :badge/Criteria)]
             [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]]]
-          [:div {:class "row criteria-html"}
-           [:div.col-md-12
-            {:dangerouslySetInnerHTML {:__html html_content}}]]
-          (if (and show_evidence evidence_url)
-            [:div.row
-             [:div.col-md-12
-              [:h2.uppercase-header (t :badge/Evidence)]
-              [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
-          (if (and owner? (not-empty congratulations))
-            [:div.row
-             [:div.col-md-12 {:id "badge-congratulations"}
+           [:div {:class "row criteria-html"}
+            [:div.col-md-12
+             {:dangerouslySetInnerHTML {:__html html_content}}]]
+           (if (and show_evidence evidence_url)
+             [:div.row
+              [:div.col-md-12
+               [:h2.uppercase-header (t :badge/Evidence)]
+               [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
+           (if (and owner? (not-empty congratulations))
+             [:div.row
+              [:div.col-md-12 {:id "badge-congratulations"}
               [:h3.congratulated-header
                [:i {:class "fa fa-heart"}]
                " " (t :badge/Congratulatedby) ":"]
-              (into [:div]
-                    (for [congratulation congratulations
-                          :let [{:keys [id first_name last_name profile_picture]} congratulation]]
-                      (uh/profile-link-inline id first_name last_name profile_picture)))]])
-          ]]
-         (if owner? "" (reporttool id name "badge" reporttool-atom))]]])))
+               (into [:div]
+                     (for [congratulation congratulations
+                           :let [{:keys [id first_name last_name profile_picture]} congratulation]]
+                       (uh/profile-link-inline id first_name last_name profile_picture)))]])
+           ]]
+       (if owner? "" (reporttool id name "badge" reporttool-atom))]]]
+    ))
+
+
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
         state (atom {:initializing true
+                     :permission true
                      :reporttool {}})
         user (session/get :user)]
     (init-data state id)
     (fn []
-      (cond (and (:owner? @state) user) (layout/default site-navi (content state))
-            user (layout/default-no-sidebar site-navi (content state))
-            :else (layout/landing-page site-navi (content state))))))
+      (cond
+        (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
+        (not (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (and (:permission @state) (:owner? @state) user) (layout/default site-navi (content state))
+        (and (:permission @state) user) (layout/default-no-sidebar site-navi (content state))
+        :else (layout/landing-page site-navi (content state))))))
 

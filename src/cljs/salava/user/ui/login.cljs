@@ -14,11 +14,11 @@
   (let [referrer js/document.referrer
         site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
-    (if (social-plugin?) "/social/stream" "/badge/mybadges")
-    ;(if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
-     ;"badge/mybadges" 
-   ; path)
-  ))
+                                        ;(if (social-plugin?) "/social/stream" "/badge/mybadges")
+    (if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
+      "/social/stream"
+      path)
+    ))
 
 (defn login [state]
   (let [{:keys [email password]} @state]

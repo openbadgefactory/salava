@@ -6,6 +6,11 @@
   )
 
 
+(defn error-content []
+  [:div
+   [:h2 "Nothing here"]])
+
+
 (defn content [params]
   (let []
     [:div

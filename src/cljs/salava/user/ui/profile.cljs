@@ -11,6 +11,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]
             [reagent-modals.modals :as m]
+            [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
@@ -171,15 +172,21 @@
      {:handler (fn [data]
                  (reset! state (assoc data :user-id user-id
                                       :show-link-or-embed-code nil
-                                      :reporttool reporttool-init)))})))
+                                      :permission true
+                                      :reporttool reporttool-init)))}
+     (swap! state assoc :permission false))))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
+                     :permission true
                      :reporttool {}})
         user (session/get :user)]
     (init-data user-id state)
     (fn []
-      (cond (= (:id user) (js/parseInt user-id)) (layout/default site-navi (content state))
-            user (layout/default-no-sidebar site-navi (content state))
-            :else (layout/landing-page site-navi (content state))))))
+      (cond
+        (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
+        (not (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (= (:id user) (js/parseInt user-id)) (layout/default site-navi (content state))
+        user (layout/default-no-sidebar site-navi (content state))
+        :else (layout/landing-page site-navi (content state))))))

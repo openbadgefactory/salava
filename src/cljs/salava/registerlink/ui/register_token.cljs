@@ -8,14 +8,13 @@
             [salava.user.ui.register :as r]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.error :as err]
             [salava.core.helper :refer [dump]]))
 
 
 (defn content []
   [:div
      [:h2 "Wrong url"]
-     [:div "Check your link or ask new from admin"]])
+   [:div "Check your link or ask new from admin"]])
 
 (defn init-data [state token]
   (ajax/GET
@@ -24,7 +23,8 @@
                 (let [{:keys [languages]} data]
                   (swap! state assoc :languages languages
                                      :permission true)))}
-    (swap! state assoc :permission false)))
+    (do
+      (swap! state assoc :permission false))))
 
 (defn handler [site-navi params]
   (let [state (atom {:permission nil
@@ -40,7 +40,6 @@
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
       (swap! state assoc :language lang))
-    (dump params)
     (init-data state (:token params))
 
     

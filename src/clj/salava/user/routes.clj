@@ -7,7 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump private?]]
             [salava.core.access :as access]
             salava.core.restructure))
 
@@ -60,15 +60,19 @@
 
              (GET "/register" []
                   :summary "Get languages"
-                  (ok {:languages (get-in ctx [:config :core :languages])}))
+                  (if (private? ctx)
+                    (forbidden)
+                    (ok {:languages (get-in ctx [:config :core :languages])})))
 
              (POST "/register" []
                    :return {:status (s/enum "success" "error")
                             :message (s/maybe s/Str)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (let [{:keys [email first_name last_name country language]} form-content]
-                     (ok (u/register-user ctx email first_name last_name country language))))
+                   (if (private? ctx)
+                     (forbidden)
+                     (let [{:keys [email first_name last_name country language]} form-content]
+                       (ok (u/register-user ctx email first_name last_name country language)))))
 
              (POST "/activate" []
                    :return {:status (s/enum "success" "error")

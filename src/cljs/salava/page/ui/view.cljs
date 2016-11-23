@@ -8,6 +8,7 @@
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [reagent-modals.modals :as m]
+            [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
@@ -35,7 +36,7 @@
                 (reset! visibility-atom data))
      :error-handler (fn [{:keys [status status-text]}]
                       (if (= status 401)
-                        (navigate-to "/user/login")))}))
+                          (navigate-to "/user/login")))}))
 
 (defn page-password-field [state]
   (let [password-atom (cursor state [:password])]
@@ -107,11 +108,14 @@
                         (swap! state assoc :page (:page data) :ask-password (:ask-password data)))
      :error-handler   (fn [{:keys [status status-text]}]
                         (if (= status 401)
-                          (navigate-to "/user/login")))}))
+                          (navigate-to "/user/login")
+                          (swap! state assoc :permission false)))}
+    ))
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
         state (atom {:page {}
+                     :permission true
                      :page-id id
                      :ask-password false
                      :password ""
@@ -129,6 +133,9 @@
         user (session/get :user)]
     (init-data state id)
     (fn []
-      (cond (and user (= (get-in @state [:page :user_id]) (:id user))) (layout/default site-navi (content state))
-            user (layout/default-no-sidebar site-navi (content state))
-            :else (layout/landing-page site-navi (content state))))))
+      (cond
+        (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
+        (not (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (and user (= (get-in @state [:page :user_id]) (:id user))) (layout/default site-navi (content state))
+        user (layout/default-no-sidebar site-navi (content state))
+        :else (layout/landing-page site-navi (content state))))))

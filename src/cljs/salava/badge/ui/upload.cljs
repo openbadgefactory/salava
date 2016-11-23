@@ -4,6 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn upload-modal [{:keys [status message reason]}]
@@ -83,11 +84,15 @@
      
      ]))
 
-(defn init-data []
-      (ajax/GET (path-for "/obpv1/user/public-access") {}))
+(defn init-data [state]
+  (ajax/GET (path-for "/obpv1/user/public-access") {}
+            (swap! state assoc :permission false)))
 
 (defn handler [site-navi]
-  (let [state (atom {:status "form"})]
+  (let [state (atom {:status "form"
+                     :permission true})]
     (fn []
-      (init-data)
-      (layout/default site-navi (content state)))))
+      (init-data state)
+      (if (:permission @state)
+        (layout/default site-navi (content state))
+        (layout/default site-navi (err/error-content))))))

@@ -5,6 +5,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.helper :refer [dump]]
+            [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn import-modal [{:keys [status message saved-count error-count]}]
@@ -189,17 +190,21 @@
    [badge-grid state]])
 
 
-(defn init-data []
-  (ajax/GET (path-for "/obpv1/user/public-access") {}))
+(defn init-data [state]
+  (ajax/GET (path-for "/obpv1/user/public-access") {}
+            (swap! state assoc :permission false)))
 
 (defn handler [site-navi params]
-  (let [state (atom {:badges []
+  (let [state (atom {:permission true
+                     :badges []
                      :badges-selected []
                      :error nil
                      :ajax-message nil
                      :all-selected false
                      :ok-badges []})]
-    (init-data)
+    (init-data state)
     (fn []
-      (layout/default site-navi (content state)))))
+      (if (:permission @state)
+        (layout/default site-navi (content state))
+        (layout/default site-navi (err/error-content))))))
 
