@@ -174,16 +174,17 @@
                                       :show-link-or-embed-code nil
                                       :permission true
                                       :reporttool reporttool-init)))}
-     (swap! state assoc :permission false))))
+     (fn [] (swap! state assoc :permission false)))))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
-                     :permission true
+                     :permission nil
                      :reporttool {}})
         user (session/get :user)]
     (init-data user-id state)
     (fn []
+      (layout/default site-navi [:div])
       (cond
         (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
         (not (:permission @state)) (layout/landing-page site-navi (err/error-content))

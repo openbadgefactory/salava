@@ -86,13 +86,14 @@
 
 (defn init-data [state]
   (ajax/GET (path-for "/obpv1/user/public-access") {}
-            (swap! state assoc :permission false)))
+            (fn [] (swap! state assoc :permission nil))))
 
 (defn handler [site-navi]
   (let [state (atom {:status "form"
                      :permission true})]
+    (init-data state)
     (fn []
-      (init-data state)
+      (layout/default site-navi [:div])
       (if (:permission @state)
         (layout/default site-navi (content state))
         (layout/default site-navi (err/error-content))))))

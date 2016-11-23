@@ -16,7 +16,6 @@
      (js->clj (core-ctx) :keywordize-keys true)))
 
 (def ctx (get-ctx))
-(dump ctx)
 (session/put! :user (:user ctx))
 (session/put! :facebook-app-id (:facebook-app-id ctx))
 (session/put! :linkedin-app-id (:linkedin-app-id ctx))
