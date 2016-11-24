@@ -14,7 +14,7 @@
 (defn route-def [ctx]
   (routes
    (context "/admin" []
-            (layout/main ctx "/register-link"))
+            (layout/main ctx "/registerlink"))
    (context "/user" []
             (layout/main ctx "/register/token/:token"))
 
@@ -24,7 +24,7 @@
                  :summary "Get languages if token is same as saved token"
                  :path-params [token :- s/Str]
                  (let [active-token (rl/get-token-active ctx)]
-                   (if (= (:token active-token) token)
+                   (if (and (:active active-token) (= (:token active-token) token))
                      (ok {:languages (get-in ctx [:config :core :languages])})
                      (forbidden))))
 

@@ -15,7 +15,7 @@
       (uuid-string)))
 
 (defn make-register-url [token]
-  (str (session/get :site-url) "/user/register/token/" token))
+  (str (session/get :site-url) (path-for (str "/user/register/token/" token))))
 
 (defn post-register-token [token state]
   (ajax/POST
@@ -47,17 +47,8 @@
 (defn content [state]
   (let [url-atom (cursor state [:url])
         active-atom (cursor state [:active])]
-    [:div {:class "col-xs-12"}
-     [:h2 (t :admin/Register-link)]
-     (if @active-atom
-       [:div.form-group
-        [:label 
-         (str (t :admin/url) ":")]
-        [:input {:class    "form-control"
-                 :value    @url-atom
-                 :onChange #(reset! url-atom (.-target.value %))
-                 :disabled true}]])
-
+    [:div {:id "share" :class "col-xs-12"}
+     [:h2 (t :admin/Registerlink)]
      [:div.checkbox
       [:label
        [:input {:name      "visibility"
@@ -66,14 +57,48 @@
                               (post-register-active (if @active-atom false true) state)
                               (.preventDefault %))
                 :checked   @active-atom}]
-       (t :user/Publishandshare)]]
+       (t :admin/Activeregister)]]
+     
+     [:div 
+      [:p (t :admin/Registerlinkhelp) ]
+      [:div {:id "share-buttons" :class (if @active-atom "form-group" "share-disabled form-group")}
+       [:label 
+        (str (t :admin/Url) ":")]
+       [:input {:class    "form-control"
+                :value    @url-atom
+                :onChange #(reset! url-atom (.-target.value %))
+                :read-only true}]]
+      
+      
+      
+        (if (:confirm-delete? @state)
+          [:div {:class "delete-confirm"}
+           [:div {:class "alert alert-warning"}
+            [:p (t :admin/Reseturlhelp) ]]
+           [:button {:type     "button"
+                     :class    "btn btn-primary"
+                     :on-click #(swap! state assoc :confirm-delete? false) 
+                     }
+            (t :badge/Cancel)]
+           [:button {:type         "button"
+                     :class        "btn btn-warning"
+                     :data-dismiss "modal"
+                     
+                     :on-click #(do
+                                  (post-register-token (random-key) state)
+                                  (swap! state assoc :confirm-delete? false))
+                     }
+            (t :admin/Reset)]]
+          [:button {:class "btn btn-primary"
+                    :on-click #(do
+                                 (swap! state assoc :confirm-delete? true)
+                               (.preventDefault %))}
+           (t :admin/Reset)])]
+     
+     
 
      
-     [:button {:class "btn btn-primary"
-               :on-click #(do
-                            (post-register-token (random-key) state)
-                            (.preventDefault %))}
-     (t :admin/Reset)]
+     
      
      
      ]))
@@ -89,7 +114,8 @@
                )}))
 
 (defn handler [site-navi]
-  (let [state (atom {:url ""
+  (let [state (atom {:confirm-delete? false
+                     :url ""
                      :token nil
                      :active false})]
     (init-data state)
