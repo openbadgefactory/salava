@@ -2,13 +2,14 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
+            [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [path-for]])
   )
 
 
 (defn error-content []
   [:div
-   [:h2 "Nothing here"]])
+   [:h4 (t :core/Errorpage)]])
 
 
 (defn content [params]

@@ -24,6 +24,7 @@
     (ajax/POST
       (path-for "/obpv1/user/edit")
       {:params  (-> params
+                    (dissoc :private)
                     (dissoc :password?)
                     (dissoc :role)
                     (assoc :current_password current-password

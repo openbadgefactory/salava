@@ -70,7 +70,7 @@
                 :read-only true}]]
       
       
-      
+      [:p (t :admin/Registerresethelp)]
         (if (:confirm-delete? @state)
           [:div {:class "delete-confirm"}
            [:div {:class "alert alert-warning"}
