@@ -7,7 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
-            [salava.registerlink.db :refer [right-token?]]
+            [salava.registerlink.db :refer [right-token?  email-whitelist]]
             [salava.core.helper :refer [dump private?]]
             [salava.core.access :as access]
             salava.core.restructure))
@@ -70,7 +70,7 @@
                             :message (s/maybe s/Str)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (if (or (not (private? ctx)) (and (private? ctx)  (right-token? ctx (:token form-content))))
+                   (if (or (not (private? ctx)) (and  (email-whitelist ctx (:email form-content)) (private? ctx) (right-token? ctx (:token form-content))))
                      (let [{:keys [email first_name last_name country language]} form-content]
                        (ok (u/register-user ctx email first_name last_name country language)))
                      (forbidden)
