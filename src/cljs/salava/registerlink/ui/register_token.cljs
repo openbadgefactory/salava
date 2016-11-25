@@ -13,8 +13,8 @@
 
 (defn content []
   [:div
-     [:h2 "Wrong url"]
-   [:div "Check your link or ask new from admin"]])
+     [:h2 (t :admin/Registererrorpagetitle)]
+   [:div (t :admin/Registererrorpagecontainer) ]])
 
 (defn init-data [state token]
   (ajax/GET
@@ -44,6 +44,7 @@
     
     (fn []
       (layout/landing-page site-navi [:div])
+      
       (if (:permission @state)
         (layout/landing-page site-navi (r/content state))
         (layout/landing-page site-navi (content))
