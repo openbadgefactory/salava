@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for current-path]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.i18n :refer [t translate-text]]
@@ -12,13 +12,15 @@
             [salava.user.ui.input :as input]))
 
 (defn send-registration [state]
-  (let [{:keys [email first-name last-name country language]} @state]
+  (let [{:keys [email first-name last-name country language]} @state
+        token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))]
     (ajax/POST
      (path-for "/obpv1/user/register/")
      {:params  {:email email
                 :first_name first-name
                 :last_name last-name
                 :country country
+                :token token
                 :language language}
       :handler (fn [data]
                  (if (= (:status data) "error")
@@ -111,6 +113,8 @@
    (registration-form state)])
 
 (defn content [state]
+  
+  (dump (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path)))))
   [:div {:id "registration-page"}
    [:div {:id "narrow-panel"
           :class "panel"}

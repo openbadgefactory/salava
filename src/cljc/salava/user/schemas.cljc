@@ -36,7 +36,8 @@
                    :profile_picture (s/maybe s/Str)
                    :about (s/maybe s/Str)})
 
-(s/defschema RegisterUser (dissoc User :password :password_verify :profile_visibility :profile_picture :about))
+(s/defschema RegisterUser (merge {:token (s/maybe s/Str)}
+                           (dissoc User :password :password_verify :profile_visibility :profile_picture :about)))
 
 (s/defschema LoginUser (select-keys User [:email :password]))
 

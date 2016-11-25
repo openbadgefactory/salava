@@ -8,6 +8,8 @@
 
 (defqueries "sql/admin/queries.sql")
 
+
+
 (defn insert-config [ctx name value]
   (try+
    (insert-config<! {:name name :value value} (get-db ctx))
@@ -33,6 +35,10 @@
 (defn get-token-active [ctx]
   {:token  (get-register-token ctx)
    :active (get-register-active ctx)})
+
+(defn right-token? [ctx temp-token]
+  (let [{:keys [token active]} (get-token-active ctx)]
+    (and active (= token temp-token))))
 
 (defn create-register-token! [ctx token]
   (try+
