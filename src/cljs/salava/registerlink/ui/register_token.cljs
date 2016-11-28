@@ -20,8 +20,9 @@
   (ajax/GET
    (path-for (str "/obpv1/registerlink/register/" token) true)
     {:handler (fn [data]
-                (let [{:keys [languages]} data]
+                (let [{:keys [languages email-whitelist]} data]
                   (swap! state assoc :languages languages
+                                     :email-whitelist email-whitelist
                                      :permission true)))}
     (fn [] (swap! state assoc :permission false))))
 

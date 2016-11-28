@@ -33,7 +33,8 @@
         language-atom (cursor state [:language])
         last-name-atom (cursor state [:last-name])
         country-atom (cursor state [:country])
-        languages (:languages @state)]
+        languages (:languages @state)
+        email-whitelist (:email-whitelist @state)]
     [:form {:class "form-horizontal"}
      (if (:error-message @state)
        [:div {:class "alert alert-danger" :role "alert"}
@@ -46,7 +47,10 @@
        [:span.form-required " *"]]
       [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/email-valid? @email-atom) "form-bar-success" "form-bar-error"))}
-        [input/text-field {:name "email" :atom email-atom}]]]
+        (if email-whitelist
+          [input/email-whitelist email-whitelist email-atom]
+          
+          [input/text-field {:name "email" :atom email-atom}])]]
       [:div.col-xs-12
        (t :user/Emailinfotext)]]
 
@@ -113,8 +117,6 @@
    (registration-form state)])
 
 (defn content [state]
-  
-  (dump (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path)))))
   [:div {:id "registration-page"}
    [:div {:id "narrow-panel"
           :class "panel"}

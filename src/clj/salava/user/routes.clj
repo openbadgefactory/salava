@@ -70,11 +70,15 @@
                             :message (s/maybe s/Str)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (if (or (not (private? ctx)) (and  (email-whitelist ctx (:email form-content)) (private? ctx) (right-token? ctx (:token form-content))))
-                     (let [{:keys [email first_name last_name country language]} form-content]
-                       (ok (u/register-user ctx email first_name last_name country language)))
-                     (forbidden)
-                     ))
+                   (let [{:keys [email first_name last_name country language]} form-content
+                         save (u/register-user ctx email first_name last_name country language)]
+                     (if (not (private? ctx))
+                       (ok save)
+                       (cond
+                         (not (right-token? ctx (:token form-content))) (forbidden)
+                         (not (email-whitelist ctx (:email form-content))) (ok {:status "error" :message "user/WAAT"})
+                         :else (ok save))))
+                   )
 
              (POST "/activate" []
                    :return {:status (s/enum "success" "error")

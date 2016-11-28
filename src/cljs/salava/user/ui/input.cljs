@@ -1,5 +1,6 @@
 (ns salava.user.ui.input
   (:require [salava.core.countries :refer [all-countries-sorted]]
+            [reagent.core :refer [atom]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [input-valid?]]
             [salava.user.schemas :as schemas]))
@@ -13,9 +14,11 @@
              :placeholder placeholder
              :on-change   #(do
                              (reset! atom (.-target.value %))
-                             (if error-message-atom
-                               (reset! error-message-atom (:message ""))))
+                             (if error-message-atom(reset! error-message-atom (:message "")))
+                             )
              :value       @atom}]))
+
+
 
 (defn radio-button-selector [values atom]
   (into [:div]
@@ -23,7 +26,7 @@
           [:label.radio-inline
            [:input {:type      "radio"
                     :name      "value"
-                    :value     value
+                     :value     value
                     :default-checked   (= @atom value)
                     :on-change  #(reset! atom value)}]
            (t (keyword (str "core/" value)))])))
@@ -39,6 +42,36 @@
    (for [[country-key country-name] (map identity all-countries-sorted)]
      [:option {:value country-key
                :key country-key} country-name])])
+
+(defn email-whitelist [values email-atom]
+  (let [current-value (atom (first values))
+        text-atom (atom "")
+        ]
+    (fn []
+      [:div.input-group
+       [:input {:class       "form-control"
+                :id          (str "input-" name)
+                :name        "email-text"
+                :type        "text"
+             
+                :on-change   #(do
+                                (reset! text-atom (.-target.value %))
+                                (reset! email-atom (str @text-atom @current-value))
+                               ; (if error-message-atom(reset! error-message-atom (:message "")))
+                                )
+                :value       @text-atom}]
+       (if (= 1 (count values))
+         [:span {:class "input-group-addon"}  @current-value]  
+         [:div {:class "input-group-btn"}
+          [:button {:type "button" :class "btn btn-default dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expended "false"} @current-value  [:span.caret]]
+          [:ul {:class "dropdown-menu dropdown-menu-right"}
+           (doall
+            (for [value values]
+              [:li {:key value}
+               [:a {:href "#" :on-click #(do
+                                           (reset! current-value value)
+                                           (reset! email-atom (str @text-atom @current-value))
+                                           (.preventDefault %))} value]]))]])])))
 
 (defn email-valid? [email-address]
   (input-valid? (:email schemas/User) email-address))
