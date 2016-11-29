@@ -50,7 +50,7 @@
     (fn []
       [:div.input-group
        [:input {:class       "form-control"
-                :id          (str "input-" name)
+                :id          (str "input-emailwhitelist")
                 :name        "email-text"
                 :type        "text"
              
