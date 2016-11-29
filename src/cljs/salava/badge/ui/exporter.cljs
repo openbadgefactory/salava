@@ -49,7 +49,7 @@
 (defn grid-element [element-data state]
   (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container"}
+     [:div {:class "media grid-container" :key id}
       [:div.media-content
         [:div.visibility-icon
            (case visibility

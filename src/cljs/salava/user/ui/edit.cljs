@@ -7,6 +7,7 @@
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.common :refer [deep-merge]]
             [salava.user.schemas :as schemas]
+            [salava.core.helper :refer [dump]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
@@ -144,7 +145,18 @@
                 (reset! state (deep-merge initial-state (update-in data [:user] dissoc :id))))}))
 
 (defn handler [site-navi]
-  (let [state (atom {})]
+  (let [state (atom {:user {:role ""
+                            :new_password_verify nil
+                            :first_name ""
+                            :current_password nil
+                            :private false
+                            :password? true
+                            :language "en"
+                            :last_name ""
+                            :new_password nil
+                            :country "EN"}
+                     :message nil
+                     :languages ["en"]})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
