@@ -133,11 +133,11 @@
     (path-for "/obpv1/user/register" true)
     {:handler (fn [data]
                 (let [{:keys [languages]} data]
-                  (swap! state assoc :languages languages :permission true)))}
-    (fn [] (swap! state assoc :permission false))))
+                  (swap! state assoc :languages languages :permission "success")))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:permission nil
+  (let [state (atom {:permission "initial"
                      :email ""
                      :first-name ""
                      :last-name ""
@@ -153,9 +153,10 @@
     (init-data state)
     
     (fn []
-      (layout/landing-page site-navi [:div])
-      (if (:permission @state)
-          (layout/landing-page site-navi (content state))
-          (layout/landing-page site-navi  (err/error-content)))
+      
+      (cond
+        (= "initial" (:permission @state)) (layout/landing-page site-navi [:div])
+        (= "success" (:permission @state))  (layout/landing-page site-navi (content state))
+        :else  (layout/landing-page site-navi  (err/error-content)))
       
       )))
