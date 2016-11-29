@@ -207,5 +207,5 @@
                   :current-user current-user
                   (if (:private current-user)
                     (forbidden)
-                    (ok))
+                    (ok {:status "success"}))
                   ))))

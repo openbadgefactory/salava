@@ -105,17 +105,17 @@
     {:response-format :json
      :keywords?       true
      :handler         (fn [data]
-                        (swap! state assoc :page (:page data) :ask-password (:ask-password data)))
+                        (swap! state assoc :page (:page data) :ask-password (:ask-password data) :permission "success"))
      :error-handler   (fn [{:keys [status status-text]}]
                         (if (= status 401)
                           (navigate-to "/user/login")
-                          (swap! state assoc :permission false)))}
+                          (swap! state assoc :permission "error")))}
     ))
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
         state (atom {:page {}
-                     :permission true
+                     :permission "initial"
                      :page-id id
                      :ask-password false
                      :password ""
@@ -134,8 +134,9 @@
     (init-data state id)
     (fn []
       (cond
-        (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
-        (not (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (= "initial" (:permission @state)) [:div]
+        (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
+        (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         (and user (= (get-in @state [:page :user_id]) (:id user))) (layout/default site-navi (content state))
-        user (layout/default-no-sidebar site-navi (content state))
+        (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))

@@ -138,11 +138,11 @@
     (path-for "/obpv1/badge/export" true)
     {:handler (fn [{:keys [badges emails]} data]
                 (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
-                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false :permission true)))}
-    (fn [] (swap! state assoc :permission false))))
+                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false :permission "success")))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi]
-  (let [state (atom {:permission nil
+  (let [state (atom {:permission "initial"
                      :badges []
                      :emails []
                      :email-selected ""
@@ -155,8 +155,8 @@
                      :initializing true})]
     (init-data state)
     (fn []
-      (layout/default site-navi [:div])
-      (if (:permission @state)
-        (layout/default site-navi (content state))
-        (layout/default site-navi (err/error-content)))
+      (cond 
+        (= "initial" (:permission @state)) (layout/default site-navi [:div])
+        (= "success" (:permission @state)) (layout/default site-navi (content state))
+        :else (layout/default site-navi (err/error-content)))
       )))
