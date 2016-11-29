@@ -80,12 +80,14 @@
                        :accept     "image/png, image/svg+xml"}]])]))
 
 (defn init-data [state]
-  (ajax/GET (path-for "/obpv1/user/public-access") {}
-            (fn [] (swap! state assoc :permission nil))))
+  (ajax/GET (path-for "/obpv1/user/public-access")
+            {:handler (fn [data]
+                        (swap! state assoc :permission "success"))}
+            (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi]
   (let [state (atom {:status "form"
-                     :permission true})]
+                     :permission "initial"})]
     (init-data state)
     (fn []
       (cond
