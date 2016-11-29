@@ -191,11 +191,13 @@
 
 
 (defn init-data [state]
-  (ajax/GET (path-for "/obpv1/user/public-access") {}
-            (fn [] (swap! state assoc :permission false))))
+  (ajax/GET (path-for "/obpv1/user/public-access")
+            {:handler (fn [data]
+                        (swap! state assoc :permission "success"))}
+            (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:permission nil
+  (let [state (atom {:permission "initial"
                      :badges []
                      :badges-selected []
                      :error nil
@@ -204,8 +206,8 @@
                      :ok-badges []})]
     (init-data state)
     (fn []
-      (layout/default site-navi [:div ])
-      (if (:permission @state)
-        (layout/default site-navi (content state))
-        (layout/default site-navi (err/error-content))))))
+      (cond 
+        (= "initial" (:permission @state)) (layout/default site-navi [:div ])
+        (= "success" (:permission @state))(layout/default site-navi (content state))
+        :else(layout/default site-navi (err/error-content))))))
 

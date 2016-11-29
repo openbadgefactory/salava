@@ -109,11 +109,11 @@
         (admintool user-id "user"))
       [:h1.uppercase-header fullname]
       [:div.row
-       [:div {:class "col-md-4 col-sm-4 col-xs-12"}
+       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
         [:img.profile-picture {:src (profile-picture profile_picture)
                                :alt fullname}]]]
-       [:div {:class "col-md-8 col-sm-8 col-xs-12"}
+       [:div {:class "col-md-9 col-sm-9 col-xs-12"}
         (if (not-empty about)
           [:div {:class "row about"}
            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]

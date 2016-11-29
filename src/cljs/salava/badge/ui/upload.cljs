@@ -88,7 +88,7 @@
                      :permission true})]
     (init-data state)
     (fn []
-      (layout/default site-navi [:div])
-      (if (:permission @state)
-        (layout/default site-navi (content state))
-        (layout/default site-navi (err/error-content))))))
+      (cond
+        (= "initial" (:permission @state)) (layout/default site-navi [:div])
+        (= "success" (:permission @state)) (layout/default site-navi (content state))
+        :else (layout/default site-navi (err/error-content))))))
