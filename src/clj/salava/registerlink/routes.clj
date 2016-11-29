@@ -25,7 +25,8 @@
                  :path-params [token :- s/Str]
                  (let [active-token (rl/get-token-active ctx)]
                    (if (and (:active active-token) (= (:token active-token) token))
-                     (ok {:languages (get-in ctx [:config :core :languages])})
+                     (ok {:languages (get-in ctx [:config :core :languages])
+                          :email-whitelist  (get-in ctx [:config :registerlink :email-whitelist])})
                      (forbidden))))
 
             (POST "/register-token/:token" []

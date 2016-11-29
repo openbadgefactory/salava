@@ -36,6 +36,11 @@
   {:token  (get-register-token ctx)
    :active (get-register-active ctx)})
 
+(defn email-whitelist [ctx email]
+  (let [whitelist (get-in ctx [:config :registerlink :email-whitelist] nil)
+        end-of-email (re-find #"\@\S+" email)]
+    (or (nil? whitelist) (not-empty (some (fn [key] (re-find key email)) whitelist)) )))
+
 (defn right-token? [ctx temp-token]
   (let [{:keys [token active]} (get-token-active ctx)]
     (and active (= token temp-token))))
