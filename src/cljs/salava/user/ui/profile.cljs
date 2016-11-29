@@ -172,22 +172,22 @@
      {:handler (fn [data]
                  (reset! state (assoc data :user-id user-id
                                       :show-link-or-embed-code nil
-                                      :permission true
+                                      :permission "success"
                                       :reporttool reporttool-init)))}
-     (fn [] (swap! state assoc :permission false)))))
+     (fn [] (swap! state assoc :permission "error")))))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
-                     :permission nil
+                     :permission "initial"
                      :reporttool {}})
         user (session/get :user)]
     (init-data user-id state)
     (fn []
-      (layout/default site-navi [:div])
       (cond
-        (and user (not (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
-        (not (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (= "initial" (:permission @state)) (layout/default site-navi [:div])
+        (and user (= "error" (:permission @state)))(layout/default-no-sidebar site-navi (err/error-content))
+        (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         (= (:id user) (js/parseInt user-id)) (layout/default site-navi (content state))
-        user (layout/default-no-sidebar site-navi (content state))
+        (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))
