@@ -80,6 +80,15 @@
 #registration-page .btn-primary{
     margin-bottom: 20px;
 }
+
+#registration-page .input-group-btn{
+    .btn {
+	margin-top: 0px;
+	margin-bottom: 0px;
+    }
+
+}
+
 #profile {
     #grid {
         margin-top: 0;
