@@ -139,9 +139,10 @@
   (let [users (:users @state)]
     [:table {:class "table"}
      [:thead
-      [:th (t :admin/Name)]
-      [:th (t :badge/Email)]
-      [:th]]
+      [:tr
+       [:th (t :admin/Name)]
+       [:th (t :badge/Email)]
+       [:th ""]]]
      [:tbody
       (doall
        (for [element-data users]
