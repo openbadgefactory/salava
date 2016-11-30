@@ -1,0 +1,150 @@
+/* VARIABLES OVERWRITE */
+@import 'kirkwood_variables';
+
+@import '../admin';
+@import '../badge';
+@import '../core';
+@import '../file';
+@import '../gallery';
+@import '../oauth';
+@import '../page';
+@import '../social';
+@import '../user';
+
+
+
+.logo-image-url{
+    width: 704px;
+    height: 60px;
+    background-image: url("/img/extra/kirkwood/logo.png");
+}
+
+.logo-image-icon-url {
+    width: 48px;
+    height: 48px;
+    background-image: url("/img/extra/kirkwood/logo_icon.png");
+}
+
+.system-image-url {
+    width: 90px;
+    height: 90px;
+    background-image: url("/img/extra/kirkwood/logo_icon.png");
+}
+
+.issuedbyobf-image-url{
+    width: 195px;
+    height: 50px;
+    background-image: url("/img/extra/kirkwood/issuedbyobf.png");
+}
+
+.verifiedissuedbyobf-image-url {
+    width: 220px;
+    height: 44px;
+    background-image: url("/img/extra/kirkwood/verifiedissuedbyobf.png");
+}
+
+
+a#login-button, #login-page .btn-primary, .btn-primary:active:focus, .btn-primary:focus {
+    background-color: $button-color;
+    border-color: $button-color;
+    &:hover {
+        background-color: $button-hover;
+    }
+}
+
+.btn[disabled]{
+    opacity:0.4;
+}
+
+.btn-warning {
+    background-color: $menu-active;
+    border-color: $menu-active;
+    &:hover {
+        background-color: lighten($menu-active, 5%);
+    }
+}
+
+//NAVBAR FIXED TOP
+ .navbar-fixed-top {
+     margin-right: 80px;
+ }
+
+.logo-main, .logo-icon {
+    height: 48px;
+}
+header#navbar {
+    background: none;
+}
+/*.title-row {
+    border-bottom-color: #9DBE5F;
+}*/
+
+ul.side-links {
+    li a {
+        color: $button-hover;
+    }
+    li.active a, li a:hover {
+        color: $menu-active;
+    }
+    @media (max-width: 767px){
+        li.active a {
+            background-color: $button-hover;
+            color: #FFF;
+            //border: 1px solid #d8d8d8;
+            border-bottom: 0px;
+            margin-bottom: -1px;
+        }
+    }
+}
+.media.message-item .media-body a {
+    color:$grid-link;
+}
+
+ul#secondary-menu-links li a i.fa {
+    color: $button-hover;
+}
+
+/*#my-badges #grid .grid-container .media-content .icons{
+    text-align:left;
+    .visibility-icon{
+        width:30px;
+        font-size: 20px;
+        padding-bottom: 5px;
+        display: inline-block;
+        text-align: left;
+        i{
+            cursor: pointer;
+        }
+    }
+    .righticon {
+        text-align: right;
+        float:right;
+        font-size: 18px;
+        display: inline-block;
+        line-height: 1em;
+        &.revoked, &.expired {
+            cursor: pointer;
+            color:#8c2e0b;
+        }
+    }
+    .lefticon {
+            color:#8c2e0b;
+            font-size: 14px;
+            text-transform: uppercase;
+            display: inline-block;
+            i {
+                font-size: 20px;
+                margin-right: 8px;
+                vertical-align:middle;
+                display: inline-block;
+                color:#8c2e0b;
+            }
+       }
+}
+legend, .form-horizontal legend.control-label {
+    text-align:left;
+    color:inherit;
+    font-size: inherit;
+    border:none;
+    font-weight: bold;
+}*/
