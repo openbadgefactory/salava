@@ -152,27 +152,7 @@
          [:a {:href issuer_content_url
               :target "_blank"
               :title issuer_content_name} issuer_content_name]]
-
-        ;(if expires_on
-         ; [:div.media-expires (if expired? (t :badge/Expiredon) (t :badge/Expireson)) ": " (date-from-unix-time (* expires_on 1000))])[:div.media-description description]
          ]]
-      ;[:div {:class "media-bottom"}
-      ; (cond
-      ;   expired? [:div.expired [:i {:class "fa fa-history"}] " " (t :badge/Expired)
-      ;             [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
-      ;              [:i {:class "fa fa-cog"}]
-      ;              [:span (t :badge/Settings)]]]
-      ;   revoked [:div.expired [:i {:class "fa fa-ban"}] " " (t :badge/Revoked)
-      ;            [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
-      ;             [:i {:class "fa fa-cog"}]
-      ;             [:span (t :badge/Settings)]]]
-      ;   :else [:div
-      ;          [:a {:class "bottom-link" :href (path-for (str "/badge/info/" id))}
-      ;           [:i {:class "fa fa-share-alt"}]
-      ;           [:span (t :badge/Share)]]
-      ;          [:a {:class "bottom-link pull-right" :href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state))}
-      ;           [:i {:class "fa fa-cog"}]
-      ;           [:span (t :badge/Settings)]]])]
       ]))
 
 (defn badge-grid [state]
@@ -194,16 +174,9 @@
               (badge-grid-element element-data state))))))
 
 
-
-
-
-
-
-
-
 (defn no-badges-text []
   [:div
-   (t :badge/Youhavenobadgesyet) (str " ") [:a {:href (path-for "/gallery/application") } (t :badge/Gohere)] (str ".") ] )
+   (t :badge/Youhavenobadgesyet) (str ".") ] )
 
 (defn content [state]
   [:div {:id "my-badges"}
