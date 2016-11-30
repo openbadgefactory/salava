@@ -7,6 +7,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [unique-values path-for]]
             [salava.core.ui.grid :as g]
+            [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t]]))
 
 (defn email-options [state]
@@ -48,7 +49,7 @@
 (defn grid-element [element-data state]
   (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container"}
+     [:div {:class "media grid-container" :key id}
       [:div.media-content
         [:div.visibility-icon
            (case visibility
@@ -137,10 +138,12 @@
     (path-for "/obpv1/badge/export" true)
     {:handler (fn [{:keys [badges emails]} data]
                 (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
-                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false)))}))
+                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false :permission "success")))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi]
-  (let [state (atom {:badges []
+  (let [state (atom {:permission "initial"
+                     :badges []
                      :emails []
                      :email-selected ""
                      :visibility "all"
@@ -152,4 +155,8 @@
                      :initializing true})]
     (init-data state)
     (fn []
-      (layout/default site-navi (content state)))))
+      (cond 
+        (= "initial" (:permission @state)) (layout/default site-navi [:div])
+        (= "success" (:permission @state)) (layout/default site-navi (content state))
+        :else (layout/default site-navi (err/error-content)))
+      )))

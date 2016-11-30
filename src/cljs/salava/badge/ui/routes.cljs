@@ -1,6 +1,6 @@
 (ns salava.badge.ui.routes
   (:require [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [base-path]]
+            [salava.core.ui.helper :refer [base-path private?]]
             [salava.badge.ui.my :as my]
             [salava.badge.ui.info :as info]
             [salava.badge.ui.embed :as embed]
@@ -27,16 +27,20 @@
                                        ["/export" exp/handler]
                                        ["/stats" stats/handler]]})
 
-(defn ^:export navi [context]
+(defn badge-navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
     
   
    (str (base-path context) "/badge/stats") {:weight 21
-                                                                             :title (t :badge/Stats)
-                                                                             :site-navi true
+                                             :title (t :badge/Stats)
+                                             :site-navi true
                                              :breadcrumb (t :badge/Badges" / " :badge/Stats)}
-   "/badge/dropdowntitle" {:weight 22
+   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}}
+  )
+
+(defn badge-manage [context]
+  {"/badge/dropdowntitle" {:weight 22
                            :title (t :badge/Manage)
                            :site-navi true
                            :breadcrumb ""
@@ -55,7 +59,14 @@
                                                                               :title (t :badge/Export)
                                                                               :site-navi true                                                                              
                                                                               :dropdown-item true
-                                                                              :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Export)}}}
-                                   
-   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}})
+                                                                              :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Export)}}}})
+
+
+(defn ^:export navi [context]
+  
+  (if (private?)
+    (badge-navi context)
+    (assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
+  
+  )
 

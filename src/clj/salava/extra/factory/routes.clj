@@ -4,7 +4,7 @@
             [schema.core :as s]
             [salava.core.layout :as layout]
             [clojure.string :refer [split]]
-            [buddy.core.codecs :refer [base64->str]]
+            [salava.core.util :refer [base64->str]]
             [salava.extra.factory.db :as f]))
 
 (defn wrap-basic-auth [handler ctx]

@@ -1,5 +1,6 @@
 (ns salava.badge.importer
-  (:require [slingshot.slingshot :refer :all]
+  (:require [clojure.tools.logging :as log]
+            [slingshot.slingshot :refer :all]
             [clj-http.client :as client]
             [salava.badge.main :as b]
             [salava.core.util :refer [map-sha256]]
@@ -7,13 +8,11 @@
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]
             [salava.user.db :as u]
-            [salava.badge.assertion :as a]
-            [salava.badge.png :as p]
-            [salava.badge.svg :as s]))
+            [salava.badge.assertion :as a]))
 
 (def api-root-url "https://backpack.openbadges.org/displayer")
 
-(defn api-request
+(defn- api-request
   ([method path] (api-request method path {}))
   ([method path post-params]
    (try+
@@ -31,7 +30,7 @@
      (catch Object _
        (throw+ "badge/Errorconnecting")))))
 
-(defn get-badge-type [badge]
+(defn- get-badge-type [badge]
   (if (= (get-in badge [:assertion :verify :type]) "hosted")
     "hosted"
     (if (and (= (get-in badge [:assertion :verify :type]) "signed")
@@ -40,7 +39,7 @@
       (if (:hostedUrl badge)
         "hostedUrl"))))
 
-(defn get-assertion-and-key [type badge]
+(defn- get-assertion-and-key [type badge]
   "Get badge type and data.
   Return badge assertion and assertion key"
   (case type
@@ -49,20 +48,20 @@
     "hostedUrl" [(:hostedUrl badge) (:hostedUrl badge)]
     [{:error "badge/Invalidassertion"} nil]))
 
-(defn add-assertion-and-key [badge]
+(defn- add-assertion-and-key [badge]
   (let [badge-type (get-badge-type badge)
         [assertion assertion-key] (get-assertion-and-key badge-type badge)
         old-assertion (:assertion badge)]
     (assoc badge :assertion (a/create-assertion assertion old-assertion)
                  :assertion_key assertion-key)))
 
-(defn collect-badges
+(defn- collect-badges
   "Collect badges fetched from groups"
   [badge-colls]
   (let [badges (flatten badge-colls)]
     (map add-assertion-and-key badges)))
 
-(defn fetch-badges-by-group
+(defn- fetch-badges-by-group
   "Get badges from public group in Backpack"
   [email backpack-id group]
   (let [response (api-request :get (str "/" backpack-id "/group/" (:id group)))
@@ -72,7 +71,7 @@
                         :_email email
                         :_status "accepted")))))
 
-(defn fetch-badges-from-groups
+(defn- fetch-badges-from-groups
   "Fetch and collect users badges in public groups."
   [backpack]
   (if (and (:email backpack) (:userId backpack))
@@ -81,7 +80,7 @@
       (if (pos? (count groups))
         (collect-badges (map #(fetch-badges-by-group (:email backpack) (:userId backpack) %) groups))))))
 
-(defn fetch-backpack-uid
+(defn- fetch-backpack-uid
   "Get Mozilla uid by email address"
   [ctx user-id email]
   (let [backpack-id (:userId (api-request :post "/convert/email" {:email email}))]
@@ -89,21 +88,12 @@
       (u/set-email-backpack-id ctx user-id email backpack-id)
       {:email email :userId backpack-id})))
 
-(defn user-backpack-emails
-  "Get list of user's email addresses"
-  [ctx user-id]
-  (let [emails (u/verified-email-addresses ctx user-id)]
-    (->> emails
-         (map #(fetch-backpack-uid ctx user-id %))
-         (filter :email)
-         (map :email))))
-
-(defn fetch-all-user-badges [ctx user-id backpack-emails]
+(defn- fetch-all-user-badges [ctx user-id backpack-emails]
   (if (empty? backpack-emails)
     (throw+ "badge/Noemails"))
   (reduce #(concat %1 (fetch-badges-from-groups %2)) [] (map #(fetch-backpack-uid ctx user-id %) backpack-emails)))
 
-(defn badge-to-import [ctx user-id badge]
+(defn- badge-to-import [ctx user-id badge]
   (let [expires (re-find #"\d+" (str (get-in badge [:assertion :expires])))
         expires-int (if expires (Integer. expires))
         expired? (and expires-int (not= expires-int 0) (< expires-int (unix-time)))
@@ -124,6 +114,26 @@
      :id          (if exists? (b/user-owns-badge-id ctx (:assertion badge) user-id))
      :key         (map-sha256 (get-in badge [:assertion_key]))}))
 
+(defn- save-badge-data! [ctx emails user-id badge]
+  (try
+    (let [badge-id (b/save-badge-from-assertion! ctx badge user-id emails)
+          tags (list (:_group_name badge))]
+      (if (and tags badge-id)
+        (b/save-badge-tags! ctx tags badge-id))
+      {:id badge-id})
+    (catch Exception ex
+      {:id nil})))
+
+(defn user-backpack-emails
+  "Get list of user's email addresses"
+  [ctx user-id]
+  (let [emails (u/verified-email-addresses ctx user-id)]
+    (->> emails
+         (map #(fetch-backpack-uid ctx user-id %))
+         (filter :email)
+         (map :email))))
+
+
 (defn badges-to-import [ctx user-id]
   (try+
     (let [emails (u/verified-email-addresses ctx user-id)
@@ -136,15 +146,6 @@
        :badges []
        :error _})))
 
-(defn save-badge-data! [ctx emails user-id badge]
-  (try+
-    (let [badge-id (b/save-badge-from-assertion! ctx badge user-id emails)
-          tags (list (:_group_name badge))]
-      (if (and tags badge-id)
-        (b/save-badge-tags! ctx tags badge-id))
-      {:id badge-id})
-    (catch Object _
-      {:id nil})))
 
 (defn do-import [ctx user-id keys]
   (try+
@@ -168,19 +169,17 @@
     (catch Object _
       {:status "error" :message _})))
 
+;;;
+
 (defn upload-badge [ctx uploaded-file user-id]
-  (try+
-    (if-not (some #(= (:content-type uploaded-file) %) ["image/png" "image/svg+xml"])
-      (throw+ "badge/Invalidfiletype"))
-    (let [content-type (:content-type uploaded-file)
-          assertion-url (if (= content-type "image/png")
-                          (p/get-assertion-from-png (:tempfile uploaded-file))
-                          (s/get-assertion-from-svg (:tempfile uploaded-file)))
-          assertion (a/create-assertion assertion-url {})
-          emails (u/verified-email-addresses ctx user-id)
-          data {:assertion assertion}
-          data (assoc data :_status "accepted")
-          badge-id (b/save-badge-from-assertion! ctx data user-id emails)]
-      {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"})
-    (catch Object _
-      {:status "error" :message "badge/Errorwhileuploading" :reason _})))
+  (try
+    (log/info "upload-badge: got new upload from user id" user-id)
+    (b/save-badge-from-assertion! ctx
+                                  {:assertion (a/baked-image uploaded-file) :_status "accepted"}
+                                  user-id
+                                  (u/verified-email-addresses ctx user-id))
+    {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
+    (catch Throwable ex
+      (log/error "upload-badge: upload failed")
+      (log/error (.toString ex))
+      {:status "error" :message "badge/Errorwhileuploading" :reason (.getMessage ex)})))

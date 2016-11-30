@@ -14,8 +14,9 @@
                 [salava.core.ui.routes]
                 [salava.social.ui.routes]
                 [salava.admin.ui.routes]
+                [salava.registerlink.ui.routes]
                 [salava.extra.cancred.ui.routes]
                 [salava.extra.application.ui.routes]
                 [salava.extra.passport.ui.routes]
-		[salava.extra.kirkwood.ui.routes]])))
+					 [salava.extra.kirkwood.ui.routes]])))
 

@@ -4,7 +4,7 @@
             [schema.core :as s]
             [clojure.java.io :as io]
             [clojure.data.json :as json]
-            [salava.core.helper :refer [dump plugin-str]]
+            [salava.core.helper :refer [dump plugin-str private?]]
             [salava.core.util :refer [get-site-url]]
             [salava.user.db :as u]
             [salava.badge.main :as b]
@@ -31,14 +31,19 @@
 
 
 (defn css-list [ctx]
-  (->> [:config :core :plugins]
-       (get-in ctx)
-       (cons :core)
-       (map plugin-str)
-       (map    #(str "/css/" % ".css"))
-       (filter #(io/resource (str "public" %)))
-       (concat asset-css)
-       (map #(with-version ctx %))))
+  (let [plugins (get-in ctx [:config :core :plugins])
+        coll (mapcat #(get-in ctx [:config % :css] []) plugins)]
+    (if-not (empty? coll)
+      ; If any plugin defines a list of css files, use those as-is
+      (map #(with-version ctx %) (concat asset-css coll))
+      ; Otherwise, create the list using plugin names
+      (->> plugins
+           (cons :core)
+           (map plugin-str)
+           (map    #(str "/css/" % ".css"))
+           (filter #(io/resource (str "public" %)))
+           (concat asset-css)
+           (map #(with-version ctx %))))))
 
 
 (defn js-list [ctx]
@@ -54,7 +59,9 @@
                  :base-path       (get-in ctx [:config :core :base-path])
                  :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
                  :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
-                 :languages       (map name (get-in ctx [:config :core :languages]))}]
+                 :languages       (map name (get-in ctx [:config :core :languages]))
+                 :private         (private? ctx)
+                 }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 

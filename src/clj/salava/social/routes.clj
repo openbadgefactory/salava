@@ -136,7 +136,7 @@
                            {:tips tips
                             :events badge-events
                             :pending-badges pending-badges}))))
-
+                   
              (GET "/connected/:badge_content_id" []
                   :return s/Bool
                    :summary "Returns Bool if user has connected with asked badge-content-id"

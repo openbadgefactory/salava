@@ -3,20 +3,24 @@
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.helper :refer [dump]]
+            [salava.core.ui.helper :refer [path-for current-path]]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.i18n :refer [t translate-text]]
+            [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]))
 
 (defn send-registration [state]
-  (let [{:keys [email first-name last-name country language]} @state]
+  (let [{:keys [email first-name last-name country language]} @state
+        token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))]
     (ajax/POST
      (path-for "/obpv1/user/register/")
      {:params  {:email email
                 :first_name first-name
                 :last_name last-name
                 :country country
+                :token token
                 :language language}
       :handler (fn [data]
                  (if (= (:status data) "error")
@@ -29,7 +33,8 @@
         language-atom (cursor state [:language])
         last-name-atom (cursor state [:last-name])
         country-atom (cursor state [:country])
-        languages (:languages @state)]
+        languages (:languages @state)
+        email-whitelist (:email-whitelist @state)]
     [:form {:class "form-horizontal"}
      (if (:error-message @state)
        [:div {:class "alert alert-danger" :role "alert"}
@@ -42,7 +47,10 @@
        [:span.form-required " *"]]
       [:div.col-sm-8
        [:div {:class (str "form-bar " (if (input/email-valid? @email-atom) "form-bar-success" "form-bar-error"))}
-        [input/text-field {:name "email" :atom email-atom}]]]
+        (if email-whitelist
+          [input/email-whitelist email-whitelist email-atom]
+          
+          [input/text-field {:name "email" :atom email-atom}])]]
       [:div.col-xs-12
        (t :user/Emailinfotext)]]
 
@@ -104,7 +112,8 @@
 (defn registeration-content [state]
   [:div
    (oauth-registration-form)
-   [:div {:class "or"} (t :user/or)]
+   (if (some #(= % "oauth") (session/get-in [:plugins :all]))
+       [:div {:class "or"} (t :user/or)])
    (registration-form state)])
 
 (defn content [state]
@@ -118,15 +127,18 @@
         (t :user/Welcomemessagesent) "."]
        (registeration-content state))]]])
 
+
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/user/register" true)
     {:handler (fn [data]
                 (let [{:keys [languages]} data]
-                  (swap! state assoc :languages languages)))}))
+                  (swap! state assoc :languages languages :permission "success")))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:email ""
+  (let [state (atom {:permission "initial"
+                     :email ""
                      :first-name ""
                      :last-name ""
                      :language ""
@@ -138,6 +150,13 @@
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
       (swap! state assoc :language lang))
-    (init-data state)    
+    (init-data state)
+    
     (fn []
-      (layout/landing-page site-navi (content state)))))
+      
+      (cond
+        (= "initial" (:permission @state)) (layout/landing-page site-navi [:div])
+        (= "success" (:permission @state))  (layout/landing-page site-navi (content state))
+        :else  (layout/landing-page site-navi  (err/error-content)))
+      
+      )))

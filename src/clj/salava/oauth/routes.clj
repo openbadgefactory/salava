@@ -23,11 +23,11 @@
                   :query-params [{code :- s/Str nil}
                                  {error :- s/Str nil}]
                   :current-user current-user
-                  (let [{:keys [status user-id message role]} (f/facebook-login ctx code (:id current-user) error)]
+                  (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)]
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role} ))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private role} ))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))

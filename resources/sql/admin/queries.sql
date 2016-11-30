@@ -110,3 +110,13 @@ DELETE FROM user WHERE id = :id and activated = 0
 
 -- name: delete-email-no-verified-address!
 DELETE FROM user_email WHERE email = :email AND user_id = :user_id AND primary_address = 0 AND verified = 0
+
+
+--name: insert-config<!
+--Add or update config
+REPLACE INTO config (name, value)
+                   VALUES (:name, :value)
+
+
+--name: select-name-value-config
+SELECT name, value FROM config WHERE name = :name

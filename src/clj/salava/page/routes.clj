@@ -67,7 +67,9 @@
                                    nil
                                    (assoc page :owner? (= user-id page-owner-id)))
                            :ask-password password-protected?})
-                      (unauthorized))))
+                      (if (and (not user-id) (= visibility "internal"))
+                        (unauthorized)
+                        (not-found)))))
 
              (POST "/password/:pageid" []
                    :return schemas/ViewPage

@@ -3,19 +3,18 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [trim split]]
             [slingshot.slingshot :refer :all]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump private?]]
             [buddy.hashers :as hashers]
             [salava.gallery.db :as g]
             [salava.file.db :as f]
             [salava.page.main :as p]
             [salava.badge.main :as b]
             [salava.oauth.db :as o]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.core.mail :as m])
-  (:import [salava LegacyPassword]))
+            [salava.core.mail :as m]))
 
 (defqueries "sql/user/main.sql")
 
@@ -37,10 +36,9 @@
 (defn hash-password [password]
   (hashers/encrypt password {:alg :pbkdf2+sha256}))
 
-(defn check-password [password hash]
-  (if (= (subs hash 0 3) "$S$")
-    (LegacyPassword/checkPassword password hash)
-    (hashers/check password hash)))
+(defn check-password [ctx password hash]
+  (let [funs (plugin-fun (get-plugins ctx) "password" "check-password")]
+    (some (fn [f] (try (f password hash) (catch Throwable _ false))) funs)))
 
 (defn verified-email-addresses
   "Get list of user's verified email addresses by user id"
@@ -98,12 +96,13 @@
   "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
   [ctx email plain-password]
   (try+
-   (let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
-     (if (and id pass activated verified (not deleted) (check-password plain-password pass))
+(let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
+      private (get-in ctx [:config :core :private] false)]
+     (if (and id pass activated verified (not deleted) (check-password ctx plain-password pass))
        (do
          (update-user-last_login! {:id id} (get-db ctx))
-         {:status "success" :id id :role role})
-       (if (and id pass activated verified deleted (check-password plain-password pass))
+         {:status "success" :id id :role role :private private})
+       (if (and id pass activated verified deleted (check-password ctx plain-password pass))
          {:status "error" :message "user/Accountdeleted"}
          {:status "error" :message "user/Loginfailed"})))
    (catch Object _
@@ -113,13 +112,12 @@
   "Edit user information."
   [ctx user-information user-id]
   (try+
-   
    (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
      (when new_password
        (if (not (= new_password new_password_verify))
          (throw+ "user/Passwordmissmatch"))
        (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
-         (if (and pass (not (check-password current_password pass)))
+         (if (and pass (not (check-password ctx current_password pass)))
             (throw+ "user/Wrongpassword"))))
       (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
       (if new_password
@@ -182,7 +180,10 @@
 (defn user-information
   "Get user data by user-id"
   [ctx user-id]
-  (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+  (let [select-user (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+        private (get-in ctx [:config :core :private] false)
+        user (assoc select-user :private private)]
+    user))
 
 (defn user-information-with-registered-and-last-login
   "Get user data by user-id "
@@ -226,17 +227,27 @@
 (defn set-profile-visibility
   "Set user profile visibility."
   [ctx visibility user-id]
-  (update-user-visibility! {:profile_visibility visibility :id user-id} (get-db ctx))
-  visibility)
+  (try+
+   (if (and (private? ctx) (= "public" visibility))
+     (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
+   (update-user-visibility! {:profile_visibility visibility :id user-id} (get-db ctx))
+   visibility
+   (catch Object _
+     "error")))
 
 (defn save-user-profile
   "Save user's profile"
   [ctx visibility picture about fields user-id]
-  (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
-  (doseq [index (range 0 (count fields))
-        :let [{:keys [field value]} (get fields index)]]
-    (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
-  (update-user-visibility-picture-about! {:profile_visibility visibility :profile_picture picture :about about :id user-id} (get-db ctx)))
+  (try+
+   (if (and (private? ctx) (= "public" visibility))
+     (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
+   (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
+   (doseq [index (range 0 (count fields))
+           :let [{:keys [field value]} (get fields index)]]
+     (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
+   (update-user-visibility-picture-about! {:profile_visibility visibility :profile_picture picture :about about :id user-id} (get-db ctx))
+   (catch Object _
+     "error")))
 
 
 (defn send-password-reset-link
@@ -275,7 +286,7 @@
   [ctx user-id plain-password]
   (try+
     (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-      (if-not (and (check-password plain-password pass) id activated)
+      (if-not (and (check-password ctx plain-password pass) id activated)
         (throw+ "Invalid password")))
     (jdbc/with-db-transaction
       [tr-cn (get-datasource ctx)]

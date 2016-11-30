@@ -4,13 +4,14 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for hyperlink]]
+            [salava.core.ui.helper :refer [path-for hyperlink private?]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]
             [reagent-modals.modals :as m]
+            [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
@@ -99,7 +100,8 @@
      [:div.panel-body
       (if owner?
         [:div.row
-         (profile-visibility-input visibility-atom)
+         (if-not (private?)
+           (profile-visibility-input visibility-atom))
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
@@ -107,11 +109,11 @@
         (admintool user-id "user"))
       [:h1.uppercase-header fullname]
       [:div.row
-       [:div {:class "col-md-4 col-sm-4 col-xs-12"}
+       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
         [:img.profile-picture {:src (profile-picture profile_picture)
                                :alt fullname}]]]
-       [:div {:class "col-md-8 col-sm-8 col-xs-12"}
+       [:div {:class "col-md-9 col-sm-9 col-xs-12"}
         (if (not-empty about)
           [:div {:class "row about"}
            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
@@ -170,15 +172,22 @@
      {:handler (fn [data]
                  (reset! state (assoc data :user-id user-id
                                       :show-link-or-embed-code nil
-                                      :reporttool reporttool-init)))})))
+                                      :permission "success"
+                                      :reporttool reporttool-init)))}
+     (fn [] (swap! state assoc :permission "error")))))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
+                     :permission "initial"
                      :reporttool {}})
         user (session/get :user)]
     (init-data user-id state)
     (fn []
-      (cond (= (:id user) (js/parseInt user-id)) (layout/default site-navi (content state))
-            user (layout/default-no-sidebar site-navi (content state))
-            :else (layout/landing-page site-navi (content state))))))
+      (cond
+        (= "initial" (:permission @state)) (layout/default site-navi [:div])
+        (and user (= "error" (:permission @state)))(layout/default-no-sidebar site-navi (err/error-content))
+        (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (= (:id user) (js/parseInt user-id)) (layout/default site-navi (content state))
+        (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
+        :else (layout/landing-page site-navi (content state))))))

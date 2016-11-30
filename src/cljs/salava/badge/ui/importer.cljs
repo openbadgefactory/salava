@@ -5,6 +5,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.helper :refer [dump]]
+            [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn import-modal [{:keys [status message saved-count error-count]}]
@@ -116,7 +117,7 @@
                                  (if checked?
                                    (remove-badge-selection key state)
                                    (add-badge-selection key state)))}]     
-           (t :badge/Savebadge) [:span {:class "reader-only"} name ]]]
+           (t :badge/Savebadge)]]
         (if (= invalidtype "error")
 
           [:div
@@ -188,17 +189,25 @@
      [:div {:class "alert alert-warning"} (t (keyword (:error @state)))])
    [badge-grid state]])
 
-(defn init-data []
-  (ajax/GET (path-for "/obpv1/user/test") {}))
+
+(defn init-data [state]
+  (ajax/GET (path-for "/obpv1/user/public-access")
+            {:handler (fn [data]
+                        (swap! state assoc :permission "success"))}
+            (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:badges []
+  (let [state (atom {:permission "initial"
+                     :badges []
                      :badges-selected []
                      :error nil
                      :ajax-message nil
                      :all-selected false
                      :ok-badges []})]
-    (init-data)
+    (init-data state)
     (fn []
-      (layout/default site-navi (content state)))))
+      (cond 
+        (= "initial" (:permission @state)) (layout/default site-navi [:div ])
+        (= "success" (:permission @state))(layout/default site-navi (content state))
+        :else(layout/default site-navi (err/error-content))))))
 
