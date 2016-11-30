@@ -197,20 +197,6 @@
         [:a {:href (if link (path-for link) "#")} (translate-text button) ])
       ]]))
 
-(defn get-first-badge-event [state]
-  (let [site-name (session/get :site-name)]
-    [:div {:class "media message-item tips"}
-     [:div.media-left
-      (system-image)]
-     [:div.media-body
-      ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
-      [:h3 {:class "media-heading"}
-       [:a {:href (path-for "/gallery/application")}  (str (t :core/Welcometo) " " site-name (t :core/Service))]]
-      [:div.media-body
-       (str (t :social/Youdonthaveanyanybadgesyet) ".")]
-      [:a {:href (path-for "/gallery/application")}
-       (t :social/Getyourfirstbadge)]]]))
-
 (defn profile-picture-tip []
   {:header (t :social/Profilepictureheader)  
    :body  (t :social/Profilepicturebody)
@@ -228,8 +214,8 @@
   (let [site-name (session/get :site-name)]
     {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
      :body  (t :social/Youdonthaveanyanybadgesyet)
-     :button (t :social/Getyourfirstbadge)
-     :link   "/gallery/application"}))
+     :button nil
+     :link   nil}))
 
 (defn not-verified-email [email]
   {:header (t :social/Confirmyouremailheader)
