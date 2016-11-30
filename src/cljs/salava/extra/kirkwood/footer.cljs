@@ -9,11 +9,8 @@
     "Copyright © 2016 Discendum Oy | "
      [:a {:class "bottom-link" :href "/terms" }
       "Terms of Use"]
-    " | "
-     [:a {:class "bottom-link" :href "/privacy"}
-      "Privacy Policy"]
      " | "
-     [:a {:class "bottom-link" :href "mailto:contact@openbadgefactory.com?Subject=Contact%20request" }
-      "contact@openbadgefactory.com"]]
+     [:a {:class "bottom-link" :href "mailto:kevin.collier@g.kirkwoodschools.org?Subject=Contact%20request" }
+      "Contact: kevin.collier@g.kirkwoodschools.org"]]
     [:p.text-muted
      "Open Badge Factory ® and Open Badge Passport ® are registered trademarks"]]])
