@@ -11,6 +11,7 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.gallery.ui.badges :as b]
             [salava.badge.ui.helper :as bh]
+            [salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
 
@@ -214,8 +215,8 @@
   (let [site-name (session/get :site-name)]
     {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
      :body  (t :social/Youdonthaveanyanybadgesyet)
-     :button nil
-     :link   nil}))
+     :button (if (application-plugin?) (t :social/Getyourfirstbadge) nil)
+     :link  (if (application-plugin?) "/gallery/application" nil) }))
 
 (defn not-verified-email [email]
   {:header (t :social/Confirmyouremailheader)
