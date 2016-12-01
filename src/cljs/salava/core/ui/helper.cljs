@@ -58,6 +58,6 @@
       (reduce str-space a-seq))))
 
 (defn private? []
-  (if (session/get :user)
-    (session/get-in [:user :private] false)
-    (session/get :private false)))
+  (if (session/get :private)
+    (session/get :private false)
+    (session/get-in [:user :private] false)))
