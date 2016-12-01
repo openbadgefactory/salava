@@ -36,7 +36,7 @@
   {:token  (get-register-token ctx)
    :active (get-register-active ctx)})
 
-(defn email-whitelist [ctx email]
+(defn in-email-whitelist? [ctx email]
   (let [whitelist (get-in ctx [:config :registerlink :email-whitelist] nil)
         end-of-email (re-find #"\@\S+" email)]
     (or (nil? whitelist) (not-empty (some (fn [key] (re-find key email)) whitelist)) )))
@@ -58,3 +58,8 @@
    "success"
    (catch Object _
      "error")))
+
+(defn get-email-whitelist [ctx]
+  (let [emails (get-in ctx [:config :registerlink :email-whitelist])
+        helper (fn [email] (subs (str email) 0 (dec (count (str email)))) )]
+    (map helper emails)))

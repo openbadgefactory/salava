@@ -7,7 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
-            [salava.registerlink.db :refer [right-token?  email-whitelist]]
+            [salava.registerlink.db :refer [right-token?  in-email-whitelist?]]
             [salava.core.helper :refer [dump private?]]
             [salava.core.access :as access]
             salava.core.restructure))
@@ -76,7 +76,7 @@
                        (ok save)
                        (cond
                          (not (right-token? ctx (:token form-content))) (forbidden)
-                         (not (email-whitelist ctx (:email form-content))) (ok {:status "error" :message "user/WAAT"})
+                         (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
                          :else (ok save))))
                    )
 
