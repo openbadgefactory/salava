@@ -46,8 +46,7 @@
                 :id "input-password"
                 :type "password"
                 :name "password"
-                :read-only   true
-                :on-focus    #(.removeAttribute (.-target %) "readonly")
+                :autocomplete "off"
                 :on-change #(reset! password-atom (.-target.value %))
                 :value @password-atom}]]]
      [:div.form-group
@@ -60,8 +59,7 @@
                 :id "input-password-verify"
                 :type "password"
                 :name "password-verify"
-                :read-only   true
-                :on-focus    #(.removeAttribute (.-target %) "readonly")
+                :autocomplete "off"
                 :on-change #(reset! password-verify-atom (.-target.value %))
                 :value @password-verify-atom}]]]
      [:button {:class    "btn btn-warning"
