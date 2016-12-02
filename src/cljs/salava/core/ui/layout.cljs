@@ -3,7 +3,7 @@
             [clojure.string :as s]
             [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [current-path navigate-to path-for base-path current-route-path]]
+            [salava.core.ui.helper :refer [current-path navigate-to path-for base-path current-route-path plugin-fun]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
@@ -137,7 +137,7 @@
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]])]
-      
+
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (doall (for [i items]
@@ -149,7 +149,7 @@
     (:footer footer)))
 
 (defn footer [site-navi]
-  (let [footer (get-footer-item (:navi-items site-navi))]
+  (let [footer (first (plugin-fun (session/get :plugins) "block" "footer"))]
     (if footer
       (footer)
       (base-footer))))
