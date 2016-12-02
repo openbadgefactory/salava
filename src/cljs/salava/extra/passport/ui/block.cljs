@@ -1,8 +1,8 @@
-(ns salava.extra.passport.ui.footer
+(ns salava.extra.passport.ui.block
   (:require [salava.core.i18n :refer [t]]))
 
 
-(defn footer []
+(defn ^:export footer []
   [:footer.footer
    [:div.footer-container
     [:p.text-muted

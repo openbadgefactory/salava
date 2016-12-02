@@ -1,8 +1,8 @@
-(ns salava.extra.cancred.ui.footer
+(ns salava.extra.cancred.ui.block
   (:require [salava.core.i18n :refer [t]]))
 
 
-(defn footer []
+(defn ^:export footer []
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
