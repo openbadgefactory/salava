@@ -9,7 +9,7 @@
   (let [fun (fn [p]
               (try
                 (apply aget (concat [js/window "salava"] (str/split (h/plugin-str p) #"/") ["ui" nspace name]))
-                (catch js/Object _ (h/dump [p _]))))]
+                (catch js/Object _)))]
     (->> plugins
          (map fun)
          (filter #(not (nil? %))))))
