@@ -234,6 +234,15 @@
            (tip-event (not-verified-email (:email email)) state) 
            ))])
 
+(defn empty-stream []
+  [:div
+   [:h2 "Well, you have cleaned the table!"]
+   [:div "Some tips:"]
+   [:ul
+    [:li "Create some cool pages and show how good you are! " [:a {:href (path-for "/page") } "My pages" ]]
+    [:li "Did you get some awesome badge and want to tell everybody how cool and fancy it is? You should rank it and comment to badge. " [:a {:href (path-for "/badges") } "My badges" ]]
+    [:li "Hahhaaa, Did you thought you was one of a kind? Well there is many other almost as cool as you are! " [:a {:href (path-for "/gallery/profiles") } "Profiles" ]]]])
+
 (defn content [state]
   (let [events (:events @state)
         tips (:tips @state)]
@@ -241,17 +250,27 @@
      [m/modal-window]
      [badges-pending state]
      (tips-container tips state)
+     (dump events)
+     (dump tips)
+     (if (and (empty? events) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))
+       (empty-stream))
      (into [:div {:class "row"}]
            (for [event events]
              (cond
                (= "follow" (:verb event)) (follow-event event state)
                (= "message" (:verb event)) (message-event event state)
-               :else "")))]))
+               :else "")))
+     
+     ]))
 
 
 
 (defn handler [site-navi]
-  (let [state (atom {:events []})]
+  (let [state (atom {:events []
+                     :tips {:profile-picture-tip false
+                            :welcome-tip false
+                            :not-verified-emails []}
+                     })]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
