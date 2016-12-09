@@ -73,7 +73,7 @@ SELECT user_id AS owner from social_connections_badge where badge_content_id = :
 
 
 --name: select-user-events
-SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
+SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN badge_content AS bc ON se.object = bc.id
      JOIN social_connections_badge AS scb ON :user_id = scb.user_id
@@ -119,3 +119,7 @@ SELECT profile_picture from user where id = :user_id
 
 --name: select-user-not-verified-emails
 SELECT email FROM user_email WHERE user_id = :user_id AND verified= 0;
+
+
+--name: update-last-checked-user-event-owner!
+UPDATE social_event_owners SET last_checked = UNIX_TIMESTAMP() WHERE event_id IN (:event_ids) AND owner = :user_id

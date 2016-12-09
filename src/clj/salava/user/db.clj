@@ -64,7 +64,8 @@
     (let [site-url (get-site-url ctx)
           base-path (get-base-path ctx)
           activation_code (generate-activation-id)
-          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language} (get-db ctx))
+          email_notifications (get-in ctx [:config :user :email-notifications] true)
+          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
       (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code language) (login-link site-url base-path) (str first-name " " last-name) email language)
@@ -310,3 +311,15 @@
       {:title       (str (:first_name user) " " (:last_name user) " - profile")
        :description (str (get-site-name ctx) " user profile")
        :image       (:profile_picture user)})))
+
+
+;; --- Email sender --- ;;
+
+(defn get-user-and-primary-email [ctx user-id]
+  (select-user-and-primary-address {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+
+(defn get-user-ids-from-event-owners [ctx]
+ (select-userid-from-event-owners {} (into {:row-fn :owner} (get-db ctx))) )
+
+
+

@@ -38,7 +38,7 @@ SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 
 -- name: insert-user<!
 -- add new user
-INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP() :email_notifications)
 
 -- name: insert-user-email!
 -- add new unverified email address to user
@@ -136,3 +136,13 @@ DELETE FROM user WHERE id = :id
 
 --name: update-user-last_login!
 UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id
+
+
+
+--name: select-user-and-primary-address
+SELECT u.first_name, u.last_name, ue.email, language, role FROM user AS u
+       JOIN user_email AS ue ON ue.user_id = u.id
+       WHERE u.id = :id and ue.primary_address = 1;
+
+--name: select-userid-from-event-owners
+select distinct owner from social_event_owners;

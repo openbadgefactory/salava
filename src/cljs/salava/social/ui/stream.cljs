@@ -19,6 +19,7 @@
     (path-for "/obpv1/social/events" true)
     {:handler (fn [data]
                 (swap! state assoc :events (:events data)
+                       :initial false
                        :pending-badges (:pending-badges data)
                        :tips (:tips data)))}))
 
@@ -245,14 +246,15 @@
 
 (defn content [state]
   (let [events (:events @state)
-        tips (:tips @state)]
+        tips (:tips @state)
+        initial (:initial @state)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
      [badges-pending state]
      (tips-container tips state)
      (dump events)
      (dump tips)
-     (if (and (empty? events) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))
+     (if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))
        (empty-stream))
      (into [:div {:class "row"}]
            (for [event events]
@@ -266,7 +268,8 @@
 
 
 (defn handler [site-navi]
-  (let [state (atom {:events []
+  (let [state (atom {:initial true
+                     :events []
                      :tips {:profile-picture-tip false
                             :welcome-tip false
                             :not-verified-emails []}

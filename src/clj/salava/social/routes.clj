@@ -128,7 +128,7 @@
                    :summary "Returns users events"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (let [badge-events (so/get-user-badge-events ctx (:id current-user))
+                   (ok (let [badge-events (so/get-user-badge-events-sorted-and-filtered ctx (:id current-user))
                                pending-badges (b/user-badges-pending ctx (:id current-user))
                                tips  (so/get-user-tips ctx (:id current-user))]
                            {:tips tips

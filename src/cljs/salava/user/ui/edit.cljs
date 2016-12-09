@@ -109,13 +109,29 @@
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last-name" :atom last-name-atom}]]]
-       
+
        [:div.form-group
         [:label {:for "input-country"
                  :class "col-md-3"}
          (t :user/Country)]
         [:div.col-md-9
          [input/country-selector country-atom]]]
+
+       [:div.form-group
+        [:label {:for "input-email-notifications"
+                 :class "col-md-3"}
+         (t :user/Emailnotifications)]
+        [:div.col-md-9
+         [:label
+     [:input {:name      "visibility"
+              :type      "checkbox"
+              :on-change  #()     ;#(toggle-visibility visibility-atom)
+              :checked   true}]
+     (t :user/Publishandshare)]
+         
+         ]]
+
+       
 
        [:div.row
         [:div.col-xs-12

@@ -2,11 +2,11 @@
   (:require [yesql.core :refer [defqueries]]
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
-            ;[salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.admin.helper :as ah]
-            [clojure.string :refer [blank?]]
+            [clojure.string :refer [blank? join]]
             [salava.core.time :refer [unix-time get-date-from-today]]))
 
 (defqueries "sql/social/queries.sql")
@@ -58,6 +58,12 @@
 (defn filter-own-events [events user_id]
   (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events) )
 
+
+(defn update-last-viewed [ctx events user_id]
+  (let [event_ids (map  #(:event_id %) events)]
+    (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))
+    ))
+
 (defn get-user-badge-events
   "get users badge  message and follow events"
   [ctx user_id]
@@ -69,9 +75,15 @@
         message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
         follow-events (filter-own-events reduced-events user_id)
         badge-events (into follow-events message-events)]
-    (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))
-    ))
+    badge-events))
 
+(defn get-user-badge-events-sorted-and-filtered [ctx user_id]
+  (let [badge-events (get-user-badge-events ctx user_id)
+        sorted (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))]
+    (dump (get-in ctx [:config :user :email-notifications] true))
+    (if (not-empty sorted)
+      (update-last-viewed ctx sorted user_id))
+    sorted))
 
 (defn hide-user-event! [ctx user_id event_id]
   (try+
@@ -79,6 +91,19 @@
    "success"
    (catch Object _
      "error")))
+
+;; --- Email sender --- ;;
+
+(defn email-new-messages-block [ctx user-id]
+  (let [events (or (get-user-badge-events ctx user-id) nil)
+        events (filter #(nil? (:last_checked %))events)
+        message-helper (fn [item]
+                         (when (and (get-in item [:message :new_messages] )
+                                    (< 0 (get-in item [:message :new_messages] ))
+                                    (= "message" (:verb item)))
+                           (str "name: " (:name item) " -- new messages: " (get-in item [:message :new_messages] ) "\n")))]
+    (join (map message-helper events))))
+
 
 ;; MESSAGES ;;
 
