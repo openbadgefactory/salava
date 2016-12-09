@@ -49,17 +49,21 @@
     [{:error "badge/Invalidassertion"} nil]))
 
 (defn- add-assertion-and-key [badge]
-  (let [badge-type (get-badge-type badge)
-        [assertion assertion-key] (get-assertion-and-key badge-type badge)
-        old-assertion (:assertion badge)]
-    (assoc badge :assertion (a/create-assertion assertion old-assertion)
-                 :assertion_key assertion-key)))
+  (try
+    (let [badge-type (get-badge-type badge)
+          [assertion assertion-key] (get-assertion-and-key badge-type badge)
+          old-assertion (:assertion badge)]
+      (assoc badge :assertion (a/create-assertion assertion old-assertion)
+             :assertion_key assertion-key))
+    (catch Throwable ex
+      (log/error "add-assertion-and-key: failed to get assertion")
+      (log/error (.toString ex)))))
 
 (defn- collect-badges
   "Collect badges fetched from groups"
   [badge-colls]
   (let [badges (flatten badge-colls)]
-    (map add-assertion-and-key badges)))
+    (filter #(not (nil? %)) (pmap add-assertion-and-key badges))))
 
 (defn- fetch-badges-by-group
   "Get badges from public group in Backpack"
