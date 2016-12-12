@@ -17,7 +17,6 @@
 
 (def ctx (get-ctx))
 
-(dump (get-in ctx [:share]))
 (session/put! :user (:user ctx))
 (session/put! :facebook-app-id (:facebook-app-id ctx))
 (session/put! :linkedin-app-id (:linkedin-app-id ctx))
