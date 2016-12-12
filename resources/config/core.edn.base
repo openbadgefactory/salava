@@ -1,4 +1,7 @@
-{:site-name "Open Badge Passport"
+{:site-name "Salava"
+
+ :share {:site-name "Salava"
+         :hashtag "Salava"}
 
  :site-url "http://localhost:5000"
 

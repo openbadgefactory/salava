@@ -6,6 +6,7 @@
             [clojure.data.json :as json]
             [salava.core.helper :refer [dump plugin-str private?]]
             [salava.core.util :refer [get-site-url]]
+            [clojure.string :refer [join split capitalize]]
             [salava.user.db :as u]
             [salava.badge.main :as b]
             [salava.page.main :as p]
@@ -51,11 +52,17 @@
 
 
 (defn context-js [ctx]
-  (let [ctx-out {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
+  (let [site-name (get-in ctx [:config :core :site-name])
+        share {:site-name (get-in ctx [:config :core :share :site-name] site-name)
+               :hashtag (get-in ctx [:config :core :share :hashtag] (->> (split site-name #" ")
+                                                                           (map capitalize)
+                                                                           join)) }
+        ctx-out {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
                  :user            (:user ctx)
                  :flash-message   (:flash-message ctx)
                  :site-url        (get-in ctx [:config :core :site-url])
-                 :site-name       (get-in ctx [:config :core :site-name])
+                 :site-name       site-name
+                 :share           share
                  :base-path       (get-in ctx [:config :core :base-path])
                  :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
                  :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
