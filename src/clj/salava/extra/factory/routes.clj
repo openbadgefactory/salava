@@ -35,7 +35,10 @@
                   :header-params [authorization :- s/Str]
                   :body-params [assertions :- s/Any]
                   :middleware [#(wrap-basic-auth % ctx)]
-                  (ok (f/save-assertions-for-emails ctx assertions)))
+                  (let [result (f/save-assertions-for-emails ctx assertions)]
+                    (if result
+                      (ok {:success true})
+                      (internal-server-error {:error "transaction failed"}))))
 
             (GET "/get_updates" []
                  :query-params [user :- s/Int

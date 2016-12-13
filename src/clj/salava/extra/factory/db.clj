@@ -1,5 +1,6 @@
 (ns salava.extra.factory.db
-  (:require [yesql.core :refer [defqueries]]
+  (:require [clojure.tools.logging :as log]
+            [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [slingshot.slingshot :refer :all]
@@ -30,10 +31,18 @@
 (defn save-assertions-for-emails
   ""
   [ctx emails-assertions]
-  (doseq [email (keys emails-assertions)]
-    (let [assertions (get emails-assertions email)]
-      (doseq [assertion assertions]
-        (insert-pending-badge-for-email! {:assertion_url assertion :email (name email)} (get-db ctx))))))
+  (log/info "save-assertions-for-emails: got" (count emails-assertions) "recipients")
+  (try
+    (jdbc/with-db-transaction [tx {:datasource (:db ctx)}]
+      (doseq [email (keys emails-assertions)]
+        (let [assertions (get emails-assertions email)]
+          (doseq [assertion assertions]
+            (insert-pending-badge-for-email! {:assertion_url assertion :email (name email)} {:connection tx})))))
+    true
+    (catch Throwable ex
+      (log/error "save-assertions-for-emails: transaction failed")
+      (log/error (.toString ex))
+      false)))
 
 (defn save-factory-badge [ctx assertion-url user-id emails]
   (let [assertion (a/create-assertion assertion-url {})]
