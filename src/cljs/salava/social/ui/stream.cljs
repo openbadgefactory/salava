@@ -262,7 +262,7 @@
      [m/modal-window]
      [badges-pending state]
      (tips-container tips state)
-     ;(if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))(empty-stream))
+     (if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))(empty-stream))
      (into [:div {:class "row"}]
            (for [event events]
              (cond
