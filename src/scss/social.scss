@@ -34,6 +34,8 @@
 	h3.media-heading {
 		position: relative;
 		color:$badge-title;
+		font-size: 16px;
+		line-height: 34px;
 		//margin-right: 105px;
 		a { font-size: 16px;
 			color:$badge-title;
@@ -88,13 +90,50 @@
 		}
 	}
 	&.tips {
+		i.fa {
+			display: block;
+			float:left;
+			font-size: 30px;
+			width: 42px;
+			text-align: center;
+			margin-right: 15px;
+			vertical-align: top;
+			color:$link-color;
+			~ div {
+				margin-left: 57px;
+			}
+
+		}
+		@media (max-width: 480px) {
+			i.fa {
+				font-size: 26px;
+				display: block;
+				width: 100%;
+				margin-right: 0px;
+				~ div {
+					margin-left: 0px;
+
+					}
+			}
+			h3{
+				text-align: center;
+				a {
+					margin-left: 0px !important;
+				}
+			}
+		}
 	    h3.media-heading{
 			&:before{
-				content:"\f0eb";
+				content:"";
 			}
 			~ .media-body {
-				padding-left:57px;
 				font-size: 14px;
+				ul {
+					padding-left:20px;
+				}
+			}
+			~ a {
+				padding-left: 0px !important;
 			}
 	    }
 	}
@@ -228,7 +267,7 @@
 @media (max-width: 480px){
     .message-item.media.tips{
 		.media-left{
-			padding-top:35px;
+			//padding-top:35px;
 			~ .media-body h3.media-heading{
 				&:before{
 				margin-top:0px;
