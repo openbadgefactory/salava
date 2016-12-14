@@ -47,7 +47,8 @@
 
 (s/defschema EditUser (-> {:current_password (s/maybe (:password User))
                            :new_password (s/maybe (:password User))
-                           :new_password_verify (s/maybe (:password User))}
+                           :new_password_verify (s/maybe (:password User))
+                           :email_notifications s/Bool}
                           (merge (select-keys User [:first_name :last_name :language :country]))))
 
 (s/defschema EmailAddress {:email            (:email User)

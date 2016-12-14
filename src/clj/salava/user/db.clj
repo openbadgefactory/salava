@@ -113,14 +113,14 @@
   "Edit user information."
   [ctx user-information user-id]
   (try+
-   (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
+   (let [{:keys [first_name last_name country language current_password new_password new_password_verify email_notifications]} user-information]
      (when new_password
        (if (not (= new_password new_password_verify))
          (throw+ "user/Passwordmissmatch"))
        (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
          (if (and pass (not (check-password ctx current_password pass)))
             (throw+ "user/Wrongpassword"))))
-      (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
+      (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country :email_notifications email_notifications} (get-db ctx))
       (if new_password
         (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx)))
       {:status "success" :message "core/Thechangeshavebeensaved" })

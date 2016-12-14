@@ -24,7 +24,7 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 
 --name: select-user
 -- get user by id
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about FROM user WHERE id = :id AND deleted = 0
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated FROM user WHERE id = :id
@@ -58,7 +58,7 @@ SELECT pass FROM user WHERE id = :id
 
 -- name: update-user!
 -- update basic user information
-UPDATE user SET first_name = :first_name, last_name = :last_name, country = :country, language = :language, mtime = UNIX_TIMESTAMP() WHERE id = :id
+UPDATE user SET first_name = :first_name, last_name = :last_name, country = :country, language = :language, mtime = UNIX_TIMESTAMP(), email_notifications = :email_notifications WHERE id = :id
 
 -- name: update-password!
 -- change user password
