@@ -306,7 +306,11 @@
   "Set badge status"
   [ctx badge-id status user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (update-status! {:id badge-id :status status} (get-db ctx))))
+    (update-status! {:id badge-id :status status} (get-db ctx)))
+  (if (= "accepted" status)
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/create-connection-badge-by-badge-id! ctx user-id badge-id)))
+  badge-id)
 
 (defn toggle-show-recipient-name!
   "Toggle recipient name visibility"

@@ -1,7 +1,17 @@
 (ns salava.core.ui.share
   (:require [reagent.core :refer [create-class]]
+            [reagent.session :as session]
+            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [private?]]
             [salava.core.i18n :refer [t]]))
+
+(def site-name
+  (session/get-in [:share :site-name]))
+
+(def hashtag
+  (session/get-in [:share :hashtag]))
+
+
 
 (defn google-plus [url]
   (create-class
@@ -17,8 +27,8 @@
     [:div.share-button
       [:a {:class "twitter"
             :href (str "https://twitter.com/intent/tweet?size=medium&count=none&text="
-                         (js/encodeURIComponent (str "Open Badge Passport: " title))
-                         "&url=" (js/encodeURIComponent url) "&hashtags=OpenBadgePassport")
+                         (js/encodeURIComponent (str site-name ": " title))
+                         "&url=" (js/encodeURIComponent url) "&hashtags=" hashtag)
             :target "_blank"}
           [:i {:class "fa fa-twitter-square"}]]
     ]
@@ -41,7 +51,7 @@
         [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
       [:div.share-button
      [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title 
-"&summary=" (js/encodeURIComponent (str "Open Badge Passport: " title)) "&source=OpenBadgePassport") :target "_blank"}
+"&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
       [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
         )]
     [:div.share-button

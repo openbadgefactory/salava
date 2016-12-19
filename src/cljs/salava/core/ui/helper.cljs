@@ -1,7 +1,18 @@
 (ns salava.core.ui.helper
   (:require [reagent.session :as session]
+            [clojure.string :as str]
             [schema.core :as s]
+            [salava.core.helper :as h]
             [ajax.core :as ajax]))
+
+(defn plugin-fun [plugins nspace name]
+  (let [fun (fn [p]
+              (try
+                (apply aget (concat [js/window "salava"] (str/split (h/plugin-str p) #"/") ["ui" nspace name]))
+                (catch js/Object _)))]
+    (->> plugins
+         (map fun)
+         (filter #(not (nil? %))))))
 
 (defn unique-values [key data]
   (->> data
@@ -58,6 +69,6 @@
       (reduce str-space a-seq))))
 
 (defn private? []
-  (if (session/get :user)
-    (session/get-in [:user :private] false)
-    (session/get :private false)))
+  (if (session/get :private)
+    (session/get :private false)
+    (session/get-in [:user :private] false)))
