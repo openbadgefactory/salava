@@ -6,6 +6,7 @@
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.admin.helper :as ah]
+            [salava.core.i18n :refer [t]]
             [clojure.string :refer [blank? join]]
             [salava.core.time :refer [unix-time get-date-from-today]]))
 
@@ -101,7 +102,8 @@
                          (when (and (get-in item [:message :new_messages] )
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
-                           (str "name: " (:name item) " -- new messages: " (get-in item [:message :new_messages] ) "\n")))]
+                           (let [new-messages (get-in item [:message :new_messages] ) ]
+                             (str (:name item) "-" "merkillä" " on "new-messages " " (if (= 1 new-messages ) "uusi viesti." "uutta viestiä.") "\n"))))]
     (join (map message-helper events))))
 
 

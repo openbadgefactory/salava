@@ -319,7 +319,8 @@
   (select-user-and-primary-address {:id user-id} (into {:result-set-fn first} (get-db ctx))))
 
 (defn get-user-ids-from-event-owners [ctx]
- (select-userid-from-event-owners {} (into {:row-fn :owner} (get-db ctx))) )
+ (select-userid-from-event-owners {} (get-db ctx)) )
+
 
 
 

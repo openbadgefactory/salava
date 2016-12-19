@@ -145,4 +145,7 @@ SELECT u.first_name, u.last_name, ue.email, language, role FROM user AS u
        WHERE u.id = :id and ue.primary_address = 1;
 
 --name: select-userid-from-event-owners
-select distinct owner from social_event_owners;
+select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role from social_event_owners AS seo
+       JOIN user_email AS ue ON ue.user_id = seo.owner
+       JOIN user AS u ON u.id = seo.owner
+       WHERE u.email_notifications = 1 AND ue.primary_address = 1; 
