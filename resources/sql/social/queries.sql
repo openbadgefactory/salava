@@ -71,6 +71,8 @@ INSERT INTO social_event_owners (owner, event_id) VALUES (:owner, :event_id)
 --name: select-users-from-connections-badge
 SELECT user_id AS owner from social_connections_badge where badge_content_id = :badge_content_id
 
+--name: select-admin-users-id
+SELECT id AS owner from user where role='admin';
 
 --name: select-user-events
 SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
@@ -81,6 +83,13 @@ SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked,
      ORDER BY se.ctime DESC
      LIMIT 1000
 
+--name: select-admin-events
+SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, seo.hidden, re.item_name, re.report_type FROM social_event_owners AS seo
+     JOIN social_event AS se ON seo.event_id = se.id
+     LEFT JOIN report_ticket AS re  ON se.object = re.id
+     WHERE seo.owner = :user_id AND se.verb = 'ticket' AND se.type = 'admin' AND re.status = 'open'
+     ORDER BY se.ctime DESC
+     LIMIT 1000;
 
 
 
@@ -90,6 +99,8 @@ SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.l
        JOIN user AS u ON (u.id = bm.user_id)
        where bmv.user_id = :user_id
        ORDER BY bm.ctime ASC
+
+
 
 
 --name: select-messages-with-badge-content-id

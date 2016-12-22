@@ -19,7 +19,9 @@
   [ctx, subject, verb, object, type]
   (try+
    (let [event-id (insert-social-event<! {:subject subject :verb verb :object object :type type} (get-db ctx))
-         connected-users  (if (or (= type "badge")) (select-users-from-connections-badge {:badge_content_id object} (get-db ctx)))
+         connected-users  (cond
+                            (= type "badge") (select-users-from-connections-badge {:badge_content_id object} (get-db ctx))
+                            (= type "admin") (select-admin-users-id {} (get-db ctx)))
          query (vec (map #(assoc % :event_id (:generated_key event-id)) connected-users))]
      (jdbc/insert-multi! (:connection (get-db ctx)) :social_event_owners query)
      {:status "success"}) 
@@ -36,6 +38,22 @@
                         )))
         reduced-events (vals (reduce helper {} (reverse events)))]
     (filter #(false? (:hidden %)) reduced-events)))
+
+
+
+
+
+(defn admin-events-reduce [events]
+  (let [helper (fn [current item]
+                  (let [key [(:verb item)]]
+                    (-> current
+                        (assoc  key item)
+                        (assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
+                        )))
+        reduced-events (vals (reduce helper {} (reverse events)))]
+    (filter #(false? (:hidden %)) reduced-events)))
+
+
 
 
 
@@ -64,6 +82,17 @@
   (let [event_ids (map  #(:event_id %) events)]
     (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))
     ))
+(defn get-user-admin-events [ctx user_id]
+  (select-admin-events {:user_id user_id} (get-db ctx)))
+
+(defn get-user-admin-events-sorted [ctx user_id]
+  (let [events (get-user-admin-events ctx user_id)]
+   (if (not-empty events)
+     (update-last-viewed ctx events user_id))
+   events))
+
+
+
 
 (defn get-user-badge-events
   "get users badge  message and follow events"
@@ -81,7 +110,6 @@
 (defn get-user-badge-events-sorted-and-filtered [ctx user_id]
   (let [badge-events (get-user-badge-events ctx user_id)
         sorted (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))]
-    (dump (get-in ctx [:config :user :email-notifications] true))
     (if (not-empty sorted)
       (update-last-viewed ctx sorted user_id))
     sorted))
@@ -95,16 +123,28 @@
 
 ;; --- Email sender --- ;;
 
-(defn email-new-messages-block [ctx user-id]
-  (let [events (or (get-user-badge-events ctx user-id) nil)
-        events (filter #(nil? (:last_checked %))events)
+
+(defn admin-events-message [ctx user lng]
+  (let [user-id (:id user)
+        admin-events (get-user-admin-events ctx user-id)
+        admin-events (filter #(nil? (:last_checked %)) admin-events)]
+    (if (not (empty? admin-events))
+      (str "järjestelmässä uusia tickettejä " (count admin-events) "\n" ))
+    ))
+
+(defn email-new-messages-block [ctx user lng]
+  (let [user-id (:id user)
+        admin? (= "admin" (:role user))
+        admin-events (if admin? (admin-events-message ctx user lng) nil)
+        events (or (get-user-badge-events ctx user-id) nil)
+        events (filter #(nil? (:last_checked %)) events)
         message-helper (fn [item]
                          (when (and (get-in item [:message :new_messages] )
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
                            (let [new-messages (get-in item [:message :new_messages] ) ]
-                             (str (:name item) "-" "merkillä" " on "new-messages " " (if (= 1 new-messages ) "uusi viesti." "uutta viestiä.") "\n"))))]
-    (join (map message-helper events))))
+                             (str (:name item) "-"  (t :social/Emailnewmessage1 lng) " " new-messages " " (if (= 1 new-messages ) (t :social/Newmessage lng)(t :social/Newmessages lng)) "\n"))))]
+    (str admin-events (join (map message-helper events)))))
 
 
 ;; MESSAGES ;;

@@ -21,7 +21,9 @@
                 (swap! state assoc :events (:events data)
                        :initial false
                        :pending-badges (:pending-badges data)
-                       :tips (:tips data)))}))
+                       :tips (:tips data))
+                (if (:admin-events data)
+                  (swap! state assoc :admin-events (:admin-events data))))}))
 
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
@@ -134,6 +136,22 @@
        (t :social/Youstartedfollowbadge)]
       ]]))
 
+(defn ticket-event [event state]
+  (let [{:keys [subject verb image_file message ctime event_id count object]}  event
+        modal-message (str "messages")]
+    [:div {:class "media message-item tips"}
+    (hide-event event_id state)
+     [:div.media-left
+      (system-image)]
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days")
+       ]
+      [:h3 {:class "media-heading"}
+       [:a {:href (path-for "/admin/tickets")} "Avoimia ilmoituksia " count ]]
+      [:div.media-body
+       "Raportointi työkalulla tehtyjä ilmoituksia admineille."]
+      ]]))
+
 (defn message-event [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         new-messages  (get-in event [:message :new_messages])
@@ -193,20 +211,20 @@
       [:h3 {:class "media-heading"}
        [:a {:href (if link (path-for link) "#")} (translate-text header)]]
       [:div.media-body
-       (translate-text body)"."]
+       (translate-text body)]
       (if button
         [:a {:href (if link (path-for link) "#")} (translate-text button) ])
       ]]))
 
 (defn profile-picture-tip []
   {:header (t :social/Profilepictureheader)  
-   :body  (t :social/Profilepicturebody)
+   :body  (str (t :social/Profilepicturebody) ".")
    :button (t :social/Profiletipbutton)
    :link "/user/edit/profile"} )
 
 (defn profile-description-tip []
   {:header (t :social/Profiledescriptiontipheader)  
-   :body  (t :social/Profiledescriptionbody)
+   :body  (str (t :social/Profiledescriptionbody) ".")
    :button (t :social/Profiletipbutton)
    :link "/user/edit/profile"} )
 
@@ -214,9 +232,16 @@
 (defn get-your-first-badge-tip []
   (let [site-name (session/get :site-name)]
     {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
-     :body  (t :social/Youdonthaveanyanybadgesyet)
+     :body (str (t :social/Youdonthaveanyanybadgesyet) ".")
      :button nil
      :link   nil}))
+
+(defn report-ticket-tip [events]
+  (let [count (count events)]
+    {:header "Järjestelmässä avonaisia ilmoituksia"
+     :body  (str "Avoimia ilmoituksia: " count) 
+     :button "näe ne täältä"
+     :link   "/admin/tickets"}))
 
 (defn not-verified-email [email]
   {:header (t :social/Confirmyouremailheader)
@@ -247,13 +272,16 @@
 (defn content [state]
   (let [events (:events @state)
         tips (:tips @state)
-        initial (:initial @state)]
+        initial (:initial @state)
+        admin-events (or (:admin-events @state) nil)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
      [badges-pending state]
+     (if admin-events
+       [:div.row
+        (tip-event (report-ticket-tip admin-events) state)]
+       )
      (tips-container tips state)
-     (dump events)
-     (dump tips)
      (if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))
        (empty-stream))
      (into [:div {:class "row"}]
@@ -272,8 +300,11 @@
                      :events []
                      :tips {:profile-picture-tip false
                             :welcome-tip false
-                            :not-verified-emails []}
-                     })]
+                            :not-verified-emails []}})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
+
+
+
+
