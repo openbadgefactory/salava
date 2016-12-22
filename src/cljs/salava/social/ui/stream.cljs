@@ -262,12 +262,12 @@
 
 (defn empty-stream []
   [:div
-   [:h2 "Well, you have cleaned the table!"]
-   [:div "Some tips:"]
+   [:h2 (t :social/Emptystreamheader)]
+   [:div(t :social/Sometips)]
    [:ul
-    [:li "Create some cool pages and show how good you are! " [:a {:href (path-for "/page") } "My pages" ]]
-    [:li "Did you get some awesome badge and want to tell everybody how cool and fancy it is? You should rank it and comment to badge. " [:a {:href (path-for "/badges") } "My badges" ]]
-    [:li "Hahhaaa, Did you thought you was one of a kind? Well there is many other almost as cool as you are! " [:a {:href (path-for "/gallery/profiles") } "Profiles" ]]]])
+    [:li (t :social/Pagetip) " "  [:a {:href (path-for "/page") } (t :page/Mypages)]]
+    [:li (t :social/Badgetip) " " [:a {:href (path-for "/badge") } (t :badge/Mybadges) ]]
+    [:li (t :social/Profiletip) " " [:a {:href (path-for "/gallery/profiles") }(t :gallery/Sharedprofiles)  ]]]])
 
 (defn content [state]
   (let [events (:events @state)
@@ -301,6 +301,7 @@
                      :tips {:profile-picture-tip false
                             :welcome-tip false
                             :not-verified-emails []}})]
+
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
