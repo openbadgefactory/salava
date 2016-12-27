@@ -3,31 +3,24 @@
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
+            [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
-(defn facebook-link
-  ([deauthorize?]
+
+(defn facebook-link [deauthorize? register?]
    (let [fb-app-id (session/get-in [:facebook-app-id])
          redirect-path (if deauthorize? "/oauth/facebook/deauthorize" "/oauth/facebook")
          redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for redirect-path)))
          facebook-url (str "https://www.facebook.com/dialog/oauth?client_id=" fb-app-id "&redirect_uri=" redirect-uri "&scope=email")]
+     
      (if fb-app-id
        [:a {:class "btn btn-oauth btn-facebook" :href facebook-url :rel "nofollow"}
         [:i {:class "fa fa-facebook"}]
         (if deauthorize?
           (t :oauth/Unlink)
-          (t :oauth/LoginwithFacebook))])))
-  ([deauthorize? register?]
-   (let [fb-app-id (session/get-in [:facebook-app-id])
-         redirect-path (if deauthorize? "/oauth/facebook/deauthorize" "/oauth/facebook")
-         redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for redirect-path)))
-         facebook-url (str "https://www.facebook.com/dialog/oauth?client_id=" fb-app-id "&redirect_uri=" redirect-uri "&scope=email")]
-     (if fb-app-id
-       [:a {:class "btn btn-default  btn-oauth btn-facebook" :href facebook-url :rel "nofollow"}
-        [:i {:class "fa fa-facebook"}]
-        (t :oauth/RegisterwithFacebook)
-        ])))
-  )
+          (if register?
+            (t :oauth/RegisterwithFacebook)
+            (t :oauth/LoginwithFacebook)))])))
 
 (defn linkedin-login-link [linkedin-app-id]
   (let [redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for "/oauth/linkedin")))
