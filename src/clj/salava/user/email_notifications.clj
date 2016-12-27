@@ -11,12 +11,11 @@
             [salava.user.db :refer [get-user-and-primary-email get-user-ids-from-event-owners]] ))
 
 
-
-
-
 (defn email-reminder-body [ctx user]
-                                        ;lisää sleeppiä
-  (Thread/sleep 50)
+  (try
+    (Thread/sleep 50)
+    (catch InterruptedException _));lisää sleeppiä
+  
   (let [site-url (get-site-url ctx)
         base-path (get-base-path ctx)
         url (str site-url base-path "/social")
@@ -35,13 +34,14 @@
          (println "email:" (:email user))
          (println subject)
          (println message)
-         ;(send-mail ctx subject events [(:email user)])
+         ;(send-mail ctx subject message [(:email user)])
          ))
-   "success"
+     "success"
    (catch Object _
      "error"))))
 
 
 (defn email-sender [ctx]
   (let [event-owners (get-user-ids-from-event-owners ctx)]
-    (map (fn [user] (email-reminder-body ctx user)) event-owners)))
+    (doseq [user event-owners]
+      (email-reminder-body ctx user))))
