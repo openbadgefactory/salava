@@ -6,7 +6,7 @@
             [slingshot.slingshot :refer :all]
             [salava.core.mail :refer [send-mail]]
             [salava.core.i18n :refer [t]]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-email-notifications]]
             [salava.social.db :refer [email-new-messages-block]]
             [salava.user.db :refer [get-user-and-primary-email get-user-ids-from-event-owners]] ))
 
@@ -34,7 +34,7 @@
          (println "email:" (:email user))
          (println subject)
          (println message)
-         ;(send-mail ctx subject message [(:email user)])
+         (send-mail ctx subject message [(:email user)])
          ))
      "success"
    (catch Object _
@@ -43,5 +43,6 @@
 
 (defn email-sender [ctx]
   (let [event-owners (get-user-ids-from-event-owners ctx)]
-    (doseq [user event-owners]
-      (email-reminder-body ctx user))))
+    (if (get-email-notifications ctx)
+      (doseq [user event-owners]
+        (email-reminder-body ctx user)))))

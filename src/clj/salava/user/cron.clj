@@ -3,7 +3,7 @@
    [salava.user.email-notifications :as en]))
 
 
-
-(defn every-minute [ctx]
+;;every-minute
+(defn every-day [ctx]
   (do
     (en/email-sender ctx)))
