@@ -50,6 +50,8 @@
         (input/password-valid? new-password-verify)
         (= new-password new-password-verify)
         (or (not has-password?) (not-empty current-password)))))
+
+
 (defn content [state]
   (let [current-password-atom (cursor state [:user :current_password])
         new-password-atom (cursor state [:user :new_password])
@@ -59,7 +61,8 @@
         last-name-atom (cursor state [:user :last_name])
         country-atom (cursor state [:user :country])
         message (:message @state)
-        current-password? (get-in @state [:user :password?])]
+        current-password? (get-in @state [:user :password?])
+        email-notifications-atom (cursor state [:user :email_notifications])]
     [:div {:class "panel" :id "edit-user"}
      
      (if message
@@ -109,13 +112,30 @@
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last-name" :atom last-name-atom}]]]
-       
+
        [:div.form-group
         [:label {:for "input-country"
                  :class "col-md-3"}
          (t :user/Country)]
         [:div.col-md-9
          [input/country-selector country-atom]]]
+
+       [:div.form-group
+        [:label {:for "input-email-notifications"
+                 :class "col-md-3"}
+         "Sähköposti muistutukset"]
+        [:div.col-md-9
+         [:label
+          [:input {:name      "visibility"
+                   :type      "checkbox"
+                   :on-change  #(reset! email-notifications-atom (if @email-notifications-atom false true)) ;#(toggle-visibility visibility-atom)
+                   :checked   @email-notifications-atom}] (str " ") (if @email-notifications-atom "Päällä" "ei käytössä")]
+         (if @email-notifications-atom
+           [:div "Saat sähköpostiisi muistutuksia merkeille tulleista viesteistä!"]
+           [:div "Aktivoimalla muistutuksen, saat sähköpostiisi muistutuksia uusista merkeille tulleista viesteistä."])
+         ]]
+
+       
 
        [:div.row
         [:div.col-xs-12
@@ -154,7 +174,8 @@
                             :language "en"
                             :last_name ""
                             :new_password nil
-                            :country "EN"}
+                            :country "EN"
+                            :email_notification nil}
                      :message nil
                      :languages ["en"]})]
     (init-data state)

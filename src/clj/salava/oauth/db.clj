@@ -50,9 +50,10 @@
   (try+
     (let [picture-url (:picture_url oauth-user)
           profile-picture (if picture-url (save-file-from-http-url ctx (str picture-url)))
+          email_notifications (get-in ctx [:config :user :email-notifications] true)
           new-user (-> oauth-user
                        (dissoc :oauth_user_id :email :picture_url)
-                       (assoc :profile_picture profile-picture))
+                       (assoc :profile_picture profile-picture :email_notifications email_notifications))
           new-user-id (:generated_key (insert-user<! new-user (get-db ctx)))
           _ (insert-user-email! {:email (:email oauth-user) :user_id new-user-id} (get-db ctx))
           _ (add-oauth-user ctx new-user-id (:oauth_user_id oauth-user) service)]

@@ -25,6 +25,9 @@
 (defn get-site-url [ctx]
   (get-in ctx [:config :core :site-url] ""))
 
+(defn get-email-notifications [ctx]
+  (get-in ctx [:config :user :email-notifications] false))
+
 (defn get-site-name [ctx]
   (get-in ctx [:config :core :site-name] ""))
 

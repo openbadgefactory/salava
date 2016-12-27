@@ -24,7 +24,7 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 
 --name: select-user
 -- get user by id
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about FROM user WHERE id = :id AND deleted = 0
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated FROM user WHERE id = :id
@@ -38,7 +38,7 @@ SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 
 -- name: insert-user<!
 -- add new user
-INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP() :email_notifications)
 
 -- name: insert-user-email!
 -- add new unverified email address to user
@@ -58,7 +58,7 @@ SELECT pass FROM user WHERE id = :id
 
 -- name: update-user!
 -- update basic user information
-UPDATE user SET first_name = :first_name, last_name = :last_name, country = :country, language = :language, mtime = UNIX_TIMESTAMP() WHERE id = :id
+UPDATE user SET first_name = :first_name, last_name = :last_name, country = :country, language = :language, mtime = UNIX_TIMESTAMP(), email_notifications = :email_notifications WHERE id = :id
 
 -- name: update-password!
 -- change user password
@@ -136,3 +136,16 @@ DELETE FROM user WHERE id = :id
 
 --name: update-user-last_login!
 UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id
+
+
+
+--name: select-user-and-primary-address
+SELECT u.first_name, u.last_name, ue.email, language, role FROM user AS u
+       JOIN user_email AS ue ON ue.user_id = u.id
+       WHERE u.id = :id and ue.primary_address = 1;
+
+--name: select-userid-from-event-owners
+select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role from social_event_owners AS seo
+       JOIN user_email AS ue ON ue.user_id = seo.owner
+       JOIN user AS u ON u.id = seo.owner
+       WHERE u.email_notifications = 1 AND ue.primary_address = 1; 
