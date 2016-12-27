@@ -136,22 +136,6 @@
        (t :social/Youstartedfollowbadge)]
       ]]))
 
-(defn ticket-event [event state]
-  (let [{:keys [subject verb image_file message ctime event_id count object]}  event
-        modal-message (str "messages")]
-    [:div {:class "media message-item tips"}
-    (hide-event event_id state)
-     [:div.media-left
-      (system-image)]
-     [:div.media-body
-      [:div.date (date-from-unix-time (* 1000 ctime) "days")
-       ]
-      [:h3 {:class "media-heading"}
-       [:a {:href (path-for "/admin/tickets")} "Avoimia ilmoituksia " count ]]
-      [:div.media-body
-       "Raportointi työkalulla tehtyjä ilmoituksia admineille."]
-      ]]))
-
 (defn message-event [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         new-messages  (get-in event [:message :new_messages])
@@ -238,9 +222,9 @@
 
 (defn report-ticket-tip [events]
   (let [count (count events)]
-    {:header "Järjestelmässä avonaisia ilmoituksia"
-     :body  (str "Avoimia ilmoituksia: " count) 
-     :button "näe ne täältä"
+    {:header (t :social/Emailadmintickets)
+     :body  (str (t :social/Openissues) ": " count) 
+     :button (t :social/Emailadmintickets)
      :link   "/admin/tickets"}))
 
 (defn not-verified-email [email]
