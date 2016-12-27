@@ -10,7 +10,7 @@
             [salava.page.main :as p]
             [salava.badge.main :as b]
             [salava.oauth.db :as o]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun get-email-notifications]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -64,7 +64,7 @@
     (let [site-url (get-site-url ctx)
           base-path (get-base-path ctx)
           activation_code (generate-activation-id)
-          email_notifications (get-in ctx [:config :user :email-notifications] true)
+          email_notifications (get-email-notifications ctx)
           new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
