@@ -92,6 +92,12 @@
     (ticket-modal-container state)
       ]])
 
+(defn get-closed-tickets [state]
+  (ajax/GET
+   (path-for "/obpv1/admin/closed_tickets/")
+   {:handler (fn [tickets]
+               (swap! state assoc :tickets tickets))}))
+
 (defn init-data [state]
   (ajax/GET
    (path-for "/obpv1/admin/tickets/")
@@ -109,37 +115,38 @@
                      :init-data init-data
                      :status ""})]
     (ajax/GET
-      (path-for (str "/obpv1/admin/user/" user-id))
-      {:handler (fn [data]
-                  (do
-                    (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]                      
-                      (swap! state assoc :name (:name data)
-                             :image_file (:image_file data)
-                             :user (:item_owner data)
-                             :user_id (:item_owner_id data)
-                             :selected-email (:email primary-email)
-                             :info (:info data))))
-                  (m/modal! [ticket-modal state init-data]))})))
+     (path-for (str "/obpv1/admin/user/" user-id))
+     {:handler (fn [data]
+                 (do
+                   (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]                      
+                     (swap! state assoc :name (:name data)
+                            :image_file (:image_file data)
+                            :user (:item_owner data)
+                            :user_id (:item_owner_id data)
+                            :selected-email (:email primary-email)
+                            :info (:info data))))
+                 (m/modal! [ticket-modal state init-data]))})))
 
 
 
 (defn ticket [ticket-data state]
-  (let [{:keys [item_type item_id item_name first_name last_name item_url reporter_id description ctime report_type id]} ticket-data]
+  (let [{:keys [item_type item_id item_name first_name last_name item_url reporter_id description ctime report_type id status mtime]} ticket-data
+        open? (= "open" status)]
     [:div {:class (str "media " report_type) :id "ticket-container"}
      [:div.media-body
-      [:div {:class (str "title-bar title-bar-" report_type ) }
-       [:div {:class "pull-right"} (date-from-unix-time (* 1000 ctime) "minutes")]
+      [:div {:class (str "title-bar title-bar-" report_type ) :id (if open? "" "closed")}
+       [:div {:class "pull-right"}  (if open? (date-from-unix-time (* 1000 ctime) "minutes") (str (t :admin/Closed) ": " (date-from-unix-time (* 1000 mtime) "minutes")))]
        [:h3 {:class "media-heading"}
         [:u (t (keyword (str "admin/" report_type)))]]
        [:h4 {:class "media-heading"}
         [:a {:href item_url :target "_blank"}
          (str (t (keyword (str "admin/" item_type))) " - " item_name)]]]
       [:div.media-descriprtion
-       [:div.col-xs-12 
+       [:div {:class "col-xs-12"  :id (if open? "" "closed")} 
         [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description) ]
         [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/user/profile/" reporter_id))}(str first_name " " last_name)]]]
-
        [:button {:class    "btn btn-primary"
+                 :disabled (not open?)
                  :on-click #(do
                               (.preventDefault %)
                               (open-ticket-modal reporter_id (str first_name " " last_name) init-data state)
@@ -150,13 +157,16 @@
                               (.preventDefault %)
                               (ajax/POST
                                (path-for (str "/obpv1/admin/close_ticket/" id))
-                                 {:response-format :json
-                                  :keywords? true
-                                  :handler (fn [data]
+                               {:response-format :json
+                                :keywords? true
+                                :params {:new-status (if open? "closed" "open")}
+                                :handler (fn [data]
+                                           (if open?
                                              (init-data state)
-                                             )
-                                  :error-handler (fn [{:keys [status status-text]}])}))}
-        (t :admin/Done)]]]]))
+                                             (get-closed-tickets state))
+                                           )
+                                :error-handler (fn [{:keys [status status-text]}])}))}
+        (if open? (t :admin/Done) (t :admin/Restore))]]]]))
 
 (defn ticket-visible? [element state]
   (if (or (> (count
@@ -199,22 +209,39 @@
                                            (conj buttons-checked value))))}
              (t (keyword (str "admin/" value)))])))])]])
 
+(defn grid-show-closed-tickets [state]
+  (let [show-closed?  (cursor state [:show-closed?])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2 col-xs-3"}
+      (str (t :admin/Archived) ": ")]
+     [:div.col-sm-10.col-xs-9
+      [:label
+       [:input {:name      "visibility"
+                :type      "checkbox"
+                :on-change #(do
+                              (reset! show-closed? (if @show-closed? false true))
+                              (if @show-closed?
+                                (get-closed-tickets state)
+                                (init-data state)))
+                :checked   @show-closed?}]]]]))
+
 (defn content [state]
   (let [tickets (:tickets @state)]
     [:div
      [:div {:id    "grid-filter"
             :class "form-horizontal"}
-      
-      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]]
-      [:div
-       (into [:div {:class "row"}]
-             (for [data tickets]
-               (if (ticket-visible? data state)
-                 (ticket data state))))]
+      [grid-buttons-with-translates (str (t :admin/Types) ":")  (unique-values :report_type tickets) :types-selected :types-all state]
+      [grid-show-closed-tickets state]]
+     [:div
+      (into [:div {:class "row"}]
+            (for [data tickets]
+              (if (ticket-visible? data state)
+                (ticket data state))))]
      [m/modal-window]]))
 
 (defn handler [site-navi]
-  (let [state (atom {:tickets []
+  (let [state (atom {:show-closed? false
+                     :tickets []
                      :types-selected []
                      :types-all true})]
     (init-data state)

@@ -40,13 +40,20 @@ INSERT INTO report_ticket (description, report_type, item_id, item_url, item_nam
 
 --name: select-tickets
 --get tickets with open status
-SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t.item_type, t.reporter_id, u.first_name, u.last_name, t.item_content_id, t.ctime FROM report_ticket t
+SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t.item_type, t.reporter_id, u.first_name, u.last_name, t.item_content_id, t.ctime, t.status FROM report_ticket t
        JOIN user AS u ON (u.id = t.reporter_id)
        WHERE status = 'open'
        ORDER BY t.ctime DESC
 
+--name: select-closed-tickets
+--get tickets with closed status
+SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t.item_type, t.reporter_id, u.first_name, u.last_name, t.item_content_id, t.ctime, t.status, t.mtime FROM report_ticket t
+       JOIN user AS u ON (u.id = t.reporter_id)
+       WHERE status = 'closed'
+       ORDER BY t.mtime DESC
+       
 --name: update-ticket-status!
-UPDATE report_ticket SET status  = 'closed', mtime = UNIX_TIMESTAMP() WHERE id = :id
+UPDATE report_ticket SET status  = :status, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 
 --name: update-badge-deleted!
