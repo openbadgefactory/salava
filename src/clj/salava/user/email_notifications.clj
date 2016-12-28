@@ -1,5 +1,6 @@
 (ns salava.user.email-notifications
   (:require [yesql.core :refer [defqueries]]
+            [clojure.tools.logging :as log]
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
@@ -8,6 +9,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-email-notifications]]
             [salava.social.db :refer [email-new-messages-block]]
+            [salava.core.time :refer [get-day-of-week]]
             [salava.user.db :refer [get-user-and-primary-email get-user-ids-from-event-owners]] ))
 
 
@@ -34,15 +36,18 @@
          (println "email:" (:email user))
          (println subject)
          (println message)
+         (log/info (str "sending message to " (:email user) "\n" message))
          (send-mail ctx subject message [(:email user)])
          ))
-     "success"
    (catch Object _
-     "error"))))
+     ))))
 
 
 (defn email-sender [ctx]
-  (let [event-owners (get-user-ids-from-event-owners ctx)]
-    (if (get-email-notifications ctx)
-      (doseq [user event-owners]
+  (if (get-email-notifications ctx)    
+    (let [event-owners      (get-user-ids-from-event-owners ctx)
+          day               (dec (get-day-of-week))
+          current-day-users (filter #(= day (rem (:id %) 7)) event-owners)]
+      (log/info (str "current day user count: " (count current-day-users)))
+      (doseq [user current-day-users]
         (email-reminder-body ctx user)))))
