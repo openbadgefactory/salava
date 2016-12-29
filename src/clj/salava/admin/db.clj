@@ -103,12 +103,16 @@
      "error")))
 
 (defn get-tickets [ctx]
-  (let [tickets (select-tickets {} (get-db ctx))]
-    tickets))
+  (select-tickets {} (get-db ctx)))
 
-(defn close-ticket! [ctx id]
+(defn get-closed-tickets [ctx]
+  (select-closed-tickets {} (get-db ctx)))
+
+(defn close-ticket!
+  "Close or restore ticket"
+  [ctx id status]
   (try+
-   (update-ticket-status! {:id id} (get-db ctx))
+   (update-ticket-status! {:id id :status status} (get-db ctx))
    "success"
    (catch Object _
      "error")))

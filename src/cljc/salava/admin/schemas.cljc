@@ -95,7 +95,11 @@
                      :reporter_id (s/maybe s/Int)
                      :ctime s/Int
                      :first_name s/Str
+                     :status (s/enum "open" "closed")
                      :last_name s/Str})
+
+(s/defschema Closed_ticket (-> {:mtime s/Int}
+                               (merge Ticket)))
 
 (s/defschema Url-parser {:item-type (s/enum "badge" "page" "user")
                          :item-id   (s/maybe s/Int)})

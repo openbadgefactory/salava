@@ -62,7 +62,7 @@
          [:div {:class (if (private?) "col-xs-12" "col-sm-6")}
           [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]
          [:div {:class "row oauth-buttons"}
-          [:div {:class "col-xs-6"} (facebook-link false)]
+          [:div {:class "col-xs-6"} (facebook-link false nil)]
           [:div.col-sm-6 (linkedin-link nil nil)]]]]]]]))
 
 (defn handler [site-navi params]

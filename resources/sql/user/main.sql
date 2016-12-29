@@ -38,7 +38,7 @@ SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 
 -- name: insert-user<!
 -- add new user
-INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP() :email_notifications)
+INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), :email_notifications)
 
 -- name: insert-user-email!
 -- add new unverified email address to user
