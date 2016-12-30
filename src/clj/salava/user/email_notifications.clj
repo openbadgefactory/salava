@@ -42,13 +42,14 @@
        (do
          (println "-----------------------")
          (println "\n")
+         
          (println "email:" (:email user))
          (println subject)
          (println message)
                                         ;(send-mail ctx subject message [(:email user)])
          )))
      (catch Object ex
-       (log/error "Failed to send email notification to user")
+       (log/error "failed to send email notification to user:")
        (log/error (.toString ex)))))
 
 
@@ -56,6 +57,6 @@
   (if (get-email-notifications ctx)    
     (let [event-owners      (get-user-ids-from-event-owners ctx)
           day               (dec (get-day-of-week))
-          current-day-users (filter #(< 0 (rem (:id %) 7)) event-owners)]
+          current-day-users (filter #(= day (rem (:id %) 7)) event-owners)]
       (doseq [user current-day-users]
         (email-reminder-body ctx user)))))
