@@ -10,6 +10,7 @@
             [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid? hyperlink]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
+            [salava.social.ui.follow :as f]
             [salava.core.time :refer [date-from-unix-time]]
             
             ))
@@ -35,6 +36,12 @@
                :user_id user_id}
       :handler (fn [data]
                  (do
+                   (if (= "success" (:connected? data))
+                     (do
+                       (f/init-data badge_content_id)
+                       (swap! state assoc :start-following true)
+                       )
+                     (swap! state assoc :start-following false))
                    (swap! state assoc :messages []
                                       :page_count 0)
                    (init-data state)))
@@ -172,10 +179,28 @@
                     (.preventDefault %))} "Refresh"])
 
 (defn content [state]
-  (let [{:keys [messages]} @state]
+  (let [{:keys [messages badge_content_id start-following]} @state]
     [:div
      (message-textarea state)
-     ;(refresh-button state)
+                                        ;(refresh-button state)
+     (if start-following
+       [:div {:class (str "alert ""alert-success")}
+        [:div.deletemessage
+         [:button {:type       "button"
+                   :class      "close"
+                   :aria-label "OK"
+                   :on-click   #(do
+                                  (swap! state assoc :start-following false)
+                                  (.preventDefault %))
+                   }
+          [:span {:aria-hidden "true"
+                  :dangerouslySetInnerHTML {:__html "&times;"}}]]
+       ]
+        (str (t :social/Youstartedfollowbadge) "! ")
+        [:a {:href "#" :on-click #(do
+                                    (f/unfollow-ajax-post badge_content_id)
+                                    (swap! state assoc :start-following false))} (t :social/Cancelfollowingbadge)]]
+       )
      [message-list messages state]]))
 
 
@@ -187,7 +212,8 @@
                      :badge_content_id badge_content_id
                      :show false
                      :page_count 0
-                     :messages_left 0})]
+                     :messages_left 0
+                     :start-following false})]
     (init-data state)
     (fn []
       (content state)
