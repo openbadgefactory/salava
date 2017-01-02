@@ -123,16 +123,16 @@
        [:div.form-group
         [:label {:for "input-email-notifications"
                  :class "col-md-3"}
-         "Sähköposti muistutukset"]
+          (t :user/Emailnotifications)]
         [:div.col-md-9
          [:label
           [:input {:name      "visibility"
                    :type      "checkbox"
                    :on-change  #(reset! email-notifications-atom (if @email-notifications-atom false true)) ;#(toggle-visibility visibility-atom)
-                   :checked   @email-notifications-atom}] (str " ") (if @email-notifications-atom "Päällä" "ei käytössä")]
+                   :checked   @email-notifications-atom}] (str " ") (if @email-notifications-atom  (t :user/Active) (t :user/Deactive))]
          (if @email-notifications-atom
-           [:div "Saat sähköpostiisi muistutuksia merkeille tulleista viesteistä!"]
-           [:div "Aktivoimalla muistutuksen, saat sähköpostiisi muistutuksia uusista merkeille tulleista viesteistä."])
+           [:div (t :user/Emailnotificationsactivetip)]
+           [:div (t :user/Emailnotificationsdeactivetip)])
          ]]
 
        
