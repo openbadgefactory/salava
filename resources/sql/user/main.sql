@@ -148,4 +148,4 @@ SELECT u.first_name, u.last_name, ue.email, language, role FROM user AS u
 select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role from social_event_owners AS seo
        JOIN user_email AS ue ON ue.user_id = seo.owner
        JOIN user AS u ON u.id = seo.owner
-       WHERE u.email_notifications = 1 AND ue.primary_address = 1; 
+       WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1; 

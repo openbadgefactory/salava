@@ -69,7 +69,7 @@
                       )))
 
              (POST "/messages/:badge_content_id" []
-                   :return (s/enum "success" "error")
+                   :return {:status (s/enum "success" "error") :connected? (s/maybe  s/Str)}
                    :summary "Create new message"
                    :path-params [badge_content_id :- s/Str]
                    :body [content {:message s/Str

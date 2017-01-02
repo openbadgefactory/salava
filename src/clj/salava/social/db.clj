@@ -12,7 +12,13 @@
 
 (defqueries "sql/social/queries.sql")
 
-;; STREAM ;;
+(defn messages-viewed
+ "Save information about viewing messages."
+ [ctx badge_content_id user_id]
+  (try+
+   (replace-badge-message-view! {:badge_content_id badge_content_id :user_id user_id} (get-db ctx))
+   (catch Object _
+     "error")))
 
 (defn insert-event!
   "Creates event and adds event for every users who are connected with event"
@@ -27,6 +33,25 @@
      {:status "success"}) 
    (catch Object _
      {:status "error"})))
+
+
+(defn is-connected? [ctx user_id badge_content_id]
+  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+    (= badge_content_id id)))
+
+(defn insert-connection-badge! [ctx user_id badge_content_id]
+  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+  (insert-event! ctx user_id "follow" badge_content_id "badge")
+  (messages-viewed ctx badge_content_id user_id))
+
+(defn create-connection-badge! [ctx user_id  badge_content_id]
+  (try+
+   (insert-connection-badge! ctx user_id badge_content_id)
+   {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
+   (catch Object _
+     {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
+     )))
+;; STREAM ;;
 
 
 (defn badge-events-reduce [events]
@@ -129,7 +154,7 @@
         admin-events (get-user-admin-events ctx user-id)
         admin-events (filter #(nil? (:last_checked %)) admin-events)]
     (if (not (empty? admin-events))
-      (str (t :social/Emailadmintickets lng) " " (count admin-events) "\n" ))
+      (str "- " (t :social/Emailadmintickets lng) " " (count admin-events) ".\n" ))
     ))
 
 (defn email-new-messages-block [ctx user lng]
@@ -143,31 +168,25 @@
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
                            (let [new-messages (get-in item [:message :new_messages] ) ]
-                             (str (:name item) "-"  (t :social/Emailnewmessage1 lng) " " new-messages " " (if (= 1 new-messages ) (t :social/Emailnewcomment lng)(t :social/Emailnewcomments lng)) "\n"))))]
+                             (str "- " (:name item) "-"  (t :social/Emailnewmessage1 lng) " " new-messages " " (if (= 1 new-messages ) (t :social/Emailnewcomment lng)(t :social/Emailnewcomments lng)) ".\n"))))]
     (str admin-events (join (map message-helper events)))))
 
 
 ;; MESSAGES ;;
 
-(defn messages-viewed
- "Save information about viewing messages."
- [ctx badge_content_id user_id]
-  (try+
-   (replace-badge-message-view! {:badge_content_id badge_content_id :user_id user_id} (get-db ctx))
-   (catch Object _
-     "error")))
-
 (defn message! [ctx badge_content_id user_id message]
   (try+
    (if (not (blank? message))
-     (do 
-       (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
-       (insert-event! ctx user_id "message" badge_content_id "badge")
-       "success")
-     "error")
+     (let [badge-connection (if (not (is-connected? ctx user_id badge_content_id))
+                              (:status (create-connection-badge! ctx user_id badge_content_id))
+                              "connected")]
+       (do
+         (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
+         (insert-event! ctx user_id "message" badge_content_id "badge")
+         {:status "success" :connected? badge-connection}))
+     {:status "error" :connected? nil})
    (catch Object _
-     "error"
-     )))
+     {:status "error" :connected? nil})))
 
 (defn get-badge-messages [ctx badge_content_id user_id]
   (let [badge-messages (select-badge-messages {:badge_content_id badge_content_id} (get-db ctx))]
@@ -215,22 +234,8 @@
      )))
 
 
-(defn is-connected? [ctx user_id badge_content_id]
-  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
-    (= badge_content_id id)))
 
-(defn insert-connection-badge! [ctx user_id badge_content_id]
-  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
-  (insert-event! ctx user_id "follow" badge_content_id "badge")
-  (messages-viewed ctx badge_content_id user_id))
 
-(defn create-connection-badge! [ctx user_id  badge_content_id]
-  (try+
-   (insert-connection-badge! ctx user_id badge_content_id)
-   {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
-   (catch Object _
-     {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
-     )))
 
 (defn create-connection-badge-by-badge-id! [ctx user_id badge_id]
   (let [badge_content_id (select-badge-content-id-by-badge-id {:badge_id badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]

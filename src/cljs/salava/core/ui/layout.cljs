@@ -16,7 +16,7 @@
 
 (defn filtered-navi-list [navi key-list type]
   (let [map-fn (fn [[tr nv]]
-                 (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (re-find (re-pattern (str tr)) (current-route-path))))))
+                 (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (= (first (re-seq #"\w+" (str tr))) (first (re-seq #"\w+" (current-route-path)))) (re-find (re-pattern (str tr)) (current-route-path))))))
         navi-list (sort-by :weight (map map-fn (select-keys navi key-list)))]
     (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) ))))) 
       (assoc-in (vec navi-list) [0 :active] true)
