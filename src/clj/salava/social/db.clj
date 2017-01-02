@@ -154,7 +154,7 @@
         admin-events (get-user-admin-events ctx user-id)
         admin-events (filter #(nil? (:last_checked %)) admin-events)]
     (if (not (empty? admin-events))
-      (str (t :social/Emailadmintickets lng) " " (count admin-events) "\n" ))
+      (str "- " (t :social/Emailadmintickets lng) " " (count admin-events) ".\n" ))
     ))
 
 (defn email-new-messages-block [ctx user lng]
@@ -168,7 +168,7 @@
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
                            (let [new-messages (get-in item [:message :new_messages] ) ]
-                             (str (:name item) "-"  (t :social/Emailnewmessage1 lng) " " new-messages " " (if (= 1 new-messages ) (t :social/Emailnewcomment lng)(t :social/Emailnewcomments lng)) "\n"))))]
+                             (str "- " (:name item) "-"  (t :social/Emailnewmessage1 lng) " " new-messages " " (if (= 1 new-messages ) (t :social/Emailnewcomment lng)(t :social/Emailnewcomments lng)) ".\n"))))]
     (str admin-events (join (map message-helper events)))))
 
 

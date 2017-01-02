@@ -224,7 +224,7 @@
   (let [count (count events)]
     {:header (t :social/Emailadmintickets)
      :body  (str (t :social/Openissues) ": " count) 
-     :button (t :social/Emailadmintickets)
+     :button (t :social/Clickhere)
      :link   "/admin/tickets"}))
 
 (defn not-verified-email [email]
