@@ -3,7 +3,7 @@
             [clojure.string :as s]
             [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [current-path navigate-to path-for base-path current-route-path plugin-fun]]
+            [salava.core.ui.helper :refer [current-path navigate-to path-for base-path current-route-path plugin-fun route-path]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
@@ -16,7 +16,7 @@
 
 (defn filtered-navi-list [navi key-list type]
   (let [map-fn (fn [[tr nv]]
-                 (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (= (first (re-seq #"\w+" (str tr))) (first (re-seq #"\w+" (current-route-path)))) (re-find (re-pattern (str tr)) (current-route-path))))))
+                 (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (= (first (re-seq #"\w+" (route-path (str tr)))) (first (re-seq #"\w+" (current-route-path))))))))
         navi-list (sort-by :weight (map map-fn (select-keys navi key-list)))]
     (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) ))))) 
       (assoc-in (vec navi-list) [0 :active] true)
