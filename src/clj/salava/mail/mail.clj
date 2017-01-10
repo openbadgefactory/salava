@@ -1,4 +1,4 @@
-(ns salava.core.mail
+(ns salava.mail.mail
   (:require [clojure.java.io :as io]
             [hiccup.core :refer :all]
             [postal.core :refer [send-message]]
@@ -12,6 +12,21 @@
                 :bcc      recipients
                 :subject subject
                 :body    [{:type    "text/plain; charset=utf-8"
+                           :content message}]}]
+      (if (nil? mail-host-config)
+        (send-message data)
+        (send-message mail-host-config data)))
+    (catch Object _
+      ;TODO log an error
+      )))
+
+(defn send-html-mail [ctx subject message recipients]
+  (try+
+    (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
+          data {:from    (get-in ctx [:config :core :mail-sender])
+                :bcc      recipients
+                :subject subject
+                :body    [{:type "text/html; charset=utf-8"
                            :content message}]}]
       (if (nil? mail-host-config)
         (send-message data)

@@ -21,13 +21,13 @@
         (init-data state)))}))
 
 (defn save-settings [state init-data]
-  (let [{:keys [id visibility tags rating evidence-url]} (:badge-settings @state)]
+  (let [{:keys [id visibility tags rating evidence_url]} (:badge-settings @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/save_settings/" id))
       {:params  {:visibility   visibility
                  :tags         tags
                  :rating       (if (pos? rating) rating nil)
-                 :evidence-url evidence-url}
+                 :evidence-url evidence_url}
        :handler (fn []
                   (init-data state id))})))
 
@@ -39,14 +39,17 @@
        :handler (fn [] (reset! show-recipient-name-atom new-value))})))
 
 (defn toggle-evidence [state]
-  (let [id (:id @state)
-        new-value (not (:show_evidence @state))]
+  (let [id (get-in @state [:badge-settings :id])
+        new-value (not (get-in @state [:badge-settings :show_evidence]))]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value}
-       :handler (fn [] (swap! state assoc :show_evidence new-value))})))
+       :handler (fn [] (do
+                         
+                         (swap! state assoc-in [:badge-settings :show_evidence] new-value)
+                         (swap! state assoc :show_evidence new-value)))})))
 
-(defn settings-modal [{:keys [id name description image_file issued_on expires_on revoked issuer_content_url issuer_content_name issuer_contact issuer_image issuer_description evidence_url show_evidence]} state init-data badgeinfo?]
+(defn settings-modal [{:keys [id name image_file issued_on expires_on show_evidence revoked]} state init-data badgeinfo?]
   (let [expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])]
     [:div {:id "badge-settings"}
@@ -139,16 +142,16 @@
                        :type        "text"
                        :id          "evidenceurl"
                        :placeholder (t :badge/EnterevidenceURLstartingwith)
-                       :value       (get-in @state [:badge-settings :evidence-url])
-                       :on-change   #(swap! state assoc-in [:badge-settings :evidence-url] (-> % .-target .-value))}]]]
-            (if (not-empty (get-in @state [:badge-settings :evidence-url]))
+                       :value       (get-in @state [:badge-settings :evidence_url])
+                       :on-change   #(swap! state assoc-in [:badge-settings :evidence_url] (-> % .-target .-value))}]]]
+            (if (not-empty (get-in @state [:badge-settings :evidence_url]))
                [:fieldset {:class "checkbox"}
                [:legend {:class "sub-heading"}
               (t :badge/Evidencevisibility)]
                 [:div [:label {:class (str show_evidence)}
                  [:input {:type      "checkbox"
                           :on-change #(toggle-evidence state)
-                          :checked   (:show_evidence @state)}]
+                          :checked    (get-in @state [:badge-settings :show_evidence])}]
                  (t :badge/Showevidence)]]])
 
               ])]

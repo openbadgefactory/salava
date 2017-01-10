@@ -14,7 +14,7 @@
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.core.mail :as m]))
+            [salava.mail.mail :as m]))
 
 (defqueries "sql/user/main.sql")
 
