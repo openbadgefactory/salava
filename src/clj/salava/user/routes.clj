@@ -7,7 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
-            [salava.user.email-notifications :as en]
+            [salava.mail.email-notifications :as en]
             [salava.registerlink.db :refer [right-token?  in-email-whitelist?]]
             [salava.core.helper :refer [dump private?]]
             [salava.core.access :as access]

@@ -12,7 +12,7 @@
             [salava.badge.main :as b]
             [salava.page.main :as p]
             [salava.social.db :refer [insert-event!]]
-            [salava.core.mail :as m]
+            [salava.mail.mail :as m]
             [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
