@@ -139,7 +139,11 @@
         font-weight: 300;
     }
     label {
-        width:40%;
+        width:60%;
+        padding-right: 15px;
+        @media (max-width:992px){
+            width:80%;
+        }
     }
     span {
         font-size: 16px;

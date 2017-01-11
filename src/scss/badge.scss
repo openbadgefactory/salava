@@ -59,6 +59,18 @@ button {
         padding: 4px;
         max-height: 200px;
     }
+    a:last-of-type:before{
+        content: "\f0e6";
+        font-family: "FontAwesome";
+        font-size: 26px;
+        text-align: center;
+        margin-right: 10px;
+        vertical-align: top;
+        font-weight: normal;
+    }
+    a.info:before{
+        content:"";
+    }
 }
 
 .badge-image-embed-pic {
@@ -384,7 +396,7 @@ button {
             margin-left: -150px;
             margin-right: -220px;
         }
-        @media (max-width:550px){
+        @media (max-width:992px){
             .pull-right.text-right {
                 float:none !important;
             }
@@ -406,7 +418,7 @@ button {
     .share-wrapper {
         margin-right: 340px;
         margin-left:150px;
-        @media (max-width:550px){
+        @media (max-width:992px){
             margin:0px;
             width: 100%;
         }

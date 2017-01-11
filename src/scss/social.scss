@@ -36,6 +36,7 @@
 		color:$badge-title;
 		font-size: 16px;
 		line-height: 34px;
+		font-weight: 600;
 		//margin-right: 105px;
 		a { font-size: 16px;
 			color:$badge-title;
@@ -71,6 +72,7 @@
 			text-align: center;
 			margin-right: 15px;
 			vertical-align: top;
+			font-weight: normal;
 		}
 	}
 	&.new {
@@ -98,7 +100,7 @@
 			text-align: center;
 			margin-right: 15px;
 			vertical-align: top;
-			color:$link-color;
+			color:$badge-title;
 			~ div {
 				margin-left: 57px;
 			}
@@ -109,7 +111,10 @@
 				font-size: 26px;
 				display: block;
 				width: 100%;
+				margin-left:0px;
 				margin-right: 0px;
+				float:none;
+				padding-left: 60px;
 				~ div {
 					margin-left: 0px;
 
@@ -225,6 +230,8 @@
 				}
 				h3.media-heading {
 					margin-bottom:10px;
+					margin-left:60px;
+					text-align: center;
 					&:before{
 						font-size: 26px;
 						display: block;
@@ -235,7 +242,6 @@
 					}
 					a {
 						line-height: 23px;
-						margin-left:70px;
 						display: inline-block;
 						padding-top:15px;
 						min-height:60px;
