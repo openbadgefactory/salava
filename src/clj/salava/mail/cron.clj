@@ -5,9 +5,8 @@
 
 
 ;;every-minute
-(defn every-minute [ctx]
+(defn every-day [ctx]
   (do
-    (println "LOOL")
     (log/info "start")
     (en/email-sender ctx)
     (log/info "stop")))

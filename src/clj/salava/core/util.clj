@@ -34,6 +34,9 @@
 (defn get-base-path [ctx]
   (get-in ctx [:config :core :base-path] ""))
 
+(defn get-full-path [ctx]
+  (str (get-site-url ctx) (get-base-path ctx)))
+
 (defn get-plugins [ctx]
   (get-in ctx [:config :core :plugins] []))
 
