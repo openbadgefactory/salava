@@ -108,7 +108,8 @@
           [:a {:href     "#"
                :on-click #(do
                             (reset! show-messages (if (= true @show-messages) nil true))
-                            (.preventDefault %))}
+                            (.preventDefault %))
+                :class (if @show-messages "info" )}
            (if @show-messages
              (t :social/Showinfo)
              all-messages)])))))
