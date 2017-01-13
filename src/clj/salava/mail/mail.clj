@@ -75,7 +75,7 @@
   ([ctx type] (get-fragments ctx nil nil type))
   ([ctx user lng type]
    (let [funs (plugin-fun (get-plugins ctx) "mail" "get-fragment")] 
-     (map (fn [f] (try (f ctx user lng type) (catch Throwable _ nil))) funs)
+     (remove nil? (map (fn [f] (try (f ctx user lng type) (catch Throwable _))) funs))
      ))
   )
 
@@ -94,6 +94,7 @@
         :src    (str site-url "/img/logo.png"),
         :height "auto",
         :width  "auto"}]]]))
+
 
 (defn html-mail-header [ctx]
   (let [banner (or (first (get-fragments ctx "mail-banner")) (html-mail-banner ctx))]
@@ -160,8 +161,8 @@
 (defn html-mail-template [ctx user lng subject type]
   (let [full-name (str (:first_name user) " " (:last_name user))
         background-color "#FFFFFF"
-        body (get-fragments ctx  user lng type)
-        footer (get-fragments ctx user lng (str type "-footer"))]
+        body (first (get-fragments ctx  user lng type))
+        footer (first (get-fragments ctx user lng (str type "-footer")))]
     (if body
       (html5
        [:head
