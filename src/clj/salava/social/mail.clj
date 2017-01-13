@@ -15,15 +15,20 @@
      :align  "left"}
     text]])
 
+(defn html-mail-body-li [text]
+  [:li
+    
+   text])
+
 (defn admin-events-message [ctx user lng]
   (let [user-id (:id user)
         admin-events  (filter-last-checked (so/get-user-admin-events ctx user-id))]
     (if (not (empty? admin-events))
-      (html-mail-body-item (str "- " (t :social/Emailadmintickets lng) " " (count admin-events) "." )))))
+      (html-mail-body-li (str (t :social/Emailadmintickets lng) " " (count admin-events) "." )))))
 
 (defn badge-message [item lng]
   (let [new-messages (get-in item [:message :new_messages] ) ]
-    (html-mail-body-item (str "- \"" (:name item) "\" " ""  (t :social/Emailnewmessage1 lng) " " new-messages " "
+    (html-mail-body-li (str "\"" (:name item) "\" " ""  (t :social/Emailnewmessage1 lng) " " new-messages " "
                               (if (= 1 new-messages )
                                 (t :social/Emailnewcomment lng)
                                 (t :social/Emailnewcomments lng)) "."))))
@@ -46,8 +51,9 @@
       [:table
        {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
        (html-mail-body-item  [:strong (str (t :user/Emailnotificationtext2 lng) ":")] )
-       admin-events
-       events
+       (html-mail-body-item [:ul
+                             admin-events
+                             events])
        (html-mail-body-item [:div (str (t :user/Emailnotificationtext3 lng) " ") [:a {:href social-url  :target "_blank"} (t :badge/Gohere lng)] "."])])))
 
 
@@ -79,7 +85,7 @@
         {:style  "padding-top: 13px; padding-bottom: 40px; ",
          :valign "top",
          :align  "left"}
-        [:div {:style " font-family: Arial,sans-serif; color: #686868; font-size: 14px;"} (t :user/Emailnotificationunsubscribetext  lng) [:a {:href (str (get-full-path ctx) "/user/edit")  :target "_blank"} (t :badge/Gohere lng)] "."]
+        [:div {:style " font-family: Arial,sans-serif; color: #686868; font-size: 14px;"} (str (t :user/Emailnotificationunsubscribetext  lng) " ") [:a {:href (str (get-full-path ctx) "/user/edit")  :target "_blank"} (t :badge/Gohere lng)] "."]
         ]]]]]])
 
 
