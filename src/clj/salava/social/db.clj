@@ -6,7 +6,6 @@
             [slingshot.slingshot :refer :all]
             [salava.core.util :refer [get-db]]
             [salava.admin.helper :as ah]
-            [salava.core.i18n :refer [t]]
             [clojure.string :refer [blank? join]]
             [salava.core.time :refer [unix-time get-date-from-today]]))
 
@@ -146,30 +145,6 @@
    (catch Object _
      "error")))
 
-;; --- Email sender --- ;;
-
-
-(defn admin-events-message [ctx user lng]
-  (let [user-id (:id user)
-        admin-events (get-user-admin-events ctx user-id)
-        admin-events (filter #(nil? (:last_checked %)) admin-events)]
-    (if (not (empty? admin-events))
-      (str "- " (t :social/Emailadmintickets lng) " " (count admin-events) ".\n" ))
-    ))
-
-(defn email-new-messages-block [ctx user lng]
-  (let [user-id (:id user)
-        admin? (= "admin" (:role user))
-        admin-events (if admin? (admin-events-message ctx user lng) nil)
-        events (or (get-user-badge-events ctx user-id) nil)
-        events (filter #(nil? (:last_checked %)) events)
-        message-helper (fn [item]
-                         (when (and (get-in item [:message :new_messages] )
-                                    (< 0 (get-in item [:message :new_messages] ))
-                                    (= "message" (:verb item)))
-                           (let [new-messages (get-in item [:message :new_messages] ) ]
-                             (str "- " (:name item) "-"  (t :social/Emailnewmessage1 lng) " " new-messages " " (if (= 1 new-messages ) (t :social/Emailnewcomment lng)(t :social/Emailnewcomments lng)) ".\n"))))]
-    (str admin-events (join (map message-helper events)))))
 
 
 ;; MESSAGES ;;
