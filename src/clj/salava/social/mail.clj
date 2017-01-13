@@ -1,8 +1,7 @@
 (ns salava.social.mail
   (:require [salava.social.db :as so]
             [salava.core.i18n :refer [t]]
-            [salava.core.util :refer [get-full-path get-plugins plugin-fun]]
-            [clojure.string :refer [blank? join]]))
+            [salava.core.util :refer [get-full-path]]))
 
 (defn filter-last-checked [events]
   (filter #(nil? (:last_checked %)) events))
@@ -49,7 +48,7 @@
        (html-mail-body-item  [:strong (str (t :user/Emailnotificationtext2 lng) ":")] )
        admin-events
        events
-       (html-mail-body-item [:div (str (t :user/Emailnotificationtext3 lng) " ") [:a {:href social-url} (t :badge/Gohere lng)] "."])])))
+       (html-mail-body-item [:div (str (t :user/Emailnotificationtext3 lng) " ") [:a {:href social-url  :target "_blank"} (t :badge/Gohere lng)] "."])])))
 
 
 (defmulti get-fragment #(last %&))
@@ -80,7 +79,7 @@
         {:style  "padding-top: 13px; padding-bottom: 40px; ",
          :valign "top",
          :align  "left"}
-        [:div {:style " font-family: Arial,sans-serif; color: #686868; font-size: 14px;"} (t :user/Emailnotificationunsubscribetext  lng) [:a {:href (str (get-full-path ctx) "/user/edit")} (t :badge/Gohere lng)] "."]
+        [:div {:style " font-family: Arial,sans-serif; color: #686868; font-size: 14px;"} (t :user/Emailnotificationunsubscribetext  lng) [:a {:href (str (get-full-path ctx) "/user/edit")  :target "_blank"} (t :badge/Gohere lng)] "."]
         ]]]]]])
 
 

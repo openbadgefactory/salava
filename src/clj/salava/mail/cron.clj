@@ -4,7 +4,6 @@
    [clojure.tools.logging :as log]))
 
 
-;;every-minute
 (defn every-day [ctx]
   (do
     (log/info "start")
