@@ -40,7 +40,8 @@
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
                            (badge-message item lng)))]
-    (map message-helper events)))
+    (if (not (empty? events))
+      (map message-helper events))))
 
 (defn email-new-messages-block [ctx user lng]
   (let [admin? (= "admin" (:role user))
