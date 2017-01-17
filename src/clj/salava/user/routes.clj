@@ -97,7 +97,8 @@
                     (ok {:user      (-> user-info
                                         (dissoc :profile_picture :profile_visibility :about)
                                         (assoc :password? (u/has-password? ctx (:id current-user))))
-                         :languages (get-in ctx [:config :core :languages])})))
+                         :languages (get-in ctx [:config :core :languages])
+                         :email-notifications (get-in ctx [:config :user :email-notifications] false)})))
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")
