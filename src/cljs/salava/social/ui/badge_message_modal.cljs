@@ -80,17 +80,18 @@
                           :all-messages 0})]
       (get-messages badge-content-id message-count)
       (fn []
-        
-        [:a {:href     "#"
-         :on-click #(do
-                      (open-modal badge-content-id)
-                      (.preventDefault %) )}
-     (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
-                                              (t :social/Comment)
-                                              (t :social/Comments)))
-     (if (pos? (:new-messages @message-count))
-       (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
-       "")]))))
+        [:a {:href "#"
+             :class "badge-message-link"
+             :on-click #(do
+                          (open-modal badge-content-id)
+                          (.preventDefault %) )}
+         (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
+                                                   (t :social/Comment)
+                                                   (t :social/Comments)))
+         [:br]
+         (if (pos? (:new-messages @message-count))
+           (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
+           "")]))))
 
 
 (defn gallery-modal-message-info-link [show-messages badge-content-id]
@@ -99,17 +100,16 @@
                                :all-messages 0})]
       (get-messages badge-content-id message-count)
       (fn []
-        
         (let [all-messages (str (t :social/Messages)  " (" (:all-messages @message-count) ") ")
               new-messages (if (pos? (:new-messages @message-count))
                              (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
                              "")
-              all-messages (str all-messages new-messages)]
+              all-messages [:div {:class "badge-message-link" }  all-messages [:br] new-messages]]
           [:a {:href     "#"
                :on-click #(do
                             (reset! show-messages (if (= true @show-messages) nil true))
                             (.preventDefault %))
-                :class (if @show-messages "info" )}
+               :class  (if @show-messages "info" )}
            (if @show-messages
              (t :social/Showinfo)
              all-messages)])))))

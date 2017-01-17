@@ -9,6 +9,16 @@
     border-radius: 2px;
 }
 
+.badge-message-link{
+    &:before{
+        content: "\f0e6";
+        font-family: "FontAwesome";
+        font-size: 26px;
+        text-align: center;
+        margin-right: 10px;
+        vertical-align: top;
+        font-weight: normal;
+    }}
 .message-profile-img{
     width: 54px;
 	height: auto;
