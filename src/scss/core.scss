@@ -327,7 +327,7 @@ ul.navbar-nav {
     margin-right:auto;
     margin-left:auto;
     float:none;
-    margin-right:280px;
+    //margin-right:280px;
     text-align: center;
     .center {
         text-align: center;
@@ -405,7 +405,7 @@ ul.side-links {
         }
         li.active a{
                 background-color:$grid-link;
-                color:#FFF;
+                color:#FFF !important;
                 border:1px solid $box-shadow;
                 border-bottom: 0px;
                 margin-bottom: -1px;
