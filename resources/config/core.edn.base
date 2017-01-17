@@ -11,7 +11,7 @@
 
  :languages [:en :fi]
 
- :plugins [:badge :page :gallery :file :user :displayer :social :admin]
+ :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail]
 
  :private false
 

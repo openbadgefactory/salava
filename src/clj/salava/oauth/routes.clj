@@ -7,6 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.oauth.db :as d]
             [salava.oauth.facebook :as f]
+            [salava.oauth.facebook :as g]
             [salava.oauth.linkedin :as l]
             [salava.core.access :as access]
             salava.core.restructure))
@@ -15,10 +16,25 @@
   (routes
     (context "/user" []
              (layout/main ctx "/oauth/facebook")
+             (layout/main ctx "/oauth/google")
              (layout/main ctx "/oauth/linkedin"))
 
 
     (context "/oauth" []
+             (GET "/google" []
+                  :query-params [{code :- s/Str nil}
+                                 {error :- s/Str nil}]
+                  :current-user current-user
+                  (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)]
+                    (if (= status "success")
+                      (if current-user
+                        (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private private} ))
+                      (if current-user
+                        (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
+                        (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
+
+             
              (GET "/facebook" []
                   :query-params [{code :- s/Str nil}
                                  {error :- s/Str nil}]
@@ -27,7 +43,7 @@
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private role} ))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private private} ))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
@@ -47,11 +63,11 @@
                                  {error :- s/Str nil}]
                   :current-user current-user
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
-                        {:keys [status user-id message role]} r]
+                        {:keys [status user-id message role private]} r]
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream")) [:session :identity] {:id user-id :role role}))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream")) [:session :identity] {:id user-id :role role :private private}))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))

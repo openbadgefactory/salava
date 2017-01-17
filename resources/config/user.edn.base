@@ -1,2 +1,3 @@
-{:default-country "FI"
- :default-language "en"}
+{:default-country "FI"	
+ :default-language "en"	
+ :email-notifications true}

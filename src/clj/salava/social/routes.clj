@@ -69,7 +69,7 @@
                       )))
 
              (POST "/messages/:badge_content_id" []
-                   :return (s/enum "success" "error")
+                   :return {:status (s/enum "success" "error") :connected? (s/maybe  s/Str)}
                    :summary "Create new message"
                    :path-params [badge_content_id :- s/Str]
                    :body [content {:message s/Str
@@ -128,12 +128,18 @@
                    :summary "Returns users events"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (let [badge-events (so/get-user-badge-events ctx (:id current-user))
-                               pending-badges (b/user-badges-pending ctx (:id current-user))
-                               tips  (so/get-user-tips ctx (:id current-user))]
-                           {:tips tips
-                            :events badge-events
-                            :pending-badges pending-badges})))
+                   (ok (let [badge-events (so/get-user-badge-events-sorted-and-filtered ctx (:id current-user))
+                             pending-badges (b/user-badges-pending ctx (:id current-user))
+                             tips (so/get-user-tips ctx (:id current-user))
+                             admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
+                             events {:tips tips
+                                     :events badge-events
+                                     :pending-badges pending-badges}
+                             events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)]
+                         events
+                         
+                           
+                           )))
 
              (GET "/connected/:badge_content_id" []
                   :return s/Bool

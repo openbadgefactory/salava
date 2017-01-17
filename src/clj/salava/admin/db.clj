@@ -11,7 +11,8 @@
             [clojure.tools.logging :as log]
             [salava.badge.main :as b]
             [salava.page.main :as p]
-            [salava.core.mail :as m]
+            [salava.social.db :refer [insert-event!]]
+            [salava.mail.mail :as m]
             [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
@@ -95,18 +96,23 @@
 
 (defn ticket [ctx description report_type item_id item_url item_name item_type reporter_id item_content_id]
   (try+
-   (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))
-   "success"
+   (let [ticket (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))]
+     (insert-event! ctx reporter_id "ticket" (:generated_key ticket) "admin")
+     "success")
    (catch Object _
      "error")))
 
 (defn get-tickets [ctx]
-  (let [tickets (select-tickets {} (get-db ctx))]
-    tickets))
+  (select-tickets {} (get-db ctx)))
 
-(defn close-ticket! [ctx id]
+(defn get-closed-tickets [ctx]
+  (select-closed-tickets {} (get-db ctx)))
+
+(defn close-ticket!
+  "Close or restore ticket"
+  [ctx id status]
   (try+
-   (update-ticket-status! {:id id} (get-db ctx))
+   (update-ticket-status! {:id id :status status} (get-db ctx))
    "success"
    (catch Object _
      "error")))

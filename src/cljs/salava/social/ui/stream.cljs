@@ -21,7 +21,9 @@
                 (swap! state assoc :events (:events data)
                        :initial false
                        :pending-badges (:pending-badges data)
-                       :tips (:tips data)))}))
+                       :tips (:tips data))
+                (if (:admin-events data)
+                  (swap! state assoc :admin-events (:admin-events data))))}))
 
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
@@ -193,20 +195,20 @@
       [:h3 {:class "media-heading"}
        [:a {:href (if link (path-for link) "#")} (translate-text header)]]
       [:div.media-body
-       (translate-text body)"."]
+       (translate-text body)]
       (if button
         [:a {:href (if link (path-for link) "#")} (translate-text button) ])
       ]]))
 
 (defn profile-picture-tip []
   {:header (t :social/Profilepictureheader)  
-   :body  (t :social/Profilepicturebody)
+   :body  (str (t :social/Profilepicturebody) ".")
    :button (t :social/Profiletipbutton)
    :link "/user/edit/profile"} )
 
 (defn profile-description-tip []
   {:header (t :social/Profiledescriptiontipheader)  
-   :body  (t :social/Profiledescriptionbody)
+   :body  (str (t :social/Profiledescriptionbody) ".")
    :button (t :social/Profiletipbutton)
    :link "/user/edit/profile"} )
 
@@ -214,9 +216,16 @@
 (defn get-your-first-badge-tip []
   (let [site-name (session/get :site-name)]
     {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
-     :body  (t :social/Youdonthaveanyanybadgesyet)
+     :body (str (t :social/Youdonthaveanyanybadgesyet) ".")
      :button nil
      :link   nil}))
+
+(defn report-ticket-tip [events]
+  (let [count (count events)]
+    {:header (t :social/Emailadmintickets)
+     :body  (str (t :social/Openissues) ": " count) 
+     :button (t :social/Clickhere)
+     :link   "/admin/tickets"}))
 
 (defn not-verified-email [email]
   {:header (t :social/Confirmyouremailheader)
@@ -247,10 +256,15 @@
 (defn content [state]
   (let [events (:events @state)
         tips (:tips @state)
-        initial (:initial @state)]
+        initial (:initial @state)
+        admin-events (or (:admin-events @state) nil)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
      [badges-pending state]
+     (if admin-events
+       [:div.row
+        (tip-event (report-ticket-tip admin-events) state)]
+       )
      (tips-container tips state)
      (if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))
        (empty-stream))
@@ -270,8 +284,12 @@
                      :events []
                      :tips {:profile-picture-tip false
                             :welcome-tip false
-                            :not-verified-emails []}
-                     })]
+                            :not-verified-emails []}})]
+
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
+
+
+
+

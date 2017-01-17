@@ -50,6 +50,8 @@
         (input/password-valid? new-password-verify)
         (= new-password new-password-verify)
         (or (not has-password?) (not-empty current-password)))))
+
+
 (defn content [state]
   (let [current-password-atom (cursor state [:user :current_password])
         new-password-atom (cursor state [:user :new_password])
@@ -59,9 +61,9 @@
         last-name-atom (cursor state [:user :last_name])
         country-atom (cursor state [:user :country])
         message (:message @state)
-        current-password? (get-in @state [:user :password?])]
+        current-password? (get-in @state [:user :password?])
+        email-notifications-atom (cursor state [:user :email_notifications])]
     [:div {:class "panel" :id "edit-user"}
-     
      (if message
        [:div {:class (str "alert " (:class message))}
        (translate-text (:content message)) ])
@@ -109,13 +111,30 @@
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last-name" :atom last-name-atom}]]]
-       
+
        [:div.form-group
         [:label {:for "input-country"
                  :class "col-md-3"}
          (t :user/Country)]
         [:div.col-md-9
          [input/country-selector country-atom]]]
+       (if (:email-notifications @state)
+         [:div.form-group
+          [:label {:for   "input-email-notifications"
+                   :class "col-md-3"}
+           (t :user/Emailnotifications)]
+          [:div.col-md-9
+           [:label
+            [:input {:name      "visibility"
+                     :type      "checkbox"
+                     :on-change #(reset! email-notifications-atom (if @email-notifications-atom false true)) ;#(toggle-visibility visibility-atom)
+                     :checked   @email-notifications-atom}] (str " ") (if @email-notifications-atom  (t :user/Active) (t :user/Deactive))]
+           (if @email-notifications-atom
+             [:div (t :user/Emailnotificationsactivetip)]
+             [:div (t :user/Emailnotificationsdeactivetip)])
+           ]])
+
+       
 
        [:div.row
         [:div.col-xs-12
@@ -154,9 +173,11 @@
                             :language "en"
                             :last_name ""
                             :new_password nil
-                            :country "EN"}
+                            :country "EN"
+                            :email_notification nil}
                      :message nil
-                     :languages ["en"]})]
+                     :languages ["en"]
+                     :email-notifications false})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
