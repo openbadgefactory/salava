@@ -161,7 +161,7 @@
                  [:button {:class    "btn btn-primary"
                            :on-click #(congratulate state)}
                   [:i {:class "fa fa-heart"}]
-                  (str " " (t :badge/Congratulations) "!")])
+                  (str " " (t :badge/Congratulate) "!")])
                )]]
            (if (session/get :user)
              [badge-message-link message_count  badge_content_id])

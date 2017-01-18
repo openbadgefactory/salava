@@ -24,22 +24,23 @@
          message (html-mail-template ctx user lng subject "email-notifications")
          ]
      (if (and message user)
-       (send-html-mail ctx subject message [(:email user)])))
+       (do
+         (send-html-mail ctx subject message [(:email user)])
+         {:status "success"})
+       {:status "not sent"}))
      (catch Object ex
        (log/error "failed to send email notification to user:")
-       (log/error (.toString ex)))))
+       (log/error (.toString ex))
+       {:status "error"})))
 
 
 (defn email-sender [ctx]
   (if (get-email-notifications ctx)    
     (let [event-owners      (get-user-ids-from-event-owners ctx)
           day               (dec (get-day-of-week))
-          current-day-users (filter #(= day (rem (:id %) 7)) event-owners)]
-      (doseq [user current-day-users]
-        (email-reminder-body ctx user)))))
-
-
-
-
-
-
+          current-day-users (filter #(= day (rem (:id %) 7)) event-owners)
+          sent-mails (map #(email-reminder-body ctx %) current-day-users)]
+      (log/info (str "has been sent: "  (count (filter #(= "success" (:status %)) sent-mails))))
+      (log/info (str "Not sent: "  (count (filter #(= "not sent" (:status %)) sent-mails))))
+      (log/info (str "error: "  (count (filter #(= "error" (:status %)) sent-mails))))
+      (log/info (str "total: "  (count sent-mails))))))
