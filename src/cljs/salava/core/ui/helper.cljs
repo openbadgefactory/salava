@@ -37,6 +37,9 @@
     (subs (current-path) (count (base-path)))
     (current-path)))
 
+(defn route-path [url]
+  (subs url (count (base-path))))
+
 (defn base-url []
   (str (.-location.protocol js/window) "//" (.-location.host js/window)))
 

@@ -140,7 +140,7 @@
     .share-wrapper {
         margin-left:150px;
         margin-right: 220px;
-        @media (max-width:550px){
+        @media (max-width:650px){
             margin:0px;
             width: 100%;
             float:none;
@@ -181,7 +181,7 @@
             margin-left: -150px;
             margin-right: -220px;
         }
-        @media (max-width:550px){
+        @media (max-width:650px){
             #buttons.text-right {
                 margin-bottom: 0px;
             }

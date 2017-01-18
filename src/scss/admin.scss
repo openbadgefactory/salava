@@ -9,6 +9,9 @@
     margin-bottom: 20px;
     margin-top: 0;
     line-height: 1.4;
+    #closed{
+	opacity:.65;
+    }
 }
 #ticket-container {
     border-left:3px solid;
@@ -139,7 +142,11 @@
         font-weight: 300;
     }
     label {
-        width:40%;
+        width:60%;
+        padding-right: 15px;
+        @media (max-width:992px){
+            width:80%;
+        }
     }
     span {
         font-size: 16px;

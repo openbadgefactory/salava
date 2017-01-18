@@ -200,14 +200,23 @@
                    (do
                      (ok (a/get-tickets ctx))))
 
+             (GET "/closed_tickets" []
+                   :return [schemas/Closed_ticket]
+                   :summary "Get all tickets with closed status"
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (do
+                     (ok (a/get-closed-tickets ctx))))
+
              (POST "/close_ticket/:id" []
                    :return (s/enum "success" "error")
                    :path-params [id :- s/Int]
-                   :summary "Set ticket status to closed"
+                   :body-params [new-status :- (:status schemas/Ticket)]
+                   :summary "Set ticket status to closed or open"
                    :auth-rules access/admin
                    :current-user current-user
-                   (ok (a/close-ticket! ctx id)))
-
+                   (ok (a/close-ticket! ctx id new-status)))
+             
              (POST "/send_activation_message/:id" []
                    :return (s/enum "success" "error")
                    :summary "Send activation message to user"
@@ -224,7 +233,7 @@
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
                                          :email (s/maybe s/Str)
                                          :filter (s/enum 1 0)}]
-                   :summary "Gwarawret public user profiles"
+                   :summary "Get public user profiles"
                    :auth-rules access/admin
                    :current-user current-user
                    (let [users (a/all-profiles ctx search-params (:id current-user))

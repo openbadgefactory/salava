@@ -5,10 +5,16 @@
       [clj-time.coerce :as c]
       [clj-time.format :as f])))
 
+
+
 (defn unix-time []
   (quot #?(:clj (System/currentTimeMillis)
            :cljs (.now js/Date))
         1000))
+
+(defn get-day-of-week []
+  #?(:clj (t/day-of-week (t/now))
+     :cljs (.getDay (new js/Date))))
 
 (defn get-date-from-today 
   "today - months - weeks - days"

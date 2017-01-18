@@ -25,11 +25,17 @@
 (defn get-site-url [ctx]
   (get-in ctx [:config :core :site-url] ""))
 
+(defn get-email-notifications [ctx]
+  (get-in ctx [:config :user :email-notifications] false))
+
 (defn get-site-name [ctx]
   (get-in ctx [:config :core :site-name] ""))
 
 (defn get-base-path [ctx]
   (get-in ctx [:config :core :base-path] ""))
+
+(defn get-full-path [ctx]
+  (str (get-site-url ctx) (get-base-path ctx)))
 
 (defn get-plugins [ctx]
   (get-in ctx [:config :core :plugins] []))

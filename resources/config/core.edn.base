@@ -11,8 +11,9 @@
 
  :languages [:en :fi]
 
- :plugins [:badge :page :gallery :file :user :social :admin :displayer
-           :extra/factory :extra/application :extra/legacy]
+
+ :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail :extra/factory :extra/application :extra/legacy]
+
 
  :private false
 

@@ -66,12 +66,8 @@
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
-                (swap! state assoc :badge-settings (hash-map :id badge-id
-                                                             :visibility (:visibility data)
-                                                             :tags (:tags data)
-                                                             :evidence-url (:evidence_url data)
-                                                             :rating (:rating data)
-                                                             :new-tag ""))
+                
+                (swap! state assoc :badge-settings data (assoc data :new-tag ""))
                 (m/modal! [s/settings-modal data state init-data]
                           {:size :lg}))}))
 

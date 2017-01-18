@@ -7,6 +7,7 @@
             [salava.core.util :refer [get-base-path]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
+            [salava.mail.email-notifications :as en]
             [salava.registerlink.db :refer [right-token?  in-email-whitelist?]]
             [salava.core.helper :refer [dump private?]]
             [salava.core.access :as access]
@@ -96,7 +97,8 @@
                     (ok {:user      (-> user-info
                                         (dissoc :profile_picture :profile_visibility :about)
                                         (assoc :password? (u/has-password? ctx (:id current-user))))
-                         :languages (get-in ctx [:config :core :languages])})))
+                         :languages (get-in ctx [:config :core :languages])
+                         :email-notifications (get-in ctx [:config :user :email-notifications] false)})))
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")

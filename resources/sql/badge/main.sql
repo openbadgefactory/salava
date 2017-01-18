@@ -107,7 +107,7 @@ UPDATE badge SET show_evidence = :show_evidence WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, cc.html_content AS criteria_html, evidence_url, rating, revoked, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, show_recipient_name, cc.html_content AS criteria_html, evidence_url, show_evidence, rating, revoked, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)

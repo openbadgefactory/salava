@@ -10,11 +10,11 @@
             [salava.page.main :as p]
             [salava.badge.main :as b]
             [salava.oauth.db :as o]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun get-email-notifications]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.core.mail :as m]))
+            [salava.mail.mail :as m]))
 
 (defqueries "sql/user/main.sql")
 
@@ -64,7 +64,8 @@
     (let [site-url (get-site-url ctx)
           base-path (get-base-path ctx)
           activation_code (generate-activation-id)
-          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language} (get-db ctx))
+          email_notifications (get-email-notifications ctx)
+          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications} (get-db ctx))
           user-id (:generated_key new-user)]
       (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
       (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code language) (login-link site-url base-path) (str first-name " " last-name) email language)
@@ -112,14 +113,14 @@
   "Edit user information."
   [ctx user-information user-id]
   (try+
-   (let [{:keys [first_name last_name country language current_password new_password new_password_verify]} user-information]
+   (let [{:keys [first_name last_name country language current_password new_password new_password_verify email_notifications]} user-information]
      (when new_password
        (if (not (= new_password new_password_verify))
          (throw+ "user/Passwordmissmatch"))
        (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
          (if (and pass (not (check-password ctx current_password pass)))
             (throw+ "user/Wrongpassword"))))
-      (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country} (get-db ctx))
+      (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country :email_notifications email_notifications} (get-db ctx))
       (if new_password
         (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx)))
       {:status "success" :message "core/Thechangeshavebeensaved" })
@@ -310,3 +311,16 @@
       {:title       (str (:first_name user) " " (:last_name user) " - profile")
        :description (str (get-site-name ctx) " user profile")
        :image       (:profile_picture user)})))
+
+
+;; --- Email sender --- ;;
+
+(defn get-user-and-primary-email [ctx user-id]
+  (select-user-and-primary-address {:id user-id} (into {:result-set-fn first} (get-db ctx))))
+
+(defn get-user-ids-from-event-owners [ctx]
+ (select-userid-from-event-owners {} (get-db ctx)) )
+
+
+
+
