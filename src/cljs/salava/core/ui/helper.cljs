@@ -2,6 +2,7 @@
   (:require [reagent.session :as session]
             [clojure.string :as str]
             [schema.core :as s]
+            [pushy.core :as pushy]
             [salava.core.helper :as h]
             [ajax.core :as ajax]))
 
@@ -51,7 +52,8 @@
      (str (base-path) url time-param))))
 
 (defn navigate-to [url]
-  (set! (.-location.href js/window) (path-for url)))
+  (let [history (session/get :history)]
+    (pushy/replace-token! history (path-for url))))
 
 (defn input-valid? [schema input]
   (try
