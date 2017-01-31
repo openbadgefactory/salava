@@ -55,6 +55,10 @@
   (let [history (session/get :history)]
     (pushy/replace-token! history (path-for url))))
 
+(defn js-navigate-to [url]
+  (set! (.-location.href js/window) (path-for url)))
+
+
 (defn input-valid? [schema input]
   (try
     (s/validate schema input)

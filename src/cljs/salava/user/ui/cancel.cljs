@@ -1,7 +1,7 @@
 (ns salava.user.ui.cancel
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
+            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.user.schemas :as schemas]))
@@ -16,7 +16,7 @@
      :handler (fn [data]
                 (if (= (:status data) "error")
                   (swap! state assoc :error-message (t :user/Erroroccuredduringaccountcancellation))
-                  (navigate-to "/user/login")))}))
+                  (js-navigate-to "/user/login")))}))
 
 (defn cancel-form [state]
   (let [password-atom (cursor state [:password])]

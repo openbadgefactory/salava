@@ -6,7 +6,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
             [salava.file.ui.my :as file]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]))
@@ -22,7 +22,7 @@
                  :about              about
                  :profile_picture    profile_picture
                  :fields             profile-fields}
-       :handler (fn [] (navigate-to (str "/user/profile/" (:user_id @state))))})))
+       :handler (fn [] (js-navigate-to (str "/user/profile/" (:user_id @state))))})))
 
 (defn send-file [files-atom profile-picture-atom]
   (let [file (-> (.querySelector js/document "#profile-picture-upload")
