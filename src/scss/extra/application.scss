@@ -1,3 +1,210 @@
+@import 'variables';
+
 .application-element {
  margin-right: 20px;
+}
+
+.media-button{
+    margin-top:-5px;
+}
+
+.btn-application{
+    color:  $link-color;
+}
+#application-contents{
+    
+}
+.heading-link{
+	margin:15px 0px 5px 0px;
+	font-size: 16px;
+	line-height: 1.2em;
+	height: 2.4em;
+	overflow: hidden;
+        color: $badge-title;
+
+}
+
+/* metosin autocomplete */
+
+.autocomplete {
+  position: relative;
+}
+.autocomplete__control {
+    -webkit-appearance: none;
+    background: #FFF url(/img/down_arrow.png) no-repeat top right;
+  padding: 4px 8px;
+  overflow: hidden;
+  cursor: text;
+}
+.autocomplete__control:after {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  display: block;
+  width: 0;
+  height: 0;
+  margin-top: -3px;
+  border-color: #444 transparent transparent transparent;
+  border-style: solid;
+  border-width: 5px 5px 0 5px;
+  
+}
+.autocomplete__control--open:after {
+  border-color: transparent transparent #444 transparent;
+  border-width: 0 5px 5px 5px;
+}
+.autocomplete__control--disabled {
+  border: 1px solid #454545;
+  background: #f9f9f9;
+  cursor: not-allowed;
+  color: #545454;
+}
+.autocomplete__control--disabled:after {
+  border-color: #ccc transparent transparent transparent;
+}
+.autocomplete__input {
+  border: 0;
+  outline: none;
+  max-width: 100%;
+}
+.autocomplete__input[disabled] {
+  background: none;
+}
+.autocomplete__dropdown {
+  position: absolute;
+    z-index: 1000;
+    width: 100%;
+    min-width: 250px;
+    background: #fff;
+    border: 1px solid #444;
+    margin-top: -1px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+}
+.autocomplete__dropdown--above {
+  margin-top: 0px;
+  margin-bottom: -1px;
+}
+.autocomplete__dropdown-content {
+  max-height: 400px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.autocomplete__item {
+  padding: 4px 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+.autocomplete__item:hover {
+    color: #FFFFFF;
+  background: $grid-link-hover; //hae oikea orange
+}
+.autocomplete__item--selected {
+ // background: #CAECFF;
+}
+.autocomplete__item--active {
+ // background: #CBFFCA;
+}
+.autocomplete__selected-items {
+  display: inline-block;
+}
+.autocomplete__selected-item {
+  display: inline-block;
+  border-radius: 2px;
+  background: #CBFFCA;
+  margin-right: 8px;
+}
+.autocomplete__item-text {
+  padding: 2px 4px;
+}
+.autocomplete__no-results {
+  padding: 4px 8px;
+}
+.autocomplete__level-1 {
+  padding-left: 0px;
+}
+.autocomplete__level-2 {
+  padding-left: 30px;
+}
+.autocomplete__level-3 {
+  padding-left: 60px;
+}
+.autocomplete__level-4 {
+  padding-left: 90px;
+}
+.autocomplete__level-5 {
+  padding-left: 120px;
+}
+.autocomplete__level-6 {
+  padding-left: 150px;
+}
+.autocomplete__level-7 {
+  padding-left: 180px;
+}
+.autocomplete__level-8 {
+  padding-left: 210px;
+}
+.autocomplete__level-9 {
+  padding-left: 240px;
+}
+.autocomplete__level-10 {
+  padding-left: 270px;
+}
+.autocomplete__level-11 {
+  padding-left: 300px;
+}
+.autocomplete__level-12 {
+  padding-left: 330px;
+}
+.autocomplete__level-13 {
+  padding-left: 360px;
+}
+.autocomplete__level-14 {
+  padding-left: 390px;
+}
+.autocomplete__level-15 {
+  padding-left: 420px;
+}
+.autocomplete__level-16 {
+  padding-left: 450px;
+}
+.autocomplete__level-17 {
+  padding-left: 480px;
+}
+.autocomplete__level-18 {
+  padding-left: 510px;
+}
+.autocomplete__level-19 {
+  padding-left: 540px;
+}
+.autocomplete__level-19 {
+  padding-left: 570px;
+}
+.autocomplete__remove-item-button {
+  color: #444 !important;
+  padding: 2px 4px;
+  border-left: 1px solid #fff;
+  cursor: pointer;
+  border-radius: 0 2px 2px 0;
+}
+.autocomplete__remove-item-button:hover {
+  background: #67ff64;
+}
+.autocomplete__clear-button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: none;
+}
+.autocomplete__clear-button:after {
+  content: "\232B";
+}
+.autocomplete__highlight {
+  background: #FFF1C2;
 }

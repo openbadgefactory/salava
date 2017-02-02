@@ -6,7 +6,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.ui.helper :refer [base-path navigate-to path-for private? plugin-fun]]
+            [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t translate-text]]))
@@ -29,7 +29,7 @@
                  :password password}
        :handler (fn [data]
                   (if (= (:status data) "success")
-                    (navigate-to (follow-up-url))
+                    (js-navigate-to (follow-up-url))
                     (swap! state assoc :error-message (:message data))))})))
 
 (defn content [state]

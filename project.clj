@@ -55,11 +55,15 @@
                  [reagent "0.6.0"]
                  [reagent-utils "0.2.0"]
                  [bidi "2.0.14"]
+                 [com.cemerick/url "0.1.1"]
+                 [metosin/komponentit "0.2.2"]
                  [kibu/pushy "0.3.6"]
                  [com.taoensso/tower "3.1.0-beta3"]
                  [cljs-ajax "0.5.8"]
                  [org.clojars.frozenlock/reagent-modals "0.2.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
+                 
+
 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
@@ -141,7 +145,7 @@
   :auto-clean        false
   :min-lein-version  "2.6.1"
 
-  :pedantic? :abort
+  :pedantic? :warn
 
   :aliases {"develop"         ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "uberjar"         ["with-profile" "uberjar" "do" "clean" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
