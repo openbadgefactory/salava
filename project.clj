@@ -100,7 +100,8 @@
                    :resource-paths ["target/generated"]}
              :uberjar {:resource-paths  ["target/adv"]
                        :main  salava.core.main
-                       :aot   [salava.core.main]}}
+                       :omit-source true
+                       :aot :all}}
 
   :scss  {:builds
           {:dev {:source-dir "src/scss"
