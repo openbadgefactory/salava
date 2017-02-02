@@ -21,3 +21,10 @@ SELECT country FROM badge_advert
 
 -- name: select-user-country
 SELECT country FROM user WHERE id = :id
+
+-- name: select-badge-content-tags
+SELECT tag, GROUP_CONCAT(badge_content_id) AS badge_content_ids from badge_content_tag GROUP BY tag ORDER BY tag LIMIT 1000
+
+
+--name: select-badge-names
+SELECT name FROM badge_content ORDER BY name LIMIT 1000
