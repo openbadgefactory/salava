@@ -14,8 +14,8 @@
             [clojure.string :as s]
             [komponentit.autocomplete :refer [multiple-autocomplete]]
             [schema.core :as sc]
+            [cemerick.url :as url]
             [salava.core.i18n :as i18n :refer [t]]))
-
 ;;Modal
 
 
@@ -215,7 +215,7 @@
         [text-field :name-tag "badge name and keywords" "search by badge name and keywords" state]
         [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]
         ])
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state search-timer]]))
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
@@ -273,14 +273,17 @@
                                         ;(if badge_content_id (open-modal badge_content_id true))
                                         )}))
 
-(defn init-data [state]
+(defn init-data [state {:keys [current-country name-tag issuer-name order]}]
   (ajax/GET
-   (path-for "/obpv1/application/")     
-   {:handler (fn [data]
+   (path-for "/obpv1/application/")
+   {:params  {:country  (trim current-country)
+              :name_tag (trim name-tag)
+              :issuer   (trim issuer-name)
+              :order    (trim order)}
+    :handler (fn [data]
                (let [{:keys [applications countries user-country]} data]
                  (swap! state assoc :applications applications
                         :countries countries
-                        :country-selected user-country
                         )))}))
 
 
@@ -288,21 +291,25 @@
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
+        query-string (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
+        init-values {:current-country  (or (:country query-string) (session/get-in [:user :country] "all"))
+                     :name-tag (or (:name-tag query-string) "")
+                     :issuer-name   (or (:issuer-name query-string) "")
+                     :order (or (:order query-string) "mtime")}
         badge_content_id (:badge_content_id params)
         state (atom {:value #{}
                      :user-id user-id
                      :badges []
                      :countries []
-                     :country-selected ""
+                     :country-selected  (or (:country query-string) (session/get-in [:user :country] "all"))
                      :advanced-search false
-                     :name-tag ""
-                     :recipient-name ""
-                     :issuer-name ""
-                     :order "mtime"
+                     :name-tag (or (:name-tag query-string) "")
+                     :issuer-name (or (:issuer-name query-string) "")
+                     :order  (or (:order query-string) "mtime")
                      :timer nil
                      :items #{}
                      :ajax-message nil})]
-    (init-data state)
+    (init-data state init-values)
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
