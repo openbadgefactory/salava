@@ -116,6 +116,9 @@
        (log/error "falling back to curl")
        (curl url opt)))))
 
+(defn json-get [url]
+  (log/info "json-get: GET" url)
+  (http-get url {:as :json :accept :json :throw-entire-message? true}))
 
 (defn- file-extension [filename]
   (try+
