@@ -46,7 +46,6 @@
                  [com.novemberain/pantomime "2.8.0" :exclusions [org.bouncycastle/bcprov-jdk15on]]
                  [com.github.kyleburton/clj-xpath "1.4.5"]
                  [digest "1.4.5"]
-                 [bencode "0.2.5"]
                  [org.clojure/tools.cli "0.3.5"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]
@@ -63,8 +62,6 @@
                  [cljs-ajax "0.5.8"]
                  [org.clojars.frozenlock/reagent-modals "0.2.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
-                 
-
 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
