@@ -46,6 +46,7 @@
                  [com.novemberain/pantomime "2.8.0" :exclusions [org.bouncycastle/bcprov-jdk15on]]
                  [com.github.kyleburton/clj-xpath "1.4.5"]
                  [digest "1.4.5"]
+                 [bencode "0.2.5"]
                  [org.clojure/tools.cli "0.3.5"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]

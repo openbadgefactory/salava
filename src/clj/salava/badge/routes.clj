@@ -27,7 +27,7 @@
     (context "/obpv1/badge" []
              :tags  ["badge"]
              (GET "/" []
-                  :return [schemas/BadgeContent]
+                  :return [schemas/UserBadgeContent]
                   :summary "Get the badges of a current user"
                   :auth-rules access/authenticated
                   :current-user current-user
@@ -36,7 +36,7 @@
                     (ok (b/user-badges-all ctx (:id current-user)))))
 
              (GET "/info/:badgeid" []
-                  ;:return schemas/BadgeContent
+                  ;:return schemas/UserBadgeContent
                   :path-params [badgeid :- Long]
                   :summary "Get badge"
                   :current-user current-user
@@ -142,7 +142,7 @@
                      (ok (i/upload-badge ctx file (:id current-user)))))
 
              (GET "/settings/:badgeid" []
-                  ;return schemas/badgeContent
+                  ;return schemas/UserBadgeContent
                   :path-params [badgeid :- Long]
                   :summary "Get badge settings"
                   :auth-rules access/authenticated

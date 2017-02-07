@@ -40,34 +40,33 @@
                     :tag (s/maybe s/Str)
                     :tags (s/maybe [s/Str])})
 
-(s/defschema BadgeContent {:id                                   s/Int
-                           :name                                 (s/maybe s/Str)
-                           :description                          (s/maybe s/Str)
-                           :image_file                           (s/maybe s/Str)
-                           :issued_on                            (s/maybe s/Int)
-                           :expires_on                           (s/maybe s/Int)
-                           :revoked                              (s/maybe s/Bool)
-                           :visibility                           (s/maybe (s/enum "private" "internal" "public"))
-                           :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
-                           :mtime                                s/Int
-                           :badge_content_id                     (s/maybe s/Str)
-                           :issuer_url                           (s/maybe s/Str)
-                           :badge_url                            (s/maybe s/Str)
-                           :obf_url                              (s/maybe s/Str)
-                           :issued_by_obf                        s/Bool
-                           :verified_by_obf                      s/Bool
-                           :issuer_verified                      (s/maybe s/Bool)
-                           (s/optional-key :issuer_content_name) (s/maybe s/Str)
-                           (s/optional-key :issuer_content_url)  (s/maybe s/Str)
-                           (s/optional-key :email)               (s/maybe s/Str)
-                           (s/optional-key :assertion_url)       (s/maybe s/Str)
-                           (s/optional-key :tags)                (s/maybe [s/Str])
-                           (s/optional-key :meta_badge)          (s/maybe s/Bool)
-                           (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
-                           (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
-                                                                  :all-messages (s/maybe s/Int)
-                          } })
-                           
+(s/defschema UserBadgeContent
+  {:id                                   s/Int
+   :name                                 (s/maybe s/Str)
+   :description                          (s/maybe s/Str)
+   :image_file                           (s/maybe s/Str)
+   :issued_on                            (s/maybe s/Int)
+   :expires_on                           (s/maybe s/Int)
+   :revoked                              (s/maybe s/Bool)
+   :visibility                           (s/maybe (s/enum "private" "internal" "public"))
+   :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
+   :mtime                                s/Int
+   :badge_content_id                     (s/maybe s/Str)
+   :issuer_url                           (s/maybe s/Str)
+   :badge_url                            (s/maybe s/Str)
+   :obf_url                              (s/maybe s/Str)
+   :issued_by_obf                        s/Bool
+   :verified_by_obf                      s/Bool
+   :issuer_verified                      (s/maybe s/Bool)
+   (s/optional-key :issuer_content_name) (s/maybe s/Str)
+   (s/optional-key :issuer_content_url)  (s/maybe s/Str)
+   (s/optional-key :email)               (s/maybe s/Str)
+   (s/optional-key :assertion_url)       (s/maybe s/Str)
+   (s/optional-key :meta_badge)          (s/maybe s/Bool)
+   (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
+   (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
+                                          :all-messages (s/maybe s/Int)}
+   (s/optional-key :tags)                (s/maybe [s/Str])})
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :email :assertion_url :tags :issuer_content_name :issuer_url :issuer_content_url]))
 
