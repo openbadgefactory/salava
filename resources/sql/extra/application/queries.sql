@@ -32,7 +32,7 @@ ON DUPLICATE KEY UPDATE
     issuer_content_id = :issuer_content_id, badge_content_id = :badge_content_id,
     criteria_content_id = :criteria_content_id, kind = :kind,
     country = :country, not_before = :not_before, not_after = :not_after,
-    mtime = UNIX_TIMESTAMP()
+    deleted = :deleted, mtime = UNIX_TIMESTAMP()
 
 -- name: update-badge-adverd-deleted
 UPDATE badge_advert SET deleted = :deleted WHERE id = :id
