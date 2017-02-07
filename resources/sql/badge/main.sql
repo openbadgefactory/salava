@@ -210,3 +210,29 @@ SELECT id FROM badge WHERE user_id = :user_id AND old_id = :old_id
 
 --name: select-badge-content-id-by-old-id
 SELECT badge_content_id FROM badge WHERE old_id = :old_id
+
+
+
+--name: insert-badge-content!
+INSERT IGNORE INTO badge_content (id, name, description, image_file)
+       VALUES (:id, :name, :description, :image_file)
+
+--name: insert-badge-content-tag!
+INSERT IGNORE INTO badge_content_tag (badge_content_id, tag)
+       VALUES (:badge-content-id, :tag)
+
+--name: insert-badge-content-alignment!
+INSERT IGNORE INTO badge_content_tag (badge_content_id, name, url, description)
+       VALUES (:badge-content-id, :name, :url, :description)
+
+--name: insert-criteria-content!
+INSERT IGNORE INTO criteria_content (id, html_content, markdown_content)
+       VALUES (:id, :html_content, :markdown_content)
+
+-- name: insert-issuer-content!
+INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url);
+
+-- name: insert-creator-content!
+INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :json_url);
