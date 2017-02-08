@@ -88,38 +88,12 @@
      :names names}))
 
 
-(defn- badge-content [ctx badge-url client-url]
-  (let [badge  (u/json-get badge-url)
-        client (u/json-get client-url)
-        criteria-html (u/http-get (:criteria badge))]
-    {:badge    {:id ""
-                :name        (:name badge)
-                :image_file  (u/file-from-url ctx (:image badge))
-                :description (:description badge)
-                :alignment   [] ;TODO parse alignments if OBF starts sending them
-                :tags        (:tags badge)}
-
-     :issuer   {:id ""
-                :name        (:name client)
-                :image_file  (if-not (string/blank? (:image client)) (u/file-from-url ctx (:image client)))
-                :description (:description badge)
-                :url  (:url client)
-                :email (:email client)
-                :revocation_list_url ""}
-
-     :criteria {:id ""
-                :html_content     criteria-html
-                :markdown_content (a/get-criteria-markdown (:criteria badge))}}))
-
-(defn- put-content [ctx data]
-  (let [content (badge-content ctx (:badge data) (:client data))]
-    {:issuer_content_id   (b/save-issuer-content!   ctx (:issuer content))
-     :badge_content_id    (b/save-badge-content!    ctx (:badge content))
-     :criteria_content_id (b/save-criteria-content! ctx (:criteria content))}))
-
 (defn publish-badge [ctx data]
   (try
-      {:success (= 1 (replace-badge-advert! (merge (assoc data :deleted 0) (put-content ctx data)) (u/get-db ctx)))}
+      {:success (= 1 (replace-badge-advert! (merge data
+                                                   (b/save-badge-content!  ctx (:badge data))
+                                                   (b/save-issuer-content! ctx (:client data)))
+                                            (u/get-db ctx)))}
     (catch Exception ex
       (log/error "publish-badge: failed to save badge advert")
       (log/error (.toString ex))
