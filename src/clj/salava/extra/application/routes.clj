@@ -15,19 +15,19 @@
     (context "/obpv1/application" []
              :tags ["application"]
              
-             (GET "/" [country name_tag issuer order]
+             (GET "/" [country tags name issuer order]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get public badge data"
                   :current-user current-user
-                  (let [applications (a/get-badge-adverts ctx country name_tag issuer order)
+                  (let [applications (a/get-badge-adverts ctx country tags name issuer order)
                         countries (a/badge-adverts-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)
                                           country)]
                     (ok (into {:applications applications} countries))))
 
-             (GET "/autocomplete" []
+             (GET "/autocomplete" [country]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
-                  (ok (a/get-autocomplete ctx ""))))))
+                  (ok (a/get-autocomplete ctx "" country))))))
