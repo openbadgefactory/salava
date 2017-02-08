@@ -62,8 +62,6 @@
                  [cljs-ajax "0.5.8"]
                  [org.clojars.frozenlock/reagent-modals "0.2.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
-                 
-
 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
@@ -104,7 +102,8 @@
                    :resource-paths ["target/generated"]}
              :uberjar {:resource-paths  ["target/adv"]
                        :main  salava.core.main
-                       :aot   [salava.core.main]}}
+                       :omit-source true
+                       :aot :all}}
 
   :scss  {:builds
           {:dev {:source-dir "src/scss"

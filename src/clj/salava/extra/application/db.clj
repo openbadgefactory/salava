@@ -1,14 +1,17 @@
 (ns salava.extra.application.db
   (:require [clojure.tools.logging :as log]
+            [clojure.java.jdbc :as jdbc]
+            [clojure.string :as string]
             [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
             [salava.core.helper :refer [dump]]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.string :refer [blank? split]]
+            [salava.badge.db :as b]
+            [salava.badge.assertion :as a]
             [salava.core.countries :refer [all-countries sort-countries]]
             [slingshot.slingshot :refer :all]
             [clojure.set :refer [subset?]]
-            [salava.core.util :refer [get-db]]))
+            [salava.core.util :as u]))
+
 
 (defqueries "sql/extra/application/queries.sql")
 
@@ -30,7 +33,7 @@
 
 (defn add-badge-advert [ctx advert]
   (let [{:keys [remote_url remote_id remote_issuer_id info application_url issuer_content_id badge_content_id criteria_content_id kind country not_before not_after]} advert]
-    (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (get-db ctx))))
+    (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
 
 
 (defn map-collection
@@ -59,7 +62,7 @@
 
 (defn tag-parser [tags]
   (if tags
-    (split tags #",")))
+    (string/split tags #",")))
 
 (defn filter-tags [search tags]
   (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
@@ -82,30 +85,30 @@
                    where
                    "GROUP BY ba.id "
                    order)
-        search  (jdbc/with-db-connection
-                 [conn (:connection (get-db ctx))]
-                  (jdbc/query conn (into [query] params)))]
+        search (jdbc/with-db-connection
+                 [conn (:connection (u/get-db ctx))]
+                 (jdbc/query conn (into [query] params)))]
+    
     (if (not-empty tags)
       (filter-tags search tags)
-      search)
-    ))
-
+      search)))
 
 (defn user-country
   "Return user's country id"
   [ctx user-id]
-  (select-user-country {:id user-id} (into {:row-fn :country :result-set-fn first} (get-db ctx))))
+  (select-user-country {:id user-id} (into {:row-fn :country :result-set-fn first} (u/get-db ctx))))
 
 (defn badge-adverts-countries
   "Return user's country id and list of all countries which have badge adverts"
   [ctx user-id]
   (let [current-country (user-country ctx user-id)
-        countries (select-badge-advert-countries {} (into {:row-fn :country} (get-db ctx)))]
+        countries (select-badge-advert-countries {} (into {:row-fn :country} (u/get-db ctx)))]
     (hash-map :countries (-> all-countries
                              (select-keys (conj countries current-country))
                              (sort-countries)
                              (seq))
               :user-country current-country)))
+
 
 
 (defn tags-where-params [country]
@@ -125,8 +128,8 @@
                     ORDER BY tag 
                     LIMIT 1000") 
         search (jdbc/with-db-connection
-                 [conn (:connection (get-db ctx))]
-                 (jdbc/query conn (into [query] params)))]
+                 [conn (:connection (u/get-db ctx))]
+                 (jdbc/query conn (into [query] params))) ]
     search))
 
 
@@ -139,11 +142,52 @@
         ]
     {:tags tags}))
 
-;(count (:tags (get-autocomplete ctx "" "all")))
-
-;(badge-adverts-countries ctx 2)
-;(select-badge-advert-countries {} (into {:row-fn :country} (get-db ctx)))
 
 
 
+(defn- badge-content [ctx badge-url client-url]
+  (let [badge  (u/json-get badge-url)
+        client (u/json-get client-url)
+        criteria-html (u/http-get (:criteria badge))]
+    {:badge    {:id ""
+                :name        (:name badge)
+                :image_file  (u/file-from-url ctx (:image badge))
+                :description (:description badge)
+                :alignment   [] ;TODO parse alignments if OBF starts sending them
+                :tags        (:tags badge)}
+
+     :issuer   {:id ""
+                :name        (:name client)
+                :image_file  (if-not (string/blank? (:image client)) (u/file-from-url ctx (:image client)))
+                :description (:description badge)
+                :url  (:url client)
+                :email (:email client)
+                :revocation_list_url ""}
+
+     :criteria {:id ""
+                :html_content     criteria-html
+                :markdown_content (a/get-criteria-markdown (:criteria badge))}}))
+
+(defn- put-content [ctx data]
+  (let [content (badge-content ctx (:badge data) (:client data))]
+    {:issuer_content_id   (b/save-issuer-content!   ctx (:issuer content))
+     :badge_content_id    (b/save-badge-content!    ctx (:badge content))
+     :criteria_content_id (b/save-criteria-content! ctx (:criteria content))}))
+
+(defn publish-badge [ctx data]
+  (try
+      {:success (= 1 (replace-badge-advert! (merge (assoc data :deleted 0) (put-content ctx data)) (u/get-db ctx)))}
+    (catch Exception ex
+      (log/error "publish-badge: failed to save badge advert")
+      (log/error (.toString ex))
+      {:success false})))
+
+
+(defn unpublish-badge [ctx data]
+  (try
+    {:success (= 1 (unpublish-badge-advert-by-remote! data (u/get-db ctx)))}
+    (catch Exception ex
+      (log/error "unpublish-badge: failed to remove badge advert")
+      (log/error (.toString ex))
+      {:success false})))
 
