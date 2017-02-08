@@ -17,9 +17,9 @@
     (jdbc/with-db-transaction  [t-con (:connection (u/get-db ctx))]
       (insert-badge-content! (assoc data :id id) {:connection t-con})
       (doseq [tag (:tags data)]
-        (insert-badge-content-tag! {:badge-content-id id :tag tag} {:connection t-con}))
+        (insert-badge-content-tag! {:badge_content_id id :tag tag} {:connection t-con}))
       (doseq [a (:alignment data)]
-        (insert-badge-content-alignment! (assoc a :badge-content-id id) {:connection t-con})))
+        (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con})))
     id))
 
 (defn save-criteria-content! [ctx data]
