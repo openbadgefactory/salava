@@ -213,19 +213,19 @@ SELECT badge_content_id FROM badge WHERE old_id = :old_id
 
 
 
---name: insert-badge-content!
+-- name: insert-badge-content!
 INSERT IGNORE INTO badge_content (id, name, description, image_file)
        VALUES (:id, :name, :description, :image_file)
 
---name: insert-badge-content-tag!
+-- name: insert-badge-content-tag!
 INSERT IGNORE INTO badge_content_tag (badge_content_id, tag)
-       VALUES (:badge-content-id, :tag)
+       VALUES (:badge_content_id, :tag)
 
---name: insert-badge-content-alignment!
-INSERT IGNORE INTO badge_content_tag (badge_content_id, name, url, description)
-       VALUES (:badge-content-id, :name, :url, :description)
+-- name: insert-badge-content-alignment!
+INSERT IGNORE INTO badge_content_alignment (badge_content_id, name, url, description)
+       VALUES (:badge_content_id, :name, :url, :description)
 
---name: insert-criteria-content!
+-- name: insert-criteria-content!
 INSERT IGNORE INTO criteria_content (id, html_content, markdown_content)
        VALUES (:id, :html_content, :markdown_content)
 
