@@ -309,6 +309,7 @@
     (delete-badge-tags! {:badge_id badge-id} (get-db ctx))
     (doall (for [tag valid-tags]
              (replace-badge-tag! {:badge_id badge-id :tag tag} (get-db ctx))))))
+
 (defn set-visibility!
   "Set badge visibility"
   [ctx badge-id visibility user-id]
