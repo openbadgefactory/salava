@@ -23,6 +23,7 @@
 
 (defn- content-type [_ input]
   (cond
+    (map? input)          :default
     (string/blank? input) :blank
     (and (string? input) (re-find #"^https?://" input)) :url
     (and (string? input) (re-find #"^\s*\{" input))     :json
@@ -62,7 +63,7 @@
   (save-issuer-content! ctx (u/http-get input)))
 
 (defmethod save-issuer-content! :json [ctx input]
-  (let [data (json/read-str input)]
+  (let [data (json/read-str input :key-fn keyword)]
     (save-issuer-content!
       ctx {:id ""
            :name        (:name data)
@@ -89,7 +90,7 @@
   (save-creator-content! ctx (with-meta (u/http-get input) {:json-url input})))
 
 (defmethod save-creator-content! :json [ctx input]
-  (let [data (json/read-str input)]
+  (let [data (json/read-str input :key-fn keyword)]
     (save-creator-content!
       ctx {:id ""
            :name        (:name data)
@@ -116,7 +117,7 @@
   (save-badge-content! ctx (u/http-get input)))
 
 (defmethod save-badge-content! :json [ctx input]
-  (let [data (json/read-str input)]
+  (let [data (json/read-str input :key-fn keyword)]
     (merge
       (save-badge-content! ctx {:id ""
                                 :name        (:name data)
@@ -125,11 +126,11 @@
                                 :alignment   []
                                 :tags        (:tags data)})
       (when (:issuer data)
-        (save-issuer-content! (:issuer data)))
+        (save-issuer-content! ctx (:issuer data)))
       (when (:criteria data)
-        (save-criteria-content! (:criteria data)))
+        (save-criteria-content! ctx (:criteria data)))
       (when (:extensions:OriginalCreator data)
-        (save-creator-content! (get-in data [:extensions:OriginalCreator :url]))))))
+        (save-creator-content! ctx (get-in data [:extensions:OriginalCreator :url]))))))
 
 (defmethod save-badge-content! :default [ctx input]
   (s/validate schemas/BadgeContent input)
@@ -137,8 +138,8 @@
     (jdbc/with-db-transaction  [t-con (:connection (u/get-db ctx))]
       (insert-badge-content! (assoc input :id id) {:connection t-con})
       (doseq [tag (:tags input)]
-        (insert-badge-content-tag! {:badge-content-id id :tag tag} {:connection t-con}))
+        (insert-badge-content-tag! {:badge_content_id id :tag tag} {:connection t-con}))
       (doseq [a (:alignment input)]
-        (insert-badge-content-alignment! (assoc a :badge-content-id id) {:connection t-con})))
+        (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con})))
     {:badge_content_id id}))
 
