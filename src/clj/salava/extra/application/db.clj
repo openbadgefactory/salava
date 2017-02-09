@@ -90,10 +90,12 @@
 
 (defn publish-badge [ctx data]
   (try
-      {:success (= 1 (replace-badge-advert! (merge data
-                                                   (b/save-badge-content!  ctx (:badge data))
-                                                   (b/save-issuer-content! ctx (:client data)))
-                                            (u/get-db ctx)))}
+    (replace-badge-advert!
+      (merge data
+             (b/save-badge-content!  ctx (:badge data))
+             (b/save-issuer-content! ctx (:client data)))
+      (u/get-db ctx))
+    {:success true}
     (catch Exception ex
       (log/error "publish-badge: failed to save badge advert")
       (log/error (.toString ex))
