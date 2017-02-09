@@ -5,6 +5,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.layout :as layout]
             [salava.extra.application.db :as a]
+            [salava.core.access :as access]
             [salava.extra.application.schemas :as schemas] ;cljc
             [clojure.string :refer [split]]))
 
@@ -14,33 +15,35 @@
              (layout/main ctx "/application"))
     (context "/obpv1/application" []
              :tags ["application"]
-             (GET "/" [country name_tag issuer order]
+             (GET "/" [country tags name issuer order]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get public badge data"
                   :current-user current-user
-                  (let [applications (a/get-badge-adverts ctx country name_tag issuer order)
+                  :auth-rules access/authenticated
+                  (let [applications (a/get-badge-adverts ctx country tags name issuer order)
                         countries (a/badge-adverts-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)
                                           country)]
                     (ok (into {:applications applications} countries))))
 
-             (GET "/autocomplete" []
+             (GET "/autocomplete" [country]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
-                  (ok (a/get-autocomplete ctx "")))
-
+                  :auth-rules access/authenticated
+                  (ok (a/get-autocomplete ctx "" country)))
+             
              (PUT "/publish_badge/:apikey/:remoteid" []
                   :return {:success s/Bool}
                   :body  [data schemas/BadgeAdvertPublish]
                   (ok (a/publish-badge ctx data)))
-
+             
              (PUT "/unpublish_badge/:apikey/:remoteid" []
                   :return {:success s/Bool}
                   :body  [data schemas/BadgeAdvertUnpublish]
                   (ok (a/unpublish-badge ctx data))))
-
+    
     (context "/obpv1/factory" []
              :tags ["factory"]
             (PUT "/publish_badge/:apikey/:remoteid" []

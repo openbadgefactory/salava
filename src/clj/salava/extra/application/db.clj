@@ -9,7 +9,9 @@
             [salava.badge.assertion :as a]
             [salava.core.countries :refer [all-countries sort-countries]]
             [slingshot.slingshot :refer :all]
+            [clojure.set :refer [subset?]]
             [salava.core.util :as u]))
+
 
 (defqueries "sql/extra/application/queries.sql")
 
@@ -34,24 +36,48 @@
     (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
 
 
-(defn get-badge-adverts [ctx country name_tag issuer-name order]
-  (let [where ""
-        params []
-        [where params] (if-not (or (empty? country) (= country "all"))
-                         [(str where " AND ba.country = ?") (conj params country)]
-                         [where params])
-        [where params] (if-not (empty? name_tag)
-                         [(str where "AND bct.tag LIKE ? OR bc.name LIKE ?" )  (conj params (str "%" name_tag "%") (str "%" name_tag "%") )]
-                         [where params])
-        [where params] (if-not (empty? issuer-name)
-                         [(str where " AND ic.name LIKE ?") (conj params (str "%" issuer-name "%"))]
-                         [where params])
+(defn map-collection
+  ([where value]
+   (map-collection where value true))
+  ([where value fn]
+   (if (and where value fn)
+     {(str where)  value})))
+
+
+
+(defn badge-adverts-where-params [country name issuer-name]
+  (let [where-params {}]
+    
+    (-> where-params
+        ;(loop-tags tags)
+        (conj (map-collection " and ba.country = ? " country (not= country "all")))        
+        (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
+        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))) ))
+
+ 
+
+
+(defn contains-tag? [query-tags tags]
+  (subset? (set query-tags) (set tags)))
+
+(defn tag-parser [tags]
+  (if tags
+    (string/split tags #",")))
+
+(defn filter-tags [search tags]
+  (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
+
+(defn get-badge-adverts [ctx country tags  name issuer-name order]
+  (let [where-params (badge-adverts-where-params country name issuer-name)
+        where  (apply str (keys where-params))
+        params  (vec (vals where-params))
+        tags (vec (vals tags))
         order (cond
                 (= order "mtime") "ORDER BY ba.mtime DESC"
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
                 :else "") 
-        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime FROM badge_advert AS ba
+        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url FROM badge_advert AS ba
        JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
        LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0
@@ -62,7 +88,10 @@
         search (jdbc/with-db-connection
                  [conn (:connection (u/get-db ctx))]
                  (jdbc/query conn (into [query] params)))]
-    search))
+    
+    (if (not-empty tags)
+      (filter-tags search tags)
+      search)))
 
 (defn user-country
   "Return user's country id"
@@ -81,11 +110,39 @@
               :user-country current-country)))
 
 
-(defn get-autocomplete [ctx name]
-  (let [tags (select-badge-content-tags {} (u/get-db ctx))
-        names (select-badge-names {} (u/get-db ctx))]
-    {:tags tags
-     :names names}))
+
+(defn tags-where-params [country]
+  (let [where-params {}]
+    (if-not (= country "all")
+      (merge where-params (map-collection " and ba.country = ? " country)))))
+
+(defn get-tags [ctx country]
+  (let [where-params (tags-where-params country)
+        where  (apply str (keys where-params))
+        params (vec (vals where-params))
+        query (str "SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
+                    from badge_content_tag AS bct JOIN badge_advert AS ba
+         ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0" 
+                   where
+                   " GROUP BY bct.tag 
+                    ORDER BY tag 
+                    LIMIT 1000") 
+        search (jdbc/with-db-connection
+                 [conn (:connection (u/get-db ctx))]
+                 (jdbc/query conn (into [query] params))) ]
+    search))
+
+
+
+
+
+(defn get-autocomplete [ctx name country]
+  (let [tags (get-tags ctx country)
+        ;names (select-badge-names {} (get-db ctx))
+        ]
+    {:tags tags}))
+
+
 
 
 (defn publish-badge [ctx data]
