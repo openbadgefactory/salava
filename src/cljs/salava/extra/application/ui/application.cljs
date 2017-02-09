@@ -34,16 +34,6 @@
     (subs text 1)
     text))
 
-(defn autocomplete-search [state country]
-  (ajax/GET
-   (path-for "/obpv1/application/autocomplete")     
-   {:params {:country  (trim country)}
-    :handler (fn [data]
-               (let [{:keys [tags names]} data]
-                 (swap! state assoc
-                        :tags  #{} ;todo: katso jos on toisessakin olemassa
-                        :items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
-
 (defn fetch-badges [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags]} @state
         ajax-message-atom (cursor state [:ajax-message])]
@@ -62,6 +52,37 @@
                                         ;(navigate-to (str "/gallery/application?country=" (trim country-selected) "&name-tag=" (subs-hashtag name-tag) "&issuer=" (trim issuer-name)  "&order=" (trim order)) )
                    (ajax-stop ajax-message-atom)))})))
 
+(defn taghandler [state value]
+  (let [tags (cursor state [:tags])
+        items (cursor state [:items])]
+    (reset! tags (vals (select-keys @items value)))
+    (fetch-badges state)))
+
+(defn get-items-key [items tag]
+  (key (first (filter #(= (str "#" tag ) (val %)) items))))
+
+(defn set-to-autocomplete [state tag]
+  (let [key (get-items-key (:items @state) tag)]
+    (if key
+      (do
+        (swap! state assoc :value #{key})
+        (taghandler state #{key})
+        ))))
+
+(defn autocomplete-search [state country]
+  (swap! state assoc :value #{}
+         :tags ())
+  (ajax/GET
+   (path-for "/obpv1/application/autocomplete")     
+   {:params {:country  (trim country)}
+    :handler (fn [data]
+               (let [{:keys [tags names]} data]
+                 (swap! state assoc
+                        :tags  #{} ;todo: katso jos on toisessakin olemassa
+                        :items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
+
+
+
 (defn tag-parser [tags]
   (if tags
     (s/split tags #",")))
@@ -78,8 +99,7 @@
          [:h3.heading-link 
           name]
          [:p
-          issuer_content_name]
-         ]
+          issuer_content_name]]
         [:div {:class "col-md-9 badge-info"}
          [:div.rowcontent
                                         ;[:h1.uppercase-header name]
@@ -96,16 +116,10 @@
                      [:a {:href "#"
                           :id "tag"
                           :on-click #(do
-                                       (swap! state assoc :name tag)
-                                       (fetch-badges state))
+                                       (set-to-autocomplete state tag))
                           :data-dismiss "modal"}
                       (str "#" tag )]
-                     )))
-           ]
-
-          
-          
-          ]]]])))
+                     )))]]]]])))
 
 
 (defn badge-content-modal-render [data state]
@@ -128,10 +142,9 @@
       [:div.col-md-3 [:div]]
       [:div {:class "col-md-9 badge-info"}
        [:div.pull-left
-        [:a " >> Apply now"]]
-       [:div.pull-right [:a "to wishlist"]]]]]
-    
-    ]])
+        [:a {:href (:application_url data) :target "_"} " >> Apply now"]]
+       [:div.pull-right ;[:a "to wishlist"]
+        ]]]]]])
 
 
 
@@ -180,8 +193,6 @@
                 :value     @country-atom
                 :on-change #(do
                               (reset! country-atom (.-target.value %))
-                              (swap! state assoc :value #{}
-                                                 :tags ())
                               (autocomplete-search state @country-atom)
                               (fetch-badges state))}
        [:option {:value "all" :key "all"} (t :core/All)]
@@ -201,16 +212,14 @@
              (range n))))
 
 
-(defn taghandler [state items value]
-  (let [tags (cursor state [:tags])]
-    (reset! tags (vals (select-keys @items @value)))
-    (fetch-badges state)))
+
 
 
 (defn autocomplete [state]
   (let [tags (cursor state [:tags])
         value (cursor state [:value])
-        items (cursor state [:items])]
+        items (cursor state [:items])
+        ]
     (fn []
       [:div.form-group
        [:label {:class "control-label col-sm-2" :for "autocomplete"} (str "keywords" ":")]
@@ -219,12 +228,12 @@
          {:value @value
           :cb    (fn [item] (do
                               (swap! value conj (:key item))
-                              (taghandler state  items value)
+                              (taghandler state @value)
                               ))
                                         ; FIXME: Remove-cb is called with value, not item
           :remove-cb (fn [x] (do
                                (swap! value disj x)
-                               (taghandler state items value)))
+                               (taghandler state @value)))
           
           :search-fields   [:value]
           :items           @items
@@ -246,7 +255,7 @@
         [text-field :name "Badge name" "search by badge name" state]
         [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]
         ])
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state search-timer]]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
@@ -348,6 +357,7 @@
     (init-data state init-values)
     (autocomplete-search state (:country init-values))
     (fn []
+      (dump (session/get :user))
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
         (layout/landing-page site-navi [content state badge_content_id]))

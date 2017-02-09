@@ -5,6 +5,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.layout :as layout]
             [salava.extra.application.db :as a]
+            [salava.core.access :as access]
             [salava.extra.application.schemas :as schemas] ;cljc
             [clojure.string :refer [split]]))
 
@@ -18,6 +19,7 @@
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get public badge data"
                   :current-user current-user
+                  :auth-rules access/authenticated
                   (let [applications (a/get-badge-adverts ctx country tags name issuer order)
                         countries (a/badge-adverts-countries ctx (:id current-user))
                         current-country (if (empty? country)
@@ -29,6 +31,7 @@
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
+                  :auth-rules access/authenticated
                   (ok (a/get-autocomplete ctx "" country)))
              
              (PUT "/publish_badge/:apikey/:remoteid" []

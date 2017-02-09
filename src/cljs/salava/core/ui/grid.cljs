@@ -62,7 +62,7 @@
 (defn grid-radio-buttons
   ([title name radio-buttons key state]
    (grid-radio-buttons title name radio-buttons key state nil))
-  ([title name radio-buttons key state timer]
+  ([title name radio-buttons key state func]
    (let [checked (get @state key)]
      [:fieldset.form-group
       [:legend {:class "control-label col-sm-2"} title]
@@ -77,6 +77,6 @@
                    :checked   (= checked (:value button))
                    :value     (:value button)
                    :on-change (fn [x] (do (swap! state assoc key (-> x .-target .-value)
-                                                 (if timer
-                                                   (timer state)))))}]
+                                                 (if func
+                                                   (func state)))))}]
           (:label button)])]])))
