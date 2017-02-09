@@ -357,7 +357,6 @@
     (init-data state init-values)
     (autocomplete-search state (:country init-values))
     (fn []
-      (dump (session/get :user))
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
         (layout/landing-page site-navi [content state badge_content_id]))

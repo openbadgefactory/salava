@@ -59,6 +59,9 @@
                  [cljs-ajax "0.5.8"]
                  [org.clojars.frozenlock/reagent-modals "0.2.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
+                 [metosin/komponentit "0.2.2"]
+                 [com.cemerick/url "0.1.1"]
+                 
 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
