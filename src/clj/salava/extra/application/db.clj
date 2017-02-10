@@ -161,7 +161,8 @@
 
 (defn unpublish-badge [ctx data]
   (try
-    {:success (= 1 (unpublish-badge-advert-by-remote! data (u/get-db ctx)))}
+    (unpublish-badge-advert-by-remote! data (u/get-db ctx))
+    {:success true}
     (catch Exception ex
       (log/error "unpublish-badge: failed to remove badge advert")
       (log/error (.toString ex))
