@@ -77,10 +77,10 @@
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
                 :else "") 
-        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url FROM badge_advert AS ba
+        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ba.mtime, ba.not_before, ba.not_after, ba.kind FROM badge_advert AS ba
        JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
-       LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0
+       where ba.deleted = 0
        "
                    where
                    "GROUP BY ba.id "
@@ -92,6 +92,10 @@
     (if (not-empty tags)
       (filter-tags search tags)
       search)))
+
+
+(defn get-badge-advert [ctx id]
+  (select-badge-advert {:id id} (into {:result-set-fn first} (u/get-db ctx))))
 
 (defn user-country
   "Return user's country id"
@@ -141,8 +145,6 @@
         ;names (select-badge-names {} (get-db ctx))
         ]
     {:tags tags}))
-
-
 
 
 (defn publish-badge [ctx data]

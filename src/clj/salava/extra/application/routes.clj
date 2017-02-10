@@ -17,7 +17,7 @@
              :tags ["application"]
              (GET "/" [country tags name issuer order]
                   ;:return [{:iframe s/Str :language s/Str}]
-                  :summary "Get public badge data"
+                  :summary "Get badge adverts"
                   :current-user current-user
                   :auth-rules access/authenticated
                   (let [applications (a/get-badge-adverts ctx country tags name issuer order)
@@ -26,6 +26,14 @@
                                           (:user-country countries)
                                           country)]
                     (ok (into {:applications applications} countries))))
+             
+             (GET "/public_badge_advert_content/:id" []
+                  ;:return [{:iframe s/Str :language s/Str}]
+                  :summary "Get badge advert"
+                  :current-user current-user
+                  :path-params [id :- s/Int]
+                  :auth-rules access/authenticated
+                  (ok (a/get-badge-advert ctx id)))
 
              (GET "/autocomplete" [country]
                   ;:return [{:iframe s/Str :language s/Str}]
@@ -46,6 +54,7 @@
     
     (context "/obpv1/factory" []
              :tags ["factory"]
+             
             (PUT "/publish_badge/:apikey/:remoteid" []
                  :return {:success s/Bool}
                  :body  [data schemas/BadgeAdvertPublish]

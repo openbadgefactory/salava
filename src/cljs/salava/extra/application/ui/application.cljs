@@ -154,8 +154,12 @@
                                                     ;(if (and init-data state) (init-data state))
                                                     ))}))
 
-(defn open-modal [data state]
-  (m/modal! [badge-content-modal data state] {:size :lg}))
+(defn open-modal [id state]
+  (ajax/GET
+      (path-for (str "/obpv1/application/public_badge_advert_content/" id))
+      {:handler (fn [data]
+                  (do
+                    (m/modal! [badge-content-modal data state] {:size :lg})))}))
 
 
 
@@ -264,19 +268,19 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:a {:href "#" :on-click #(open-modal element-data state) :title name}
+          [:a {:href "#" :on-click #(open-modal id state) :title name}
            [:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:on-click #(do (.preventDefault %)(open-modal element-data state)) :title name}
+         [:a.heading-link {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
           name]]
         [:div.media-issuer
          [:a {:href issuer_content_url
               :target "_blank"
               :title issuer_content_name} issuer_content_name]]
         [:div.media-button
-         [:button {:class "btn btn-default" :on-click #(do (.preventDefault %)(open-modal element-data state))
+         [:button {:class "btn btn-default" :on-click #(do (.preventDefault %)(open-modal id state))
                    } "Get this badge"]]
         
         [:div.media-description description]]]
@@ -320,7 +324,7 @@
   (ajax/GET
    (path-for "/obpv1/application/")
    {:params  {:country  (trim country)
-              :name_tag (trim name)
+              :name     (trim name)
               :issuer   (trim issuer-name)
               :order    (trim order)}
     :handler (fn [data]

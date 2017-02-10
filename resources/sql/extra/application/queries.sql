@@ -46,6 +46,13 @@ INNER JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
 LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
 GROUP BY ba.id
 
+--name: select-badge-advert
+SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url FROM badge_advert AS ba
+JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
+JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
+LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0 AND ba.id = :id
+
+
 -- name: select-badge-advert-countries
 SELECT country FROM badge_advert ORDER BY country
 
