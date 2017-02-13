@@ -60,7 +60,7 @@
                                                 :creator_url         (s/maybe s/Str)
                                                 :creator_email       (s/maybe s/Str)
                                                 :creator_image       (s/maybe s/Str)
-                                                :html_content        (s/maybe s/Str)
+                                                :criteria_content    (s/maybe s/Str)
                                                 :criteria_url        (s/maybe s/Str)
                                                 :badge_url           (s/maybe s/Str)
                                                 :badge_content_id    (s/maybe s/Str)
