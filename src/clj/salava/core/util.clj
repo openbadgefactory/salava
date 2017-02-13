@@ -225,5 +225,5 @@
 
 (defn md->html
   "convert markdown to html and sanitize output"
-  ([md] (markdown-to-html md default-md-processor))
+  ([md] (md->html md default-md-processor))
   ([md processor] (markdown-to-html processor md)))
