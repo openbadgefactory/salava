@@ -15,7 +15,7 @@
 (defn- content-id [data]
   (u/map-sha256 (assoc data :id "")))
 
-(defn- alt-markdown [^String input]
+(defn alt-markdown [^String input]
   (let [link-tags (-> (StringReader. input) (html/html-resource) (html/select [:head :link]))
         md-url (some #(when (and (= (:rel %) "alternate") (= (:type %) "text/x-markdown")) (:href %))
                      (map :attrs link-tags))]

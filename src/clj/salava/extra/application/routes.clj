@@ -15,12 +15,12 @@
              (layout/main ctx "/application"))
     (context "/obpv1/application" []
              :tags ["application"]
-             (GET "/" [country tags name issuer order]
+             (GET "/" [country tags name issuer order id]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get badge adverts"
                   :current-user current-user
                   :auth-rules access/authenticated
-                  (let [applications (a/get-badge-adverts ctx country tags name issuer order)
+                  (let [applications (a/get-badge-adverts ctx country tags name issuer order id)
                         countries (a/badge-adverts-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)

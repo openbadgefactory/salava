@@ -45,11 +45,12 @@
 
 
 
-(defn badge-adverts-where-params [country name issuer-name]
+(defn badge-adverts-where-params [country name issuer-name id]
   (let [where-params {}]
     
     (-> where-params
-        ;(loop-tags tags)
+                                        ;(loop-tags tags)
+        (conj (map-collection " and ba.id = ? " id ))
         (conj (map-collection " and ba.country = ? " country (not= country "all")))        
         (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
         (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))) ))
@@ -67,8 +68,8 @@
 (defn filter-tags [search tags]
   (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
 
-(defn get-badge-adverts [ctx country tags  name issuer-name order]
-  (let [where-params (badge-adverts-where-params country name issuer-name)
+(defn get-badge-adverts [ctx country tags name issuer-name order id]
+  (let [where-params (badge-adverts-where-params country name issuer-name id)
         where  (apply str (keys where-params))
         params  (vec (vals where-params))
         tags (vec (vals tags))
@@ -77,10 +78,10 @@
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
                 :else "") 
-        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ba.mtime, ba.not_before, ba.not_after, ba.kind FROM badge_advert AS ba
+        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url FROM badge_advert AS ba
        JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
-       where ba.deleted = 0
+       LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0
        "
                    where
                    "GROUP BY ba.id "
@@ -94,8 +95,36 @@
       search)))
 
 
+(def ctx {:config {:core {:site-name "Perus salava"
+ 
+                          :share {:site-name "jeejjoee"
+                                  :hashtag "KovisKisko"}
+                          
+                          :site-url "http://localhost:3000"
+                          
+                          :base-path "/app"
+                          
+                          :asset-version 2
+                          
+                          :languages [:en :fi]
+                          
+                          :plugins [:badge :page :gallery :file :user :oauth :admin :social :registerlink :mail]
+
+                          :http {:host "localhost" :port 3000 :max-body 100000000}
+                          :mail-sender "sender@example.com"}
+                   :user {:email-notifications true}}
+          :db (hikari-cp.core/make-datasource {:adapter "mysql",
+                                               :username "root",
+                                               :password "isokala",
+                                               :database-name "salava_extra1",
+                                               :server-name "localhost"})})
+
+(get-badge-adverts ctx nil nil nil nil nil 1)
+
 (defn get-badge-advert [ctx id]
-  (select-badge-advert {:id id} (into {:result-set-fn first} (u/get-db ctx))))
+  (let [badge-advert (select-badge-advert {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
+    ;add markdown parser for :info
+    badge-advert))
 
 (defn user-country
   "Return user's country id"
