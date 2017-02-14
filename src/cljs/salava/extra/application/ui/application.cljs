@@ -293,9 +293,17 @@
      (if (not (:user-id @state))
        [:div
         [country-selector state]
-        [autocomplete state]
-        [text-field :name "Badge name" "search by badge name" state]
-        [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]
+        [:div
+         [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
+              :href "#"}
+          (if @show-advanced-search
+            (t :gallery/Hideadvancedsearch)
+            (t :gallery/Showadvancedsearch))]]
+        (if  @show-advanced-search
+          [:div
+           [autocomplete state]
+           [text-field :name "Badge name" "search by badge name" state]
+           [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])
         [:div.form-group
           [:label {:for   "input-email-notifications"
                    :class "col-md-3"}
