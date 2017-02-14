@@ -106,8 +106,7 @@
 
 (defn get-badge-advert [ctx id user_id]
   (let [badge-advert (select-badge-advert {:id id :user_id user_id} (into {:result-set-fn first} (u/get-db ctx)))]
-    ;add markdown parser for :info
-    badge-advert))
+    (update badge-advert :info u/md->html)))
 
 (defn user-country
   "Return user's country id"
