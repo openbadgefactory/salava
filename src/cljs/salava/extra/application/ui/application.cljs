@@ -17,14 +17,13 @@
             [cemerick.url :as url]
             [salava.extra.application.schemas :as schemas]
             [salava.core.i18n :as i18n :refer [t]]))
+
+
+
 ;;Modal
-
-
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
-
-
 
 (defn hashtag? [text]
   (re-find #"^#" text))
@@ -36,7 +35,7 @@
     text))
 
 (defn fetch-badges [state]
-  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags]} @state
+  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (ajax/GET
@@ -45,13 +44,42 @@
                 :name      (subs-hashtag name)
                 :tags      (map #(subs-hashtag %) tags)
                 :issuer    (trim issuer-name)
-                :order     (trim order)}
+                :order     (trim order)
+                :followed show-followed-only}
       :handler (fn [data]
                  (swap! state assoc :applications (:applications data)))
       :finally (fn []
                  (do
                                         ;(navigate-to (str "/gallery/application?country=" (trim country-selected) "&name-tag=" (subs-hashtag name-tag) "&issuer=" (trim issuer-name)  "&order=" (trim order)) )
                    (ajax-stop ajax-message-atom)))})))
+
+(defn add-to-followed
+  "set advert to connections"
+  [badge-advert-id data-atom state]
+  (ajax/POST
+    (path-for (str "/obpv1/application/create_connection_badge_advert/" badge-advert-id))
+    {:handler (fn [data]
+                (if (= "success")
+                  (do ;set current data-atom to followed true
+                    (swap! data-atom assoc :followed 1)
+                    (fetch-badges state))
+                  ))}))
+
+(defn remove-from-followed
+  "remove advert from connections"
+  ([badge-advert-id state]
+   (remove-from-followed badge-advert-id nil state))
+  ([badge-advert-id data-atom state]
+   (ajax/DELETE
+    (path-for (str "/obpv1/application/delete_connection_badge_advert/" badge-advert-id))
+    {:handler (fn [data]
+                (if (= "success")
+                  (do ;set current data-atom to followed false
+                    (if data-atom
+                      (swap! data-atom assoc :followed 0))
+                    (fetch-badges state))
+                  ))})))
+
 
 (defn taghandler [state value]
   (let [tags (cursor state [:tags])
@@ -124,28 +152,36 @@
 
 
 (defn badge-content-modal-render [data state]
-  [:div {:id "badge-content"}
-   [:div.modal-body
-    [:div.row
-     [:div.col-md-12
-      [:div {:class "text-right"}
-       
-       [:button {:type         "button"
-                 :class        "close"
-                 :data-dismiss "modal"
-                 :aria-label   "OK"}
-        [:span {:aria-hidden             "true"
-                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
-    [modal-content data state]]
-   [:div.modal-footer
-    [:div {:class "badge-content"}
-     [:div {:class "badge-contents col-xs-12"}
-      [:div.col-md-3 [:div]]
-      [:div {:class "col-md-9 badge-info"}
-       [:div.pull-left
-        [:a {:href (:application_url data) :target "_"} " >> Apply now"]]
-       [:div.pull-right ;[:a "to wishlist"]
-        ]]]]]])
+  
+  (let [data-atom (atom data) ]
+    (fn []
+      [:div {:id "badge-content"}
+       [:div.modal-body
+        [:div.row
+         [:div.col-md-12
+          [:div {:class "text-right"}
+           
+           [:button {:type         "button"
+                     :class        "close"
+                     :data-dismiss "modal"
+                     :aria-label   "OK"}
+            [:span {:aria-hidden             "true"
+                    :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
+        [modal-content data state]]
+       [:div.modal-footer
+        [:div {:class "badge-content"}
+         [:div {:class "badge-contents col-xs-12"}
+          [:div.col-md-3 [:div]]
+          [:div {:class "col-md-9 badge-info"}
+           [:div.pull-left
+            [:a {:href (:application_url data) :target "_"} " >> Apply now"]]
+           
+           (if (pos? (:followed @data-atom))
+             [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} "Remove from  wishlist" ]
+              ]
+             [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} "add to wishlist" ]
+              ])
+           ]]]]])))
 
 
 
@@ -250,7 +286,8 @@
   )
 
 (defn gallery-grid-form [state]
-  (let [show-advanced-search (cursor state [:advanced-search])]
+  (let [show-advanced-search (cursor state [:advanced-search])
+        show-followed-only-atom (cursor state [:show-followed-only])]
     [:div {:id "grid-filter"
            :class "form-horizontal"}
      (if (not (:user-id @state))
@@ -259,34 +296,50 @@
         [autocomplete state]
         [text-field :name "Badge name" "search by badge name" state]
         [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]
+        [:div.form-group
+          [:label {:for   "input-email-notifications"
+                   :class "col-md-3"}
+           "Näytä suosikit"]
+          [:div.col-md-9
+           [:label
+            [:input {:name      "visibility"
+                     :type      "checkbox"
+                     :on-change #(do
+                                   (reset! show-followed-only-atom (if @show-followed-only-atom false true))
+                                   (fetch-badges state)) ;#(toggle-visibility visibility-atom)
+                     :checked   @show-followed-only-atom}] (str " ") (if @show-followed-only-atom "suosikit" "kaikki")]
+           
+           ]]
         ])
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state search-timer]]))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
+  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data
         badge-id (or badge_content_id id)]
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       (if image_file
+    [:div {:class "media grid-container"}
+     (if (pos? followed)
+       [:a {:href "#" :on-click #(remove-from-followed id state)} "x"])
+     [:div.media-content
+      (if image_file
          [:div.media-left
           [:a {:href "#" :on-click #(open-modal id state) :title name}
            [:img {:src (str "/" image_file)
-                 :alt name}]]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
-          name]]
-        [:div.media-issuer
-         [:a {:href issuer_content_url
-              :target "_blank"
-              :title issuer_content_name} issuer_content_name]]
-        [:div.media-button
-         [:button {:class "btn btn-default" :on-click #(do (.preventDefault %)(open-modal id state))
-                   } "Get this badge"]]
-        
-        [:div.media-description description]]]
-      [:div.media-bottom
+                  :alt name}]]])
+      [:div.media-body
+       [:div.media-heading
+        [:a.heading-link {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
+         name]]
+       [:div.media-issuer
+        [:a {:href issuer_content_url
+             :target "_blank"
+             :title issuer_content_name} issuer_content_name]]
+       [:div.media-button
+        [:button {:class "btn btn-default" :on-click #(do (.preventDefault %)(open-modal id state))
+                  } "Get this badge"]]
        
+        [:div.media-description description]]]
+     [:div.media-bottom
+      
        ;(admin-gallery-badge badge-id "badges" state init-data)
        ]]))
 
@@ -311,12 +364,9 @@
                                    [:div {:id "badge-gallery"}
                                     [m/modal-window]
                                     [gallery-grid-form state]
-                                    
-                                    (if (:ajax-message @state)
-                                      [:div.ajax-message
-                                       [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                                       [:span (:ajax-message @state)]]
-                                      [gallery-grid state])])
+                                    [gallery-grid state]
+                                    ;(if (:ajax-message @state) [:div.ajax-message [:i {:class "fa fa-cog fa-spin fa-2x "}] [:span (:ajax-message @state)]][gallery-grid state])
+                                    ])
                  :component-did-mount (fn []
                                         (if (:init-id @state) (open-modal (:init-id @state) state))
                                         )}))
@@ -338,8 +388,7 @@
   (let [{:keys [country issuer-name order id name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
         query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
     (-> query-params
-              (assoc :country (if id "all" (or country (session/get-in [:user :country] "all"))) ))
-    ))
+        (assoc :country (if id "all" (or country (session/get-in [:user :country] "all")))))))
 
 
 (defn handler [site-navi params]
@@ -347,6 +396,7 @@
         init-values (init-values)
         badge_content_id (:badge_content_id params)
         state (atom {:init-id (:id init-values)
+                     :show-followed-only false
                      :tags ()
                      :value #{}
                      :user-id user-id

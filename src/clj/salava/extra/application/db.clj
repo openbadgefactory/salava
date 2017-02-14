@@ -36,6 +36,19 @@
     (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
 
 
+
+
+(defn contains-tag? [query-tags tags]
+  (subset? (set query-tags) (set tags)))
+
+(defn tag-parser [tags]
+  (if tags
+    (string/split tags #",")))
+
+(defn filter-tags [search tags]
+  (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
+
+
 (defn map-collection
   ([where value]
    (map-collection where value true))
@@ -49,39 +62,32 @@
   (let [where-params {}]
     
     (-> where-params
-                                        ;(loop-tags tags)
         (conj (map-collection " and ba.id = ? " id ))
-        (conj (map-collection " and ba.country = ? " country (not= country "all")))        
+        (conj (map-collection " and ba.country = ? " country (not= country "all")))
         (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
-        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))) ))
+        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))
+        )))
 
  
 
 
-(defn contains-tag? [query-tags tags]
-  (subset? (set query-tags) (set tags)))
-
-(defn tag-parser [tags]
-  (if tags
-    (string/split tags #",")))
-
-(defn filter-tags [search tags]
-  (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
-
-(defn get-badge-adverts [ctx country tags name issuer-name order id]
+(defn get-badge-adverts [ctx country tags name issuer-name order id user-id show-followed-only]
   (let [where-params (badge-adverts-where-params country name issuer-name id)
-        where  (apply str (keys where-params))
-        params  (vec (vals where-params))
+        user-id (or user-id "NULL") ;set null if nil
+        where   (str (apply str (keys where-params))  (if show-followed-only  " AND scba.user_id IS NOT NULL ")) ;add IS NOT NULL when user want only followed adverts
+        params (cons user-id (vec (vals where-params)))  ;add user-id to params 
         tags (vec (vals tags))
         order (cond
                 (= order "mtime") "ORDER BY ba.mtime DESC"
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
                 :else "") 
-        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url FROM badge_advert AS ba
+        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
        JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
-       LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0
+       LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
+       LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = ?) 
+       where ba.deleted = 0
        "
                    where
                    "GROUP BY ba.id "
@@ -89,40 +95,17 @@
         search (jdbc/with-db-connection
                  [conn (:connection (u/get-db ctx))]
                  (jdbc/query conn (into [query] params)))]
-    
     (if (not-empty tags)
       (filter-tags search tags)
       search)))
 
 
-(def ctx {:config {:core {:site-name "Perus salava"
- 
-                          :share {:site-name "jeejjoee"
-                                  :hashtag "KovisKisko"}
-                          
-                          :site-url "http://localhost:3000"
-                          
-                          :base-path "/app"
-                          
-                          :asset-version 2
-                          
-                          :languages [:en :fi]
-                          
-                          :plugins [:badge :page :gallery :file :user :oauth :admin :social :registerlink :mail]
 
-                          :http {:host "localhost" :port 3000 :max-body 100000000}
-                          :mail-sender "sender@example.com"}
-                   :user {:email-notifications true}}
-          :db (hikari-cp.core/make-datasource {:adapter "mysql",
-                                               :username "root",
-                                               :password "isokala",
-                                               :database-name "salava_extra1",
-                                               :server-name "localhost"})})
 
-(get-badge-adverts ctx nil nil nil nil nil 1)
 
-(defn get-badge-advert [ctx id]
-  (let [badge-advert (select-badge-advert {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
+
+(defn get-badge-advert [ctx id user_id]
+  (let [badge-advert (select-badge-advert {:id id :user_id user_id} (into {:result-set-fn first} (u/get-db ctx)))]
     ;add markdown parser for :info
     badge-advert))
 
@@ -197,4 +180,22 @@
       (log/error "unpublish-badge: failed to remove badge advert")
       (log/error (.toString ex))
       {:success false})))
+
+(defn create-connection-badge-advert! [ctx user_id badge_advert_id]
+  (try+
+   (insert-connect-badge-advert<! {:user_id user_id :badge_advert_id badge_advert_id}  (u/get-db ctx))
+   
+   {:status "success"}
+   (catch Object _
+     {:status "error"}
+     )))
+
+(defn delete-connection-badge-advert! [ctx user_id  badge_advert_id]
+  (try+
+   (delete-connect-badge-advert! {:user_id user_id :badge_advert_id badge_advert_id} (u/get-db ctx))
+   
+   {:status "success" }
+   (catch Object _
+     {:status "error"}
+     )))
 

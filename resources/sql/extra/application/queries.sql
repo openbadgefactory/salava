@@ -47,10 +47,13 @@ LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_i
 GROUP BY ba.id
 
 --name: select-badge-advert
-SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url FROM badge_advert AS ba
+SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
 JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
 JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
-LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0 AND ba.id = :id
+LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
+LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = :user_id)
+where ba.deleted = 0 AND ba.id = :id
+ 
 
 
 -- name: select-badge-advert-countries
@@ -72,3 +75,13 @@ SELECT name FROM badge_content ORDER BY name LIMIT 1000
 -- name: unpublish-badge-advert-by-remote!
 UPDATE badge_advert SET deleted = 1, mtime = UNIX_TIMESTAMP()
 WHERE remote_url = :remote_url AND remote_id = :remote_id AND remote_issuer_id = :remote_issuer_id
+
+
+
+--name: insert-connect-badge-advert<!
+--add new connect with badge advert
+INSERT IGNORE INTO social_connections_badge_advert (user_id, badge_advert_id, ctime)
+                   VALUES (:user_id, :badge_advert_id, UNIX_TIMESTAMP())
+		   
+--name: delete-connect-badge-advert!
+DELETE FROM social_connections_badge_advert WHERE user_id = :user_id  AND badge_advert_id = :badge_advert_id
