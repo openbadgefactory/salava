@@ -16,7 +16,7 @@
     (context "/obpv1/application" []
              :tags ["application"]
              (GET "/" [country tags name issuer order id followed]
-                  ;:return [{:iframe s/Str :language s/Str}]
+                  :return schemas/BadgeAdverts
                   :summary "Get badge adverts"
                   :current-user current-user
                   :auth-rules access/authenticated
@@ -28,7 +28,7 @@
                     (ok (into {:applications applications} countries))))
              
              (GET "/public_badge_advert_content/:id" []
-                  ;:return [{:iframe s/Str :language s/Str}]
+                  :return schemas/BadgeAdvertModal
                   :summary "Get badge advert"
                   :current-user current-user
                   :path-params [id :- s/Int]
