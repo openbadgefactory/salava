@@ -326,7 +326,8 @@
         badge-id (or badge_content_id id)]
     [:div {:class "media grid-container"}
      (if (pos? followed)
-       [:a {:href "#" :on-click #(remove-from-followed id state)} "x"])
+       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title "Remove from following"} [:i {:class "fa fa-bookmark"}]]
+       )
      [:div.media-content
       (if image_file
          [:div.media-left
@@ -334,16 +335,16 @@
            [:img {:src (str "/" image_file)
                   :alt name}]]])
       [:div.media-body
-       [:div.media-heading
-        [:a.heading-link {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
+       [:div {:class "media-heading"}
+        [:a {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
          name]]
        [:div.media-issuer
         [:a {:href issuer_content_url
              :target "_blank"
              :title issuer_content_name} issuer_content_name]]
        [:div.media-button
-        [:button {:class "btn btn-default" :on-click #(do (.preventDefault %)(open-modal id state))
-                  } "Get this badge"]]
+        [:button {:class "btn btn-advert" :on-click #(do (.preventDefault %)(open-modal id state))
+                  } [:i.apply-now-icon {:class "fa fa-angle-double-right"}] " Get this badge"]]
        
         [:div.media-description description]]]
      [:div.media-bottom
@@ -369,7 +370,7 @@
 
 (defn content [state]
   (create-class {:reagent-render (fn []
-                                   [:div {:id "badge-gallery"}
+                                   [:div {:id "badge-advert"}
                                     [m/modal-window]
                                     [gallery-grid-form state]
                                     [gallery-grid state]
@@ -380,7 +381,6 @@
                                         )}))
 
 (defn init-data [state init-params]
-
   (ajax/GET
    (path-for "/obpv1/application/")
    {:params  init-params
