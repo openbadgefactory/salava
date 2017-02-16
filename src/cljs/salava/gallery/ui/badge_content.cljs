@@ -14,7 +14,7 @@
             ))
 
 (defn badge-content [{:keys [badge public_users private_user_count]} messages?]
-  (let [{:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description html_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge
+  (let [{:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge
         show-messages (atom messages?)
         ]
     (fn []
@@ -57,7 +57,7 @@
                       :target "_blank"} (t :badge/Opencriteriapage)]]]
                   [:div.row
                    [:div.col-md-12
-                    {:dangerouslySetInnerHTML {:__html html_content}}]]]]
+                    {:dangerouslySetInnerHTML {:__html criteria_content}}]]]]
             ]
             (if (or (> (count public_users) 0) (> private_user_count 0))
               [:div.recipients

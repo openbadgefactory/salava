@@ -12,7 +12,7 @@
             [salava.core.helper :refer [dump private?]]
             [salava.social.db :as so]
             [clojure.tools.logging :as log]
-            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64 str->epoch]]
+            [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64 str->epoch md->html]]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
@@ -147,7 +147,7 @@
 (defn get-badge
   "Get badge by id"
   [ctx badge-id user-id]
-  (let [badge (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
+  (let [badge (update (select-badge {:id badge-id} (into {:result-set-fn first} (get-db ctx))) :criteria_content md->html)
         owner? (= user-id (:owner badge))
         ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
         ;followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))
@@ -356,7 +356,7 @@
   "Get badge settings"
   [ctx badge-id user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (let [badge (select-badge-settings {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
+    (let [badge (update (select-badge-settings {:id badge-id} (into {:result-set-fn first} (get-db ctx))) :criteria_content md->html)
           tags (select-taglist {:badge_ids [badge-id]} (get-db ctx))]
       (assoc-badge-tags badge tags))))
 
@@ -434,7 +434,8 @@
 (defn badges-by-tag-and-owner
   "Get badges by list of tag names and owner's user-id"
   [ctx tag user-id]
-  (select-badges-by-tag-and-owner {:badge_tag tag :user_id user-id} (get-db ctx)))
+  (map #(update % :criteria_content md->html)
+       (select-badges-by-tag-and-owner {:badge_tag tag :user_id user-id} (get-db ctx))))
 
 (defn badge-viewed
   "Save information about viewing a badge. If user is not logged in user-id is nil."

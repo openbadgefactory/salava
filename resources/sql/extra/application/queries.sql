@@ -1,8 +1,9 @@
 -- name: insert-badge-advert<!
 INSERT INTO badge_advert
    (remote_url, remote_id, remote_issuer_id, info, application_url,
-    issuer_content_id, badge_content_id, criteria_content_id, kind,
-    country, not_before, not_after, ctime, mtime)
+    application_url_label, issuer_content_id, badge_content_id,
+    criteria_content_id, criteria_url, kind, country, not_before, not_after,
+    ctime, mtime)
 VALUES
    (:remote_url, :remote_id, :remote_issuer_id, :info, :application_url,
     :issuer_content_id, :badge_content_id, :criteria_content_id, :kind,
@@ -12,25 +13,26 @@ VALUES
 UPDATE badge_advert SET
     remote_url = :remote_url, remote_id = :remote_id,
     remote_issuer_id = :remote_issuer_id, info = :info,
-    application_url = :application_url, issuer_content_id = :issuer_content_id,
-    badge_content_id = :badge_content_id, criteria_content_id = :criteria_content_id,
+    application_url = :application_url, application_url_label = :application_url_label,
+    issuer_content_id = :issuer_content_id, badge_content_id = :badge_content_id,
+    criteria_content_id = :criteria_content_id, criteria_url = :criteria_url,
     kind = :kind, country = :country, not_before = :not_before, not_after = :not_after,
     mtime = UNIX_TIMESTAMP()
 WHERE id = :id
 
 -- name: replace-badge-advert!
 INSERT INTO badge_advert
-   (remote_url, remote_id, remote_issuer_id, info, application_url,
-    issuer_content_id, badge_content_id, criteria_content_id, kind,
+   (remote_url, remote_id, remote_issuer_id, info, application_url, application_url_label,
+    issuer_content_id, badge_content_id, criteria_content_id, criteria_url, kind,
     country, not_before, not_after, ctime, mtime)
 VALUES
-   (:remote_url, :remote_id, :remote_issuer_id, :info, :application_url,
-    :issuer_content_id, :badge_content_id, :criteria_content_id, :kind,
+   (:remote_url, :remote_id, :remote_issuer_id, :info, :application_url, :application_url_label,
+    :issuer_content_id, :badge_content_id, :criteria_content_id, :criteria_url, :kind,
     :country, :not_before, :not_after, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE
-    info = :info, application_url = :application_url,
+    info = :info, application_url = :application_url, application_url_label = :application_url_label,
     issuer_content_id = :issuer_content_id, badge_content_id = :badge_content_id,
-    criteria_content_id = :criteria_content_id, kind = :kind,
+    criteria_content_id = :criteria_content_id, criteria_url = :criteria_url, kind = :kind,
     country = :country, not_before = :not_before, not_after = :not_after,
     deleted = 0, mtime = UNIX_TIMESTAMP()
 
@@ -48,13 +50,17 @@ GROUP BY ba.id
 
 
 --name: select-badge-advert
-SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ic.email AS issuer_contact, ic.image_file AS issuer_image, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
-JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
-JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
-LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
-LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = :user_id)
-where ba.deleted = 0 AND ba.id = :id
- 
+
+SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ba.criteria_url, ic.email AS issuer_contact,
+       ic.image_file AS issuer_image, ba.info, bc.image_file, ic.name AS issuer_content_name,
+       ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before,
+       ba.not_after, ba.kind, ba.application_url, ba.application_url_label, IF(scba.user_id, true, false) AS followed
+       FROM badge_advert AS ba
+       JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
+       JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
+       LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
+       LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = :user_id)
+       WHERE ba.deleted = 0 AND ba.id = :id
 
 
 -- name: select-badge-advert-countries
