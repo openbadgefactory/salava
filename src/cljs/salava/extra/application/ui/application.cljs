@@ -7,6 +7,7 @@
             [clojure.walk :refer [keywordize-keys]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.ajax-utils :as ajax]
+            [salava.badge.ui.helper :as bh]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [path-for unique-values current-path navigate-to]]
             [reagent.session :as session]
@@ -40,11 +41,11 @@
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (ajax/GET
      (path-for (str "/obpv1/application/"))
-     {:params  {:country   (trim country-selected)
-                :name      (subs-hashtag name)
-                :tags      (map #(subs-hashtag %) tags)
-                :issuer    (trim issuer-name)
-                :order     (trim order)
+     {:params  {:country  (trim country-selected)
+                :name     (subs-hashtag name)
+                :tags     (map #(subs-hashtag %) tags)
+                :issuer   (trim issuer-name)
+                :order    (trim order)
                 :followed show-followed-only}
       :handler (fn [data]
                  (swap! state assoc :applications (:applications data)))
@@ -77,8 +78,7 @@
                   (do ;set current data-atom to followed false
                     (if data-atom
                       (swap! data-atom assoc :followed 0))
-                    (fetch-badges state))
-                  ))})))
+                    (fetch-badges state))))})))
 
 
 (defn taghandler [state value]
@@ -117,27 +117,41 @@
     (s/split tags #",")))
 
 (defn modal-content [data state] 
-  (let [{:keys [image_file name info issuer_content_name tags]} data
+  (let [{:keys [image_file name info issuer_content_name tags  issuer_content_name issuer_content_url issuer_contact issuer_image description criteria_url]} data
         tags (tag-parser tags)
         country (:country-selected @state)]
     (fn []
       [:div {:id "badge-contents"}
        [:div.row
         [:div {:class "col-md-3 badge-image modal-left"}
-         [:img {:src (str "/" image_file)}]
-         [:h3.heading-link 
-          name]
-         [:p
-          issuer_content_name]]
+         [:img {:src (str "/" image_file)}]]
         [:div {:class "col-md-9 badge-info"}
          [:div.rowcontent
-                                        ;[:h1.uppercase-header name]
-          [:h2.uppercase-header "How get this badge"]
-          [:div.row
-             [:div.col-md-12
-              {:dangerouslySetInnerHTML {:__html info}}]]
-          [:h2.uppercase-header "keywords"]
-          [:div.row
+            [:h1.uppercase-header name]
+            [:div
+             (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+             ;(bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+             [:div.row
+              [:div {:class "col-md-12 description"}
+               description]]
+             ;; do when got criteria url
+             ;[:div.row
+             ;  [:div {:class "col-md-12 badge-info"}
+             ;     [:h2.uppercase-header (t :badge/Criteria)]
+             ;  [:div.row
+             ;   [:div.col-md-12
+             ;    [:a {:href   criteria_url
+             ;         :target "_blank"} (t :badge/Opencriteriapage)]]]
+                                        ;     ]]
+             [:div.row
+              [:div {:class "col-md-12 badge-info"}
+               [:h2.uppercase-header "How get this badge"]]
+              [:div.row
+               [:div.col-md-12
+                {:dangerouslySetInnerHTML {:__html info}}]]]
+             ]
+ 
+           [:div.row
            (if (not (empty? tags))
              (into [:div {:class "col-md-12"}]
                    (for [tag tags]
@@ -148,7 +162,11 @@
                                        (set-to-autocomplete state tag))
                           :data-dismiss "modal"}
                       (str "#" tag )]
-                     )))]]]]])))
+                     )))] ]
+
+
+         
+         ]]])))
 
 
 (defn badge-content-modal-render [data state]
@@ -257,25 +275,21 @@
 
 
 (defn autocomplete [state]
-  (let [tags (cursor state [:tags])
+  (let [tags  (cursor state [:tags])
         value (cursor state [:value])
-        items (cursor state [:items])
-        ]
+        items (cursor state [:items])]
     (fn []
       [:div.form-group
        [:label {:class "control-label col-sm-2" :for "autocomplete"} (str "keywords" ":")]
        [:div.col-sm-10
         [multiple-autocomplete
-         {:value @value
-          :cb    (fn [item] (do
-                              (swap! value conj (:key item))
-                              (taghandler state @value)
-                              ))
-                                        ; FIXME: Remove-cb is called with value, not item
+         {:value     @value
+          :cb        (fn [item] (do
+                                  (swap! value conj (:key item))
+                                  (taghandler state @value)))
           :remove-cb (fn [x] (do
                                (swap! value disj x)
                                (taghandler state @value)))
-          
           :search-fields   [:value]
           :items           @items
           :placeholder     "search by badge name or keywords"
@@ -400,24 +414,24 @@
 
 
 (defn handler [site-navi params]
-  (let [user-id (:user-id params)
-        init-values (init-values)
+  (let [user-id          (:user-id params)
+        init-values      (init-values)
         badge_content_id (:badge_content_id params)
-        state (atom {:init-id (:id init-values)
-                     :show-followed-only false
-                     :tags ()
-                     :value #{}
-                     :user-id user-id
-                     :badges []
-                     :countries []
-                     :country-selected  (or (:country init-values) (session/get-in [:user :country] "all"))
-                     :advanced-search false
-                     :name (or (:name init-values) "")
-                     :issuer-name (or (:issuer-name init-values) "")
-                     :order  (or (:order init-values) "mtime")
-                     :timer nil
-                     :items #{}
-                     :ajax-message nil})]
+        state            (atom {:init-id            (:id init-values)
+                                :show-followed-only false
+                                :tags               ()
+                                :value              #{}
+                                :user-id            user-id
+                                :badges             []
+                                :countries          []
+                                :country-selected   (or (:country init-values) (session/get-in [:user :country] "all"))
+                                :advanced-search    false
+                                :name               (or (:name init-values) "")
+                                :issuer-name        (or (:issuer-name init-values) "")
+                                :order              (or (:order init-values) "mtime")
+                                :timer              nil
+                                :items              #{}
+                                :ajax-message       nil})]
     (init-data state init-values)
     (autocomplete-search state (:country init-values))
     (fn []

@@ -38,11 +38,14 @@
                                   (dissoc :issuer_content_id :badge_content_id
                                                        :criteria_content_id :ctime :deleted :remote_url :remote_id :remote_issuer_id)
                                     (assoc :followed s/Int
-                                           :image_file s/Str
-                                           :issuer_content_url s/Str
-                                           :issuer_content_name s/Str
+                                           :image_file (s/maybe s/Str)
+                                           :description (s/maybe s/Str)
+                                           :issuer_content_url  (s/maybe s/Str)
+                                           :issuer_content_name (s/maybe s/Str)
                                            :name s/Str
-                                           :tags (s/maybe s/Str))))
+                                           (s/optional-key :tags) (s/maybe s/Str)
+                                           (s/optional-key :issuer_contact) (s/maybe s/Str)
+                                           (s/optional-key :issuer_image) (s/maybe s/Str))))
 
 (s/defschema BadgeAdverts {:applications [(-> BadgeAdvert
                                                (dissoc :issuer_content_id :badge_content_id

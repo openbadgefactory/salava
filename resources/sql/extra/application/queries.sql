@@ -46,8 +46,9 @@ INNER JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
 LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
 GROUP BY ba.id
 
+
 --name: select-badge-advert
-SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
+SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ic.email AS issuer_contact, ic.image_file AS issuer_image, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, application_url, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
 JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
 JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
 LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
