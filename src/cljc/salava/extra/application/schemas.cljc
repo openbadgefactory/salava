@@ -12,9 +12,11 @@
                           :remote_issuer_id s/Str
                           :info s/Str
                           :application_url s/Str
+                          :application_url_label (s/maybe s/Str)
                           :issuer_content_id s/Str
                           :badge_content_id s/Str
                           :criteria_content_id s/Str
+                          :criteria_url s/Str
                           :kind (s/enum "application" "advert")
                           :country s/Str
                           :not_before s/Int
