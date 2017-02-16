@@ -304,21 +304,26 @@
            [autocomplete state]
            [text-field :name "Badge name" "search by badge name" state]
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])
-        [:div.form-group
-          [:label {:for   "input-email-notifications"
-                   :class "col-md-3"}
-           "Näytä suosikit"]
-          [:div.col-md-9
-           [:label
-            [:input {:name      "visibility"
-                     :type      "checkbox"
-                     :on-change #(do
-                                   (reset! show-followed-only-atom (if @show-followed-only-atom false true))
-                                   (fetch-badges state)) ;#(toggle-visibility visibility-atom)
-                     :checked   @show-followed-only-atom}] (str " ") (if @show-followed-only-atom "suosikit" "kaikki")]
-           
-           ]]
+        
         ])
+     [:div {:class "form-group wishlist-buttons"}
+          [:label {:for   "input-email-notifications"
+                   :class "col-md-2"}
+           "Näytä suosikit"]
+         [:div.col-md-10
+          [:div.buttons
+           [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active") )
+                     :id "btn-all"
+                     :on-click #(do
+                                  (reset! show-followed-only-atom (if @show-followed-only-atom false true))
+                                  (fetch-badges state))}
+            (t :core/All)]
+           [:button {:class (str "btn btn-default " (if @show-followed-only-atom "btn-active"))
+                     :id "btn-all"
+                     :on-click #(do
+                                  (reset! show-followed-only-atom (if @show-followed-only-atom false true))
+                                  (fetch-badges state))}
+             [:i {:class "fa fa-bookmark"}] " wishlist"]]]]
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state search-timer]]))
 
 (defn badge-grid-element [element-data state]
