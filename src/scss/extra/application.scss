@@ -8,6 +8,10 @@
     margin-top:-10px;
 }
 
+#tag{
+    margin-right: 3px;
+}
+
 
 .btn-application{
     border: 2px solid;
@@ -107,6 +111,14 @@
 		color:  $badge-title;
 		border-radius: 2px;
 		font-size: 14px;
+		a {
+                    cursor: pointer;
+		    &:hover {
+			color:$badge-title-hover;
+		    }
+		}
+
+	
 	    }
 
         }

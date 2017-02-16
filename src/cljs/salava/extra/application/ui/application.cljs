@@ -3,7 +3,7 @@
             [reagent.session :as session]
             [reagent-modals.modals :refer [close-modal!]]
             [reagent-modals.modals :as m]
-            [clojure.string :refer [trim]]
+            [clojure.string :refer [trim blank?]]
             [clojure.walk :refer [keywordize-keys]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.ajax-utils :as ajax]
@@ -127,46 +127,30 @@
          [:img {:src (str "/" image_file)}]]
         [:div {:class "col-md-9 badge-info"}
          [:div.rowcontent
-            [:h1.uppercase-header name]
-            [:div
-             (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-             ;(bh/creator-label-image-link creator_name creator_url creator_email creator_image)
-             [:div.row
-              [:div {:class "col-md-12 description"}
-               description]]
-             ;; do when got criteria url
-             ;[:div.row
-             ;  [:div {:class "col-md-12 badge-info"}
-             ;     [:h2.uppercase-header (t :badge/Criteria)]
-             ;  [:div.row
-             ;   [:div.col-md-12
-             ;    [:a {:href   criteria_url
-             ;         :target "_blank"} (t :badge/Opencriteriapage)]]]
-                                        ;     ]]
-             [:div.row
-              [:div {:class "col-md-12 badge-info"}
-               [:h2.uppercase-header "How get this badge"]]
-              [:div.row
-               [:div.col-md-12
-                {:dangerouslySetInnerHTML {:__html info}}]]]
-             ]
- 
-           [:div.row
+          [:h1.uppercase-header name]
+          (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+          [:div {:class "description"}
+           description]
+          (if-not (blank? criteria_url)
+            [:div {:class "badge-info"}
+             [:h2.uppercase-header (t :badge/Criteria)]
+             [:div
+              [:a {:href   criteria_url
+                   :target "_blank"} (t :badge/Opencriteriapage)]]])
+          [:div {:class " badge-info"}
+           [:h2.uppercase-header "How get this badge"]
+           [:div {:dangerouslySetInnerHTML {:__html info}}]]
+           
+          [:div
            (if (not (empty? tags))
-             (into [:div {:class "col-md-12"}]
+             (into [:div]
                    (for [tag tags]
-                     ;[:div tag]
-                     [:a {:href "#"
-                          :id "tag"
-                          :on-click #(do
-                                       (set-to-autocomplete state tag))
+                     [:a {:href         "#"
+                          :id           "tag"
+                          :on-click     #(do
+                                           (set-to-autocomplete state tag))
                           :data-dismiss "modal"}
-                      (str "#" tag )]
-                     )))] ]
-
-
-         
-         ]]])))
+                      (str "#" tag )])))]]]]])))
 
 
 (defn badge-content-modal-render [data state]
@@ -192,12 +176,14 @@
           [:div.col-md-3 [:div]]
           [:div {:class "col-md-9 badge-info"}
            [:div.pull-left
-            [:a {:href (:application_url data) :target "_"} " >> Apply now"]]
+            [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] " Get this badge"]
+            ;[:a  " >> Apply now"]
+            ]
            
            (if (pos? (:followed @data-atom))
-             [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} "Remove from  wishlist" ]
+             [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] " Remove from  wishlist" ]
               ]
-             [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} "add to wishlist" ]
+             [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] " Add to wishlist" ]
               ])
            ]]]]])))
 
@@ -357,7 +343,7 @@
              :target "_blank"
              :title issuer_content_name} issuer_content_name]]
        [:div.media-button
-        [:button {:class "btn btn-advert" :on-click #(do (.preventDefault %)(open-modal id state))
+        [:a {:class "btn btn-advert" :on-click #(do (.preventDefault %)(open-modal id state))
                   } [:i.apply-now-icon {:class "fa fa-angle-double-right"}] " Get this badge"]]
        
         [:div.media-description description]]]
