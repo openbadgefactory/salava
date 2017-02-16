@@ -37,6 +37,7 @@
                  [prismatic/schema "1.1.3"]
                  [clojurewerkz/propertied "1.2.0"]
                  [com.draines/postal "2.0.2" :exclusions [commons-codec]]
+                 [org.clojure/core.async "0.2.395"]
 
                  [clj-http "3.4.1"]
                  [enlive "1.1.6"]
