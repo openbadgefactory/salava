@@ -178,14 +178,14 @@
           [:div.col-md-3 [:div]]
           [:div {:class "col-md-9 badge-info"}
            [:div.pull-left
-            [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (blank? (:application_url_label @data-atom)) " Get this badge" (str " " (:application_url_label @data-atom)))]
+            [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (blank? (:application_url_label @data-atom)) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
             ;[:a  " >> Apply now"]
             ]
            
            (if (pos? (:followed @data-atom))
-             [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] " Remove from  wishlist" ]
+             [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites)) ]
               ]
-             [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] " Add to wishlist" ]
+             [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites)) ]
               ])
            ]]]]])))
 
@@ -268,7 +268,7 @@
         items (cursor state [:items])]
     (fn []
       [:div.form-group
-       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str "keywords" ":")]
+       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords)  ":")]
        [:div.col-sm-10
         [multiple-autocomplete
          {:value     @value
@@ -280,8 +280,7 @@
                                (taghandler state @value)))
           :search-fields   [:value]
           :items           @items
-          :placeholder     "search by badge name or keywords"
-          :no-results-text "ei löytyny"
+          :no-results-text (t :extra-application/Notfound)
           :control-class   "form-control"}]
         ]])
     )
@@ -304,14 +303,14 @@
         (if  @show-advanced-search
           [:div
            [autocomplete state]
-           [text-field :name "Badge name" "search by badge name" state]
+           [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])
         
         ])
      [:div {:class "form-group wishlist-buttons"}
           [:label {:for   "input-email-notifications"
                    :class "col-md-2"}
-           "Näytä suosikit"]
+           (str (t :core/Show) ":")]
          [:div.col-md-10
           [:div.buttons
            [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active") )
@@ -325,7 +324,7 @@
                      :on-click #(do
                                   (reset! show-followed-only-atom (if @show-followed-only-atom false true))
                                   (fetch-badges state))}
-             [:i {:class "fa fa-bookmark"}] " wishlist"]]]]
+             [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]]
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state search-timer]]))
 
 (defn badge-grid-element [element-data state]
@@ -333,7 +332,7 @@
         badge-id (or badge_content_id id)]
     [:div {:class "media grid-container"}
      (if (pos? followed)
-       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title "Remove from following"} [:i {:class "fa fa-bookmark"}]]
+       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]]
        )
      [:div.media-content
       (if image_file
@@ -351,7 +350,7 @@
              :title issuer_content_name} issuer_content_name]]
        [:div.media-button
         [:a {:class "btn btn-advert" :on-click #(do (.preventDefault %)(open-modal id state))
-                  } [:i.apply-now-icon {:class "fa fa-angle-double-right"}] " Get this badge"]]
+                  } [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]
        
         [:div.media-description description]]]
      [:div.media-bottom
