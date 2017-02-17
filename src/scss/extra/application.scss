@@ -353,10 +353,14 @@
   display: inline-block;
 }
 .autocomplete__selected-item {
-  display: inline-block;
-  border-radius: 2px;
-  background: #CBFFCA;
-  margin-right: 8px;
+    color: #ffffff;
+    background-color: #7d7178;
+    border-color: #171517;
+    box-shadow: 0px 2px #d8d8d8;
+    display: inline-block;
+    border-radius: 2px;
+    //background: #7d7178;
+    margin-right: 8px;
 }
 .autocomplete__item-text {
   padding: 2px 4px;
@@ -425,14 +429,14 @@
   padding-left: 570px;
 }
 .autocomplete__remove-item-button {
-  color: #444 !important;
+  color: #ffffff !important;
   padding: 2px 4px;
   border-left: 1px solid #fff;
   cursor: pointer;
   border-radius: 0 2px 2px 0;
 }
 .autocomplete__remove-item-button:hover {
-  background: #67ff64;
+  background: #252123;
 }
 .autocomplete__clear-button {
   background: transparent;

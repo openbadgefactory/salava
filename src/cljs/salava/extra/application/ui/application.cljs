@@ -148,6 +148,8 @@
                      [:a {:href         "#"
                           :id           "tag"
                           :on-click     #(do
+                                           
+                                           (swap! state assoc :advanced-search true)
                                            (set-to-autocomplete state tag))
                           :data-dismiss "modal"}
                       (str "#" tag )])))]]]]])))
@@ -176,7 +178,7 @@
           [:div.col-md-3 [:div]]
           [:div {:class "col-md-9 badge-info"}
            [:div.pull-left
-            [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] " Get this badge"]
+            [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (blank? (:application_url_label @data-atom)) " Get this badge" (str " " (:application_url_label @data-atom)))]
             ;[:a  " >> Apply now"]
             ]
            
