@@ -1,7 +1,7 @@
 (ns salava.core.components.pubsub
   (:require [clojure.tools.logging :as log]
             [com.stuartsierra.component :as component]
-            [clojure.core.async :refer [chan pub sub go-loop <! close! unsub-all]]
+            [clojure.core.async :refer [chan pub sub go-loop <! close! unsub-all buffer]]
             [salava.core.util :as u]))
 
 (defn- sub-loop [our-pub]
@@ -27,7 +27,7 @@
 
   (start [this]
     (let [input-chan (chan)
-          our-pub  (pub input-chan :topic)
+          our-pub (pub input-chan :topic (fn [_] (buffer 100)))
           context {:config     (:config config)
                    :db         (:datasource db)
                    :input-chan input-chan}]
