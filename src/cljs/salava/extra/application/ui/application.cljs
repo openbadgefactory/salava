@@ -20,12 +20,6 @@
             [salava.core.i18n :as i18n :refer [t]]))
 
 
-
-;;Modal
-
-(defn ajax-stop [ajax-message-atom]
-  (reset! ajax-message-atom nil))
-
 (defn hashtag? [text]
   (re-find #"^#" text))
 
@@ -35,10 +29,8 @@
     (subs text 1)
     text))
 
-(defn fetch-badges [state]
-  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state
-        ajax-message-atom (cursor state [:ajax-message])]
-    (reset! ajax-message-atom (t :gallery/Searchingbadges))
+(defn fetch-badge-adverts [state]
+  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]    
     (ajax/GET
      (path-for (str "/obpv1/application/"))
      {:params  {:country  (trim country-selected)
@@ -48,11 +40,7 @@
                 :order    (trim order)
                 :followed show-followed-only}
       :handler (fn [data]
-                 (swap! state assoc :applications (:applications data)))
-      :finally (fn []
-                 (do
-                                        ;(navigate-to (str "/gallery/application?country=" (trim country-selected) "&name-tag=" (subs-hashtag name-tag) "&issuer=" (trim issuer-name)  "&order=" (trim order)) )
-                   (ajax-stop ajax-message-atom)))})))
+                 (swap! state assoc :applications (:applications data)))})))
 
 (defn add-to-followed
   "set advert to connections"
@@ -63,8 +51,7 @@
                 (if (= "success")
                   (do ;set current data-atom to followed true
                     (swap! data-atom assoc :followed 1)
-                    (fetch-badges state))
-                  ))}))
+                    (fetch-badge-adverts state))))}))
 
 (defn remove-from-followed
   "remove advert from connections"
@@ -78,20 +65,23 @@
                   (do ;set current data-atom to followed false
                     (if data-atom
                       (swap! data-atom assoc :followed 0))
-                    (fetch-badges state))))})))
+                    (fetch-badge-adverts state))))})))
 
 
-(defn taghandler [state value]
+(defn taghandler
+  "set tag with autocomplete value and accomplish searchs"
+  [state value]
   (let [tags (cursor state [:tags])
-        items (cursor state [:items])]
-    (reset! tags (vals (select-keys @items value)))
-    (fetch-badges state)))
+        autocomplete-items (cursor state [:autocomplete-items])]
+    (reset! tags (vals (select-keys @autocomplete-items value)))
+    (fetch-badge-adverts state)))
 
-(defn get-items-key [items tag]
-  (key (first (filter #(= (str "#" tag ) (val %)) items))))
+(defn get-items-key
+  ""[autocomplete-items tag]
+  (key (first (filter #(= (str "#" tag ) (val %)) autocomplete-items))))
 
 (defn set-to-autocomplete [state tag]
-  (let [key (get-items-key (:items @state) tag)]
+  (let [key (get-items-key (:autocomplete-items @state) tag)]
     (if key
       (do
         (swap! state assoc :value #{key})
@@ -108,7 +98,7 @@
                (let [{:keys [tags names]} data]
                  (swap! state assoc
                         :tags  #{} ;todo: katso jos on toisessakin olemassa
-                        :items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
+                        :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
 
 
 
@@ -134,22 +124,18 @@
             description]
            (if-not (blank? criteria_url)
              [:div {:class "badge-info"}
-              [:h2.uppercase-header (t :badge/Criteria)]
-              [:div
-               [:a {:href   criteria_url
-                    :target "_blank"} (t :badge/Opencriteriapage)]]])]
+              [:a {:href   criteria_url
+                   :target "_blank"} (t :badge/Opencriteriapage)]])]
           [:div {:class " badge-info"}
            [:h2.uppercase-header (t :extra-application/Howtogetthisbadge)]
            [:div {:dangerouslySetInnerHTML {:__html info}}]]
-           
           [:div
            (if (not (empty? tags))
              (into [:div]
                    (for [tag tags]
                      [:a {:href         "#"
                           :id           "tag"
-                          :on-click     #(do
-                                           
+                          :on-click     #(do                                           
                                            (swap! state assoc :advanced-search true)
                                            (set-to-autocomplete state tag))
                           :data-dismiss "modal"}
@@ -214,7 +200,7 @@
     (if @timer-atom
       (js/clearTimeout @timer-atom))
     (reset! timer-atom (js/setTimeout (fn []
-                                        (fetch-badges state)) 500))))
+                                        (fetch-badge-adverts state)) 500))))
 
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
@@ -243,7 +229,7 @@
                 :on-change #(do
                               (reset! country-atom (.-target.value %))
                               (autocomplete-search state @country-atom)
-                              (fetch-badges state))}
+                              (fetch-badge-adverts state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
@@ -267,10 +253,10 @@
 (defn autocomplete [state]
   (let [tags  (cursor state [:tags])
         value (cursor state [:value])
-        items (cursor state [:items])]
+        autocomplete-items (cursor state [:autocomplete-items])]
     (fn []
       [:div.form-group
-       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords)  ":")]
+       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
        [:div.col-sm-10
         [multiple-autocomplete
          {:value     @value
@@ -281,12 +267,30 @@
                                (swap! value disj x)
                                (taghandler state @value)))
           :search-fields   [:value]
-          :items           @items
+          :items           @autocomplete-items
           :no-results-text (t :extra-application/Notfound)
-          :control-class   "form-control"}]
-        ]])
-    )
-  )
+          :control-class   "form-control"}]]])))
+
+
+(defn follow-grid-item [show-followed-only-atom state]
+  [:div {:class "form-group wishlist-buttons"}
+   [:label {:for   "input-email-notifications"
+            :class "col-md-2"}
+    (str (t :core/Show) ":")]
+   [:div.col-md-10
+    [:div.buttons
+     [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active") )
+               :id "btn-all"
+               :on-click #(do
+                            (reset! show-followed-only-atom (if @show-followed-only-atom false true))
+                            (fetch-badge-adverts state))}
+      (t :core/All)]
+     [:button {:class (str "btn btn-default " (if @show-followed-only-atom "btn-active"))
+               :id "btn-all"
+               :on-click #(do
+                            (reset! show-followed-only-atom (if @show-followed-only-atom false true))
+                            (fetch-badge-adverts state))}
+      [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]])
 
 (defn gallery-grid-form [state]
   (let [show-advanced-search (cursor state [:advanced-search])
@@ -296,46 +300,25 @@
      (if (not (:user-id @state))
        [:div
         [country-selector state]
-        [:div
-         [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
+        [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
               :href "#"}
           (if @show-advanced-search
             (t :gallery/Hideadvancedsearch)
-            (t :gallery/Showadvancedsearch))]]
+            (t :gallery/Showadvancedsearch))]
         (if  @show-advanced-search
           [:div
            [autocomplete state]
            [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-           [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])
-        
-        ])
-     [:div {:class "form-group wishlist-buttons"}
-          [:label {:for   "input-email-notifications"
-                   :class "col-md-2"}
-           (str (t :core/Show) ":")]
-         [:div.col-md-10
-          [:div.buttons
-           [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active") )
-                     :id "btn-all"
-                     :on-click #(do
-                                  (reset! show-followed-only-atom (if @show-followed-only-atom false true))
-                                  (fetch-badges state))}
-            (t :core/All)]
-           [:button {:class (str "btn btn-default " (if @show-followed-only-atom "btn-active"))
-                     :id "btn-all"
-                     :on-click #(do
-                                  (reset! show-followed-only-atom (if @show-followed-only-atom false true))
-                                  (fetch-badges state))}
-             [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]]
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
+           [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
+     [follow-grid-item show-followed-only-atom state]
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]]))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data
+  (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data
         badge-id (or badge_content_id id)]
     [:div {:class "media grid-container"}
      (if (pos? followed)
-       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]]
-       )
+       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
      [:div.media-content
       (if image_file
          [:div.media-left
@@ -349,19 +332,24 @@
        [:div.media-issuer
         [:p issuer_content_name]]
        [:div.media-getthis
-        [:a {:class "" :on-click #(do (.preventDefault %)(open-modal id state))
-                  } [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]
-       
-        [:div.media-description description]]]
+        [:a {:class "" :on-click #(do (.preventDefault %)(open-modal id state))}
+         [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
      [:div.media-bottom
       ;(admin-gallery-badge badge-id "badges" state init-data)
        ]]))
+
+(defn str-cat [a-seq]
+  (if (empty? a-seq)
+    ""
+    (let [str-space (fn [str1 str2]
+                      (str str1 " " str2))]
+      (reduce str-space a-seq))))
 
 (defn gallery-grid [state]
   (let [badges (:applications @state)
         tags (:tags @state)]
     [:div 
-     [:h3 (apply str tags)]
+     [:h3 (str-cat tags)]
      (into [:div {:class "row"
                   :id    "grid"}]
            (for [element-data badges]
@@ -389,7 +377,6 @@
                (let [{:keys [applications countries user-country]} data]
                  (swap! state assoc :applications applications
                         :countries countries
-                        ;:items (simple-items 5)
                         )))}))
 
 
@@ -418,7 +405,7 @@
                                 :issuer-name        (or (:issuer-name init-values) "")
                                 :order              (or (:order init-values) "mtime")
                                 :timer              nil
-                                :items              #{}
+                                :autocomplete-items              #{}
                                 :ajax-message       nil})]
     (init-data state init-values)
     (autocomplete-search state (:country init-values))

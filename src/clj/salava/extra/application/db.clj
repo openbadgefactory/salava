@@ -62,7 +62,7 @@
   (let [where-params {}]
     
     (-> where-params
-        (conj (map-collection " and ba.id = ? " id ))
+        ;(conj (map-collection " and ba.id = ? " id ))
         (conj (map-collection " and ba.country = ? " country (not= country "all")))
         (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
         (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))
