@@ -327,7 +327,7 @@
                                   (reset! show-followed-only-atom (if @show-followed-only-atom false true))
                                   (fetch-badges state))}
              [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]]
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state search-timer]]))
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data

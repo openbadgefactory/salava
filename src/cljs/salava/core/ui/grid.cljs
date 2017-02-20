@@ -76,7 +76,7 @@
                    :name      name
                    :checked   (= checked (:value button))
                    :value     (:value button)
-                   :on-change (fn [x] (do (swap! state assoc key (-> x .-target .-value)
-                                                 (if func
-                                                   (func state)))))}]
+                   :on-change (fn [x] (do (swap! state assoc key (-> x .-target .-value))
+                                          (if func
+                                            (func state))))}]
           (:label button)])]])))
