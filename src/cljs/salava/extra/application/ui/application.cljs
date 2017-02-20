@@ -128,17 +128,18 @@
         [:div {:class "col-md-9 badge-info"}
          [:div.rowcontent
           [:h1.uppercase-header name]
-          (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-          [:div {:class "description"}
-           description]
-          (if-not (blank? criteria_url)
-            [:div {:class "badge-info"}
-             [:h2.uppercase-header (t :badge/Criteria)]
-             [:div
-              [:a {:href   criteria_url
-                   :target "_blank"} (t :badge/Opencriteriapage)]]])
+          [:div.badge-stats
+           (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+           [:div 
+            description]
+           (if-not (blank? criteria_url)
+             [:div {:class "badge-info"}
+              [:h2.uppercase-header (t :badge/Criteria)]
+              [:div
+               [:a {:href   criteria_url
+                    :target "_blank"} (t :badge/Opencriteriapage)]]])]
           [:div {:class " badge-info"}
-           [:h2.uppercase-header "How get this badge"]
+           [:h2.uppercase-header (t :extra-application/Howtogetthisbadge)]
            [:div {:dangerouslySetInnerHTML {:__html info}}]]
            
           [:div
@@ -173,20 +174,21 @@
                     :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
         [modal-content data state]]
        [:div.modal-footer
-        [:div {:class "badge-content"}
+        [:div {:class "badge-advert-footer"}
          [:div {:class "badge-contents col-xs-12"}
           [:div.col-md-3 [:div]]
           [:div {:class "col-md-9 badge-info"}
-           [:div.pull-left
-            [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (blank? (:application_url_label @data-atom)) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
-            ;[:a  " >> Apply now"]
-            ]
-           
-           (if (pos? (:followed @data-atom))
-             [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites)) ]
-              ]
-             [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites)) ]
-              ])
+           [:div
+            [:div.pull-left
+             [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (blank? (:application_url_label @data-atom)) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
+                                        ;[:a  " >> Apply now"]
+             ]
+            
+            (if (pos? (:followed @data-atom))
+              [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites)) ]
+               ]
+              [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites)) ]
+               ])]
            ]]]]])))
 
 
@@ -345,17 +347,14 @@
         [:a {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
          name]]
        [:div.media-issuer
-        [:a {:href issuer_content_url
-             :target "_blank"
-             :title issuer_content_name} issuer_content_name]]
-       [:div.media-button
-        [:a {:class "btn btn-advert" :on-click #(do (.preventDefault %)(open-modal id state))
+        [:p issuer_content_name]]
+       [:div.media-getthis
+        [:a {:class "" :on-click #(do (.preventDefault %)(open-modal id state))
                   } [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]
        
         [:div.media-description description]]]
      [:div.media-bottom
-      
-       ;(admin-gallery-badge badge-id "badges" state init-data)
+      ;(admin-gallery-badge badge-id "badges" state init-data)
        ]]))
 
 (defn gallery-grid [state]
@@ -367,10 +366,6 @@
                   :id    "grid"}]
            (for [element-data badges]
              (badge-grid-element element-data state)))]))
-
-
-
-
 
 
 
@@ -398,7 +393,8 @@
                         )))}))
 
 
-(defn init-values []
+(defn init-values
+  "take url params"[]
   (let [{:keys [country issuer-name order id name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
         query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
     (-> query-params
