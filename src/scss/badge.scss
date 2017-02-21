@@ -593,9 +593,12 @@ button {
             font-size: 14px;
             margin: 0;
             input{
+		top: 2px;
                 margin:0px;
                 position: relative;
                 margin-bottom:5px;
+		margin-right: 3px;
+		
             }
             label {
                 padding-left:0px;
