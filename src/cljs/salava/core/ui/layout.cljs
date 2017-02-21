@@ -230,8 +230,4 @@
 
 (defn embed-page [content]
   [:div
-   [:header {:id "navbar"}
-    (top-navi-embed)]
-   [:div {:class "container main-container"}
-    [:div {:id "content"}
-     content]]])
+   content])
