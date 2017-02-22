@@ -55,6 +55,7 @@
       (= "error" permission)   (error-view state)
       :else                    [:div])))
 
+
 (defn init-data [state id]
   (ajax/GET
     (path-for (str "/obpv1/badge/info-embed/" id))

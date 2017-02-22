@@ -227,3 +227,4 @@
   "convert markdown to html and sanitize output"
   ([md] (if (nil? md) "" (md->html md default-md-processor)))
   ([md processor] (if (nil? md) "" (markdown-to-html processor md))))
+
