@@ -9,6 +9,7 @@
             [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
+            [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn follow-up-url []
@@ -16,7 +17,7 @@
         site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
                                         ;(if (social-plugin?) "/social/stream" "/badge/mybadges")
-    (if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
+    (if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
       "/social/stream"
       path)
     ))
