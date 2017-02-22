@@ -44,8 +44,7 @@
               :target "_blank"}
           [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
-          [:a {:href                                                                                         (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title 
-                                                                                                                  "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
+          [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
          )]
       [:div.share-button
