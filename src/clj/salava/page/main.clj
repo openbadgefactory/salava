@@ -8,7 +8,7 @@
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path str->qr-base64]]
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
             [salava.badge.main :as b]
             [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
@@ -63,7 +63,7 @@
     (map #(assoc % :files (select-files-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
 
 (defn page-blocks [ctx page-id]
-  (let [badge-blocks (select-pages-badge-blocks {:page_id page-id} (get-db ctx))
+  (let [badge-blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))
         file-blocks (file-blocks ctx page-id)
         heading-blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
@@ -72,7 +72,7 @@
     (sort-by :block_order blocks)))
 
 (defn badge-blocks-for-edit [ctx page-id]
-  (let [blocks (select-pages-badge-blocks {:page_id page-id} (get-db ctx))]
+  (let [blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))]
     (map #(hash-map :id (:id %)
                     :type (:type %)
                     :block_order (:block_order %)

@@ -3,7 +3,7 @@
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db md->html]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.page.main :as p]
             [salava.social.db :as so]
@@ -103,7 +103,7 @@
         recipients (if user-id (select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx)))
         ;badge-message-count (if user-id {:message_count (so/get-badge-message-count ctx badge-content-id user-id)})
         ;followed? (if user-id {:followed? (so/is-connected? ctx user-id badge-content-id)})
-        badge (merge badge-content badge-data rating ;badge-message-count ;followed?
+        badge (merge badge-content (update badge-data :criteria_content md->html) rating ;badge-message-count ;followed?
                      )]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
               :public_users (->> recipients

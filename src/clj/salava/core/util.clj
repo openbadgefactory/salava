@@ -10,6 +10,7 @@
             [clojure.java.shell :refer [sh]]
             [clj.qrgen :as q]
             [clj-time.coerce :as tc]
+            [autoclave.core :refer [markdown-processor markdown-to-html]]
             [salava.core.helper :refer [plugin-str]]
             [pantomime.mime :refer [extension-for-name mime-type-of]]))
 
@@ -116,6 +117,9 @@
        (log/error "falling back to curl")
        (curl url opt)))))
 
+(defn json-get [url]
+  (log/info "json-get: GET" url)
+  (http-get url {:as :json :accept :json :throw-entire-message? true}))
 
 (defn- file-extension [filename]
   (try+
@@ -216,3 +220,10 @@
              (map #(str/replace (plugin-str %) #"/" "."))
              (map fun)
              (filter #(not (nil? %))))))))
+
+(def default-md-processor (markdown-processor :quotes :suppress-all-html))
+
+(defn md->html
+  "convert markdown to html and sanitize output"
+  ([md] (md->html md default-md-processor))
+  ([md processor] (markdown-to-html processor md)))

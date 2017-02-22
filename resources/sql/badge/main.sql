@@ -54,7 +54,7 @@ INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json,
 
 --name: select-badge
 --get badge by id
-SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, show_evidence, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.description AS issuer_description, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.html_content, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image, crc.description AS creator_description FROM badge
+SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, show_evidence, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.description AS issuer_description, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.markdown_content AS criteria_content, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image, crc.description AS creator_description FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -107,7 +107,7 @@ UPDATE badge SET show_evidence = :show_evidence WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, show_recipient_name, cc.html_content AS criteria_html, evidence_url, show_evidence, rating, revoked, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, show_recipient_name, cc.markdown_content AS criteria_content, evidence_url, show_evidence, rating, revoked, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -128,7 +128,7 @@ UPDATE badge SET deleted = 1, visibility = 'private' WHERE id = :id
 SELECT b.id, bc.name, bc.image_file FROM badge AS b JOIN badge_content AS bc ON b.badge_content_id = bc.id WHERE b.id IN (:ids)
 
 --name: select-badges-by-tag-and-owner
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, criteria_url, badge_content_id, bt.tag, cc.html_content FROM badge
+SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, criteria_url, badge_content_id, bt.tag, cc.markdown_content AS criteria_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
        JOIN badge_tag AS bt ON bt.badge_id = badge.id
@@ -210,3 +210,29 @@ SELECT id FROM badge WHERE user_id = :user_id AND old_id = :old_id
 
 --name: select-badge-content-id-by-old-id
 SELECT badge_content_id FROM badge WHERE old_id = :old_id
+
+
+
+--name: insert-badge-content!
+INSERT IGNORE INTO badge_content (id, name, description, image_file)
+       VALUES (:id, :name, :description, :image_file)
+
+--name: insert-badge-content-tag!
+INSERT IGNORE INTO badge_content_tag (badge_content_id, tag)
+       VALUES (:badge-content-id, :tag)
+
+--name: insert-badge-content-alignment!
+INSERT IGNORE INTO badge_content_tag (badge_content_id, name, url, description)
+       VALUES (:badge-content-id, :name, :url, :description)
+
+--name: insert-criteria-content!
+INSERT IGNORE INTO criteria_content (id, html_content, markdown_content)
+       VALUES (:id, :html_content, :markdown_content)
+
+-- name: insert-issuer-content!
+INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url);
+
+-- name: insert-creator-content!
+INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :json_url);
