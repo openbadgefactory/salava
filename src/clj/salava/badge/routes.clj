@@ -55,6 +55,23 @@
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
+             
+             (GET "/info-embed/:badgeid" []
+                  ;:return schemas/UserBadgeContent
+                  :path-params [badgeid :- Long]
+                  :summary "Get badge for embed view"
+                  (let [user-id nil
+                        badge (b/get-badge ctx badgeid user-id)
+                        badge-owner-id (:owner badge)
+                        visibility (:visibility badge)
+                        owner? (= user-id badge-owner-id)]
+                    (if (= visibility "public") 
+                      (do
+                        (if badge
+                          (b/badge-viewed ctx badgeid user-id))
+                        (ok (assoc badge :owner? owner?
+                                   :user-logged-in? (boolean user-id))))
+                      (not-found))))
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]

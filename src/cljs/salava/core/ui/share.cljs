@@ -39,13 +39,12 @@
                                         ;[:div.share-button
                                         ; [:script {:type "IN/Share" :data-url url}]]
       [:div.share-button
-       (if is-badge?
+       (if false ;is-badge?  remove bade certification
          [:a {:href   (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
               :target "_blank"}
           [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
-          [:a {:href                                                                                         (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title 
-                                                                                                                  "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
+          [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
          )]
       [:div.share-button
@@ -69,11 +68,9 @@
        (if is-badge?
          [:div.form-horizontal
           [:div.form-group
-           [:label.col-xs-3 (t :core/Alldetails) ":"]
-           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]]
-          [:div.form-group
            [:label.col-xs-3 (t :core/Imageonly) ":"]
-           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"320\" src=\" src=\""url"/pic/embed\"  frameborder=\"0\"></iframe>")}]]]]
+           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/embed\" width=\"200\" height=\"270\"></iframe>")}]]]
+          ]
          [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))]))
 
 

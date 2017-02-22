@@ -2,12 +2,14 @@
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [clojure.string :as string]
+            [salava.core.helper :as h]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.ui.helper :refer [base-path navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
+            [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn follow-up-url []
@@ -15,7 +17,7 @@
         site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
                                         ;(if (social-plugin?) "/social/stream" "/badge/mybadges")
-    (if (or (empty? path) (= referrer path) (= path (path-for "/user/login")))
+    (if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
       "/social/stream"
       path)
     ))
@@ -28,13 +30,15 @@
                  :password password}
        :handler (fn [data]
                   (if (= (:status data) "success")
-                    (navigate-to (follow-up-url))
+                    (js-navigate-to (follow-up-url))
                     (swap! state assoc :error-message (:message data))))})))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
-        error-message-atom (cursor state [:error-message])]
+        error-message-atom (cursor state [:error-message])
+        ;login-info (first (plugin-fun (session/get :plugins) "block" "login_info"))
+        ]
     [:div {:id "login-page"}
      [:div {:id "narrow-panel"
             :class "panel"}
@@ -42,6 +46,7 @@
        (if @error-message-atom
          [:div {:class "alert alert-warning"}
           (translate-text @error-message-atom)])
+       ;(if login-info (login-info))
        [:form
         [:div.form-group {:aria-label "email"}
          [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (t :user/Email) :aria-label (t :user/Email)}]]

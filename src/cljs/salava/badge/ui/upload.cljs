@@ -63,13 +63,12 @@
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
 (defn content [state]
-  (let [status  (:status @state)] 
+  (let [status  (:status @state)]
     [:div {:class "badge-upload"}
      [m/modal-window]
      [:h1.uppercase-header (t :badge/Uploadbadgesfrom)]
      [upload-info]
-
-     (cond 
+     (cond
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
@@ -78,11 +77,7 @@
                        :aria-label "Choose file"
                        :name       "file"
                        :on-change  #(send-file state)
-                       :accept     "image/png, image/svg+xml"}]] )
-     
-     
-     
-     ]))
+                       :accept     "image/png, image/svg+xml"}]])]))
 
 (defn init-data [state]
   (ajax/GET (path-for "/obpv1/user/public-access")

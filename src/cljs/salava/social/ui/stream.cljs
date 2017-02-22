@@ -127,13 +127,14 @@
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
-      [:h3 {:class "media-heading"}
+      [:i {:class "fa fa-lightbulb-o"}]
+      [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
            :on-click #(do
                         (b/open-modal object false init-data state)
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
-       (t :social/Youstartedfollowbadge)]
+       (t :social/Youstartedfollowbadge)]]
       ]]))
 
 (defn message-event [event state]
@@ -176,11 +177,13 @@
       (system-image)]
      [:div.media-body
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:i {:class "fa fa-lightbulb-o"}]
+        [:div
       [:h3 {:class "media-heading"}
        [:a {:href (path-for "/user/edit/profile")} (t :social/Profiletipheader)]]
       [:div.media-body
        (t :badge/Add) " "  (t :badge/Profilepicture)
-       "."  ]
+       "."  ]]
       [:a {:href (path-for "/user/edit/profile")} (t :social/Profiletipbutton)]
       ]]))
 
@@ -192,13 +195,14 @@
       (system-image)]
      [:div.media-body
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
-      [:h3 {:class "media-heading"}
+      [:i {:class "fa fa-lightbulb-o"}]
+      [:div [:h3 {:class "media-heading"}
        [:a {:href (if link (path-for link) "#")} (translate-text header)]]
       [:div.media-body
        (translate-text body)]
       (if button
         [:a {:href (if link (path-for link) "#")} (translate-text button) ])
-      ]]))
+      ]]]))
 
 (defn profile-picture-tip []
   {:header (t :social/Profilepictureheader)  
@@ -218,7 +222,7 @@
     {:header (str (t :core/Welcometo) " " site-name (t :core/Service))
      :body (str (t :social/Youdonthaveanyanybadgesyet) ".")
      :button nil
-     :link   nil}))
+     :link  nil }))
 
 (defn report-ticket-tip [events]
   (let [count (count events)]
@@ -245,13 +249,18 @@
            ))])
 
 (defn empty-stream []
-  [:div
-   [:h2 (t :social/Emptystreamheader)]
-   [:div(t :social/Sometips)]
-   [:ul
-    [:li (t :social/Pagetip) " "  [:a {:href (path-for "/page") } (t :page/Mypages)]]
-    [:li (t :social/Badgetip) " " [:a {:href (path-for "/badge") } (t :badge/Mybadges) ]]
-    [:li (t :social/Profiletip) " " [:a {:href (path-for "/gallery/profiles") }(t :gallery/Sharedprofiles)  ]]]])
+  [:div {:class "media message-item tips"}
+    [:div.media-left
+      (system-image)]
+    [:div.media-body
+        [:i {:class "fa fa-lightbulb-o"}]
+        [:div
+        [:h3.media-heading (str (t :social/Emptystreamheader) " " (t :social/Sometips))]
+        [:div.media-body
+        [:ul
+         [:li (t :social/Pagetip) " "  [:a {:href (path-for "/page") } (t :page/Mypages)]]
+         [:li (t :social/Badgetip) " " [:a {:href (path-for "/badge") } (t :badge/Mybadges) ]]
+         [:li (t :social/Profiletip) " " [:a {:href (path-for "/gallery/profiles") }(t :gallery/Sharedprofiles)  ]]]]]]])
 
 (defn content [state]
   (let [events (:events @state)
@@ -266,8 +275,7 @@
         (tip-event (report-ticket-tip admin-events) state)]
        )
      (tips-container tips state)
-     (if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))
-       (empty-stream))
+     (if (and (empty? events) (not initial) (not (:profile-picture-tip tips)) (not (:welcome-tip tips)) (empty? (:not-verified-emails tips)))(empty-stream))
      (into [:div {:class "row"}]
            (for [event events]
              (cond

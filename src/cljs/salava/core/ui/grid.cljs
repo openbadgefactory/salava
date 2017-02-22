@@ -59,19 +59,24 @@
        [:option {:value (:value option)
                  :key (:value option)} (:title option)])]]])
 
-(defn grid-radio-buttons [title name radio-buttons key state]
-  (let [checked (get @state key)]
-    [:fieldset.form-group
-     [:legend {:class "control-label col-sm-2"} title]
-     [:div.col-sm-10
-      (for [button radio-buttons]
-        [:label {:class "radio-inline"
-                 :for (:id button)
-                 :key (:id button)}
-         [:input {:id (:id button)
-                  :type "radio"
-                  :name name
-                  :checked (= checked (:value button))
-                  :value (:value button)
-                  :on-change (fn [x] (swap! state assoc key (-> x .-target .-value)))}]
-         (:label button)])]]))
+(defn grid-radio-buttons
+  ([title name radio-buttons key state]
+   (grid-radio-buttons title name radio-buttons key state nil))
+  ([title name radio-buttons key state func]
+   (let [checked (get @state key)]
+     [:fieldset.form-group
+      [:legend {:class "control-label col-sm-2"} title]
+      [:div.col-sm-10
+       (for [button radio-buttons]
+         [:label {:class "radio-inline"
+                  :for   (:id button)
+                  :key   (:id button)}
+          [:input {:id        (:id button)
+                   :type      "radio"
+                   :name      name
+                   :checked   (= checked (:value button))
+                   :value     (:value button)
+                   :on-change (fn [x] (do (swap! state assoc key (-> x .-target .-value))
+                                          (if func
+                                            (func state))))}]
+          (:label button)])]])))

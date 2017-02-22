@@ -73,5 +73,7 @@
 
 (defonce history (pushy/pushy set-route! (partial b/match-route (:routes site-navi))))
 
+(session/put! :history history)
+
 (pushy/start! history)
 

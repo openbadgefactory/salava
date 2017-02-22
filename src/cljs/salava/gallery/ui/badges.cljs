@@ -144,9 +144,7 @@
                                         (open-modal badge-id nil)) :title name}
           name]]
         [:div.media-issuer
-         [:a {:href issuer_content_url
-              :target "_blank"
-              :title issuer_content_name} issuer_content_name]]
+         [:p issuer_content_name]]
         (if recipients
           [:div.media-recipients
            recipients " " (if (= recipients 1)
