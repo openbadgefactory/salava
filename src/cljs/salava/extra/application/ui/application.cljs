@@ -46,7 +46,7 @@
   "set advert to connections"
   [badge-advert-id data-atom state]
   (ajax/POST
-    (path-for (str "/obpv1/application/create_connection_badge_advert/" badge-advert-id))
+    (path-for (str "/obpv1/application/create_connection_badge_application/" badge-advert-id))
     {:handler (fn [data]
                 (if (= "success")
                   (do ;set current data-atom to followed true
@@ -59,7 +59,7 @@
    (remove-from-followed badge-advert-id nil state))
   ([badge-advert-id data-atom state]
    (ajax/DELETE
-    (path-for (str "/obpv1/application/delete_connection_badge_advert/" badge-advert-id))
+    (path-for (str "/obpv1/application/delete_connection_badge_application/" badge-advert-id))
     {:handler (fn [data]
                 (if (= "success")
                   (do ;set current data-atom to followed false
@@ -166,7 +166,7 @@
           [:div {:class "col-md-9 badge-info"}
            [:div
             [:div.pull-left
-             [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (blank? (:application_url_label @data-atom)) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
+             [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
                                         ;[:a  " >> Apply now"]
              ]
             
@@ -385,7 +385,7 @@
   (let [{:keys [country issuer-name order id name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
         query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
     (-> query-params
-        (assoc :country (if id "all" (or country (session/get-in [:user :country] "all")))))))
+        (assoc :country (if id "all" (or country "all"))))))
 
 
 (defn handler [site-navi params]

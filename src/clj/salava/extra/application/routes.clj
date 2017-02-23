@@ -47,7 +47,7 @@
                   :body  [data schemas/BadgeAdvertPublish]
                   (ok (a/publish-badge ctx data)))
 
-             (POST "/create_connection_badge_advert/:badge_advert_id" []
+             (POST "/create_connection_badge_application/:badge_advert_id" []
                    :return {:status (s/enum "success" "error") }
                    :summary "Add badge advert to follow"
                    :path-params [badge_advert_id :- s/Int]
@@ -56,7 +56,7 @@
                    (ok (a/create-connection-badge-advert! ctx (:id current-user) badge_advert_id))
                    )
 
-             (DELETE "/delete_connection_badge_advert/:badge_advert_id" []
+             (DELETE "/delete_connection_badge_application/:badge_advert_id" []
                    :return {:status (s/enum "success" "error")}
                    :summary "Delete badge advert from follow"
                    :path-params [badge_advert_id :- s/Int]

@@ -138,7 +138,7 @@
         params (vec (vals where-params))
         query (str "SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
                     from badge_content_tag AS bct JOIN badge_advert AS ba
-         ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0" 
+         ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0  AND (ba.not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (ba.not_after = 0 OR not_after > UNIX_TIMESTAMP()) " 
                    where
                    " GROUP BY bct.tag 
                     ORDER BY tag 

@@ -64,7 +64,7 @@ SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ba.criteria_url, ic.
 
 
 -- name: select-badge-advert-countries
-SELECT country FROM badge_advert ORDER BY country
+SELECT country FROM badge_advert WHERE deleted=0  AND (not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (not_after = 0 OR not_after > UNIX_TIMESTAMP()) ORDER BY country  
 
 -- name: select-user-country
 SELECT country FROM user WHERE id = :id
