@@ -3,12 +3,33 @@
             [clj-http.cookies :as cookies]
             [ring.mock.request :as mock]
             [com.stuartsierra.component :as component]
-            [salava.core.system]
-            [clojure.string :refer [split]]
-            [salava.core.migrator :as migrator]
-            [cheshire.core :as cheshire]
             [slingshot.slingshot :refer :all]))
 
+(def test-config (-> (clojure.java.io/resource "test_config/core.edn") slurp read-string))
+
+(def api-root
+  (let [host (get-in test-config [:http :host])
+        port (get-in test-config [:http :port])
+        base-path (get-in test-config [:base-path] "")]
+    (str "http://" host ":"port base-path "/obpv1" )))
+
+(def ^:dynamic *cookie-store*
+  (cookies/cookie-store))
+
+(defn login! [email password]
+  (client/request {:url (str api-root "/user/login")
+                   :method :post
+                   :form-params {:email email :password password}
+                   :as :json
+                   :content-type :json
+                   :cookie-store *cookie-store*}))
+
+(defn logout! []
+  (client/request {:url (str api-root "/user/logout")
+                   :method :post
+                   :as :json
+                   :content-type :json
+                   :cookie-store *cookie-store*}))
 
 (defn get-system []
   (-> (salava.core.system/base-system "test_config")
@@ -16,40 +37,28 @@
       (component/start)))
 
 (defn stop-system [system]
-  (migrator/reset-seeds (migrator/test-config))
   (component/stop system))
 
-
-(defn parse-body [body]
-  (if body
-    (cheshire/parse-string (slurp body) true)))
-
 (defn test-api-request
-  ([system method url] (test-api-request system method url {} ""))
-  ([system method url post-params login-token]
+  ([system method url] (test-api-request system method url {}))
+  ([system method url post-params]
    (try+
-    (let [response ((get-in system [:handler :handler]) (-> (mock/request method url)
-                                                            (mock/header "cookie" login-token)
-                                                            (mock/content-type "application/json")
-                                                            (mock/body  (cheshire/generate-string post-params))))]
-      (update response :body parse-body))
+    ((get-in system [:handler :handler]) (mock/request method url))
     (catch Exception _))))
 
-(defn parse-cookie [headers]
-  (-> headers
-      (get  "Set-Cookie")
-      first
-      str
-      (split  #";")
-      first))
-
-(:headers response)
-(defn login [system email password]
-  (let [response (test-api-request system :post "/app/obpv1/user/login" {:email email :password password} "")
-        cookie (if (:headers response)
-                 (parse-cookie (:headers response))
-                 nil)]
-    (assoc response :cookie cookie)))
+(defn test-api-request1
+  ([method url] (test-api-request method url {}))
+  ([method url post-params]
+   (try+
+     (client/request
+       {:method       method
+        :url          (str api-root url)
+        :content-type :json
+        :as :json
+        :form-params  post-params
+        :throw-exceptions false
+        :cookie-store *cookie-store*})
+     (catch Exception _))))
 
 (defn test-upload [url upload-data]
   (try+
@@ -91,13 +100,10 @@
     :email "test.discendum@gmail.com"
     :password "testtest"}])
 
-
-(defn login-with-user [system user-id]
+(defn test-user-credentials [user-id]
   (let [user (->> test-users
                   (filter #(= (:id %) user-id))
                   first)]
-    (login system (:email user) (:password user))))
-
-
+    [(:email user) (:password user)]))
 
 

@@ -2,7 +2,7 @@
   :description "FIXME: write description"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
-            :url "http://www.apache.org/licenses/LICENSE-2.0"}
+            :url  "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.8.0"]
 
                  [com.stuartsierra/component "0.3.2"]
@@ -27,6 +27,7 @@
                  [ring/ring-devel "1.5.1"]
                  [ring/ring-defaults "0.2.3"]
                  [ring-webjars "0.1.1"]
+                 [ring/ring-mock "0.3.0"]
                  [compojure "1.5.2"]
                  [cheshire "5.7.0"]
                  [org.clojure/core.memoize "0.5.9"]
@@ -85,70 +86,70 @@
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :java-source-paths ["src/java"]
   :test-paths ["test/clj" "test/cljs" "test/cljc"]
-  :profiles {:dev {:source-paths ["src/dev-clj"]
-                   :dependencies [[figwheel "0.5.9"]
-                                  [com.cemerick/piggieback "0.2.1"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [lein-midje "3.2.1"]
-                                  [reloaded.repl "0.2.3"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-                   :plugins [[lein-pdo "0.1.1"]
-                             [lein-cljsbuild "1.1.5" :exclusions [org.clojure/clojure]]
-                             [lein-scss "0.3.0"]
-                             [lein-figwheel "0.5.9"]]
-                   :resource-paths ["target/generated"]}
-             :uberjar {:resource-paths  ["target/adv"]
-                       :main  salava.core.main
-                       :aot   [salava.core.main]}}
+  :profiles {:dev     {:source-paths   ["src/dev-clj"]
+                       :dependencies   [[figwheel-sidecar "0.5.8"]
+                                        [com.cemerick/piggieback "0.2.1"]
+                                        [org.clojure/tools.namespace "0.2.11"]
+                                        [lein-midje "3.2.1"]
+                                        [reloaded.repl "0.2.3"]]
+                       :repl-options   {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                       :plugins        [[lein-pdo "0.1.1"]
+                                        [lein-cljsbuild "1.1.5" :exclusions [org.clojure/clojure]]
+                                        [lein-scss "0.3.0"]
+                                        [lein-figwheel "0.5.9"]]
+                       :resource-paths ["target/generated"]}
+             :uberjar {:resource-paths ["target/adv"]
+                       :main           salava.core.main
+                       :aot            [salava.core.main]}}
 
   :scss  {:builds
           {:dev {:source-dir "src/scss"
                  :dest-dir   "target/generated/public/css"
                  :executable "sassc"
-                 :args       ["-m" "-l" "-I" "src/scss" "-t" "nested"]}
+                 :args       ["-l" "-I" "src/scss" "-t" "nested"]}
            :adv {:source-dir "src/scss"
                  :dest-dir   "target/adv/public/css"
                  :executable "sassc"
                  :args       ["-I" "src/scss/" "-t" "compressed"]}}}
 
 
-  :figwheel {:http-server-root  "public"
-             :server-port       3449
-             :css-dirs          ["target/generated/public/css"]
-             :repl              false
-             :server-logfile    "target/figwheel-logfile.log"}
+  :figwheel {:http-server-root "public"
+             :server-port      3449
+             :css-dirs         ["target/generated/public/css"]
+             :repl             true
+             :server-logfile   "target/figwheel-logfile.log"}
 
   :cljsbuild {:builds {:dev {:source-paths ["src/cljs" "src/cljc" "src/dev-cljs"]
-                             :compiler {:main            "salava.core.ui.figwheel"
-                                        :asset-path      "/js/out"
-                                        :output-to       "target/generated/public/js/salava.js"
-                                        :output-dir      "target/generated/public/js/out"
-                                        :source-map      true
-                                        :optimizations   :none
-                                        :cache-analysis  true
-                                        :pretty-print    true}}
+                             :compiler     {:main           "salava.core.ui.figwheel"
+                                            :asset-path     "/js/out"
+                                            :output-to      "target/generated/public/js/salava.js"
+                                            :output-dir     "target/generated/public/js/out"
+                                            :source-map     true
+                                            :optimizations  :none
+                                            :cache-analysis true
+                                            :pretty-print   true}}
                        :adv {:source-paths ["src/cljs" "src/cljc"]
-                             :compiler {:main           "salava.core.ui.main"
-                                        :externs        ["resources/public/js/externs/jquery.ext.js" "resources/public/js/externs/externs.js"]
-                                        :output-to      "target/adv/public/js/salava.js"
-                                        :optimizations  :advanced
-                                        :elide-asserts  true
-                                        :pretty-print   false}}}}
+                             :compiler     {:main          "salava.core.ui.main"
+                                            :externs       ["resources/public/js/externs/jquery.ext.js" "resources/public/js/externs/externs.js"]
+                                            :output-to     "target/adv/public/js/salava.js"
+                                            :optimizations :advanced
+                                            :elide-asserts true
+                                            :pretty-print  false}}}}
 
   :uberjar-name      "salava.jar"
   :auto-clean        false
   :min-lein-version  "2.6.1"
 
-  :pedantic? :abort
+  :pedantic? :warn
 
-  :aliases {"develop"         ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
-            "uberjar"         ["with-profile" "uberjar" "do" "clean" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
+  :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
+            "css" ["do" ["pdo" ["scss" ":dev" "boring"]]]
+            "uberjar" ["with-profile" "uberjar" "do" "clean" ["cljsbuild" "once" "adv"] ["scss" ":adv" "once" "boring"] "uberjar"]
 
-            "translate"       ["run" "-m" "salava.core.translator/translate"]
+            "translate" ["run" "-m" "salava.core.translator/translate"]
 
             "migrate"         ["run" "-m" "salava.core.migrator/migrate"]
             "rollback"        ["run" "-m" "salava.core.migrator/rollback"]
             "migrator-remove" ["run" "-m" "salava.core.migrator/remove-plugin"]
             "migrator-seed"   ["run" "-m" "salava.core.migrator/seed"]
-            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]
-            "test"            ["run" "-m" "user/do-test"]})
+            "migrator-reset"  ["run" "-m" "salava.core.migrator/reset"]})

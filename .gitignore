@@ -9,6 +9,7 @@ pom.xml.asc
 /.nrepl-port
 .hgignore
 .hg/
+.cljs_rhino_repl/
 /resources/config/*.edn
 /resources/test_config/*.edn
 /resources/public/file
