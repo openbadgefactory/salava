@@ -38,19 +38,20 @@
   (throw (Exception. "badge/MissingCriteriaContent")))
 
 (defmethod save-criteria-content! :url [ctx input]
-  (save-criteria-content! ctx (u/http-get input)))
+  (save-criteria-content! ctx (with-meta (u/http-get input) {:url input})))
 
 (defmethod save-criteria-content! :html [ctx input]
   (save-criteria-content!
-    ctx {:id ""
-         :html_content input
-         :markdown_content (alt-markdown input)}))
+    ctx (with-meta {:id ""
+                    :html_content input
+                    :markdown_content (alt-markdown input)}
+                   (meta input))))
 
 (defmethod save-criteria-content! :default [ctx input]
   (s/validate schemas/CriteriaContent input)
   (let [id (content-id input)]
     (insert-criteria-content! (assoc input :id id) (u/get-db ctx))
-    {:criteria_content_id id}))
+    {:criteria_content_id id :criteria_url (:url (meta input))}))
 
 ;;
 
@@ -60,24 +61,25 @@
   (throw (Exception. "badge/MissingIssuerContent")))
 
 (defmethod save-issuer-content! :url [ctx input]
-  (save-issuer-content! ctx (u/http-get input)))
+  (save-issuer-content! ctx (with-meta (u/http-get input) {:url input})))
 
 (defmethod save-issuer-content! :json [ctx input]
   (let [data (json/read-str input :key-fn keyword)]
     (save-issuer-content!
-      ctx {:id ""
-           :name        (:name data)
-           :image_file  (if-not (string/blank? (:image data)) (u/file-from-url ctx (:image data)))
-           :description (:description data)
-           :url   (:url data)
-           :email (:email data)
-           :revocation_list_url (:revocationList data)})))
+      ctx (with-meta {:id ""
+                      :name        (:name data)
+                      :image_file  (if-not (string/blank? (:image data)) (u/file-from-url ctx (:image data)))
+                      :description (:description data)
+                      :url   (:url data)
+                      :email (:email data)
+                      :revocation_list_url (:revocationList data)}
+                     (meta input)))))
 
 (defmethod save-issuer-content! :default [ctx input]
   (s/validate schemas/IssuerContent input)
   (let [id (content-id input)]
     (insert-issuer-content! (assoc input :id id) (u/get-db ctx))
-    {:issuer_content_id id}))
+    {:issuer_content_id id :issuer_url (:url (meta input))}))
 
 ;;
 
@@ -92,19 +94,20 @@
 (defmethod save-creator-content! :json [ctx input]
   (let [data (json/read-str input :key-fn keyword)]
     (save-creator-content!
-      ctx {:id ""
-           :name        (:name data)
-           :image_file  (if-not (string/blank? (:image data)) (u/file-from-url ctx (:image data)))
-           :description (:description data)
-           :url   (:url data)
-           :email (:email data)
-           :json_url ((meta input) :json-url "")})))
+      ctx (with-meta {:id ""
+                      :name        (:name data)
+                      :image_file  (if-not (string/blank? (:image data)) (u/file-from-url ctx (:image data)))
+                      :description (:description data)
+                      :url   (:url data)
+                      :email (:email data)
+                      :json_url ((meta input) :json-url "")}
+                     (meta input)))))
 
 (defmethod save-creator-content! :default [ctx input]
   (s/validate schemas/CreatorContent input)
   (let [id (content-id input)]
     (insert-creator-content! (assoc input :id id) (u/get-db ctx))
-    {:creator_content_id id}))
+    {:creator_content_id id :creator_url (:json-url (meta input))}))
 
 ;;
 
@@ -114,17 +117,18 @@
   (throw (Exception. "badge/MissingBadgeContent")))
 
 (defmethod save-badge-content! :url [ctx input]
-  (save-badge-content! ctx (u/http-get input)))
+  (save-badge-content! ctx (with-meta (u/http-get input) {:url input})))
 
 (defmethod save-badge-content! :json [ctx input]
   (let [data (json/read-str input :key-fn keyword)]
     (merge
-      (save-badge-content! ctx {:id ""
-                                :name        (:name data)
-                                :image_file  (u/file-from-url ctx (:image data))
-                                :description (:description data)
-                                :alignment   []
-                                :tags        (:tags data)})
+      (save-badge-content! ctx (with-meta {:id ""
+                                           :name        (:name data)
+                                           :image_file  (u/file-from-url ctx (:image data))
+                                           :description (:description data)
+                                           :alignment   []
+                                           :tags        (:tags data)}
+                                          (meta input)))
       (when (:issuer data)
         (save-issuer-content! ctx (:issuer data)))
       (when (:criteria data)
@@ -141,5 +145,13 @@
         (insert-badge-content-tag! {:badge_content_id id :tag tag} {:connection t-con}))
       (doseq [a (:alignment input)]
         (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con})))
-    {:badge_content_id id}))
+    {:badge_content_id id :badge_url (:url (meta input))}))
+
+;;
+
+(defn save-badge! [ctx data]
+  (let [content (save-badge-content! (:badge_url data))]
+    (assoc content :id (insert-badge<! (merge data content) (u/get-db ctx)))))
+
+;;
 

@@ -8,6 +8,7 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
+            [salava.badge.db :as db]
             [salava.social.db :as so]
             [clojure.tools.logging :as log]
             [salava.core.util :refer [get-db get-datasource map-sha256 file-from-url hex-digest get-site-url get-base-path str->qr-base64 str->epoch md->html]]
@@ -34,7 +35,7 @@
 (defn check-issuer-verified!
   "Fetch issuer data and check if issuer is verified by OBF"
   [ctx badge-id issuer-json-url mtime issuer-verified-initial]
-  (try+
+  (try
     (if (and issuer-json-url mtime (< mtime (- (unix-time) (* 60 60 24 2))))
       (let [issuer-url-base (split issuer-json-url #"&event=")
             issuer-json (if (second issuer-url-base) (fetch-json-data (first issuer-url-base)))
@@ -43,13 +44,13 @@
           (update-badge-set-verified! {:issuer_verified issuer-verified :id badge-id} (get-db ctx)))
         issuer-verified)
       issuer-verified-initial)
-    (catch Object _
+    (catch Exception _
       issuer-verified-initial)))
 
 (defn badge-issued-and-verified-by-obf
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
-  (try+
+  (try
     (let [obf-url (get-in ctx [:config :core :obf :url] "")
           obf-base (-> obf-url (split #"://") second)
           {:keys [id badge_url issuer_url mtime issuer_verified]} badge
@@ -58,7 +59,7 @@
       (assoc badge :issued_by_obf (boolean issued-by-obf)
                    :verified_by_obf (boolean verified-by-obf)
                    :obf_url obf-url))
-    (catch Object _
+    (catch Exception _
       badge)))
 
 (defn user-badges-all
@@ -160,134 +161,49 @@
                  :assertion (parse-assertion-json (:assertion_json badge))
                  :qr_code (str->qr-base64 (badge-url ctx badge-id)))))
 
-(defn save-badge-content!
-  "Save badge content"
-  [ctx assertion image-file]
-  (let [badge-data {:name (get-in assertion [:badge :name])
-                    :description (get-in assertion [:badge :description])
-                    :image_file image-file}
-        badge-content-sha256 (map-sha256 badge-data)
-        data (assoc badge-data :id badge-content-sha256)]
-    (replace-badge-content! data (get-db ctx))
-    badge-content-sha256))
 
-
-(defn save-criteria-content!
-  "Save badge criteria content"
-  [ctx assertion]
-  (let [criteria-data {:html_content (get-in assertion [:badge :criteria_html])
-                       :markdown_content (get-in assertion [:badge :criteria_markdown])}
-        criteria-content-sha256 (map-sha256 criteria-data)
-        data (assoc criteria-data :id criteria-content-sha256)]
-    (replace-criteria-content! data (get-db ctx))
-    criteria-content-sha256))
-
-(defn save-original-creator!
-  "Save original creator of the badge"
-  [ctx assertion image-file]
-  (if (get-in assertion [:badge :OriginalCreator :json-url])
-    (let [creator-data {:url (get-in assertion [:badge :OriginalCreator :url])
-                        :name (get-in assertion [:badge :OriginalCreator :name])
-                        :description (get-in assertion [:badge :OriginalCreator :description])
-                        :email (get-in assertion [:badge :OriginalCreator :email])
-                        :json_url (get-in assertion [:badge :OriginalCreator :json-url])
-                        :image_file image-file}
-          creator-content-sha256 (map-sha256 creator-data)]
-      (replace-creator-content! (assoc creator-data :id creator-content-sha256) (get-db ctx))
-      creator-content-sha256)))
-
-(defn save-badge!
-  "Save user's badge"
-  [ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id]
-  (let [issuer-url (get-in badge [:assertion :badge :issuer_url])
-        issuer-verified (check-issuer-verified! ctx nil issuer-url 0 false)
-        hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
-        data {:user_id             user-id
-              :email               recipient-email
-              :assertion_url       (if hosted? (get-in badge [:assertion :verify :url]))
-              :assertion_jws       (get-in badge [:assertion :assertion_jws])
-              :assertion_json      (get-in badge [:assertion :assertion_json])
-              :badge_url           (get-in badge [:assertion :badge :badge_url])
-              :issuer_url          issuer-url
-              :criteria_url        (get-in badge [:assertion :badge :criteria_url])
-              :criteria_content_id criteria-content-id
-              :badge_content_id    badge-content-id
-              :issuer_content_id   issuer-content-id
-              :creator_content_id  creator-content-id
-              :issued_on           (get-in badge [:assertion :issuedOn])
-              :expires_on          (get-in badge [:assertion :expires])
-              :evidence_url        (get-in badge [:assertion :evidence])
-              :status              (get-in badge [:_status] "pending")
-              :visibility          "private"
-              :show_recipient_name 0
-              :rating              0
-              :ctime               (unix-time)
-              :mtime               (unix-time)
-              :deleted             0
-              :revoked             0
-              :issuer_verified     issuer-verified}]
-    (insert-badge<! data (get-db ctx))
-    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
-      (so/insert-connection-badge! ctx user-id badge-content-id))))
-
-(defn save-issuer-content!
-  "Save issuer-data"
-  [ctx assertion image-file]
-  (let [issuer-data {:name (get-in assertion [:badge :issuer :name])
-                     :description (get-in assertion [:badge :issuer :description])
-                     :url (get-in assertion [:badge :issuer :url])
-                     :image_file image-file
-                     :email (get-in assertion [:badge :issuer :email])
-                     :revocation_list_url (get-in assertion [:badge :issuer :revocationList])}
-        issuer-content-sha256 (map-sha256 issuer-data)
-        data (assoc issuer-data :id issuer-content-sha256)]
-    (replace-issuer-content! data (get-db ctx))
-    issuer-content-sha256))
-
-(defn check-email [recipient email]
+(defn- check-email [recipient email]
   (let [{hashed :hashed identity :identity salt :salt} recipient
         [algo hash] (split (or identity "") #"\$")]
-    (if hashed
-      (do
-        (if-not algo
-          (throw+ "Invalid algorithm"))
-        (first (filter #(= hash (hex-digest algo (str % salt))) [email (upper-case email) (lower-case email) (capitalize email)])))
-      (if (= email identity)
-        email))))
+    (first (filter #(if hashed (= hash (hex-digest algo (str % salt))) (= identity %))
+                   [email (upper-case email) (lower-case email) (capitalize email)]))))
 
-(defn check-recipient [user-emails assertion]
-  (let [recipient (:recipient assertion)]
-    (if (empty? user-emails)
-      (throw (Exception. "badge/Userdoesnotownthisbadge")))
-    (loop [emails user-emails
-           checked-email (check-email recipient (first emails))]
-      (cond
-        (boolean checked-email) checked-email
-        (empty? emails) nil
-        :else (recur (rest emails) (check-email recipient (first emails)))))))
+(defn- recipient-email [user-emails recipient]
+  (or (some #(check-email recipient %) user-emails)
+      (throw (Exception. "badge/Userdoesnotownthisbadge"))))
 
-(defn save-badge-from-assertion!
-  [ctx badge user-id emails]
+(defn save-badge-from-assertion! [ctx badge user-id emails]
   (if (and (get-in badge [:assertion :expires]) (< (get-in badge [:assertion :expires]) (unix-time)))
     (throw (Exception. "badge/Badgeexpired")))
-  (let [assertion (:assertion badge)
-        recipient-email (check-recipient emails assertion)
-        badge-image-path (file-from-url ctx (get-in assertion [:badge :image]))
-        badge-content-id (save-badge-content! ctx assertion badge-image-path)
-        issuer-image (get-in assertion [:badge :issuer :image])
-        issuer-image-path (if-not (empty? issuer-image)
-                            (file-from-url ctx issuer-image))
-        issuer-content-id (save-issuer-content! ctx assertion issuer-image-path)
-        original-creator-image (get-in assertion [:badge :OriginalCreator :image])
-        original-creator-image-path (if (not (empty? original-creator-image))
-                                      (file-from-url ctx original-creator-image))
-        creator-content-id (save-original-creator! ctx assertion original-creator-image-path)
-        criteria-content-id (save-criteria-content! ctx assertion)]
-    (if (user-owns-badge? ctx (:assertion badge) user-id)
-      (throw (Exception. "badge/Alreadyowned")))
-    (if-not recipient-email
-      (throw (Exception. "badge/Userdoesnotownthisbadge")))
-    (:generated_key (save-badge! ctx user-id recipient-email badge badge-content-id issuer-content-id criteria-content-id creator-content-id))))
+  (if (user-owns-badge? ctx (:assertion badge) user-id)
+    (throw (Exception. "badge/Alreadyowned")))
+  (let [
+        hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
+        now (unix-time)
+        saved (db/save-badge! ctx
+                           {:user_id             user-id
+                            :email               (recipient-email emails (get-in badge [:assertion :recipient]))
+                            :assertion_url       (if hosted? (get-in badge [:assertion :verify :url]))
+                            :assertion_jws       (get-in badge [:assertion :assertion_jws])
+                            :assertion_json      (get-in badge [:assertion :assertion_json])
+                            :badge_url           (get-in badge [:assertion :badge :badge_url])
+                            :issued_on           (get-in badge [:assertion :issuedOn])
+                            :expires_on          (get-in badge [:assertion :expires])
+                            :evidence_url        (get-in badge [:assertion :evidence])
+                            :status              (get-in badge [:_status] "pending")
+                            :visibility          "private"
+                            :show_recipient_name 0
+                            :rating              0
+                            :ctime               now
+                            :mtime               now
+                            :deleted             0
+                            :revoked             0
+                            :issuer_verified     0})]
+    (check-issuer-verified! ctx (saved :id) (saved :issuer_url) 1 false)
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/insert-connection-badge! ctx user-id (saved :badge_content_id)))
+    (:generated_key (saved :id))))
+
 
 (defn save-badge-tags!
   "Save tags associated to badge. Delete existing tags."
