@@ -124,5 +124,5 @@
                                 (assoc :json_url s/Str)))
 
 (s/defschema CriteriaContent {:id s/Str
-                            :html_content s/Str
-                            :markdown_content (s/maybe s/Str)})
+                              :html_content s/Str
+                              :markdown_content (s/maybe s/Str)})

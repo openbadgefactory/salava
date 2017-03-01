@@ -10,7 +10,8 @@
     (let [context {:config (:config config)
                    :db     (:datasource db)
                    :input-chan (get-in pubsub [:channel :input-chan])}]
-      (assoc this :handler (salava.core.handler/handler context))))
+      (assoc this :handler (salava.core.handler/handler context)
+                  :ctx context)))
 
   (stop [this]
     (assoc this :handler nil)))

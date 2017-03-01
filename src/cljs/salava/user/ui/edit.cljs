@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [clojure.string :refer [blank?]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? navigate-to path-for]]
+            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.common :refer [deep-merge]]
@@ -33,7 +33,7 @@
                            :new_password_verify new-password-verify))
        :handler (fn [data]
                   (if (= (:status data) "success")
-                    (navigate-to "/user/edit")
+                    (js-navigate-to "/user/edit")
                     (do
                       (swap! state assoc :message {:class "alert-danger" :content (:message data)})
                       (clear-password-fields state)))
@@ -148,8 +148,7 @@
                    :on-click #(do
                                (.preventDefault %)
                                (save-user-info state))}
-          (t :core/Save)]
-         [:a {:id "cancel-button" :class "btn btn-warning" :href (path-for "/user/cancel")} (t :user/Cancelaccount)]]]]]]))
+          (t :core/Save)]]]]]]))
 
 (def initial-state
   {:user {:current_password nil

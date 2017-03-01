@@ -117,16 +117,12 @@
                                  (if checked?
                                    (remove-badge-selection key state)
                                    (add-badge-selection key state)))}]     
-           (t :badge/Savebadge)]]
+          (t :badge/Savebadge)]]
         (if (= invalidtype "error")
-
           [:div
-           
-          [:span {:id (str "err" key)} error]
-          ]
+           [:span {:id (str "err" key)} error]]
           [:div
-           (t (keyword message))]
-        ))]]))
+           (t (keyword message))]))]]))
 
 (defn badge-grid [state]
   (into [:div {:class "row"

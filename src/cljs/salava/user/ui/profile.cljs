@@ -49,9 +49,7 @@
          [:a.heading-link {:href (path-for (str "/badge/info/" id))}
           name]]
         [:div.media-issuer
-         [:a {:href issuer_content_url
-              :target "_blank"
-              :title issuer_content_name} issuer_content_name]]]]]
+         [:p issuer_content_name]]]]]
               ;]
               ))
 

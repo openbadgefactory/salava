@@ -145,9 +145,7 @@
         [:div.media-heading
          [:a.heading-link {:href badge-link :id (str id "-heading")} name]]
         [:div.media-issuer
-         [:a {:href issuer_content_url
-              :target "_blank"
-              :title issuer_content_name} issuer_content_name]]
+         [:p issuer_content_name]]
          ]]
       ]))
 
@@ -171,8 +169,7 @@
 
 
 (defn no-badges-text []
-  [:div
-   (t :badge/Youhavenobadgesyet) (str ".") ] )
+  [:div (t :badge/Youhavenobadgesyet) (str ".")])
 
 (defn content [state]
   [:div {:id "my-badges"}

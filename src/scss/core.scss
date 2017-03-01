@@ -181,8 +181,12 @@ select.form-control  {
 input[type=checkbox], input[type=radio] {
     margin-top:6px;
 }
+.radio-inline{
+    margin-right:15px;
+    margin-left: 0px;
+}
 .checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline {
-    margin-left:15px;
+   // margin-left:15px;
 }
 fieldset legend, .form-group legend, .form-horizontal .form-group legend {
     font-size: inherit;

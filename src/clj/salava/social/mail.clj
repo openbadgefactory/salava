@@ -23,7 +23,7 @@
 (defn admin-events-message [ctx user lng]
   (let [user-id (:id user)
         admin-events  (filter-last-checked (so/get-user-admin-events ctx user-id))]
-    (if (not (empty? admin-events))
+    (if (and (not (nil? (first admin-events))) (not (empty? admin-events)))
       (html-mail-body-li (str (t :social/Emailadmintickets lng) " " (count admin-events) "." )))))
 
 (defn badge-message [item lng]
@@ -39,16 +39,17 @@
                          (when (and (get-in item [:message :new_messages] )
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
-                           (badge-message item lng)))]
-    (if (not (empty? events))
-      (map message-helper events))))
+                           (badge-message item lng)))
+        message-events (map message-helper events)]
+    (if (and (not (nil? (first message-events))) (not (empty? message-events)))
+      message-events)))
 
 (defn email-new-messages-block [ctx user lng]
   (let [admin? (= "admin" (:role user))
         admin-events (if admin? (admin-events-message ctx user lng) nil)
         events (message-events ctx user lng)
         social-url (str (get-full-path ctx) "/social")]
-    (if (or admin-events events)
+    (if (or (not (empty? admin-events)) (not (empty? events)))
       [:table
        {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
        (html-mail-body-item  [:strong (str (t :user/Emailnotificationtext2 lng) ":")] )
@@ -88,7 +89,3 @@
          :align  "left"}
         [:div {:style " font-family: Arial,sans-serif; color: #686868; font-size: 14px;"} (str (t :user/Emailnotificationunsubscribetext  lng) " ") [:a {:href (str (get-full-path ctx) "/user/edit")  :target "_blank"} (t :badge/Gohere lng)] "."]
         ]]]]]])
-
-
-
-
