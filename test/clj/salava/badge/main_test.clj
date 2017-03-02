@@ -1,7 +1,7 @@
 (ns salava.badge.main-test
   (:require [salava.badge.main :as b]
             [clojure.test :refer :all]
-            [salava.test-utils :as t]))
+            [salava.core.test-utils :as t]))
 
 (t/deftest-ctx main-test [ctx]
   (testing "with correct values"

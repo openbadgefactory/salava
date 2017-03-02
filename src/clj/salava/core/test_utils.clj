@@ -1,4 +1,4 @@
-(ns salava.test-utils
+(ns salava.core.test-utils
   (:require [clojure.test]
             [clj-http.client :as client]
             [clojure.tools.logging :refer  [*logger-factory*]]

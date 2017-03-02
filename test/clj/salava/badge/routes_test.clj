@@ -1,6 +1,6 @@
 (ns salava.badge.routes-test
   (:require [clojure.test :refer :all]
-            [salava.test-utils :as t]))
+            [salava.core.test-utils :as t]))
 
 (def test-user {:id 1 :role "user" :private false})
 (def user-with-no-badges (assoc test-user :id 3))
