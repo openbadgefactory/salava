@@ -1,5 +1,6 @@
 (ns salava.core.components.db
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.tools.logging :as log]
+            [com.stuartsierra.component :as component]
             [hikari-cp.core :refer :all]))
 
 (defrecord Db [config datasource]
@@ -7,11 +8,14 @@
 
   (start [component]
     (let [datasource (make-datasource (get-in config [:config :core :datasource]))]
+      (log/info "hikari-cp started")
       (assoc component :datasource datasource)))
 
   (stop [component]
-    (if datasource
-      (close-datasource datasource))
+    (when datasource
+      (log/info "hikari-cp close initiated...")
+      (close-datasource datasource)
+      (log/info "hikari-cp closed"))
     (assoc component :datasource nil)))
 
 (defn create []
