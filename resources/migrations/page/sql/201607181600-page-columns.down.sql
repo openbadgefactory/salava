@@ -1,1 +1,1 @@
-ALTER TABLE `page` DROP `border`;
+ALTER TABLE `page` DROP `deleted`;
