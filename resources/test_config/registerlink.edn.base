@@ -1,0 +1,2 @@
+{:email-whitelist [#"@live.com$"
+       		   #"@gmail.com$"] }
