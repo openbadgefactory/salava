@@ -160,6 +160,7 @@
         overflow: auto;
         width: 100%;
         .profile-picture-gallery-element {
+	    position:relative;
             float: left;
             width: 112px;
             height: 112px;
@@ -176,6 +177,11 @@
                 max-width: 100px;
                 max-height: 100px;
             }
+	    .delete-icon{
+		position: absolute;
+		top: 84px;
+		left: 92px;
+	    }
         }
         .element-selected {
             border-color: #66afe9;
