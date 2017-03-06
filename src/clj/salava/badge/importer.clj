@@ -126,6 +126,8 @@
         (b/save-badge-tags! ctx tags badge-id))
       {:id badge-id})
     (catch Exception ex
+      (log/error "save-badge-data!: failed to save badge")
+      (log/error (.toString ex))
       {:id nil})))
 
 (defn user-backpack-emails
