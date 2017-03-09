@@ -107,7 +107,7 @@
   ([url] (http-get url {}))
   ([url opt]
    (if (str/blank? url)
-     (throw (Exception. "http-get: missing url parameter")))
+     (throw (IllegalArgumentException. "http-get: missing url parameter")))
    (try
      (:body (client/get url opt))
      (catch Exception ex

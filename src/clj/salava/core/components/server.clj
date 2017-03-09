@@ -11,7 +11,7 @@
           port          (or (System/getenv "SALAVA_PORT") (:port http-config))
           ring-handler  (get-in handler [:handler])
           server        (http-kit/run-server ring-handler (assoc http-config :port (Integer. port)))]
-      (println (str "http-kit application server started at " (:host http-config) ":" port))
+      (log/info (str "http-kit application server started at " (:host http-config) ":" port))
       (assoc this :http-kit server)))
 
   (stop [this]

@@ -1,4 +1,5 @@
 (ns salava.core.handler
+  (:import (java.io FileNotFoundException))
   (:require [clojure.tools.logging :as log]
             [compojure.api.sweet :refer :all]
             [compojure.route :as route]
@@ -13,17 +14,13 @@
             [ring.middleware.session.cookie :refer [cookie-store]]
             [ring.middleware.webjars :refer [wrap-webjars]]))
 
-
-(defn get-route-def [ctx plugin]
-  (try+
-    (let [sym (symbol (str "salava." (clojure.string/replace (plugin-str plugin) #"/" ".") ".routes/route-def"))]
-      (require (symbol (namespace sym)) :reload)
-      ((resolve sym) ctx))
-    (catch Object _
+(defn- get-route-def [ctx plugin]
+  (let [nspace (symbol (str "salava." (clojure.string/replace (plugin-str plugin) #"/" ".") ".routes"))]
+    (if (try (require nspace :reload) true (catch FileNotFoundException _ false))
+      ((get (ns-map nspace) 'route-def) ctx)
       (log/info (str "no routes in plugin " plugin)))))
 
-
-(defn resolve-routes [ctx]
+(defn- resolve-routes [ctx]
   (apply routes (map (fn [p] (get-route-def ctx p)) (conj (get-in ctx [:config :core :plugins]) :core))))
 
 

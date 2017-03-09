@@ -1,17 +1,9 @@
 (ns salava.badge.main-test
   (:require [salava.badge.main :as b]
             [clojure.test :refer :all]
-            [salava.test-utils :as ts ]))
+            [salava.core.test-utils :as t]))
 
-(def system (ts/get-system))
-
-(def ctx (get-in system [:handler :ctx]))
-
-(deftest badge-url
-  
+(t/deftest-ctx main-test [ctx]
   (testing "with correct values"
-    (is (= "http://localhost:3000/app/badge/info/1" (b/badge-url ctx 1))))) 
-
-
-(ts/stop-system system)
+    (is (= "http://localhost:3000/app/badge/info/1" (b/badge-url ctx 1)))))
 
