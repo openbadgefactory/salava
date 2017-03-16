@@ -18,12 +18,19 @@
     (if (exists config-file)
       (-> config-file slurp read-string))))
 
+(defn- temp-wrap-factory
+  "Temporarily assoc factory config to core. Can be removed after factory
+  plugin transition is completed."
+  [base-path core-conf]
+  (assoc core-conf :obf (or (load-config base-path :factory)
+                            (load-config base-path :extra/factory)
+                            (:obf core-conf))))
 
 (defrecord Config [base-path config]
   component/Lifecycle
 
   (start [this]
-    (let [core-conf (load-config base-path :core)
+    (let [core-conf (->> (load-config base-path :core) (temp-wrap-factory base-path))
           config (reduce #(assoc %1 %2 (load-config base-path %2)) {} (:plugins core-conf))]
 
     (assoc this :config (assoc config :core core-conf))))

@@ -1,3 +1,4 @@
+;; Allowed iframe sources in user page content.
 {:iframe-whitelist [#"^:\/\/www\.dipity\.com"
                     #"^sites.google.com/site/"
                     #"^https?:\/\/vimeo\.com"

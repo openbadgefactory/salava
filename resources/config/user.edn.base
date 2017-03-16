@@ -1,3 +1,4 @@
-{:default-country "FI"	
- :default-language "en"	
+;; Default settings for new users
+{:default-country "FI"
+ :default-language "en"
  :email-notifications true}
