@@ -74,6 +74,7 @@
   [ctx user-id]
   (let [badges (select-user-badges-to-export {:user_id user-id} (u/get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (u/get-db ctx)))]
+    (log/info (pr-str badges))
     (map-badges-tags badges tags)))
 
 (defn user-badges-pending
@@ -100,18 +101,8 @@
 
 (defn user-owns-badge-id
   "Check if user owns badge and returns id"
-  [ctx assertion user-id]
-  (str (:id (if (= (get-in assertion [:verify :type]) "hosted")
-                  (select-user-owns-hosted-badge-id
-                    {:assertion_url (get-in assertion [:verify :url])
-                     :user_id user-id}
-                    (into {:result-set-fn first}
-                          (u/get-db ctx)))
-                  (select-user-owns-signed-badge-id
-                    {:assertion_json (get-in assertion [:assertion_json])
-                     :user_id user-id}
-                    (into {:result-set-fn first}
-                          (u/get-db ctx)))))))
+  [ctx badge]
+  (:id (select-user-owns-badge-id badge (u/get-db-1 ctx))))
 
 (defn check-badge-revoked
   "Check if badge assertion url exists and set badge re"
@@ -170,39 +161,6 @@
 (defn- recipient-email [user-emails recipient]
   (or (some #(check-email recipient %) user-emails)
       (throw (Exception. "badge/Userdoesnotownthisbadge"))))
-
-(defn save-badge-from-assertion! [ctx badge user-id emails]
-  (if (and (get-in badge [:assertion :expires]) (< (get-in badge [:assertion :expires]) (unix-time)))
-    (throw (Exception. "badge/Badgeexpired")))
-  (if (user-owns-badge? ctx (:assertion badge) user-id)
-    (throw (Exception. "badge/Alreadyowned")))
-  (let [
-        hosted? (= (get-in badge [:assertion :verify :type]) "hosted")
-        now (unix-time)
-        saved (db/save-badge! ctx
-                           {:user_id             user-id
-                            :email               (recipient-email emails (get-in badge [:assertion :recipient]))
-                            :assertion_url       (if hosted? (get-in badge [:assertion :verify :url]))
-                            :assertion_jws       (get-in badge [:assertion :assertion_jws])
-                            :assertion_json      (get-in badge [:assertion :assertion_json])
-                            :badge_url           (get-in badge [:assertion :badge :badge_url])
-                            :issued_on           (get-in badge [:assertion :issuedOn])
-                            :expires_on          (get-in badge [:assertion :expires])
-                            :evidence_url        (get-in badge [:assertion :evidence])
-                            :status              (get-in badge [:_status] "pending")
-                            :visibility          "private"
-                            :show_recipient_name 0
-                            :rating              0
-                            :ctime               now
-                            :mtime               now
-                            :deleted             0
-                            :revoked             0
-                            :issuer_verified     0})]
-    (check-issuer-verified! ctx (saved :id) (saved :issuer_url) 1 false)
-    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
-      (so/insert-connection-badge! ctx user-id (saved :badge_content_id)))
-    (:generated_key (saved :id))))
-
 
 (defn save-badge-tags!
   "Save tags associated to badge. Delete existing tags."

@@ -1,14 +1,74 @@
 (ns salava.badge.parse
-  (:require [clojure.tools.logging :as log]
-            [clojure.java.io :as io]
+  (:require [buddy.sign.jws :as jws]
+            [buddy.core.keys :as keys]
+            [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.data.json :as json]
             [clojure.xml :as xml]
-            [buddy.sign.jws :as jws]
-            [buddy.core.keys :as keys]
             [net.cgrand.enlive-html :as html]
-            [salava.core.util :as u])
-  (:import [ar.com.hjg.pngj PngReader]))
+            [salava.core.util :as u]
+            [schema.core :as s])
+  (:import (ar.com.hjg.pngj PngReader)
+           (java.io StringReader)))
+
+(s/defschema BadgeContent {:id    s/Str
+                           :name  s/Str
+                           :image_file  s/Str
+                           :description s/Str
+                           :alignment [(s/maybe {:name s/Str
+                                                 :url  s/Str
+                                                 :description s/Str})]
+                           :tags      [(s/maybe s/Str)]})
+
+(s/defschema IssuerContent {:id   s/Str
+                            :name s/Str
+                            :url  s/Str
+                            :description (s/maybe s/Str)
+                            :image_file (s/maybe s/Str)
+                            :email (s/maybe s/Str)
+                            :revocation_list_url (s/maybe s/Str)})
+
+(s/defschema CreatorContent (-> IssuerContent
+                                (dissoc :revocation_list_url)
+                                (assoc :json_url s/Str)))
+
+(s/defschema CriteriaContent {:id s/Str
+                              :html_content s/Str
+                              :markdown_content (s/maybe s/Str)})
+
+(s/defschema Badge {:id (s/maybe s/Int)
+                    :user_id s/Int
+                    :email   s/Str
+                    :assertion_url    (s/maybe s/Str)
+                    :assertion_jws    (s/maybe s/Str)
+                    :assertion_json   s/Str
+                    :badge_url        (s/maybe s/Str)
+                    :issuer_url       (s/maybe s/Str)
+                    :creator_url      (s/maybe s/Str)
+                    :criteria_url     s/Str
+                    :badge_content    BadgeContent
+                    :issuer_content   IssuerContent
+                    :criteria_content CriteriaContent
+                    :creator_content  (s/maybe CreatorContent)
+                    :issued_on  s/Int
+                    :expires_on (s/maybe s/Int)
+                    :evidence_url (s/maybe s/Str)
+                    :status     (s/enum "pending" "accepted" "declined")
+                    :visibility (s/enum "private" "internal" "public")
+                    :show_recipient_name (s/enum 0 1)
+                    :rating (s/maybe (s/enum 0 1))
+                    :ctime s/Int
+                    :mtime s/Int
+                    :deleted (s/enum 0 1)
+                    :revoked (s/enum 0 1)
+                    :issuer_verified (s/enum 0 1)
+                    :show_evidence   (s/enum 0 1)
+                    :last_checked (s/maybe s/Int)
+                    :old_id (s/maybe s/Int)})
+
+(def valid-badge (s/validator Badge))
+
+;;;
 
 (defn- domain [url]
   (last (re-find #"^https?://([^/]+)" url)))
@@ -25,112 +85,214 @@
             (throw (Exception. "image missing"))))))))
 
 
-(defmulti assertion (fn [input]
-                      (cond
-                        (map? (:badge input)) :v0.5.0
-                        (and (contains? input :id) (contains? input :type)) :v1.1
-                        :else :v1.0)))
+(defn- email-variations [emails]
+  (mapcat #(list (string/upper-case %)
+                 (string/lower-case %)
+                 (string/capitalize %)) emails))
+
+;;;
 
 ;; See https://github.com/mozilla/openbadges-backpack/wiki/Assertion-Specification-Changes
+(defmulti badge-content (fn [_ assertion]
+                          (cond
+                            (map? (:badge assertion)) :v0.5.0
+                            (and (contains? assertion :id) (contains? assertion :type)) :v1.1
+                            :else :v1.0)))
 
-(defmethod assertion :v0.5.0 [input]
+(defmethod badge-content :v0.5.0 [initial assertion]
+  (if (contains? initial :assertion_url)
+    (if (not= (domain (get-in assertion [:badge :issuer :origin])) (domain (:assertion_url initial)))
+      (throw (IllegalArgumentException. "invalid assertion, origin url mismatch"))))
+
   (let [q-url (fn [url]
                 (if (re-find #"^/" (str url))
-                  (str (get-in input [:badge :issuer :origin]) url) url))]
-    {:recipient {:identity (:recipient input)
-                 :type "email"
-                 :salt (get input :salt "")
-                 :hashed (not (boolean (re-find #"\@" (:recipient input))))}
-     :badge {:name         (get-in input [:badge :name])
-             :image        (badge-image (q-url (get-in input [:badge :image])))
-             :description  (get-in input [:badge :description])
-             :criteria     (q-url (get-in input [:badge :criteria]))
-             :issuer {:name  (str (get-in input [:badge :issuer :name])
-                                  ": "
-                                  (get-in input [:badge :issuer :org]))
-                      :url   (get-in input [:badge :issuer :origin])
-                      :email (get-in input [:badge :issuer :contact])}}
-     :evidence (q-url (:evidence input))
-     :expires  (u/str->epoch (:expires input))
-     :issuedOn (u/str->epoch (or (:issued_on input) (:issuedOn input)))
-     :verify {:type "hosted"
-              :url  (get-in input [:verify :url])}}))
+                  (str (get-in assertion [:badge :issuer :origin]) url) url))
+        badge    (:badge assertion)
+        issuer   (:issuer badge)
+        criteria (u/http-get (q-url (:criteria badge)))]
+
+    (merge initial
+           {:badge_url    nil
+            :issuer_url   nil
+            :criteria_url (q-url (:criteria badge))
+            :creator_url  nil
+            :badge_content {:id ""
+                            :name (:name badge)
+                            :image_file (q-url (:image badge))
+                            :description (:description badge)
+                            :alignment []
+                            :tags (get badge :tags [])}
+            :issuer_content {:id ""
+                             :name (str (:name issuer) ": " (:org issuer))
+                             :description (:description issuer)
+                             :url (q-url (:origin issuer))
+                             :email (:contact issuer)
+                             :image_file nil
+                             :revocation_list_url nil}
+            :criteria_content {:id ""
+                               :html_content criteria
+                               :markdown_content (u/alt-markdown criteria)}
+            :creator_content  nil
+            :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
+            :expires_on (u/str->epoch (:expires assertion))
+            :evidence_url (q-url (:evidence assertion))})))
 
 
-(defmethod assertion :default [input]
-  (if (contains? (meta input) :assertion_url)
-    (if (not= (get-in input [:verify :url]) (:assertion_url (meta input)))
-      (throw (Exception. "badge/VerifyURLMismatch"))))
-  (if (not= (domain (get-in input [:verify :url])) (domain (:badge input)))
-    (throw (Exception. "badge/VerifyURLMismatch")))
-  (let [badge  (json/read-str (u/http-get (:badge input)))
-        issuer (json/read-str (u/http-get (:issuer badge)))]
-    (-> input
-        (assoc :expires  (u/str->epoch (:expires input)))
-        (assoc :issuedOn (u/str->epoch (:issuedOn input)))
-        (assoc :badge badge)
-        (assoc-in [:badge :image] (badge-image input))
-        (assoc-in [:badge :issuer] issuer))))
+(defmethod badge-content :default [initial assertion]
+  (if (contains? initial :assertion_url)
+    (if (not= (get-in assertion [:verify :url]) (:assertion_url initial))
+      (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
+  (if (not= (domain (get-in assertion [:verify :url])) (domain (:badge assertion)))
+    (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
+
+  (let [badge  (u/json-get (:badge assertion))
+        issuer (u/json-get (:issuer badge))
+        criteria (u/http-get (:criteria badge))
+        creator-url (:extensions:OriginalCreator badge)
+        creator (if creator-url
+                  (let [data (u/json-get creator-url)]
+                    {:id ""
+                     :name        (:name data)
+                     :image_file  (:image data)
+                     :description (:description data)
+                     :url   (:url data)
+                     :email (:email data)
+                     :json_url creator-url}))]
+
+    (merge initial
+           {:badge_url    (:badge assertion)
+            :issuer_url   (:issuer badge)
+            :criteria_url (:criteria badge)
+            :creator_url  creator-url
+            :badge_content {:id ""
+                            :name (:name badge)
+                            :image_file (:image badge)
+                            :description (:description badge)
+                            :alignment (get badge :alignment [])
+                            :tags (get badge :tags [])}
+            :issuer_content {:id ""
+                             :name (:name issuer)
+                             :description (:description issuer)
+                             :url (:url issuer)
+                             :email (:email issuer)
+                             :image_file (:image issuer)
+                             :revocation_list_url (:revocationList issuer)}
+            :criteria_content {:id ""
+                               :html_content criteria
+                               :markdown_content (u/alt-markdown criteria)}
+            :creator_content  creator
+            :issued_on  (u/str->epoch (:issuedOn assertion))
+            :expires_on (u/str->epoch (:expires assertion))
+            :evidence_url (:evidence assertion)})))
+
+;;;
+
+(defmulti recipient (fn [_ asr] (:recipient asr)))
+
+(defmethod recipient String [emails asr]
+  (recipient emails (assoc asr :recipient {:salt (:salt asr)
+                                           :hashed (not (re-find #"@" (:recipient asr)))
+                                           :identity (:recipient asr)
+                                           :type "email"})))
+
+(defmethod recipient :default [emails asr]
+  (let [hashed  (get-in asr [:recipient :hashed])
+        salt    (get-in asr [:recipient :salt])
+        we-have (get-in asr [:recipient :identity])
+        [algo hash] (string/split we-have #"\$")
+        check-fn (fn [they-sent]
+                   (if hashed
+                     (= hash (u/hex-digest algo (str they-sent salt)))
+                     (= we-have they-sent)))]
+    (if-let [found (first (filter check-fn (email-variations emails)))]
+      found
+      (throw (Exception. "badge/Userdoesnotownthisbadge")))))
+
+;;;
+
+(defn assertion->badge
+  ([user assertion] (assertion->badge user assertion {}))
+  ([user assertion initial]
+   (let [now (u/now)]
+     (-> initial
+         (assoc :id nil
+                :user_id (:id user)
+                :email   (recipient (:emails user) assertion)
+                :status "pending"
+                :visibility "private"
+                :show_recipient_name 0
+                :rating nil
+                :ctime now
+                :mtime now
+                :deleted 0
+                :revoked 0
+                :issuer_verified 0
+                :show_evidence 0
+                :last_checked nil
+                :old_id nil)
+         (badge-content assertion)
+         valid-badge))))
+
+;;;
+
+(defmulti str->badge (fn [_ input]
+                       (cond
+                         (string/blank? input) :blank
+                         (and (string? input) (re-find #"^https?://" input)) :url
+                         (and (string? input) (re-find #"\{" input))         :json
+                         (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
+
+(defmethod str->badge :json [user input]
+  (let [content (json/read-str input :key-fn keyword)]
+    (if (= ((get-in content [:verify :type])) "hosted")
+      (str->badge user (get-in content [:verify :url])))))
+
+(defmethod str->badge :url [user input]
+  (let [body (u/http-get input)]
+    (assertion->badge user
+                      (json/read-str body :key-fn keyword)
+                      {:assertion_url input :assertion_json body :assertion_jws nil})))
+
+(defmethod str->badge :jws [user input]
+  (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
+        header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
+        payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
+        public-key (-> (get-in payload [:verify :url]) u/http-get keys/str->public-key)
+        body       (-> input (jws/unsign public-key {:alg (keyword (:alg header))}) (String. "UTF-8"))]
+    (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
 
 
-(defmulti str->assertion(fn [input]
-                          (cond
-                            (string/blank? input) :blank
-                            (and (string? input) (re-find #"^https?://" input)) :url
-                            (and (string? input) (re-find #"\{" input))         :json
-                            (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
-
-(defmethod str->assertion :url [input]
-  (let [input-meta (or (meta input) {})]
-    (with-meta (assertion (u/json-get input)) (assoc input-meta :assertion_url input))))
-
-(defmethod str->assertion :json [input]
-  (let [input-meta (or (meta input) {})]
-    (assertion (with-meta (json/read-str input :key-fn keyword) (assoc input-meta :assertion_json input)))))
-
-(defmethod str->assertion :jws [input]
-  (let [input-meta (or (meta input) {})
-        [raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
-        header (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
-        payload (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
-        public-key (-> (get-in payload [:verify :url])
-                       u/http-get
-                       keys/str->public-key)
-        asr (-> input
-                (jws/unsign public-key {:alg (keyword (:alg header))})
-                (String. "UTF-8")
-                (json/read-str :key-fn keyword))]
-    (assertion (with-meta asr (-> input-meta
-                                  (assoc :assertion_jws  input)
-                                  (assoc :assertion_json (u/url-base64->str raw-payload)))))))
-
-(defmethod str->assertion :blank [_]
+(defmethod str->badge :blank [_ _]
   (throw (IllegalArgumentException. "missing assertion string")))
 
-(defmethod str->assertion :default [_]
-  (log/error "str->assertion: got unsupported assertion data")
+(defmethod str->badge :default [_ _]
+  (log/error "str->badge: got unsupported assertion data")
   (log/error (pr-str _))
   (throw (IllegalArgumentException. "invalid assertion string")))
 
+;;;
 
-(defmulti file->assertion :content-type)
+(defmulti file->badge (fn [_ upload]
+                        (or (:content-type upload)
+                            (get-in upload [:headers "Content-Type"]))))
 
-(defmethod file->assertion "image/png" [upload]
-  (let [m (.getMetadata (doto (PngReader. (:tempfile upload)) (.readSkippingAllRows)))
-        content (string/trim (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge") ""))
-        asr (str->assertion content)
-        input-meta (or (meta asr) {})]
-    (with-meta asr (assoc input-meta :image (slurp (:tempfile upload))))))
+(defmethod file->badge "image/png" [user upload]
+  (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
+           .getMetadata
+           #(or (.getTxtForKey % "openbadges") (.getTxtForKey % "openbadge"))
+           string/trim
+           (str->badge user)))
 
-(defmethod file->assertion "image/svg+xml" [upload]
-  (let [content (some->> (xml/parse (:tempfile upload))
-                     :content
-                     (filter #(= :openbadges:assertion (:tag %)))
-                     first :content first string/trim)
-        asr (str->assertion content)
-        input-meta (or (meta asr) {})]
-    (with-meta asr (assoc input-meta :image (slurp (:tempfile upload))))))
+(defmethod file->badge "image/svg+xml" [user upload]
+  (some->> (xml/parse (or (:tempfile upload) (:body upload)))
+           :content
+           (filter #(= :openbadges:assertion (:tag %)))
+           first
+           :content
+           first
+           string/trim
+           (str->badge user)))
 
-(defmethod file->assertion :default [_]
-  (log/error "file->assertion: unsupported file type:" (:content-type _))
+(defmethod file->badge :default [_ upload]
+  (log/error "file->assertion: unsupported file type:" (:content-type upload))
   (throw (IllegalArgumentException. "invalid file type")))

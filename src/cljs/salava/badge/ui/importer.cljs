@@ -35,7 +35,7 @@
 (defn ok-badge-keys [badges]
   (->> badges
        (filter #(= (:status %) "ok"))
-       (map #(:key %))))
+       (map #(:import-key %))))
 
 (defn fetch-badges [state]
   (swap! state assoc :ajax-message (t :badge/Fetchingbadges))
@@ -61,15 +61,15 @@
                 (m/modal! (import-modal data)
                           {:hide #(navigate-to "/badge")}))}))
 
-(defn remove-badge-selection [key state]
+(defn remove-badge-selection [import-key state]
   (swap! state assoc :badges-selected
          (remove
-           #(= % key)
+           #(= % import-key)
            (:badges-selected @state))))
 
-(defn add-badge-selection [key state]
+(defn add-badge-selection [import-key state]
   (swap! state assoc :badges-selected
-         (conj (:badges-selected @state) key)))
+         (conj (:badges-selected @state) import-key)))
 
 (defn toggle-select-all [state]
   (swap! state update-in [:all-selected] not)
@@ -78,22 +78,20 @@
     (swap! state assoc :badges-selected [])))
 
 (defn import-grid-element [element-data state]
-  (let [{:keys [id image_file name key description status message issuer_content_name issuer_content_url error]} element-data
-        checked? (some #(= key %) (:badges-selected @state))
+  (let [{:keys [previous-id image_file name import-key description status message issuer_content_name issuer_content_url error]} element-data
+        checked? (some #(= import-key %) (:badges-selected @state))
         invalidtype (cond
                     (= "badge/Alreadyowned" message) "duplicate"
                     (= "badge/Badgeisexpired" message) "expired"
                     (= "badge/Savethisbadge" message) "ok"
                     :else "error")
 
-        badge-link (if (= invalidtype "duplicate") (path-for (str "/badge/info/" id)))]
+        badge-link (if (= invalidtype "duplicate") (path-for (str "/badge/info/" previous-id)))]
      [:div {:class (str "media grid-container " invalidtype)}
       [:div.media-content
-       (if image_file
+       (if (and image_file (re-find #"^(https?://|data:image/).+" image_file))
          [:div.media-left
-          [:img {:src (if-not (re-find #"http" image_file)
-                        (str "/" image_file)
-                        image_file)
+          [:img {:src image_file
                  :alt name}]])
        [:div.media-body
         [:div.media-heading
@@ -108,19 +106,19 @@
       [:div {:class "media-bottom"}
        (if (= status "ok")
          [:div.checkbox
-         [:label {:for (str "checkbox-" key)}
+         [:label {:for (str "checkbox-" import-key)}
           [:input {:type "checkbox"
-                    :id (str "checkbox-" key)
+                    :id (str "checkbox-" import-key)
                     :name "checkbox"
                     :checked checked?
                     :on-change (fn []
                                  (if checked?
-                                   (remove-badge-selection key state)
-                                   (add-badge-selection key state)))}]     
+                                   (remove-badge-selection import-key state)
+                                   (add-badge-selection import-key state)))}]
           (t :badge/Savebadge)]]
         (if (= invalidtype "error")
           [:div
-           [:span {:id (str "err" key)} error]]
+           [:span {:id (str "err" import-key)} error]]
           [:div
            (t (keyword message))]))]]))
 

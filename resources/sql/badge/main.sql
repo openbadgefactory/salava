@@ -37,6 +37,13 @@ SELECT id AS id FROM badge WHERE assertion_url = :assertion_url AND user_id = :u
 -- check if user owns badge and returns id
 SELECT id AS id FROM badge WHERE assertion_json = :assertion_json AND user_id = :user_id AND status != 'declined' AND deleted = 0
 
+-- name: select-user-owns-badge-id
+-- check if user owns badge and returns id
+SELECT id FROM badge
+WHERE user_id = :user_id AND status != 'declined' AND deleted = 0
+AND (assertion_url = :assertion_url OR assertion_json = :assertion_json OR assertion_jws = :assertion_jws)
+
+
 --name: replace-badge-content!
 --save content of the badge
 REPLACE INTO badge_content (id, name, description, image_file)
