@@ -50,7 +50,7 @@
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
   (try
-    (let [obf-url (get-in ctx [:config :core :obf :url] "")
+    (let [obf-url (get-in ctx [:config :factory :url] "")
           obf-base (-> obf-url (split #"://") second)
           {:keys [id badge_url issuer_url mtime issuer_verified]} badge
           issued-by-obf (if (and obf-base badge_url) (-> obf-base re-pattern (re-find badge_url) boolean))
@@ -74,7 +74,6 @@
   [ctx user-id]
   (let [badges (select-user-badges-to-export {:user_id user-id} (u/get-db ctx))
         tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (u/get-db ctx)))]
-    (log/info (pr-str badges))
     (map-badges-tags badges tags)))
 
 (defn user-badges-pending

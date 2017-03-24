@@ -10,8 +10,8 @@
 (defn wrap-basic-auth [handler ctx]
   (fn [request]
     (let [auth-header (get-in request [:headers "authorization"] "")
-          api-key (get-in ctx [:config :core :obf :key])
-          api-secret (get-in ctx [:config :core :obf :secret])
+          api-key (get-in ctx [:config :factory :key])
+          api-secret (get-in ctx [:config :factory :secret])
           credentials (if auth-header (base64->str (str (last (re-find #"^Basic (.*)$" auth-header)))))
           [key pass] (if credentials (split (str credentials) #":" 2))]
       (if (or (empty? key) (empty? pass))

@@ -68,7 +68,7 @@
 (defn- issued-by-factory [ctx badge]
   (boolean
     (try
-      (let [url-match (partial re-find (re-pattern (str "^" (get-in ctx [:config :core :obf :url] "-"))))]
+      (let [url-match (partial re-find (re-pattern (str "^" (get-in ctx [:config :factory :url] "-"))))]
         (or (url-match (get badge :assertion_url ""))
             (some-> (:assertion_url badge)
                     u/json-get
@@ -91,7 +91,7 @@
 
 (defn issuer-info [ctx badge]
   (let [issued (issued-by-factory ctx badge)]
-    {:obf_url (get-in ctx [:config :core :obf :url] "")
+    {:obf_url (get-in ctx [:config :factory :url] "")
      :issued_by_factory issued
      :verified_by_factory (and issued (verified-by-factory ctx badge))}))
 
