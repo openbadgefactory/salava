@@ -15,9 +15,9 @@
 
 
 (defn- save-image [ctx item]
-  (if (and item (:image_file item))
-    (assoc item :image_file (u/file-from-url ctx (:image_file item)))
-    item))
+  (if (string/blank? (:image_file item))
+    item
+    (assoc item :image_file (u/file-from-url ctx (:image_file item)))))
 
 
 (defn save-criteria-content! [ctx input]
