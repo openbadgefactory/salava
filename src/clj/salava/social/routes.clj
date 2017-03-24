@@ -5,7 +5,7 @@
             [schema.core :as s]
             [salava.core.access :as access]
             [salava.social.db :as so]
-            [salava.core.helper :refer [dump]]
+            [salava.factory.db :as f]
             [salava.badge.main :as b]
             salava.core.restructure))
 
@@ -128,18 +128,17 @@
                    :summary "Returns users events"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (let [badge-events (so/get-user-badge-events-sorted-and-filtered ctx (:id current-user))
-                             pending-badges (b/user-badges-pending ctx (:id current-user))
-                             tips (so/get-user-tips ctx (:id current-user))
-                             admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
-                             events {:tips tips
-                                     :events badge-events
-                                     :pending-badges pending-badges}
-                             events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)]
-                         events
-                         
-                           
-                           )))
+                   (do
+                     (f/save-pending-assertions ctx (:id current-user))
+                     (ok (let [badge-events (so/get-user-badge-events-sorted-and-filtered ctx (:id current-user))
+                               pending-badges (b/user-badges-pending ctx (:id current-user))
+                               tips (so/get-user-tips ctx (:id current-user))
+                               admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
+                               events {:tips tips
+                                       :events badge-events
+                                       :pending-badges pending-badges}
+                               events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)]
+                           events))))
 
              (GET "/connected/:badge_content_id" []
                   :return s/Bool
