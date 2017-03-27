@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `pending_factory_badge`;
