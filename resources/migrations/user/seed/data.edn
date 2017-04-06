@@ -22,6 +22,7 @@
           :ctime 1438954261
           :mtime 1438954261}
    }
+ 
   {:table "user_email"
    :data {
           :user_id 1
@@ -56,9 +57,15 @@
           :ctime 1450172372
           :mtime 1450172372}
    }
-  {
-   :table "user"
-   :data {
+ {:table "user_properties"
+  :data  {
+          :user_id 2
+          :name    "user_connect_accepting" 
+          :value   "accepted"}
+  }
+ {
+  :table "user"
+  :data  {
           :first_name "Third"
           :last_name "User"
           :role "user"
@@ -69,7 +76,7 @@
           :mtime 1453812046
           :activated 1
           }
-   }
+  }
   {:table "user_email"
    :data {
           :user_id 3
@@ -79,6 +86,12 @@
           :primary_address 1
           :ctime 1453812046
           :mtime 2000000000}
+   }
+ {:table "user_properties"
+   :data {
+          :user_id 3
+          :name "user_connect_accepting" 
+          :value "pending"}
    }
   {
    :table "user"
@@ -123,6 +136,12 @@
           :primary_address 1
           :ctime 1453968291
           :mtime 1453968291}
+   }
+ {:table "user_properties"
+   :data {
+          :user_id 5
+          :name "user_connect_accepting" 
+          :value "accepted"}
    }
   {
    :table "user"
@@ -218,4 +237,60 @@
          :primary_address 1
          :ctime 1462785916
          :mtime 1462785916}
-  })
+  }
+   {
+   :table "user"
+   :data {
+          :first_name "Tenth"
+          :last_name "Account"
+          :role "user"
+          :country "SE"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1453968291
+          :mtime 1453968291
+          :activated 1
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 10
+          :email "tenth.user@example.com"
+          :verified 1
+          :primary_address 1
+          :ctime 1453968291
+          :mtime 1453968291}
+   }
+ {:table "user_properties"
+   :data {
+          :user_id 10
+          :name "user_connect_accepting" 
+          :value "pending"}
+  }
+ {
+   :table "user"
+   :data {
+          :first_name "eleventh"
+          :last_name "Account"
+          :role "user"
+          :country "SE"
+          :pass "pbkdf2+sha256$ff1ca4be9620490658c0a43c$100000$b9744c7b51fe7615edf245bc7316ae57ed27054ce0a5ce3f69313f04b4c10580"
+          :ctime 1453968291
+          :mtime 1453968291
+          :activated 1
+          }
+   }
+  {:table "user_email"
+   :data {
+          :user_id 11
+          :email "eleventh.user@example.com"
+          :verified 1
+          :primary_address 1
+          :ctime 1453968291
+          :mtime 1453968291}
+   }
+ {:table "user_properties"
+   :data {
+          :user_id 11
+          :name "user_connect_accepting" 
+          :value "declined"}
+   })

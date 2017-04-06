@@ -46,7 +46,8 @@
 
 (defn save-factory-badge [ctx assertion-url user-id emails]
   (let [assertion (a/create-assertion assertion-url {})]
-    (b/save-badge-from-assertion! ctx {:assertion assertion} user-id emails)))
+    ;(b/save-badge-from-assertion! ctx {:assertion assertion} user-id emails)
+    ))
 
 (defn save-pending-assertions
   ""

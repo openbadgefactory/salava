@@ -1,6 +1,8 @@
 (ns salava.test-utils
   (:require [clj-http.client :as client]
             [clj-http.cookies :as cookies]
+            [ring.mock.request :as mock]
+            [com.stuartsierra.component :as component]
             [slingshot.slingshot :refer :all]))
 
 (def test-config (-> (clojure.java.io/resource "test_config/core.edn") slurp read-string))
@@ -29,7 +31,22 @@
                    :content-type :json
                    :cookie-store *cookie-store*}))
 
+(defn get-system []
+  (-> (salava.core.system/base-system "test_config")
+      (dissoc :http-server)
+      (component/start)))
+
+(defn stop-system [system]
+  (component/stop system))
+
 (defn test-api-request
+  ([system method url] (test-api-request system method url {}))
+  ([system method url post-params]
+   (try+
+    ((get-in system [:handler :handler]) (mock/request method url))
+    (catch Exception _))))
+
+(defn test-api-request1
   ([method url] (test-api-request method url {}))
   ([method url post-params]
    (try+

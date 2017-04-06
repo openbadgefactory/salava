@@ -5,7 +5,7 @@
             [schema.core :as s]
             [salava.core.access :as access]
             [salava.social.db :as so]
-            [salava.extra.factory.db :as f]
+            [salava.factory.db :as f]
             [salava.badge.main :as b]
             salava.core.restructure))
 
@@ -138,10 +138,9 @@
                                        :events badge-events
                                        :pending-badges pending-badges}
                                events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)]
-                           events
-                           
-                           ))))
-                   
+
+                           events))))
+             
              (GET "/connected/:badge_content_id" []
                   :return s/Bool
                    :summary "Returns Bool if user has connected with asked badge-content-id"

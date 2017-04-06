@@ -1,12 +1,13 @@
 (ns salava.social.ui.connections
   (:require [salava.core.ui.layout :as layout]
             [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
             [salava.gallery.ui.badges :as b]
             [reagent-modals.modals :as m]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
 
 (defn init-data [state]
   (ajax/GET
@@ -55,13 +56,22 @@
      ])
 
 
+(defn user-connections []
+  (let [connections (first (plugin-fun (session/get :plugins) "block" "connections"))]
+    (if connections
+      [connections]
+      [:div ""])))
+
 (defn content [state]
   (let [badges (:badges @state)]
-    [:div {:id "badge-stats"}
+    [:div
      [m/modal-window]
-     (badge-connections badges state)
-     
-     ]))
+     [:div {:id "badge-stats"}
+      
+      (badge-connections badges state)
+      
+      ]
+     (user-connections)]))
 
 
 

@@ -1,5 +1,6 @@
 (ns salava.core.components.config
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.tools.logging :as log]
+            [com.stuartsierra.component :as component]
             [salava.core.helper :refer [dump plugin-str]]
             [clojure.java.io :as io]))
 
@@ -32,5 +33,5 @@
     (assoc this :config nil)))
 
 (defn create [path]
-  (println "loading config files from:" path)
+  (log/info "loading config files from:" path)
   (map->Config {:base-path path}))

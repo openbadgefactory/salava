@@ -23,8 +23,6 @@
               :database-name "salava"
               :server-name   "localhost"}
 
- :obf {:url "https://openbadgefactory.com"}
-
  :session {:name "salava-session"
            :root "/"
            :secret "1234567890123456"

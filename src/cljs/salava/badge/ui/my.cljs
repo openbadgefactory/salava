@@ -173,6 +173,7 @@
   [:div
    (if (application-plugin?)  [:div (t :badge/Youhavenobadgesyet) (str ". ") (t :social/Getyourfirstbadge) [:a {:href (path-for "/gallery/application") } (str " ") (t :badge/Gohere)] (str ".")] [:div (t :badge/Youhavenobadgesyet) (str ".")]) ] )
 
+
 (defn content [state]
   [:div {:id "my-badges"}
    [m/modal-window]

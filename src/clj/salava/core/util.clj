@@ -1,5 +1,4 @@
 (ns salava.core.util
-  (:import [java.util Base64])
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.string :as str]
@@ -11,14 +10,21 @@
             [clj.qrgen :as q]
             [clj-time.coerce :as tc]
             [autoclave.core :refer [markdown-processor markdown-to-html]]
+            [net.cgrand.enlive-html :as html]
             [salava.core.helper :refer [plugin-str]]
-            [pantomime.mime :refer [extension-for-name mime-type-of]]))
+            [pantomime.mime :refer [extension-for-name mime-type-of]])
+  (:import (java.io StringReader)
+           (java.util Base64)))
 
 (defn get-db [ctx]
   {:connection {:datasource (:db ctx)}})
 
 (defn get-datasource [ctx]
   {:datasource (:db ctx)})
+
+(defn get-db-1 [ctx]
+  {:connection {:datasource (:db ctx)}
+   :result-set-fn first})
 
 (defn get-data-dir [ctx]
   (get-in ctx [:config :core :data-dir]))
@@ -107,7 +113,7 @@
   ([url] (http-get url {}))
   ([url opt]
    (if (str/blank? url)
-     (throw (Exception. "http-get: missing url parameter")))
+     (throw (IllegalArgumentException. "http-get: missing url parameter")))
    (try
      (:body (client/get url opt))
      (catch Exception ex
@@ -183,8 +189,8 @@
   [ctx url]
   (cond
     (str/blank? url) (throw (Exception. "file-from-url: url parameter missing"))
-    (re-find #"^https?" (str url)) (save-file-from-http-url ctx url)
-    (re-find #"^data"   (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
+    (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
+    (re-find #"^data"    (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw (Exception. (str "Error in file url: " url)))))
 
 (defn str->qr-base64 [text]
@@ -197,6 +203,9 @@
     (catch Exception ex
       (log/error "str->qr->base64: failed to generate QR-code")
       (log/error (.toString ex)))))
+
+(defn now []
+  (int (/ (System/currentTimeMillis) 1000)))
 
 (defn str->epoch
   "Convert string to unix epoch timestamp"
@@ -227,3 +236,11 @@
   "convert markdown to html and sanitize output"
   ([md] (if (nil? md) "" (md->html md default-md-processor)))
   ([md processor] (if (nil? md) "" (markdown-to-html processor md))))
+
+(defn alt-markdown
+  "Try to find alternate markdown version from input html"
+  [^String input]
+  (let [link-tags (-> (StringReader. input) (html/html-resource) (html/select [:head :link]))
+        md-url (some #(when (and (= (:rel %) "alternate") (= (:type %) "text/x-markdown")) (:href %))
+                     (map :attrs link-tags))]
+    (try (http-get md-url) (catch Exception _ ""))))

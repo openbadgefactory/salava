@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for hyperlink private?]]
+            [salava.core.ui.helper :refer [path-for hyperlink private? plugin-fun]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
@@ -15,6 +15,8 @@
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
+
+
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
@@ -86,6 +88,13 @@
         (for [element-data (sort-by :mtime > pages)]
           (page-grid-element element-data profile_picture))))
 
+(defn connect-user [user-id]
+  (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
+    (if connectuser
+      [connectuser user-id]
+      [:div ""])))
+
+
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
         reporttool-atom (cursor state [:reporttool])
@@ -104,8 +113,11 @@
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)]]]
-        (admintool user-id "user"))
+        [:div 
+         (connect-user user-id)
+         (admintool user-id "user")])
       [:h1.uppercase-header fullname]
+      
       [:div.row
        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper

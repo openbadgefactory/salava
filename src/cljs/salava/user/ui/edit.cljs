@@ -1,8 +1,9 @@
 (ns salava.user.ui.edit
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [clojure.string :refer [blank?]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for]]
+            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.common :refer [deep-merge]]
@@ -51,6 +52,11 @@
         (= new-password new-password-verify)
         (or (not has-password?) (not-empty current-password)))))
 
+(defn user-connect-config []
+  (let [connections (first (plugin-fun (session/get :plugins) "block" "userconnectionconfig"))]
+    (if connections
+      [connections]
+      [:div "lool"])))
 
 (defn content [state]
   (let [current-password-atom (cursor state [:user :current_password])
@@ -133,9 +139,7 @@
              [:div (t :user/Emailnotificationsactivetip)]
              [:div (t :user/Emailnotificationsdeactivetip)])
            ]])
-
-       
-
+       (user-connect-config)
        [:div.row
         [:div.col-xs-12
          [:button {:class "btn btn-primary"

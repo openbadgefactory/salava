@@ -4,6 +4,7 @@
             [clojure.set :refer [rename-keys]]
             [clj-http.client :as http]
             [slingshot.slingshot :refer :all]
+            [salava.core.helper :refer [dump]]
             [salava.core.util :refer [get-db get-datasource get-site-url get-base-path save-file-from-http-url]]))
 
 (defqueries "sql/oauth/queries.sql")
@@ -23,7 +24,7 @@
 
 (defn access-token [method url opts]
   (let [response (oauth-request method url opts)
-        access-token (:access_token response)]
+        access-token (:access_token response)]  
     (when-not access-token
       ;TODO: (log "OAuth request failed" _)
       (throw+ "oauth/Cannotconnecttoservice"))

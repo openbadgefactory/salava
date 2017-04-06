@@ -13,7 +13,14 @@
             [salava.badge.ui.helper :as bh]
             [salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
+
+
+(defn pending-connections []
+  (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
+    (if connections
+      [connections]
+      [:div ""])))
 
 (defn init-data [state]
   (ajax/GET
@@ -225,6 +232,7 @@
      :button (if (application-plugin?) (t :social/Getyourfirstbadge) nil)
      :link  (if (application-plugin?) "/gallery/application" nil) }))
 
+
 (defn report-ticket-tip [events]
   (let [count (count events)]
     {:header (t :social/Emailadmintickets)
@@ -270,6 +278,7 @@
         admin-events (or (:admin-events @state) nil)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
+     (pending-connections)
      [badges-pending state]
      (if admin-events
        [:div.row

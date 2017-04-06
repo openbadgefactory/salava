@@ -6,7 +6,7 @@
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
             [salava.badge.importer :as i]
-            [salava.extra.factory.db :as f]
+            [salava.factory.db :as f]
             [salava.core.layout :as layout]
             [salava.core.access :as access]
             salava.core.restructure))

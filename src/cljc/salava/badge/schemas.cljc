@@ -68,18 +68,23 @@
                                           :all-messages (s/maybe s/Int)}
    (s/optional-key :tags)                (s/maybe [s/Str])})
 
-(s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :email :assertion_url :tags :issuer_content_name :issuer_url :issuer_content_url]))
+(s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
+                                                :issued_on :expires_on :visibility
+                                                :mtime :status :badge_content_id
+                                                :email :assertion_url :tags
+                                                :issuer_content_name :issuer_url
+                                                :issuer_content_url]))
 
 (s/defschema BadgeToImport {:status  (s/enum "ok" "invalid")
                             :message (s/maybe s/Str)
                             :error (s/maybe s/Str)
-                            :key     s/Str
+                            :import-key     s/Str
                             :name        s/Str
                             :description (s/maybe s/Str)
                             :image_file  (s/maybe s/Str)
                             :issuer_content_name (s/maybe s/Str)
                             :issuer_content_url (s/maybe s/Str)
-                            :id (s/maybe s/Str)})
+                            :previous-id (s/maybe s/Int)})
 
 (s/defschema Import {:status (s/enum "success" "error")
                      :badges [BadgeToImport]

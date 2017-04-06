@@ -18,4 +18,6 @@
 
   <logger name="salava" level="DEBUG"/>
 
+  <logger name="com.zaxxer.hikari" level="ERROR" />
+
 </configuration>

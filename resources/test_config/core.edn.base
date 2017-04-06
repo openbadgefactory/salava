@@ -1,4 +1,7 @@
-{:site-name "Open Badge Passport"
+{:site-name "Salava"
+
+ :share {:site-name "Salava"
+         :hashtag "Salava"}
 
  :site-url "http://localhost:5000"
 
@@ -8,7 +11,9 @@
 
  :languages [:en :fi]
 
- :plugins [:badge :page :gallery :file :user :displayer]
+ :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail]
+
+ :private false
 
  :datasource {:adapter "mysql"
               :username "salava"
@@ -27,6 +32,13 @@
  :http {:host "localhost" :port 5000 :max-body 100000000}
 
  :mail-sender "sender@example.com"
+
+ :mail-host-config {:host "smtp.example.com"
+                    :user "yourusername"
+                    :pass "yourpassword"
+                    :ssl true
+                    :tls false
+                    :port 587}
 
  :data-dir "/path/to/data/directory"
 
