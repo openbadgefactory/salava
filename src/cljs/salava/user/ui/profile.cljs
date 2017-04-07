@@ -78,14 +78,14 @@
         [:img {:src (profile-picture profile_picture)
                :alt (str first_name " " last_name)}]]]]]))
 
-(defn badge-grid [badges]
+(defn badge-grid [badges badge-small-view]
   (into [:div {:class "row" :id "grid"}]
-        (for [element-data (sort-by :mtime > badges)]
+        (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
           (badge-grid-element element-data))))
 
-(defn page-grid [pages profile_picture]
+(defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row" :id "grid"}]
-        (for [element-data (sort-by :mtime > pages)]
+        (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
           (page-grid-element element-data profile_picture))))
 
 (defn connect-user [user-id]
@@ -98,6 +98,8 @@
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
         reporttool-atom (cursor state [:reporttool])
+        badge-small-view (cursor state [:badge-small-view])
+        page-small-view (cursor state [:page-small-view])
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
@@ -156,13 +158,15 @@
       (if (not-empty badges)
         [:div {:id "user-badges"}
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentbadges)]
-         [badge-grid badges]
-         [:div [:a {:href (path-for (str "/gallery/badges/" user-id))} (t :user/Showmore)]]])
+         [badge-grid badges @badge-small-view]
+         (if (< 6 (count badges))
+           [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])])
       (if (not-empty pages)
         [:div {:id "user-pages"}
          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
-         [page-grid pages profile_picture]
-         [:div [:a {:href (path-for (str "/gallery/pages/" user-id))} (t :user/Showmore)]]])
+         [page-grid pages profile_picture @page-small-view]
+         (if (< 6 (count pages))
+           [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
       (reporttool user-id fullname "user" reporttool-atom)
       ]]))
 
@@ -183,6 +187,7 @@
                  (reset! state (assoc data :user-id user-id
                                       :show-link-or-embed-code nil
                                       :permission "success"
+                                      :badge-small-view false
                                       :reporttool reporttool-init)))}
      (fn [] (swap! state assoc :permission "error")))))
 
@@ -190,9 +195,12 @@
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
                      :permission "initial"
-                     :reporttool {}})
+                     :reporttool {}
+                     :badge-small-view false
+                     :pages-small-view true})
         user (session/get :user)]
     (init-data user-id state)
+    
     (fn []
       (cond
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
