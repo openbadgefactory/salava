@@ -74,7 +74,8 @@
              
              (POST "/user-connection-config/:status" []
                    :summary "change user config accepting" 
-                   ;:return {:status (s/enum "success" "error")}                  
+                   :return {:status (s/enum "success" "error")
+                            (s/optional-key :message) (s/maybe s/Str)}                  
                    :path-params [status :- (s/enum "accepted" "pending" "declined")]
                    :auth-rules access/authenticated
                    :current-user current-user
@@ -96,7 +97,7 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   :return {:pending-users  [schemas/PendingUsers]
-                           :accepted-users [schemas/ConnectedUsers]}
+                           :accepted-users [schemas/AcceptedUserConnections]}
                   (do
                     (let [pending-users  (db/get-pending-requests ctx (:id current-user))
                           accepted-users (db/get-user-accepted-connections-user ctx (:id current-user))]

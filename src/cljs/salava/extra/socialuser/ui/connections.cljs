@@ -43,7 +43,7 @@
              [:th ""]]]
            (into [:tbody]
                  (for [user users
-                       :let [{:keys [user_id profile_picture first_name last_name]} user]]
+                       :let [{:keys [user_id profile_picture first_name last_name status]} user]]
                    [:tr
                     [:td [:img.badge-icon {:src (profile-picture profile_picture) 
                                            :alt name}]]
@@ -51,7 +51,7 @@
                                    :on-click #(do
                                         ;(b/open-modal id false init-data state)
                                                 (.preventDefault %)) } (str first_name " " last_name)]]
-                    [:td  (deleteconnect user_id state)]]))]])]))
+                    [:td  (if (= "accepted" status) (deleteconnect user_id state) "pending..")]]))]])]))
 
 
 (defn accept [owner-id state]

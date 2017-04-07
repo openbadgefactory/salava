@@ -9,6 +9,7 @@
 (s/defschema AcceptedUserConnections {:first_name      s/Str
                                       :last_name       s/Str
                                       :profile_picture (s/maybe s/Str)
+                                      :status          (s/enum "accepted" "pending" "declined")
                                       :user_id         s/Int})
 
 
@@ -23,7 +24,4 @@
                            :last_name       s/Str
                            :profile_picture (s/maybe s/Str)})
 
-(s/defschema ConnectedUsers {:user_id         s/Int
-                             :first_name      s/Str
-                             :last_name       s/Str
-                             :profile_picture (s/maybe s/Str)})
+

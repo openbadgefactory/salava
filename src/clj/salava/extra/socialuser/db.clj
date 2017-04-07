@@ -46,9 +46,6 @@
 
 (defn- update-connections-user-status [ctx owner_id user_id status]
   (try+
-   (dump status)
-   (dump owner_id)
-   (dump user_id)
    (update-connections-user-pending! {:user_id user_id :owner_id owner_id :status status} (get-db ctx))
    
    {:status "success"}

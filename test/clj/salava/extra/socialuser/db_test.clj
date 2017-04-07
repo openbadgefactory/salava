@@ -14,7 +14,7 @@
 (t/deftest-ctx main-test [ctx]
   (testing "get user connections"
     (let [connections (db/get-user-accepted-connections-user ctx (:id test-user))]
-      (is (=  1 (count connections)))
+      (is (=  2 (count connections)))
       ;order by first_name
       (is (= "Another"  (:first_name  (first connections))))))
 

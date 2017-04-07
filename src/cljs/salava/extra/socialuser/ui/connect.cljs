@@ -1,6 +1,7 @@
 (ns salava.extra.socialuser.ui.connect
   (:require [reagent.core :refer [atom cursor]]
             [ajax.core :as ajax]
+            [reagent.session :as session]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]])
@@ -51,13 +52,15 @@
 
 (defn handler [user-id]
   (let [state (atom {:status nil
-                     :user-id user-id})]
+                     :user-id user-id})
+        user (session/get :user)]
 
     (init-data user-id state)
     (fn []
-      [:div {:class "pull-right text-right"}
-       (case (:status @state)
-         "accepted" (unfollow-button user-id state)
-         "pending" (pending-button)
-         (follow-button user-id state))
-       ])))
+      (if user
+        [:div {:class "pull-right text-right"}
+         (case (:status @state)
+           "accepted" (unfollow-button user-id state)
+           "pending"  (pending-button)
+           (follow-button user-id state))
+         ]))))

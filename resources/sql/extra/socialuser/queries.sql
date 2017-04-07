@@ -13,9 +13,9 @@ WHERE up.user_id = :user_id AND up.name = 'user_connect_accepting'), 'pending'))
 
 -- name: select-user-connections-user
 -- get users user connections
-SELECT DISTINCT u.first_name, u.last_name, u.profile_picture, scu.user_id  FROM social_connections_user AS scu
+SELECT DISTINCT u.first_name, u.last_name, u.profile_picture, scu.user_id,  scu.status  FROM social_connections_user AS scu
 JOIN user as u ON scu.user_id = u.id
-       WHERE scu.owner_id = :owner_id AND scu.status = 'accepted'
+       WHERE scu.owner_id = :owner_id 
        GROUP BY u.first_name, u.last_name, u.profile_picture, scu.user_id
        ORDER BY u.first_name
 
