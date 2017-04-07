@@ -38,7 +38,7 @@
           [:table {:class "table" :summary (t :badge/Badgeviews)}
            [:thead
             [:tr
-             [:th (t :badge/Name)]
+             [:th ""]
              [:th (t :badge/Name)]
              [:th ""]]]
            (into [:tbody]
@@ -47,7 +47,7 @@
                    [:tr
                     [:td [:img.badge-icon {:src (profile-picture profile_picture) 
                                            :alt name}]]
-                    [:td.name [:a {:href     "#"
+                    [:td.name [:a {:href     (path-for (str "/user/profile/" user_id))
                                    :on-click #(do
                                         ;(b/open-modal id false init-data state)
                                                 (.preventDefault %)) } (str first_name " " last_name)]]
