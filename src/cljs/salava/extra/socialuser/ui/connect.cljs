@@ -31,7 +31,7 @@
 (defn pending-button []
   [:button {:class    "btn btn-primary follow"
             :on-click  #()}
-   (str " " (t :social/pending) "..") ])
+   (str " " (t :social/Pending) "..") ])
 
 
 (defn unfollow-button [user-id state]

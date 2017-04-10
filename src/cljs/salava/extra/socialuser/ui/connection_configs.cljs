@@ -31,7 +31,7 @@
   [:div.form-group
    [:label {:for   "input-email-notifications"
             :class "col-md-3"}
-    "User connections"]
+    (t :social/Userfollowingconfig)]
    [:div.col-md-9
     [:select {:id        "input-country"
               :class     "form-control"
@@ -41,9 +41,9 @@
                             (change-status (.-target.value %)))}
      
      [:option {:value "accepted"
-               :key   "accepted"} "Käyttäjät voivat lisätä sinut ilman hyväksyntää"]
+               :key   "accepted"} (t :social/Configaccepting)]
      [:option {:value "pending"
-               :key   "pending"} "Sinun pitää hyväksyä seurantapyyntö"]]
+               :key   "pending"} (t :social/Configpending)]]
     #_(case @state
       "pending"  [:div "PENDING TEKSTI"]
       "accepted" [:div "ACCEPTED teksti"]

@@ -32,26 +32,26 @@
     [:div.panel
      [:div.panel-heading
       [:h3
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (str (t :social/followedusers) " (" (count users) ")")]]]
-     (if (= panel-identity @visible-area-atom)
-         [:div.panel-body
-          [:table {:class "table" :summary (t :badge/Badgeviews)}
-           [:thead
-            [:tr
-             [:th ""]
-             [:th (t :badge/Name)]
-             [:th ""]]]
-           (into [:tbody]
-                 (for [user users
-                       :let [{:keys [user_id profile_picture first_name last_name status]} user]]
-                   [:tr
-                    [:td [:img.badge-icon {:src (profile-picture profile_picture) 
-                                           :alt name}]]
-                    [:td.name [:a {:href     (path-for (str "/user/profile/" user_id))
-                                   :on-click #(do
+       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (str (t :social/Followedusers) " (" (count users) ")")]]]
+     [:div.panel-body
+      [:table {:class "table" :summary (t :social/Followedusers)}
+       [:thead
+        [:tr
+         [:th ""]
+         [:th (t :badge/Name)]
+         [:th ""]]]
+       (into [:tbody]
+             (for [user users
+                   :let [{:keys [user_id profile_picture first_name last_name status]} user]]
+               [:tr
+                [:td [:img.badge-icon {:src (profile-picture profile_picture) 
+                                       :alt name}]]
+                [:td.name [:a {:href     (path-for (str "/user/profile/" user_id))
+                               :on-click #(do
                                         ;(b/open-modal id false init-data state)
-                                                (.preventDefault %)) } (str first_name " " last_name)]]
-                    [:td  (if (= "accepted" status) (deleteconnect user_id state) "pending..")]]))]])]))
+                                            (.preventDefault %)) } (str first_name " " last_name)]]
+                [:td  (if (= "accepted" status) (deleteconnect user_id state) (str (t :social/Pending) ".."))]]))]]
+     ]))
 
 
 (defn accept [owner-id state]
