@@ -1,5 +1,5 @@
-(defproject salava "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+(defproject salava "1.0.0"
+  :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
             :url  "http://www.apache.org/licenses/LICENSE-2.0"}

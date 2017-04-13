@@ -1,43 +1,57 @@
-{:site-name "Salava"
+{;; public name of your site
+ :site-name "Salava"
 
+ ;; Site name and hashtag to use when badges are shared to LinkedIn and Twitter
  :share {:site-name "Salava"
          :hashtag "Salava"}
 
+ ;; public url of your site
  :site-url "http://localhost:5000"
 
+ ;; base path for this application
  :base-path ""
 
+ ;; Version of static asset files. Change this with every update to ensure browsers load new files.
  :asset-version nil
 
- :languages [:en :fi]
+ ;; ui translations available to users
+ :languages [:en :es :fi :fr :pl]
 
-
+ ;; List of enabled features. Plugins can have their own config files
  :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail :extra/factory :extra/application :extra/legacy]
 
-
+ ;; Private site. Badges cannot be shared or imported/exported. New account registration is restricted.
  :private false
 
+ ;; Database configuration
  :datasource {:adapter "mysql"
               :username "salava"
               :password "salava"
               :database-name "salava"
               :server-name   "localhost"}
 
+
+ ;; Session cookie configuration. Secret value MUST be exactly 16 bytes long.
  :session {:name "salava-session"
            :root "/"
-           :secret "1234567890123456"
+           :secret "1234567890123456" ; CHANGE ME
            :secure false
            :max-age 28800}
 
+ ;; Application server configuration
  :http {:host "localhost" :port 5000 :max-body 100000000}
 
+ ;; Sender address to use in outbound mail
  :mail-sender "sender@example.com"
 
- :mail-host-config {:host "smtp.example.com"
-                    :user "yourusername"
-                    :pass "yourpassword"
-                    :ssl true
-                    :tls false
-                    :port 587}
+  ;; External SMTP server configuration.
+  ;; You can leave this out if you use local sendmail transport.
+; :mail-host-config {:host "smtp.example.com"
+;                    :user "yourusername"
+;                    :pass "yourpassword"
+;                    :ssl true
+;                    :tls false
+;                    :port 587}
 
- :data-dir "/path/to/data/directory"}
+ ;; Path to the data directory on your server
+ :data-dir "/var/local/salava_data"}

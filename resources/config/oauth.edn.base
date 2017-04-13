@@ -1,5 +1,6 @@
- {:facebook {:app-id    "YOUR-APP-ID"
-             :app-secret "YOUR-APP-SECRET"}
+;; OAuth login API. Please refer to instructions in Facebook and LinkedIn to connect your application.
+{:facebook {:app-id    "YOUR-APP-ID"
+            :app-secret "YOUR-APP-SECRET"}
 
-  :linkedin {:app-id     "YOUR-APP-ID"
-             :app-secret ""YOUR-APP-SECRET""}}
+ :linkedin {:app-id     "YOUR-APP-ID"
+            :app-secret ""YOUR-APP-SECRET""}}

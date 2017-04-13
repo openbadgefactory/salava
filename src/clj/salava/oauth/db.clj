@@ -1,5 +1,6 @@
 (ns salava.oauth.db
-  (:require [yesql.core :refer [defqueries]]
+  (:require [clojure.tools.logging :as log]
+            [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
             [clj-http.client :as http]
@@ -10,16 +11,19 @@
 (defqueries "sql/oauth/queries.sql")
 
 (defn oauth-request [method url opts]
-  (try+
+  (try
     (-> {:method       method
          :url          url
+         :socket-timeout 30000
+         :conn-timeout   30000
          :content-type :json
          :as           :json}
         (merge opts)
         (http/request)
         (get :body))
-    (catch Object _
-      ;TODO: (log "OAuth request failed" _)
+    (catch Exception ex
+      (log/error "OAuth request failed")
+      (log/error (.toString ex))
       (throw+ "oauth/Cannotconnecttoservice"))))
 
 (defn access-token [method url opts]
