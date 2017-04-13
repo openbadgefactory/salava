@@ -134,3 +134,5 @@ SELECT email FROM user_email WHERE user_id = :user_id AND verified= 0;
 
 --name: update-last-checked-user-event-owner!
 UPDATE social_event_owners SET last_checked = UNIX_TIMESTAMP() WHERE event_id IN (:event_ids) AND owner = :user_id
+
+

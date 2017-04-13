@@ -4,14 +4,31 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :as u :refer [get-db]]
             [salava.admin.helper :as ah]
             [clojure.string :refer [blank? join]]
+            [clojure.tools.logging :as log]
             [salava.core.time :refer [unix-time get-date-from-today]]))
 
 (defqueries "sql/extra/socialuser/queries.sql")
 
+(defn get-connected-users-badge-events [ctx user_id]
+  )
 
+
+
+(defn get-user-events [ctx user_id]
+  (let [user-badge-events (select-user-badge-events {:owner_id user_id} (get-db ctx))
+        user-events (select-user-events {:owner_id user_id} (get-db ctx))]
+   (distinct (concat user-badge-events user-events))))
+
+(defn get-owners
+  "Set object to owner if event type is user"
+  [ctx object user-event?]
+  (let [owners (select-users-from-connections-user {:user_id object} (get-db ctx))]
+    (if user-event?
+      (conj owners {:owner object})
+      owners)))
 
 (defn get-user-accepted-connections-user
   "returns accepted connections: profile_picture, first_name, last_name and ordered by first_name "
@@ -59,7 +76,9 @@
   [ctx owner_id user_id status]
   (if (= "declined" status)
     (delete-connections-user ctx owner_id user_id)
-    (update-connections-user-status ctx owner_id user_id status)
+    (do
+      (update-connections-user-status ctx owner_id user_id status)
+      (u/event ctx owner_id "follow" user_id "user"))
     ))
 
 (defn set-user-connections-accepting
@@ -75,12 +94,15 @@
 (defn get-user-connections-accepting [ctx user_id]
   (or (select-user-connections-accepting {:user_id user_id} (into {:result-set-fn first :row-fn :status} (get-db ctx))) "pending"))
 
-(defn insert-connections-user! [ctx owner_id user_id]
-  (insert-connections-user<! {:owner_id owner_id :user_id user_id} (get-db ctx)))
+(defn insert-connections-user! [ctx owner_id user_id status]
+  (insert-connections-user<! {:owner_id owner_id :user_id user_id :status status} (get-db ctx)))
 
 (defn create-connections-user! [ctx owner_id user_id]
   (try+
-   (insert-connections-user! ctx owner_id user_id)
+   (let [status (get-user-connections-accepting ctx user_id)]
+     (insert-connections-user! ctx owner_id user_id status)
+     (if (= status "accepted")
+       (u/event ctx owner_id "follow" user_id "user")))
    {:status "success"}
    (catch Object _
      {:status "error" :message (:message &throw-context) }

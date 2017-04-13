@@ -12,7 +12,8 @@
             [autoclave.core :refer [markdown-processor markdown-to-html]]
             [net.cgrand.enlive-html :as html]
             [salava.core.helper :refer [plugin-str]]
-            [pantomime.mime :refer [extension-for-name mime-type-of]])
+            [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
            (java.util Base64)))
 
@@ -244,3 +245,16 @@
         md-url (some #(when (and (= (:rel %) "alternate") (= (:type %) "text/x-markdown")) (:href %))
                      (map :attrs link-tags))]
     (try (http-get md-url) (catch Exception _ ""))))
+
+
+
+(defn publish [ctx topic data]
+  (if-not (map? data)
+    (throw (IllegalArgumentException. "Publish: Data must be a map")))
+  (if-not  (keyword? topic)
+    (throw (IllegalArgumentException. "Publish: Topic must be a keyword")))
+  (>!! (:input-chan ctx) (assoc data :topic topic)))
+
+(defn event [ctx subject verb object type]
+  ;TODO VALIDATE DATA
+  (publish ctx :event {:subject subject :verb verb :object object :type type}))

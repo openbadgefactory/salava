@@ -4,19 +4,28 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
+            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
             [clojure.tools.logging :as log]
             [salava.badge.main :as b]
             [salava.page.main :as p]
-            [salava.social.db :refer [insert-event!]]
             [salava.mail.mail :as m]
             [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
 
+(defn get-owners [ctx]
+  (select-admin-users-id {} (get-db ctx)))
+
+
+(defn get-user-admin-events [ctx user_id]
+  (select-admin-events {:user_id user_id} (get-db ctx)))
+
+(defn get-admin-events [ctx user_id]
+  (let [events (get-user-admin-events ctx user_id)]
+   events))
 
 
 (defn register-users-count
@@ -97,7 +106,7 @@
 (defn ticket [ctx description report_type item_id item_url item_name item_type reporter_id item_content_id]
   (try+
    (let [ticket (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))]
-     (insert-event! ctx reporter_id "ticket" (:generated_key ticket) "admin")
+     (util/event ctx reporter_id "ticket" (:generated_key ticket) "admin")
      "success")
    (catch Object _
      "error")))

@@ -130,13 +130,15 @@
                    :current-user current-user
                    (do
                      (f/save-pending-assertions ctx (:id current-user))
-                     (ok (let [badge-events (so/get-user-badge-events-sorted-and-filtered ctx (:id current-user))
+                     (ok (let [badge-events  (so/get-user-badge-events-sorted-and-filtered ctx (:id current-user))
                                pending-badges (b/user-badges-pending ctx (:id current-user))
+                               new-events (so/get-all-events ctx (:id current-user))
                                tips (so/get-user-tips ctx (:id current-user))
                                admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
                                events {:tips tips
                                        :events badge-events
-                                       :pending-badges pending-badges}
+                                       :pending-badges pending-badges
+                                       :new-events new-events}
                                events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)]
 
                            events))))

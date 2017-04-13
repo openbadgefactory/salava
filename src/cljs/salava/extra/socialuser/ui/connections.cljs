@@ -15,7 +15,7 @@
                       :accepted-users (:accepted-users data)))}))
 
 (defn deleteconnect [user-id state]
-  [:a {:href "#" :on-click #(ajax/DELETE
+  [:a {:class "btn btn-primary btn-xs" :href "#" :on-click #(ajax/DELETE
                              (path-for (str "/obpv1/socialuser/user-connection/" user-id))
                              {:response-format :json
                               :keywords?       true          
@@ -50,12 +50,13 @@
                                :on-click #(do
                                         ;(b/open-modal id false init-data state)
                                             (.preventDefault %)) } (str first_name " " last_name)]]
-                [:td  (if (= "accepted" status) (deleteconnect user_id state) (str (t :social/Pending) ".."))]]))]]
+                [:td  (if (= "accepted" status) (deleteconnect user_id state) [:span {:class "label label-primary"} (str (t :social/Pending) "...")])]]))]]
      ]))
 
 
 (defn accept [owner-id state]
-  [:a {:href     "#"
+  [:a {:class "btn btn-primary btn-xs"
+       :href     "#"
        :on-click #(ajax/POST
                    (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/accepted"))
                    {:response-format :json
@@ -68,7 +69,8 @@
                                        )})} (t :social/Accept)])
 
 (defn decline [owner-id state]
-  [:a {:href     "#"
+  [:a {:class  "btn btn-primary btn-xs"
+       :href     "#"
        :on-click #(ajax/POST
                    (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/declined"))
                    {:response-format :json

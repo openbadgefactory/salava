@@ -183,7 +183,11 @@
   "Set badge visibility"
   [ctx badge-id visibility user-id]
   (if (badge-owner? ctx badge-id user-id)
-    (update-visibility! {:id badge-id :visibility visibility} (u/get-db ctx))))
+    (do
+      (update-visibility! {:id badge-id :visibility visibility} (u/get-db ctx))
+      (if (= "public" visibility)
+        (u/event ctx user-id "publish" badge-id "badge")
+        (u/event ctx user-id "unpublish" badge-id "badge")))))
 
 (defn set-status!
   "Set badge status"
@@ -217,6 +221,7 @@
       (if (badge-owner? ctx badge-id user-id)
         (throw+ "User cannot congratulate himself"))
       (insert-badge-congratulation<! {:badge_id badge-id :user_id user-id} (u/get-db ctx))
+      (u/event ctx user-id "congratulate" badge-id "badge")
       {:status "success" :message ""})
     (catch Object _
       {:status "error" :message _})))
@@ -255,6 +260,9 @@
        (update-badge-settings! data (u/get-db ctx))
        (save-badge-tags! ctx tags badge-id)
        (send-badge-info-to-obf ctx badge-id user-id)
+       (if (or (= "internal" visibility) (= "public" visibility))
+        (u/event ctx user-id "publish" badge-id "badge")
+        (u/event ctx user-id "unpublish" badge-id "badge"))
        {:status "success"})
      (throw+ {:status "error"}))
    (catch Object ex

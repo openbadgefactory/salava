@@ -26,7 +26,7 @@
   (ajax/GET
     (path-for "/obpv1/social/events" true)
     {:handler (fn [data]
-                (swap! state assoc :events (:events data)
+                (swap! state assoc :events (:new-events data)
                        :initial false
                        :pending-badges (:pending-badges data)
                        :tips (:tips data))
@@ -122,7 +122,7 @@
        [:span {:aria-hidden "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]])
 
-(defn follow-event [event state]
+(defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         modal-message (str "messages")]
     [:div {:class "media message-item tips"}
@@ -143,6 +143,61 @@
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
        (t :social/Youstartedfollowbadge)]]
+      ]]))
+
+(defn publish-event-badge [event state]
+  (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event
+        modal-message (str "messages")]
+    [:div {:class "media message-item tips"}
+    (hide-event event_id state)
+     [:div.media-left
+      [:a {:href "#"
+           :on-click #(do
+                        (b/open-modal object false init-data state)
+                        (.preventDefault %) )}
+       [:img {:src (str "/" image_file)} ]]]
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:i {:class "fa fa-lightbulb-o"}]
+      [:div [:h3 {:class "media-heading"}
+       [:a {:href "#"
+           :on-click #(do
+                        ;(b/open-modal object false init-data state)
+                        (.preventDefault %) )} (str first_name " " last_name " " verb " "  name)]]
+      [:div.media-body
+       "Käyttäjä julkaisi merkin! eikö ole hienoa?"]]
+      ]])
+  )
+
+
+(defn follow-event-user [event state]
+  (let [{:keys [subject verb ctime event_id object s_first_name s_last_name o_first_name o_last_name o_id s_id owner o_profile_picture s_profile_picture]}  event
+        modal-message (str "messages")]
+    [:div {:class "media message-item tips"}
+    (hide-event event_id state)
+     [:div.media-left
+      [:a {:href "#"
+           :on-click #(do
+                        (b/open-modal object false init-data state)
+                        (.preventDefault %) )}
+       [:img {:src (profile-picture (if (= owner s_id)
+                                      o_profile_picture
+                                      s_profile_picture)) } ]]]
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:i {:class "fa fa-lightbulb-o"}]
+      [:div [:h3 {:class "media-heading"}
+       [:a {:href (path-for (str "/user/profile/" (if (= owner s_id)
+                                                    o_id
+                                                    s_id) ))
+           :on-click #(do
+                        ;(b/open-modal object false init-data state)
+                        (.preventDefault %) )} (if (= owner s_id) (str  "You started  " verb " " o_first_name " " o_last_name)
+                                                   (str  s_first_name " " s_last_name " " verb " you"  ))]]
+       [:div.media-body
+        (if (= owner s_id) "aloitit henkilön seuraamisen"
+            "Henkilö aloitti sinun seuraamisen")
+       ]]
       ]]))
 
 (defn message-event [event state]
@@ -289,7 +344,9 @@
      (into [:div {:class "row"}]
            (for [event events]
              (cond
-               (= "follow" (:verb event)) (follow-event event state)
+               (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
+               (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
+               (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state) 
                (= "message" (:verb event)) (message-event event state)
                :else "")))
      

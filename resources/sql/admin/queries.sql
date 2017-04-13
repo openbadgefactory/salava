@@ -127,3 +127,16 @@ REPLACE INTO config (name, value)
 
 --name: select-name-value-config
 SELECT name, value FROM config WHERE name = :name
+
+
+--name: select-admin-users-id
+SELECT id AS owner FROM user WHERE role='admin'
+
+
+--name: select-admin-events
+SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, seo.hidden, re.item_name, re.report_type FROM social_event_owners AS seo
+     JOIN social_event AS se ON seo.event_id = se.id
+     LEFT JOIN report_ticket AS re  ON se.object = re.id
+     WHERE seo.owner = :user_id AND se.verb = 'ticket' AND se.type = 'admin' AND re.status = 'open'
+     ORDER BY se.ctime DESC
+     LIMIT 1000;

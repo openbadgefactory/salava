@@ -8,7 +8,7 @@
             [salava.core.time :refer [unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
             [salava.badge.main :as b]
             [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
@@ -274,6 +274,9 @@
          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
       (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
       (save-page-tags! ctx page-id tags)
+      (if (or (= "internal" visibility) (= "public" visibility))
+        (u/event ctx user-id "publish" page-id "page")
+        (u/event ctx user-id "unpublish" page-id "page"))
       {:status "success" :message "page/Pagesavedsuccessfully"})
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
@@ -307,6 +310,9 @@
   (if (page-owner? ctx page-id user-id)
     (do
       (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
+      (if (or (= "internal" visibility) (= "public" visibility))
+        (u/event ctx user-id "publish" page-id "page")
+        (u/event ctx user-id "unpublish" page-id "page"))
       visibility)
     (if (= visibility "public") "private" "public")))
 

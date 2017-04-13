@@ -5,10 +5,92 @@
             [clojure.string :as string]
             [clojure.data.json :as json]
             [schema.core :as s]
+            [salava.core.helper :refer [dump]]
             [salava.badge.schemas :as schemas] ;cljc
             [salava.core.util :as u]))
 
 (defqueries "sql/badge/main.sql")
+
+(defn badge-events-reduce [events]
+  (let [helper (fn [current item]
+                  (let [key [(:verb item) (:object item)]]
+                    (-> current
+                        (assoc  key item)
+                        ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
+                        )))
+        reduced-events (vals (reduce helper {} (reverse events)))]
+    (filter #(false? (:hidden %)) reduced-events)))
+
+
+
+
+
+(defn admin-events-reduce [events]
+  (let [helper (fn [current item]
+                  (let [key [(:verb item)]]
+                    (-> current
+                        (assoc  key item)
+                        (assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
+                        )))
+        reduced-events (vals (reduce helper {} (reverse events)))]
+    (filter #(false? (:hidden %)) reduced-events)))
+
+
+
+
+
+(defn badge-message-map
+  "returns newest message and count new messages"
+  [messages]
+  (let [message-helper (fn [current item]
+                         (let [key  (:badge_content_id item)
+                               new-messages-count (get-in current [key :new_messages] 0)]
+                           (-> current
+                               (assoc key item)
+                               (assoc-in [key :new_messages] (if (> (:ctime item) (:last_viewed item))
+                                                              (inc new-messages-count)
+                                                              new-messages-count)))))]
+    (reduce message-helper {} (reverse messages))))
+
+
+(defn filter-badge-message-events [events]
+  (filter #(= "message" (:verb %)) events))
+
+(defn filter-own-events [events user_id]
+  (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events) )
+
+(defn get-user-badge-events
+  "get users badge  message and follow events"
+  [ctx user_id]
+  (let [events (select-user-events {:user_id user_id} (u/get-db ctx)) ;get all events where type = badge
+        reduced-events (badge-events-reduce events) ;bundle events together with object and verb
+        badge-content-ids (map #(:object %) reduced-events)
+        messages (if (not (empty? badge-content-ids)) (select-messages-with-badge-content-id {:badge_content_ids badge-content-ids :user_id user_id} (u/get-db ctx)) ())
+        messages-map (badge-message-map messages)
+        message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
+        follow-events (filter-own-events reduced-events user_id)
+        badge-events (into follow-events message-events)]
+    badge-events))
+
+(defn get-badge-events [ctx user_id]
+  (let [badge-events (get-user-badge-events ctx user_id)
+        sorted (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))]
+    sorted))
+;Owners
+
+(defn str->number? [str]
+  (try
+    (if (number? str)
+        true
+        (let [n (read-string str)]
+          (number? n)))
+    (catch Exception e
+      false)))
+
+(defn get-owners [ctx object]
+  (if (str->number? object) ;if object is badge-id set owner be badges owner
+    (select-badge-owner-as-owner {:id object} (u/get-db ctx))
+    (select-users-from-connections-badge {:badge_content_id object} (u/get-db ctx))))
 
 (defn- content-id [data]
   (u/map-sha256 (assoc data :id "")))

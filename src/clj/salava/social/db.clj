@@ -4,12 +4,38 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :as util :refer [get-db plugin-fun get-plugins]]
             [salava.admin.helper :as ah]
+            [clojure.tools.logging :as log]
             [clojure.string :refer [blank? join]]
             [salava.core.time :refer [unix-time get-date-from-today]]))
 
 (defqueries "sql/social/queries.sql")
+
+(defn insert-social-event! [ctx data]
+  (insert-social-event<! data (get-db ctx)))
+
+(defn get-all-owners [ctx data]
+  (let [funs (plugin-fun (get-plugins ctx) "event" "owners")]
+    (set (mapcat (fn [f] (try (f ctx data) (catch Throwable _ ()))) funs)))
+  )
+
+(defn get-all-events [ctx user_id]
+  (let [funs (plugin-fun (get-plugins ctx) "event" "events")]
+    (set (mapcat (fn [f] (try (f ctx user_id) (catch Throwable _ ()))) funs))))
+
+(defn insert-event-owners!
+  "Creates event owners for event"
+  [ctx data]
+  (try
+    (let [owners (get-all-owners ctx data)  
+          query (vec (map #(assoc % :event_id (:event-id data)) owners))]
+     (jdbc/insert-multi! (:connection (get-db ctx)) :social_event_owners query))
+   (catch Exception ex
+      (log/error "insert-event-owners!: failed to save event owners")
+      (log/error (.toString ex)))))
+
+
 
 (defn messages-viewed
  "Save information about viewing messages."
@@ -19,19 +45,7 @@
    (catch Object _
      "error")))
 
-(defn insert-event!
-  "Creates event and adds event for every users who are connected with event"
-  [ctx, subject, verb, object, type]
-  (try+
-   (let [event-id (insert-social-event<! {:subject subject :verb verb :object object :type type} (get-db ctx))
-         connected-users  (cond
-                            (= type "badge") (select-users-from-connections-badge {:badge_content_id object} (get-db ctx))
-                            (= type "admin") (select-admin-users-id {} (get-db ctx)))
-         query (vec (map #(assoc % :event_id (:generated_key event-id)) connected-users))]
-     (jdbc/insert-multi! (:connection (get-db ctx)) :social_event_owners query)
-     {:status "success"}) 
-   (catch Object _
-     {:status "error"})))
+
 
 
 (defn is-connected? [ctx user_id badge_content_id]
@@ -40,7 +54,7 @@
 
 (defn insert-connection-badge! [ctx user_id badge_content_id]
   (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
-  (insert-event! ctx user_id "follow" badge_content_id "badge")
+  (util/event ctx user_id "follow" badge_content_id "badge")
   (messages-viewed ctx badge_content_id user_id))
 
 (defn create-connection-badge! [ctx user_id  badge_content_id]
@@ -157,7 +171,7 @@
                               "connected")]
        (do
          (insert-badge-message<! {:badge_content_id badge_content_id :user_id user_id :message message} (get-db ctx))
-         (insert-event! ctx user_id "message" badge_content_id "badge")
+         (util/event ctx user_id "message" badge_content_id "badge")
          {:status "success" :connected? badge-connection}))
      {:status "error" :connected? nil})
    (catch Object _

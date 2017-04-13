@@ -6,7 +6,7 @@
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
-    "Copyright © 2016 Discendum Oy | "
+    "Copyright © 2015-2017 Discendum Oy | "
      [:a {:class "bottom-link" :href "/terms" }
       "Terms of Use"]
      " | "

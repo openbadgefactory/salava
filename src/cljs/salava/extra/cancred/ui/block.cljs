@@ -6,7 +6,7 @@
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
-    "Copyright © Learning Agents 2016. | "
+    "Copyright © Learning Agents 2015-2017. | "
      [:a {:class "bottom-link" :href "/terms/" }
       "Terms of Use"]
     " | "
