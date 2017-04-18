@@ -12,15 +12,22 @@
 
 (defqueries "sql/extra/socialuser/queries.sql")
 
-(defn get-connected-users-badge-events [ctx user_id]
-  )
-
-
+(defn events-reduce [events]
+  (let [helper (fn [current item]
+                  (let [key [(:verb item) (:object item)]]
+                    (-> current
+                        (assoc  key item)
+                        ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
+                        )))
+        reduced-events (vals (reduce helper {} (reverse events)))]
+    (filter #(false? (:hidden %)) reduced-events)))
 
 (defn get-user-events [ctx user_id]
   (let [user-badge-events (select-user-badge-events {:owner_id user_id} (get-db ctx))
-        user-events (select-user-events {:owner_id user_id} (get-db ctx))]
-   (distinct (concat user-badge-events user-events))))
+        user-events (select-user-events {:owner_id user_id} (get-db ctx))
+        events (distinct (concat user-badge-events user-events))]
+    (events-reduce events)
+    ))
 
 (defn get-owners
   "Set object to owner if event type is user"

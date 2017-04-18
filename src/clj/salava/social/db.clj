@@ -17,12 +17,13 @@
 
 (defn get-all-owners [ctx data]
   (let [funs (plugin-fun (get-plugins ctx) "event" "owners")]
-    (set (mapcat (fn [f] (try (f ctx data) (catch Throwable _ ()))) funs)))
+    (set (flatten (pmap (fn [f] (try (f ctx data) (catch Throwable _ ()))) funs))))
   )
 
 (defn get-all-events [ctx user_id]
-  (let [funs (plugin-fun (get-plugins ctx) "event" "events")]
-    (set (mapcat (fn [f] (try (f ctx user_id) (catch Throwable _ ()))) funs))))
+  (let [funs (plugin-fun (get-plugins ctx) "event" "events")
+        events (flatten (pmap (fn [f] (try (f ctx user_id) (catch Throwable _ ()))) funs))]
+    (sort-by :ctime > (set events))))
 
 (defn insert-event-owners!
   "Creates event owners for event"
