@@ -14,7 +14,7 @@
 
 (defn events-reduce [events]
   (let [helper (fn [current item]
-                  (let [key [(:verb item) (:object item)]]
+                 (let [key [(:subject item) (:verb item) (:object item)]]
                     (-> current
                         (assoc  key item)
                         ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
@@ -26,8 +26,7 @@
   (let [user-badge-events (select-user-badge-events {:owner_id user_id} (get-db ctx))
         user-events (select-user-events {:owner_id user_id} (get-db ctx))
         events (distinct (concat user-badge-events user-events))]
-    (events-reduce events)
-    ))
+    (events-reduce events)))
 
 (defn get-owners
   "Set object to owner if event type is user"

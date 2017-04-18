@@ -66,7 +66,7 @@ SELECT seo.owner, se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.la
      JOIN social_connections_user AS scu ON :owner_id = scu.owner_id
      INNER JOIN user s ON se.subject = s.id
      INNER JOIN user o ON se.object = o.id
-     WHERE seo.owner = :owner_id  AND se.type = 'user'AND se.verb = 'follow' AND (scu.owner_id = se.subject OR scu.owner_id = se.object)
+     WHERE seo.owner = :owner_id  AND se.type = 'user' AND se.verb = 'follow' AND (scu.owner_id = se.subject OR scu.owner_id = se.object)
      ORDER BY se.ctime DESC
      LIMIT 1000
 

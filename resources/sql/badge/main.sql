@@ -256,7 +256,7 @@ INSERT IGNORE INTO creator_content (id, name, url, description, image_file, emai
 
 --name: select-user-events
 -- EVENTS
-SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
+SELECT se.subject, se.verb, se.object, se.ctime, se.type, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN badge_content AS bc ON se.object = bc.id
      JOIN social_connections_badge AS scb ON :user_id = scb.user_id
