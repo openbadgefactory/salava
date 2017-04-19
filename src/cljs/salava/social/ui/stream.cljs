@@ -3,7 +3,8 @@
             [reagent.session :as session]
             [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.ui.ajax-utils :as ajax]
-            [reagent.core :refer [atom cursor]]
+            [reagent.core :refer [atom cursor create-class]]
+            [salava.core.ui.modal :as mo]
             [salava.user.ui.helper :refer [profile-picture]]
             [reagent-modals.modals :as m]
             [salava.core.helper :refer [dump]]
@@ -11,6 +12,7 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.gallery.ui.badges :as b]
             [salava.badge.ui.helper :as bh]
+            ;[salava.user.ui.usermodel :as usermodel]
             [salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
@@ -153,7 +155,8 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (b/open-modal object false init-data state)
+                        (mo/open-modal [:modal-routes :badge :info] {:badge-id object})
+                        
                         (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -161,8 +164,8 @@
       [:i {:class "fa fa-lightbulb-o"}]
       [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
-           :on-click #(do
-                        ;(b/open-modal object false init-data state)
+            :on-click #(do
+                         (mo/open-modal [:modal-routes :badge :info] {:badge-id object})
                         (.preventDefault %) )} (str first_name " " last_name " " verb " "  name)]]
       [:div.media-body
        "Käyttäjä julkaisi merkin! eikö ole hienoa?"]]
@@ -178,7 +181,10 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (b/open-modal object false init-data state)
+                        (mo/open-modal [:modal-routes :user :profile] {:user-id (if (= owner s_id)
+                                                                                              o_id
+                                                                                              s_id)})                        
+                        ;(b/open-modal object false init-data state)
                         (.preventDefault %) )}
        [:img {:src (profile-picture (if (= owner s_id)
                                       o_profile_picture
@@ -187,11 +193,11 @@
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:i {:class "fa fa-lightbulb-o"}]
       [:div [:h3 {:class "media-heading"}
-       [:a {:href (path-for (str "/user/profile/" (if (= owner s_id)
-                                                    o_id
-                                                    s_id) ))
+       [:a {:href "#"
            :on-click #(do
-                        ;(b/open-modal object false init-data state)
+                        (mo/open-modal [:modal-routes :user :profile] {:user-id (if (= owner s_id)
+                                                                                              o_id
+                                                                                              s_id)})
                         (.preventDefault %) )} (if (= owner s_id) (str  "You started  " verb " " o_first_name " " o_last_name)
                                                    (str  s_first_name " " s_last_name " " verb " you"  ))]]
        [:div.media-body
@@ -326,6 +332,9 @@
          [:li (t :social/Badgetip) " " [:a {:href (path-for "/badge") } (t :badge/Mybadges) ]]
          [:li (t :social/Profiletip) " " [:a {:href (path-for "/gallery/profiles") }(t :gallery/Sharedprofiles)  ]]]]]]])
 
+
+;[usermodel/handler 11]
+
 (defn content [state]
   (let [events (:events @state)
         tips (:tips @state)
@@ -333,6 +342,7 @@
         admin-events (or (:admin-events @state) nil)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
+     [:button  "PAINA TÄSTÄ"]
      (pending-connections)
      [badges-pending state]
      (if admin-events
@@ -348,9 +358,7 @@
                (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
                (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state) 
                (= "message" (:verb event)) (message-event event state)
-               :else "")))
-     
-     ]))
+               :else "")))]))
 
 
 

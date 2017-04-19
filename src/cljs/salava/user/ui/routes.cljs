@@ -11,7 +11,8 @@
             [salava.user.ui.edit :as edit]
             [salava.user.ui.email-addresses :as email-addresses]
             [salava.user.ui.edit-profile :as edit-profile]
-            [salava.user.ui.cancel :as cancel]))
+            [salava.user.ui.cancel :as cancel]
+            [salava.user.ui.usermodal :as usermodal]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -32,6 +33,10 @@
                                       ["/edit/email-addresses" email-addresses/handler]
                                       ["/edit/profile" edit-profile/handler]
                                       ["/cancel" cancel/handler]]})
+
+
+(defn ^:export modalroutes [context]
+  {:user {:profile usermodal/handler}})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/user/profile/\\d+")                          {:breadcrumb (t :user/User " / " :user/Profile)}

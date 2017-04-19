@@ -43,6 +43,10 @@
   (let [route-coll (apply common/deep-merge (map #(resolve-plugin "routes" % ctx) plugins))]
     ["" (common/deep-merge route-coll (resolve-plugin "routes" "core" ctx))]))
 
+(defn collect-modal-routes [plugins ctx]
+  (let [route-coll (apply common/deep-merge (map #(resolve-plugin "modalroutes" % ctx) plugins))]
+    (common/deep-merge route-coll (resolve-plugin "modalroutes" "core" ctx))))
+
 
 (defn collect-navi [plugins ctx]
   (let [navi-coll  (apply common/deep-merge (map #(resolve-plugin "navi" % ctx) plugins))]
@@ -53,7 +57,8 @@
   (let [plugins (get-in ctx [:plugins :all])]
     {:plugins    plugins
      :routes     (collect-routes plugins ctx)
-     :navi-items (collect-navi plugins ctx)}))
+     :navi-items (collect-navi plugins ctx)
+     :modal-routes (collect-modal-routes plugins ctx)}))
 
 (def site-navi (collect-site-navi))
 

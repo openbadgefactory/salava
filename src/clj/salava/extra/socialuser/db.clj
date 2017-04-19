@@ -112,11 +112,7 @@
    {:status "success"}
    (catch Object _
      {:status "error" :message (:message &throw-context) }
-     ))
-  
-  ;(insert-event! ctx user_id "follow" badge_content_id "badge")
-  ;(messages-viewed ctx badge_content_id user_id)
-  )
+     )))
 
 
 

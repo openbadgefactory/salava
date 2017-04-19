@@ -9,6 +9,7 @@
             [salava.badge.ui.exporter :as exp]
             [salava.badge.ui.upload :as up]
             [salava.badge.ui.stats :as stats]
+            [salava.badge.ui.badgemodal :as badgemodal]
             [salava.core.i18n :as i18n :refer [t]]))
 
 (defn placeholder [content]
@@ -26,6 +27,9 @@
                                        ["/upload" up/handler]
                                        ["/export" exp/handler]
                                        ["/stats" stats/handler]]})
+
+(defn ^:export modalroutes [context]
+  {:badge {:info badgemodal/handler}})
 
 (defn badge-navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
