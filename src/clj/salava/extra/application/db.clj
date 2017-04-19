@@ -210,19 +210,14 @@
 
 (defn create-connection-badge-advert! [ctx user_id badge_advert_id]
   (try+
-   (insert-connect-badge-advert<! {:user_id user_id :badge_advert_id badge_advert_id}  (u/get-db ctx))
-   
-   {:status "success"}
-   (catch Object _
-     {:status "error"}
-     )))
+    (insert-connect-badge-advert<! {:user_id user_id :badge_advert_id badge_advert_id}  (u/get-db ctx))
+    {:status "success"}
+    (catch Object _
+      {:status "error"})))
 
 (defn delete-connection-badge-advert! [ctx user_id  badge_advert_id]
   (try+
-   (delete-connect-badge-advert! {:user_id user_id :badge_advert_id badge_advert_id} (u/get-db ctx))
-   
-   {:status "success" }
-   (catch Object _
-     {:status "error"}
-     )))
-
+    (delete-connect-badge-advert! {:user_id user_id :badge_advert_id badge_advert_id} (u/get-db ctx))
+    {:status "success" }
+    (catch Object _
+      {:status "error"})))
