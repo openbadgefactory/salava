@@ -12,17 +12,12 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.gallery.ui.badges :as b]
             [salava.badge.ui.helper :as bh]
-            ;[salava.user.ui.usermodel :as usermodel]
             [salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
 
 
-(defn pending-connections []
-  (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
-    (if connections
-      [connections]
-      [:div ""])))
+
 
 (defn init-data [state]
   (ajax/GET
@@ -35,6 +30,13 @@
                 (if (:admin-events data)
                   (swap! state assoc :admin-events (:admin-events data))))}))
 
+
+(defn pending-connections [state]
+  (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
+    (if connections
+      [connections {:state state
+                    :init-data init-data}]
+      [:div ""])))
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
   [:div {:class "media" :key id}
@@ -155,7 +157,7 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (mo/open-modal [:modal-routes :badge :info] {:badge-id object})
+                        (mo/open-modal [:badge :info] {:badge-id object})
                         
                         (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
@@ -165,7 +167,7 @@
       [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
             :on-click #(do
-                         (mo/open-modal [:modal-routes :badge :info] {:badge-id object})
+                         (mo/open-modal [:badge :info] {:badge-id object})
                         (.preventDefault %) )} (str first_name " " last_name " " verb " "  name)]]
       [:div.media-body
        "Käyttäjä julkaisi merkin! eikö ole hienoa?"]]
@@ -181,7 +183,7 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (mo/open-modal [:modal-routes :user :profile] {:user-id (if (= owner s_id)
+                        (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
                                                                                               o_id
                                                                                               s_id)})                        
                         ;(b/open-modal object false init-data state)
@@ -195,7 +197,7 @@
       [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
            :on-click #(do
-                        (mo/open-modal [:modal-routes :user :profile] {:user-id (if (= owner s_id)
+                        (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
                                                                                               o_id
                                                                                               s_id)})
                         (.preventDefault %) )} (if (= owner s_id) (str  "You started  " verb " " o_first_name " " o_last_name)
@@ -342,8 +344,7 @@
         admin-events (or (:admin-events @state) nil)]
     [:div {:class "my-badges pages"}
      [m/modal-window]
-     [:button  "PAINA TÄSTÄ"]
-     (pending-connections)
+     (pending-connections state)
      [badges-pending state]
      (if admin-events
        [:div.row

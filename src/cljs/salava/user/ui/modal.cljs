@@ -1,4 +1,4 @@
-(ns salava.user.ui.usermodal
+(ns salava.user.ui.modal
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
@@ -13,11 +13,9 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
-            [salava.core.ui.modal :refer [set-new-view]
-             ]
+            [salava.core.ui.modal :refer [set-new-view]]
             [salava.admin.ui.reporttool :refer [reporttool]]
             ))
-
 
 
 (defn toggle-visibility [visibility-atom]
@@ -46,12 +44,13 @@
        (if image_file
          [:div.media-left
           [:a {:href "#";(path-for (str "/badge/info/" id))
-               :on-click #(set-new-view [:modal-routes :badge :info] {:badge-id id})}
+               :on-click #(set-new-view [:badge :info] {:badge-id id})}
             [:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href "#";(path-for (str "/badge/info/" id))
+         [:a.heading-link {:href "#"
+                           :on-click #(set-new-view [:badge :info] {:badge-id id})
                            }
           name]]
         [:div.media-issuer
@@ -207,3 +206,9 @@
         (= (:id user) (js/parseInt user-id)) (content state) 
         (and (= "success" (:permission @state)) user)(content state) 
         :else (content state)))))
+
+
+
+(def modalroutes
+  {:user {:profile handler}}
+  )

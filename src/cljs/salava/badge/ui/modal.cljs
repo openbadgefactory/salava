@@ -1,4 +1,4 @@
-(ns salava.badge.ui.badgemodal
+(ns salava.badge.ui.modal
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
@@ -149,3 +149,8 @@
         (and (= "success" (:permission @state)) user) (content state) 
         :else (content state) ))
     ))
+
+
+(def modalroutes
+  {:badge {:info handler}}
+  )

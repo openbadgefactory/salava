@@ -1,14 +1,23 @@
 (ns salava.core.ui.modal
   (:require [reagent.core :refer [create-class atom]]
+            [reagent.session :as session]
             [reagent-modals.modals :as m :refer [close-modal!]]
-            [salava.core.ui.dispatch :refer [site-navi]]))
+            [salava.core.ui.helper :refer [plugin-fun]]
+            [salava.core.common :as common]
+            [salava.core.helper :refer [dump]]
+            [clojure.string :as str]
+            ;[salava.core.ui.dispatch :refer [site-navi]]
+            ))
 
+
+(defn modal-navi []
+  {:modal-routes (apply merge (plugin-fun (session/get :plugins) "modal" "modalroutes") ) })
 
 (def views (atom []))
 
-
 (defn set-new-view [route params]
-  (reset! views (conj @views [((get-in site-navi route) params)])))
+  (reset! views (conj @views [((get-in (modal-navi) route) params)]))
+)
 
 
 
@@ -49,6 +58,7 @@
                                                     #_(if (and init-data state)
                                                         (init-data state))))}))
 
+
+
 (defn open-modal [route params]
-  
-  (m/modal! [modal-init [((get-in site-navi route) params)]] {:size :lg}))
+  (m/modal! [modal-init [((get-in (modal-navi) route) params)]] {:size :lg}))

@@ -83,8 +83,9 @@
   (if (= "declined" status)
     (delete-connections-user ctx owner_id user_id)
     (do
+      (u/event ctx owner_id "follow" user_id "user")
       (update-connections-user-status ctx owner_id user_id status)
-      (u/event ctx owner_id "follow" user_id "user"))
+      )
     ))
 
 (defn set-user-connections-accepting

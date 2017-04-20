@@ -1,6 +1,6 @@
 (ns salava.extra.socialuser.ui.pending-connections
   (:require [reagent.core :refer [atom cursor]]
-            [ajax.core :as ajax]
+            [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]])
@@ -14,7 +14,7 @@
                (swap! state assoc :pending data))}))
 
 
-(defn accept [owner-id state]
+(defn accept [owner-id state parent-data]
   [:button {:class "btn btn-primary"
             :on-click #(do
                          (ajax/POST
@@ -23,7 +23,9 @@
                               :keywords?       true          
                               :handler         (fn [data]
                                                  (do
-                                                   (init-data state)))
+                                                   (init-data state)
+                                                   ((:init-data parent-data) (:state parent-data))
+                                                   ))
                               :error-handler   (fn [{:keys [status status-text]}]
                                                  (.log js/console (str status " " status-text))
                                                  )})
@@ -31,7 +33,7 @@
        (t :social/Accept) ]
   )
 
-(defn decline [owner-id state]
+(defn decline [owner-id state parent-data]
   [:button {:class "btn btn-primary"
                  :on-click #(do
                               (ajax/POST
@@ -40,7 +42,8 @@
                                 :keywords?       true          
                                 :handler         (fn [data]
                                                    (do
-                                                     (init-data state)))
+                                                     (init-data state)
+                                                     ((:init-data parent-data) (:state parent-data))))
                                 :error-handler   (fn [{:keys [status status-text]}]
                                                    (.log js/console (str status " " status-text))
                                                  )})
@@ -48,7 +51,7 @@
         (t :social/Decline)]
   )
 
-(defn request [{:keys [owner_id profile_picture first_name last_name]} state]
+(defn request [{:keys [owner_id profile_picture first_name last_name]} state parent-data]
   [:div.row {:key owner_id}
    [:div.col-md-12
     [:div.badge-container-pending
@@ -60,31 +63,24 @@
          [:img.badge-image {:src (str "/" profile_picture)}]]
         [:div.media-body
          [:h4.media-heading
-          (str  first_name " " last_name " haluaa seurata sinua" )]
-         
-         
-
-         
-         
-
-         ]]]]
+          (str  first_name " " last_name " haluaa seurata sinua" )]]]]]
      [:div {:class "row button-row"}
       [:div.col-md-12
-       (accept owner_id state)
-       (decline owner_id state)
+       (accept owner_id state parent-data)
+       (decline owner_id state parent-data)
        ]]]]])
 
-(defn pending-requests [state]
+(defn pending-requests [state parent-data]
   (into [:div {:id "pending-badges"}]
         (for [item (:pending @state)]
           (do
-            (request item state)))))
+            (request item state parent-data)))))
 
 
-(defn handler []
+(defn handler [parent-data]
   (let [state (atom {:pending []})]
 
     (init-data state)
     (fn []
-      (pending-requests state)
+      (pending-requests state parent-data)
       )))

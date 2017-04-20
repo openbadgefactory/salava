@@ -18,8 +18,8 @@
 (defn ^:export connections []
   (connections/handler))
 
-(defn ^:export pendingconnections []
-  (pending-connections/handler))
+(defn ^:export pendingconnections [parent-data]
+  (pending-connections/handler parent-data))
 
 (defn ^:export userconnectionconfig []
   (connection-configs/handler))
