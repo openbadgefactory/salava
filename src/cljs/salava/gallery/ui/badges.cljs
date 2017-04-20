@@ -6,6 +6,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
+            [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -135,13 +136,15 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:a {:href "#" :on-click #(open-modal badge-id nil) :title name}[:img {:src (str "/" image_file)
+          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-content-id badge-id})
+                :title name}[:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(do
                                         (.preventDefault %)
-                                        (open-modal badge-id nil)) :title name}
+                                        (mo/open-modal [:gallery :badges] {:badge-content-id badge-id})
+                                        ) :title name}
           name]]
         [:div.media-issuer
          [:p issuer_content_name]]

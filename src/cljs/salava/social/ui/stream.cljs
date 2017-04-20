@@ -134,7 +134,8 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (b/open-modal object false init-data state)
+                        (mo/open-modal [:gallery :badges] {:badge-content-id object})
+                        ;(b/open-modal object false init-data state)
                         (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -142,8 +143,9 @@
       [:i {:class "fa fa-lightbulb-o"}]
       [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
-           :on-click #(do
-                        (b/open-modal object false init-data state)
+            :on-click #(do
+                         (mo/open-modal [:gallery :badges] {:badge-content-id object})
+                        ;(b/open-modal object false init-data state)
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
        (t :social/Youstartedfollowbadge)]]
@@ -229,13 +231,18 @@
       [:h3 {:class "media-heading"}
       (if (pos? new-messages) [:span.new  new-messages])
        [:a {:href "#"
-           :on-click #(do
-                        (b/open-modal object true init-data state)
+            :on-click #(do
+                         
+                         (mo/open-modal [:gallery :badges] {:badge-content-id object
+                                                            :show-messages true})
+                        ;(b/open-modal object true init-data state)
                         (.preventDefault %) )} name]]
       (message-item message)
       [:a {:href     "#"
-       :on-click #(do
-                    (b/open-modal (:object event) true init-data state)
+           :on-click #(do
+                        (mo/open-modal [:gallery :badges] {:badge-content-id object
+                                                           :show-messages true})
+                        ;(b/open-modal (:object event) true init-data state)
                     (.preventDefault %) )}
        modal-message]]]))
 

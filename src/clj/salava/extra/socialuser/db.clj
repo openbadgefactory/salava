@@ -84,9 +84,7 @@
     (delete-connections-user ctx owner_id user_id)
     (do
       (u/event ctx owner_id "follow" user_id "user")
-      (update-connections-user-status ctx owner_id user_id status)
-      )
-    ))
+      (update-connections-user-status ctx owner_id user_id status))))
 
 (defn set-user-connections-accepting
   "User can accept connectionss instantly or with pending requests or decline every"

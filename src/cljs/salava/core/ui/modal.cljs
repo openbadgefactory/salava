@@ -11,7 +11,8 @@
 
 
 (defn modal-navi []
-  {:modal-routes (apply merge (plugin-fun (session/get :plugins) "modal" "modalroutes") ) })
+  (let [navi (apply merge (plugin-fun (session/get :plugins) "modal" "modalroutes"))]
+    navi))
 
 (def views (atom []))
 

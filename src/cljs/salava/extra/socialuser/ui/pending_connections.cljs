@@ -2,6 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
+            [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]])
   )
@@ -15,39 +16,39 @@
 
 
 (defn accept [owner-id state parent-data]
-  [:button {:class "btn btn-primary"
+  [:button {:class    "btn btn-primary"
             :on-click #(do
                          (ajax/POST
                           (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/accepted"))
-                             {:response-format :json
-                              :keywords?       true          
-                              :handler         (fn [data]
-                                                 (do
-                                                   (init-data state)
-                                                   ((:init-data parent-data) (:state parent-data))
-                                                   ))
-                              :error-handler   (fn [{:keys [status status-text]}]
-                                                 (.log js/console (str status " " status-text))
-                                                 )})
-                              (.preventDefault %))}
+                          {:response-format :json
+                           :keywords?       true          
+                           :handler         (fn [data]
+                                              (do
+                                                (init-data state)
+                                                ((:init-data parent-data) (:state parent-data))
+                                                ))
+                           :error-handler   (fn [{:keys [status status-text]}]
+                                              (.log js/console (str status " " status-text))
+                                              )})
+                         (.preventDefault %))}
        (t :social/Accept) ]
   )
 
 (defn decline [owner-id state parent-data]
-  [:button {:class "btn btn-primary"
-                 :on-click #(do
-                              (ajax/POST
-                               (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/declined"))
-                               {:response-format :json
-                                :keywords?       true          
-                                :handler         (fn [data]
-                                                   (do
-                                                     (init-data state)
-                                                     ((:init-data parent-data) (:state parent-data))))
-                                :error-handler   (fn [{:keys [status status-text]}]
-                                                   (.log js/console (str status " " status-text))
-                                                 )})
-                              (.preventDefault %))}
+  [:button {:class         "btn btn-primary"
+            :on-click #(do
+                         (ajax/POST
+                          (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/declined"))
+                          {:response-format :json
+                           :keywords?       true          
+                           :handler         (fn [data]
+                                              (do
+                                                (init-data state)
+                                                ((:init-data parent-data) (:state parent-data))))
+                           :error-handler   (fn [{:keys [status status-text]}]
+                                              (.log js/console (str status " " status-text))
+                                              )})
+                         (.preventDefault %))}
         (t :social/Decline)]
   )
 
@@ -60,10 +61,12 @@
       [:div.col-md-12
        [:div.media
         [:div.pull-left
-         [:img.badge-image {:src (str "/" profile_picture)}]]
+         [:img.badge-image {:src (str "/" profile_picture)
+                            :on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}]]
         [:div.media-body
-         [:h4.media-heading
-          (str  first_name " " last_name " haluaa seurata sinua" )]]]]]
+         [:h5.media-heading
+          [:a {:on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}
+           (str  first_name " " last_name " haluaa seurata sinua" )]]]]]]
      [:div {:class "row button-row"}
       [:div.col-md-12
        (accept owner_id state parent-data)

@@ -11,6 +11,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.social.ui.follow :as f]
+            [salava.core.ui.modal :refer [set-new-view]]
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn init-data [state]
@@ -104,7 +105,8 @@
      [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
     [:div {:class "media-body"}
      [:h4 {:class "media-heading"}
-      [:a {:href (path-for (str "/user/profile/" user_id)) :target "_blank"} (str first_name " "last_name)]
+      [:a {:href "#"
+           :on-click #(set-new-view [:user :profile] {:user-id user_id})} (str first_name " "last_name)]
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]]
      (into [:div] (for [ item (clojure.string/split-lines message)]
                     (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item)) 
