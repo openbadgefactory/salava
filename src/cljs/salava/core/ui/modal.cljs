@@ -46,9 +46,7 @@
         [:span {:aria-hidden             "true"
                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
     [:div (last @views)]]
-   [:div.modal-footer
-    
-    ]])
+   ])
 
 (defn modal-init [view]
   (create-class {:component-will-mount   (fn [] (reset! views [view]))

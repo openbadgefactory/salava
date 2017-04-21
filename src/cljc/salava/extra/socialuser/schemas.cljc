@@ -19,9 +19,9 @@
                               :ctime    (s/maybe s/Int)})
 
 (s/defschema PendingUsers {:owner_id        s/Int
-                           :user_id         s/Int
                            :first_name      s/Str
                            :last_name       s/Str
+                           :status          (s/enum "accepted" "pending" "declined")
                            :profile_picture (s/maybe s/Str)})
 
 

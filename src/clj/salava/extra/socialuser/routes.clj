@@ -28,7 +28,7 @@
                   :auth-rules access/authenticated
                   :current-user current-user
                   (do
-                    (ok (db/get-user-accepted-connections-user ctx (:id current-user)))))
+                    (ok (db/get-user-following-connections-user ctx (:id current-user)))))
              
              (DELETE "/user-connection/:user_id" []
                      :path-params [user_id :- s/Int]
@@ -96,14 +96,14 @@
                   :summary "Returns user all  user connections; pending and accepted"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  :return {:pending-users  [schemas/PendingUsers]
-                           :accepted-users [schemas/AcceptedUserConnections]}
+                  :return {:followers-users  [schemas/PendingUsers]
+                           :following-users [schemas/AcceptedUserConnections]}
                   (do
-                    (let [pending-users  (db/get-pending-requests ctx (:id current-user))
-                          accepted-users (db/get-user-accepted-connections-user ctx (:id current-user))]
+                    (let [followers-users  (db/get-user-followers-connections ctx (:id current-user))
+                          following-users (db/get-user-following-connections-user ctx (:id current-user))]
                       
-                      (ok {:pending-users  pending-users
-                           :accepted-users accepted-users}))))
+                      (ok {:followers-users followers-users
+                           :following-users following-users}))))
              
              (POST "/user-pending-requests/:owner_id/:status" []
                    :summary "Change pending request to accept or declined" 

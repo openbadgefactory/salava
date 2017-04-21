@@ -8,7 +8,7 @@
             [salava.user.ui.helper :refer [profile-link-inline-modal]]
             [salava.core.ui.rate-it :as r]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
             [salava.core.ui.helper :refer [path-for private?]]
@@ -76,36 +76,24 @@
                   (if (> (count public_users) 0)
                     [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                     [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
-        ]]]
+         ]]
+     [reporttool1 badge_content_id name "badges"]]
     ))
 
 
 (defn init-data [badge-content-id state]
-  
-  (let [reporttool-init {:description ""
-                         :report-type "bug"
-                         :item-id ""
-                         :item-content-id ""
-                         :item-url   ""
-                         :item-name "" ;
-                         :item-type "" ;badge/user/page/badges
-                         :reporter-id ""
-                         :status "false"}]
-    
-    
-    (ajax/GET
+  (ajax/GET
      (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id) true)
      {:handler (fn [data]
                  (reset! state (assoc data 
-                                      :permission "success"
-                                      :reporttool reporttool-init)))}
-     (fn [] (swap! state assoc :permission "error")))))
+                                      :permission "success")))}
+     (fn [] (swap! state assoc :permission "error")))
+  )
 
 (defn handler [params]
   
   (let [badge-content-id (:badge-content-id params)
         state (atom {:permission "initial"
-                     :reporttool {}
                      :badge {:badge_content_id badge-content-id}
                      :public_users []
                      :private_user_count 0

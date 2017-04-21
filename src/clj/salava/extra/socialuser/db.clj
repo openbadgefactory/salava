@@ -36,10 +36,16 @@
       (conj owners {:owner object})
       owners)))
 
-(defn get-user-accepted-connections-user
-  "returns accepted connections: profile_picture, first_name, last_name and ordered by first_name "
+(defn get-user-following-connections-user
+  "returns connections: profile_picture, first_name, last_name and ordered by first_name "
   [ctx owner_id]
   (select-user-connections-user {:owner_id owner_id} (get-db ctx)))
+
+
+(defn get-user-followers-connections
+  "returns accepted connections: profile_picture, first_name, last_name and ordered by first_name "
+  [ctx user_id]
+  (select-user-followers-connections-user {:user_id user_id} (get-db ctx)))
 
 
 

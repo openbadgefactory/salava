@@ -3,6 +3,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.modal :as mo]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]))
 
@@ -11,8 +12,8 @@
   (ajax/GET
    (path-for (str "/obpv1/socialuser/connections" ))
    {:handler (fn [data]
-               (swap! state assoc :pending-users (:pending-users data)
-                      :accepted-users (:accepted-users data)))}))
+               (swap! state assoc :followers-users (:followers-users data)
+                      :following-users (:following-users data)))}))
 
 (defn deleteconnect [user-id state]
   [:a {:class "btn btn-primary btn-xs" :href "#" :on-click #(ajax/DELETE
@@ -46,8 +47,9 @@
                [:tr
                 [:td [:img.badge-icon {:src (profile-picture profile_picture) 
                                        :alt name}]]
-                [:td.name [:a {:href     (path-for (str "/user/profile/" user_id))
+                [:td.name [:a {:href     "#"
                                :on-click #(do
+                                            (mo/open-modal [:user :profile] {:user-id user_id})
                                         ;(b/open-modal id false init-data state)
                                             (.preventDefault %)) } (str first_name " " last_name)]]
                 [:td  (if (= "accepted" status) (deleteconnect user_id state) [:span {:class "label label-primary"} (str (t :social/Pending) "...")])]]))]]
@@ -88,44 +90,50 @@
 (defn pending-user-connections [state users visible-area-atom]
   (let [panel-identity :pending]
     [:div.panel
+     [:div.panel-heading
+      [:h3
+       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (str (t :social/Followersusers) " (" (count users) ")")]]]
      [:div.panel-body
       [:table {:class "table" :summary (t :badge/Badgeviews)}
        [:thead
         [:tr
-         [:th (t :badge/Name)]
-         [:th (t :badge/Name)]
+         [:th ""]
+         [:th ""]
          [:th ""]]]
        (into [:tbody]
              (for [user users
-                   :let [{:keys [owner_id profile_picture first_name last_name]} user]]      
+                   :let [{:keys [owner_id profile_picture first_name last_name status]} user]]      
                [:tr
                 [:td [:img.badge-icon {:src (profile-picture profile_picture) 
                                        :alt name}]]
                 [:td.name [:a {:href     "#"
                                :on-click #(do
+                                            (mo/open-modal [:user :profile] {:user-id owner_id})
                                         ;(b/open-modal id false init-data state)
                                             (.preventDefault %)) } (str first_name " " last_name)]]
-                [:td (accept owner_id state) " " (decline owner_id state)]]))]]]))
+                (if (= "pending" status)
+                  [:td (accept owner_id state) " " (decline owner_id state)]
+                  [:td  "follows " ])]))]]]))
 
 
 
 
 (defn content [state]
   (let [visible-area-atom (cursor state [:visible-area])
-        pending-users     (cursor state [:pending-users])
-        accepted-users    (cursor state [:accepted-users])]
+        followers-users     (cursor state [:followers-users])
+        following-users    (cursor state [:following-users])]
     [:div     
-     (if-not (empty? @pending-users)
+     (if-not (empty? @followers-users)
        [:div {:id "badge-stats"}
-      (pending-user-connections state @pending-users visible-area-atom)])
-     (if-not (empty? @accepted-users)
+      (pending-user-connections state @followers-users visible-area-atom)])
+     (if-not (empty? @following-users)
        [:div {:id "badge-stats"}
-        (accepted-user-connections state @accepted-users visible-area-atom)])]))
+        (accepted-user-connections state @following-users visible-area-atom)])]))
 
 (defn handler []
   (let [state (atom {:visible-area   :accepted
-                     :pending-users  []
-                     :accepted-users []})]
+                     :followers-users  []
+                     :following-users []})]
     (init-data state)
     (fn []
       (content state))))

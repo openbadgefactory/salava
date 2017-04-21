@@ -19,7 +19,7 @@
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            [salava.admin.ui.reporttool :refer [reporttool]])
+            [salava.admin.ui.reporttool :refer [reporttool1]])
   )
 
 
@@ -33,8 +33,7 @@
 (defn content [state]
   (let [{:keys [id badge_content_id name owner? visibility show_evidence image_file rating issuer_image issued_on expires_on revoked issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count]} @state
         expired? (bh/badge-expired? expires_on)
-        show-recipient-name-atom (cursor state [:show_recipient_name])
-        reporttool-atom (cursor state [:reporttool])]
+        show-recipient-name-atom (cursor state [:show_recipient_name])]
     [:div {:id "badge-info"}
      [:div.panel
       [:div.panel-body
@@ -103,29 +102,19 @@
                [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
            
            ]]
-       (if owner? "" (reporttool id name "badge" reporttool-atom))]]]
+       (if owner? "" [reporttool1 id name "badge"])]]]
     ))
 
 
 (defn init-data [state id]
-  (let [reporttool-init {:description ""
-                         :report-type "bug"
-                         :item-id ""
-                         :item-content-id ""
-                         :item-url   ""
-                         :item-name "" ;
-                         :item-type "" ;badge/user/page/badges
-                         :reporter-id ""
-                         :status "false"}]
-   (ajax/GET
+  (ajax/GET
     (path-for (str "/obpv1/badge/info/" id))
     {:handler (fn [data]
                 (reset! state (assoc data :id id
                                      :show-link-or-embed-code nil
                                      :initializing false
-                                     :permission "success"
-                                     :reporttool reporttool-init)))}
-    (fn [] (swap! state assoc :permission "error")))))
+                                     :permission "success")))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 
 
@@ -135,8 +124,7 @@
   
   (let [id (:badge-id params)
         state (atom {:initializing true
-                     :permission "initial"
-                     :reporttool {}})
+                     :permission "initial"})
         user (session/get :user)]
     (init-data state id)
     

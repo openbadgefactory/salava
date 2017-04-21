@@ -117,6 +117,7 @@
   (cond
     (= item-type "badges") (path-for (str "/gallery/badgeview/" id))  
     (= item-type "page") (path-for (str "/page/view/" id))
+     (= item-type "user") (path-for (str "/user/profile/" id))
     :else (current-path)))
 
 (defn reporttool [id item-name item-type state]
@@ -134,6 +135,7 @@
            :item-url item-url
            :reporter-id reporter-id)
     
+    
     (if reporter-id
       [:div
        (cond
@@ -142,3 +144,27 @@
          (= @status "sent")  (confirmedtext) 
          :else               "")]
       "")))
+
+(defn reporttool1 [id item-name item-type]
+  (let [state (atom {:description ""
+                     :report-type "bug"
+                     :item-id (if (= item-type "badges") nil (js/parseInt id))
+                     :item-content-id (if (= item-type "badges") id nil)
+                     :item-url   (url-creator item-type id)
+                     :item-name item-name
+                     :item-type item-type ;badge/user/page/badges
+                     :reporter-id (session/get-in [:user :id])
+                     :status "false"})
+        status (cursor state [:status])
+        reporter-id (:reporter-id @state)]
+    
+    (fn []
+      
+      (if reporter-id
+        [:div
+         (cond
+           (= @status "false") (open-reportform-button true status)
+           (= @status "true")  (reportform state status)
+           (= @status "sent")  (confirmedtext) 
+         :else               "")]
+        ""))))

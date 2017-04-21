@@ -9,7 +9,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool1]]
             [reagent.session :as session]
             [salava.core.ui.error :as err]
             [salava.core.ui.modal :refer [set-new-view]]
@@ -59,24 +59,15 @@
                       "file" (file-block block)
                       "heading" (heading-block block)
                       "tag" (tag-block block)
-                      nil)]))]]]])]))
+                      nil)]))]]]
+        [reporttool1 id name "page"]])]))
 
 
 
 
 
 (defn init-data [page-id state]
-  (let [reporttool-init {:description ""
-                         :report-type "bug"
-                         :item-id ""
-                         :item-content-id ""
-                         :item-url   ""
-                         :item-name "" ;
-                         :item-type "" ;badge/user/page/badges
-                         :reporter-id ""
-                         :status "false"}]
-    
-    (ajax/GET
+  (ajax/GET
      (path-for (str "/obpv1/page/view/" page-id) true)
      {:handler (fn [data]
                  
@@ -84,9 +75,8 @@
                                       :page-id page-id
                                       :show-link-or-embed-code nil
                                       :permission "success"
-                                      :badge-small-view false
-                                      :reporttool reporttool-init)))}
-     (fn [] (swap! state assoc :permission "error")))))
+                                      :badge-small-view false)))}
+     (fn [] (swap! state assoc :permission "error"))))
 
 
 (defn handler [params]
@@ -94,8 +84,7 @@
   (let [page-id (:page-id params)
         state (atom {:page {}
                      :initializing true
-                     :permission "initial"
-                     :reporttool {}})
+                     :permission "initial"})
         user (session/get :user)]
     
     (init-data page-id state)

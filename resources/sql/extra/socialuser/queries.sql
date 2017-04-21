@@ -18,6 +18,15 @@ JOIN user as u ON scu.user_id = u.id
        GROUP BY u.first_name, u.last_name, u.profile_picture, scu.user_id
        ORDER BY u.first_name
 
+
+-- name: select-user-followers-connections-user
+-- get users user connections
+SELECT DISTINCT u.first_name, u.last_name, u.profile_picture, scu.owner_id,  scu.status  FROM social_connections_user AS scu
+JOIN user as u ON scu.owner_id = u.id
+       WHERE scu.user_id = :user_id 
+       GROUP BY u.first_name, u.last_name, u.profile_picture, scu.user_id, scu.owner_id, scu.status
+       ORDER BY u.first_name
+
 -- name: select-user-connections-user-pending
 -- get users connections
 SELECT DISTINCT u.first_name, u.last_name, u.profile_picture, scu.user_id, scu.owner_id  FROM social_connections_user AS scu

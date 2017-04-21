@@ -14,7 +14,7 @@
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.core.ui.modal :refer [set-new-view]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool1]]
             ))
 
 
@@ -61,7 +61,6 @@
 (defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
         badges (take 4 badges)]
-    (dump element-data)
     [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
@@ -166,36 +165,24 @@
          [page-grid pages profile_picture @page-small-view]
          (if (< 6 (count pages))
            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
-      ;(reporttool user-id fullname "user" reporttool-atom)
+      [reporttool1 user-id fullname "user"]
       ]]))
 
 (defn init-data [user-id state]
-  (let [reporttool-init {:description ""
-                         :report-type "bug"
-                         :item-id ""
-                         :item-content-id ""
-                         :item-url   ""
-                         :item-name "" ;
-                         :item-type "" ;badge/user/page/badges
-                         :reporter-id ""
-                         :status "false"}]
-    
-    (ajax/GET
+  (ajax/GET
      (path-for (str "/obpv1/user/profile/" user-id) true)
      {:handler (fn [data]
                  (reset! state (assoc data :user-id user-id
                                       :show-link-or-embed-code nil
                                       :permission "success"
-                                      :badge-small-view false
-                                      :reporttool reporttool-init)))}
-     (fn [] (swap! state assoc :permission "error")))))
+                                      :badge-small-view false)))}
+     (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [params]
   
   (let [user-id (:user-id params)
         state (atom {:user-id (:user-id params)
                      :permission "initial"
-                     :reporttool {}
                      :badge-small-view false
                      :pages-small-view true})
         user (session/get :user)]
