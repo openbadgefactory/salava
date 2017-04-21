@@ -44,7 +44,7 @@
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
-    [:a {:href (path-for (str "/user/profile/" user_id)) :target "_blank"}(str first_name " "last_name)]
+     [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id user_id})} (str first_name " "last_name)]
     ;[:span (str (t :social/Commented) ":") ]
     ]
                                         ;(date-from-unix-time (* 1000 ctime) "minutes")

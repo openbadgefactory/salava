@@ -21,7 +21,6 @@
   
   (let [{:keys [badge public_users private_user_count]} @state
         {:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge]
-    (dump badge_content_id)
     [:div {:id "badge-contents"}
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))

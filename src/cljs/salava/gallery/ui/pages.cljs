@@ -11,6 +11,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.user.ui.helper :as u]
+            [salava.core.ui.modal :as mo]
             [salava.admin.ui.admintool :refer [admintool-gallery-page]]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
 
@@ -117,7 +118,7 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:on-click #(open-modal id)}
+         [:a.heading-link {:href "#" :on-click #(mo/open-modal [:page :view] {:page-id id})}
           name]]
         [:div.media-content
          [:div.page-owner
@@ -145,14 +146,15 @@
             (page-gallery-grid-element element-data state)))))
 
 (defn content [state]
-  [:div {:id "page-gallery"}
+  [:div 
    [m/modal-window]
-   [page-gallery-grid-form state]
-   (if (:ajax-message @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (:ajax-message @state)]]
-     [page-gallery-grid state])])
+   [:div {:id "page-gallery"}
+    [page-gallery-grid-form state]
+    (if (:ajax-message @state)
+      [:div.ajax-message
+       [:i {:class "fa fa-cog fa-spin fa-2x "}]
+       [:span (:ajax-message @state)]]
+      [page-gallery-grid state])]])
 
 
 

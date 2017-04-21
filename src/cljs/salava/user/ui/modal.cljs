@@ -61,12 +61,15 @@
 (defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
         badges (take 4 badges)]
+    (dump element-data)
     [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/page/view/" id))} name]]
+         [:a.heading-link {:href "#";(path-for (str "/page/view/" id))
+                           :on-click #(set-new-view [:page :view] {:page-id id})
+                           } name]]
         [:div.media-content
          [:div.page-owner
           [:a {:href "#"} first_name " " last_name]]
@@ -89,7 +92,7 @@
 (defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row" :id "grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
-          (page-grid-element element-data profile_picture))))
+          [page-grid-element element-data profile_picture])))
 
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
@@ -209,6 +212,6 @@
 
 
 
-(def modalroutes
+(def ^:export modalroutes
   {:user {:profile handler}}
   )

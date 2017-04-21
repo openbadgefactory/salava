@@ -139,8 +139,8 @@
                      :reporttool {}})
         user (session/get :user)]
     (init-data state id)
+    
     (fn []
-      
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (err/error-content)
@@ -151,6 +151,5 @@
     ))
 
 
-(def modalroutes
-  {:badge {:info handler}}
-  )
+(def ^:export modalroutes
+  {:badge {:info handler}})
