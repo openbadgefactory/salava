@@ -24,8 +24,10 @@
                            :keywords?       true          
                            :handler         (fn [data]
                                               (do
+                                                
                                                 (init-data state)
-                                                ((:init-data parent-data) (:state parent-data))
+                                                
+                                                ;((:init-data parent-data) (:state parent-data))
                                                 ))
                            :error-handler   (fn [{:keys [status status-text]}]
                                               (.log js/console (str status " " status-text))
@@ -44,7 +46,8 @@
                            :handler         (fn [data]
                                               (do
                                                 (init-data state)
-                                                ((:init-data parent-data) (:state parent-data))))
+                                                ;((:init-data parent-data) (:state parent-data))
+                                                ))
                            :error-handler   (fn [{:keys [status status-text]}]
                                               (.log js/console (str status " " status-text))
                                               )})

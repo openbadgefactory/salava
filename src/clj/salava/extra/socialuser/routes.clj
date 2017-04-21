@@ -96,7 +96,7 @@
                   :summary "Returns user all  user connections; pending and accepted"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  :return {:followers-users  [schemas/PendingUsers]
+                  :return {:followers-users  [schemas/FollowersUsers]
                            :following-users [schemas/AcceptedUserConnections]}
                   (do
                     (let [followers-users  (db/get-user-followers-connections ctx (:id current-user))
