@@ -152,8 +152,7 @@
       ]]))
 
 (defn publish-event-badge [event state]
-  (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event
-        modal-message (str "messages")]
+  (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event]
     [:div {:class "media message-item tips"}
     (hide-event event_id state)
      [:div.media-left
@@ -176,6 +175,29 @@
       ]])
   )
 
+(defn publish-event-page [event state]
+  (let [{:keys [subject verb profile_picture message ctime event_id name object first_name last_name]}  event]
+    [:div {:class "media message-item tips"}
+    (hide-event event_id state)
+     [:div.media-left
+      [:a {:href "#"
+           :on-click #(do
+                        (mo/open-modal [:page :view] {:page-id object})
+                        
+                        (.preventDefault %) )}
+       [:img {:src (profile-picture profile_picture) } ]]]
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:i {:class "fa fa-lightbulb-o"}]
+      [:div [:h3 {:class "media-heading"}
+       [:a {:href "#"
+            :on-click #(do
+                         (mo/open-modal [:page :view] {:page-id object})
+                         (.preventDefault %) )} (str first_name " " last_name " " verb " "  name)]]
+      [:div.media-body
+       "Käyttäjä julkaisi merkin! eikö ole hienoa?"]]
+      ]])
+  )
 
 (defn follow-event-user [event state]
   (let [{:keys [subject verb ctime event_id object s_first_name s_last_name o_first_name o_last_name o_id s_id owner o_profile_picture s_profile_picture]}  event
@@ -364,7 +386,8 @@
              (cond
                (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
                (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
-               (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state) 
+               (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
+               (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
                (= "message" (:verb event)) (message-event event state)
                :else "")))]))
 

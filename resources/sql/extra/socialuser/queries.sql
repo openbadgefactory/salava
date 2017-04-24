@@ -66,6 +66,17 @@ SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked,
      ORDER BY se.ctime DESC
      LIMIT 1000
 
+--name: select-user-page-events
+-- EVENTS
+SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, seo.hidden, se.type, GROUP_CONCAT(pb.badge_id) AS badges,  p.name, p.description, u.first_name, u.last_name, u.profile_picture FROM social_event_owners AS seo
+     JOIN social_event AS se ON seo.event_id = se.id
+     JOIN social_connections_user AS scu ON :owner_id = scu.owner_id
+     JOIN user AS u ON se.subject = u.id
+     JOIN page as p ON se.object = p.id
+     LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
+     WHERE seo.owner = :owner_id AND se.subject = scu.user_id AND se.type = 'page' AND se.verb = 'publish' AND p.visibility <> 'private'
+     ORDER BY se.ctime DESC
+     LIMIT 1000
 
 
 --name: select-user-events
@@ -79,4 +90,3 @@ SELECT seo.owner, se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.la
      ORDER BY se.ctime DESC
      LIMIT 1000
 
- 

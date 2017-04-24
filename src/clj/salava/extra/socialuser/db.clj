@@ -25,7 +25,8 @@
 (defn get-user-events [ctx user_id]
   (let [user-badge-events (select-user-badge-events {:owner_id user_id} (get-db ctx))
         user-events (select-user-events {:owner_id user_id} (get-db ctx))
-        events (distinct (concat user-badge-events user-events))]
+        user-page-events (select-user-page-events {:owner_id user_id} (get-db ctx))
+        events (distinct (concat user-badge-events user-events user-page-events))]
     (events-reduce events)))
 
 (defn get-owners
