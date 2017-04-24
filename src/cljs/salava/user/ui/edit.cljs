@@ -12,62 +12,38 @@
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
-(defn clear-password-fields [state]
-  (do
-    (swap! state assoc-in [:user :current_password] "")
-    (swap! state assoc-in [:user :new_password] "")
-    (swap! state assoc-in [:user :new_password_verify] "")))
 
 (defn save-user-info [state]
-  (let [params (:user @state)
-        current-password (if-not (blank? (:current_password params)) (:current_password params))
-        new-password (if-not (blank? (:new_password params)) (:new_password params))
-        new-password-verify (if-not (blank? (:new_password_verify params)) (:new_password_verify params))]
+  (let [params (:user @state)]
     (ajax/POST
       (path-for "/obpv1/user/edit")
       {:params  (-> params
                     (dissoc :private)
                     (dissoc :password?)
-                    (dissoc :role)
-                    (assoc :current_password current-password
-                           :new_password new-password
-                           :new_password_verify new-password-verify))
+                    (dissoc :role))
        :handler (fn [data]
                   (if (= (:status data) "success")
                     (js-navigate-to "/user/edit")
                     (do
                       (swap! state assoc :message {:class "alert-danger" :content (:message data)})
-                      (clear-password-fields state)))
+                      ))
                   )})))
 
-(defn new-password-valid? [has-password? current-password new-password new-password-verify]
-  (or
-   (and (empty? new-password)
-        (empty? new-password-verify)
-        (empty? current-password))
-   (and (not-empty new-password)
-        (not-empty new-password-verify)
-        (input/password-valid? new-password)
-        (input/password-valid? new-password-verify)
-        (= new-password new-password-verify)
-        (or (not has-password?) (not-empty current-password)))))
+
 
 (defn user-connect-config []
   (let [connections (first (plugin-fun (session/get :plugins) "block" "userconnectionconfig"))]
     (if connections
       [connections]
-      [:div "lool"])))
+      [:div ""])))
 
 (defn content [state]
-  (let [current-password-atom (cursor state [:user :current_password])
-        new-password-atom (cursor state [:user :new_password])
-        new-password-verify-atom (cursor state [:user :new_password_verify])
-        language-atom (cursor state [:user :language])
+  (let [language-atom (cursor state [:user :language])
         first-name-atom (cursor state [:user :first_name])
         last-name-atom (cursor state [:user :last_name])
         country-atom (cursor state [:user :country])
         message (:message @state)
-        current-password? (get-in @state [:user :password?])
+        
         email-notifications-atom (cursor state [:user :email_notifications])]
     [:div {:class "panel" :id "edit-user"}
      (if message
@@ -75,32 +51,6 @@
        (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       
-       (if current-password?
-         [:div.form-group
-          [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
-          [:div {:class "col-md-9"}
-           [:input {:class       "form-control"
-                    :id          "input-current-password"
-                    :name        name
-                    :type        "password"
-                    :placeholder (t :user/Enteryourcurrentpassword)
-                    :read-only   true
-                    :on-focus    #(.removeAttribute (.-target %) "readonly")
-                    :on-change   #(reset! current-password-atom (.-target.value %))
-                    :value       @current-password-atom}]]])
-       [:div.form-group
-        [:div.col-md-12 (t :user/Tochangecurrentpassword)]
-        [:br]
-        [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
-        [:div {:class "col-md-9"}
-         [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]
-
-       [:div.form-group
-        [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
-        [:div {:class "col-md-9"}
-         [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]]
-       
        [:div.form-group
         [:label {:for "languages"
                  :class "col-md-3"}
@@ -147,7 +97,7 @@
                                           (input/last-name-valid? @last-name-atom)
                                           (input/country-valid? @country-atom)
                                           
-                                          (new-password-valid? current-password? @current-password-atom @new-password-atom @new-password-verify-atom))
+                                          )
                                "disabled")
                    :on-click #(do
                                (.preventDefault %)
@@ -155,10 +105,7 @@
           (t :core/Save)]]]]]]))
 
 (def initial-state
-  {:user {:current_password nil
-          :new_password nil
-          :new_password_verify nil}
-   :message nil})
+  {:message nil})
 
 (defn init-data [state]
   (ajax/GET
@@ -168,14 +115,10 @@
 
 (defn handler [site-navi]
   (let [state (atom {:user {:role ""
-                            :new_password_verify nil
                             :first_name ""
-                            :current_password nil
                             :private false
-                            :password? true
                             :language "en"
                             :last_name ""
-                            :new_password nil
                             :country "EN"
                             :email_notification nil}
                      :message nil

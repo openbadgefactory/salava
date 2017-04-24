@@ -45,11 +45,13 @@
                                   :user_id   s/Int}
                                  (select-keys User [:password :password_verify])))
 
-(s/defschema EditUser (-> {:current_password (s/maybe (:password User))
-                           :new_password (s/maybe (:password User))
-                           :new_password_verify (s/maybe (:password User))
-                           :email_notifications s/Bool}
+(s/defschema EditUser (-> {:email_notifications s/Bool}
                           (merge (select-keys User [:first_name :last_name :language :country]))))
+
+
+(s/defschema EditUserPassword{:current_password (s/maybe (:password User))
+                              :new_password (s/maybe (:password User))
+                              :new_password_verify (s/maybe (:password User))})
 
 (s/defschema EmailAddress {:email            (:email User)
                            :verified         s/Bool

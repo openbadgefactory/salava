@@ -9,6 +9,7 @@
             [salava.user.ui.register :as register]
             [salava.user.ui.reset :as reset]
             [salava.user.ui.edit :as edit]
+            [salava.user.ui.edit-password :as edit-password]
             [salava.user.ui.email-addresses :as email-addresses]
             [salava.user.ui.edit-profile :as edit-profile]
             [salava.user.ui.cancel :as cancel]
@@ -30,6 +31,7 @@
                                       ["/reset" reset/handler]
                                       [["/reset/" :lang] reset/handler]
                                       ["/edit" edit/handler]
+                                      ["/edit/password" edit-password/handler]
                                       ["/edit/email-addresses" email-addresses/handler]
                                       ["/edit/profile" edit-profile/handler]
                                       ["/cancel" cancel/handler]]})
@@ -40,6 +42,7 @@
    (str (base-path context) "/user/profile/" (get-in context [:user :id])) {:weight 40 :title (t :user/Myprofile) :site-navi true :breadcrumb (str (t :user/User) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
    (str (base-path context) "/user/edit/profile")                          {:breadcrumb (t :user/User " / " :user/Editprofile)}
    (str (base-path context) "/user/edit")                                  {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
-   (str (base-path context) "/user/edit/email-addresses")                  {:weight 42 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}
-   (str (base-path context) "/user/cancel")                                {:weight 43 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}})
+   (str (base-path context) "/user/edit/password")                         {:weight 42 :title (t :user/Passwordsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Passwordsettings)}
+   (str (base-path context) "/user/edit/email-addresses")                  {:weight 43 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}
+   (str (base-path context) "/user/cancel")                                {:weight 44 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}})
 

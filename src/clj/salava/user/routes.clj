@@ -25,6 +25,7 @@
              (layout/main ctx "/activate/:userid/:timestamp/:code")
              (layout/main ctx "/activate/:userid/:timestamp/:code/:lang")
              (layout/main ctx "/edit")
+             (layout/main ctx "/edit/password")
              (layout/main ctx "/edit/email-addresses")
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
@@ -99,6 +100,23 @@
                                         (assoc :password? (u/has-password? ctx (:id current-user))))
                          :languages (get-in ctx [:config :core :languages])
                          :email-notifications (get-in ctx [:config :user :email-notifications] false)})))
+
+             (GET "/edit/password" []
+                  :summary "Get user information for editing"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok {:password? (u/has-password? ctx (:id current-user))})
+                  )
+
+             (POST "/edit/password" []
+                  :return {:status (s/enum "success" "error")
+                            :message (s/maybe s/Str)}
+                  :body [user-data schemas/EditUserPassword]
+                  :summary "Get user information for editing"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (u/edit-user-password ctx user-data (:id current-user)))
+                  )
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")
