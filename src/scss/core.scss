@@ -734,3 +734,78 @@ body.anon {
     /* inline-block space fix */
     margin-right:-4px;
 }
+
+.btn-fix {
+    margin-top: 0px;
+    margin-left: 1px;
+}
+
+
+/* Badge certification*/
+
+.btn-oauth {
+    i {
+        padding-right: 10px;
+        border-right: 1px solid #ffffff;
+        margin-right: 10px;
+    }
+    box-shadow: none;
+    margin-bottom:3px;
+    &:hover {
+        box-shadow: none;
+    }
+    &:active, &:visited {
+        color: #ffffff;
+    }
+}
+.btn-linkedin {
+    background-color: #007bb6;
+    color: #ffffff !important;
+    border: 1px solid #006292;
+    &:hover, &:focus, &:active {
+        background-color: #006292;
+        border: 1px solid #007bb6;
+    }
+}
+.certification{
+    .guide-text{
+	h3{
+	    margin-top:-15px;
+	}
+	margin-bottom:15px;
+    }
+    .image-view {
+	margin-bottom:15px;
+    }
+    .copy-boxes{
+	margin-bottom:15px;
+	.input-box{
+	    background-color: #eee;
+	    padding: 5px;
+	    border-left: 3px #eee;
+	    border-radius: 3px;
+	    cursor: pointer;
+	    margin-bottom: 3px;
+	    .text{
+		max-width: 170px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis
+	    }
+	    .name{
+		font-size: 18px;
+		font-weight: 600;}
+	    .certification-button{
+		float: right;
+		margin-top: -40px;}
+	    &:hover {
+		background-color: #ddd;
+	    }
+	    .success {
+		transition: background-color 500ms linear;
+		border-left: green solid 1px;
+	    }
+	}
+    }
+}
+
