@@ -9,6 +9,7 @@
             [salava.registry]
             [salava.translator.ui.routes]
             [salava.core.ui.routes]
+            [cljsjs.clipboard]
             [salava.core.ui.helper :refer [current-path]]))
 
 (defn get-ctx []

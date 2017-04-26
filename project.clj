@@ -63,8 +63,8 @@
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
                  [metosin/komponentit "0.2.2"]
                  [com.cemerick/url "0.1.1"]
+                 [cljsjs/clipboard "1.6.1-1"]
                  
-
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
                  [org.webjars/font-awesome "4.7.0"]
