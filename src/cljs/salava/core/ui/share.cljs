@@ -3,71 +3,86 @@
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [private?]]
+            [markdown.core :refer [md->html]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [reagent-modals.modals :as m :refer [close-modal!]]
             [salava.core.i18n :refer [t]]
             ))
+(def video-link "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/ZDhwbRIABjA\" frameborder=\"0\"></iframe>")
 
-
-(defn clipboard-button [label target status]
+(defn clipboard-button [target status]
   (let [clipboard-atom (atom nil)]
     (create-class
      {:display-name "clipboard-button"
       :component-did-mount
       #(let [clipboard (new js/Clipboard (dom-node %))]
          (reset! clipboard-atom clipboard)
-         )
+         (-> (js/$ (reagent.core/dom-node %))
+             (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
+             (.tooltip "toggle"))
+         (.on @clipboard-atom "success"
+              (fn [] (do
+                       (-> (js/$ (reagent.core/dom-node %))
+                           (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
+                           (.tooltip "hide")
+                           (.attr "data-original-title" , (str (t :core/Copied) "!"))
+                           (.tooltip "show"))
+                       (js/setTimeout (fn []
+                                        (do
+                                          (-> (js/$ (reagent.core/dom-node %))
+                                              (.tooltip "destroy")))) 1000)))))
       :component-will-unmount
       #(when-not (nil? @clipboard-atom)
          (.destroy @clipboard-atom)
          (reset! clipboard-atom nil)
+         (-> (js/$ (reagent.core/dom-node %))
+             (.tooltip "destroy"))
          )
       :reagent-render
       (fn []
-        [:button {:class "btn btn-primary"
+        [:button {:class "btn btn-primary input-btn"
+                  :id "copybutton"
                   :type "button"
                   :data-clipboard-target target
-                  :on-click (fn [] (do
-                                     (reset! status "alert-success")
-                                     (js/setTimeout #(reset! status "") 2000)))}
-         label])})))
+                  :on-click #(.preventDefault %)}
+         [:i {:class "fa fa-clipboard" :aria-hidden "true"}] (str " " (t :core/Copy))])})))
 
 
-
-
-
-
-
-(defn input-button11 [name id text]
-  (let [status (atom "")]
-    (fn []
-      [:div {:class (str "input-box " @status)}
-       [:div.name name]
-       [:div
-        [:p {:id id} text]
-        [clipboard-button "Copy" (str "#" id) status]]]))
-  )
 
 (defn input-button [name id text]
   (let [status (atom "")]
     (fn []
-      [:div {:class (str "media input-box " @status)}
-       [:div.media-body
-        [:h4.media-heading name]
-        [:div{:id id :class "text"} text]]
-       [:div.media-right
-        [:div.media-object
-         [clipboard-button "Copy" (str "#" id) status]]
-        ]]))
-   )
+      [:div.form-group
+       [:fieldset
+        [:label {:class " sub-heading"} name]
+        [:div.input-group
+         [:input {:class       "form-control"
+                  :id          id
+                  :name        "email-text"
+                  :type        "text"
+                  :read-only true
+                  :on-click #(-> (js* "$('#reagent-modal .modal-dialog')")
+                                 (.addClass "modal-lg" )
+                                 (.removeClass "modal-sm"))
+                  :value       text}]
+         [:span {:class "input-group-btn"}
+          [clipboard-button (str "#" id) status]]]]]
+      ))
+  )
+
 
 (defn input-date [datefrom dateto]
-  [:div {:class (str "media input-box")}
-   [:div.media-body
-    [:h4.media-heading "Time period"]
-        [:div (date-from-unix-time (* 1000 datefrom)) "-"  (if dateto (date-from-unix-time (* 1000 dateto))
-                                                               "present") ]]
-       ])
+  [:div.form-group
+       [:fieldset
+        [:label {:class " sub-heading"} (t :core/Timeperiod)]
+        [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
+                                                                              (str "present")
+                                                                              ))
+         (if-not dateto
+           [:div (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")])]
+        
+        ]]
+  )
 
 
 (defn open-linkedin-popup []
@@ -83,24 +98,28 @@
 
 
 (defn certificate-badge-helper [{:keys [name authory licence url datefrom dateto] :as certification}]
-  [:div.certification
+  [:div.col-xs-12.certification
    [:div.row
-    [:div.guide-text.col-xs-12
+    [:div.guide-text
      [:h3 (t :core/Sharelinkedinaddcredit) ]
      [:p (str (t :core/Sharelinkedincopytip) ".")]
      [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
             (add-to-profile-image)]
       [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
-     [:div.row
-      [:div.col-md-6.copy-boxes         
-       [input-button "certification name" "name" name]
-       [input-button "Certification authority" "authory" authory]
-       [input-button "License number" "licence" licence]
-       [input-date datefrom dateto]
-       [input-button "Certification url" "url" url]]
-      
-      [:div.col-md-6.image-view
-       [:img.img-responsive.img-thumbnail {:src "/img/certification.png" :alt "linkedin certification img"}]
+   [:div.row
+   
+    [:div.col-md-6.copy-boxes
+     [:form {:class "form-horizontal"}
+      [input-button (t :core/Certificationname)  "name" name]
+      [input-button (t :core/Certificationauthority) "authory" authory]
+      [input-button (t :core/Licensenumber) "licence" licence]
+      [input-date datefrom dateto]
+      [input-button (t :core/Certificationurl) "url" url]]]
+    
+    [:div.col-md-6.image-view
+     [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
+     [:div.embed-responsive.embed-responsive-16by9
+      {:dangerouslySetInnerHTML {:__html (md->html video-link)}}]
        ]]]
   )
 
@@ -108,12 +127,12 @@
 (defn start-view [url title certification view]
   (let [site-name (session/get-in [:share :site-name])
         hashtag (session/get-in [:share :hashtag])]
-    [:div.col-xs-12.certification
+    [:div.certification
      [:div.guide-text
       [:h3  (t :core/Shareonlinkedin)]
       [:div (str (t :core/Sharelinkedintip) "."
                  (t :core/Sharelinkedinprofile) ":") ]]
-     [:div.col-xs-12
+     [:div
       [:a {:class "btn btn-oauth btn-linkedin text-center"
            :href "#"
            :on-click (fn []
@@ -122,13 +141,13 @@
                          (-> (js* "$('#reagent-modal .modal-dialog')")
                              (.addClass "modal-lg" )
                              (.removeClass "modal-sm"))
-                         #_(js/setTimeout #(open-linkedin-popup) 500)
+                         ;(js/setTimeout #(open-linkedin-popup) 500)
                          )
                        )}
         [:i {:class "fa fa-linkedin"}]
        (t :core/Addtoprofile)]]
      [:div (str (t :core/Sharelinkedinupdate) ":") ]
-     [:div.col-xs-12
+     [:div
       [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
        [:i {:class "fa fa-linkedin"}]
        (t :badge/Share)]
@@ -145,7 +164,7 @@
         :default))))
 
 (defn content-modal-render [url title certification]
-  [:div 
+  [:div.badge-settings
    [:div.modal-body
     [:div.row
      [:div.col-md-12
