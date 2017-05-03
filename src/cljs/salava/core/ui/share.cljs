@@ -141,7 +141,7 @@
                          (-> (js* "$('#reagent-modal .modal-dialog')")
                              (.addClass "modal-lg" )
                              (.removeClass "modal-sm"))
-                         ;(js/setTimeout #(open-linkedin-popup) 500)
+                         (js/setTimeout #(open-linkedin-popup) 700)
                          )
                        )}
         [:i {:class "fa fa-linkedin"}]
