@@ -76,8 +76,7 @@
        [:fieldset
         [:label {:class " sub-heading"} (t :core/Timeperiod)]
         [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
-                                                                              (str "present")
-                                                                              ))
+                                                                              (str "present")))
          (if-not dateto
            [:div (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")])]
         
@@ -86,9 +85,10 @@
 
 
 (defn open-linkedin-popup []
-  (.open js/window "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME",
-               "_blank",
-               "toolbar=yes,scrollbars=yes,resizable=yes"))
+  (.open js/window
+         "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME",
+         "_blank",
+         "toolbar=yes,scrollbars=yes,resizable=yes"))
 
 (defn add-to-profile-image []
   (let [user-lng (session/get-in [:user :language])
@@ -124,20 +124,20 @@
   )
 
 
-(defn start-view [url title certification view]
+(defn start-view [url title certification view-atom]
   (let [site-name (session/get-in [:share :site-name])
         hashtag (session/get-in [:share :hashtag])]
     [:div.certification
      [:div.guide-text
       [:h3  (t :core/Shareonlinkedin)]
-      [:div (str (t :core/Sharelinkedintip) "."
+      [:div (str (t :core/Sharelinkedintip) "! "
                  (t :core/Sharelinkedinprofile) ":") ]]
      [:div
       [:a {:class "btn btn-oauth btn-linkedin text-center"
            :href "#"
            :on-click (fn []
                        (do
-                         (reset! view :addtoprofile)
+                         (reset! view-atom :addtoprofile)
                          (-> (js* "$('#reagent-modal .modal-dialog')")
                              (.addClass "modal-lg" )
                              (.removeClass "modal-sm"))
@@ -154,16 +154,14 @@
       ]]))
 
 
-(defn modal-content [url title certification]
-  (let [view (atom :start)]
-    (fn []
-      
-      (case @view
-        :start [start-view url title certification view]
+(defn modal-content [url title certification view-atom]
+  (case @view-atom
+        :start [start-view url title certification view-atom]
         :addtoprofile [certificate-badge-helper certification]
-        :default))))
+        :default)
+  )
 
-(defn content-modal-render [url title certification]
+(defn content-modal-render [url title certification view-atom]
   [:div.badge-settings
    [:div.modal-body
     [:div.row
@@ -174,7 +172,7 @@
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-    [modal-content url title certification]]
+    [modal-content url title certification view-atom]]
    [:div.modal-footer
     #_[:button {:type         "button"
               :class        "btn btn-primary"
@@ -182,8 +180,13 @@
      (t :core/Close)]]])
 
 (defn linkedin-modal [url title certification]
-  (create-class {:reagent-render (fn [url title public?] (content-modal-render url title certification))
-                 :component-will-unmount (fn [] (close-modal!) )}))
+  (let [view-atom (atom :start)]
+    (fn []
+      (create-class {:reagent-render         (fn [url title public?] (content-modal-render url title certification view-atom))
+                     :component-will-unmount (fn []
+                                               (close-modal!)
+                                               (reset! view-atom :start)
+                                               )}))))
 
 
 
