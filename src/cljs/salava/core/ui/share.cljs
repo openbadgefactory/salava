@@ -11,16 +11,17 @@
 (def video-link "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/ZDhwbRIABjA\" frameborder=\"0\"></iframe>")
 
 (defn clipboard-button [target status]
+  
   (let [clipboard-atom (atom nil)]
     (create-class
      {:display-name "clipboard-button"
       :component-did-mount
       #(let [clipboard (new js/Clipboard (dom-node %))]
          (reset! clipboard-atom clipboard)
-         (-> (js/$ (reagent.core/dom-node %))
+         #_(-> (js/$ (reagent.core/dom-node %))
              (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
              (.tooltip "toggle"))
-         (.on @clipboard-atom "success"
+         #_(.on @clipboard-atom "success"
               (fn [] (do
                        (-> (js/$ (reagent.core/dom-node %))
                            (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
@@ -34,10 +35,7 @@
       :component-will-unmount
       #(when-not (nil? @clipboard-atom)
          (.destroy @clipboard-atom)
-         (reset! clipboard-atom nil)
-         (-> (js/$ (reagent.core/dom-node %))
-             (.tooltip "destroy"))
-         )
+         (reset! clipboard-atom nil))
       :reagent-render
       (fn []
         [:button {:class "btn btn-primary input-btn"
@@ -52,7 +50,7 @@
 (defn input-button [name id text]
   (let [status (atom "")]
     (fn []
-      [:div.form-group
+      [:div {:class "form-group" :key id}
        [:fieldset
         [:label {:class " sub-heading"} name]
         [:div.input-group
@@ -61,14 +59,9 @@
                   :name        "email-text"
                   :type        "text"
                   :read-only true
-                  :on-click #(-> (js* "$('#reagent-modal .modal-dialog')")
-                                 (.addClass "modal-lg" )
-                                 (.removeClass "modal-sm"))
                   :value       text}]
          [:span {:class "input-group-btn"}
-          [clipboard-button (str "#" id) status]]]]]
-      ))
-  )
+          [clipboard-button (str "#" id) status]]]]])))
 
 
 (defn input-date [datefrom dateto]
@@ -78,10 +71,7 @@
         [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
                                                                               (str "present")))
          (if-not dateto
-           [:div (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")])]
-        
-        ]]
-  )
+           [:div (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")])]]])
 
 
 (defn open-linkedin-popup []
@@ -97,71 +87,38 @@
     [:img {:src (str "/img/linkedin-addprofile/" use-lng ".png") :alt "LinkedIn Add to Profile button"}]) )
 
 
-(defn certificate-badge-helper [{:keys [name authory licence url datefrom dateto] :as certification}]
-  [:div.col-xs-12.certification
-   [:div.row
-    [:div.guide-text
-     [:h3 (t :core/Sharelinkedinaddcredit) ]
-     [:p (str (t :core/Sharelinkedincopytip) ".")]
-     [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
-            (add-to-profile-image)]
-      [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
-   [:div.row
-   
-    [:div.col-md-6.copy-boxes
-     [:form {:class "form-horizontal"}
-      [input-button (t :core/Certificationname)  "name" name]
-      [input-button (t :core/Certificationauthority) "authory" authory]
-      [input-button (t :core/Licensenumber) "licence" licence]
-      [input-date datefrom dateto]
-      [input-button (t :core/Certificationurl) "url" url]]]
-    
-    [:div.col-md-6.image-view
-     [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
-     [:div.embed-responsive.embed-responsive-16by9
-      {:dangerouslySetInnerHTML {:__html (md->html video-link)}}]
-       ]]]
-  )
+(defn certificate-badge-helper [{:keys [name authory licence url datefrom dateto] :as certification} view-atom]
+  (create-class {:reagent-render
+                 (fn [] [:div.col-xs-12.certification
+                         [:div.row
+                          [:div.guide-text.margin-bottom
+                           [:h3 (t :core/Sharelinkedinaddcredit) ]
+                           [:p (str (t :core/Sharelinkedincopytip) ".")]
+                           [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
+                                  (add-to-profile-image)]
+                            [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
+                         [:div.row
+                          
+                          [:div.col-md-6.copy-boxes
+                           [:form {:class "form-horizontal"}
+                            [input-button (t :core/Certificationname)  "name" name]
+                            [input-button (t :core/Certificationauthority) "authory" authory]
+                            [input-button (t :core/Licensenumber) "licence" licence]
+                            [input-date datefrom dateto]
+                            [input-button (t :core/Certificationurl) "url" url]]]
+                          
+                          [:div.col-md-6.image-view
+                           [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
+                           [:div.embed-responsive.embed-responsive-16by9
+                            {:dangerouslySetInnerHTML {:__html (md->html video-link)}}]]]])
+                 :component-will-unmount (fn []
+                                           (reset! view-atom :start))}))
 
 
-(defn start-view [url title certification view-atom]
-  (let [site-name (session/get-in [:share :site-name])
-        hashtag (session/get-in [:share :hashtag])]
-    [:div.certification
-     [:div.guide-text
-      [:h3  (t :core/Shareonlinkedin)]
-      [:div (str (t :core/Sharelinkedintip) "! "
-                 (t :core/Sharelinkedinprofile) ":") ]]
-     [:div
-      [:a {:class "btn btn-oauth btn-linkedin text-center"
-           :href "#"
-           :on-click (fn []
-                       (do
-                         (reset! view-atom :addtoprofile)
-                         (-> (js* "$('#reagent-modal .modal-dialog')")
-                             (.addClass "modal-lg" )
-                             (.removeClass "modal-sm"))
-                         (js/setTimeout #(open-linkedin-popup) 700)
-                         )
-                       )}
-        [:i {:class "fa fa-linkedin"}]
-       (t :core/Addtoprofile)]]
-     [:div (str (t :core/Sharelinkedinupdate) ":") ]
-     [:div
-      [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
-       [:i {:class "fa fa-linkedin"}]
-       (t :badge/Share)]
-      ]]))
 
 
-(defn modal-content [url title certification view-atom]
-  (case @view-atom
-        :start [start-view url title certification view-atom]
-        :addtoprofile [certificate-badge-helper certification]
-        :default)
-  )
 
-(defn content-modal-render [url title certification view-atom]
+(defn content-modal-render [url title {:keys [name authory licence url datefrom dateto] :as certification}]
   [:div.badge-settings
    [:div.modal-body
     [:div.row
@@ -172,7 +129,26 @@
                 :aria-label   "OK"}
        [:span {:aria-hidden             "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-    [modal-content url title certification view-atom]]
+    [:div.col-xs-12.certification
+                         [:div.row
+                          [:div.guide-text.margin-bottom
+                           [:h3 (t :core/Sharelinkedinaddcredit) ]
+                           [:p (str (t :core/Sharelinkedincopytip) ".")]
+                           [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
+                                  (add-to-profile-image)]
+                            [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
+                         [:div.row
+                          [:div.col-md-6.copy-boxes
+                           [:form {:class "form-horizontal"}
+                            [input-button (t :core/Certificationname)  "name" name]
+                            [input-button (t :core/Certificationauthority) "authory" authory]
+                            [input-button (t :core/Licensenumber) "licence" licence]
+                            [input-date datefrom dateto]
+                            [input-button (t :core/Certificationurl) "url" url]]]
+                          [:div.col-md-6.image-view
+                           [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
+                           [:div.embed-responsive.embed-responsive-16by9
+                            {:dangerouslySetInnerHTML {:__html (md->html video-link)}}]]]]]
    [:div.modal-footer
     #_[:button {:type         "button"
               :class        "btn btn-primary"
@@ -180,13 +156,65 @@
      (t :core/Close)]]])
 
 (defn linkedin-modal [url title certification]
-  (let [view-atom (atom :start)]
-    (fn []
-      (create-class {:reagent-render         (fn [url title public?] (content-modal-render url title certification view-atom))
-                     :component-will-unmount (fn []
-                                               (close-modal!)
-                                               (reset! view-atom :start)
-                                               )}))))
+  (create-class {:reagent-render         (fn [url title public?] (content-modal-render url title certification))
+                 :component-will-unmount (fn []
+                                           (close-modal!))}))
+
+
+
+
+
+
+(defn linkedin-modal1 [url title certification]
+  (let [site-name (session/get-in [:share :site-name])
+        hashtag (session/get-in [:share :hashtag])]
+    [:div.badge-settings
+     [:div.modal-body
+      [:div.row
+       [:div.col-md-12
+        [:button {:type         "button"
+                  :class        "close"
+                  :data-dismiss "modal"
+                  :aria-label   "OK"}
+         [:span {:aria-hidden             "true"
+                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+      [:div.certification
+       [:div.guide-text
+        [:h3  (t :core/Shareonlinkedin)]
+        [:div (str (t :core/Sharelinkedintip) "! "
+                   (t :core/Sharelinkedinprofile) ":") ]]
+       [:div
+        [:a {:class    "btn btn-oauth btn-linkedin text-center"
+             :href     "#"
+             :on-click (fn []
+                         (do
+                           
+                           #_(-> (js* "$('#reagent-modal .modal-dialog')")
+                               (.addClass "modal-lg" )
+                               (.removeClass "modal-sm"))
+                           (js/setTimeout #(open-linkedin-popup) 700)
+                           #_(close-modal!)
+                           (m/modal! [linkedin-modal url title certification] {:size :lg})
+                           )
+                         )}
+         [:i {:class "fa fa-linkedin"}]
+         (t :core/Addtoprofile)]]
+       [:div (str (t :core/Sharelinkedinupdate) ":") ]
+       [:div
+        [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
+         [:i {:class "fa fa-linkedin"}]
+         (t :badge/Share)]
+        ]]]
+     [:div.modal-footer
+      #_[:button {:type         "button"
+                  :class        "btn btn-primary"
+                  :data-dismiss "modal"}
+         (t :core/Close)]]]))
+
+
+
+
+
 
 
 
@@ -229,7 +257,7 @@
                                         ; [:script {:type "IN/Share" :data-url url}]]
       [:div.share-button
        (if is-badge?
-         [:a {:href "#" :on-click #(m/modal! [linkedin-modal url title certification] {:size :sm} )}
+         [:a {:href "#" :on-click #(m/modal! [linkedin-modal1 url title certification] {:size :sm} )}
           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]
          #_[:a {:href   (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
               :target "_blank"}
