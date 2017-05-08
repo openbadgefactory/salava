@@ -21,8 +21,10 @@
   (if tags
     (string/split tags #",")))
 
+(set (mapcat #(tag-parser %) ["82e9715b8938a11845d563be82b755d767b9d6ef1fd2f14fd2bd9f74525466a0,392533871608845892b1df118eb414493693df1fefd66b1544bd0d7dc5ee7f69" "82e9715b8938a11845d563be82b755d767b9d6ef1fd2f14fd2bd9f74525466a0"]))
+
 (defn filter-tags [search tags]
-  (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
+  (remove (fn [badge] (not (contains-tag? tags  (tag-parser (:tags badge))))) search))
 
 
 (defn map-collection
@@ -30,7 +32,7 @@
    (map-collection where value true))
   ([where value fn]
    (if (and where value fn)
-     {(str where)  value})))
+     {(str where) value})))
 
 
 
@@ -42,88 +44,90 @@
         (conj (map-collection  " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?" (if recipient-name (str "%" recipient-name "%")) ))
         (conj (map-collection " and u.country = ? " country (not= country "all")))
         (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
-        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))
-        
-        )))
+        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%")))))))
 
- 
-(def ctx {:config {:core {:site-name "Perus salava"
- 
-                          :share {:site-name "jeejjoee"
-                                  :hashtag "KovisKisko"}
-                          
-                          :site-url "http://localhost:3000"
-                          
-                          :base-path "/app"
-                          
-                          :asset-version 2
-                          
-                          :languages [:en :fi]
-                          
-                          :plugins [:badge :page :gallery :file :user :oauth :admin :social :registerlink :mail]
+(defn tags-id-parser [tags]
+  (let [parsed-ids (mapcat #("'"(tag-parser %) "'") (vec (vals tags)))]
+    (dump parsed-ids)
+    parsed-ids))
 
-                          :http {:host "localhost" :port 3000 :max-body 100000000}
-                          :mail-sender "sender@example.com"}
-                   :user {:email-notifications true}}
-          :db (hikari-cp.core/make-datasource {:adapter "mysql",
-                                               :username "root",
-                                               :password "isokala",
-                                               :database-name "salavareal",
-                                               :server-name "localhost"})})
-
-
-
-
-
-(def hakujenhaku
-  "select distinct  bc.name, ic.name AS issuer_content_name, count(distinct b.id) as owners, MAX(b.ctime) AS ctime
-FROM badge_content as bc 
-INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
-INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id 
-group by bc.id
-ORDER BY owners desc")
-
-(defn get-badge-adverts [ctx country tags badge-name issuer-name order id recipient-name]
+(defn get-badge-adverts [ctx country tags badge-name issuer-name order recipient-name tags-ids]
+  
   (let [where-params (badge-adverts-where-params country badge-name issuer-name recipient-name)
         where  (apply str (keys where-params))
         params  (vec (vals where-params))  ;add user-id to params 
-        ;tags (vec (vals tags))
+        tags (vec (vals tags))
+        ;tags-ids (tags-id-parser tags-ids)
+        texxt (if false ;(not-empty tags-ids)
+                (str "(" (map #(str "'" % "'") tags-ids)")")
+                "(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))")
         order (cond
                 ;(= order "mtime") "ORDER BY ba.mtime DESC"
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
-                (= order "owners") "ORDER BY owners DESC"
+                (= order "recipients") "ORDER BY recipients DESC"
                 :else "ORDER BY ctime DESC") 
         query (str
-               "select bc.id, bc.name, ic.name AS issuer_content_name, count(distinct b.id) as owners, MAX(b.ctime) AS ctime
+               "select bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) as recipients, MAX(b.ctime) AS ctime, GROUP_CONCAT(distinct bct.tag) AS tags
 FROM badge_content as bc 
 INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
 INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
 INNER JOIN user as u on b.user_id =  u.id
-WHERE bc.id IN
-	(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())) 
+LEFT JOIN badge_content_tag AS bct ON (bc.id = bct.badge_content_id)
+WHERE bc.id IN 
  "
-
-                 
-
+              texxt
                   where
-                   
                    "GROUP BY bc.id "
                    order
+                   
                    )
         search (jdbc/with-db-connection
                  [conn (:connection (get-db ctx))]
                  (jdbc/query conn (into [query] params)))]
-    (dump where)
+    #_(dump (if (not-empty tags)
+      (filter-tags search tags)
+      search))
+    
     search
     #_(if (not-empty tags)
       (filter-tags search tags)
       search)))
 
+(defn tags-where-params [country]
+  (let [where-params {}]
+    (if-not (= country "all")
+      (merge where-params (map-collection " and ba.country = ? " country)))))
 
-(time  (count (get-badge-adverts ctx nil nil nil nil "owners" nil nil) ))
+(defn get-tags [ctx country]
+  (let [where-params (tags-where-params country)
+        where  (apply str (keys where-params))
+        params (vec (vals where-params))
+        query (str "SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
+                    from badge_content_tag AS bct 
+         JOIN badge_content AS bc ON (bct.badge_content_id = bc.id)
+         INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
+         INNER JOIN user as u on b.user_id =  u.id
+         WHERE bct.badge_content_id IN
+	(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())) 
+         " 
+                   where
+                   " GROUP BY bct.tag 
+                    ORDER BY tag 
+                    LIMIT 500") 
+        search (jdbc/with-db-connection
+                 [conn (:connection (get-db ctx))]
+                 (jdbc/query conn (into [query] params))) ]
+    search))
 
-(:name (first (get-badge-adverts ctx nil nil nil nil "mtime" nil nil nil nil)))
+
+(defn get-autocomplete [ctx name country]
+  (let [tags (get-tags ctx country)]
+    {:tags tags}))
+
+
+
+
 
 (defn public-badges-by-user
   "Return user's public badges"
@@ -171,8 +175,8 @@ WHERE bc.id IN
         assochelper (fn [user recipients] (assoc user  :recipients (get recipientsmap (:badge_content_id user))))]
     (map assochelper badgesearch recipients)))
 
-(dump )
-(time (count (public-badges ctx nil nil nil nil)))
+
+
 (defn user-country
   "Return user's country id"
   [ctx user-id]
@@ -304,79 +308,3 @@ WHERE bc.id IN
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]
     (rename-keys badge-content {:image_file :image :name :title})))
 
-
- id: ffb7074f567518bf28aee587e032a0023652289273f044c04d2a8fcab8d82e20
-       messagecount: 2
-         ownercount: 2
-               name: Peukaloija
-         image_file: file/a/9/c/0/a9c0fcac0b074362e21b9707b78e2a8f208e1bbe016b0ee8a391afc4b1376b96.svg
-        description: Niille jotka eivät vain voi pitää näppejä erossa.
-issuer_content_name: Example organisation
- issuer_content_url: http://www.example.com
-              ctime: 1491893984
-
-                id: ffb7074f567518bf28aee587e032a0023652289273f044c04d2a8fcab8d82e20
-               name: Peukaloija
-         image_file: file/a/9/c/0/a9c0fcac0b074362e21b9707b78e2a8f208e1bbe016b0ee8a391afc4b1376b96.svg
-        description: Niille jotka eivät vain voi pitää näppejä erossa.
-issuer_content_name: Example organisation
- issuer_content_url: http://www.example.com
-              ctime: 1491893984
-   badge_content_id: ffb7074f567518bf28aee587e032a0023652289273f044c04d2a8fcab8d82e20
-
-
-
-
-
-explain select distinct bc.id, count(distinct bm.id) as messagecount, count(distinct b.id) as ownercount,  bc.name, bc.image_file, bc.description, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime from badge_content as bc 
-  join badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0
-  inner join badge_message as bm on bc.id = bm.badge_content_id and bm.deleted = 0
-  JOIN issuer_content AS ic ON b.issuer_content_id = ic.id 
-group by bc.id;
-
-explain select distinct bc.id, count(distinct bm.id) as messagecount, count(distinct b.id) as ownercount,  bc.name, bc.image_file, bc.description, ic.name AS issuer_content_name, ic.url AS issuer_content_url, MAX(b.ctime) AS ctime from badge as b 
-  inner join  badge_content as bc  on  b.badge_content_id = bc.id
-  inner join badge_message as bm on b.badge_content_id = bm.badge_content_id and bm.deleted = 0
-inner JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
-WHERE  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0
-group by bc.id;
-
-
-ALTER TABLE `badge_message` ADD INDEX `badge_content_id` (`badge_content_id`)
-ALTER TABLE `badge` ADD INDEX `badge_content_id` (`badge_content_id`)
-ALTER TABLE `badge` ADD INDEX `issuer_content_id` (`issuer_content_id`)
-name
-
-
-;; select badge_content and messages
-;; here can add "in this month"
-
-select count(distinct bm.id) as count, bm.badge_content_id from badge_message as bm group by bm.badge_content_id
-
-;; select owners and badge_content
-
-;; - here can add "in this month"
-
-select count(distinct b.id) as count, b.badge_content_id from badge as b group by b.badge_content_id ORDER by count desc
-
-
-select count(distinct bm.id) as count, b.badge_content_id from badge as b
-join badge_message as bm on b.badge_content_id = bm.badge_content_id and bm.deleted = 0
-GROUP BY b.badge_content_id;
-
-;;tarvitaan:
-;; badge_content_id, bc.name,bc.image_file, ic_name
-
-select 
-
-select distinct  bc.name, ic.name AS issuer_content_name, count(distinct b.id) as owners, MAX(b.ctime) AS ctime
-FROM badge_content as bc 
-INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0
-INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id 
-group by bc.id
-ORDER BY owners desc
-                                      
-
-
-(defn get-stuff [ctx]
-  )

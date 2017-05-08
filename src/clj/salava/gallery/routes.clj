@@ -23,6 +23,25 @@
 
     (context "/obpv1/gallery" []
              :tags ["gallery"]
+             (GET "/badges" [country tags badge-name issuer-name order recipient-name tags-ids]
+                  ;:return schemas/BadgeAdverts
+                  :summary "Get badges"
+                  :current-user current-user
+                  :auth-rules access/authenticated
+                  (let [applications (g/get-badge-adverts ctx country tags badge-name issuer-name order recipient-name tags-ids)
+                        countries (g/badge-countries ctx (:id current-user))
+                        current-country (if (empty? country)
+                                          (:user-country countries)
+                                          country)]
+                    (ok (into {:badges applications} countries))))
+
+             (GET "/badges/autocomplete" [country]
+                  ;:return [{:iframe s/Str :language s/Str}]
+                  :summary "Get autocomplete data"
+                  :current-user current-user
+                  :auth-rules access/authenticated
+                  (ok (g/get-autocomplete ctx "" country)))
+             
              (POST "/badges" []
                    ;:return [}
                    :body-params [country :- (s/maybe s/Str)

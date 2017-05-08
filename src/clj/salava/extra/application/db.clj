@@ -148,10 +148,6 @@
                  (jdbc/query conn (into [query] params))) ]
     search))
 
-
-
-
-
 (defn get-autocomplete [ctx name country]
   (let [tags (get-tags ctx country)
         ;names (select-badge-names {} (get-db ctx))

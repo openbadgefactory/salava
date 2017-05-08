@@ -9,8 +9,12 @@
             [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
+            [clojure.walk :refer [keywordize-keys]]
             [salava.core.helper :refer [dump]]
+            [cemerick.url :as url]
+            [clojure.string :as s]
             [salava.gallery.ui.badge-content :refer [badge-content-modal]]
+            [komponentit.autocomplete :refer [multiple-autocomplete]]
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
 
@@ -32,11 +36,92 @@
                   (do
                     (m/modal! [badge-content-modal data reporttool messages? init-data state] {:size :lg})))}))))
 
-
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
-(defn init-data [state user-id]
+(defn autocomplete-search [state country]
+  (swap! state assoc :value #{}
+         :tags ())
+  (ajax/GET
+   (path-for "/obpv1/gallery/badges/autocomplete")     
+   {:params {:country  (trim country)}
+    :handler (fn [data]
+               (let [{:keys [tags names]} data]
+                 (swap! state assoc
+                        :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_content_ids v)]) tags))
+                        :tags  #{} ;todo: katso jos on toisessakin olemassa
+                        :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
+
+(defn hashtag? [text]
+  (re-find #"^#" text))
+
+(defn subs-hashtag [text]
+  (trim text)
+  (if (hashtag? text)
+    (subs text 1)
+    text))
+
+(defn tag-parser [tags]
+  (if tags
+    (s/split tags #",")))
+
+
+(defn fetch-badges [state]
+  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-content-ids]} @state
+        ajax-message-atom                                                                                                    (cursor state [:ajax-message])]
+    (reset! ajax-message-atom (t :gallery/Searchingbadges))
+    (ajax/GET
+      (path-for (str "/obpv1/gallery/badges"))
+      {:params  {:country        (trim country-selected)
+                 :badge-name     (trim badge-name)
+                 :tags           (map #(subs-hashtag %) tags)
+                 :tags-ids       tags-badge-content-ids
+                 :recipient-name (trim recipient-name)
+                 :order          (trim order)
+                 :issuer-name    (trim issuer-name)}
+       :handler (fn [data]
+                  (swap! state assoc :badges (:badges data)))
+       :finally (fn []
+                  (ajax-stop ajax-message-atom))})))
+
+
+
+(defn taghandler
+  "set tag with autocomplete value and accomplish searchs"
+  [state value]
+  (let [tags (cursor state [:tags])
+        tags-badge-content-ids (cursor state [:tags-badge-content-ids])
+        autocomplete-items (cursor state [:autocomplete-items])
+        autocomplete-badge-content-ids (cursor state [:full-tags])]
+    (reset! tags (vals (select-keys @autocomplete-items value)))
+    (reset! tags-badge-content-ids (vals (select-keys @autocomplete-badge-content-ids value)))
+    (fetch-badges state)))
+
+(defn autocomplete [state]
+  (let [tags  (cursor state [:tags])
+        value (cursor state [:value])
+        autocomplete-items (cursor state [:autocomplete-items])]
+    
+    (fn []
+      [:div.form-group
+       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
+       [:div.col-sm-10
+        [multiple-autocomplete
+         {:value     @value
+          :cb        (fn [item] (do
+                                  (swap! value conj (:key item))
+                                  (taghandler state @value)))
+          :remove-cb (fn [x] (do
+                               (swap! value disj x)
+                               (taghandler state @value)))
+          :search-fields   [:value]
+          :items           @autocomplete-items
+          :no-results-text (t :extra-application/Notfound)
+          :control-class   "form-control"}]]])))
+
+
+
+#_(defn init-data1 [state user-id]
   (ajax/POST
     (path-for (str "/obpv1/gallery/badges/" user-id))
     {:params {:country ""
@@ -48,22 +133,35 @@
                   (swap! state assoc :badges badges
                                      :countries countries
                                      :country-selected user-country)))}))
+(defn init-data [state init-params]
+  (ajax/GET
+   (path-for "/obpv1/gallery/badges")
+   {:params  init-params
+    :handler (fn [data]
+               (let [{:keys [badges countries user-country]} data]
+                  (swap! state assoc :badges badges
+                                     :countries countries
+                                     :country-selected user-country))
+               )}))
+
+#_(defn init-data [state user-id]
+  (ajax/GET
+   (path-for (str "/obpv1/gallery/badges/" user-id))
+   
+    {:params {:country ""
+              :badge ""
+              :issuer ""
+              :recipient ""}
+     :handler (fn [data]
+                (let [{:keys [badges countries user-country]} data]
+                  (swap! state assoc :badges badges
+                                     :countries countries
+                                     :country-selected user-country)))}))
 
 
-(defn fetch-badges [state]
-  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name]} @state
-        ajax-message-atom (cursor state [:ajax-message])]
-    (reset! ajax-message-atom (t :gallery/Searchingbadges))
-    (ajax/POST
-      (path-for (str "/obpv1/gallery/badges/" user-id))
-      {:params  {:country   (trim country-selected)
-                 :badge     (trim badge-name)
-                 :recipient (trim recipient-name)
-                 :issuer    (trim issuer-name)}
-       :handler (fn [data]
-                  (swap! state assoc :badges (:badges data)))
-       :finally (fn []
-                  (ajax-stop ajax-message-atom))})))
+
+
+
 
 (defn search-timer [state]
   (let [timer-atom (cursor state [:timer])]
@@ -87,6 +185,7 @@
                               (reset! search-atom (.-target.value %))
                               (search-timer state))}]]]))
 
+
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
     [:div.form-group
@@ -97,17 +196,20 @@
                 :name      "country"
                 :value     @country-atom
                 :on-change #(do
-                             (reset! country-atom (.-target.value %))
-                             (fetch-badges state))}
+                              (reset! country-atom (.-target.value %))
+                              (autocomplete-search state @country-atom)
+                              (fetch-badges state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
                    :key country-key} country-name])]]]))
 
+
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
    {:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "issuer_content_name" :id "radio-issuer-name" :label (t :core/byissuername)}])
+   {:value "issuer_content_name" :id "radio-issuer-name" :label (t :core/byissuername)}
+   {:value "recipients" :id "radio-recipients" :label "recipients"}])
 
 (defn gallery-grid-form [state]
   (let [show-advanced-search (cursor state [:advanced-search])]
@@ -124,10 +226,11 @@
             (t :gallery/Showadvancedsearch))]]
         (if @show-advanced-search
           [:div
+           [autocomplete state]
            [text-field :badge-name (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
            [text-field :recipient-name (t :gallery/Recipient) (t :gallery/Searchbyrecipient) state]
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]]))
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
@@ -161,11 +264,7 @@
        (admin-gallery-badge badge-id "badges" state init-data)]]))
 
 (defn gallery-grid [state]
-  (let [badges (:badges @state)
-        order (keyword (:order @state))
-        badges (if (= order :mtime)
-                 (sort-by order > badges)
-                 (sort-by (comp clojure.string/upper-case order) badges))]
+  (let [badges (:badges @state)]
     (into [:div {:class "row"
                  :id    "grid"}]
           (for [element-data badges]
@@ -180,8 +279,7 @@
                                     [:div.ajax-message
                                      [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                      [:span (:ajax-message @state)]]
-                                    [gallery-grid state])]
-                                   )
+                                    [gallery-grid state])])
                  :component-did-mount (fn []
                                         (if badge_content_id
                                           (open-modal badge_content_id true)
@@ -192,22 +290,37 @@
   )
 
 
+(defn init-values
+  "take url params"[]
+  (let [{:keys [country issuer-name order id badge-name recipient-name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
+        query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
+    (-> query-params
+        (assoc :country (if id "all" (or country "all"))))))
+
 
 (defn handler [site-navi params]
-  (let [user-id (:user-id params)
+  (let [user-id          (:user-id params)
+        init-values      (init-values)
         badge_content_id (:badge_content_id params)
-        state (atom {:user-id user-id
-                     :badges []
-                     :countries []
-                     :country-selected "FI"
-                     :advanced-search false
-                     :badge-name ""
-                     :recipient-name ""
-                     :issuer-name ""
-                     :order "mtime"
-                     :timer nil
-                     :ajax-message nil})]
-    (init-data state user-id)
+        state            (atom {:user-id                user-id
+                                :badges                 []
+                                :countries              []
+                                :country-selected       "FI"
+                                :tags                   ()
+                                :tags-badge-content-ids ()
+                                :full-tags              ()
+                                :value                  #{}
+                                :autocomplete-items     #{}
+                                :advanced-search        false
+                                :badge-name             ""
+                                :recipient-name         ""
+                                :issuer-name            ""
+                                :order                  "mtime"
+                                :timer                  nil
+                                :ajax-message           nil})]
+    (init-data state init-values)
+    (autocomplete-search state (:country init-values))
+    ;(init-data state user-id)
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])

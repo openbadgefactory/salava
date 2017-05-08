@@ -79,3 +79,12 @@ SELECT user_id, COUNT(DISTINCT badge_content_id) AS c FROM badge
 SELECT badge_content_id, count(distinct user_id) as recipients FROM badge
        WHERE badge_content_id IN (:badge_content_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp())
        GROUP BY badge_content_id
+
+
+--name: select-gallery-badges
+SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
+FROM badge_content AS bc 
+INNER JOIN badge as b on bc.id = b.badge_content_id
+INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+WHERE bc.id IN (:badge_content_ids)
+GROUP BY bc.id
