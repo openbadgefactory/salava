@@ -34,7 +34,7 @@
     #?(:cljs
        (let [date (js/Date. time)]
          (case format
-           "months" (str (inc (.getMonth date)) " " (.getFullYear date))
+           "months" (str (inc (.getMonth date)) " / " (.getFullYear date))
            "date" (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date))
            "minutes" (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date) " - " (.getHours date) ":" (if (< (.getMinutes date) 10) (str "0" (.getMinutes date)) (.getMinutes date)))
            (str (.getDate date) "." (inc (.getMonth date)) "." (.getFullYear date))))
@@ -43,6 +43,6 @@
              formatter (case format
                          "date" "dd.MM.yyyy"
                          "minutes" "dd.MM.yyyy - HH:mm"
-                         "months" "MM - yyyy"
+                         "months" "MM / yyyy"
                          "dd.MM.yyyy")]
          (f/unparse (f/formatter formatter) (c/from-long date))))))
