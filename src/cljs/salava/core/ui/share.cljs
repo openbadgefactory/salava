@@ -8,7 +8,8 @@
             [reagent-modals.modals :as m :refer [close-modal!]]
             [salava.core.i18n :refer [t]]
             ))
-(def video-link "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/ZDhwbRIABjA\" frameborder=\"0\"></iframe>")
+(def video-link-fi "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/l-9H0nJMPWA\" frameborder=\"0\"></iframe>")
+(def video-link-en "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/YJJ8lZshqbY\" frameborder=\"0\"></iframe>")
 
 (defn clipboard-button [target status]
   
@@ -86,6 +87,13 @@
         use-lng (if (some #(= % user-lng) btn-lngs) user-lng "en")]
     [:img {:src (str "/img/linkedin-addprofile/" use-lng ".png") :alt "LinkedIn Add to Profile button"}]) )
 
+(defn tutorial-video []
+  (let [user-lng (session/get-in [:user :language])]
+    [:div.col-md-6.image-view
+     [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
+     [:div.embed-responsive.embed-responsive-16by9
+      {:dangerouslySetInnerHTML {:__html (md->html (if (= "fi" user-lng) video-link-fi video-link-en))}}]])
+  )
 
 (defn certificate-badge-helper [{:keys [name authory licence url datefrom dateto] :as certification} view-atom]
   (create-class {:reagent-render
@@ -106,11 +114,8 @@
                             [input-button (t :core/Licensenumber) "licence" licence]
                             [input-date datefrom dateto]
                             [input-button (t :core/Certificationurl) "url" url]]]
-                          
-                          [:div.col-md-6.image-view
-                           [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
-                           [:div.embed-responsive.embed-responsive-16by9
-                            {:dangerouslySetInnerHTML {:__html (md->html video-link)}}]]]])
+                          (tutorial-video)
+                          ]])
                  :component-will-unmount (fn []
                                            (reset! view-atom :start))}))
 
@@ -145,10 +150,8 @@
                             [input-button (t :core/Licensenumber) "licence" licence]
                             [input-date datefrom dateto]
                             [input-button (t :core/Certificationurl) "url" url]]]
-                          [:div.col-md-6.image-view
-                           [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
-                           [:div.embed-responsive.embed-responsive-16by9
-                            {:dangerouslySetInnerHTML {:__html (md->html video-link)}}]]]]]
+                          (tutorial-video)
+                          ]]]
    [:div.modal-footer
     #_[:button {:type         "button"
               :class        "btn btn-primary"
