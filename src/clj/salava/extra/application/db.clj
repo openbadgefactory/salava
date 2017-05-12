@@ -155,12 +155,38 @@
     {:tags tags}))
 
 
+(defn- advert-content [ctx data]
+  (let [badge (u/json-get (:badge data))
+        client (u/json-get (:client data))
+        criteria (u/http-get (:criteria_url data))]
+    {:badge_content_id
+     (b/save-badge-content! ctx
+                            {:id ""
+                             :name (:name badge)
+                             :image_file (u/file-from-url ctx (:image badge))
+                             :description (:description badge)
+                             :alignment (get badge :alignment [])
+                             :tags (get badge :tags [])})
+     :issuer_content_id
+     (b/save-issuer-content! ctx
+                             {:id ""
+                              :name (:name client)
+                              :description (:description client)
+                              :url (:url client)
+                              :email (:email client)
+                              :image_file (if-not (string/blank? (:image client))
+                                            (u/file-from-url ctx (:image client)))
+                              :revocation_list_url (:revocationList client)})
+     :criteria_content_id
+     (b/save-criteria-content! ctx
+                               {:id ""
+                                :html_content criteria
+                                :markdown_content (u/alt-markdown criteria)})}))
+
 (defn publish-badge [ctx data]
   (try
     (replace-badge-advert!
-      (merge data
-             (b/save-badge-content!  ctx (:badge data))
-             (b/save-issuer-content! ctx (:client data)))
+      (merge data (advert-content ctx data))
       (u/get-db ctx))
     {:success true}
     (catch Exception ex
@@ -180,19 +206,14 @@
 
 (defn create-connection-badge-advert! [ctx user_id badge_advert_id]
   (try+
-   (insert-connect-badge-advert<! {:user_id user_id :badge_advert_id badge_advert_id}  (u/get-db ctx))
-   
-   {:status "success"}
-   (catch Object _
-     {:status "error"}
-     )))
+    (insert-connect-badge-advert<! {:user_id user_id :badge_advert_id badge_advert_id}  (u/get-db ctx))
+    {:status "success"}
+    (catch Object _
+      {:status "error"})))
 
 (defn delete-connection-badge-advert! [ctx user_id  badge_advert_id]
   (try+
-   (delete-connect-badge-advert! {:user_id user_id :badge_advert_id badge_advert_id} (u/get-db ctx))
-   
-   {:status "success" }
-   (catch Object _
-     {:status "error"}
-     )))
-
+    (delete-connect-badge-advert! {:user_id user_id :badge_advert_id badge_advert_id} (u/get-db ctx))
+    {:status "success" }
+    (catch Object _
+      {:status "error"})))
