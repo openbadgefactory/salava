@@ -2,7 +2,7 @@
   (:require [yesql.core :refer [defqueries]]
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
-            [salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump string->number]]
             [salava.core.util :refer [get-db md->html]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.page.main :as p]
@@ -21,8 +21,6 @@
   (if tags
     (string/split tags #",")))
 
-(set (mapcat #(tag-parser %) ["82e9715b8938a11845d563be82b755d767b9d6ef1fd2f14fd2bd9f74525466a0,392533871608845892b1df118eb414493693df1fefd66b1544bd0d7dc5ee7f69" "82e9715b8938a11845d563be82b755d767b9d6ef1fd2f14fd2bd9f74525466a0"]))
-
 (defn filter-tags [search tags]
   (remove (fn [badge] (not (contains-tag? tags  (tag-parser (:tags badge))))) search))
 
@@ -40,24 +38,25 @@
   (let [where-params {}]
     
     (-> where-params
-                                        ;(conj (map-collection " and ba.id = ? " id ))
-        (conj (map-collection  " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?" (if recipient-name (str "%" recipient-name "%")) ))
+        (conj (if-not (string/blank? recipient-name) (map-collection  " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?" (str "%" recipient-name "%") )))
         (conj (map-collection " and u.country = ? " country (not= country "all")))
-        (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
-        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%")))))))
+        (conj (if-not (string/blank? name) (map-collection " AND bc.name LIKE ? " (str "%" name "%"))))
+        (conj (if-not (string/blank? issuer-name) (map-collection " AND ic.name LIKE ? " (str "%" issuer-name "%")))))))
+
+
+(defn filter-ids [ids] (reduce (fn [x y] (filter (set x) (set y))) (first ids) (rest ids)))
 
 (defn tags-id-parser [tags]
-  (let [parsed-ids (mapcat #("'"(tag-parser %) "'") (vec (vals tags)))]
-    (dump parsed-ids)
+  (let [parsed-ids  (filter-ids (map #(tag-parser %) (vec (vals tags))))]
     parsed-ids))
 
-(defn get-badge-adverts [ctx country tags badge-name issuer-name order recipient-name tags-ids]
+#_(defn get-badge-adverts [ctx country tags badge-name issuer-name order recipient-name tags-ids]
   
   (let [where-params (badge-adverts-where-params country badge-name issuer-name recipient-name)
         where  (apply str (keys where-params))
         params  (vec (vals where-params))  ;add user-id to params 
         tags (vec (vals tags))
-        ;tags-ids (tags-id-parser tags-ids)
+        tags-ids (tags-id-parser tags-ids)
         texxt (if false ;(not-empty tags-ids)
                 (str "(" (map #(str "'" % "'") tags-ids)")")
                 "(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))")
@@ -94,12 +93,93 @@ WHERE bc.id IN
       (filter-tags search tags)
       search)))
 
+(def join-badge
+  "INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) ")
+(def join-user
+  "INNER JOIN user as u on b.user_id =  u.id ")
+(def join-issuer
+  "INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id ")
+
+(defn select-tags [ctx badge_content_ids]
+  
+  (if (not-empty badge_content_ids)
+    (select-gallery-tags {:badge_content_ids badge_content_ids} (get-db ctx))
+    
+    ))
+
+(defn str-ids [ids]
+  (if (empty? ids)
+      "()"
+      (str "(" (reduce (fn [x y] (str x ",'" y "'"  )) (str "'"(first ids)"'") (rest ids)) ")")))
+
+(defn badge-count [search page_count]
+  (dump page_count)
+  (let [limit 48
+        badges-left (- (count search) (* limit (+ page_count 1)))]
+    (if (pos? badges-left)
+      badges-left
+      0)))
+
+(defn select-badges [ctx badge_content_ids order page_count]
+  (let [limit 48
+        offset (* limit page_count)]
+    (if (not-empty badge_content_ids)
+      (case order
+        "recipients"          (select-gallery-badges-order-by-recipients {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx))
+        "issuer_content_name" (select-gallery-badges-order-by-ic-name {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx))
+        "name"                (select-gallery-badges-order-by-name {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx))
+        (select-gallery-badges-order-by-ctime {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx)))))
+  )
+
+(defn get-badge-adverts [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
+  (let [where-params (badge-adverts-where-params country badge-name issuer-name recipient-name)
+        where        (apply str (keys where-params))
+        params       (vec (vals where-params))
+        ids          (tags-id-parser tags-ids)
+        in-params (if (not-empty ids)
+                    (str-ids ids)
+                    "(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))")
+        query (str
+               "select bc.id FROM badge_content as bc 
+"
+               (if (or (not (string/blank? issuer-name))
+                       (not (string/blank? badge-name))
+                       (not (string/blank? country))
+                       (not (string/blank? recipient-name)))
+                 join-badge)
+               (if (or (not (string/blank? country))
+                       (not (string/blank? recipient-name)))
+                 join-user)
+               (if (not (string/blank? issuer-name))
+                 join-issuer)
+               " WHERE bc.id IN "
+               in-params
+               " "
+               where
+               "GROUP BY bc.id")
+        search (if (and (not-empty ids) (string/blank? issuer-name) (string/blank? badge-name) (string/blank? country))
+                 ids
+                 (jdbc/with-db-connection
+                   [conn (:connection (get-db ctx))]
+                   (jdbc/query conn (into [query] params) {:row-fn :id})
+                   ))]
+    
+    {:badges (select-badges ctx search order page_count)
+     :tags (select-tags ctx search)
+     :badge_count (badge-count search page_count) }))
+
+
+
+
 (defn tags-where-params [country]
   (let [where-params {}]
     (if-not (= country "all")
-      (merge where-params (map-collection " and ba.country = ? " country)))))
+      (merge where-params (map-collection " and u.country = ? " country )))))
 
-(defn get-tags [ctx country]
+#_(defn select-tags [ctx badge_content_ids]
+  (select-gallery-tags {:badge_content_ids badge_content_ids} (get-db ctx)))
+
+#_(defn get-tags [ctx country]
   (let [where-params (tags-where-params country)
         where  (apply str (keys where-params))
         params (vec (vals where-params))
@@ -113,16 +193,42 @@ WHERE bc.id IN
          " 
                    where
                    " GROUP BY bct.tag 
-                    ORDER BY tag 
-                    LIMIT 500") 
+                    ORDER BY tag") 
         search (jdbc/with-db-connection
                  [conn (:connection (get-db ctx))]
                  (jdbc/query conn (into [query] params))) ]
     search))
 
+(defn get-tags [ctx country badge_content_ids]
+  (let [where-params (tags-where-params country)
+        ids (tags-id-parser badge_content_ids)
+        where  (apply str (keys where-params))
+        params (vec (vals where-params))
+        query (str "SELECT DISTINCT bct.badge_content_id from badge_content_tag AS bct 
+         JOIN badge_content AS bc ON (bct.badge_content_id = bc.id)
+         INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
+         INNER JOIN user as u on b.user_id =  u.id
+         WHERE bct.badge_content_id IN
+	(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())) 
+         " 
+                   where
+                   ) 
+        search (if (not-empty ids)
+                 ids
+                 (time (jdbc/with-db-connection
+                         [conn (:connection (get-db ctx))]
+                         (jdbc/query conn (into [query] params) {:row-fn :badge_content_id})))) ]
+    (if (not-empty search)
+      (select-tags ctx search)
+      search)
+    
+    ))
 
-(defn get-autocomplete [ctx name country]
-  (let [tags (get-tags ctx country)]
+
+
+
+(defn get-autocomplete [ctx name country badge_content_ids]
+  (let [tags (get-tags ctx country badge_content_ids)]
     {:tags tags}))
 
 
@@ -259,7 +365,7 @@ WHERE bc.id IN
                    where
                    " GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
                     ORDER BY p.mtime DESC
-                    LIMIT 100")
+                    LIMIT 75")
         pages (jdbc/with-db-connection
                 [conn (:connection (get-db ctx))]
                 (jdbc/query conn (into [query] params)))]

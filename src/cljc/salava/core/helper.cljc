@@ -14,3 +14,8 @@
   (if (keyword? plugin)
     (subs (str plugin) 1)
     (str plugin)))
+
+(defn string->number [str]
+  #?(:clj (let [n (read-string str)]
+            (if (number? n) n nil))))
+

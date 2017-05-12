@@ -5,6 +5,7 @@
             [salava.gallery.schemas :as schemas]
             [salava.core.layout :as layout]
             [salava.gallery.db :as g]
+            [salava.core.helper :refer [dump string->number]]
             [salava.core.access :as access]
             salava.core.restructure))
 
@@ -23,24 +24,27 @@
 
     (context "/obpv1/gallery" []
              :tags ["gallery"]
-             (GET "/badges" [country tags badge-name issuer-name order recipient-name tags-ids]
+             (GET "/badges" [country tags badge-name issuer-name order recipient-name tags-ids page_count]
                   ;:return schemas/BadgeAdverts
                   :summary "Get badges"
                   :current-user current-user
                   :auth-rules access/authenticated
-                  (let [applications (g/get-badge-adverts ctx country tags badge-name issuer-name order recipient-name tags-ids)
+                  
+                  (let [badges-and-tags (g/get-badge-adverts ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
                         countries (g/badge-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)
-                                          country)]
-                    (ok (into {:badges applications} countries))))
+                                          country)
+                        ;tags (g/get-autocomplete ctx "" country tags-ids)
+                        ]
+                    (ok (into badges-and-tags countries))))
 
-             (GET "/badges/autocomplete" [country]
+             (GET "/badges/autocomplete" [country badge_content_ids]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
                   :auth-rules access/authenticated
-                  (ok (g/get-autocomplete ctx "" country)))
+                  (ok (g/get-autocomplete ctx "" country badge_content_ids)))
              
              (POST "/badges" []
                    ;:return [}

@@ -64,7 +64,6 @@
 (defn bytes->base64 [input]
   (.encodeToString (Base64/getEncoder) input))
 
-
 (defn hex-digest [algo string]
   (case algo
     "sha1" (d/sha-1 string)

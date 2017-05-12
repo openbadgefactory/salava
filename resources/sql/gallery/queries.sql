@@ -81,10 +81,52 @@ SELECT badge_content_id, count(distinct user_id) as recipients FROM badge
        GROUP BY badge_content_id
 
 
---name: select-gallery-badges
+--name: select-gallery-badges-order-by-recipients
 SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
 FROM badge_content AS bc 
 INNER JOIN badge as b on bc.id = b.badge_content_id
 INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
 WHERE bc.id IN (:badge_content_ids)
 GROUP BY bc.id
+ORDER BY recipients DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-ic-name
+SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
+FROM badge_content AS bc 
+INNER JOIN badge as b on bc.id = b.badge_content_id
+INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+WHERE bc.id IN (:badge_content_ids)
+GROUP BY bc.id
+ORDER BY ic.name
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-name
+SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
+FROM badge_content AS bc 
+INNER JOIN badge as b on bc.id = b.badge_content_id
+INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+WHERE bc.id IN (:badge_content_ids)
+GROUP BY bc.id
+ORDER BY bc.name
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-ctime
+SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
+FROM badge_content AS bc 
+INNER JOIN badge as b on bc.id = b.badge_content_id
+INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
+WHERE bc.id IN (:badge_content_ids)
+GROUP BY bc.id
+ORDER BY ctime DESC
+LIMIT :limit OFFSET :offset
+
+
+
+--name: select-gallery-tags
+SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
+FROM badge_content_tag AS bct 
+WHERE bct.tag IN
+	(SELECT tag FROM badge_content_tag WHERE badge_content_id IN (:badge_content_ids))
+	AND bct.badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
+GROUP BY bct.tag
