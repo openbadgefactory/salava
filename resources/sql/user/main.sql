@@ -24,7 +24,7 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 
 --name: select-user
 -- get user by id
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications FROM user WHERE id = :id AND deleted = 0
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated FROM user WHERE id = :id
@@ -38,7 +38,7 @@ SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 
 -- name: insert-user<!
 -- add new user
-INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), :email_notifications)
+INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications, pass) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), :email_notifications, :pass)
 
 -- name: insert-user-email!
 -- add new unverified email address to user
@@ -51,6 +51,9 @@ SELECT verification_key, activated, ue.mtime, email, primary_address FROM user A
 
 -- name: update-user-password-and-activate!
 UPDATE user SET activated = 1, pass = :pass, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+-- name: update-user-activate!
+UPDATE user SET activated = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 -- name: select-password-by-user-id
 -- get user password by user-id

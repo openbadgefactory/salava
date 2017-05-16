@@ -8,7 +8,9 @@
             [salava.badge.ui.importer :as imp]
             [salava.badge.ui.exporter :as exp]
             [salava.badge.ui.upload :as up]
+            [salava.core.helper :refer [dump]]
             [salava.badge.ui.stats :as stats]
+            [reagent.session :as session]
             [salava.badge.ui.modal :as badgemodal]
             [salava.core.i18n :as i18n :refer [t]]))
 
@@ -64,8 +66,9 @@
 
 
 (defn ^:export navi [context]
-  
-  (if (private?)
+  (dump (not (session/get-in [:user :activated] false)))
+  (dump (or (false? (session/get-in [:user :activated] false)) (private?)))
+  (if (or (false? (session/get-in [:user :activated] false)) (private?))
     (badge-navi context)
     (assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
   

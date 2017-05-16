@@ -7,6 +7,7 @@
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]
             [salava.core.helper :refer [dump]]
+            [reagent.session :as session]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 

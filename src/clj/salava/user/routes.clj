@@ -42,8 +42,8 @@
                   :current-user current-user
                   (if current-user
                     (do
-                      (u/verify-email-address ctx verification_key (:id current-user))
-                      (found (str (get-base-path ctx) "/user/edit/email-addresses")))
+                      (u/verify-email-address ctx verification_key (:id current-user) (:activated current-user))
+                      (u/set-session ctx (found (str (get-base-path ctx) "/user/edit/email-addresses"))  (:id current-user)))
                     (found (str (get-base-path ctx) "/user/login")))))
 
     (context "/obpv1/user" []
@@ -55,7 +55,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity] {:id (:id login-status) :role (:role login-status) :private (:private login-status)})
+                       (u/set-session ctx (ok login-status) (:id login-status))
                        (ok login-status))))
 
              (POST "/logout" []
@@ -68,18 +68,26 @@
                     (ok {:languages (get-in ctx [:config :core :languages])})))
 
              (POST "/register" []
-                   :return {:status (s/enum "success" "error")
-                            :message (s/maybe s/Str)}
+                   ;:return
+                   #_{:status  (s/maybe  (s/enum "success" "error"))
+                    :message (s/maybe s/Str)
+                    :id      (s/maybe s/Int)
+                    :role    (s/maybe s/Str)
+                    :private (s/maybe s/Bool)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (let [{:keys [email first_name last_name country language]} form-content
-                         save (u/register-user ctx email first_name last_name country language)]
+                   (let [{:keys [email first_name last_name country language password password_verify]} form-content
+                         save                                                                           (u/register-user ctx email first_name last_name country language password password_verify)]
                      (if (not (private? ctx))
-                       (ok save)
+                                        ;(ok save)
+                       (let [login-status (u/login-user ctx email password)]
+                         (if (= "success" (:status login-status))
+                           (u/set-session ctx (ok login-status) (:id login-status))
+                           (ok login-status)))
                        (cond
-                         (not (right-token? ctx (:token form-content))) (forbidden)
+                         (not (right-token? ctx (:token form-content)))        (forbidden)
                          (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
-                         :else (ok save))))
+                         :else                                                 (ok save))))
                    )
 
              (POST "/activate" []

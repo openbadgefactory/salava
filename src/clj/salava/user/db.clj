@@ -56,20 +56,27 @@
   [ctx email]
   (select-email-address {:email email} (into {:result-set-fn first :row-fn :user_id} (get-db ctx))))
 
+
+
+
+
 (defn register-user
   "Create new user"
-  [ctx email first-name last-name country language]
+  [ctx email first-name last-name country language password password-verify]
   (if (email-exists? ctx email)
     {:status "error" :message "user/Enteredaddressisalready"}
-    (let [site-url (get-site-url ctx)
-          base-path (get-base-path ctx)
-          activation_code (generate-activation-id)
-          email_notifications (get-email-notifications ctx)
-          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications} (get-db ctx))
-          user-id (:generated_key new-user)]
-      (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code language) (login-link site-url base-path) (str first-name " " last-name) email language)
-      {:status "success" :message ""})))
+    (if-not (= password password-verify)
+      {:status "error" :message "user/Passwordmissmatch"}
+      (let [site-url            (get-site-url ctx)
+            base-path           (get-base-path ctx)
+            activation_code     (generate-activation-id)
+            email_notifications (get-email-notifications ctx)
+            new-user            (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications :pass (hash-password password)} (get-db ctx))
+            user-id             (:generated_key new-user)]
+        (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
+        (m/send-verification ctx site-url (email-verification-link site-url base-path activation_code) (str first-name " " last-name) email language)
+        
+        {:status "success" :message ""}))))
 
 (defn set-password-and-activate
   "Activate user account and set password. Do not change password if user account is already activated and verification key is older than a day. If account is not yet activated, verify primary email address."
@@ -94,16 +101,15 @@
             {:status "success" :message (if activated "user/Accountpasswordchangedsuccessfully" "user/Accountactivatedsuccessfully")}))))))
 
 (defn login-user
-  "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
+  "Check if user exists and password matches. User account must be activated."
   [ctx email plain-password]
   (try+
-(let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
-      private (get-in ctx [:config :core :private] false)]
-     (if (and id pass activated verified (not deleted) (check-password ctx plain-password pass))
+(let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+     (if (and id pass (not deleted) (check-password ctx plain-password pass)) ;activated verified
        (do
          (update-user-last_login! {:id id} (get-db ctx))
-         {:status "success" :id id :role role :private private})
-       (if (and id pass activated verified deleted (check-password ctx plain-password pass))
+         {:status "success" :id id})
+       (if (and id pass deleted (check-password ctx plain-password pass))
          {:status "error" :message "user/Accountdeleted"}
          {:status "error" :message "user/Loginfailed"})))
    (catch Object _
@@ -183,10 +189,18 @@
 
 (defn verify-email-address
   "Verify email address"
-  [ctx key user-id]
+  [ctx key user-id activated]
   (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
-    (if (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
-      (update-verify-email-address! {:email email :user_id user_id} (get-db ctx)))))
+    (dump activated)
+    (try+
+     (if-not (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
+       (throw+ {:status "error"}))
+     (if-not activated
+       (update-user-activate! {:id user_id} (get-db ctx)))
+     (update-verify-email-address! {:email email :user_id user_id} (get-db ctx))
+     "success"
+     (catch Object _
+     "error"))))
 
 (defn user-information
   "Get user data by user-id"
@@ -297,7 +311,7 @@
   [ctx user-id plain-password]
   (try+
     (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-      (if-not (and (check-password ctx plain-password pass) id activated)
+      (if-not (and (check-password ctx plain-password pass) id)
         (throw+ "Invalid password")))
     (jdbc/with-db-transaction
       [tr-cn (get-datasource ctx)]
@@ -322,6 +336,11 @@
        :description (str (get-site-name ctx) " user profile")
        :image       (:profile_picture user)})))
 
+
+(defn set-session [ctx ok-status user-id]
+  (let [{:keys [role id private activated]} (user-information ctx user-id)]
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated}))
+  )
 
 ;; --- Email sender --- ;;
 

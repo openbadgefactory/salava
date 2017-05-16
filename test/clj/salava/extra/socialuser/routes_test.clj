@@ -21,7 +21,7 @@
     (testing "with login"
       (let [{:keys [status body]} (t/test-api-request ctx :get "/app/obpv1/socialuser/accepted-connections" {:user test-user})]
         (is (= 200 status))
-        (is (= 1 (count body))))))
+        (is (= 2 (count body))))))
 
   (testing "Create and delete user connection "
     (testing "Create"

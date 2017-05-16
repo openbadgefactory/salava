@@ -74,6 +74,7 @@
 
 (defn main-view []
   (fn []
+    (dump (session/get-in [:user]))
     (let [{:keys [handler route-params]} @current-route]
       [ (handler site-navi route-params) ])))
 
