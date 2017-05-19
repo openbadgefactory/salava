@@ -28,7 +28,7 @@
                   ;:return schemas/BadgeAdverts
                   :summary "Get badges"
                   :current-user current-user
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   
                   (let [badges-and-tags (g/get-badge-adverts ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
                         countries (g/badge-countries ctx (:id current-user))
@@ -43,7 +43,7 @@
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   (ok (g/get-autocomplete ctx "" country badge_content_ids)))
              
              (POST "/badges" []
@@ -53,7 +53,7 @@
                                  issuer :- (s/maybe s/Str)
                                  recipient :- (s/maybe s/Str)]
                    :summary "Get public badges"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (let [countries (g/badge-countries ctx (:id current-user))
                          current-country (if (empty? country)
@@ -105,7 +105,7 @@
                    :body-params [country :- (s/maybe s/Str)
                                  owner :- (s/maybe s/Str)]
                    :summary "Get public pages"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (let [countries (g/page-countries ctx (:id current-user))
                          current-country (if (empty? country)
@@ -124,7 +124,7 @@
                             :countries [schemas/Countries]}
                    :body [search-params schemas/UserSearch]
                    :summary "Get public user profiles"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok {:users     (g/public-profiles ctx search-params (:id current-user))
                         :countries (g/profile-countries ctx (:id current-user))})))))

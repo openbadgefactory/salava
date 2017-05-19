@@ -38,7 +38,7 @@
                   :return {:files [schemas/File]
                            :max-size (s/maybe s/Str) }
                   :summary "Get user's all files"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (f/user-files-all ctx (:id current-user))))
 

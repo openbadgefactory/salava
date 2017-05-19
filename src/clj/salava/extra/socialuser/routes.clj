@@ -43,7 +43,7 @@
                    :summary "get connection with user"
                    :return schemas/UserConnection
                    :path-params [user_id :- s/Int]
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok
                     (db/get-connections-user ctx (:id current-user) user_id)
@@ -64,7 +64,7 @@
              (GET "/user-connection-config" []
                   :summary "returns user config accepting status"
                   :return (s/enum "accepted" "pending" "declined")
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok
                    (db/get-user-connections-accepting ctx (:id current-user))
@@ -77,7 +77,7 @@
                    :return {:status (s/enum "success" "error")
                             (s/optional-key :message) (s/maybe s/Str)}                  
                    :path-params [status :- (s/enum "accepted" "pending" "declined")]
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok
                     (db/set-user-connections-accepting ctx (:id current-user) status)))
@@ -85,7 +85,7 @@
              (GET "/user-pending-requests" []
                   :summary "Get pending requests"
                   :return [schemas/PendingUsers]
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok
                    (db/get-pending-requests ctx (:id current-user))
@@ -94,7 +94,7 @@
 
              (GET "/connections" []
                   :summary "Returns user all  user connections; pending and accepted"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   :return {:followers-users  [schemas/FollowersUsers]
                            :following-users [schemas/AcceptedUserConnections]}

@@ -15,7 +15,9 @@
 (defn delete-page [id]
   (ajax/DELETE
     (path-for (str "/obpv1/page/" id))
-    {:handler (fn [] (navigate-to "/page"))}))
+    {:handler (fn [] (do
+                       (m/close-modal!)
+                       (navigate-to "/page")))}))
 
 (defn delete-page-modal [page-id]
   [:div
@@ -38,6 +40,9 @@
               :class "btn btn-warning"
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
+
+
+
 
 (defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url]}]
   [:div {:class "row badge-block"}

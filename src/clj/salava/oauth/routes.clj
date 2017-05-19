@@ -51,7 +51,7 @@
 
              (GET "/facebook/deauthorize" []
                   :query-params [code :- s/Str]
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [{:keys [status message]} (f/facebook-deauthorize ctx code (:id current-user))]
                     (if (= status "success")
@@ -76,7 +76,7 @@
              (GET "/linkedin/deauthorize" []
                   :return {:status (s/enum "success" "error")
                            (s/optional-key :message) s/Str}
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (l/linkedin-deauthorize ctx (:id current-user)))))
 
@@ -86,6 +86,6 @@
                   :return {:active s/Bool :no-password? s/Bool}
                   :summary "Get user's remote service login status"
                   :path-params [service :- (s/enum "facebook" "linkedin")]
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (d/login-status ctx (:id current-user) service))))))

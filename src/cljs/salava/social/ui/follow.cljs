@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom create-class]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [path-for current-path]]
+            [salava.core.ui.helper :refer [path-for current-path not-activated?]]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]))
@@ -13,6 +13,7 @@
 
 (defn follow-button-badge [badge-content-id followed?]
   [:button {:class    "btn btn-primary follow"
+            :disabled (if (not-activated?) "disabled" "")
             :on-click #(ajax/POST
                         (path-for (str "/obpv1/social/create_connection_badge/" badge-content-id))
                         {:response-format :json

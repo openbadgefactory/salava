@@ -9,7 +9,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [path-for unique-values current-path navigate-to]]
+            [salava.core.ui.helper :refer [path-for unique-values current-path navigate-to not-activated?]]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
             [clojure.string :as s]
@@ -169,13 +169,10 @@
              [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
                                         ;[:a  " >> Apply now"]
              ]
-            
-            (if (pos? (:followed @data-atom))
-              [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites)) ]
-               ]
-              [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites)) ]
-               ])]
-           ]]]]])))
+            (if-not (not-activated?)
+              (if (pos? (:followed @data-atom))
+                [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
+                [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]]]]])))
 
 
 

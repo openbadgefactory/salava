@@ -66,9 +66,7 @@
 
 
 (defn ^:export navi [context]
-  (dump (not (session/get-in [:user :activated] false)))
-  (dump (or (false? (session/get-in [:user :activated] false)) (private?)))
-  (if (or (false? (session/get-in [:user :activated] false)) (private?))
+  (if (private?)
     (badge-navi context)
     (assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
   

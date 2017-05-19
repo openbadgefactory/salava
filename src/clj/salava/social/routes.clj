@@ -51,7 +51,7 @@
                    :summary "Get 10 messages. Page_count tells OFFSET "
                    :path-params [badge_content_id :- s/Str
                                  page_count :- s/Int]
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (do
                      (ok (so/get-badge-messages-limit ctx badge_content_id page_count (:id current-user))
@@ -62,7 +62,7 @@
                            :all-messages s/Int}
                    :summary "Returns count of not viewed messages and all messages"
                    :path-params [badge_content_id :- s/Str]
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (do
                      (ok (so/get-badge-message-count ctx badge_content_id (:id current-user))
@@ -119,14 +119,14 @@
 
              (GET "/connections_badge" []
                    :summary "Return users all badge connections"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (do
                      (ok (so/get-connections-badge ctx (:id current-user)))))
 
              (GET "/events" []
                    :summary "Returns users events"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (do
                      (f/save-pending-assertions ctx (:id current-user))
@@ -147,7 +147,7 @@
                   :return s/Bool
                    :summary "Returns Bool if user has connected with asked badge-content-id"
                    :path-params [badge_content_id :- s/Str]
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (do
                      (ok (so/is-connected? ctx (:id current-user) badge_content_id)

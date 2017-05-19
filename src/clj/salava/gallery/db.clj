@@ -389,7 +389,7 @@ WHERE bc.id IN
                          [where params])
         query (str "SELECT id, first_name, last_name, country, profile_picture, ctime
                     FROM user
-                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0"
+                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1"
                    where
                    order)
         profiles (jdbc/with-db-connection

@@ -164,6 +164,22 @@
     (catch Object _
       {:status "error" :message "user/Errorwhileaddingemail"})))
 
+(defn send-email-verified-link
+  "Send verififed link to address"
+  [ctx email user-id]
+  (try+
+   (if (:verified (email-exists? ctx email))
+     (throw+ {:status "error" :message "user/Emailisalreadyverified"}))
+   (let [site-url (get-site-url ctx)
+            base-path (get-base-path ctx)
+            verification-key (generate-activation-id)
+            {:keys [first_name last_name language]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+        (update-email-address-verification-key! { :email email :verification_key verification-key} (get-db ctx))
+        (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email language)
+        {:status "success" :message (str (t :user/Emailaddress language) " " email " " (t :user/added language)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}})
+    (catch Object _
+      {:status "error" :message "user/Errorwhileaddingemail"})))
+
 (defn delete-email-address
   "Remove email address attached to user account"
   [ctx email user-id]
@@ -190,14 +206,16 @@
 (defn verify-email-address
   "Verify email address"
   [ctx key user-id activated]
-  (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
-    (dump activated)
+  (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
+        verified-emails (verified-email-addresses ctx user-id)]
     (try+
      (if-not (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
        (throw+ {:status "error"}))
      (if-not activated
        (update-user-activate! {:id user_id} (get-db ctx)))
      (update-verify-email-address! {:email email :user_id user_id} (get-db ctx))
+     (if (= 0 (count verified-emails))
+       (set-primary-email-address ctx email user-id))
      "success"
      (catch Object _
      "error"))))

@@ -10,7 +10,7 @@ SELECT email FROM user_email
 
 -- name: select-email-address
 -- check if email address exists
-SELECT user_id FROM user_email WHERE email = :email
+SELECT user_id, verified FROM user_email WHERE email = :email
 
 -- name: select-user-by-email-address
 -- get user data by email address
@@ -85,6 +85,9 @@ UPDATE user_email SET verified = 1 WHERE user_id = :user_id AND primary_address 
 
 --name: update-primary-email-address-verification-key!
 UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email AND primary_address = 1
+
+--name: update-email-address-verification-key!
+UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
 
 --name: update-verified-email-address-verification-key!
 UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email AND verified = 1

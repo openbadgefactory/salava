@@ -100,7 +100,7 @@
 
              (GET "/edit" []
                   :summary "Get user information for editing"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [user-info (u/user-information ctx (:id current-user))]
                     (ok {:user      (-> user-info
@@ -111,7 +111,7 @@
 
              (GET "/edit/password" []
                   :summary "Get user information for editing"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok {:password? (u/has-password? ctx (:id current-user))})
                   )
@@ -121,7 +121,7 @@
                             :message (s/maybe s/Str)}
                   :body [user-data schemas/EditUserPassword]
                   :summary "Get user information for editing"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (u/edit-user-password ctx user-data (:id current-user)))
                   )
@@ -131,14 +131,14 @@
                             :message (s/maybe s/Str)}
                    :body [user-data schemas/EditUser]
                    :summary "Save user information"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/edit-user ctx user-data (:id current-user))))
 
              (GET "/email-addresses" []
                   :return [schemas/EmailAddress]
                   :summary "Get user email addresses"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (u/email-addresses ctx (:id current-user))))
 
@@ -148,7 +148,7 @@
                             (s/optional-key :new-email) schemas/EmailAddress}
                    :body-params [email :- (:email schemas/User)]
                    :summary "Add new unverified email address"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/add-email-address ctx email (:id current-user))))
 
@@ -156,15 +156,25 @@
                    :return {:status (s/enum "success" "error")}
                    :body-params [email :- (:email schemas/User)]
                    :summary "Remove email address"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/delete-email-address ctx email (:id current-user))))
+
+             (POST "/send_verified_link" []
+                   :return {:status (s/enum "success" "error")
+                            (s/optional-key :message) s/Str
+                            (s/optional-key :new-email) schemas/EmailAddress}
+                   :body-params [email :- (:email schemas/User)]
+                   :summary ""
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (ok (u/send-email-verified-link ctx email (:id current-user))))
 
              (POST "/set_primary_email" []
                    :return {:status (s/enum "success" "error")}
                    :body-params [email :- (:email schemas/User)]
                    :summary "Set primary email address"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/set-primary-email-address ctx email (:id current-user))))
 
@@ -183,7 +193,7 @@
              (GET "/edit/profile" []
                   ;:return
                   :summary "Get user information and profile fields for editing"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (u/user-profile-for-edit ctx (:id current-user))))
 
@@ -191,7 +201,7 @@
                    :return (:profile_visibility schemas/User)
                    :body-params [visibility :- (:profile_visibility schemas/User)]
                    :summary "Update profile visibility"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (if (:private current-user)
                      (forbidden)
@@ -204,7 +214,7 @@
                                  about :- (:about schemas/User)
                                  fields :- [{:field (apply s/enum (map :type schemas/contact-fields)) :value (s/maybe s/Str)}]]
                    :summary "Save user's profile fields, visibility, picture and about text"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (str (u/save-user-profile ctx profile_visibility profile_picture about fields (:id current-user)))))
 
@@ -217,7 +227,7 @@
              (POST "/delete" []
                    :body-params [password :- (:password schemas/User)]
                    :summary "Delete user account"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (let [result (u/delete-user ctx (:id current-user) password)]
                      (if (= "success" (:status result))
@@ -226,12 +236,12 @@
 
              (GET "/test" []
                   :summary "Test is user authenticated"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   (ok))
              
              (GET "/public-access" []
                   :summary "Test is user authenticated and in private mode"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (if (:private current-user)
                     (forbidden)

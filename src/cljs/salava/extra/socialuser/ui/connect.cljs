@@ -3,7 +3,7 @@
             [ajax.core :as ajax]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for not-activated?]]
             [salava.core.i18n :refer [t]])
   )
 
@@ -16,6 +16,7 @@
 
 (defn follow-button [user-id state]
   [:button {:class    "btn btn-primary follow"
+            :disabled (if (not-activated?) "disabled" "")
             :on-click  #(ajax/POST
                          (path-for (str "/obpv1/socialuser/user-connection/" user-id))
                          {:response-format :json
