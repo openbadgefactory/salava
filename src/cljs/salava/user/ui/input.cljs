@@ -3,6 +3,7 @@
             [reagent.core :refer [atom]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [input-valid?]]
+            [salava.core.helper :refer [dump]]
             [salava.user.schemas :as schemas]))
 
 (defn text-field [input-data]
@@ -30,6 +31,19 @@
                     :default-checked   (= @atom value)
                     :on-change  #(reset! atom value)}]
            (t (keyword (str "core/" value)))])))
+
+
+(defn select-selector [values atom init-text]
+  (into [:select {:id        "input-country"
+                  :class     "form-control"
+                  :value     @atom
+                  :on-change #(reset! atom (.-target.value %))}
+         [:option {:value ""
+                   :key   ""}
+          (str "- " init-text " -")]
+         (doall (for [value values]
+                  [:option {:value value
+                            :key   value} (t (keyword (str "core/" value)))]))]))
 
 (defn country-selector [atom]
   [:select {:id "input-country"

@@ -74,69 +74,69 @@
                :for "input-password"}
        (t :user/Password)
        [:span.form-required " *"]]
-      [:div.col-xs-8
-       [:input {:class "form-control"
-                :id "input-password"
-                :type "password"
-                :name "password"
-                :on-change #(reset! password-atom (.-target.value %))
-                :value @password-atom}]]]
+       [:div.col-xs-8
+        [:div {:class (str "form-bar " (if (and (input/password-valid? @password-atom) (=@password-atom @password-verify-atom))  "form-bar-success" ""))}         
+         [:input {:class     "form-control"
+                  :id        "input-password"
+                  :type      "password"
+                  :name      "password"
+                  :on-change #(reset! password-atom (.-target.value %))
+                  :value     @password-atom}]]]]
      [:div.form-group
       [:label {:class "col-xs-4"
                :for "input-password-verify"}
        (t :user/Verifypassword)
        [:span.form-required " *"]]
       [:div.col-xs-8
-       [:input {:class "form-control"
-                :id "input-password-verify"
-                :type "password"
-                :name "password-verify"
-                :on-change #(reset! password-verify-atom (.-target.value %))
-                :value @password-verify-atom}]]
-      [:div " Tähä jotain välii"]]
+       [:div {:class (str "form-bar " (if (and (input/password-valid? @password-verify-atom) (=@password-atom @password-verify-atom)) "form-bar-success" ""))}        
+        [:input {:class     "form-control"
+                 :id        "input-password-verify"
+                 :type      "password"
+                 :name      "password-verify"
+                 :on-change #(reset! password-verify-atom (.-target.value %))
+                 :value     @password-verify-atom}]]]]
+     [:div.user-inputs
+      [:div.row
+       [:div.form-group.margin-0.col-sm-6
+        [:label {:class ""
+                 :for   "input-first-name"}
+         (t :user/Firstname)
+         [:span.form-required " *"]]
+        [:div {:class (str "form-bar "  (if (input/first-name-valid? @first-name-atom) "form-bar-success" "form-bar-error"))}
+         [input/text-field {:name "first-name" :atom first-name-atom}]]]
 
-     [:div.form-group
-      [:label {:class "col-sm-4"
-               :for "input-first-name"}
-       (t :user/Firstname)
-       [:span.form-required " *"]]
-      [:div.col-sm-8
-       [:div {:class (str "form-bar " (if (input/first-name-valid? @first-name-atom) "form-bar-success" "form-bar-error"))}
-        [input/text-field {:name "first-name" :atom first-name-atom}]]]]
+       [:div.form-group.margin-0.col-sm-6
+        [:label {:class ""
+                 :for   "input-last-name"}
+         (t :user/Lastname)
+         [:span.form-required " *"]]
+        [:div {:class (str "form-bar " (if (input/last-name-valid? @last-name-atom) "form-bar-success" "form-bar-error"))}
+         [input/text-field {:name "last-name" :atom last-name-atom}]]]]
 
-     [:div.form-group
-      [:label {:class "col-sm-4"
-               :for "input-last-name"}
-       (t :user/Lastname)
-       [:span.form-required " *"]]
-      [:div.col-sm-8
-       [:div {:class (str "form-bar " (if (input/last-name-valid? @last-name-atom) "form-bar-success" "form-bar-error"))}
-        [input/text-field {:name "last-name" :atom last-name-atom}]]]]
+      
+      [:div.row
+       [:div.form-group.margin-0.col-sm-6
+        [:label {:class ""
+                 :for   "input-language"}
+         (t :user/Language)
+         [:span.form-required " *"]]
+        [:div {:class (str "form-bar " (if (input/language-valid? @language-atom) "form-bar-success" "form-bar-error"))}
+         [input/select-selector languages language-atom (t :user/Chooselanguage)]]]
 
-     
-
-     [:fieldset.form-group
-      [:legend {:class "col-sm-4"
-               :for "input-language"}
-       (t :user/Language)
-       [:span.form-required " *"]]
-      [:div.col-sm-8
-       [:div {:class (str "form-bar " (if (input/language-valid? @language-atom) "form-bar-success" "form-bar-error"))}
-        [input/radio-button-selector languages language-atom]]]]
-
-     [:div.form-group
-      [:label {:class "col-sm-4"
-               :for "input-country"}
-       (t :user/Country)
-       [:span.form-required " *"]]
-      [:div.col-sm-8
-       [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
-        [input/country-selector country-atom]]]]
+       [:div.form-group.margin-0.col-sm-6
+        [:label {:class ""
+                 :for   "input-country"}
+         (t :user/Country)
+         [:span.form-required " *"]]
+        [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
+         [input/country-selector country-atom]]]]]
 
      [:button {:class    "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2"
                :disabled (if-not (and (input/email-valid? @email-atom)
                                       (input/first-name-valid? @first-name-atom)
                                       (input/last-name-valid? @last-name-atom)
+                                      (input/password-valid? @password-atom)
+                                      (input/password-valid? @password-verify-atom)
                                       (input/country-valid? @country-atom)
                                       (input/language-valid? @language-atom))
                            "disabled")
@@ -199,6 +199,4 @@
       (cond
         (= "initial" (:permission @state)) (layout/landing-page site-navi [:div])
         (= "success" (:permission @state))  (layout/landing-page site-navi (content state))
-        :else  (layout/landing-page site-navi  (err/error-content)))
-      
-      )))
+        :else  (layout/landing-page site-navi  (err/error-content))))))
