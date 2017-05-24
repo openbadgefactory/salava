@@ -9,6 +9,7 @@
             [salava.oauth.facebook :as f]
             [salava.oauth.facebook :as g]
             [salava.oauth.linkedin :as l]
+            [salava.user.db :as u]
             [salava.core.access :as access]
             salava.core.restructure))
 
@@ -50,7 +51,7 @@
 
              (GET "/facebook/deauthorize" []
                   :query-params [code :- s/Str]
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [{:keys [status message]} (f/facebook-deauthorize ctx code (:id current-user))]
                     (if (= status "success")
@@ -63,11 +64,11 @@
                                  {error :- s/Str nil}]
                   :current-user current-user
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
-                        {:keys [status user-id message role private]} r]
+                        {:keys [status user-id message]} r]
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream")) [:session :identity] {:id user-id :role role :private private}))
+                        (u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
@@ -75,7 +76,7 @@
              (GET "/linkedin/deauthorize" []
                   :return {:status (s/enum "success" "error")
                            (s/optional-key :message) s/Str}
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (l/linkedin-deauthorize ctx (:id current-user)))))
 
@@ -85,6 +86,6 @@
                   :return {:active s/Bool :no-password? s/Bool}
                   :summary "Get user's remote service login status"
                   :path-params [service :- (s/enum "facebook" "linkedin")]
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (d/login-status ctx (:id current-user) service))))))

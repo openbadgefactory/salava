@@ -112,7 +112,6 @@
   (ajax/GET
     (path-for "/obpv1/user/edit/password" true)
     {:handler (fn [data]
-                (dump data)
                 (swap! state assoc :password? data))}))
 
 (defn handler [site-navi]

@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [unique-values path-for]]
+            [salava.core.ui.helper :refer [unique-values path-for not-activated? not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t]]))
@@ -112,26 +112,28 @@
 (defn content [state]
   [:div {:id "export-badges"}
    [:h1.uppercase-header (t :badge/Exportordownload)]
-   (if (:initializing @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (str (t :core/Loading) "...")]]
-     [:div
-      (if (or (empty? (:badges @state)) (empty? (:emails @state)))
-        [:div {:class "alert alert-warning"}
-         (cond
-           (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/here) "."]]
-           (empty? (:badges @state)) (t :badge/Nobadgestoexport))]
-        [:div
-         [badge-grid-form state]
-         [:button {:class "btn btn-primary"
-                   :on-click #(select-all state)}
-          (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
-         [:button {:class    "btn btn-primary"
-                   :on-click #(export-badges state)
-                   :disabled (= 0 (count (:badges-selected @state)))}
-          (t :badge/Exportselected)]
-         [badge-grid state]])])])
+   (if (not-activated?)
+     (not-activated-banner)
+     (if (:initializing @state)
+       [:div.ajax-message
+        [:i {:class "fa fa-cog fa-spin fa-2x "}]
+        [:span (str (t :core/Loading) "...")]]
+       [:div
+        (if (or (empty? (:badges @state)) (empty? (:emails @state)))
+          [:div {:class "alert alert-warning"}
+           (cond
+             (empty? (:emails @state)) [:span (t :badge/Nomozillaaccount) " " [:a {:href (path-for "/user/edit/email-addresses")} (t :badge/here) "."]]
+             (empty? (:badges @state)) (t :badge/Nobadgestoexport))]
+          [:div
+           [badge-grid-form state]
+           [:button {:class    "btn btn-primary"
+                     :on-click #(select-all state)}
+            (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
+           [:button {:class    "btn btn-primary"
+                     :on-click #(export-badges state)
+                     :disabled (= 0 (count (:badges-selected @state)))}
+            (t :badge/Exportselected)]
+           [badge-grid state]])]))])
 
 (defn init-data [state]
   (ajax/GET

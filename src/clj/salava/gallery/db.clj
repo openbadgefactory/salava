@@ -113,7 +113,6 @@ WHERE bc.id IN
       (str "(" (reduce (fn [x y] (str x ",'" y "'"  )) (str "'"(first ids)"'") (rest ids)) ")")))
 
 (defn badge-count [search page_count]
-  (dump page_count)
   (let [limit 48
         badges-left (- (count search) (* limit (+ page_count 1)))]
     (if (pos? badges-left)
@@ -389,7 +388,7 @@ WHERE bc.id IN
                          [where params])
         query (str "SELECT id, first_name, last_name, country, profile_picture, ctime
                     FROM user
-                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0"
+                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1"
                    where
                    order)
         profiles (jdbc/with-db-connection

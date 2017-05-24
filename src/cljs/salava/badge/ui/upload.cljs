@@ -3,7 +3,7 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for not-activated? not-activated-banner]]
             [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]))
 
@@ -67,17 +67,20 @@
     [:div {:class "badge-upload"}
      [m/modal-window]
      [:h1.uppercase-header (t :badge/Uploadbadgesfrom)]
-     [upload-info]
-     (cond
-       (= "loading" status) [:div.ajax-message
-                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                             [:span (str (t :core/Loading) "...")]]
-       :else [:form {:id "form"}
-              [:input {:type       "file"
-                       :aria-label "Choose file"
-                       :name       "file"
-                       :on-change  #(send-file state)
-                       :accept     "image/png, image/svg+xml"}]])]))
+     (if  (not-activated?)
+       (not-activated-banner)
+       [:div
+        [upload-info]
+        (cond
+          (= "loading" status) [:div.ajax-message
+                                [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                [:span (str (t :core/Loading) "...")]]
+          :else                [:form {:id "form"}
+                                [:input {:type       "file"
+                                         :aria-label "Choose file"
+                                         :name       "file"
+                                         :on-change  #(send-file state)
+                                         :accept     "image/png, image/svg+xml"}]])])]))
 
 (defn init-data [state]
   (ajax/GET (path-for "/obpv1/user/public-access")

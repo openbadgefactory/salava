@@ -29,7 +29,7 @@
              (GET "/" []
                   :return [schemas/UserBadgeContent]
                   :summary "Get the badges of a current user"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (do
                     ;(f/save-pending-assertions ctx (:id current-user))
@@ -120,7 +120,7 @@
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
                   :summary "Get the badges of a specified user for export"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [emails (i/user-backpack-emails ctx (:id current-user))]
                     (if (:private current-user)
@@ -131,7 +131,7 @@
              (GET "/import" []
                   :return schemas/Import
                   :summary "Fetch badges from Mozilla Backpack to import"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (if (:private current-user)
                     (forbidden)
@@ -198,6 +198,6 @@
              (GET "/stats" []
                   :return schemas/BadgeStats
                   :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (b/badge-stats ctx (:id current-user)))))))

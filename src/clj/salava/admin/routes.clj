@@ -158,6 +158,17 @@
                    :current-user current-user
                    (ok (a/delete-user! ctx id subject message email)))
 
+             (POST "/full_delete_user/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete user"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 email   :- s/Str]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-user-full! ctx id subject message email)))
+
              (POST "/delete_no_activated_user/:user_id" []
                    :return (s/enum "success" "error")
                    :summary "Delete no activated user "
@@ -226,17 +237,21 @@
                    (ok (a/send-user-activation-message ctx id)))
 
              (POST "/profiles" []
-                   :return {:users [schemas/UserProfiles]
-                            :countries [schemas/Countries]}
-                   :body [search-params {:name (s/maybe s/Str)
-                                         :country (s/maybe s/Str)
+                   ;:return
+                   #_{:users     [schemas/UserProfiles]
+                    :countries [schemas/Countries]
+                    }
+                   :body [search-params {:name     (s/maybe s/Str)
+                                         :country  (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
-                                         :email (s/maybe s/Str)
-                                         :filter (s/enum 1 0)}]
+                                         :email    (s/maybe s/Str)
+                                         :filter   (s/enum 1 0)}]
                    :summary "Get public user profiles"
                    :auth-rules access/admin
                    :current-user current-user
-                   (let [users (a/all-profiles ctx search-params (:id current-user))
-                         countries (a/profile-countries ctx (:id current-user))]         
+                   
+                   (let [users     (a/all-profiles ctx search-params (:id current-user))
+                         countries (a/profile-countries ctx (:id current-user))]
                      (ok {:users     (vec users)
-                          :countries (vec countries)}))))))
+                          :countries countries
+                          }))))))

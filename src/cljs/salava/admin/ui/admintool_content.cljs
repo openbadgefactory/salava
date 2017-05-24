@@ -272,6 +272,10 @@
           (str (t :user/Email) ":")]
          (email-select (:emails info) email-atom) ]
         (message-form mail)
+        [:div
+         [:p (str (t :admin/Lock) " " (t :admin/Whatlockmeans) ".")]
+         [:p (str (t :admin/Delete) " " (t :admin/Whatdeletemeans) ".")]
+         ]
         [:button {:type         "button"
                   :class        "btn btn-primary"
                   :data-dismiss "modal"
@@ -290,7 +294,26 @@
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
 
-         (t :admin/Lock)]]
+         (t :admin/Lock)]
+        [:button {:type         "button"
+                  :class        "btn btn-primary"
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/full_delete_user/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :params          {:subject (:subject @mail)
+                                                     :message (:message @mail)
+                                                     :email  @email-atom}
+                                   :handler         (fn [data]
+                                                      (if (and (= "success" data) init-data)
+                                                        (init-data gallery-state)
+                                                        (navigate-to "/admin"))
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+
+         (t :admin/Delete)]]
        )]))
 
 

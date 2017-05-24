@@ -1,5 +1,5 @@
 (ns salava.user.ui.email-addresses
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [create-class atom cursor]]
             [reagent-modals.modals :as modal]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [input-valid? path-for str-cat]]
@@ -7,6 +7,7 @@
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]
             [salava.core.helper :refer [dump]]
+            [reagent.session :as session]
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
@@ -44,41 +45,65 @@
                   (swap! state assoc :message {:class "alert-danger" :content (t :user/Errordeletingemailaddress)}))
                 (modal/close-modal!))}))
 
-(defn email-modal [content action-fn]
+(defn send-verify-email [email state]
+  (ajax/POST
+    (path-for "/obpv1/user/send_verified_link")
+    {:params  {:email email}
+     :handler (fn [data]
+                #_(if (= status "success")
+                  (let [email-removed (filter #(not= (:email %) email) (:emails @state))]
+                    (swap! state assoc :emails email-removed :message {:class "alert-success" :content (str (t :user/Emailaddress) " " email " " (t :user/deleted))}))
+                  (swap! state assoc :message {:class "alert-danger" :content (t :user/Errordeletingemailaddress)}))
+                (modal/close-modal!))}))
+
+
+(defn email-modal-content [content action-fn]
   [:div
    [:div.modal-header
-    [:button {:type "button"
-              :class "close"
+    [:button {:type         "button"
+              :class        "close"
               :data-dismiss "modal"
-              :aria-label "OK"}
-     [:span {:aria-hidden "true"
+              :aria-label   "OK"}
+     [:span {:aria-hidden             "true"
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
     [:div {:class (str "alert alert-warning")}
      [:p content]]]
    [:div.modal-footer
-    [:button {:type "button"
-              :class "btn btn-primary"
+    [:button {:type     "button"
+              :class    "btn btn-primary"
               :on-click action-fn}
      (t :core/Confirm)]
-    [:a {:class "modal-cancel-button"
+    [:a {:class        "modal-cancel-button"
          :data-dismiss "modal"
-         :href ""}
-     (t :core/Cancel)]]])
+         :href         ""}
+     (t :core/Cancel)]]] )
 
-(defn email-options [email verified? state]
+(defn email-modal [content action-fn]
+  (create-class {:reagent-render         (fn [] [email-modal-content content action-fn])
+                 :component-will-unmount (fn []  (modal/close-modal!))}))
+
+(defn email-options [email verified? primary-address? state]
   (let [delete-email-fn (fn [] (delete-email email state))
-        set-primary-fn (fn [] (set-primary-email email state))]
+        set-primary-fn (fn [] (set-primary-email email state))
+        send-verify-link-fn (fn [] (send-verify-email email state))]
     [:div
-     [:a {:href     "#"
-         :on-click #(modal/modal! [email-modal (t :user/Areyousuredelete) delete-email-fn])}
-     (t :core/Delete)]
+     (if primary-address?
+       (t :user/Loginaddress)
+       [:a {:href     "#"
+            :on-click #(modal/modal! [email-modal (t :user/Areyousuredelete) delete-email-fn])}
+        (t :core/Delete)])
      (if verified?
        [:span
         [:span.separate "|"]
         [:a {:href     "#"
              :on-click #(modal/modal! [email-modal (t :user/Areyousureprimary) set-primary-fn])}
-         (t :user/Setasloginaddress)]])]))
+         (t :user/Setasloginaddress)]]
+       [:span
+        [:span.separate "|"]
+        [:a {:href     "#"
+             :on-click #(modal/modal! [email-modal (t :user/Areyousuresendverifylink) send-verify-link-fn])}
+         (t :user/Sendverifylink)]])]))
 
 (defn email-address-table [state]
   [:table.table
@@ -93,9 +118,9 @@
            [:tr
             [:td email]
             [:td.text-center (if verified [:i {:class "fa fa-check"}])]
-            [:td (if primary_address
+            [:td (if (and primary_address verified) 
                    (t :user/Loginaddress)
-                   (email-options email verified state))]]))])
+                   (email-options email verified primary_address state))]]))])
 
 (defn content [state]
   (let [new-address-atom (cursor state [:new-address])

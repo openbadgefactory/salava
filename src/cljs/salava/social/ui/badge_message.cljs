@@ -7,7 +7,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid? hyperlink]]
+            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid? hyperlink not-activated? not-activated-banner]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.social.ui.follow :as f]
@@ -150,6 +150,7 @@
       [:textarea {:class    "form-control"
                   :rows     "5"
                   :value    @message-atom
+                  :disabled (if (not-activated?) "disabled" "")
                   :onChange #(reset! message-atom (.-target.value %))} ]]
      [:div {:class "form-group"}
       [:button {:class    "btn btn-primary"
@@ -186,9 +187,12 @@
                        (swap! state assoc :start-following false))}
       (t :social/Cancelfollowingbadge)]]))
 
+
+
 (defn content [state]
   (let [{:keys [messages start-following]} @state]
     [:div
+     (not-activated-banner)
      (message-textarea state)
      (if start-following
        (start-following-alert state))

@@ -5,7 +5,7 @@
             [clojure.set :refer [intersection]]
             [ajax.core :as ajax]
             [salava.file.icons :refer [file-icon]]
-            [salava.core.ui.helper :refer [unique-values navigate-to path-for]]
+            [salava.core.ui.helper :refer [unique-values navigate-to path-for not-activated? not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.ui.tag :as tag]
@@ -194,7 +194,9 @@
   [:div {:id "my-files"}
    [m/modal-window]
    [file-grid-form state]
-   [file-grid state]])
+   (if (not-activated?)
+     (not-activated-banner)
+     [file-grid state])])
 
 (defn init-data [state]
   (ajax/GET

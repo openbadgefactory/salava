@@ -170,6 +170,15 @@
    (catch Object _
      "error")))
 
+(defn delete-user-full! [ctx user-id subject message email]
+  (try+
+   (if (and (< 1 (count subject)) (< 1 (count message)))
+     (m/send-mail ctx subject message [email]))
+   (u/delete-user ctx user-id nil true)
+   "success"
+   (catch Object _
+     "error")))
+
 (defn undelete-user! [ctx user-id]
   (try+
    (update-user-undeleted! {:id user-id} (get-db ctx))
@@ -287,7 +296,7 @@
                          [where params])
         query (str "SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email FROM user AS u
 JOIN user_email AS ue ON ue.user_id = u.id
-WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
+WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND u.role <> 'deleted' "
                    where
                    " GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted "
                    order
@@ -295,6 +304,7 @@ WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
         profiles (jdbc/with-db-connection
                    [conn (:connection (get-db ctx))]
                    (jdbc/query conn (into [query] params)))]
+    
     (->> profiles
          (take 50))))
 

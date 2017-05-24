@@ -14,7 +14,7 @@
             [salava.badge.ui.helper :as bh]
             [salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated? not-activated-banner]]))
 
 
 
@@ -299,7 +299,8 @@
       [:div [:h3 {:class "media-heading"}
        [:a {:href (if link (path-for link) "#")} (translate-text header)]]
       [:div.media-body
-       (translate-text body)]
+       ;(translate-text body)
+       body]
       (if button
         [:a {:href (if link (path-for link) "#")} (translate-text button) ])
       ]]]))
@@ -338,12 +339,26 @@
    :button (t :social/Readmore)
    :link   "/user/edit/email-addresses"})
 
+(defn not-activated-account []
+  {:header (t :social/Notactivatedaccount)
+   :body  [:div
+           [:p (t :social/Notactivatedbody1)]
+           [:ul
+             [:li (t :social/Notactivatedbody2)]
+             [:li (t :social/Notactivatedbody3)]
+             [:li (t :social/Notactivatedbody4)]
+             [:li (t :social/Notactivatedbody5)]
+             [:li (t :social/Notactivatedbody6)]]] 
+   :button (t :social/Readmore)
+   :link   "/user/edit/email-addresses"})
+
 (defn tips-container [tips state]
   [:div.row
-   (if (:welcome-tip tips)
-     (tip-event (get-your-first-badge-tip) state))
-   (if (:profile-picture-tip tips)
-     (tip-event (profile-picture-tip) state))
+   (cond
+       (not-activated?) (tip-event (not-activated-account) state)
+       (:welcome-tip tips) (tip-event (get-your-first-badge-tip) state)
+       (:profile-picture-tip tips) (tip-event (profile-picture-tip) state)
+       :else [:div])
    (into [:div ]
          (for [email (:not-verified-emails tips)]
            (tip-event (not-verified-email (:email email)) state) 
@@ -372,9 +387,12 @@
         initial (:initial @state)
         admin-events (or (:admin-events @state) nil)]
     [:div {:class "my-badges pages"}
+     
      [m/modal-window]
      (pending-connections state)
      [badges-pending state]
+     (if (not-activated?)
+       (not-activated-banner))
      (if admin-events
        [:div.row
         (tip-event (report-ticket-tip admin-events) state)]

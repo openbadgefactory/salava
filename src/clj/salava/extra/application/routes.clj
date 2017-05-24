@@ -19,7 +19,7 @@
                   :return schemas/BadgeAdverts
                   :summary "Get badge adverts"
                   :current-user current-user
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   (let [applications (a/get-badge-adverts ctx country tags name issuer order id (:id current-user) (if (= "true" followed) true false))
                         countries (a/badge-adverts-countries ctx (:id current-user))
                         current-country (if (empty? country)
@@ -32,14 +32,14 @@
                   :summary "Get badge advert"
                   :current-user current-user
                   :path-params [id :- s/Int]
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   (ok (a/get-badge-advert ctx id (:id current-user))))
 
              (GET "/autocomplete" [country]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   (ok (a/get-autocomplete ctx "" country)))
              
              (PUT "/publish_badge/:apikey/:remoteid" []

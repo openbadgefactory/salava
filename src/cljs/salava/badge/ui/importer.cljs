@@ -3,10 +3,11 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for not-activated? not-activated-banner]]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]))
+
 
 (defn import-modal [{:keys [status message saved-count error-count]}]
   [:div
@@ -157,6 +158,7 @@
    [m/modal-window]
    [:h1.uppercase-header (t :badge/Importfrom)]
    [import-info]
+   (not-activated-banner)
    [:div.import-button
     (if (:ajax-message @state)
       [:div.ajax-message
@@ -165,7 +167,8 @@
     (if-not (pos? (count (:badges @state)))
       [:button {:class "btn btn-primary"
                 :on-click #(fetch-badges state)
-                :disabled (:ajax-message @state)}
+                :disabled (or (:ajax-message @state)
+                              (if (not-activated?) "disabled" ""))}
        (t :badge/Importfrom)]
 
       (if (pos? (count (:ok-badges @state)))
