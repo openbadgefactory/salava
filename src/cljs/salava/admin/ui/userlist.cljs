@@ -22,7 +22,7 @@
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
-      (path-for "/obpv1/admin/profiles/")
+      (path-for "/obpv1/admin/profiles")
       {:params  {:country       country-selected
                  :name          (trim (str name))
                  :order_by      order_by
@@ -161,7 +161,7 @@
 (defn init-data [state]
   (let [country "all"]
     (ajax/POST
-      (path-for (str "/obpv1/admin/profiles/"))
+      (path-for (str "/obpv1/admin/profiles"))
       {:params {:country "all"
                 :name ""
                 :order_by "ctime"

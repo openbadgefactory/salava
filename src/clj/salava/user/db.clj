@@ -100,6 +100,10 @@
             )
             {:status "success" :message (if activated "user/Accountpasswordchangedsuccessfully" "user/Accountactivatedsuccessfully")}))))))
 
+(defn get-user-by-email [ctx email]
+  (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx))))
+
+
 (defn login-user
   "Check if user exists and password matches. User account must be activated."
   [ctx email plain-password]
@@ -324,28 +328,40 @@
     (doseq [badge-id badge-ids]
       (b/delete-badge-with-db! db badge-id))))
 
+
+
 (defn delete-user
   "Delete user and all user data"
-  [ctx user-id plain-password]
-  (try+
-    (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-      (if-not (and (check-password ctx plain-password pass) id)
-        (throw+ "Invalid password")))
-    (jdbc/with-db-transaction
-      [tr-cn (get-datasource ctx)]
-      (remove-user-files ctx {:connection tr-cn} user-id)
-      (remove-user-badges {:connection tr-cn} user-id)
-      (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
-      (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
-      (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
-      (delete-user-profile! {:user_id user-id} {:connection tr-cn})
-      (delete-email-addresses! {:user_id user-id} {:connection tr-cn})
-      (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
-        (o/remove-oauth-user-all-services ctx user-id))
-      (delete-user! {:id user-id} {:connection tr-cn}))
-    {:status "success"}
+  ([ctx user-id plain-password]
+            (delete-user ctx user-id plain-password false))
+  ([ctx user-id plain-password admin?]
+   (try+
+    (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+          emails                      (email-addresses ctx user-id)]
+      (if-not (and (or admin? (check-password ctx plain-password pass)) id)
+        (throw+ "Invalid password"))
+      (jdbc/with-db-transaction
+        [tr-cn (get-datasource ctx)]
+        (remove-user-files ctx {:connection tr-cn} user-id)
+        (remove-user-badges {:connection tr-cn} user-id)
+        (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
+        (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
+        (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
+        (delete-user-profile! {:user_id user-id} {:connection tr-cn})
+        
+        (if activated
+          (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn} ) emails))
+          (delete-email-addresses! {:user_id user-id} {:connection tr-cn}))
+        
+        (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
+          (o/remove-oauth-user-all-services ctx user-id))
+        
+        (if activated
+          (delete-user! {:id user-id} {:connection tr-cn})
+          (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id } {:connection tr-cn})))
+      {:status "success"})
     (catch Object _
-      {:status "error"})))
+      {:status "error"}))))
 
 (defn meta-tags [ctx id]
   (let [user (select-user {:id id} (into {:result-set-fn first} (get-db ctx)))]

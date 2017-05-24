@@ -140,6 +140,12 @@ DELETE FROM user_email WHERE user_id = :user_id
 --name: delete-user!
 DELETE FROM user WHERE id = :id
 
+--name: update-user-set-deleted!
+UPDATE user SET first_name = :first_name, last_name = :last_name, mtime = UNIX_TIMESTAMP(), email_notifications = 0, deleted = 1, role = 'deleted', profile_picture = NULL, profile_visibility = 'internal', about = NULL  WHERE id = :id 
+
+--name: update-user-email-set-deleted!
+UPDATE user_email SET email = :deletedemail, backpack_id = NULL WHERE user_id = :user_id AND email = :email
+
 --name: update-user-last_login!
 UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id
 
