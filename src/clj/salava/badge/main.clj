@@ -19,6 +19,74 @@
 (defqueries "sql/badge/main.sql")
 
 
+
+(def badge-content-fi
+  {:language-code "fi"
+   :language-name  "Finnish"
+   :name           "Open Badge Passport - Jäsen"
+   :description    "Merkki on myönnetty henkilölle, joka on ottanut Open Badge Passport -palvelun käyttöön."
+   :tags           ["jäsen" "osaamismerkit"]
+   :criteria_content       "Tämä merkki on myönnetty henkilölle, joka on ottanut Open Badge Passport -palvelun käyttöön.
+
+Open Badge Passport on Discendum Oy:n kehittämä ilmainen palvelu, johon käyttäjä voi tallentaa ansaitsemansa Open Badges -osaamismerkit. Palvelussa käyttäjä voi jakaa merkkejä sekä palvelun sisällä muille käyttäjille että palvelun ulkopuolelle sosiaalisen median eri palveluihin. Lisäksi palvelusta löytyy työkalu, jolla käyttäjä voi luoda merkeistä ja muista sisällöistä miniportfoliosivuja, joita voi julkaista muille käyttäjille ja internetiin.
+
+**Hyödylliset linkit**
+
+[Open Badge Passport ](http://openbadgepassport.com)
+
+[Lisätietoa Open Badge Passport -palvelusta](https://openbadgepassport.com/fi/about) 
+
+[Luo oma Open Badge Passport -tunnus](https://openbadgepassport.com/fi/user/register)
+
+[Lisätietoja Open Badges -konseptista](http://openbadges.org/)
+"
+   :default false
+   })
+
+(def badge-content-en
+  {:language-code "en"
+   :language-name  "English"
+   :name           "Open Badge Passport - Member"
+   :description    "his Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage."
+   :tags           ["member" "openbadges"]
+   :criteria_content     "This Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage. 
+
+Open Badge Passport is a free service developed by Discendum, where the user can save / store the Open Badges they’ve earned. The user can share their Open Badges to other users inside the service as well as outside the service to different social media services. Open Badge Passport has also a tool with which the user can create miniportfolio pages consisting of their Open Badges and other content and publish those pages to other users as well as to the internet. 
+
+**Helpful links**
+
+[More information about Open Badge Passport ](https://openbadgepassport.com/en/about)
+
+[More information about the Open Badges -concept](http://openbadges.org)
+
+[Create your own Open Badge Passport account](https://openbadgepassport.com/en/user/register)
+"
+   :default true
+   })
+
+
+
+(def dummy-badge
+  {:id                  19
+   :content             [(update badge-content-en :criteria_content u/md->html) (update badge-content-fi :criteria_content u/md->html)]
+   :image_file          "file/e/4/3/c/e43c48360a8a0a6b75caf225d2fab021b3812dc5032b158fa834ae658a3d9b04.png"
+   :issued_on           1493942400
+   :expires_on          nil
+   :revoked             0
+   :visibility          "public"
+   :status              "accepted"
+   :mtime               1495430902
+   :badge_content_id    "d38193c6a77672357edbc147caa4c2ed3e3e6ffe486c7667ad83c39d4aa5146f"
+   :issuer_url          "http://localhost:5000/v1/client/?key=OK9XPAaLWVa1&event=OPH43Aa4RGa3&v=1.1"
+   :badge_url           "http://localhost:5000/v1/badge/_/OPH42Fa4RGa1.json?v=1.1&event=OPH43Aa4RGa3"
+   :obf_url             "http://localhost:5000"
+   :issued_by_obf       false
+   :verified_by_obf     false
+   :issuer_verified     false
+   :issuer_content_name "Discendum Oy"
+   :issuer_content_url  "http://www.discendum.com"
+   })
+
 (defn badge-url [ctx badge-id]
   (str (u/get-site-url ctx) (u/get-base-path ctx) "/badge/info/" badge-id))
 
@@ -149,7 +217,7 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_content_id (:badge_content_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))]
-    (assoc badge :congratulated? user-congratulation?
+    (assoc dummy-badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count
                  :recipient_count recipient-count
