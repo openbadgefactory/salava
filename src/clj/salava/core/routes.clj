@@ -15,7 +15,6 @@
    (context "/" []
             (GET "/" []
                  :current-user current-user
-                 (println "MNENE")
                  (if current-user
                    (temporary-redirect (str (get-base-path ctx) "/social"))
                    (temporary-redirect (str (get-base-path ctx) "/user/login"))))))
