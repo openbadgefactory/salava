@@ -1,6 +1,7 @@
 (ns salava.admin.ui.userlist
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
+            [salava.core.ui.modal :as mo]
             [reagent-modals.modals :as m]
             [clojure.string :refer [trim]]
             [clojure.string :as s]
@@ -124,7 +125,10 @@
      [:td
       (if deleted
         [:div [:i {:class "fa fa-ban" :aria-hidden "true"}] (str " " first_name " " last_name) ]
-        [:a {:href (path-for (str "/user/profile/" id))} first_name " " last_name])]
+        [:a {:href "#"
+             :on-click #(do
+                          (mo/open-modal  [:user :profile] {:user-id id})
+                          (.preventDefault %)) }  first_name " " last_name])]
      [:td
       (doall
        (for [i email-list]

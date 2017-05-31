@@ -135,7 +135,6 @@
       [:a {:href "#"
            :on-click #(do
                         (mo/open-modal [:gallery :badges] {:badge-content-id object})
-                        ;(b/open-modal object false init-data state)
                         (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -245,7 +244,9 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (b/open-modal object true init-data state)
+                        ;(b/open-modal object true init-data state)
+                        (mo/open-modal [:gallery :badges] {:badge-content-id object
+                                                            :show-messages true})
                         (.preventDefault %) )} 
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
