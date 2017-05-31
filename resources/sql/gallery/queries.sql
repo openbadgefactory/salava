@@ -1,4 +1,5 @@
 -- name: select-users-public-badges
+-- FIXME (content columns)
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
@@ -6,6 +7,7 @@ SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, 
        ORDER BY ctime DESC
 
 -- name: select-badge-countries
+-- FIXME (rename badge -> user_badge)
 SELECT country FROM user AS u
                LEFT JOIN badge AS b ON b.user_id = u.id
                WHERE b.visibility = 'public' OR b.visibility = 'internal'
@@ -29,14 +31,17 @@ SELECT country FROM user AS u
 SELECT country FROM user WHERE id = :id
 
 -- name: select-common-badge-content 
+-- FIXME (content columns)
 SELECT name, description, image_file, id AS badge_content_id FROM badge_content AS bc WHERE bc.id = :id
 
 -- name: select-common-badge-rating
+-- FIXME (rename badge -> user_badge, use new badge table)
 SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM badge AS b
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        WHERE b.visibility = 'public' AND b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND bc.id = :badge_content_id AND (rating IS NULL OR rating > 0)
 
 -- name: select-badge-criteria-issuer-by-recipient
+-- FIXME (badge_url? rename badge -> user_badge, use new badge table)
 SELECT badge_url, issuer_verified, ctime, cc.markdown_content AS criteria_content, criteria_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
@@ -46,6 +51,7 @@ SELECT badge_url, issuer_verified, ctime, cc.markdown_content AS criteria_conten
        LIMIT 1
 
 -- name: select-badge-criteria-issuer-by-date
+-- FIXME (badge_url? rename badge -> user_badge, use new badge table)
 SELECT badge_url, issuer_verified, ctime, cc.markdown_content AS criteria_content, criteria_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM badge AS b
        LEFT JOIN criteria_content AS cc ON cc.id = b.criteria_content_id
        LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
@@ -64,11 +70,13 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
        LIMIT 100
 
 -- name: select-badge-recipients
+-- FIXME (use new badge table)
 SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN badge AS b ON b.user_id = u.id
        WHERE badge_content_id = :badge_content_id AND status = 'accepted' AND b.deleted = 0
 
 -- name: select-common-badge-counts
+-- FIXME (rename badge -> user_badge, use new badge table)
 SELECT user_id, COUNT(DISTINCT badge_content_id) AS c FROM badge
        WHERE status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
              AND badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE user_id = :user_id AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
@@ -76,12 +84,14 @@ SELECT user_id, COUNT(DISTINCT badge_content_id) AS c FROM badge
        GROUP BY user_id
 
 -- name: select-badges-recipients
+-- FIXME (rename badge -> user_badge, use new badge table)
 SELECT badge_content_id, count(distinct user_id) as recipients FROM badge
        WHERE badge_content_id IN (:badge_content_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp())
        GROUP BY badge_content_id
 
 
 --name: select-gallery-badges-order-by-recipients
+-- FIXME (content columns)
 SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
 FROM badge_content AS bc 
 INNER JOIN badge as b on bc.id = b.badge_content_id
@@ -92,6 +102,7 @@ ORDER BY recipients DESC
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-ic-name
+-- FIXME (content columns)
 SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
 FROM badge_content AS bc 
 INNER JOIN badge as b on bc.id = b.badge_content_id
@@ -102,6 +113,7 @@ ORDER BY ic.name
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-name
+-- FIXME (content columns)
 SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
 FROM badge_content AS bc 
 INNER JOIN badge as b on bc.id = b.badge_content_id
@@ -112,6 +124,7 @@ ORDER BY bc.name
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-ctime
+-- FIXME (content columns)
 SELECT bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) AS recipients, MAX(b.ctime) AS ctime
 FROM badge_content AS bc 
 INNER JOIN badge as b on bc.id = b.badge_content_id
@@ -124,6 +137,7 @@ LIMIT :limit OFFSET :offset
 
 
 --name: select-gallery-tags
+-- FIXME
 SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
 FROM badge_content_tag AS bct 
 WHERE bct.tag IN

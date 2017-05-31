@@ -46,6 +46,7 @@ INSERT IGNORE INTO social_connections_badge (user_id, badge_content_id, ctime)
 DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_content_id = :badge_content_id
 
 --name: delete-connect-badge-by-badge-id!
+-- FIXME (badge_content_id)
 DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_content_id =  (SELECT badge_content_id from badge where id = :badge_id AND user_id = :user_id) 
 
 --name: select-connection-badge
@@ -53,6 +54,7 @@ SELECT badge_content_id FROM social_connections_badge WHERE user_id = :user_id A
 
 -- name: select-user-connections-badge
 -- get users badge connections
+-- FIXME (content columns)
 SELECT DISTINCT bc.id, bc.name, bc.image_file, bc.description FROM social_connections_badge AS scb
        JOIN badge_content AS bc ON scb.badge_content_id = bc.id
        WHERE scb.user_id = :user_id
@@ -75,6 +77,7 @@ SELECT user_id AS owner from social_connections_badge where badge_content_id = :
 SELECT id AS owner from user where role='admin';
 
 --name: select-user-events
+-- FIXME (content columns)
 SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN badge_content AS bc ON se.object = bc.id
@@ -120,6 +123,7 @@ UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner =
 SELECT badge_content_id from badge_message where id = :message_id
 
 --name: select-badge-content-id-by-badge-id
+-- FIXME (badge_content_id)
 SELECT badge_content_id from badge where id = :badge_id
 
 --name: select-user-badge-count

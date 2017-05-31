@@ -32,6 +32,7 @@ UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
 UPDATE user SET profile_visibility  = 'internal', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-badges-visibility!
+-- FIXME (badge_content_id)
 UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_content_id= :badge_content_id
 
 --name: insert-report-ticket<!
@@ -81,6 +82,7 @@ SELECT email FROM user_email
 SELECT user_id FROM badge WHERE id=:id
 
 --name: select-users-id-by-badge-content-id
+-- FIXME (badge_content_id)
 select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted = 0
 
 
@@ -98,6 +100,7 @@ DELETE FROM badge_view WHERE user_id = :user_id
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
 --name: update-badge-deleted-by-badge-content-id! 
+-- FIXME (badge_content_id)
 UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_content_id = :badge_content_id
 
 --name: select-users-name-and-email
