@@ -10,6 +10,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]
+            [salava.core.ui.modal :as mo]
             [reagent-modals.modals :as m]
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
@@ -43,12 +44,20 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:a {:href (path-for (str "/badge/info/" id))}
+          [:a{:href "#"
+              :on-click #(do
+                           (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                           (.preventDefault %)) } 
             [:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/badge/info/" id))}
+         [:a.heading-link {:href "#"
+                           :on-click #(do
+                                        (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                                        (.preventDefault %)) } 
           name]]
         [:div.media-issuer
          [:p issuer_content_name]]]]]
@@ -63,7 +72,7 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/page/view/" id))} name]]
+         [:a.heading-link  {:href "#" :on-click #(mo/open-modal [:page :view] {:page-id id})}  name]]
         [:div.media-content
          [:div.page-owner
           [:a {:href "#"} first_name " " last_name]]
