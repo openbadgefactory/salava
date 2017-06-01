@@ -3,18 +3,21 @@ SELECT user_id AS owner from social_connections_badge where badge_content_id = :
 
 -- name: select-user-badges-all
 -- get user's badges
+-- FIXME (content columns)
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, revoked, visibility, mtime, status, badge_content_id, badge_url, issuer_url, issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, meta_badge, meta_badge_req FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        WHERE user_id = :user_id AND deleted = 0 AND status != 'declined'
 
 -- name: select-user-badges-to-export
+-- FIXME (content columns)
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, badge_content_id, badge.email, assertion_url, issuer_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
        WHERE user_id = :user_id AND status = 'accepted' AND assertion_url IS NOT NULL AND deleted = 0 AND revoked = 0
 
 -- name: select-user-badges-pending
+-- FIXME (content columns)
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        WHERE user_id = :user_id AND status = 'pending' AND deleted = 0
@@ -48,21 +51,25 @@ AND (assertion_url = :assertion_url OR assertion_json = :assertion_json OR asser
 
 --name: replace-badge-content!
 --save content of the badge
+-- FIXME (add language)
 REPLACE INTO badge_content (id, name, description, image_file)
        VALUES (:id, :name, :description, :image_file)
 
 --name: replace-criteria-content!
 --save criteria content of the badge
+-- FIXME (add language)
 REPLACE INTO criteria_content (id, html_content, markdown_content)
        VALUES (:id, :html_content, :markdown_content)
 
 --name: insert-badge<!
 --save badge
+-- FIXME (content columns)
 INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified, criteria_content_id, creator_content_id)
        VALUES (:user_id, :email, :assertion_url, :assertion_jws, :assertion_json, :badge_url, :issuer_url, :criteria_url, :badge_content_id, :issuer_content_id, :issued_on, :expires_on, :evidence_url, :status, 'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0, :issuer_verified, :criteria_content_id, :creator_content_id)
 
 --name: select-badge
 --get badge by id
+-- FIXME (content columns)
 SELECT badge.id, badge_content_id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, evidence_url, show_recipient_name, rating, status, assertion_url, assertion_json, revoked, last_checked, badge_url, issuer_verified, show_evidence, badge.ctime, badge.mtime, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.description AS issuer_description, ic.email AS issuer_contact, ic.image_file AS issuer_image, u.id AS owner, u.first_name, u.last_name, cc.markdown_content AS criteria_content, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image, crc.description AS creator_description FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
@@ -76,21 +83,26 @@ REPLACE INTO badge_tag (badge_id, tag)
        VALUES (:badge_id, :tag)
 
 --name: delete-badge-tags!
+-- FIXME (rename badge_id -> user_badge_id)
 DELETE FROM badge_tag WHERE badge_id = :badge_id
 
 --name: delete-badge-views!
+-- FIXME (rename badge_id -> user_badge_id)
 DELETE FROM badge_view WHERE badge_id = :badge_id
 
 --name: delete-badge-congratulations!
+-- FIXME (rename badge_id -> user_badge_id)
 DELETE FROM badge_congratulation WHERE badge_id = :badge_id
 
 -- name: replace-issuer-content!
 -- save issuer, replace if issuer exists already
+-- FIXME (add language)
 REPLACE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url)
         VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url);
 
 -- name: replace-creator-content!
 -- save badge original creator, replace if creator exists already
+-- FIXME (add language)
 REPLACE INTO creator_content (id, url, name, description, image_file, email, json_url)
         VALUES (:id, :url, :name, :description, :image_file, :email, :json_url);
 
@@ -116,6 +128,7 @@ UPDATE badge SET show_evidence = :show_evidence WHERE id = :id
 
 --name: select-badge-settings
 --get badge settings
+-- FIXME (content columns)
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, criteria_url, show_recipient_name, cc.markdown_content AS criteria_content, evidence_url, show_evidence, rating, revoked, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_contact, ic.image_file AS issuer_image FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
@@ -134,9 +147,11 @@ UPDATE badge SET rating = :rating WHERE id = :id
 UPDATE badge SET deleted = 1, visibility = 'private' WHERE id = :id
 
 --name: select-badges-images-names
+-- FIXME (content columns)
 SELECT b.id, bc.name, bc.image_file FROM badge AS b JOIN badge_content AS bc ON b.badge_content_id = bc.id WHERE b.id IN (:ids)
 
 --name: select-badges-by-tag-and-owner
+-- FIXME (content columns)
 SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, status, criteria_url, badge_content_id, bt.tag, cc.markdown_content AS criteria_content FROM badge
        JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
        LEFT JOIN criteria_content AS cc ON (cc.id = badge.criteria_content_id)
@@ -153,14 +168,17 @@ SELECT user_id AS owner FROM badge WHERE id = :id
 
 --name: select-badge-congratulation
 --get badge congratulation
+-- FIXME (rename badge_id -> user_badge_id)
 SELECT badge_id, user_id, ctime FROM badge_congratulation WHERE badge_id = :badge_id AND user_id = :user_id
 
 --name: insert-badge-congratulation<!
 --add new badge congratulation
+-- FIXME (rename badge_id -> user_badge_id)
 INSERT INTO badge_congratulation (badge_id, user_id, ctime) VALUES (:badge_id, :user_id, UNIX_TIMESTAMP())
 
 --name: select-all-badge-congratulations
 --get all users who congratulated another user from specific badge
+-- FIXME (rename badge_id -> user_badge_id)
 SELECT u.id, first_name, last_name, profile_picture FROM user AS u
        JOIN badge_congratulation AS b ON u.id = b.user_id
        WHERE b.badge_id = :badge_id
@@ -171,10 +189,12 @@ INSERT INTO badge_view (badge_id, user_id, ctime) VALUES (:badge_id, :user_id, U
 
 --name: select-badge-view-count
 --get badge view count
+-- FIXME (rename badge_id -> user_badge_id)
 SELECT COUNT(id) AS count FROM badge_view WHERE badge_id = :badge_id
 
 --name: select-badge-recipient-count
 --get badge badge recipient count
+-- FIXME (badge_content_id)
 SELECT COUNT(DISTINCT user_id) AS recipient_count FROM badge WHERE badge_content_id = :badge_content_id AND (visibility = 'public' OR visibility = :visibility) AND status='accepted' and deleted = 0
 
 --name: select-user-badge-count
@@ -187,6 +207,7 @@ SELECT COUNT(id) as count FROM badge WHERE user_id = :user_id AND deleted = 0 AN
 
 --name: select-badge-views-stats
 --get user's badge view stats
+-- FIXME (content columns)
 SELECT b.id, bc.name, bc.image_file, SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS anon_count, MAX(bv.ctime) AS latest_view FROM badge AS b
        JOIN badge_view AS bv ON b.id = bv.badge_id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
@@ -196,6 +217,7 @@ SELECT b.id, bc.name, bc.image_file, SUM(bv.id IS NOT NULL AND bv.user_id IS NOT
 
 --name: select-badge-congratulations-stats
 --get user's badge congratulations stats
+-- FIXME (content columns)
 SELECT b.id, bc.name, bc.image_file, COUNT(bco.user_id) AS congratulation_count, MAX(bco.ctime) AS latest_congratulation FROM badge AS b
        JOIN badge_congratulation AS bco ON b.id = bco.badge_id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
@@ -205,6 +227,7 @@ SELECT b.id, bc.name, bc.image_file, COUNT(bco.user_id) AS congratulation_count,
 
 --name: select-badge-issuer-stats
 --get user's badge issuer stats
+-- FIXME (content columns)
 SELECT b.id, bc.name, bc.image_file, b.issuer_content_id, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge AS b
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
        JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
@@ -222,11 +245,13 @@ SELECT assertion_url FROM badge WHERE id = :id AND user_id = :user_id
 SELECT id FROM badge WHERE user_id = :user_id AND old_id = :old_id
 
 --name: select-badge-content-id-by-old-id
+-- FIXME (badge_content_id)
 SELECT badge_content_id FROM badge WHERE old_id = :old_id
 
 
 
 -- name: insert-badge-content!
+-- FIXME (add language)
 INSERT IGNORE INTO badge_content (id, name, description, image_file)
        VALUES (:id, :name, :description, :image_file)
 
@@ -236,18 +261,21 @@ INSERT IGNORE INTO badge_content_tag (badge_content_id, tag)
 
 
 --name: insert-badge-content-alignment!
-INSERT IGNORE INTO badge_content_tag (badge_content_id, name, url, description)
+INSERT IGNORE INTO badge_content_alignment (badge_content_id, name, url, description)
        VALUES (:badge_content_id, :name, :url, :description)
 
 -- name: insert-criteria-content!
+-- FIXME (add language)
 INSERT IGNORE INTO criteria_content (id, html_content, markdown_content)
        VALUES (:id, :html_content, :markdown_content)
 
 -- name: insert-issuer-content!
+-- FIXME (add language)
 INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url)
         VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url);
 
 -- name: insert-creator-content!
+-- FIXME (add language)
 INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url)
         VALUES (:id, :name, :url, :description, :image_file, :email, :json_url);
 
@@ -256,6 +284,7 @@ INSERT IGNORE INTO creator_content (id, name, url, description, image_file, emai
 
 --name: select-user-events
 -- EVENTS
+-- FIXME (content columns)
 SELECT se.subject, se.verb, se.object, se.ctime, se.type, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN badge_content AS bc ON se.object = bc.id

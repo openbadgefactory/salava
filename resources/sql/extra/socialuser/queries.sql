@@ -56,6 +56,7 @@ SELECT  owner_id AS owner from social_connections_user where user_id = :user_id 
 
 --name: select-user-badge-events
 -- EVENTS
+-- FIXME (content columns)
 SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, seo.hidden, se.type, bc.name, bc.image_file, u.first_name, u.last_name, u.profile_picture FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN social_connections_user AS scu ON :owner_id = scu.owner_id

@@ -20,6 +20,7 @@ SELECT p.id, name, description, theme, border, padding, visibility, password, vi
        GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name
 
 -- name: select-pages-badge-blocks
+-- FIXME (content columns)
 SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, b.evidence_url, b.show_evidence, cc.markdown_content AS criteria_content, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM page_block_badge AS pb
        JOIN badge AS b ON pb.badge_id = b.id
        JOIN badge_content AS bc ON b.badge_content_id = bc.id
