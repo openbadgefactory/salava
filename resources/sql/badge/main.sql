@@ -61,7 +61,7 @@ REPLACE INTO badge_content (id, name, description, image_file)
 REPLACE INTO criteria_content (id, html_content, markdown_content)
        VALUES (:id, :html_content, :markdown_content)
 
---name: insert-badge<!
+--name: old-insert-badge<!
 --save badge
 -- FIXME (content columns)
 INSERT INTO badge (user_id, email, assertion_url, assertion_jws, assertion_json, badge_url, issuer_url, criteria_url, badge_content_id, issuer_content_id, issued_on, expires_on, evidence_url, status, visibility, show_recipient_name, rating, ctime, mtime, deleted, revoked, issuer_verified, criteria_content_id, creator_content_id)
@@ -301,3 +301,30 @@ JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND
 WHERE bm.badge_content_id IN (:badge_content_ids) AND bm.deleted = 0
 ORDER BY bm.ctime DESC
 LIMIT 100
+
+--name: insert-badge!
+--save badge content
+INSERT IGNORE INTO badge (
+    id, remote_url, remote_id, remote_issuer_id, issuer_verified,
+    default_language_code, default_language_name,
+    published, last_received, recipient_count
+) VALUES (
+    :id, :remote_url, :remote_id, :remote_issuer_id, :issuer_verified,
+    :default_language_code, :default_language_name,
+    0, UNIX_TIMESTAMP(), 0
+);
+
+--name: insert-user-badge<!
+--save user badge
+INSERT INTO user_badge (
+    badge_id, user_id, email, assertion_url, assertion_jws,
+    assertion_json, issued_on, expires_on, evidence_url, status, visibility,
+    show_recipient_name, rating, ctime, mtime, deleted, revoked,
+    issuer_verified, criteria_content_id, creator_content_id
+) VALUES (
+    :badge_id, :user_id, :email,
+    :assertion_url, :assertion_jws, :assertion_json,
+    :issued_on, :expires_on, :evidence_url, :status,
+    'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0,
+    :issuer_verified, :criteria_content_id, :creator_content_id
+);
