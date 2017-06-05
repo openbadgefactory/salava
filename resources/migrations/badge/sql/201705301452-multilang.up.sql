@@ -13,7 +13,7 @@ CREATE TABLE badge (
     published tinyint UNSIGNED DEFAULT 0,
     last_received bigint UNSIGNED DEFAULT NULL,
     recipient_count bigint UNSIGNED DEFAULT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -21,7 +21,7 @@ CREATE TABLE badge_badge_content (
     badge_id varchar(255) NOT NULL,
     badge_content_id varchar(255) NOT NULL,
     PRIMARY KEY (badge_id, badge_content_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -29,7 +29,7 @@ CREATE TABLE badge_criteria_content (
     badge_id varchar(255) NOT NULL,
     criteria_content_id varchar(255) NOT NULL,
     PRIMARY KEY (badge_id, criteria_content_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -37,7 +37,7 @@ CREATE TABLE badge_issuer_content (
     badge_id varchar(255) NOT NULL,
     issuer_content_id varchar(255) NOT NULL,
     PRIMARY KEY (badge_id, issuer_content_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -45,7 +45,7 @@ CREATE TABLE badge_creator_content (
     badge_id varchar(255) NOT NULL,
     creator_content_id varchar(255) NOT NULL,
     PRIMARY KEY (badge_id, creator_content_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -59,7 +59,7 @@ CREATE TABLE criteria_content (
     language varchar(255) DEFAULT '',
     url varchar(255) NOT NULL,
     markdown_text mediumtext
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -84,7 +84,7 @@ CREATE TABLE user_badge (
     show_evidence tinyint DEFAULT 0,
     last_checked bigint UNSIGNED DEFAULT NULL,
     old_id bigint UNSIGNED DEFAULT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
@@ -99,7 +99,7 @@ CREATE TABLE user_badge_evidence (
     audience text,
     ctime bigint unsigned NOT NULL,
     mtime bigint unsigned NOT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --;;
 
