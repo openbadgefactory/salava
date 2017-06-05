@@ -3,11 +3,18 @@ SELECT user_id AS owner from social_connections_badge where badge_content_id = :
 
 -- name: select-user-badges-all
 -- get user's badges
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, badge.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM user_badge AS ub
-       JOIN badge AS badge ON (badge.id = ub.badge_id)
-       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       JOIN issuer_content AS ic ON (ic.id = badge.id)
-       WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
+           ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id,
+           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+FROM user_badge ub
+INNER JOIN badge b ON ub.badge_id = b.id
+INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
+INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
+INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
+INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
+    AND bc.language_code = b.default_language_code
+    AND ic.language_code = b.default_language_code
 
 -- name: select-user-badges-to-export
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, ub.badge_id, badge.issuer_verified, ub.email, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url FROM user_badge AS ub
@@ -394,3 +401,30 @@ JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND
 WHERE bm.badge_content_id IN (:badge_content_ids) AND bm.deleted = 0
 ORDER BY bm.ctime DESC
 LIMIT 100
+
+--name: insert-badge!
+--save badge content
+INSERT IGNORE INTO badge (
+    id, remote_url, remote_id, remote_issuer_id, issuer_verified,
+    default_language_code, default_language_name,
+    published, last_received, recipient_count
+) VALUES (
+    :id, :remote_url, :remote_id, :remote_issuer_id, :issuer_verified,
+    :default_language_code, :default_language_name,
+    0, UNIX_TIMESTAMP(), 0
+);
+
+--name: insert-user-badge<!
+--save user badge
+INSERT INTO user_badge (
+    badge_id, user_id, email, assertion_url, assertion_jws,
+    assertion_json, issued_on, expires_on, evidence_url, status, visibility,
+    show_recipient_name, rating, ctime, mtime, deleted, revoked,
+    issuer_verified, criteria_content_id, creator_content_id
+) VALUES (
+    :badge_id, :user_id, :email,
+    :assertion_url, :assertion_jws, :assertion_json,
+    :issued_on, :expires_on, :evidence_url, :status,
+    'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0,
+    :issuer_verified, :criteria_content_id, :creator_content_id
+);

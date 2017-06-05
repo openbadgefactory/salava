@@ -52,8 +52,8 @@
    :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
    :mtime                                s/Int
    :badge_content_id                     (s/maybe s/Str)
-   :issuer_url                           (s/maybe s/Str)
-   :badge_url                            (s/maybe s/Str)
+;  :issuer_url                           (s/maybe s/Str)
+;  :badge_url                            (s/maybe s/Str)
    :obf_url                              (s/maybe s/Str)
    :issued_by_obf                        s/Bool
    :verified_by_obf                      s/Bool

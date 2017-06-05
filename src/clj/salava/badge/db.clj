@@ -183,7 +183,8 @@
       (-> badge
           (dissoc :content :criteria :issuer :creator)
           (assoc :id badge-id)
-          (insert-badge<! tx)))))
+          (insert-badge! tx)))
+    badge-id))
 
 
 (defn save-user-badge! [ctx user-badge]

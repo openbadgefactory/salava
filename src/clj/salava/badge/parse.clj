@@ -430,7 +430,7 @@
       (throw (IllegalArgumentException. "invalid assertion, origin url mismatch")))))
 
 (defmethod verify-assertion :v2.0 [url asr]
-  (let [kind (get-in content [:verify :type] (get-in content [:verification :type]))]
+  (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
     (when (and url (or (= kind "hosted") (= kind "HostedBadge")))
       (if (not= (:id asr) url)
         (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))

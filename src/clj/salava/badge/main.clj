@@ -48,6 +48,7 @@
     (catch Exception _
       issuer-verified-initial)))
 
+;FIXME
 (defn badge-issued-and-verified-by-obf
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
@@ -72,8 +73,9 @@
 (defn user-badges-all
   "Returns all the badges of a given user"
   [ctx user-id]
-  (let [badges (select-user-badges-all {:user_id user-id} (u/get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (u/get-db ctx)))
+    (let [badges (map (fn [b] (assoc b :revoked (= 1 (b :revoked))))
+                      (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
+        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
         badges-with-tags (map-badges-tags badges tags)]
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
