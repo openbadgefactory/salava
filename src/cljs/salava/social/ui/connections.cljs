@@ -5,8 +5,8 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.gallery.ui.badges :as b]
             [reagent-modals.modals :as m]
+            [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
 
 (defn init-data [state]
@@ -49,7 +49,8 @@
                                          :alt name}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
-                                              (b/open-modal id false init-data state)
+                                              (mo/open-modal [:gallery :badges] {:badge-content-id id})
+                                              ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } name]]
                    [:td (unfollow id state)]
                   ]))]]

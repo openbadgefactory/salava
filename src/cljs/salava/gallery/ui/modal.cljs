@@ -7,6 +7,7 @@
             [salava.badge.ui.helper :as bh]
             [salava.user.ui.helper :refer [profile-link-inline-modal]]
             [salava.core.ui.rate-it :as r]
+            [clojure.string :as s]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -16,11 +17,15 @@
             ))
 
 
+(defn tag-parser [tags]
+  (if tags
+    (s/split tags #",")))
 
 (defn content [state show-messages]
   
   (let [{:keys [badge public_users private_user_count]} @state
-        {:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge]
+        {:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count tags]} badge
+        tags (tag-parser tags)]
     [:div {:id "badge-contents"}
      [:div {:class "pull-right text-right"}
              [follow-badge badge_content_id]]
@@ -63,7 +68,12 @@
                   [:div.row
                    [:div.col-md-12
                     {:dangerouslySetInnerHTML {:__html criteria_content}}]]]]
-            ]
+             ]
+            (if (not (empty? tags))
+             (into [:div]
+                   (for [tag tags]
+                     [:p {:id "tag"}
+                      (str "#" tag )])))
             (if (or (> (count public_users) 0) (> private_user_count 0))
               [:div.recipients
                [:div

@@ -30,9 +30,12 @@ SELECT country FROM user AS u
 -- name: select-user-country
 SELECT country FROM user WHERE id = :id
 
--- name: select-common-badge-content 
+-- name: select-common-badge-content
 -- FIXME (content columns)
-SELECT name, description, image_file, id AS badge_content_id FROM badge_content AS bc WHERE bc.id = :id
+SELECT bc.name, bc.description, bc.image_file, bc.id AS badge_content_id, GROUP_CONCAT( bct.tag) AS tags FROM badge_content AS bc
+LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = bc.id)
+WHERE bc.id = :id
+GROUP BY badge_content_id
 
 -- name: select-common-badge-rating
 -- FIXME (rename badge -> user_badge, use new badge table)
