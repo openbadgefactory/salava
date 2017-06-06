@@ -13,32 +13,32 @@
             [salava.core.i18n :refer [t]]))
 
 (defn content [state]
-  (let [{content :content badge-content-id :badge-content-id} @state
+  (let [{content :content badge-id :badge-id} @state
         {{name :name} :badge} content]
     [:div {:id "badge-gallery-view"}
      [m/modal-window]
      [:div.panel
       [:div.panel-body
-       (admintool badge-content-id "badges")
-       [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-content-id) name true true (cursor state [:show-link-or-embed])]
+       (admintool badge-id "badges")
+       [share-buttons (str (session/get :site-url) (path-for "/gallery/badgeview/") badge-id) name true true (cursor state [:show-link-or-embed])]
 
        (if (:content @state)
          [badge-content (:content @state) false])]
-      ;(reporttool badge-content-id name "badges")
+      ;(reporttool badge-id name "badges")
       ]]))
 
-(defn init-data [state badge-content-id]
+(defn init-data [state badge-id]
   (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
     {:handler (fn [data]
                 (swap! state assoc :content data))}))
 
 (defn handler [site-navi params]
-  (let [badge-content-id (:badge-content-id params)
-        state (atom {:badge-content-id badge-content-id
+  (let [badge-id (:badge-id params)
+        state (atom {:badge-id badge-id
                      :content nil
                      :show-link-or-embed nil})]
-    (init-data state badge-content-id)
+    (init-data state badge-id)
     (fn []
       (if (session/get :user)
         (layout/default site-navi (content state))

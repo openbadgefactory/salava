@@ -55,15 +55,15 @@
 
 (defn insert-connection-badge! [ctx user_id badge_id]
   (insert-connect-badge<! {:user_id user_id :badge_content_id badge_id} (get-db ctx))
-  (util/event ctx user_id "follow" badge_content_id "badge")
-  (messages-viewed ctx badge_content_id user_id))
+  (util/event ctx user_id "follow" badge_id "badge")
+  (messages-viewed ctx badge_id user_id))
 
 (defn create-connection-badge! [ctx user_id  badge_id]
   (try+
    (insert-connection-badge! ctx user_id badge_id)
-   {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
+   {:status "success" :connected? (is-connected? ctx user_id badge_id)}
    (catch Object _
-     {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
+     {:status "error" :connected? (is-connected? ctx user_id badge_id)}
      )))
 ;; STREAM ;;
 

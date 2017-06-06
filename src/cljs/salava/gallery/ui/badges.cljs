@@ -77,7 +77,7 @@
     ))
 
 (defn fetch-badges [state]
-  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-content-ids value]} @state
+  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value]} @state
         ajax-message-atom                                                                                                                     (cursor state [:ajax-message])
         page-count-atom (cursor state [:page_count])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
@@ -87,7 +87,7 @@
       {:params  {:country        (trim country-selected)
                  :badge-name     (trim badge-name)
                  :tags           (map #(subs-hashtag %) tags)
-                 :tags-ids       tags-badge-content-ids
+                 :tags-ids       tags-badge-ids
                  :recipient-name (trim recipient-name)
                  :order          (trim order)
                  :issuer-name    (trim issuer-name)
@@ -102,7 +102,7 @@
 
 
 (defn get-more-badges [state]
-  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-content-ids value page_count]} @state
+  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value page_count]} @state
         ajax-message-atom                                                                                                                     (cursor state [:ajax-message])]
     ;(reset! ajax-message-atom (t :gallery/Searchingbadges))
     (ajax/GET
@@ -110,7 +110,7 @@
       {:params  {:country        (trim country-selected)
                  :badge-name     (trim badge-name)
                  :tags           (map #(subs-hashtag %) tags)
-                 :tags-ids       tags-badge-content-ids
+                 :tags-ids       tags-badge-ids
                  :recipient-name (trim recipient-name)
                  :order          (trim order)
                  :issuer-name    (trim issuer-name)
@@ -131,11 +131,11 @@
   "set tag with autocomplete value and accomplish searchs"
   [state value]
   (let [tags (cursor state [:tags])
-        tags-badge-content-ids (cursor state [:tags-badge-content-ids])
+        tags-badge-ids (cursor state [:tags-badge-ids])
         autocomplete-items (cursor state [:autocomplete-items])
-        autocomplete-badge-content-ids (cursor state [:full-tags])]
+        autocomplete-badge-ids (cursor state [:full-tags])]
     (reset! tags (vals (select-keys @autocomplete-items value)))
-    (reset! tags-badge-content-ids (vals (select-keys @autocomplete-badge-content-ids value)))
+    (reset! tags-badge-ids (vals (select-keys @autocomplete-badge-ids value)))
     (fetch-badges state)
     ))
 
@@ -248,7 +248,7 @@
                                      :recipient-name ""
                                      :issuer-name    ""
                                      :value #{}
-                                     :tags-badge-content-ids '()
+                                     :tags-badge-ids '()
                                      :tags '()
                                      :full-tags '())
                               ;(autocomplete-search state @country-atom)
@@ -322,14 +322,14 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-content-id badge-id})
+          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge-id})
                 :title name}[:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(do
                                         (.preventDefault %)
-                                        (mo/open-modal [:gallery :badges] {:badge-content-id badge-id})
+                                        (mo/open-modal [:gallery :badges] {:badge-id badge-id})
                                         ) :title name}
           name]]
         [:div.media-issuer
@@ -408,7 +408,7 @@
 (defn handler [site-navi params]
   (let [user-id          (:user-id params)
         init-values      (init-values)
-        badge_content_id (:badge_content_id params)
+        badge_id (:badge_id params)
         state            (atom {:badge_count            0
                                 :user-id                user-id
                                 :page_count             0
@@ -416,7 +416,7 @@
                                 :countries              []
                                 :country-selected       "FI"
                                 :tags                   ()
-                                :tags-badge-content-ids ()
+                                :tags-badge-ids ()
                                 :full-tags              ()
                                 :value                  #{}
                                 :autocomplete-items     #{}
@@ -432,5 +432,5 @@
     ;(init-data state user-id)
     (fn []
       (if (session/get :user)
-        (layout/default site-navi [content state badge_content_id])
-        (layout/landing-page site-navi [content state badge_content_id])))))
+        (layout/default site-navi [content state badge_id])
+        (layout/landing-page site-navi [content state badge_id])))))
