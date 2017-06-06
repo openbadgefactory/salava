@@ -146,13 +146,19 @@ u.id AS owner, u.first_name, u.last_name,
 cc.markdown_text AS criteria_content
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
-JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
-JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
-JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
+GROUP BY ub.id
+
+
 
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (user_badge_id, tag)
@@ -286,7 +292,7 @@ SELECT COUNT(id) AS count FROM badge_view WHERE user_badge_id = :user_badge_id
 
 --name: select-badge-recipient-count
 --get badge badge recipient count
-SELECT recipient_count FROM badge WHERE badge_id = :badge_id
+SELECT recipient_count FROM badge WHERE id = :badge_id
 
 --name: select-user-badge-count
 --get user's badge count

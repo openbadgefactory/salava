@@ -1,16 +1,19 @@
 -- name: select-users-public-badges
 -- FIXME (content columns)
-SELECT badge.id, bc.name, bc.description, bc.image_file, issued_on, expires_on, visibility, mtime, badge_content_id, assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url FROM badge
-       JOIN badge_content AS bc ON (bc.id = badge.badge_content_id)
-       JOIN issuer_content AS ic ON (ic.id = badge.issuer_content_id)
-       WHERE (visibility = 'public' OR visibility = :visibility) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp()) AND user_id = :user_id
-       ORDER BY ctime DESC
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+FROM user_badge AS ub
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+WHERE (ub.visibility = 'public' OR ub.visibility = :visibility) AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > unix_timestamp()) AND ub.user_id = :user_id
+       ORDER BY ub.ctime DESC
 
 -- name: select-badge-countries
--- FIXME (rename badge -> user_badge)
 SELECT country FROM user AS u
-               LEFT JOIN badge AS b ON b.user_id = u.id
-               WHERE b.visibility = 'public' OR b.visibility = 'internal'
+               LEFT JOIN user_badge AS ub ON ub.user_id = u.id
+               WHERE ub.visibility = 'public' OR ub.visibility = 'internal'
                GROUP BY country
                ORDER BY country
 
@@ -60,8 +63,8 @@ JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
-JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
-JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
+LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
 JOIN user_badge AS ub ON (badge.id = ub.badge_id)
 WHERE ub.user_id = :user_id AND badge.id = :badge_content_id
 ORDER By ctime DESC

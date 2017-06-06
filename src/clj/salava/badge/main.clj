@@ -143,13 +143,13 @@
         owner? (= user-id (:owner badge))
         ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
         ;followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))
-        all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (u/get-db ctx)))
+        all-congratulations (if user-id (select-all-badge-congratulations {:user_badge_id badge-id} (u/get-db ctx)))
         user-congratulation? (and user-id
                                   (not owner?)
                                   (some #(= user-id (:id %)) all-congratulations))
-        view-count (if owner? (select-badge-view-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))
+        view-count (if owner? (select-badge-view-count {:user_badge_id badge-id} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))
         badge (badge-issued-and-verified-by-obf ctx badge)
-        recipient-count (select-badge-recipient-count {:badge_content_id (:badge_content_id badge) :visibility (if user-id "internal" "public")}
+        recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))]
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
@@ -177,9 +177,9 @@
   "Save tags associated to badge. Delete existing tags."
   [ctx tags badge-id]
   (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
-    (delete-badge-tags! {:badge_id badge-id} (u/get-db ctx))
+    (delete-badge-tags! {:user_badge_id badge-id} (u/get-db ctx))
     (doall (for [tag valid-tags]
-             (replace-badge-tag! {:badge_id badge-id :tag tag} (u/get-db ctx))))))
+             (replace-badge-tag! {:user_badge_id badge-id :tag tag} (u/get-db ctx))))))
 
 (defn set-visibility!
   "Set badge visibility"
@@ -233,7 +233,7 @@
   [ctx badge-id user-id]
   (if (badge-owner? ctx badge-id user-id)
     (let [badge (update (select-badge-settings {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
-          tags (select-taglist {:badge_ids [badge-id]} (u/get-db ctx))]
+          tags (select-taglist {:user_badge_ids [badge-id]} (u/get-db ctx))]
       (assoc-badge-tags badge tags))))
 
 (defn send-badge-info-to-obf [ctx badge-id user-id]
@@ -319,7 +319,7 @@
 (defn badge-viewed
   "Save information about viewing a badge. If user is not logged in user-id is nil."
   [ctx badge-id user-id]
-  (insert-badge-viewed! {:badge_id badge-id :user_id user-id} (u/get-db ctx)))
+  (insert-badge-viewed! {:user_badge_id badge-id :user_id user-id} (u/get-db ctx)))
 
 (defn badges-by-issuer [badges-issuers]
   (reduce (fn [result issuer-badge]
