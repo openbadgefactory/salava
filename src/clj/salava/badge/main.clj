@@ -217,12 +217,12 @@
   "User congratulates badge receiver"
   [ctx badge-id user-id]
   (try+
-    (let [congratulation (select-badge-congratulation {:badge_id badge-id :user_id user-id} (into {:result-set-fn first} (u/get-db ctx)))]
+    (let [congratulation (select-badge-congratulation {:user_badge_id badge-id :user_id user-id} (into {:result-set-fn first} (u/get-db ctx)))]
       (if congratulation
         (throw+ "User have congratulated owner already"))
       (if (badge-owner? ctx badge-id user-id)
         (throw+ "User cannot congratulate himself"))
-      (insert-badge-congratulation<! {:badge_id badge-id :user_id user-id} (u/get-db ctx))
+      (insert-badge-congratulation<! {:user_badge_id badge-id :user_id user-id} (u/get-db ctx))
       (u/event ctx user-id "congratulate" badge-id "badge")
       {:status "success" :message ""})
     (catch Object _

@@ -158,8 +158,6 @@ JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 
-
-
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (user_badge_id, tag)
        VALUES (:user_badge_id, :tag)
