@@ -24,11 +24,11 @@
 (defn content [state show-messages]
   
   (let [{:keys [badge public_users private_user_count]} @state
-        {:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count tags]} badge
+        {:keys [badge_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count tags]} badge
         tags (tag-parser tags)]
     [:div {:id "badge-contents"}
      [:div {:class "pull-right text-right"}
-             [follow-badge badge_content_id]]
+             [follow-badge badge_id]]
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
        [:div.row
@@ -41,14 +41,14 @@
                     (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                     (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
          [:div
-          [gallery-modal-message-info-link show-messages badge_content_id]
+          [gallery-modal-message-info-link show-messages badge_id]
           ]]
         [:div {:class "col-md-9 badge-info"}
          
          (if @show-messages
            [:div.rowmessage
             [:h1.uppercase-header (str name " - " (t :social/Messages))]
-            [badge-message-handler badge_content_id]]
+            [badge-message-handler badge_id]]
             
            [:div.rowcontent
             [:h1.uppercase-header name]
@@ -89,13 +89,13 @@
                     [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                     [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
          ]]
-     [reporttool1 badge_content_id name "badges"]]
+     [reporttool1 badge_id name "badges"]]
     ))
 
 
-(defn init-data [badge-content-id state]
+(defn init-data [badge-id state]
   (ajax/GET
-     (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id) true)
+     (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
      {:handler (fn [data]
                  (reset! state (assoc data 
                                       :permission "success")))}
@@ -104,16 +104,16 @@
 
 (defn handler [params]
   
-  (let [badge-content-id (:badge-content-id params)
+  (let [badge-id (:badge-id params)
         state (atom {:permission "initial"
-                     :badge {:badge_content_id badge-content-id}
+                     :badge {:badge_id badge-id}
                      :public_users []
                      :private_user_count 0
                      :badge-small-view false
                      :pages-small-view true})
         user (session/get :user)
         show-messages (atom (or (:show-messages params) false))]
-    (init-data badge-content-id state)
+    (init-data badge-id state)
 
     
     (fn []

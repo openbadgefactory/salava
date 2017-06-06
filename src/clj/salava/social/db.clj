@@ -49,18 +49,18 @@
 
 
 
-(defn is-connected? [ctx user_id badge_content_id]
-  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_content_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
-    (= badge_content_id id)))
+(defn is-connected? [ctx user_id badge_id]
+  (let [id (select-connection-badge {:user_id user_id :badge_content_id badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+    (= badge_id id)))
 
-(defn insert-connection-badge! [ctx user_id badge_content_id]
-  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_content_id} (get-db ctx))
+(defn insert-connection-badge! [ctx user_id badge_id]
+  (insert-connect-badge<! {:user_id user_id :badge_content_id badge_id} (get-db ctx))
   (util/event ctx user_id "follow" badge_content_id "badge")
   (messages-viewed ctx badge_content_id user_id))
 
-(defn create-connection-badge! [ctx user_id  badge_content_id]
+(defn create-connection-badge! [ctx user_id  badge_id]
   (try+
-   (insert-connection-badge! ctx user_id badge_content_id)
+   (insert-connection-badge! ctx user_id badge_id)
    {:status "success" :connected? (is-connected? ctx user_id badge_content_id)}
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_content_id)}
