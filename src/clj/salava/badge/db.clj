@@ -100,6 +100,14 @@
     item
     (assoc item :image_file (u/file-from-url ctx (:image_file item)))))
 
+(defn save-images [ctx badge]
+  (-> badge
+      (update :content  (fn [content]  (mapv #(save-image ctx %) content)))
+      (update :criteria (fn [criteria] (mapv #(save-image ctx %) criteria)))
+      (update :issuer   (fn [issuer]   (mapv #(save-image ctx %) issuer)))
+      (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))))
+
+
 
 (defn save-criteria-content! [ctx input]
   (s/validate schemas/CriteriaContent input)
@@ -133,7 +141,7 @@
 
 ;;
 
-(defn save-badge! [ctx badge]
+#_(defn save-badge! [ctx badge]
   (try
     (let [badge_content_id    (->> (:badge_content badge) (save-image ctx) (save-badge-content! ctx))
           issuer_content_id   (->> (:issuer_content badge) (save-image ctx) (save-issuer-content! ctx))
@@ -148,4 +156,44 @@
           (insert-badge<! (u/get-db ctx))))
     (catch Exception ex
       (log/error "save-badge!: failed to save badge data")
+      (log/error (.toString ex)))))
+
+(defn save-badge! [ctx badge]
+  (let [badge-content-id (sort (map #(save-badge-content! ctx %) (:content badge)))
+        criteria-content-id (sort (map #(save-criteria-content! ctx %) (:criteria badge)))
+        issuer-content-id (sort (map #(save-issuer-content! ctx %) (:issuer badge)))
+        creator-content-id (sort (map #(save-creator-content! ctx %) (:creator badge)))
+        badge-id (u/hex-digest "sha256" (apply str (concat badge-content-id
+                                                           criteria-content-id
+                                                           issuer-content-id
+                                                           creator-content-id)))]
+    (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+      (doseq [content-id badge-content-id]
+        (jdbc/execute! tx ["INSERT IGNORE INTO badge_badge_content (badge_id, badge_content_id) VALUES (?,?)"
+                           badge-id content-id]))
+      (doseq [criteria-id criteria-content-id]
+        (jdbc/execute! tx ["INSERT IGNORE INTO badge_criteria_content (badge_id, criteria_content_id) VALUES (?,?)"
+                           badge-id criteria-id]))
+      (doseq [issuer-id issuer-content-id]
+        (jdbc/execute! tx ["INSERT IGNORE INTO badge_issuer_content (badge_id, issuer_content_id) VALUES (?,?)"
+                           badge-id issuer-id]))
+      (doseq [creator-id creator-content-id]
+        (jdbc/execute! tx ["INSERT IGNORE INTO badge_creator_content (badge_id, creator_content_id) VALUES (?,?)"
+                           badge-id creator-id]))
+      (-> badge
+          (dissoc :content :criteria :issuer :creator)
+          (assoc :id badge-id)
+          (insert-badge! tx)))
+    badge-id))
+
+
+(defn save-user-badge! [ctx user-badge]
+  (try
+    (let [badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! ctx))]
+      (-> user-badge
+          (dissoc :badge)
+          (assoc :badge_id badge-id)
+          (insert-user-badge<! (u/get-db ctx))))
+    (catch Exception ex
+      (log/error "save-user-badge!: failed to save badge data")
       (log/error (.toString ex)))))

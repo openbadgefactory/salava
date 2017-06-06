@@ -141,18 +141,18 @@ SELECT badge_content_id, badge_content_id FROM badge_old;
 --;;
 
 INSERT IGNORE INTO badge_criteria_content (badge_id, criteria_content_id)
-SELECT badge_content_id, criteria_content_id FROM badge_old;
+SELECT badge_content_id, criteria_content_id FROM badge_old ORDER BY ctime DESC;
 
 --;;
 
 INSERT IGNORE INTO badge_issuer_content (badge_id, issuer_content_id)
-SELECT badge_content_id, issuer_content_id FROM badge_old;
+SELECT badge_content_id, issuer_content_id FROM badge_old ORDER BY ctime DESC;
 
 --;;
 
 INSERT IGNORE INTO badge_creator_content (badge_id, creator_content_id)
 SELECT badge_content_id, creator_content_id FROM badge_old
-WHERE creator_content_id IS NOT NULL;
+WHERE creator_content_id IS NOT NULL ORDER BY ctime DESC;
 
 --;;
 
