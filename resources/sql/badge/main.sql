@@ -236,7 +236,6 @@ JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.d
 WHERE ub.id IN (:ids)
 
 --name: select-badges-by-tag-and-owner
--- FIXME (content columns)
 SELECT ub.id, ub.issued_on,
 ub.expires_on, ub.status,
 ub.mtime, ub.badge_id,
@@ -246,7 +245,7 @@ cc.markdown_text AS criteria_content
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-JOIN badge_tag AS bt ON bt.badge_id = ub.id
+JOIN badge_tag AS bt ON bt.user_badge_id = ub.id
 JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND bt.tag = :badge_tag
 
@@ -300,10 +299,10 @@ bc.name, bc.image_file,
 SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS anon_count, MAX(bv.ctime) AS latest_view
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_view AS bv ON b.user_badge_id = bv.user_badge_id
-JOIN badge_content AS bc ON (bc.badge_id = ub.badge_id) AND bc.language_code = badge.default_language_code
-WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
-GROUP BY b.id, bc.name, bc.image_file
+JOIN badge_view AS bv ON ub.id = bv.user_badge_id
+JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted'
+GROUP BY ub.id, bc.name, bc.image_file
 ORDER BY latest_view DESC
 
 

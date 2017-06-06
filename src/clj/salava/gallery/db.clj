@@ -34,7 +34,13 @@
 
 
 
-(defn badge-adverts-where-params [country name issuer-name recipient-name]
+(defn badge-adverts-where-params
+  "Creates map:
+  key: where string with ?
+  value: Params list with query values
+  Example:
+  {' and u.country = ? ', 'fi'}" 
+  [country name issuer-name recipient-name]
   (let [where-params {}]
     
     (-> where-params
@@ -94,11 +100,11 @@ WHERE bc.id IN
       search)))
 
 (def join-badge
-  "INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) ")
+  "INNER JOIN user_badge as b on badge.id = b.badge_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) ")
 (def join-user
   "INNER JOIN user as u on b.user_id =  u.id ")
 (def join-issuer
-  "INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id ")
+  "INNER JOIN issuer_content AS ic ON badge.id = ic.id AND badge.default_language_code = ic.language_code ")
 
 (defn select-tags [ctx badge_content_ids]
   
@@ -137,10 +143,10 @@ WHERE bc.id IN
         ids          (tags-id-parser tags-ids)
         in-params (if (not-empty ids)
                     (str-ids ids)
-                    "(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))")
+                    "(SELECT DISTINCT id FROM badge WHERE published = 1 AND recipient_count > 0)")
         query (str
-               "select bc.id FROM badge_content as bc 
-"
+               "SELECT bc.id FROM badge as badge "
+               "JOIN badge_content AS bc ON (bc.badge_id = ub.badge_id) AND bc.language_code = badge.default_language_code  "
                (if (or (not (string/blank? issuer-name))
                        (not (string/blank? badge-name))
                        (not (string/blank? country))
@@ -371,7 +377,7 @@ WHERE bc.id IN
     (p/page-badges ctx pages)))
 
 (defn public-profiles
-  "Searcn public user profiles by user's name and country"
+  "Search public user profiles by user's name and country"
   [ctx search-params user-id]
   (let [{:keys [name country common_badges order_by]} search-params
         where ""

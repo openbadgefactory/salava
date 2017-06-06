@@ -16,18 +16,21 @@ INSERT INTO page (user_id, name, visibility, ctime, mtime) VALUES (:user_id, :na
 SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
        JOIN user AS u ON u.id = p.user_id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
-       WHERE p.id = :id AND p.deleted = 0
+       WHERE p.id = 1 AND p.deleted = 0
        GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name
 
 -- name: select-pages-badge-blocks
--- FIXME (content columns)
-SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, b.issued_on, bc.name, bc.description, bc.image_file, b.criteria_url, b.evidence_url, b.show_evidence, cc.markdown_content AS criteria_content, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM page_block_badge AS pb
-       JOIN badge AS b ON pb.badge_id = b.id
-       JOIN badge_content AS bc ON b.badge_content_id = bc.id
-       LEFT JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
-       LEFT JOIN criteria_content AS cc ON b.criteria_content_id = cc.id
-       LEFT JOIN creator_content AS crc ON b.creator_content_id = crc.id
+SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, ub.issued_on, bc.name, bc.description, bc.image_file, cc.url AS criteria_url, ube.url AS evidence_url, ub.show_evidence, cc.markdown_text AS criteria_content, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM page_block_badge AS pb
+       JOIN user_badge AS ub ON pb.badge_id = ub.id
+       JOIN badge AS badge ON (badge.id = ub.badge_id)
+       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+       JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
+       JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+       JOIN user_badge_evidence AS ube ON (ube.id = ub.badge_id)
+       JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
+       JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
        WHERE page_id = :page_id
+
 
 -- name: select-pages-files-blocks
 SELECT id, 'file' AS type, block_order FROM page_block_files
