@@ -41,7 +41,7 @@
                               :language_code s/Str
                               :language_name s/Str
                               :url s/Str
-                              :markdown_content (s/maybe s/Str)})
+                              :markdown_text (s/maybe s/Str)})
 
 (s/defschema Badge {:id s/Str
                     :remote_url (s/maybe s/Str)
@@ -177,12 +177,17 @@
                    :recipient_count 0}
            :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
            :expires_on (u/str->epoch (:expires assertion))
-           :evidence (when-not (nil? evidence_url)
-                       [{:id nil
+           :evidence [(when-not (nil? evidence_url)
+                       {:id nil
                          :user_badge_id nil
                          :url evidence_url
+                         :narrative nil
+                         :name nil
+                         :description nil
+                         :genre nil
+                         :audience nil
                          :ctime now
-                         :mtime now}]))))
+                         :mtime now})])))
 
 
 ; old v0.5.0 badge content
@@ -200,7 +205,7 @@
                    :revocation_list_url nil}
   :criteria_content {:id ""
                      :html_content criteria
-                     :markdown_content (http/alternate-get "text/x-markdown" criteria)}
+                     :markdown_text (http/alternate-get "text/x-markdown" criteria)}
   :creator_content  nil
   :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
   :expires_on (u/str->epoch (:expires assertion))
@@ -230,14 +235,14 @@
                     :criteria [{:id ""
                                 :language_code language
                                 :language_name "" ;TODO get language name
-                                :url criteria-url
+                                :url (str criteria-url)
                                 :markdown_text criteria-text}]
                     :issuer   [{:id ""
                                 :language_code language
                                 :language_name "" ;TODO get language name
                                 :name (str (:name issuer) ": " (:org issuer))
                                 :description (:description issuer)
-                                :url (:origin issuer)
+                                :url (:url issuer)
                                 :email (:contact issuer)
                                 :image_file nil
                                 :revocation_list_url nil}]
@@ -257,13 +262,23 @@
                    ;; inline narrative
                    (string? (:narrative assertion)) [{:id nil
                                                       :user_badge_id nil
+                                                      :url nil
                                                       :narrative (:narrative assertion)
+                                                      :name nil
+                                                      :description nil
+                                                      :genre nil
+                                                      :audience nil
                                                       :ctime now
                                                       :mtime now}]
                    ;; url
                    (string? (:evidence assertion)) [{:id nil
                                                      :user_badge_id nil
                                                      :url (:evidence assertion)
+                                                     :narrative nil
+                                                     :name nil
+                                                     :description nil
+                                                     :genre nil
+                                                     :audience nil
                                                      :ctime now
                                                      :mtime now}]
                    ;; inline evidence object
@@ -288,12 +303,12 @@
                                                             :audience (:audience %)
                                                             :ctime now
                                                             :mtime now}) (:evidence assertion))
-                   :else nil)
+                   :else [])
         badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
         related (filter #(keyword "@language") (cons badge (get badge :related [])))
         default-language (get badge (keyword "@language") "")]
 
-    (merge initial
+    (assoc initial
            :badge (merge {:id ""
                           :remote_url nil
                           :remote_id nil
@@ -317,7 +332,7 @@
         criteria (http/http-get (:criteria badge))
         evidence_url (:evidence assertion)
         creator-url (get-in badge [:extensions:OriginalCreator :url])
-        creator (if creator-url
+        creator (if-not (nil? creator-url)
                   (let [data (http/json-get creator-url)]
                     [{:id ""
                       :language_code ""
@@ -329,7 +344,7 @@
                       :email (:email data)
                       :json_url creator-url}]))]
 
-    (merge initial
+    (assoc initial
            :badge {:id ""
                    :remote_url nil
                    :remote_id nil
@@ -355,7 +370,7 @@
                              :language_name ""
                              :name (str (:name issuer) ": " (:org issuer))
                              :description (:description issuer)
-                             :url (:origin issuer)
+                             :url (:url issuer)
                              :email (:contact issuer)
                              :image_file nil
                              :revocation_list_url nil}]
@@ -365,12 +380,17 @@
                    :recipient_count 0}
            :issued_on  (u/str->epoch (:issuedOn assertion))
            :expires_on (u/str->epoch (:expires assertion))
-           :evidence (when-not (nil? evidence_url)
-                       [{:id nil
+           :evidence [(when-not (nil? evidence_url)
+                        {:id nil
                          :user_badge_id nil
                          :url evidence_url
+                         :narrative nil
+                         :name nil
+                         :description nil
+                         :genre nil
+                         :audience nil
                          :ctime now
-                         :mtime now}]))))
+                         :mtime now})])))
 
 ; old v1.0/v1.1 badge content
 #_{:badge_url    (:badge assertion)
@@ -392,7 +412,7 @@
                              :revocation_list_url (:revocationList issuer)}
             :criteria_content {:id ""
                                :html_content criteria
-                               :markdown_content (http/alternate-get "text/x-markdown" criteria)}
+                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}
             :creator_content  creator
             :issued_on  (u/str->epoch (:issuedOn assertion))
             :expires_on (u/str->epoch (:expires assertion))
@@ -425,7 +445,7 @@
 (defmulti verify-assertion assertion-version)
 
 (defmethod verify-assertion :v0.5.0 [url asr]
-  (if url
+  (if-not (nil? url)
     (if (not= (domain (get-in asr [:badge :issuer :origin])) (domain url))
       (throw (IllegalArgumentException. "invalid assertion, origin url mismatch")))))
 
@@ -441,7 +461,7 @@
           (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))))))
 
 (defmethod verify-assertion :default [url asr]
-  (if url
+  (if-not (nil? url)
     (if (not= (get-in asr [:verify :url]) url)
       (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
   (if (not= (domain (get-in asr [:verify :url])) (domain (:badge asr)))

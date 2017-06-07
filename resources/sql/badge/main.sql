@@ -368,8 +368,8 @@ INSERT IGNORE INTO badge_content_alignment (badge_content_id, name, url, descrip
        VALUES (:badge_content_id, :name, :url, :description)
 
 -- name: insert-criteria-content!
-INSERT IGNORE INTO criteria_content (id, html_content, markdown_content, language_code, language_name)
-       VALUES (:id, :html_content, :markdown_content, :language_code, :language_name)
+INSERT IGNORE INTO criteria_content (id, language_code, language_name, url, markdown_text)
+       VALUES (:id, :language_code, :language_name, :url, :markdown_text)
 
 -- name: insert-issuer-content!
 INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code, language_name)
@@ -417,14 +417,13 @@ INSERT IGNORE INTO badge (
 --name: insert-user-badge<!
 --save user badge
 INSERT INTO user_badge (
-    badge_id, user_id, email, assertion_url, assertion_jws,
-    assertion_json, issued_on, expires_on, evidence_url, status, visibility,
-    show_recipient_name, rating, ctime, mtime, deleted, revoked,
-    issuer_verified, criteria_content_id, creator_content_id
+    badge_id, user_id, email,
+    assertion_url, assertion_jws, assertion_json,
+    issued_on, expires_on, status, visibility,
+    show_recipient_name, rating, ctime, mtime, deleted, revoked
 ) VALUES (
     :badge_id, :user_id, :email,
     :assertion_url, :assertion_jws, :assertion_json,
-    :issued_on, :expires_on, :evidence_url, :status,
-    'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0,
-    :issuer_verified, :criteria_content_id, :creator_content_id
+    :issued_on, :expires_on, :status, 'private',
+    0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );

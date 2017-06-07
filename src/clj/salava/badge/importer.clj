@@ -123,7 +123,7 @@
           user {:id user-id :emails (user/verified-email-addresses ctx user-id)}
           key-set (set keys)
           badges-to-save (filter #(key-set (:checksum (meta %))) (all-public-badges user base-url))
-          badge-ids (remove nil? (map #(db/save-badge! ctx (assoc % :status "accepted")) badges-to-save))]
+          badge-ids (remove nil? (map #(db/save-user-badge! ctx (assoc % :status "accepted")) badges-to-save))]
       {:status      "success"
        :message     "badge/Badgessaved"
        :saved-count (count badge-ids)
@@ -140,7 +140,7 @@
     (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
         (p/file->badge uploaded-file)
         (assoc :status "accepted")
-        (partial db/save-badge! ctx))
+        (partial db/save-user-badge! ctx))
     {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
     (catch Throwable ex
       (log/error "upload-badge: upload failed")
