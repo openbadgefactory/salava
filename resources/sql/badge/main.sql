@@ -24,11 +24,15 @@ SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_o
        WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
 
 -- name: select-user-badges-pending
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url FROM user_badge AS ub
-       JOIN badge AS badge ON (badge.id = ub.badge_id)
-       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'pending'
-       
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
+ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url
+FROM user_badge AS ub
+INNER JOIN badge AS b ON (b.id = ub.badge_id)
+INNER JOIN badge_badge_content bb ON (b.id = bb.badge_id)
+INNER JOIN badge_content bc ON (bb.badge_content_id = bc.id)
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'pending'
+    AND bc.language_code = b.default_language_code
+
 -- name: select-taglist
 -- get tags by list of badge content ids
 SELECT user_badge_id, tag FROM badge_tag WHERE user_badge_id IN (:user_badge_ids)
