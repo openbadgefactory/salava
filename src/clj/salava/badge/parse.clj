@@ -99,7 +99,7 @@
 
 
 (defn- domain [url]
-  (last (re-find #"^https?://([^/]+)" url)))
+  (last (re-find #"^https?://([^/]+)" (str url))))
 
 (defn- badge-image [input]
   (let [image (if (map? input) (get-in input [:badge :image] "") input)]
@@ -310,9 +310,10 @@
                                                             :mtime now}) (:evidence assertion))
                    :else [])
         badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
-        related (filter #(keyword "@language") (cons badge (get badge :related [])))
+        related (->> (get badge :related [])
+                     (map #(http/json-get (:id %)))
+                     (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")]
-
     (assoc initial
            :badge (merge {:id ""
                           :remote_url nil
@@ -324,10 +325,11 @@
                           :published 0
                           :last_received 0
                           :recipient_count 0}
-                          (apply merge-with (cons concat (map parser related))))
+                          (apply merge-with (cons concat (map parser (cons badge related)))))
            :issued_on  (u/str->epoch (:issuedOn assertion))
            :expires_on (u/str->epoch (:expires assertion))
            :evidence evidence)))
+
 ;;;
 
 (defmethod badge-content :default [initial assertion]
@@ -456,13 +458,13 @@
 
 (defmethod verify-assertion :v2.0 [url asr]
   (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
-    (when (and url (or (= kind "hosted") (= kind "HostedBadge")))
+    (when (and (not (nil? url)) (or (= kind "hosted") (= kind "HostedBadge")))
       (if (not= (:id asr) url)
         (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
       (if (map? (:badge asr))
         (if (not= (domain (get-in asr [:badge :id])) (domain (:id asr)))
           (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
-        (if (not= (domain (get-in asr [:verify :url])) (domain (:badge asr)))
+        (if (not= (domain (:badge asr)) (domain (:id asr)))
           (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))))))
 
 (defmethod verify-assertion :default [url asr]
