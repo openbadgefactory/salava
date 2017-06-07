@@ -30,7 +30,7 @@
                   :current-user current-user
                   :auth-rules access/signed
                   
-                  (let [badges-and-tags (g/get-badge-adverts ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
+                  (let [badges-and-tags (g/get-gallery-badges ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
                         countries       (g/badge-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)
@@ -68,7 +68,7 @@
                    :current-user current-user
                    (ok (hash-map :badges (g/public-badges-by-user ctx userid (if current-user "internal" "public")))))
 
-             (GET "/public_badge_content/:badge-content-id" []
+             (GET "/public_badge_content/:badge-id" []
                   ;:return
                   #_{:badge              {:name                  s/Str
                                         :ctime                 s/Int
@@ -98,10 +98,10 @@
                                                   :last_name       s/Str
                                                   :profile_picture (s/maybe s/Str)}])
                    :private_user_count (s/maybe s/Int)}
-                  :path-params [badge-content-id :- s/Str]
+                  :path-params [badge-id :- s/Str]
                   :summary "Get public badge data"
                   :current-user current-user
-                  (ok (g/public-badge-content ctx badge-content-id (:id current-user))))
+                  (ok (g/public-badge-content ctx badge-id (:id current-user))))
 
              (POST "/pages" []
                    :body-params [country :- (s/maybe s/Str)

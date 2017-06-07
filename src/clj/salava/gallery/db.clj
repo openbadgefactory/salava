@@ -34,15 +34,12 @@
 
 
 
-(defn badge-adverts-where-params
-  "Creates map:
-  key: where string with ?
-  value: Params list with query values
+(defn badge-ids-where-params
+  "Create map from search params
   Example:
   {' and u.country = ? ', 'fi'}" 
   [country name issuer-name recipient-name]
   (let [where-params {}]
-    
     (-> where-params
         (conj (if-not (string/blank? recipient-name) (map-collection  " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?" (str "%" recipient-name "%") )))
         (conj (map-collection " and u.country = ? " country (not= country "all")))
@@ -56,62 +53,21 @@
   (let [parsed-ids  (filter-ids (map #(tag-parser %) (vec (vals tags))))]
     parsed-ids))
 
-#_(defn get-badge-adverts [ctx country tags badge-name issuer-name order recipient-name tags-ids]
-  
-  (let [where-params (badge-adverts-where-params country badge-name issuer-name recipient-name)
-        where  (apply str (keys where-params))
-        params  (vec (vals where-params))  ;add user-id to params 
-        tags (vec (vals tags))
-        tags-ids (tags-id-parser tags-ids)
-        texxt (if false ;(not-empty tags-ids)
-                (str "(" (map #(str "'" % "'") tags-ids)")")
-                "(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))")
-        order (cond
-                ;(= order "mtime") "ORDER BY ba.mtime DESC"
-                (= order "name") "ORDER BY bc.name"
-                (= order "issuer_content_name") "ORDER BY ic.name"
-                (= order "recipients") "ORDER BY recipients DESC"
-                :else "ORDER BY ctime DESC") 
-        query (str
-               "select bc.id, bc.name, bc.image_file, ic.name AS issuer_content_name, count(distinct b.id) as recipients, MAX(b.ctime) AS ctime, GROUP_CONCAT(distinct bct.tag) AS tags
-FROM badge_content as bc 
-INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
-INNER JOIN issuer_content AS ic ON b.issuer_content_id = ic.id
-INNER JOIN user as u on b.user_id =  u.id
-LEFT JOIN badge_content_tag AS bct ON (bc.id = bct.badge_content_id)
-WHERE bc.id IN 
- "
-              texxt
-                  where
-                   "GROUP BY bc.id "
-                   order
-                   
-                   )
-        search (jdbc/with-db-connection
-                 [conn (:connection (get-db ctx))]
-                 (jdbc/query conn (into [query] params)))]
-    #_(dump (if (not-empty tags)
-      (filter-tags search tags)
-      search))
-    
-    search
-    #_(if (not-empty tags)
-      (filter-tags search tags)
-      search)))
-
 (def join-badge
-  "INNER JOIN user_badge as b on badge.id = b.badge_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP()) ")
-(def join-user
-  "INNER JOIN user as u on b.user_id =  u.id ")
-(def join-issuer
-  "INNER JOIN issuer_content AS ic ON badge.id = ic.id AND badge.default_language_code = ic.language_code ")
+  "INNER JOIN user_badge as ub on b.id = ub.badge_id AND  ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) ")
 
-(defn select-tags [ctx badge_content_ids]
-  
-  (if (not-empty badge_content_ids)
-    (select-gallery-tags {:badge_content_ids badge_content_ids} (get-db ctx))
-    
-    ))
+(def join-user
+  "INNER JOIN user as u on ub.user_id =  u.id ")
+
+(def join-issuer
+  (str
+   "JOIN badge_issuer_content AS bic ON (bic.badge_id = b.id) "
+   "JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = b.default_language_code "
+   ))
+
+(defn select-tags [ctx badge_ids]
+  (if (not-empty badge_ids)
+    (select-gallery-tags {:badge_ids badge_ids} (get-db ctx))))
 
 (defn str-ids [ids]
   (if (empty? ids)
@@ -125,19 +81,28 @@ WHERE bc.id IN
       badges-left
       0)))
 
-(defn select-badges [ctx badge_content_ids order page_count]
+(defn select-badges [ctx badge_ids order page_count]
   (let [limit 48
         offset (* limit page_count)]
-    (if (not-empty badge_content_ids)
+    (if (not-empty badge_ids)
       (case order
-        "recipients"          (select-gallery-badges-order-by-recipients {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx))
-        "issuer_content_name" (select-gallery-badges-order-by-ic-name {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx))
-        "name"                (select-gallery-badges-order-by-name {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx))
-        (select-gallery-badges-order-by-ctime {:badge_content_ids badge_content_ids :limit limit :offset offset} (get-db ctx)))))
-  )
+        "recipients"          (select-gallery-badges-order-by-recipients {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx))
+        "issuer_content_name" (select-gallery-badges-order-by-ic-name {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx))
+        "name"                (select-gallery-badges-order-by-name {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx))
+        (select-gallery-badges-order-by-ctime {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx))))))
 
-(defn get-badge-adverts [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
-  (let [where-params (badge-adverts-where-params country badge-name issuer-name recipient-name)
+
+
+(defn db-connect [ctx query params]
+  (jdbc/with-db-connection
+    [conn (:connection (get-db ctx))]
+    (jdbc/query conn (into [query] params) {:row-fn :id})))
+
+
+(defn get-badge-ids
+  "Get badge-ids"
+  [ctx country tags badge-name issuer-name order recipient-name tags-ids]
+  (let [where-params (badge-ids-where-params country badge-name issuer-name recipient-name)
         where        (apply str (keys where-params))
         params       (vec (vals where-params))
         ids          (tags-id-parser tags-ids)
@@ -145,8 +110,10 @@ WHERE bc.id IN
                     (str-ids ids)
                     "(SELECT DISTINCT id FROM badge WHERE published = 1 AND recipient_count > 0)")
         query (str
-               "SELECT bc.id FROM badge as badge "
-               "JOIN badge_content AS bc ON (bc.badge_id = ub.badge_id) AND bc.language_code = badge.default_language_code  "
+               "SELECT b.id FROM badge as b "
+               "JOIN badge_badge_content AS bbc ON (bbc.badge_id = b.id) "
+               "JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = b.default_language_code "
+               
                (if (or (not (string/blank? issuer-name))
                        (not (string/blank? badge-name))
                        (not (string/blank? country))
@@ -157,21 +124,24 @@ WHERE bc.id IN
                  join-user)
                (if (not (string/blank? issuer-name))
                  join-issuer)
-               " WHERE bc.id IN "
+               " WHERE b.id IN "
                in-params
                " "
                where
-               "GROUP BY bc.id")
+               "GROUP BY b.id")
         search (if (and (not-empty ids) (string/blank? issuer-name) (string/blank? badge-name) (string/blank? country))
                  ids
-                 (jdbc/with-db-connection
-                   [conn (:connection (get-db ctx))]
-                   (jdbc/query conn (into [query] params) {:row-fn :id})
-                   ))]
+                 (db-connect ctx query params))]
     
-    {:badges (select-badges ctx search order page_count)
-     :tags (select-tags ctx search)
-     :badge_count (badge-count search page_count) }))
+    search))
+
+(defn get-gallery-badges
+  "Get badge-ids"
+  [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
+  (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)]
+    {:badges (select-badges ctx badge-ids order page_count)
+     :tags (select-tags ctx badge-ids)
+     :badge_count (badge-count badge-ids page_count) }))
 
 
 

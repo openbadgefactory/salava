@@ -18,9 +18,9 @@
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
 
-(defn open-modal ([badge-content-id messages?]
-                  (open-modal badge-content-id messages? nil nil))
-  ([badge-content-id messages? init-data state]
+(defn open-modal ([badge-id messages?]
+                  (open-modal badge-id messages? nil nil))
+  ([badge-id messages? init-data state]
    (let [reporttool (atom {:description     ""
                            :report-type     "bug"
                            :item-id         ""
@@ -31,7 +31,7 @@
                            :reporter-id     ""
                            :status          "false"})]
      (ajax/GET
-      (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+      (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
       {:handler (fn [data]
                   (do
                     (m/modal! [badge-content-modal data reporttool messages? init-data state] {:size :lg})))}))))
@@ -46,7 +46,7 @@
       :handler (fn [data]
                  (let [{:keys [tags names]} data]
                    (swap! state assoc
-                          :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_content_ids v)]) tags))
+                          :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_ids v)]) tags))
                           :tags  #{} ;todo: katso jos on toisessakin olemassa
                           :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))})
   )
@@ -68,10 +68,10 @@
 (defn value-helper [state tag-items]
   (let [value          (cursor state [:value])
         {:keys [tags]} @state
-        items          (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v) " (" (:badge_content_id_count v) ")")]) tag-items))
+        items          (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v) " (" (:badge_id_count v) ")")]) tag-items))
         new-value      (set (keys (filter (comp (set tags) last) items)))]
     (swap! state assoc
-           :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_content_ids v)]) tag-items))
+           :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_ids v)]) tag-items))
            :value new-value
            :autocomplete-items items)
     ))
@@ -316,8 +316,8 @@
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id]} element-data
-        badge-id (or badge_content_id id)]
+  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_id]} element-data
+        badge-id (or badge_id id)]
      [:div {:class "media grid-container"}
       [:div.media-content
        (if image_file
@@ -375,7 +375,7 @@
 
 
 
-(defn content [state badge_content_id]
+(defn content [state badge_id]
 (create-class {:reagent-render (fn []
                                  [:div {:id "badge-gallery"}
                                   [m/modal-window]
@@ -387,8 +387,8 @@
                                     [gallery-grid state]
                                     )])
                  :component-did-mount (fn []
-                                        (if badge_content_id
-                                          (open-modal badge_content_id true)
+                                        (if badge_id
+                                          (open-modal badge_id true)
                                           )
                                         )
                  ;:component-did-update #(scroll-bottom)

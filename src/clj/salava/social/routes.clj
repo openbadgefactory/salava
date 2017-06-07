@@ -21,63 +21,65 @@
 
     (context "/obpv1/social" []
              :tags ["social"]
-             (GET "/messages/:badge_content_id" []
-                  :return [{:id               s/Int
-                            :user_id          s/Int
-                            :badge_content_id s/Str 
-                            :message          s/Str 
-                            :ctime            s/Int
-                            :first_name       s/Str
-                            :last_name        s/Str
-                            :profile_picture  (s/maybe s/Str)}]
-                   :summary "Get all messages"
-                   :path-params [badge_content_id :- s/Str]
-                   :auth-rules access/admin
-                   :current-user current-user
-                   (do
-                     (ok (so/get-badge-messages ctx badge_content_id (:id current-user))
-                      )))
+             (GET "/messages/:badge_id" []
+                  ;:return
+                  #_[{:id              s/Int
+                    :user_id         s/Int
+                    :badge_id        s/Str 
+                    :message         s/Str 
+                    :ctime           s/Int
+                    :first_name      s/Str
+                    :last_name       s/Str
+                    :profile_picture (s/maybe s/Str)}]
+                  :summary "Get all messages"
+                  :path-params [badge_id :- s/Str]
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (do
+                    (ok (so/get-badge-messages ctx badge_id (:id current-user))
+                        )))
 
-             (GET "/messages/:badge_content_id/:page_count" []
-                  :return {:messages [{:id               s/Int
-                                       :user_id          s/Int
-                                       :badge_content_id s/Str 
-                                       :message          s/Str 
-                                       :ctime            s/Int
-                                       :first_name       s/Str
-                                       :last_name        s/Str
-                                       :profile_picture  (s/maybe s/Str)}]
-                           :messages_left s/Int}
-                   :summary "Get 10 messages. Page_count tells OFFSET "
-                   :path-params [badge_content_id :- s/Str
-                                 page_count :- s/Int]
-                   :auth-rules access/signed
-                   :current-user current-user
-                   (do
-                     (ok (so/get-badge-messages-limit ctx badge_content_id page_count (:id current-user))
-                         )))
+             (GET "/messages/:badge_id/:page_count" []
+                  ;:return
+                  #_{:messages      [{:id              s/Int
+                                    :user_id         s/Int
+                                    :badge_id        s/Str 
+                                    :message         s/Str 
+                                    :ctime           s/Int
+                                    :first_name      s/Str
+                                    :last_name       s/Str
+                                    :profile_picture (s/maybe s/Str)}]
+                   :messages_left s/Int}
+                  :summary "Get 10 messages. Page_count tells OFFSET "
+                  :path-params [badge_id :- s/Str
+                                page_count :- s/Int]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (do
+                    (ok (so/get-badge-messages-limit ctx badge_id page_count (:id current-user))
+                        )))
 
-             (GET "/messages_count/:badge_content_id" []
+             (GET "/messages_count/:badge_id" []
                   :return {:new-messages s/Int
                            :all-messages s/Int}
                    :summary "Returns count of not viewed messages and all messages"
-                   :path-params [badge_content_id :- s/Str]
+                   :path-params [badge_id :- s/Str]
                    :auth-rules access/signed
                    :current-user current-user
                    (do
-                     (ok (so/get-badge-message-count ctx badge_content_id (:id current-user))
+                     (ok (so/get-badge-message-count ctx badge_id (:id current-user))
                       )))
 
-             (POST "/messages/:badge_content_id" []
+             (POST "/messages/:badge_id" []
                    :return {:status (s/enum "success" "error") :connected? (s/maybe  s/Str)}
                    :summary "Create new message"
-                   :path-params [badge_content_id :- s/Str]
+                   :path-params [badge_id :- s/Str]
                    :body [content {:message s/Str
                                    :user_id s/Int}]
                    :auth-rules access/authenticated
                    :current-user current-user
                    (let [{:keys [message user_id]} content]
-                     (ok (so/message! ctx badge_content_id user_id message)
+                     (ok (so/message! ctx badge_id user_id message)
                       )))
 
              (POST "/delete_message/:message_id" []
@@ -89,13 +91,13 @@
                    (ok (so/delete-message! ctx message_id (:id current-user)))
                    )
 
-             (POST "/delete_connection_badge/:badge_content_id" []
+             (POST "/delete_connection_badge/:badge_id" []
                    :return {:status (s/enum "success" "error") :connected? s/Bool}
                    :summary "Delete message"
-                   :path-params [badge_content_id :- s/Str]
+                   :path-params [badge_id :- s/Str]
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (so/delete-connection-badge! ctx (:id current-user) badge_content_id))
+                   (ok (so/delete-connection-badge! ctx (:id current-user) badge_id))
                    )
 
              (POST "/hide_event/:event_id" []
@@ -107,13 +109,13 @@
                    (ok (so/hide-user-event! ctx (:id current-user) event_id))
                    )
              
-             (POST "/create_connection_badge/:badge_content_id" []
+             (POST "/create_connection_badge/:badge_id" []
                    :return {:status (s/enum "success" "error") :connected? s/Bool}
                    :summary "Delete message"
-                   :path-params [badge_content_id :- s/Str]
+                   :path-params [badge_id :- s/Str]
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (so/create-connection-badge! ctx (:id current-user) badge_content_id))
+                   (ok (so/create-connection-badge! ctx (:id current-user) badge_id))
                    )
 
 
@@ -143,14 +145,14 @@
 
                            events))))
              
-             (GET "/connected/:badge_content_id" []
+             (GET "/connected/:badge_id" []
                   :return s/Bool
-                   :summary "Returns Bool if user has connected with asked badge-content-id"
-                   :path-params [badge_content_id :- s/Str]
+                   :summary "Returns Bool if user has connected with asked badge-id"
+                   :path-params [badge_id :- s/Str]
                    :auth-rules access/signed
                    :current-user current-user
                    (do
-                     (ok (so/is-connected? ctx (:id current-user) badge_content_id)
+                     (ok (so/is-connected? ctx (:id current-user) badge_id)
                       )))
              
              )))

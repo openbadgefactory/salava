@@ -1,6 +1,6 @@
 -- name: select-users-public-badges
 -- FIXME (content columns)
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+SELECT ub.id, badge.id AS badge_id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
@@ -34,7 +34,7 @@ SELECT country FROM user AS u
 SELECT country FROM user WHERE id = :id
 
 -- name: select-common-badge-content
-SELECT bc.name, bc.description, bc.image_file, bc.id AS badge_content_id, GROUP_CONCAT( bct.tag) AS tags FROM badge AS badge
+SELECT bc.name, bc.description, bc.image_file, badge.id AS badge_id, GROUP_CONCAT( bct.tag) AS tags FROM badge AS badge
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = bc.id)
@@ -127,7 +127,7 @@ SELECT badge_id, count(distinct user_id) as recipients FROM user_badge
 --name: select-gallery-badges-order-by-recipients
 -- FIXME (content columns)
 SELECT
-bc.name, bc.image_file,
+badge.id AS badge_id, bc.name, bc.image_file,
 badge.last_received AS ctime,
 badge.recipient_count AS recipients,
 ic.name AS issuer_content_name
@@ -145,7 +145,7 @@ LIMIT :limit OFFSET :offset
 --name: select-gallery-badges-order-by-ic-name
 -- FIXME (content columns)
 SELECT
-bc.name, bc.image_file,
+badge.id AS badge_id, bc.name, bc.image_file,
 badge.last_received AS ctime,
 badge.recipient_count AS recipients,
 ic.name AS issuer_content_name
@@ -162,7 +162,7 @@ LIMIT :limit OFFSET :offset
 --name: select-gallery-badges-order-by-name
 -- FIXME (content columns)
 SELECT
-bc.name, bc.image_file,
+badge.id AS badge_id, bc.name, bc.image_file,
 badge.last_received AS ctime,
 badge.recipient_count AS recipients,
 ic.name AS issuer_content_name
@@ -179,14 +179,14 @@ LIMIT :limit OFFSET :offset
 --name: select-gallery-badges-order-by-ctime
 -- FIXME (content columns)
 SELECT
-bc.name, bc.image_file,
+badge.id AS badge_id, bc.name, bc.image_file,
 badge.last_received AS ctime,
 badge.recipient_count AS recipients,
 ic.name AS issuer_content_name
 FROM badge
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-JOIN badge_issuer_content AS bic ON (bic.badge_id = ub.badge_id)
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
 GROUP BY badge.id
@@ -195,10 +195,11 @@ LIMIT :limit OFFSET :offset
 
 
 --name: select-gallery-tags
--- FIXME
-SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
-FROM badge_content_tag AS bct 
-WHERE bct.tag IN
-	(SELECT tag FROM badge_content_tag WHERE badge_content_id IN (:badge_content_ids))
-	AND bct.badge_content_id IN (SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
+SELECT bct.tag, GROUP_CONCAT(bbc.badge_id) AS badge_ids, COUNT(bbc.badge_id) as badge_id_count 
+FROM badge_badge_content as bbc
+JOIN badge_content_tag as bct on (bct.badge_content_id = bbc.badge_content_id)
+WHERE bct.tag IN (SELECT tag FROM badge_content_tag AS bct
+      	      	 JOIN badge_badge_content AS bbc ON (bct.badge_content_id = bbc.badge_content_id) 
+      	      	 WHERE bbc.badge_id IN  (:badge_ids))
+AND bbc.badge_id IN (SELECT DISTINCT badge_id FROM badge WHERE published = 1 and recipient_count > 0)
 GROUP BY bct.tag

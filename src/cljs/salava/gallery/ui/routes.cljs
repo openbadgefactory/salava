@@ -16,7 +16,7 @@
   {(str (base-path context) "/gallery") [["" b/handler]
                                          ["/badges" b/handler]
                                          [["/badges/" :user-id] b/handler]
-                                         [["/badges/" :user-id "/" :badge_content_id] b/handler]
+                                         [["/badges/" :user-id "/" :badge_id] b/handler]
                                          ["/pages" p/handler]
                                          [["/pages/" :user-id] p/handler]
                                          ["/profiles" u/handler]

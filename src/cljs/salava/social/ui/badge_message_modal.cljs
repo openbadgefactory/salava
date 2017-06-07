@@ -14,7 +14,7 @@
 
 
 (defn modal-content [{:keys [badge public_users private_user_count]}]
-  (let [{:keys [badge_content_id name image_file message_count]} badge
+  (let [{:keys [badge_id name image_file message_count]} badge
         all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")
         new-messages (if (pos? (:new-messages message_count))
                        (str (:new-messages message_count) " " (t :social/Newmessages ))
@@ -29,7 +29,7 @@
         [:div {:class "col-md-9 badge-info"}
          [:div.row
           [:h1.uppercase-header (str name " - " (t :social/Messages))]
-          [badge-message-handler badge_content_id]]]]])))
+          [badge-message-handler badge_id]]]]])))
 
 (defn badge-content-modal-render [data]
   [:div {:id "badge-content"}
@@ -57,12 +57,12 @@
 
 
 (defn open-modal
-  ([badge-content-id]
-   (open-modal badge-content-id nil nil))
-  ([badge-content-id init-data state]
+  ([badge-id]
+   (open-modal badge-id nil nil))
+  ([badge-id init-data state]
    
    (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
     {:handler (fn [data]
                 (do
                   (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
