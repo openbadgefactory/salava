@@ -112,11 +112,16 @@
             (:image (meta input))
             (throw (Exception. "image missing"))))))))
 
+(defn- capitalize-name [email]
+  (when-let [m (re-matches #"([^\.@]+)\.([^\.@]+)@(.+)" (string/lower-case email))]
+    (str (-> m rest first string/capitalize) "." (-> m rest second string/capitalize) "@" (last m))))
 
 (defn- email-variations [emails]
-  (mapcat #(list (string/upper-case %)
+  (remove nil? (mapcat #(list %
+                 (string/upper-case %)
                  (string/lower-case %)
-                 (string/capitalize %)) emails))
+                 (string/capitalize %)
+                 (capitalize-name %)) emails)))
 
 ;;;
 
