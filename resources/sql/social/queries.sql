@@ -122,9 +122,8 @@ UPDATE social_event_owners SET hidden = 1 WHERE event_id = :event_id AND owner =
 --name: select-badge-content-id-by-message-id
 SELECT badge_content_id from badge_message where id = :message_id
 
---name: select-badge-content-id-by-badge-id
--- FIXME (badge_content_id)
-SELECT badge_content_id from badge where id = :badge_id
+--name: select-badge-id-by-user-badge-id
+SELECT badge_id from user_badge where id = :user_badge_id
 
 --name: select-user-badge-count
 SELECT COUNT(*) AS count from user_badge where user_id = :user_id AND status = 'accepted' AND deleted=0

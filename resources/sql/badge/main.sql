@@ -17,11 +17,16 @@ WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND ic.language_code = b.default_language_code
 
 -- name: select-user-badges-to-export
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, ub.badge_id, badge.issuer_verified, ub.email, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url FROM user_badge AS ub
-       JOIN badge AS badge ON (badge.id = ub.badge_id)
-       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       JOIN issuer_content AS ic ON (ic.id = badge.id)
-       WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
+SELECT ub.id,
+       bc.name, bc.description, bc.image_file,
+       ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, ub.badge_id,
+       badge.issuer_verified, ub.email,
+       ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url
+FROM user_badge AS ub
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN issuer_content AS ic ON (ic.id = badge.id)
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
 
 -- name: select-user-badges-pending
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
@@ -123,6 +128,8 @@ INSERT INTO badge (
        :criteria_content_id, :creator_content_id)
 
 
+--name: select-badge-visibility-recipients-count
+select COUNT(visibility) AS visibility_count from user_badge where badge_id= :badge_id AND visibility <> "private";
 
 --name: select-badge
 --get badge by id
@@ -196,7 +203,7 @@ UPDATE user_badge SET revoked = :revoked, last_checked = UNIX_TIMESTAMP() WHERE 
 
 --name: update-status!
 --change badge status
-UPDATE user_badge SET status = :status WHERE id = :id
+UPDATE user_badge SET status = :status, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-show-recipient-name!
 --show/hide recipient name
@@ -213,6 +220,7 @@ ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
 ub.rating,ub.revoked,
 ub.show_evidence,
+bc.name, bc.image_file,
 ube.url,
 cc.markdown_text AS criteria_content,
 ic.name AS issuer_content_name,
@@ -221,15 +229,26 @@ ic.email AS issuer_contact,
 ic.image_file AS issuer_image
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN user_badge_evidence AS ube ON (ube.id = ub.badge_id)
-JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
-JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND cc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 WHERE ub.id = :id
+
 
 
 --name: update-badge-settings!
 --update badge settings
-UPDATE user_badge SET visibility = :visibility, rating = :rating, evidence_url = :evidence_url WHERE id = :id
+UPDATE user_badge SET visibility = :visibility, rating = :rating WHERE id = :id
+
+--name: update-badge-published!
+UPDATE badge SET published = :value where id = :badge_id
+
+--name: update-badge-recipient-count!
+UPDATE badge SET recipient_count = recipient_count + 1 where id = :badge_id
 
 --name: update-badge-raiting!
 --update badge raiting
@@ -359,6 +378,8 @@ SELECT id FROM user_badge WHERE user_id = :user_id AND old_id = :old_id
 --name: select-badge-content-id-by-old-id
 SELECT badge_id FROM user_badge WHERE old_id = :old_id
 
+--name: select-badge-id-by-user-badge-id
+SELECT badge_id FROM user_badge WHERE id = :user_badge_id
 
 
 -- name: insert-badge-content!
