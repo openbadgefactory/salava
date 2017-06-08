@@ -227,10 +227,10 @@
 
 
 
-(defn create-connection-badge-by-badge-id! [ctx user_id badge_id]
-  (let [badge_content_id (select-badge-content-id-by-badge-id {:badge_id badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
+(defn create-connection-badge-by-badge-id! [ctx user_id user_badge_id]
+  (let [badge_id (select-badge-id-by-user-badge-id {:user_badge_id user_badge_id} (into {:result-set-fn first :row-fn :badge_content_id} (get-db ctx)))]
     (try+
-     (insert-connection-badge! ctx user_id badge_content_id)
+     (insert-connection-badge! ctx user_id badge_id)
      (catch Object _
        ))))
 
