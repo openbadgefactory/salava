@@ -524,11 +524,12 @@
                             (get-in upload [:headers "Content-Type"]))))
 
 (defmethod file->badge "image/png" [user upload]
-  (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
-           .getMetadata
-           #(or (.getTxtForKey % "openbadges") (.getTxtForKey % "openbadge"))
-           string/trim
-           (str->badge user)))
+  (let [get-txt (fn [m] (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge")))]
+    (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
+             .getMetadata
+             get-txt
+             string/trim
+             (str->badge user))))
 
 (defmethod file->badge "image/svg+xml" [user upload]
   (some->> (xml/parse (or (:tempfile upload) (:body upload)))
