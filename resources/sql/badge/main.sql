@@ -24,11 +24,15 @@ SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_o
        WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
 
 -- name: select-user-badges-pending
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url FROM user_badge AS ub
-       JOIN badge AS badge ON (badge.id = ub.badge_id)
-       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'pending'
-       
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
+ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url
+FROM user_badge AS ub
+INNER JOIN badge AS b ON (b.id = ub.badge_id)
+INNER JOIN badge_badge_content bb ON (b.id = bb.badge_id)
+INNER JOIN badge_content bc ON (bb.badge_content_id = bc.id)
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'pending'
+    AND bc.language_code = b.default_language_code
+
 -- name: select-taglist
 -- get tags by list of badge content ids
 SELECT user_badge_id, tag FROM badge_tag WHERE user_badge_id IN (:user_badge_ids)
@@ -371,8 +375,8 @@ INSERT IGNORE INTO badge_content_alignment (badge_content_id, name, url, descrip
        VALUES (:badge_content_id, :name, :url, :description)
 
 -- name: insert-criteria-content!
-INSERT IGNORE INTO criteria_content (id, html_content, markdown_content, language_code, language_name)
-       VALUES (:id, :html_content, :markdown_content, :language_code, :language_name)
+INSERT IGNORE INTO criteria_content (id, language_code, language_name, url, markdown_text)
+       VALUES (:id, :language_code, :language_name, :url, :markdown_text)
 
 -- name: insert-issuer-content!
 INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code, language_name)
@@ -420,14 +424,13 @@ INSERT IGNORE INTO badge (
 --name: insert-user-badge<!
 --save user badge
 INSERT INTO user_badge (
-    badge_id, user_id, email, assertion_url, assertion_jws,
-    assertion_json, issued_on, expires_on, evidence_url, status, visibility,
-    show_recipient_name, rating, ctime, mtime, deleted, revoked,
-    issuer_verified, criteria_content_id, creator_content_id
+    badge_id, user_id, email,
+    assertion_url, assertion_jws, assertion_json,
+    issued_on, expires_on, status, visibility,
+    show_recipient_name, rating, ctime, mtime, deleted, revoked
 ) VALUES (
     :badge_id, :user_id, :email,
     :assertion_url, :assertion_jws, :assertion_json,
-    :issued_on, :expires_on, :evidence_url, :status,
-    'private', 0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0,
-    :issuer_verified, :criteria_content_id, :creator_content_id
+    :issued_on, :expires_on, :status, 'private',
+    0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );

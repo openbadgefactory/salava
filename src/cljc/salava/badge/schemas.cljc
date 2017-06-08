@@ -109,7 +109,11 @@
                                                      (select-keys [:issuer_content_id :issuer_content_name :issuer_content_url])
                                                      (assoc :badges [(select-keys Badge [:id :name :image_file])]))]})
 
+
+
 (s/defschema BadgeContent {:id    s/Str
+                           :language_code s/Str
+                           :language_name s/Str
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
@@ -119,6 +123,8 @@
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema IssuerContent {:id   s/Str
+                            :language_code s/Str
+                            :language_name s/Str
                             :name s/Str
                             :url  s/Str
                             :description (s/maybe s/Str)
@@ -128,8 +134,11 @@
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
-                                (assoc :json_url s/Str)))
+                                (assoc  :json_url s/Str)))
 
 (s/defschema CriteriaContent {:id s/Str
-                              :html_content s/Str
-                              :markdown_content (s/maybe s/Str)})
+                              :language_code s/Str
+                              :language_name s/Str
+                              :url s/Str
+                              :markdown_text (s/maybe s/Str)})
+

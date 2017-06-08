@@ -183,7 +183,7 @@
       (-> badge
           (dissoc :content :criteria :issuer :creator)
           (assoc :id badge-id)
-          (insert-badge! tx)))
+          (insert-badge! {:connection tx})))
     badge-id))
 
 
@@ -194,6 +194,6 @@
           (dissoc :badge)
           (assoc :badge_id badge-id)
           (insert-user-badge<! (u/get-db ctx))))
-    (catch Exception ex
+    #_(catch Exception ex
       (log/error "save-user-badge!: failed to save badge data")
       (log/error (.toString ex)))))
