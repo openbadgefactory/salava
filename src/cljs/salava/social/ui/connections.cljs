@@ -16,9 +16,9 @@
                 (swap! state assoc :badges data))}))
 
 
-(defn unfollow [badge-content-id state]
+(defn unfollow [badge-id state]
   [:a {:href "#" :on-click #(ajax/POST
-                                (path-for (str "/obpv1/social/delete_connection_badge/" badge-content-id))
+                                (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
                                 {:response-format :json
                                  :keywords?       true          
                                  :handler         (fn [data]
@@ -49,7 +49,7 @@
                                          :alt name}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
-                                              (mo/open-modal [:gallery :badges] {:badge-content-id id})
+                                              (mo/open-modal [:gallery :badges] {:badge-id id})
                                               ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } name]]
                    [:td (unfollow id state)]

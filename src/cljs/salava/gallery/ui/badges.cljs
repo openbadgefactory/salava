@@ -316,20 +316,19 @@
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_id]} element-data
-        badge-id (or badge_id id)]
+  (let [{:keys [image_file name description issuer_content_name issuer_content_url recipients badge_id]} element-data]
      [:div {:class "media grid-container"}
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge-id})
+          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
                 :title name}[:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:on-click #(do
                                         (.preventDefault %)
-                                        (mo/open-modal [:gallery :badges] {:badge-id badge-id})
+                                        (mo/open-modal [:gallery :badges] {:badge-id badge_id})
                                         ) :title name}
           name]]
         [:div.media-issuer
@@ -350,7 +349,7 @@
        [:div {:class "pull-left"}
         ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
         ]
-       (admin-gallery-badge badge-id "badges" state init-data)]]))
+       (admin-gallery-badge badge_id "badges" state init-data)]]))
 
 (defn load-more [state]
   (if (pos? (:badge_count @state))
