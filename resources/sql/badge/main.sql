@@ -62,13 +62,13 @@ AND (assertion_url = :assertion_url OR assertion_json = :assertion_json OR asser
 
 --name: replace-badge-content!
 --save content of the badge
-REPLACE INTO badge_content (id, name, description, image_file, language_code, language_name)
-       VALUES (:id, :name, :description, :image_file :language_code :language_name)
+REPLACE INTO badge_content (id, name, description, image_file, language_code)
+       VALUES (:id, :name, :description, :image_file :language_code)
 
 --name: replace-criteria-content!
 --save criteria content of the badge
-REPLACE INTO criteria_content (id, html_content, markdown_content , language_code, language_name)
-       VALUES (:id, :html_content, :markdown_content :language_code :language_name)
+REPLACE INTO criteria_content (id, html_content, markdown_content , language_code)
+       VALUES (:id, :html_content, :markdown_content :language_code)
 
 --name: old-insert-badge<!
 --save badge
@@ -174,13 +174,13 @@ DELETE FROM badge_congratulation WHERE user_badge_id = :user_badge_id
 
 -- name: replace-issuer-content!
 -- save issuer, replace if issuer exists already
-REPLACE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code, language_name)
-        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code, :language_name);
+REPLACE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code);
 
 -- name: replace-creator-content!
 -- save badge original creator, replace if creator exists already
-REPLACE INTO creator_content (id, url, name, description, image_file, email, json_url, language_code, language_name)
-        VALUES (:id, :url, :name, :description, :image_file, :email, :json_url :language_code, :language_name);
+REPLACE INTO creator_content (id, url, name, description, image_file, email, json_url, language_code)
+        VALUES (:id, :url, :name, :description, :image_file, :email, :json_url :language_code);
 
 --name: update-visibility!
 --change badge visibility
@@ -359,8 +359,8 @@ SELECT badge_id FROM user_badge WHERE old_id = :old_id
 
 
 -- name: insert-badge-content!
-INSERT IGNORE INTO badge_content (id, name, description, image_file, language_code, language_name)
-       VALUES (:id, :name, :description, :image_file , :language_code, :language_name)
+INSERT IGNORE INTO badge_content (id, name, description, image_file, language_code)
+       VALUES (:id, :name, :description, :image_file , :language_code)
 
 -- name: insert-badge-content-tag!
 INSERT IGNORE INTO badge_content_tag (badge_content_id, tag)
@@ -372,16 +372,16 @@ INSERT IGNORE INTO badge_content_alignment (badge_content_id, name, url, descrip
        VALUES (:badge_content_id, :name, :url, :description)
 
 -- name: insert-criteria-content!
-INSERT IGNORE INTO criteria_content (id, language_code, language_name, url, markdown_text)
-       VALUES (:id, :language_code, :language_name, :url, :markdown_text)
+INSERT IGNORE INTO criteria_content (id, language_code, url, markdown_text)
+       VALUES (:id, :language_code, :url, :markdown_text)
 
 -- name: insert-issuer-content!
-INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code, language_name)
-        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code, :language_name);
+INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code);
 
 -- name: insert-creator-content!
-INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url, language_code, language_name)
-        VALUES (:id, :name, :url, :description, :image_file, :email, :json_url, :language_code, :language_name);
+INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url, language_code)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :json_url, :language_code);
 
 
 
@@ -410,11 +410,11 @@ LIMIT 100
 --save badge content
 INSERT IGNORE INTO badge (
     id, remote_url, remote_id, remote_issuer_id, issuer_verified,
-    default_language_code, default_language_name,
+    default_language_code,
     published, last_received, recipient_count
 ) VALUES (
     :id, :remote_url, :remote_id, :remote_issuer_id, :issuer_verified,
-    :default_language_code, :default_language_name,
+    :default_language_code,
     0, UNIX_TIMESTAMP(), 0
 );
 
