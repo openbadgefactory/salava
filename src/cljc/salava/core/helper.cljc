@@ -1,6 +1,9 @@
 (ns salava.core.helper
-  #?(:clj (:require
-            [clojure.pprint :refer [pprint]])))
+  #?(:clj (:require [clojure.java.io :as io]
+                    [clojure.pprint :refer [pprint]])))
+
+#?(:clj (defmacro io-resource [file]
+          (slurp (io/resource file))))
 
 (defn dump [data]
   #?(:clj (pprint data)
