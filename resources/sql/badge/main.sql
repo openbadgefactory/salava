@@ -1,5 +1,5 @@
 --name: select-users-from-connections-badge
-SELECT user_id AS owner from social_connections_badge where badge_content_id = :badge_content_id
+SELECT user_id AS owner from social_connections_badge where badge_id = :badge_id
 
 -- name: select-user-badges-all
 -- get user's badges
@@ -17,11 +17,16 @@ WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND ic.language_code = b.default_language_code
 
 -- name: select-user-badges-to-export
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, ub.badge_id, badge.issuer_verified, ub.email, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url FROM user_badge AS ub
-       JOIN badge AS badge ON (badge.id = ub.badge_id)
-       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       JOIN issuer_content AS ic ON (ic.id = badge.id)
-       WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
+SELECT ub.id,
+       bc.name, bc.description, bc.image_file,
+       ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, ub.badge_id,
+       badge.issuer_verified, ub.email,
+       ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url
+FROM user_badge AS ub
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN issuer_content AS ic ON (ic.id = badge.id)
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
 
 -- name: select-user-badges-pending
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
@@ -123,6 +128,8 @@ INSERT INTO badge (
        :criteria_content_id, :creator_content_id)
 
 
+--name: select-badge-visibility-recipients-count
+select COUNT(visibility) AS visibility_count from user_badge where badge_id= :badge_id AND visibility <> "private";
 
 --name: select-badge
 --get badge by id
@@ -150,13 +157,17 @@ u.id AS owner, u.first_name, u.last_name,
 cc.markdown_text AS criteria_content
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
-JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
-JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
-JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
+GROUP BY ub.id
 
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (user_badge_id, tag)
@@ -192,7 +203,7 @@ UPDATE user_badge SET revoked = :revoked, last_checked = UNIX_TIMESTAMP() WHERE 
 
 --name: update-status!
 --change badge status
-UPDATE user_badge SET status = :status WHERE id = :id
+UPDATE user_badge SET status = :status, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-show-recipient-name!
 --show/hide recipient name
@@ -209,6 +220,7 @@ ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
 ub.rating,ub.revoked,
 ub.show_evidence,
+bc.name, bc.image_file,
 ube.url,
 cc.markdown_text AS criteria_content,
 ic.name AS issuer_content_name,
@@ -217,15 +229,26 @@ ic.email AS issuer_contact,
 ic.image_file AS issuer_image
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN user_badge_evidence AS ube ON (ube.id = ub.badge_id)
-JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
-JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND cc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 WHERE ub.id = :id
+
 
 
 --name: update-badge-settings!
 --update badge settings
-UPDATE user_badge SET visibility = :visibility, rating = :rating, evidence_url = :evidence_url WHERE id = :id
+UPDATE user_badge SET visibility = :visibility, rating = :rating WHERE id = :id
+
+--name: update-badge-published!
+UPDATE badge SET published = :value where id = :badge_id
+
+--name: update-badge-recipient-count!
+UPDATE badge SET recipient_count = recipient_count + 1 where id = :badge_id
 
 --name: update-badge-raiting!
 --update badge raiting
@@ -244,7 +267,6 @@ JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.d
 WHERE ub.id IN (:ids)
 
 --name: select-badges-by-tag-and-owner
--- FIXME (content columns)
 SELECT ub.id, ub.issued_on,
 ub.expires_on, ub.status,
 ub.mtime, ub.badge_id,
@@ -254,7 +276,7 @@ cc.markdown_text AS criteria_content
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-JOIN badge_tag AS bt ON bt.badge_id = ub.id
+JOIN badge_tag AS bt ON bt.user_badge_id = ub.id
 JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND bt.tag = :badge_tag
 
@@ -291,7 +313,7 @@ SELECT COUNT(id) AS count FROM badge_view WHERE user_badge_id = :user_badge_id
 
 --name: select-badge-recipient-count
 --get badge badge recipient count
-SELECT recipient_count FROM badge WHERE badge_id = :badge_id
+SELECT recipient_count FROM badge WHERE id = :badge_id
 
 --name: select-user-badge-count
 --get user's badge count
@@ -308,10 +330,10 @@ bc.name, bc.image_file,
 SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS anon_count, MAX(bv.ctime) AS latest_view
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_view AS bv ON b.user_badge_id = bv.user_badge_id
-JOIN badge_content AS bc ON (bc.badge_id = ub.badge_id) AND bc.language_code = badge.default_language_code
-WHERE b.user_id = :user_id AND b.deleted = 0 AND b.status = 'accepted'
-GROUP BY b.id, bc.name, bc.image_file
+JOIN badge_view AS bv ON ub.id = bv.user_badge_id
+JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted'
+GROUP BY ub.id, bc.name, bc.image_file
 ORDER BY latest_view DESC
 
 
@@ -356,6 +378,8 @@ SELECT id FROM user_badge WHERE user_id = :user_id AND old_id = :old_id
 --name: select-badge-content-id-by-old-id
 SELECT badge_id FROM user_badge WHERE old_id = :old_id
 
+--name: select-badge-id-by-user-badge-id
+SELECT badge_id FROM user_badge WHERE id = :user_badge_id
 
 
 -- name: insert-badge-content!
@@ -388,21 +412,22 @@ INSERT IGNORE INTO creator_content (id, name, url, description, image_file, emai
 
 --name: select-user-events
 -- EVENTS
--- FIXME (content columns)
 SELECT se.subject, se.verb, se.object, se.ctime, se.type, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
-     JOIN badge_content AS bc ON se.object = bc.id
+     JOIN badge AS badge ON (badge.id = se.object)
+     JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+     JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
      JOIN social_connections_badge AS scb ON :user_id = scb.user_id
-     WHERE owner = :user_id AND se.type = 'badge' AND se.object = scb.badge_content_id
+     WHERE owner = :user_id AND se.type = 'badge' AND se.object = scb.badge_id
      ORDER BY se.ctime DESC
      LIMIT 1000
 
---name: select-messages-with-badge-content-id
+--name: select-messages-with-badge-id
 -- EVENTS
-SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
+SELECT bmv.badge_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
 JOIN user AS u ON (u.id = bm.user_id)
-JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND :user_id =  bmv.user_id
-WHERE bm.badge_content_id IN (:badge_content_ids) AND bm.deleted = 0
+JOIN badge_message_view AS bmv ON bm.badge_id = bmv.badge_id AND :user_id =  bmv.user_id
+WHERE bm.badge_id IN (:badge_ids) AND bm.deleted = 0
 ORDER BY bm.ctime DESC
 LIMIT 100
 

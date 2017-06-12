@@ -20,6 +20,7 @@
       {:params  (-> params
                     (dissoc :private)
                     (dissoc :password?)
+                    (dissoc :activated)
                     (dissoc :role))
        :handler (fn [data]
                   (if (= (:status data) "success")

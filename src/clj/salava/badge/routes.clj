@@ -85,13 +85,13 @@
                      (forbidden)
                      (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user))))))
 
-             (POST "/set_status/:badgeid" []
-                   :path-params [badgeid :- Long]
+             (POST "/set_status/:user-badge-id" []
+                   :path-params [user-badge-id :- Long]
                    :body-params [status :- (s/enum "accepted" "declined")]
                    :summary "Set badge status"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (b/set-status! ctx badgeid status (:id current-user)))))
+                   (ok (str (b/set-status! ctx user-badge-id status (:id current-user)))))
 
              (POST "/toggle_recipient_name/:badgeid" []
                    :path-params [badgeid :- Long]
@@ -158,13 +158,13 @@
                      (forbidden)
                      (ok (i/upload-badge ctx file (:id current-user)))))
 
-             (GET "/settings/:badgeid" []
+             (GET "/settings/:user-badge-id" []
                   ;return schemas/UserBadgeContent
-                  :path-params [badgeid :- Long]
+                  :path-params [user-badge-id :- Long]
                   :summary "Get badge settings"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (b/badge-settings ctx badgeid (:id current-user))))
+                  (ok (b/badge-settings ctx user-badge-id (:id current-user))))
 
              (POST "/save_settings/:badgeid" []
                    :return {:status (s/enum "success" "error")}

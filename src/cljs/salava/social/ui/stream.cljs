@@ -134,7 +134,7 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (mo/open-modal [:gallery :badges] {:badge-content-id object})
+                        (mo/open-modal [:gallery :badges] {:badge-id object})
                         (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -143,7 +143,7 @@
       [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
             :on-click #(do
-                         (mo/open-modal [:gallery :badges] {:badge-content-id object})
+                         (mo/open-modal [:gallery :badges] {:badge-id object})
                         ;(b/open-modal object false init-data state)
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
@@ -245,7 +245,7 @@
       [:a {:href "#"
            :on-click #(do
                         ;(b/open-modal object true init-data state)
-                        (mo/open-modal [:gallery :badges] {:badge-content-id object
+                        (mo/open-modal [:gallery :badges] {:badge-id object
                                                             :show-messages true})
                         (.preventDefault %) )} 
        [:img {:src (str "/" image_file)} ]]]
@@ -256,14 +256,14 @@
        [:a {:href "#"
             :on-click #(do
                          
-                         (mo/open-modal [:gallery :badges] {:badge-content-id object
+                         (mo/open-modal [:gallery :badges] {:badge-id object
                                                             :show-messages true})
                         ;(b/open-modal object true init-data state)
                         (.preventDefault %) )} name]]
       (message-item message)
       [:a {:href     "#"
            :on-click #(do
-                        (mo/open-modal [:gallery :badges] {:badge-content-id object
+                        (mo/open-modal [:gallery :badges] {:badge-id object
                                                            :show-messages true})
                         ;(b/open-modal (:object event) true init-data state)
                     (.preventDefault %) )}

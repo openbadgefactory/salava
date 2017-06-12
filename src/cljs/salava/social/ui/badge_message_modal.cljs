@@ -14,7 +14,7 @@
 
 
 (defn modal-content [{:keys [badge public_users private_user_count]}]
-  (let [{:keys [badge_content_id name image_file message_count]} badge
+  (let [{:keys [badge_id name image_file message_count]} badge
         all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")
         new-messages (if (pos? (:new-messages message_count))
                        (str (:new-messages message_count) " " (t :social/Newmessages ))
@@ -29,7 +29,7 @@
         [:div {:class "col-md-9 badge-info"}
          [:div.row
           [:h1.uppercase-header (str name " - " (t :social/Messages))]
-          [badge-message-handler badge_content_id]]]]])))
+          [badge-message-handler badge_id]]]]])))
 
 (defn badge-content-modal-render [data]
   [:div {:id "badge-content"}
@@ -57,33 +57,33 @@
 
 
 (defn open-modal
-  ([badge-content-id]
-   (open-modal badge-content-id nil nil))
-  ([badge-content-id init-data state]
+  ([badge-id]
+   (open-modal badge-id nil nil))
+  ([badge-id init-data state]
    
    (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-content-id))
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
     {:handler (fn [data]
                 (do
                   (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
 
-(defn get-messages [badge-content-id data-atom]
+(defn get-messages [badge-id data-atom]
   (ajax/GET
-   (path-for (str "/obpv1/social/messages_count/" badge-content-id))
+   (path-for (str "/obpv1/social/messages_count/" badge-id))
    {:handler (fn [data]
                (reset! data-atom data))}))
 
 
-(defn badge-message-link [message-count badge-content-id]
+(defn badge-message-link [message-count badge-id]
   (if (social-plugin?)
     (let [message-count (atom {:new-messages 0
                           :all-messages 0})]
-      (get-messages badge-content-id message-count)
+      (get-messages badge-id message-count)
       (fn []
         [:a {:href "#"
              :class "badge-message-link"
              :on-click #(do
-                          (open-modal badge-content-id)
+                          (open-modal badge-id)
                           (.preventDefault %) )}
          (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
                                                    (t :social/Comment)
@@ -94,11 +94,11 @@
            "")]))))
 
 
-(defn gallery-modal-message-info-link [show-messages badge-content-id]
+(defn gallery-modal-message-info-link [show-messages badge-id]
   (if (social-plugin?)
     (let [message-count (atom {:new-messages 0
                                :all-messages 0})]
-      (get-messages badge-content-id message-count)
+      (get-messages badge-id message-count)
       (fn []
         (let [all-messages (str (t :social/Messages)  " (" (:all-messages @message-count) ") ")
               new-messages (if (pos? (:new-messages @message-count))

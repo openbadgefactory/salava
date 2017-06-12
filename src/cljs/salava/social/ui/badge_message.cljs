@@ -15,8 +15,9 @@
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn init-data [state]
+  (dump @state)
   (ajax/GET
-   (path-for (str "/obpv1/social/messages/" (:badge_content_id @state) "/" (:page_count @state)))
+   (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
    {:handler (fn [data]
                (swap! state assoc
                       :messages (into (:messages @state) (:messages data))
@@ -26,9 +27,9 @@
 
 
 (defn save-message [state]
-  (let [{:keys [message user_id badge_content_id]} @state]
+  (let [{:keys [message user_id badge_id]} @state]
     (ajax/POST
-     (path-for (str "/obpv1/social/messages/" badge_content_id))
+     (path-for (str "/obpv1/social/messages/" badge_id))
      {:response-format :json
       :keywords? true
       :params {:message message
@@ -37,7 +38,7 @@
                  (do
                    (if (= "success" (:connected? data))
                      (do
-                       (f/init-data badge_content_id)
+                       (f/init-data badge_id)
                        (swap! state assoc :start-following true))
                      (swap! state assoc :start-following false))
                    (swap! state assoc
@@ -169,7 +170,7 @@
                     (.preventDefault %))} "Refresh"])
 
 (defn start-following-alert [state]
-  (let [{:keys [badge_content_id]} @state]
+  (let [{:keys [badge_id]} @state]
     [:div {:class (str "alert ""alert-success")}
      [:div.deletemessage
       [:button {:type       "button"
@@ -183,7 +184,7 @@
      (str (t :social/Youstartedfollowbadge) "! ")
      [:a {:href "#"
           :on-click #(do
-                       (f/unfollow-ajax-post badge_content_id)
+                       (f/unfollow-ajax-post badge_id)
                        (swap! state assoc :start-following false))}
       (t :social/Cancelfollowingbadge)]]))
 
@@ -199,12 +200,12 @@
      [message-list messages state]]))
 
 
-(defn badge-message-handler [badge_content_id]
+(defn badge-message-handler [badge_id]
   (let [state (atom {:messages [] 
                      :user_id (session/get-in [:user :id])
                      :user_role (session/get-in [:user :role])
                      :message ""
-                     :badge_content_id badge_content_id
+                     :badge_id badge_id
                      :show false
                      :page_count 0
                      :messages_left 0

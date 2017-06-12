@@ -14,7 +14,7 @@
                     :badge_url (s/maybe s/Str)
                     :criteria_url (s/maybe s/Str)
                     :criteria_content (s/maybe s/Str)
-                    :badge_content_id (s/maybe s/Str)
+                    :badge_id (s/maybe s/Str)
                     :image_file (s/maybe s/Str)
                     :issuer_content_id (s/maybe s/Str)
                     :issuer_email (s/maybe s/Str)
@@ -51,13 +51,13 @@
    :visibility                           (s/maybe (s/enum "private" "internal" "public"))
    :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
    :mtime                                s/Int
-   :badge_content_id                     (s/maybe s/Str)
+   :badge_id                     (s/maybe s/Str)
 ;  :issuer_url                           (s/maybe s/Str)
 ;  :badge_url                            (s/maybe s/Str)
    :obf_url                              (s/maybe s/Str)
    :issued_by_obf                        s/Bool
    :verified_by_obf                      s/Bool
-   :issuer_verified                      (s/maybe s/Bool)
+   :issuer_verified                      (s/maybe s/Int)
    (s/optional-key :issuer_content_name) (s/maybe s/Str)
    (s/optional-key :issuer_content_url)  (s/maybe s/Str)
    (s/optional-key :email)               (s/maybe s/Str)
