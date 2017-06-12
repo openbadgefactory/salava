@@ -1,5 +1,4 @@
 -- name: select-users-public-badges
--- FIXME (content columns)
 SELECT ub.id, badge.id AS badge_id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)

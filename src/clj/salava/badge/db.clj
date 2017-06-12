@@ -43,7 +43,7 @@
   "returns newest message and count new messages"
   [messages]
   (let [message-helper (fn [current item]
-                         (let [key  (:badge_content_id item)
+                         (let [key  (:badge_id item)
                                new-messages-count (get-in current [key :new_messages] 0)]
                            (-> current
                                (assoc key item)
@@ -64,8 +64,8 @@
   [ctx user_id]
   (let [events (select-user-events {:user_id user_id} (u/get-db ctx)) ;get all events where type = badge
         reduced-events (badge-events-reduce events) ;bundle events together with object and verb
-        badge-content-ids (map #(:object %) reduced-events)
-        messages (if (not (empty? badge-content-ids)) (select-messages-with-badge-content-id {:badge_content_ids badge-content-ids :user_id user_id} (u/get-db ctx)) ())
+        badge-ids (map #(:object %) reduced-events)
+        messages (if (not (empty? badge-ids)) (select-messages-with-badge-id {:badge_ids badge-ids :user_id user_id} (u/get-db ctx)) ())
         messages-map (badge-message-map messages)
         message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
         follow-events (filter-own-events reduced-events user_id)
@@ -90,7 +90,7 @@
 (defn get-owners [ctx object]
   (if (str->number? object) ;if object is badge-id set owner be badges owner
     (select-badge-owner-as-owner {:id object} (u/get-db ctx))
-    (select-users-from-connections-badge {:badge_content_id object} (u/get-db ctx))))
+    (select-users-from-connections-badge {:badge_id object} (u/get-db ctx))))
 
 (defn- content-id [data]
   (u/map-sha256 (assoc data :id "")))

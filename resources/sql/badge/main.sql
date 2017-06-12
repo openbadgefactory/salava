@@ -1,5 +1,5 @@
 --name: select-users-from-connections-badge
-SELECT user_id AS owner from social_connections_badge where badge_content_id = :badge_content_id
+SELECT user_id AS owner from social_connections_badge where badge_id = :badge_id
 
 -- name: select-user-badges-all
 -- get user's badges
@@ -412,21 +412,22 @@ INSERT IGNORE INTO creator_content (id, name, url, description, image_file, emai
 
 --name: select-user-events
 -- EVENTS
--- FIXME (content columns)
 SELECT se.subject, se.verb, se.object, se.ctime, se.type, seo.event_id, seo.last_checked, bc.name, bc.image_file, seo.hidden FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
-     JOIN badge_content AS bc ON se.object = bc.id
+     JOIN badge AS badge ON (badge.id = se.object)
+     JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+     JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
      JOIN social_connections_badge AS scb ON :user_id = scb.user_id
-     WHERE owner = :user_id AND se.type = 'badge' AND se.object = scb.badge_content_id
+     WHERE owner = :user_id AND se.type = 'badge' AND se.object = scb.badge_id
      ORDER BY se.ctime DESC
      LIMIT 1000
 
---name: select-messages-with-badge-content-id
+--name: select-messages-with-badge-id
 -- EVENTS
-SELECT bmv.badge_content_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
+SELECT bmv.badge_id, bm.user_id, bm.message, bm.ctime, u.first_name, u.last_name, u.profile_picture, bmv.mtime AS last_viewed from badge_message as bm
 JOIN user AS u ON (u.id = bm.user_id)
-JOIN badge_message_view AS bmv ON bm.badge_content_id = bmv.badge_content_id AND :user_id =  bmv.user_id
-WHERE bm.badge_content_id IN (:badge_content_ids) AND bm.deleted = 0
+JOIN badge_message_view AS bmv ON bm.badge_id = bmv.badge_id AND :user_id =  bmv.user_id
+WHERE bm.badge_id IN (:badge_ids) AND bm.deleted = 0
 ORDER BY bm.ctime DESC
 LIMIT 100
 
