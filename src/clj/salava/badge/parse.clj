@@ -14,7 +14,6 @@
 
 (s/defschema BadgeContent {:id    s/Str
                            :language_code s/Str
-                           :language_name s/Str
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
@@ -25,7 +24,6 @@
 
 (s/defschema IssuerContent {:id   s/Str
                             :language_code s/Str
-                            :language_name s/Str
                             :name s/Str
                             :url  s/Str
                             :description (s/maybe s/Str)
@@ -39,7 +37,6 @@
 
 (s/defschema CriteriaContent {:id s/Str
                               :language_code s/Str
-                              :language_name s/Str
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
 
@@ -49,7 +46,6 @@
                     :remote_issuer_id (s/maybe s/Str)
                     :issuer_verified (s/enum 0 1)
                     :default_language_code s/Str
-                    :default_language_name s/Str
                     :content [BadgeContent]
                     :criteria [CriteriaContent]
                     :issuer [IssuerContent]
@@ -153,10 +149,8 @@
                    :remote_issuer_id nil
                    :issuer_verified 0
                    :default_language_code ""
-                   :default_language_name ""
                    :content [{:id ""
                               :language_code ""
-                              :language_name ""
                               :name (:name badge)
                               :image_file (q-url (:image badge))
                               :description (:description badge)
@@ -164,12 +158,10 @@
                               :tags (get badge :tags [])}]
                    :criteria [{:id ""
                                :language_code ""
-                               :language_name ""
                                :url (q-url (:criteria badge))
                                :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
                    :issuer [{:id ""
                              :language_code ""
-                             :language_name ""
                              :name (str (:name issuer) ": " (:org issuer))
                              :description (:description issuer)
                              :url (q-url (:origin issuer))
@@ -231,7 +223,6 @@
 
                    {:content  [{:id ""
                                 :language_code language
-                                :language_name "" ;TODO get language name
                                 :name (:name badge)
                                 :image_file (:image badge)
                                 :description (:description badge)
@@ -239,12 +230,10 @@
                                 :tags (get badge :tags [])}]
                     :criteria [{:id ""
                                 :language_code language
-                                :language_name "" ;TODO get language name
                                 :url (str criteria-url)
                                 :markdown_text criteria-text}]
                     :issuer   [{:id ""
                                 :language_code language
-                                :language_name "" ;TODO get language name
                                 :name (str (:name issuer) ": " (:org issuer))
                                 :description (:description issuer)
                                 :url (:url issuer)
@@ -255,7 +244,6 @@
                                (let [data (http/json-get creator-url)]
                                  [{:id ""
                                   :language_code language
-                                  :language_name "" ;TODO get language name
                                   :name        (:name data)
                                   :image_file  (:image data)
                                   :description (:description data)
@@ -321,7 +309,6 @@
                           :remote_issuer_id nil
                           :issuer_verified 0
                           :default_language_code default-language
-                          :default_language_name "" ;TODO get language name
                           :published 0
                           :last_received 0
                           :recipient_count 0}
@@ -343,7 +330,6 @@
                   (let [data (http/json-get creator-url)]
                     [{:id ""
                       :language_code ""
-                      :language_name ""
                       :name        (:name data)
                       :image_file  (:image data)
                       :description (:description data)
@@ -358,10 +344,8 @@
                    :remote_issuer_id nil
                    :issuer_verified 0
                    :default_language_code ""
-                   :default_language_name ""
                    :content [{:id ""
                               :language_code ""
-                              :language_name ""
                               :name (:name badge)
                               :image_file (:image badge)
                               :description (:description badge)
@@ -369,12 +353,10 @@
                               :tags (get badge :tags [])}]
                    :criteria [{:id ""
                                :language_code ""
-                               :language_name ""
                                :url (:criteria badge)
                                :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
                    :issuer [{:id ""
                              :language_code ""
-                             :language_name ""
                              :name (str (:name issuer) ": " (:org issuer))
                              :description (:description issuer)
                              :url (:url issuer)
@@ -542,11 +524,12 @@
                             (get-in upload [:headers "Content-Type"]))))
 
 (defmethod file->badge "image/png" [user upload]
-  (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
-           .getMetadata
-           #(or (.getTxtForKey % "openbadges") (.getTxtForKey % "openbadge"))
-           string/trim
-           (str->badge user)))
+  (let [get-txt (fn [m] (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge")))]
+    (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
+             .getMetadata
+             get-txt
+             string/trim
+             (str->badge user))))
 
 (defmethod file->badge "image/svg+xml" [user upload]
   (some->> (xml/parse (or (:tempfile upload) (:body upload)))

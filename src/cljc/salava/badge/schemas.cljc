@@ -113,7 +113,6 @@
 
 (s/defschema BadgeContent {:id    s/Str
                            :language_code s/Str
-                           :language_name s/Str
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
@@ -124,7 +123,6 @@
 
 (s/defschema IssuerContent {:id   s/Str
                             :language_code s/Str
-                            :language_name s/Str
                             :name s/Str
                             :url  s/Str
                             :description (s/maybe s/Str)
@@ -138,7 +136,6 @@
 
 (s/defschema CriteriaContent {:id s/Str
                               :language_code s/Str
-                              :language_name s/Str
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
 

@@ -137,10 +137,10 @@
 (defn upload-badge [ctx uploaded-file user-id]
   (log/info "upload-badge: got new upload from user id" user-id)
   (try
-    (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-        (p/file->badge uploaded-file)
-        (assoc :status "accepted")
-        (partial db/save-user-badge! ctx))
+    (db/save-user-badge! ctx
+                         (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                             (p/file->badge uploaded-file)
+                             (assoc :status "accepted")))
     {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
     (catch Throwable ex
       (log/error "upload-badge: upload failed")
