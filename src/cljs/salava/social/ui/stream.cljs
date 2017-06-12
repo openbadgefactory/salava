@@ -237,6 +237,7 @@
         modal-message (if (pos? new-messages)
                               [:span (t :social/Newmessages) [:span.badge new-messages]]
                               (t :social/Readmore))
+        reload-fn (fn [] (init-data state))
         ;(str  (t :social/Readmore) (if (pos? new-messages) (str " (" new-messages " " (if (= 1 new-messages) (t :social/Newmessage) (t :social/Newmessages)) ")")))
         ]
     [:div {:class (if (pos? new-messages) "media message-item new " "media message-item" )}
@@ -244,9 +245,11 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        ;(b/open-modal object true init-data state)
+                                        ;(b/open-modal object true init-data state)
+                        (init-data state)
                         (mo/open-modal [:gallery :badges] {:badge-id object
-                                                            :show-messages true})
+                                                           :show-messages true
+                                                           :reload-fn reload-fn})
                         (.preventDefault %) )} 
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -255,16 +258,19 @@
       (if (pos? new-messages) [:span.new  new-messages])
        [:a {:href "#"
             :on-click #(do
-                         
+                         (reload-fn)
                          (mo/open-modal [:gallery :badges] {:badge-id object
-                                                            :show-messages true})
+                                                            :show-messages true
+                                                            :reload-fn reload-fn})
                         ;(b/open-modal object true init-data state)
                         (.preventDefault %) )} name]]
       (message-item message)
       [:a {:href     "#"
            :on-click #(do
+                        (init-data state)
                         (mo/open-modal [:gallery :badges] {:badge-id object
-                                                           :show-messages true})
+                                                           :show-messages true
+                                                           :reload-fn reload-fn})
                         ;(b/open-modal (:object event) true init-data state)
                     (.preventDefault %) )}
        modal-message]]]))
@@ -407,7 +413,7 @@
                (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
                (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
                (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
-               (= "message" (:verb event)) (message-event event state)
+               (= "message" (:verb event)) [message-event event state]
                :else "")))]))
 
 

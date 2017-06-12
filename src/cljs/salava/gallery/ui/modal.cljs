@@ -23,7 +23,7 @@
 
 (defn content [state show-messages]
   
-  (let [{:keys [badge public_users private_user_count]} @state
+  (let [{:keys [badge public_users private_user_count reload-fn]} @state
         {:keys [badge_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count tags]} badge
         tags (tag-parser tags)]
     [:div {:id "badge-contents"}
@@ -48,7 +48,7 @@
          (if @show-messages
            [:div.rowmessage
             [:h1.uppercase-header (str name " - " (t :social/Messages))]
-            [badge-message-handler badge_id]]
+            [badge-message-handler badge_id reload-fn]]
             
            [:div.rowcontent
             [:h1.uppercase-header name]
@@ -97,7 +97,8 @@
   (ajax/GET
      (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
      {:handler (fn [data]
-                 (reset! state (assoc data 
+                 (reset! state (assoc data
+                                      :reload-fn (:reload-fn @state)
                                       :permission "success")))}
      (fn [] (swap! state assoc :permission "error")))
   )
@@ -110,14 +111,12 @@
                      :public_users []
                      :private_user_count 0
                      :badge-small-view false
-                     :pages-small-view true})
+                     :pages-small-view true
+                     :reload-fn (or (:reload-fn params) nil)})
         user (session/get :user)
         show-messages (atom (or (:show-messages params) false))]
     (init-data badge-id state)
-
-    
     (fn []
-      
       (content state show-messages))))
 
 (def ^:export modalroutes

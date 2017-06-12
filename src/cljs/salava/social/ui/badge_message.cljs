@@ -15,7 +15,6 @@
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn init-data [state]
-  (dump @state)
   (ajax/GET
    (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
    {:handler (fn [data]
@@ -26,7 +25,7 @@
                       :messages_left (:messages_left data)))}))
 
 
-(defn save-message [state]
+(defn save-message [state reload-fn]
   (let [{:keys [message user_id badge_id]} @state]
     (ajax/POST
      (path-for (str "/obpv1/social/messages/" badge_id))
@@ -38,13 +37,16 @@
                  (do
                    (if (= "success" (:connected? data))
                      (do
+                       
                        (f/init-data badge_id)
                        (swap! state assoc :start-following true))
                      (swap! state assoc :start-following false))
                    (swap! state assoc
                           :messages []
                           :page_count 0)
-                   (init-data state)))
+                   (init-data state)
+                   (reload-fn)
+                   ))
       :error-handler (fn [{:keys [status status-text]}]
                        (dump (str status " " status-text)))})))
 
@@ -144,7 +146,7 @@
                  ;:component-did-update #(scroll-bottom)
                  }))
 
-(defn message-textarea [state]
+(defn message-textarea [state reload-fn]
   (let [message-atom (cursor state [:message])]
     [:div
      [:div {:class "form-group"}
@@ -157,7 +159,7 @@
       [:button {:class    "btn btn-primary"
                 :disabled (if (blank? @message-atom) "disabled" "")
                 :on-click #(do
-                             (save-message state)
+                             (save-message state reload-fn)
                              (.preventDefault %))} 
       (t :social/Postnew)]]]))
 
@@ -190,17 +192,17 @@
 
 
 
-(defn content [state]
+(defn content [state reload-fn]
   (let [{:keys [messages start-following]} @state]
     [:div
      (not-activated-banner)
-     (message-textarea state)
+     [message-textarea state reload-fn]
      (if start-following
        (start-following-alert state))
      [message-list messages state]]))
 
 
-(defn badge-message-handler [badge_id]
+(defn badge-message-handler [badge_id reload-fn]
   (let [state (atom {:messages [] 
                      :user_id (session/get-in [:user :id])
                      :user_role (session/get-in [:user :role])
@@ -209,7 +211,9 @@
                      :show false
                      :page_count 0
                      :messages_left 0
-                     :start-following false})]
+                     :start-following false})
+        reload-fn (or reload-fn (fn []))]
+    
     (init-data state)
     (fn []
-      (content state))))
+      (content state reload-fn))))
