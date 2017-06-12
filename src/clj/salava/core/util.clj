@@ -181,7 +181,7 @@
     (let [base64-data (subs data-str (inc comma-pos))
           content (base64->bytes base64-data)
           content-str (base64->str base64-data)
-          ext (-> content mime-type-of extension-for-name)
+          ext (if (re-find #"^data:image/svg" data-str) ".svg" ".png")
           path (public-path-from-content content-str ext)]
       (save-file-data ctx content path))))
 
