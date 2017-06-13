@@ -56,7 +56,6 @@
 
 (defn follow-badge [badge-id init-followed?]
   (let [user (session/get :user)]
-    (dump badge-id)
     (init-data badge-id)
     (if (and user (social-plugin?))
         (create-class {:component-will-mount (fn [] (reset! followed? init-followed?))

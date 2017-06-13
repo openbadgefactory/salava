@@ -169,6 +169,54 @@ JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 
+
+--name: select-multi-language-user-badge
+--get badge by id
+SELECT ub.id, ub.user_id,
+ub.badge_id, ub.email,
+ub.assertion_url, 
+ub.assertion_json, ub.issued_on,
+ub.expires_on, ub.status,
+ub.visibility, ub.show_recipient_name,
+ub.rating, ub.ctime,
+ub.mtime, ub.deleted,
+ub.revoked, ub.show_evidence,
+u.id AS owner, u.first_name, u.last_name
+FROM user_badge AS ub
+JOIN user AS u ON (u.id = ub.user_id)
+WHERE ub.id = :id AND ub.deleted = 0
+GROUP BY ub.id
+
+
+--name: select-multi-language-badge-content
+--get badge by id
+SELECT
+badge.id as badge_id, badge.default_language_code,
+bc.language_code,
+bc.name, bc.description,
+bc.image_file,
+ic.name AS issuer_content_name,
+ic.url AS issuer_content_url,
+ic.description AS issuer_description,
+ic.email AS issuer_contact,
+ic.image_file AS issuer_image,
+crc.name AS creator_name, crc.url AS creator_url,
+crc.email AS creator_email,
+crc.image_file AS creator_image,
+crc.description AS creator_description,
+cc.markdown_text AS criteria_content
+FROM badge AS badge 
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) 
+LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id) 
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code
+WHERE badge.id = :id
+GROUP BY bc.language_code, cc.language_code, ic.language_code
+
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (user_badge_id, tag)
        VALUES (:user_badge_id, :tag)

@@ -144,10 +144,21 @@
     (catch Object _
       (log/error "parse-assertion-json: " _))))
 
+
+
+
+(defn fetch-badge [ctx badge-id]
+  (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
+        content (map (fn [content] (update content :criteria_content u/md->html) ) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
+    (assoc my-badge :content content))
+  )
+
+
+
 (defn get-badge
   "Get badge by id"
   [ctx badge-id user-id]
-  (let [badge (update (select-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
+  (let [badge (fetch-badge ctx badge-id) ;(update (select-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
         owner? (= user-id (:owner badge))
         ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
         ;followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))

@@ -195,7 +195,8 @@
 (defn content [state reload-fn]
   (let [{:keys [messages start-following]} @state]
     [:div
-     (not-activated-banner)
+     (if (not-activated?)
+       (not-activated-banner))
      [message-textarea state reload-fn]
      (if start-following
        (start-following-alert state))

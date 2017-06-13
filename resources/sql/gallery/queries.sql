@@ -40,10 +40,41 @@ LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = bc.id)
 WHERE badge.id = :id
 GROUP BY badge.id
 
+
+--name: select-multi-language-badge-content
+--get badge by id
+SELECT
+badge.id as badge_id, badge.default_language_code,
+bc.language_code,
+bc.name, bc.description,
+bc.image_file,
+ic.name AS issuer_content_name,
+ic.url AS issuer_content_url,
+ic.description AS issuer_description,
+ic.email AS issuer_contact,
+ic.image_file AS issuer_image,
+crc.name AS creator_name, crc.url AS creator_url,
+crc.email AS creator_email,
+crc.image_file AS creator_image,
+crc.description AS creator_description,
+cc.markdown_text AS criteria_content
+FROM badge AS badge 
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) 
+LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id) 
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code
+WHERE badge.id = :id
+GROUP BY bc.language_code, cc.language_code, ic.language_code
+
+
 -- name: select-common-badge-rating
 SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM user_badge AS ub
        JOIN badge AS badge ON (badge.id = ub.badge_id)
-       WHERE ub.visibility = 'public' AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND badge.id = :badge_content_id AND (rating IS NULL OR rating > 0)
+       WHERE ub.visibility = 'public' AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND badge.id = :badge_id AND (rating IS NULL OR rating > 0)
 
 -- name: select-badge-criteria-issuer-by-recipient
 -- FIXME (badge_url? rename badge -> user_badge, use new badge table)
@@ -105,7 +136,7 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
 SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN user_badge AS ub ON ub.user_id = u.id
        JOIN badge AS badge ON (badge.id = ub.badge_id)
-       WHERE badge.id = :badge_content_id AND status = 'accepted' AND ub.deleted = 0
+       WHERE badge.id = :badge_id AND status = 'accepted' AND ub.deleted = 0
 
 -- name: select-common-badge-counts
 SELECT ub.user_id,

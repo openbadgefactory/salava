@@ -61,6 +61,7 @@
                                            country)]
                      
                      (ok (into {:badges (g/public-badges ctx current-country badge issuer recipient)} countries))))
+             
              (POST "/badges/:userid" []
                    ;:return []
                    :path-params [userid :- s/Int]
@@ -68,6 +69,7 @@
                    :current-user current-user
                    (ok (hash-map :badges (g/public-badges-by-user ctx userid (if current-user "internal" "public")))))
 
+             
              (GET "/public_badge_content/:badge-id" []
                   ;:return
                   #_{:badge              {:name                  s/Str
@@ -101,7 +103,7 @@
                   :path-params [badge-id :- s/Str]
                   :summary "Get public badge data"
                   :current-user current-user
-                  (ok (g/public-badge-content ctx badge-id (:id current-user))))
+                  (ok (g/public-multilanguage-badge-content ctx badge-id (:id current-user))))
 
              (POST "/pages" []
                    :body-params [country :- (s/maybe s/Str)
