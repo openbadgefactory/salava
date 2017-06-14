@@ -1,5 +1,6 @@
 (ns salava.user.ui.helper
   (:require [salava.core.ui.helper :refer [path-for]]
+            [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :refer [set-new-view]]))
 
 (def default-profile-picture "/img/user_default.png")

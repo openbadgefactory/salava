@@ -86,10 +86,4 @@
   (not (session/get-in [:user :activated] false)))
 
 
-(defn not-activated-banner []
-  (if not-activated?
-    [:div {:class (str "alert ""alert-warning")}
-     (str "Sinun pitää aktivoida ennekuin pääset värkkäämän" "! ")
-     [:a {:href "#"}
-      "Aktivoi täältä"]]
-    ))
+

@@ -1,7 +1,7 @@
 (ns salava.core.ui.ajax-utils
   (:require [ajax.core :as ajax]
             [reagent.session :as session]
-            [salava.core.ui.helper :refer [navigate-to not-activated?]]
+            [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
