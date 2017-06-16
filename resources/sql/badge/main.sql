@@ -8,6 +8,8 @@ SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
            b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
@@ -19,13 +21,15 @@ WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
 -- name: select-user-badges-to-export
 SELECT ub.id,
        bc.name, bc.description, bc.image_file,
-       ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, ub.badge_id,
-       badge.issuer_verified, ub.email,
+       ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, 
+       ub.email,
        ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-JOIN issuer_content AS ic ON (ic.id = badge.id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.assertion_url IS NOT NULL AND ub.deleted = 0 AND ub.revoked = 0
 
 -- name: select-user-badges-pending
