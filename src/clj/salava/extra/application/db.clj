@@ -162,6 +162,7 @@
     {:badge_content_id
      (b/save-badge-content! ctx
                             {:id ""
+                             :language_code ""
                              :name (:name badge)
                              :image_file (u/file-from-url ctx (:image badge))
                              :description (:description badge)
@@ -170,6 +171,7 @@
      :issuer_content_id
      (b/save-issuer-content! ctx
                              {:id ""
+                              :language_code ""
                               :name (:name client)
                               :description (:description client)
                               :url (:url client)
@@ -180,8 +182,9 @@
      :criteria_content_id
      (b/save-criteria-content! ctx
                                {:id ""
-                                :html_content criteria
-                                :markdown_content (u/alt-markdown criteria)})}))
+                                :language_code ""
+                                :url (:criteria_url data)
+                                :markdown_text (u/alt-markdown criteria)})}))
 
 (defn publish-badge [ctx data]
   (try
