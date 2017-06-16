@@ -41,10 +41,13 @@ WHERE badge.id = :id
 GROUP BY badge.id
 
 
+
+
 --name: select-multi-language-badge-content
 --get badge by id
 SELECT
-badge.id as badge_id, badge.default_language_code,
+badge.id as badge_id, badge.remote_url, badge.issuer_verified,
+badge.default_language_code,
 bc.language_code,
 bc.name, bc.description,
 bc.image_file,

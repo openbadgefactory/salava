@@ -299,14 +299,15 @@
 (defn public-multilanguage-badge-content
   "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
   [ctx badge-id user-id]
-  (let [badge-content (map (fn [content] (update content :criteria_content md->html) ) (select-multi-language-badge-content {:id badge-id} (get-db ctx)))  
+  (let [badge-content (map (fn [content] (update content :criteria_content md->html) ) (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
+        {:keys [badge_id remote_url issuer_verified]} (first badge-content)
         ;recipient-badge-data (select-badge-criteria-issuer-by-recipient {:badge_content_id badge-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
         ;badge-data (or recipient-badge-data (select-badge-criteria-issuer-by-date {:badge_content_id badge-id} (into {:result-set-fn first} (get-db ctx))))
         rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
         recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
         ;badge-message-count (if user-id {:message_count (so/get-badge-message-count ctx badge-content-id user-id)})
         ;followed? (if user-id {:followed? (so/is-connected? ctx user-id badge-content-id)})
-        badge (merge {:badge_id (:badge_id (first badge-content))} {:content badge-content} rating ;(update badge-data :criteria_content md->html)  ;badge-message-count ;followed?
+        badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified} {:content badge-content} rating ;(update badge-data :criteria_content md->html)  ;badge-message-count ;followed?
                      )]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
               :public_users (->> recipients

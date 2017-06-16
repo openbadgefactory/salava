@@ -8,8 +8,6 @@ SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
            b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
-JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
@@ -186,8 +184,11 @@ ub.visibility, ub.show_recipient_name,
 ub.rating, ub.ctime,
 ub.mtime, ub.deleted,
 ub.revoked, ub.show_evidence,
+b.remote_url,
+b.issuer_verified,
 u.id AS owner, u.first_name, u.last_name
 FROM user_badge AS ub
+JOIN badge as b ON (b.id = ub.badge_id) 
 JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
