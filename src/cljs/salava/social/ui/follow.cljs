@@ -12,7 +12,7 @@
 
 
 (defn follow-button-badge [badge-id followed?]
-  [:button {:class    "btn btn-primary follow"
+  [:button {:class    "btn btn-primary follow follow-badge"
             :disabled (if (not-activated?) "disabled" "")
             :on-click #(ajax/POST
                         (path-for (str "/obpv1/social/create_connection_badge/" badge-id))
@@ -39,7 +39,7 @@
 
 
 (defn unfollow-button-badge [badge-id followed?]
-  [:button {:class    "btn btn-primary unfollow"
+  [:button {:class    "btn btn-primary unfollow follow-badge"
             :on-click #(unfollow-ajax-post badge-id)}
     (str " " (t :social/Unfollow)) ])
 

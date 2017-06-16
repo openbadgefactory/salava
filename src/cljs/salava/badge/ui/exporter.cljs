@@ -5,7 +5,8 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [unique-values path-for not-activated? not-activated-banner]]
+            [salava.core.ui.helper :refer [unique-values path-for not-activated?]]
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t]]))

@@ -56,16 +56,18 @@ SELECT  owner_id AS owner from social_connections_user where user_id = :user_id 
 
 --name: select-user-badge-events
 -- EVENTS
--- FIXME (content columns)
 SELECT se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, seo.hidden, se.type, bc.name, bc.image_file, u.first_name, u.last_name, u.profile_picture FROM social_event_owners AS seo
      JOIN social_event AS se ON seo.event_id = se.id
      JOIN social_connections_user AS scu ON :owner_id = scu.owner_id
      JOIN user AS u ON se.subject = u.id
-     JOIN badge as b ON se.object = b.id
-     JOIN badge_content AS bc ON b.badge_content_id = bc.id
-     WHERE seo.owner = :owner_id AND se.subject = scu.user_id AND se.type = 'badge'AND se.verb = 'publish' AND b.visibility <> 'private'
+     JOIN user_badge as ub ON (ub.id = se.object)
+     JOIN badge AS badge ON (badge.id =  ub.badge_id)
+     JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+     JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+     WHERE seo.owner = :owner_id AND se.subject = scu.user_id AND se.type = 'badge'AND se.verb = 'publish' AND ub.visibility <> 'private'
      ORDER BY se.ctime DESC
      LIMIT 1000
+
 
 --name: select-user-page-events
 -- EVENTS
@@ -90,4 +92,3 @@ SELECT seo.owner, se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.la
      WHERE seo.owner = :owner_id  AND se.type = 'user' AND se.verb = 'follow' AND (scu.owner_id = se.subject OR scu.owner_id = se.object)
      ORDER BY se.ctime DESC
      LIMIT 1000
-

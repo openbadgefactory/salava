@@ -25,7 +25,7 @@
                                                    (init-data state)))
                               :error-handler   (fn [{:keys [status status-text]}]
                                                  (.log js/console (str status " " status-text))
-                                                 )})} "unfollow"])
+                                                 )})} (t :social/Unfollow) ])
 
 
 (defn accepted-user-connections [state users visible-area-atom]
@@ -39,7 +39,7 @@
        [:thead
         [:tr
          [:th ""]
-         [:th (t :badge/Name)]
+         [:th ""]
          [:th ""]]]
        (into [:tbody]
              (for [user users
@@ -113,7 +113,7 @@
                                             (.preventDefault %)) } (str first_name " " last_name)]]
                 (if (= "pending" status)
                   [:td (accept owner_id state) " " (decline owner_id state)]
-                  [:td  "follows " ])]))]]]))
+                  [:td  (str(t :social/Follows)  " ") ])]))]]]))
 
 
 

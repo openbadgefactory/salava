@@ -121,7 +121,7 @@
 
 
   :figwheel {:http-server-root "public"
-             :server-port      3449
+             :server-port      3450
              :css-dirs         ["target/generated/public/css"]
              :repl             false
              :server-logfile   "target/figwheel-logfile.log"}

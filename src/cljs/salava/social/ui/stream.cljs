@@ -14,7 +14,8 @@
             [salava.badge.ui.helper :as bh]
             [salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated? not-activated-banner]]))
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated?]]))
 
 
 
@@ -31,11 +32,10 @@
                   (swap! state assoc :admin-events (:admin-events data))))}))
 
 
-(defn pending-connections [state]
+(defn pending-connections [reload-fn]
   (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
     (if connections
-      [connections {:state state
-                    :init-data init-data}]
+      [connections reload-fn]
       [:div ""])))
 
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
@@ -168,9 +168,9 @@
        [:a {:href "#"
             :on-click #(do
                          (mo/open-modal [:badge :info] {:badge-id object})
-                        (.preventDefault %) )} (str first_name " " last_name " " verb " "  name)]]
+                         (.preventDefault %) )} (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedbadge) " " name)]]
       [:div.media-body
-       "Käyttäjä julkaisi merkin! eikö ole hienoa?"]]
+       (t :social/Publishedbadgetext)]]
       ]])
   )
 
@@ -192,9 +192,9 @@
        [:a {:href "#"
             :on-click #(do
                          (mo/open-modal [:page :view] {:page-id object})
-                         (.preventDefault %) )} (str first_name " " last_name " " verb " "  name)]]
-      [:div.media-body
-       "Käyttäjä julkaisi merkin! eikö ole hienoa?"]]
+                         (.preventDefault %) )} (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedpage) " " name)]]
+       [:div.media-body
+        (t :social/Publishedpagetext)]]
       ]])
   )
 
@@ -223,11 +223,12 @@
                         (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
                                                                                               o_id
                                                                                               s_id)})
-                        (.preventDefault %) )} (if (= owner s_id) (str  "You started  " verb " " o_first_name " " o_last_name)
-                                                   (str  s_first_name " " s_last_name " " verb " you"  ))]]
+                        (.preventDefault %) )} (if (= owner s_id)
+                                                 (str (t :social/Youstartedfollowing) " " o_first_name " " o_last_name)
+                                                 (str  s_first_name " " s_last_name " " (t :social/Followsyou)  ))]]
        [:div.media-body
-        (if (= owner s_id) "aloitit henkilön seuraamisen"
-            "Henkilö aloitti sinun seuraamisen")
+        (if (= owner s_id)(t :social/Youstartedfollowingtext) 
+           (t :social/Followsyoutext) )
        ]]
       ]]))
 
@@ -258,7 +259,6 @@
       (if (pos? new-messages) [:span.new  new-messages])
        [:a {:href "#"
             :on-click #(do
-                         (reload-fn)
                          (mo/open-modal [:gallery :badges] {:badge-id object
                                                             :show-messages true
                                                             :reload-fn reload-fn})
@@ -392,11 +392,12 @@
   (let [events (:events @state)
         tips (:tips @state)
         initial (:initial @state)
-        admin-events (or (:admin-events @state) nil)]
+        admin-events (or (:admin-events @state) nil)
+        reload-fn (fn [] (init-data state))]
     [:div {:class "my-badges pages"}
      
      [m/modal-window]
-     (pending-connections state)
+     [pending-connections reload-fn]
      [badges-pending state]
      (if (not-activated?)
        (not-activated-banner))
@@ -427,7 +428,7 @@
 
     (init-data state)
     (fn []
-      (layout/default site-navi (content state)))))
+      (layout/default site-navi [content state]))))
 
 
 

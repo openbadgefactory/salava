@@ -81,7 +81,7 @@
        [:div.row
         [:div {:class                   "col-md-12"
                :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
-    (if (and show_evidence evidence_url)
+    (if (and (pos? show_evidence) evidence_url)
             [:div.row
              [:div.col-md-12
               [:h2.uppercase-header (t :badge/Evidence)]

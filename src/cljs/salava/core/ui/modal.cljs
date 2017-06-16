@@ -37,6 +37,7 @@
                                 (reset! views (pop @views))
                                 (.preventDefault %))}
           [:span {:aria-hidden             "true"
+                  :id "backbutton"
                   :dangerouslySetInnerHTML {:__html "&lt;"}}]]])
       [:div {:class "text-right"}       
        [:button {:type         "button"
@@ -46,6 +47,8 @@
         [:span {:aria-hidden             "true"
                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
     [:div (last @views)]]
+   [:div.modal-footer ]
+   
    ])
 
 (defn modal-init [view]

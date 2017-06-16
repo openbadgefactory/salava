@@ -123,7 +123,8 @@
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
-          [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)]]]
+          (if-not (not-activated?)
+            [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)])]]
         [:div 
          (connect-user user-id)
          (admintool user-id "user")])

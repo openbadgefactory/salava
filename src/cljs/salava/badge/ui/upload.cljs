@@ -3,7 +3,8 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for not-activated? not-activated-banner]]
+            [salava.core.ui.helper :refer [navigate-to path-for not-activated?]]
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]))
 

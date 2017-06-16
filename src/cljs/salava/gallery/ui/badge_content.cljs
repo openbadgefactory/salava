@@ -93,6 +93,7 @@
     (reporttool (get-in data [:badge :badge_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
     ]])
 
+
 (defn badge-content-modal [modal-data reporttool-atom messages? init-data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data reporttool-atom messages?))
                  :component-will-unmount (fn [] (do (close-modal!)
