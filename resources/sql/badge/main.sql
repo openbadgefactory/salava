@@ -154,7 +154,8 @@ crc.email AS creator_email,
 crc.image_file AS creator_image,
 crc.description AS creator_description,
 u.id AS owner, u.first_name, u.last_name,
-cc.markdown_text AS criteria_content
+cc.markdown_text AS criteria_content,
+cc.url AS criteria_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
@@ -204,7 +205,8 @@ crc.name AS creator_name, crc.url AS creator_url,
 crc.email AS creator_email,
 crc.image_file AS creator_image,
 crc.description AS creator_description,
-cc.markdown_text AS criteria_content
+cc.markdown_text AS criteria_content,
+cc.url AS criteria_url
 FROM badge AS badge 
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
@@ -271,6 +273,7 @@ ub.show_evidence,
 bc.name, bc.image_file,
 ube.url,
 cc.markdown_text AS criteria_content,
+cc.url AS criteria_url,
 ic.name AS issuer_content_name,
 ic.url AS issuer_content_url,
 ic.email AS issuer_contact,
@@ -311,7 +314,8 @@ bc.name,
 bc.image_file
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE ub.id IN (:ids)
 
 --name: select-badges-by-tag-and-owner
@@ -321,11 +325,14 @@ ub.mtime, ub.badge_id,
 bc.name, bc.description, bc.image_file,
 bt.tag,
 cc.markdown_text AS criteria_content
+cc.url AS criteria_url,
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 JOIN badge_tag AS bt ON bt.user_badge_id = ub.id
-JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND bt.tag = :badge_tag
 
 --name: select-badge-owner
@@ -379,7 +386,8 @@ SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_view AS bv ON ub.id = bv.user_badge_id
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted'
 GROUP BY ub.id, bc.name, bc.image_file
 ORDER BY latest_view DESC
@@ -394,7 +402,8 @@ COUNT(bco.user_id) AS congratulation_count,
 MAX(bco.ctime) AS latest_congratulation 
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 JOIN badge_congratulation AS bco ON ub.id = bco.user_badge_id
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted'
 GROUP BY ub.id, bc.name, bc.image_file
@@ -408,7 +417,8 @@ ic.name AS issuer_content_name,
 ic.url AS issuer_content_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted'
 ORDER BY ub.id, bc.name, bc.image_file

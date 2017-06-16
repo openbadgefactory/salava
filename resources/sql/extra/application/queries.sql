@@ -43,7 +43,8 @@ UPDATE badge_advert SET deleted = :deleted WHERE id = :id
 SELECT ba.id, bc.name, ba.info, bc.image_file,
     ic.name AS issuer_content_name, ic.url AS issuer_content_url,
     GROUP_CONCAT( bct.tag) AS tags FROM badge_advert ba
-INNER JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
+    JOIN badge_badge_content AS bbc ON (bbc.badge_id = ba.badge_content_id)
+     JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 INNER JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
 LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
 GROUP BY ba.id
@@ -56,7 +57,8 @@ SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ba.criteria_url, ic.
        ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before,
        ba.not_after, ba.kind, ba.application_url, ba.application_url_label, IF(scba.user_id, true, false) AS followed
        FROM badge_advert AS ba
-       JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
+       JOIN badge_badge_content AS bbc ON (bbc.badge_id = ba.badge_content_id)
+     JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
        LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
        LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = :user_id)
