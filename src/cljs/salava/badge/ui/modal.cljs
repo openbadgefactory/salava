@@ -91,7 +91,7 @@
                                         ;(m/modal! [a/assertion-modal assertion] {:size :lg})
                                    )}
                 (t :badge/Openassertion) "..."]])
-            (if @show-recipient-name-atom
+            (if (pos? @show-recipient-name-atom)
               (if (and user-logged-in? (not owner?))
                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
