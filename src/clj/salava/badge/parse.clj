@@ -234,7 +234,7 @@
                                 :markdown_text criteria-text}]
                     :issuer   [{:id ""
                                 :language_code language
-                                :name (str (:name issuer) ": " (:org issuer))
+                                :name (:name issuer)
                                 :description (:description issuer)
                                 :url (:url issuer)
                                 :email (:contact issuer)
@@ -357,7 +357,7 @@
                                :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
                    :issuer [{:id ""
                              :language_code ""
-                             :name (str (:name issuer) ": " (:org issuer))
+                             :name (:name issuer)
                              :description (:description issuer)
                              :url (:url issuer)
                              :email (:contact issuer)
