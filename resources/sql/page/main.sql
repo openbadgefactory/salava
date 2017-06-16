@@ -16,20 +16,33 @@ INSERT INTO page (user_id, name, visibility, ctime, mtime) VALUES (:user_id, :na
 SELECT p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name, GROUP_CONCAT(pt.tag) AS tags FROM page AS p
        JOIN user AS u ON u.id = p.user_id
        LEFT JOIN page_tag AS pt ON pt.page_id = p.id
-       WHERE p.id = 1 AND p.deleted = 0
+       WHERE p.id = :id AND p.deleted = 0
        GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name
 
 -- name: select-pages-badge-blocks
-SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format, ub.issued_on, bc.name, bc.description, bc.image_file, cc.url AS criteria_url, ube.url AS evidence_url, ub.show_evidence, cc.markdown_text AS criteria_content, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ic.email AS issuer_email, ic.image_file AS issuer_image, crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email, crc.image_file AS creator_image FROM page_block_badge AS pb
-       JOIN user_badge AS ub ON pb.badge_id = ub.id
-       JOIN badge AS badge ON (badge.id = ub.badge_id)
-       JOIN badge_content AS bc ON (bc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
-       JOIN criteria_content AS cc ON (cc.id = ub.badge_id) AND bc.language_code = badge.default_language_code
-       JOIN user_badge_evidence AS ube ON (ube.id = ub.badge_id)
-       JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
-       JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
-       WHERE page_id = :page_id
+SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format,
+ub.issued_on, bc.name,
+bc.description, bc.image_file,
+cc.url AS criteria_url, 
+ub.show_evidence, cc.markdown_text AS criteria_content,
+ic.name AS issuer_content_name, ic.url AS issuer_content_url,
+ic.email AS issuer_email, ic.image_file AS issuer_image,
+crc.name AS creator_name, crc.url AS creator_url, crc.email AS creator_email,
+crc.image_file AS creator_image,
+ube.url AS evidence_url
+FROM page_block_badge AS pb
+JOIN user_badge AS ub ON pb.badge_id = ub.id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+       JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+       JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+       JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+       JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+       JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+       JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
+       LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+       LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
+       LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
+       WHERE pb.page_id = :page_id
 
 
 -- name: select-pages-files-blocks
