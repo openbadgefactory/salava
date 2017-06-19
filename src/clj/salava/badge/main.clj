@@ -61,13 +61,10 @@
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
   (try
-    (let [obf-url (get-in ctx [:config :factory :url] "")
-          obf-base (-> obf-url (split #"://") second)
+    (let [obf-url (get-in ctx [:config :factory :url])
           {:keys [id remote_url issuer_url mtime issuer_verified]} badge
-          issued-by-obf (if (and obf-base remote_url) (= remote_url obf-url) ;(-> obf-base re-pattern (re-find badge_url) boolean)
-                          )
-          verified-by-obf (and issued-by-obf issuer_verified ;(check-issuer-verified! ctx id issuer_url mtime issuer_verified)
-                               )]
+          issued-by-obf   (and (not (nil? obf-url)) (not (nil? remote_url)) (= remote_url obf-url))
+          verified-by-obf (and issued-by-obf (or (= issuer_verified true) (= issuer_verified 1)))]
       (assoc badge :issued_by_obf (boolean issued-by-obf)
                    :verified_by_obf (boolean verified-by-obf)
                    :obf_url obf-url))
