@@ -127,7 +127,7 @@
            [:button {:class    "btn btn-primary settings-btn"
                      :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
               (t :badge/Settings)]
-           [:button {:class    "btn btn-primary print-btn"
+           #_[:button {:class    "btn btn-primary print-btn"
                      :on-click #(.print js/window)}
               (t :core/Print)]]
           [:div.share-wrapper
@@ -188,7 +188,7 @@
                   (str " " (t :badge/Congratulate) "!")])
                )]]
            (if (session/get :user)
-             [badge-message-link message_count  badge_id])
+             [badge-message-link message_count badge_id])
            ]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
@@ -223,7 +223,7 @@
            [:div {:class "row criteria-html"}
             [:div.col-md-12
              {:dangerouslySetInnerHTML {:__html criteria_content}}]]
-           (if (and show_evidence evidence_url)
+           (if (and (pos? show_evidence) evidence_url)
              [:div.row
               [:div.col-md-12
                [:h2.uppercase-header (t :badge/Evidence)]

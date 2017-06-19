@@ -9,7 +9,7 @@
 
 
 (defn not-activated-banner []
-  (if not-activated?
+  (if (not-activated?)
     [:div {:class (str "alert ""alert-warning")}
      (str (t :core/Notactivedpannerhelptext)  ". ")
      [:a {:href (path-for "/user/edit/email-addresses")}

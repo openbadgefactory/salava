@@ -17,7 +17,6 @@
 
 
 (defn accept [owner-id state reload-fn]
-  (dump reload-fn)
   [:button {:class    "btn btn-primary"
             :on-click #(do
                          (ajax/POST

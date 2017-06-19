@@ -70,7 +70,7 @@
                                                           #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
                                                           #(= (:type %) "tag") (assoc TagBlock :id s/Int
                                                                                                :block_order s/Int
-                                                                                               :badges [(select-keys Badge [:id :name :criteria_content :criteria_url :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_content_id :tag])]))]))
+                                                                                               :badges [(select-keys Badge [:id :name :criteria_content :criteria_url :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_id :tag])]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int

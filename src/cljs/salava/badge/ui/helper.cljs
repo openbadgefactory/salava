@@ -60,11 +60,12 @@
   (if (or name url email image)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left  (t :badge/Issuedby) ":"]
-     (issuer-image image)
-     [:div {:class "issuer-links pull-left"}
-      [:a {:target "_blank" :href url} " " name]
-      (if (not-empty email)
-        [:span [:br] [:a {:href (str "mailto:" email)} email]])]]))
+     [:div {:class "issuer-links pull-left inline"}
+       (issuer-image image)
+       [:a {:target "_blank" :href url} " " name]
+       (if (not-empty email)
+         [:span [:br] [:a {:href (str "mailto:" email)} email]])]
+     ]))
 
 (defn creator-label-image-link [name url email image]
   (if (or name url email image)    
