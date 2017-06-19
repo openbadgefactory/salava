@@ -57,13 +57,11 @@ SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ba.criteria_url, ic.
        ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before,
        ba.not_after, ba.kind, ba.application_url, ba.application_url_label, IF(scba.user_id, true, false) AS followed
        FROM badge_advert AS ba
-       JOIN badge_badge_content AS bbc ON (bbc.badge_id = ba.badge_content_id)
-     JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+       JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
        LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
        LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = :user_id)
        WHERE ba.deleted = 0 AND ba.id = :id
-
 
 -- name: select-badge-advert-countries
 SELECT country FROM badge_advert WHERE deleted=0  AND (not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (not_after = 0 OR not_after > UNIX_TIMESTAMP()) ORDER BY country  

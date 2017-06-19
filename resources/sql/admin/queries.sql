@@ -11,10 +11,10 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login 
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :time;
 
 --name: count-all-badges
-SELECT COUNT(DISTINCT id) AS count FROM badge WHERE deleted = 0 AND status != 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status != 'declined';
 
 --name: count-all-badges-after-date
-SELECT COUNT(DISTINCT id) AS count FROM badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
 
 --name: count-all-pages
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE  deleted = 0;
@@ -26,14 +26,13 @@ SELECT role FROM user WHERE id= :id;
 UPDATE page SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-badge-visibility!
-UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
+UPDATE user_badge SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-user-visibility!
 UPDATE user SET profile_visibility  = 'internal', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-badges-visibility!
--- FIXME (badge_content_id)
-UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_content_id= :badge_content_id
+UPDATE user_badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_id= :badge_id
 
 --name: insert-report-ticket<!
 --add new report ticket
@@ -83,7 +82,7 @@ SELECT user_id FROM badge WHERE id=:id
 
 --name: select-users-id-by-badge-content-id
 -- FIXME (badge_content_id)
-select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted = 0
+select user_id from user_badge WHERE badge_id = :badge_id AND deleted = 0
 
 
 
@@ -91,7 +90,7 @@ select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted
 UPDATE page SET visibility = 'private' WHERE user_id = :user_id
 
 --name: update-user-badges-set-private!
-UPDATE badge SET visibility = 'private' WHERE user_id = :user_id
+UPDATE user_badge SET visibility = 'private' WHERE user_id = :user_id
 
 --name: delete-user-badge-views!
 DELETE FROM badge_view WHERE user_id = :user_id
@@ -99,9 +98,8 @@ DELETE FROM badge_view WHERE user_id = :user_id
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
---name: update-badge-deleted-by-badge-content-id! 
--- FIXME (badge_content_id)
-UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_content_id = :badge_content_id
+--name: update-badge-deleted-by-badge-content-id!
+UPDATE user_badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_id = :badge_id
 
 --name: select-users-name-and-email
 SELECT first_name, last_name, ue.email, deleted FROM user AS u

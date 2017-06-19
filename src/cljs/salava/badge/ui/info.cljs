@@ -55,7 +55,7 @@
        :handler (fn [] (swap! state assoc :visibility new-value))})))
 
 (defn toggle-recipient-name [id show-recipient-name-atom]
-  (let [new-value (not @show-recipient-name-atom)]
+  (let [new-value (not (pos? @show-recipient-name-atom))]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
       {:params {:show_recipient_name new-value}
@@ -212,12 +212,11 @@
                 [:a.link {:href     "#"
                      :on-click #(do (.preventDefault %)
                                     (m/modal! [a/assertion-modal assertion] {:size :lg}))}
-                (t :badge/Openassertion) "..."]])
-             (if @show-recipient-name-atom
+                 (t :badge/Openassertion) "..."]])
+             (if (pos? @show-recipient-name-atom)
                (if (and user-logged-in? (not owner?))
                  [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
-                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
-               )
+                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
              [:div.description description]
              [:h2.uppercase-header (t :badge/Criteria)]
              [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]]]
