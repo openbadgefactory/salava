@@ -37,8 +37,8 @@ JOIN badge AS badge ON (badge.id = ub.badge_id)
        JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
        JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
        JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
-       LEFT JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
-       LEFT JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
+       JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+       JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
        LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
        LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
        LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code

@@ -71,8 +71,8 @@ JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) 
 LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
 LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id) 
-LEFT JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
-LEFT JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code
 WHERE badge.id = :id
 GROUP BY bc.language_code, cc.language_code, ic.language_code
 
@@ -97,8 +97,8 @@ crc.image_file AS creator_image
 FROM badge
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
-LEFT JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
-LEFT JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
 LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
 JOIN user_badge AS ub ON (badge.id = ub.badge_id)
@@ -121,8 +121,8 @@ crc.image_file AS creator_image
 FROM badge
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
-LEFT JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
-LEFT JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
 JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
 WHERE badge.id = :badge_content_id
