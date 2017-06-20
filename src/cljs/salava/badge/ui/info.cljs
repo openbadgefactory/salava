@@ -127,14 +127,17 @@
            [:button {:class    "btn btn-primary settings-btn"
                      :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
               (t :badge/Settings)]
-           #_[:button {:class    "btn btn-primary print-btn"
+           [:button {:class    "btn btn-primary print-btn"
                      :on-click #(.print js/window)}
               (t :core/Print)]]
           [:div.share-wrapper
            [s/share-buttons-badge
             (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-            name (= "public" visibility) true (cursor state [:show-link-or-embed])
-            nil
+            name
+            (= "public" visibility)
+            true
+            (cursor state [:show-link-or-embed])
+            image_file
             {:name     name
              :authory  issuer_content_name
              :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
@@ -143,7 +146,6 @@
              :dateto   expires_on}]]]
          (if (and (not expired?) (not revoked))
            (admintool id "badge")))
-       
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
