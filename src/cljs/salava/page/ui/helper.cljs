@@ -45,14 +45,14 @@
 
 
 (defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url]}]
-  [:div {:class "row badge-block"}
+  [:div {:class "row badge-block badge-info"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
    [:div {:class "col-md-8"}
     [:div.row
      [:div.col-md-12
       [:h3.badge-name name]]]
-    [:div.row
+    #_[:div.row
      [:div
       (bh/issuer-image issuer_image)]]
      [:div.row

@@ -20,7 +20,7 @@ SELECT p.id, name, description, theme, border, padding, visibility, password, vi
        GROUP BY p.id, name, description, theme, border, padding, visibility, password, visible_after, visible_before, p.ctime, p.mtime, user_id, u.first_name, u.last_name
 
 -- name: select-pages-badge-blocks
-SELECT pb.id, 'badge' AS type, block_order, pb.badge_id, format,
+SELECT DISTINCT pb.id, 'badge' AS type, block_order, pb.badge_id, format,
 ub.issued_on, bc.name,
 bc.description, bc.image_file,
 cc.url AS criteria_url, 
@@ -43,7 +43,7 @@ JOIN badge AS badge ON (badge.id = ub.badge_id)
        LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
        LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
        WHERE pb.page_id = :page_id
-
+GROUP BY pb.id
 
 -- name: select-pages-files-blocks
 SELECT id, 'file' AS type, block_order FROM page_block_files

@@ -133,8 +133,11 @@
           [:div.share-wrapper
            [s/share-buttons-badge
             (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-            name (= "public" visibility) true (cursor state [:show-link-or-embed])
-            nil
+            name
+            (= "public" visibility)
+            true
+            (cursor state [:show-link-or-embed])
+            image_file
             {:name     name
              :authory  issuer_content_name
              :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
@@ -143,7 +146,6 @@
              :dateto   expires_on}]]]
          (if (and (not expired?) (not revoked))
            (admintool id "badge")))
-       
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div.row
@@ -188,7 +190,7 @@
                   (str " " (t :badge/Congratulate) "!")])
                )]]
            (if (session/get :user)
-             [badge-message-link message_count  badge_id])
+             [badge-message-link message_count badge_id])
            ]
           [:div {:class "col-md-9 badge-info"}
            [:div.row
@@ -223,7 +225,7 @@
            [:div {:class "row criteria-html"}
             [:div.col-md-12
              {:dangerouslySetInnerHTML {:__html criteria_content}}]]
-           (if (and show_evidence evidence_url)
+           (if (and (pos? show_evidence) evidence_url)
              [:div.row
               [:div.col-md-12
                [:h2.uppercase-header (t :badge/Evidence)]

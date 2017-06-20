@@ -15,6 +15,7 @@ INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND bc.language_code = b.default_language_code
     AND ic.language_code = b.default_language_code
+GROUP BY ub.id
 
 -- name: select-user-badges-to-export
 SELECT ub.id,
@@ -186,8 +187,10 @@ ub.mtime, ub.deleted,
 ub.revoked, ub.show_evidence,
 b.remote_url,
 b.issuer_verified,
+ube.url AS evidence_url,
 u.id AS owner, u.first_name, u.last_name
 FROM user_badge AS ub
+LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
 JOIN badge as b ON (b.id = ub.badge_id) 
 JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
@@ -220,13 +223,22 @@ JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id)
 LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
 LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id) 
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
-JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code)
 WHERE badge.id = :id
-GROUP BY bc.language_code, cc.language_code, ic.language_code
+GROUP BY badge.id, bc.language_code, cc.language_code, ic.language_code
 
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (user_badge_id, tag)
        VALUES (:user_badge_id, :tag)
+
+--name: update-user-badge-evidence!
+UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: insert-user-badge-evidence-url<!
+INSERT INTO user_badge_evidence (user_badge_id, url, ctime, mtime) VALUES (:user_badge_id, :url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: select-user-badge-evidence-id
+SELECT id from user_badge_evidence where user_badge_id = :user_badge_id
 
 --name: delete-badge-tags!
 DELETE FROM badge_tag WHERE user_badge_id = :user_badge_id
@@ -276,7 +288,7 @@ ub.visibility, ub.show_recipient_name,
 ub.rating,ub.revoked,
 ub.show_evidence,
 bc.name, bc.image_file,
-ube.url,
+ube.url as evidence_url,
 cc.markdown_text AS criteria_content,
 cc.url AS criteria_url,
 ic.name AS issuer_content_name,
@@ -326,11 +338,12 @@ WHERE ub.id IN (:ids)
 --name: select-badges-by-tag-and-owner
 SELECT ub.id, ub.issued_on,
 ub.expires_on, ub.status,
+ub.visibility,
 ub.mtime, ub.badge_id,
 bc.name, bc.description, bc.image_file,
 bt.tag,
-cc.markdown_text AS criteria_content
-cc.url AS criteria_url,
+cc.markdown_text AS criteria_content,
+cc.url AS criteria_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)

@@ -12,14 +12,14 @@
        [:div {:id "grid"}
         [:div {:class "media grid-container"}
          [:div.media-content
-           
            [:div.media-body
             [:div.media-heading
              [:div.heading-link]]
             [:div "The owner of the badge has set it private and therefore it can’t be shown."]]]]]])
 
 (defn success-view [state]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url recipients badge_content_id permission]} @state
+  (let [{:keys [content permission]} @state
+        {:keys [id image_file name description issuer_content_name issuer_content_url recipients]} (first (filter  #(= (:language_code %) (:default_language_code %)) content))
         url (str (session/get :site-url) (path-for (str "/badge/info/" id)))]
     [:div {:id "badge-gallery"}
      [:div {:id "grid"}

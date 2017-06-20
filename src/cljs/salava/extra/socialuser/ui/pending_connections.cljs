@@ -17,7 +17,6 @@
 
 
 (defn accept [owner-id state reload-fn]
-  (dump reload-fn)
   [:button {:class    "btn btn-primary"
             :on-click #(do
                          (ajax/POST
@@ -39,7 +38,7 @@
   )
 
 (defn decline [owner-id state reload-fn]
-  [:button {:class         "btn btn-primary"
+  [:button {:class         "btn btn-warning"
             :on-click #(do
                          (ajax/POST
                           (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/declined"))
@@ -62,7 +61,7 @@
 (defn request [{:keys [owner_id profile_picture first_name last_name]} state reload-fn]
   [:div.row {:key owner_id}
    [:div.col-md-12
-    [:div.connections-container-pending
+    [:div.badge-container-pending
      
      [:div.row
       [:div.col-md-12
@@ -71,9 +70,10 @@
          [:img.badge-image {:src (profile-picture profile_picture) 
                             :on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}]]
         [:div.media-body
-         [:h5.media-heading
-          [:a {:on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}
-           (str  first_name " " last_name " " (t :social/Wantsfollow) )]]]]]]
+         [:h4.media-heading
+          [:a {:class "pending-a" :on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}
+          (str  first_name " " last_name)]
+          (str  " " (t :social/Wantsfollow) )]]]]]
      [:div {:class "row button-row"}
       [:div.col-md-12
        [accept owner_id state reload-fn]

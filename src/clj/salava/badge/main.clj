@@ -23,7 +23,7 @@
   (str (u/get-site-url ctx) (u/get-base-path ctx) "/badge/info/" badge-id))
 
 (defn assoc-badge-tags [badge tags]
-  (assoc badge :tags (map :tag (filter #(= (:badge_id %) (:id badge))
+  (assoc badge :tags (map :tag (filter #(= (:user_badge_id %) (:id badge))
                                        tags))))
 (defn map-badges-tags [badges tags]
   (map (fn [b] (assoc-badge-tags b tags))
@@ -60,7 +60,6 @@
 (defn badge-issued-and-verified-by-obf
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
-  (dump badge)
   (try
     (let [obf-url (get-in ctx [:config :factory :url])
           {:keys [id remote_url issuer_url mtime issuer_verified]} badge
@@ -83,8 +82,8 @@
   [ctx user-id]
     (let [badges (map (fn [b] (assoc b :revoked (= 1 (b :revoked))))
                       (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
-        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
-        badges-with-tags (map-badges-tags badges tags)]
+          tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
+          badges-with-tags (map-badges-tags badges tags)]
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
@@ -280,7 +279,12 @@
 
 
 
-
+(defn user-badge-evidence
+  [ctx user-badge-id url]
+  (let [id (select-user-badge-evidence-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :id} (u/get-db ctx)))]
+    (if id
+      (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
+      (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
 
 ;TODO rework evidence
 (defn save-badge-settings!
@@ -298,6 +302,8 @@
        (update-badge-settings! data (u/get-db ctx))
        (save-badge-tags! ctx tags user-badge-id)
                                         ;(send-badge-info-to-obf ctx badge-id user-id) ;TODO EI TOIMI
+       (if evidence-url
+         (user-badge-evidence ctx user-badge-id evidence-url))
        (badge-publish-update! ctx user-badge-id visibility)
        (if (or (= "internal" visibility) (= "public" visibility))
          (u/event ctx user-id "publish" user-badge-id "badge")

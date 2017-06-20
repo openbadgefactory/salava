@@ -69,7 +69,6 @@
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
-    (dump badge-blocks)
     (sort-by :block_order blocks)))
 
 (defn badge-blocks-for-edit [ctx page-id]

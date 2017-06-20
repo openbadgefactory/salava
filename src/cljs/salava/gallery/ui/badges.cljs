@@ -265,7 +265,7 @@
   [{:value "mtime" :id "radio-date" :label (t :core/bydate)}
    {:value "name" :id "radio-name" :label (t :core/byname)}
    {:value "issuer_content_name" :id "radio-issuer-name" :label (t :core/byissuername)}
-   {:value "recipients" :id "radio-recipients" :label "recipients"}])
+   {:value "recipients" :id "radio-recipients" :label (t :core/byrecipients)}])
 
 (defn autocomplete-picker
   ""

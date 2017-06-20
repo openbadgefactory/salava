@@ -77,7 +77,7 @@
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
                    (let [{:keys [email first_name last_name country language password password_verify]} form-content
-                         save                                                                           (u/register-user ctx email first_name last_name country language password password_verify)]
+                         save (u/register-user ctx email first_name last_name country language password password_verify)]
                      (if (not (private? ctx))
                                         ;(ok save)
                        (let [login-status (u/login-user ctx email password)]
@@ -87,7 +87,10 @@
                        (cond
                          (not (right-token? ctx (:token form-content)))        (forbidden)
                          (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
-                         :else                                                 (ok save))))
+                         :else                                                 (let [login-status (u/login-user ctx email password)]
+                                                                                 (if (= "success" (:status login-status))
+                                                                                   (u/set-session ctx (ok login-status) (:id login-status))
+                                                                                   (ok login-status))))))
                    )
 
              (POST "/activate" []

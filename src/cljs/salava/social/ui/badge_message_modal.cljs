@@ -14,7 +14,7 @@
 
 
 (defn modal-content [{:keys [badge public_users private_user_count]}]
-  (let [{:keys [badge_id name image_file message_count]} badge
+  (let [{:keys [badge_id name image_file message_count]} (first (filter  #(= (:language_code %) (:default_language_code %)) (:content badge)))
         all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")
         new-messages (if (pos? (:new-messages message_count))
                        (str (:new-messages message_count) " " (t :social/Newmessages ))
