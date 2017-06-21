@@ -47,15 +47,13 @@
       (jdbc/with-db-transaction [t-con db-conn]
         (jdbc/execute! t-con ["UPDATE badge SET remote_url = ? WHERE id = ? AND remote_url IS NULL"
                               (remote-url factory-url (:body asr)) (:badge_id user-badge)])
-        (jdbc/execute! t-con ["UPDATE badge SET issuer_verified = ? WHERE id = ?"
+        (jdbc/execute! t-con ["UPDATE badge SET issuer_verified = ? WHERE id = ? AND remote_url IS NOT NULL"
                               (if (issuer-verified? factory-url (:body asr))
                                 1
-                                0) (:badge_id user-badge)])
-        (jdbc/execute! t-con ["UPDATE user_badge SET last_checked = UNIX_TIMESTAMP() WHERE id = ?"
-                              (:id user-badge)])))))
+                                0) (:badge_id user-badge)])))))
 
 (defn- check-badges [db-conn factory-url]
-  (log/info "salava.badge.cron/check-badges: started working")
+  (log/info "check-badges: started working")
   (let [time-limit (+ (System/currentTimeMillis) (* 15 60 1000))
         sql "SELECT id, badge_id, assertion_url FROM user_badge
             WHERE assertion_url IS NOT NULL
@@ -68,11 +66,13 @@
           (try
             (log/debug "check-badges: working on id " (:id user-badge))
             (check-badge db-conn factory-url user-badge)
+            (jdbc/execute! db-conn ["UPDATE user_badge SET last_checked = UNIX_TIMESTAMP() WHERE id = ?"
+                              (:id user-badge)])
             (catch Throwable ex
               (log/error "check-badges failed")
               (log/error (.toString ex)))))
         (try (Thread/sleep 1000) (catch InterruptedException _)))))
-  (log/info "salava.badge.cron/check-badges: done"))
+  (log/info "check-badges: done"))
 
 ;;;
 
