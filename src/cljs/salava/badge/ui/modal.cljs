@@ -18,6 +18,7 @@
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
+            [salava.core.ui.modal :refer [set-new-view]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]])
@@ -87,9 +88,7 @@
               [:div {:id "assertion-link"}
                [:label (t :badge/Metadata)": "]
                [:a {:href     "#"
-                    :on-click #(do (.preventDefault %)
-                                        ;(m/modal! [a/assertion-modal assertion] {:size :lg})
-                                   )}
+                    :on-click #(set-new-view [:badge :metadata] assertion)}
                 (t :badge/Openassertion) "..."]])
             (if (pos? @show-recipient-name-atom)
               (if (and user-logged-in? (not owner?))
@@ -148,4 +147,5 @@
 
 
 (def ^:export modalroutes
-  {:badge {:info handler}})
+  {:badge {:info handler
+           :metadata a/assertion-content}})

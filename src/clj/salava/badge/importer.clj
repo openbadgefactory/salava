@@ -21,11 +21,8 @@
 
 ;;;
 
-(defn- badge-checksum [badge]
-  (u/map-sha256
-    (select-keys badge [:badge_content
-                        :issuer_content
-                        :criteria_content])))
+(defn- badge-checksum [user-badge]
+  (u/map-sha256 (:badge user-badge)))
 
 (defn- get-remote-id [email base-url]
   (try
@@ -76,21 +73,24 @@
   (let [previous-id (b/user-owns-badge-id ctx (assoc badge :user_id (:id user)))
         expired? (if (nil? (:expires_on badge)) false (< (:expires_on badge) (u/now)))
         exists? (not (nil? previous-id))
-        error (:error (meta badge))]
-    {:status      (if (or expired? exists? error) "invalid" "ok")
-     :message     (cond
-                    exists? "badge/Alreadyowned"
-                    expired? "badge/Badgeisexpired"
-                    error "badge/Invalidbadge"
-                    :else "badge/Savethisbadge")
-     :error       error
-     :name        (get-in badge [:badge_content :name])
-     :description (get-in badge [:badge_content :description])
-     :image_file  (get-in badge [:badge_content :image_file])
-     :issuer_content_name (get-in badge [:issuer_content :name])
-     :issuer_content_url  (get-in badge [:issuer_content :url])
-     :previous-id previous-id
-     :import-key  (:checksum (meta badge))}))
+        error (:error (meta badge))
+        content (first (get-in badge [:badge :content])) ;TODO check default language
+        issuer (first (get-in badge [:badge :issuer]))  ;TODO check default language
+        ] 
+    {:status              (if (or expired? exists? error) "invalid" "ok")
+     :message             (cond
+                            exists?  "badge/Alreadyowned"
+                            expired? "badge/Badgeisexpired"
+                            error    "badge/Invalidbadge"
+                            :else    "badge/Savethisbadge")
+     :error               error
+     :name                (:name content)
+     :description         (:description content) 
+     :image_file          (:image_file content) 
+     :issuer_content_name (:name issuer) 
+     :issuer_content_url  (:url issuer) 
+     :previous-id         previous-id
+     :import-key          (:checksum (meta badge))}))
 
 (defn user-backpack-emails
   "Get list of user's email addresses"

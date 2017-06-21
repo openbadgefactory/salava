@@ -1,5 +1,7 @@
 (ns salava.core.ui.content-language
   (:require [reagent.session :as session]
+            [salava.core.i18n :refer [lang-lookup]]
+            [clojure.string :refer [capitalize]]
             [salava.core.helper :refer [dump]]))
 
 (defn init-content-language
@@ -11,10 +13,11 @@
       (:language-code (first (filter #(= (:language_code %) (:default_language_code %)) contents))))))
 
 (defn content-language-selector [content-language-atom contents]
+  
   (if (< 1 (count contents))
       (into [:div.badge-language-selector]
             (for [content contents]
-              [:a {:href "#" :class (if (= @content-language-atom (:language_code content)) "chosen" "") :on-click #(reset! content-language-atom (:language_code content))} (str  (:language_code content))]))
+              [:a {:href "#" :class (if (= @content-language-atom (:language_code content)) "chosen" "") :on-click #(reset! content-language-atom (:language_code content))} (str  (or (capitalize (get lang-lookup (:language_code content))) (:language_code content)))]))
       [:div.badge-language-selector]))
 
 
