@@ -64,7 +64,7 @@
       (when (> time-limit (System/currentTimeMillis))
         (doseq [user-badge chunk]
           (try
-            (log/debug "check-badges: working on id " (:id user-badge))
+            ;(log/debug "check-badges: working on id " (:id user-badge))
             (check-badge db-conn factory-url user-badge)
             (jdbc/execute! db-conn ["UPDATE user_badge SET last_checked = UNIX_TIMESTAMP() WHERE id = ?"
                               (:id user-badge)])
