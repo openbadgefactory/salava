@@ -53,7 +53,7 @@ SELECT badge_id FROM social_connections_badge WHERE user_id = :user_id AND badge
 
 -- name: select-user-connections-badge
 -- get users badge connections
-SELECT DISTINCT bc.id, bc.name, bc.image_file, bc.description FROM social_connections_badge AS scb
+SELECT DISTINCT badge.id, bc.name, bc.image_file, bc.description FROM social_connections_badge AS scb
      JOIN badge AS badge ON (badge.id =  scb.badge_id)
      JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
      JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
