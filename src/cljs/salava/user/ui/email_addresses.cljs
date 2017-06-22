@@ -106,7 +106,7 @@
          (t :user/Sendverifylink)]])]))
 
 (defn email-address-table [state]
-  [:table.table
+  [:table.table.hidden-xs
    [:thead
     [:tr
      [:th (t :user/Email)]
@@ -122,6 +122,22 @@
                    (t :user/Loginaddress)
                    (email-options email verified primary_address state))]]))])
 
+(defn email-address-table-mobile [state]
+  [:table.table.visible-xs
+   [:thead
+    [:tr
+     [:th (t :user/Email) ]
+     
+     [:th (t :user/Actions)]]]
+   (into [:tbody]
+         (for [address (sort-by :ctime (:emails @state))
+               :let [{:keys [email verified primary_address]} address]]
+           [:tr
+            [:td [:div email (if verified [:i {:class "fa fa-check" }])]]
+            [:td (if (and primary_address verified) 
+                   (t :user/Loginaddress)
+                   (email-options email verified primary_address state))]]))])
+
 (defn content [state]
   (let [new-address-atom (cursor state [:new-address])
         message-atom (cursor state [:message])]
@@ -133,6 +149,7 @@
         [:div {:class (str "alert " (:class @message-atom))}
          (:content @message-atom)])
       (email-address-table state)
+      (email-address-table-mobile state)
       [:form
        [:div.form-group
         [:label {:for "input-new-address"}
