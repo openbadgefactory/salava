@@ -17,6 +17,7 @@ DELETE FROM pending_factory_badge WHERE email = :email AND assertion_url = :asse
 
 --name: select-badge-updates
 -- FIXME (evidence_url)
-SELECT id, user_id, email, assertion_url, mtime, evidence_url, rating FROM badge
-       WHERE status = 'accepted' AND deleted = 0 AND user_id = :user_id AND id = :id
+SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evidence_url, ub.rating FROM user_badge AS ub
+       LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+       WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
 
