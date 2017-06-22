@@ -50,8 +50,7 @@
        [:div.media-body
         [:div.media-heading
          [:a.heading-link {:href "#"
-                           :on-click #(set-new-view [:badge :info] {:badge-id id})
-                           }
+                           :on-click #(set-new-view [:badge :info] {:badge-id id})}
           name]]
         [:div.media-issuer
          [:p issuer_content_name]]]]]
@@ -108,65 +107,67 @@
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
-    
-    [:div.panel {:id "profile"}
-     [:div.panel-body
+    [:div
+     [:div.pull-right
       (if-not owner?
         [:div 
          (connect-user user-id)
          ;(admintool user-id "user")
-         ])
-      [:h1.uppercase-header fullname]
-      
-      [:div.row
-       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
-        [:div.profile-picture-wrapper
-        [:img.profile-picture {:src (profile-picture profile_picture)
-                               :alt fullname}]]]
-       [:div {:class "col-md-9 col-sm-9 col-xs-12"}
-        (if (not-empty about)
-          [:div {:class "row about"}
-           [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
-           [:div.col-xs-12 about]])
-        (if (not-empty profile)
-          [:div.row
-           [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
-           [:div.col-xs-12
-            [:table.table
-             (into [:tbody]
-                   (for [profile-field (sort-by :order profile)
-                         :let [{:keys [field value]} profile-field
-                               key (->> contact-fields
-                                        (filter #(= (:type %) field))
-                                        first
-                                        :key)]]
-                     [:tr
-                      [:td.profile-field (t key) ":"]
-                      [:td (cond
-                             (or (re-find #"www." (str value)) (re-find #"^https?://" (str value)) (re-find #"^http?://" (str value))) (hyperlink value)
-                             (and (re-find #"@" (str value)) (= "twitter" field)) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
-                             (and (re-find #"@" (str value)) (= "email" field)) [:a {:href (str "mailto:" value)} (t value)]
-                             (and  (empty? (re-find #" " (str value))) (= "facebook" field)) [:a {:href (str "https://www.facebook.com/" value) :target "_blank" } (t value)]
-                             (= "twitter" field) [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
-                             (and  (empty? (re-find #" " (str value))) (= "pinterest" field)) [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
-                             (and  (empty? (re-find #" " (str value))) (= "instagram" field)) [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
-                             (= "blog" field) (hyperlink value)
-                             :else (t value))]]))]]]
-          )]]
-      (if (not-empty badges)
-        [:div {:id "user-badges"}
-         [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentbadges)]
-         [badge-grid badges @badge-small-view]
-         (if (< 6 (count badges))
-           [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])])
-      (if (not-empty pages)
-        [:div {:id "user-pages"}
-         [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
-         [page-grid pages profile_picture @page-small-view]
-         (if (< 6 (count pages))
-           [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
-      [reporttool1 user-id fullname "user"]
-      ]]))
+         ])]
+     [:div.panel {:id "profile"}
+      [:div.panel-body
+       
+       [:h1.uppercase-header fullname]
+       
+       [:div.row
+        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
+         [:div.profile-picture-wrapper
+          [:img.profile-picture {:src (profile-picture profile_picture)
+                                 :alt fullname}]]]
+        [:div {:class "col-md-9 col-sm-9 col-xs-12"}
+         (if (not-empty about)
+           [:div {:class "row about"}
+            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
+            [:div.col-xs-12 about]])
+         (if (not-empty profile)
+           [:div.row
+            [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
+            [:div.col-xs-12
+             [:table.table
+              (into [:tbody]
+                    (for [profile-field (sort-by :order profile)
+                          :let          [{:keys [field value]} profile-field
+                                         key (->> contact-fields
+                                                  (filter #(= (:type %) field))
+                                                  first
+                                                  :key)]]
+                      [:tr
+                       [:td.profile-field (t key) ":"]
+                       [:td (cond
+                              (or (re-find #"www." (str value)) (re-find #"^https?://" (str value)) (re-find #"^http?://" (str value))) (hyperlink value)
+                              (and (re-find #"@" (str value)) (= "twitter" field))                                                      [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
+                              (and (re-find #"@" (str value)) (= "email" field))                                                        [:a {:href (str "mailto:" value)} (t value)]
+                              (and  (empty? (re-find #" " (str value))) (= "facebook" field))                                           [:a {:href (str "https://www.facebook.com/" value) :target "_blank" } (t value)]
+                              (= "twitter" field)                                                                                       [:a {:href (str "https://twitter.com/" value) :target "_blank" } (t value)]
+                              (and  (empty? (re-find #" " (str value))) (= "pinterest" field))                                          [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
+                              (and  (empty? (re-find #" " (str value))) (= "instagram" field))                                          [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
+                              (= "blog" field)                                                                                          (hyperlink value)
+                              :else                                                                                                     (t value))]]))]]]
+           )]]
+       (if (not-empty badges)
+         [:div {:id "user-badges"}
+          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentbadges)]
+          [badge-grid badges @badge-small-view]
+          (if (< 6 (count badges))
+            [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])])
+       (if (not-empty pages)
+         [:div {:id "user-pages"}
+          [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
+          [page-grid pages profile_picture @page-small-view]
+          (if (< 6 (count pages))
+            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
+       [reporttool1 user-id fullname "user"]
+       ]]]))
 
 (defn init-data [user-id state]
   (ajax/GET

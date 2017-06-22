@@ -12,10 +12,27 @@
       user-lng
       (:language-code (first (filter #(= (:language_code %) (:default_language_code %)) contents))))))
 
-(defn content-language-selector [content-language-atom contents]
+
+#_(defn content-language-selector [content-language-atom contents]
   
   (if (< 1 (count contents))
-      (into [:div.badge-language-selector]
+    (let []
+
+      [:div.dropdown
+       [:button {:class "btn btn-default btn-xs dropdown-toggle" :type "button" :id "dropdownMenu1" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "true"}
+        (str  (or (capitalize (get lang-lookup @content-language-atom)) @content-language-atom))
+        [:span.caret]]
+       (into [:ul {:class "dropdown-menu" :aria-labelledby "dropdownMenu1"}]
+            (for [content contents]
+              [:li [:a {:href "#" :on-click #(reset! content-language-atom (:language_code content))} (str  (or (capitalize (get lang-lookup (:language_code content))) (:language_code content)))]]) )]
+      #_(into [:div.badge-language-selector]
+            (for [content contents]
+              [:a {:href "#" :class (if (= @content-language-atom (:language_code content)) "chosen" "") :on-click #(reset! content-language-atom (:language_code content))} (str  (or (capitalize (get lang-lookup (:language_code content))) (:language_code content)))])))
+      [:div.badge-language-selector]))
+
+(defn content-language-selector [content-language-atom contents]
+  (if (< 1 (count contents))
+    (into [:div.badge-language-selector]
             (for [content contents]
               [:a {:href "#" :class (if (= @content-language-atom (:language_code content)) "chosen" "") :on-click #(reset! content-language-atom (:language_code content))} (str  (or (capitalize (get lang-lookup (:language_code content))) (:language_code content)))]))
       [:div.badge-language-selector]))

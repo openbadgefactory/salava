@@ -36,9 +36,7 @@
                    :on-click #(do
                                 (reset! views (pop @views))
                                 (.preventDefault %))}
-          [:span {:aria-hidden             "true"
-                  :id "backbutton"
-                  :dangerouslySetInnerHTML {:__html "&lt;"}}]]])
+          [:i {:class "fa fa-arrow-circle-left" :aria-hidden "true"}]]])
       [:div {:class "text-right"}       
        [:button {:type         "button"
                  :class        "close"

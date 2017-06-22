@@ -73,7 +73,8 @@
                                                                               :description (str issuer_description)
                                                                               :email       (str issuer_email)
                                                                               :url         (str issuer_url)
-                                                                              :image       (if issuer_image (str site-url "/" issuer_image))}}
+                                                                              :image       (if issuer_image (str site-url "/" issuer_image))
+                                                                              :origin      (str issuer_url)}}
                                            :uid                (:uid assertion)
                                            :issued_on          issued_on
                                            :issuedOn           issued_on
