@@ -132,7 +132,7 @@ INSERT INTO badge (
 
 
 --name: select-badge-visibility-recipients-count
-select COUNT(visibility) AS visibility_count from user_badge where badge_id= :badge_id AND visibility <> "private";
+select COUNT(visibility) AS visibility_count from user_badge where badge_id = :badge_id AND visibility <> 'private';
 
 --name: select-badge
 --get badge by id
