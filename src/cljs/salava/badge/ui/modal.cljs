@@ -41,7 +41,7 @@
         {:keys [name description tags criteria_content image_file image_file issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)]
     [:div
      
-     [:div {:id "badge-contents"}
+     [:div 
       [:div.pull-right
       [follow-badge badge_id]]]
      [:div {:id "badge-info"}
