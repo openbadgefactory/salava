@@ -563,7 +563,11 @@ ol.welcome-text li {
     border: 1px solid #bdbdc0;
     box-shadow: 0px 3px 6px #000;
     font-size: 13px;
-    .modal-body > .row{
+     button.close span {
+                    font-size: 40px;
+                    line-height: 24px;
+                }
+    /*.modal-body > .row{
         margin:0px 30px;
         &:first-child{
             margin-right: 0px;
@@ -578,7 +582,7 @@ ol.welcome-text li {
         @media (max-width:992px){
             margin:0px -15px;
         }
-    }
+    }*/
     #badge-contents {
         margin:0px 45px;
     }

@@ -113,11 +113,9 @@
          (connect-user user-id)]]
         )
      
-     [:div.panel {:id "profile"}
-      [:div.panel-body
-       
+     [:div {:id "profile"}
+      [:div.modal-body
        [:h1.uppercase-header fullname]
-       
        [:div.row
         [:div {:class "col-md-3 col-sm-3 col-xs-12"}
          [:div.profile-picture-wrapper
