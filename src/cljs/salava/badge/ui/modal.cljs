@@ -41,15 +41,12 @@
         {:keys [name description tags criteria_content image_file image_file issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)]
     [:div
      
-     [:div 
+     [:div.col-xs-12
       [:div.pull-right
       [follow-badge badge_id]]]
      [:div {:id "badge-info"}
       [:div.panel
        [:div.panel-body
-        
-        
-        
         (if (or verified_by_obf issued_by_obf)
           (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
         [:div.row

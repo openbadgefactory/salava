@@ -26,7 +26,7 @@
 (defn modal-content [] 
   [:div {:id "badge-content"}
    [:div.modal-body
-    [:div.row
+    [:div
      [:div.col-md-12
       (if (< 1 (count @views))
         [:div {:class "pull-left"}       

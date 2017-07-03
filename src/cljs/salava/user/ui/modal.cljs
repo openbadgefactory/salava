@@ -108,12 +108,11 @@
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
     [:div
-     [:div.pull-right
-      (if-not owner?
-        [:div 
-         (connect-user user-id)
-         ;(admintool user-id "user")
-         ])]
+     (if-not owner?
+       [:div.col-xs-12[:div.pull-right
+         (connect-user user-id)]]
+        )
+     
      [:div.panel {:id "profile"}
       [:div.panel-body
        
