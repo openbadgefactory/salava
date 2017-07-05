@@ -114,7 +114,7 @@
         )
      
      [:div {:id "profile"}
-      [:div.modal-body
+      [:div.col-xs-12
        [:h1.uppercase-header fullname]
        [:div.row
         [:div {:class "col-md-3 col-sm-3 col-xs-12"}

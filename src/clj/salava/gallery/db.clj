@@ -301,12 +301,11 @@
   [ctx badge-id user-id]
   (let [badge-content (map (fn [content] (update content :criteria_content md->html) ) (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
         {:keys [badge_id remote_url issuer_verified]} (first badge-content)
-        ;recipient-badge-data (select-badge-criteria-issuer-by-recipient {:badge_content_id badge-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
-        ;badge-data (or recipient-badge-data (select-badge-criteria-issuer-by-date {:badge_content_id badge-id} (into {:result-set-fn first} (get-db ctx))))
+
         rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
-        recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
-        ;badge-message-count (if user-id {:message_count (so/get-badge-message-count ctx badge-content-id user-id)})
-        ;followed? (if user-id {:followed? (so/is-connected? ctx user-id badge-content-id)})
+        {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
+        ;recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
+        recipients (if user-id (select-badge-recipients-fix {:issuer_content_name issuer_content_name :description description :name name} (get-db ctx)))
         badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified} {:content badge-content} rating ;(update badge-data :criteria_content md->html)  ;badge-message-count ;followed?
                      )]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)

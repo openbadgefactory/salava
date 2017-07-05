@@ -47,6 +47,7 @@
         report-type-atom (cursor state [:report-type])]
     [:div  {:class "row report-form"}
      (open-reportform-button false status)
+     
      [:div {:class "col-xs-12" :id "reportform"}
       [:h4 (t :admin/Reportproblem)]
       [:div.form-group

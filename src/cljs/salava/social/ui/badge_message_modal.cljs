@@ -1,6 +1,7 @@
 (ns salava.social.ui.badge-message-modal
   (:require [reagent.core :refer [atom create-class]]
             [reagent-modals.modals :as m]
+            [salava.core.ui.modal :as mo]
             [reagent-modals.modals :refer [close-modal!]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.rate-it :as r]
@@ -83,7 +84,10 @@
         [:a {:href "#"
              :class "badge-message-link"
              :on-click #(do
-                          (open-modal badge-id)
+                          (mo/open-modal [:gallery :badges] {:badge-id badge-id
+                                                             :show-messages true
+                                                             :reload-fn nil})
+                          ;(open-modal badge-id)
                           (.preventDefault %) )}
          (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
                                                    (t :social/Comment)

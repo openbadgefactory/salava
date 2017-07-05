@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom create-class dom-node]]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [private?]]
+            [salava.core.ui.helper :refer [private? base-url]]
             [markdown.core :refer [md->html]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [reagent-modals.modals :as m :refer [close-modal!]]
@@ -234,7 +234,7 @@
 
 (defn share-buttons-element [url title public? is-badge? link-or-embed-atom image-file certification]
   (let [site-name (session/get-in [:share :site-name])
-        hashtag (session/get-in [:share :hashtag])
+        hashtag   (session/get-in [:share :hashtag])
         ]
     [:div {:id "share"}
      [:div {:id "share-buttons" :class (if-not public? " share-disabled")}
@@ -262,9 +262,9 @@
        (if is-badge?
          [:a {:href "#" :on-click #(m/modal! [linkedin-modal1 url title certification] {:size :sm} )}
           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]
-         #_[:a {:href   (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
-              :target "_blank"}
-          [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
+         #_[:a {:href (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
+                :target "_blank"}
+            [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
           [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
@@ -274,12 +274,14 @@
        [google-plus url]]
       [:div.share-button
        [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank"} [:i {:class "fa fa-facebook-square"}]]]
+      
       [:div.share-button
        (if is-badge?
-         [:a {:href            (str "//www.pinterest.com/pin/create/button/?url=" url "&description=" title)
+         [:a {:href            (str "https://www.pinterest.com/pin/create/button/?url=" url "&media=" (base-url) "/" image-file "&description=" title) 
               :data-pin-do     "buttonPin"
               :data-pin-custom "true"
-              :data-pin-media  image-file}
+              :target "_blank"
+              }
           [:i {:class "fa fa-pinterest-square"}]])]
       [:div.share-link
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]

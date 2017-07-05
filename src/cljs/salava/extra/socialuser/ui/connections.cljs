@@ -15,17 +15,20 @@
                (swap! state assoc :followers-users (:followers-users data)
                       :following-users (:following-users data)))}))
 
+
+
 (defn deleteconnect [user-id state]
-  [:a {:class "btn btn-primary btn-xs" :href "#" :on-click #(ajax/DELETE
-                             (path-for (str "/obpv1/socialuser/user-connection/" user-id))
-                             {:response-format :json
-                              :keywords?       true          
-                              :handler         (fn [data]
-                                                 (do
-                                                   (init-data state)))
-                              :error-handler   (fn [{:keys [status status-text]}]
-                                                 (.log js/console (str status " " status-text))
-                                                 )})} (t :social/Unfollow) ])
+  [:a {:href "#" :on-click #(ajax/DELETE
+                              (path-for (str "/obpv1/socialuser/user-connection/" user-id))
+                              {:response-format :json
+                               :keywords?       true          
+                               :handler         (fn [data]
+                                                  (do
+                                                    (init-data state)))
+                               :error-handler   (fn [{:keys [status status-text]}]
+                                                  (.log js/console (str status " " status-text))
+                                                  )})} (t :social/Unfollow) ]
+  )
 
 
 (defn accepted-user-connections [state users visible-area-atom]
@@ -45,14 +48,14 @@
              (for [user users
                    :let [{:keys [user_id profile_picture first_name last_name status]} user]]
                [:tr
-                [:td [:img.badge-icon {:src (profile-picture profile_picture) 
-                                       :alt name}]]
+                [:td.icon [:img.badge-icon {:src (profile-picture profile_picture) 
+                                       :alt user_id}]]
                 [:td.name [:a {:href     "#"
                                :on-click #(do
                                             (mo/open-modal [:user :profile] {:user-id user_id})
                                         ;(b/open-modal id false init-data state)
                                             (.preventDefault %)) } (str first_name " " last_name)]]
-                [:td  (if (= "accepted" status) (deleteconnect user_id state) [:span {:class "label label-primary"} (str (t :social/Pending) "...")])]]))]]
+                [:td.action  (if (= "accepted" status) (deleteconnect user_id state)  (str (t :social/Pending) "..."))]]))]]
      ]))
 
 
@@ -100,20 +103,21 @@
          [:th ""]
          [:th ""]
          [:th ""]]]
+       
        (into [:tbody]
              (for [user users
                    :let [{:keys [owner_id profile_picture first_name last_name status]} user]]      
                [:tr
-                [:td [:img.badge-icon {:src (profile-picture profile_picture) 
-                                       :alt name}]]
+                [:td.icon [:img.badge-icon {:src (profile-picture profile_picture) 
+                                       :alt (str first_name last_name)}]]
                 [:td.name [:a {:href     "#"
                                :on-click #(do
                                             (mo/open-modal [:user :profile] {:user-id owner_id})
                                         ;(b/open-modal id false init-data state)
                                             (.preventDefault %)) } (str first_name " " last_name)]]
                 (if (= "pending" status)
-                  [:td (accept owner_id state) " " (decline owner_id state)]
-                  [:td  (str(t :social/Follows)  " ") ])]))]]]))
+                  [:td.action (accept owner_id state) " " (decline owner_id state)]
+                  [:td.action  (str(t :social/Follows)  " ") ])]))]]]))
 
 
 
@@ -122,7 +126,7 @@
   (let [visible-area-atom (cursor state [:visible-area])
         followers-users     (cursor state [:followers-users])
         following-users    (cursor state [:following-users])]
-    [:div     
+    [:div   
      (if-not (empty? @followers-users)
        [:div {:id "badge-stats"}
       (pending-user-connections state @followers-users visible-area-atom)])

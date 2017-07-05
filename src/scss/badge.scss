@@ -192,11 +192,15 @@ button {
         padding-bottom: 10px;
         font: 400 20px "Open Sans",sans-serif;
     }
+
     .panel {
         border:none;
         border-radius: 4px;
         img.badge-icon {
             width: 30px;
+        }
+	img.user-icon {
+            width: 25px;
         }
         .panel-heading {
             border-bottom: 1px solid #dddddd;
@@ -230,7 +234,14 @@ button {
                     text-align: center;
                     vertical-align: middle;
                 }
+		td.icon {
+		    width:10%;
+		}
+		td.action{
+		    width:20%;
+		}
                 td.name {
+		    width: 70%;
                     text-align: left;
                 }
                 th:nth-child(2) {

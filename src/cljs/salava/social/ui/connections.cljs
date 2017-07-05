@@ -45,14 +45,14 @@
                (for [badge-views badges
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:tr
-                  [:td [:img.badge-icon {:src (str "/" image_file)
+                  [:td.icon [:img.badge-icon {:src (str "/" image_file)
                                          :alt name}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:gallery :badges] {:badge-id id})
                                               ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } name]]
-                   [:td (unfollow id state)]
+                   [:td.action (unfollow id state)]
                   ]))]]
      ])
 
@@ -72,7 +72,8 @@
       (badge-connections badges state)
       
       ]
-     (user-connections)]))
+     (user-connections)
+     ]))
 
 
 
