@@ -20,6 +20,7 @@
                 [salava.extra.passport.ui.routes]
                 [salava.extra.socialuser.ui.routes]
                 [salava.extra.kirkwood.ui.routes]
+                [salava.extra.theme.ui.routes]
 		[salava.extra.hpi.ui.routes]
 ])))
 

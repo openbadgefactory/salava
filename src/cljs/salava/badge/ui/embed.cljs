@@ -7,6 +7,7 @@
             [salava.core.ui.helper :refer [path-for]]))
 
 
+
 (defn error-view [state]
   [:div {:id "badge-gallery"}
        [:div {:id "grid"}

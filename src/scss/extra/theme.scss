@@ -1,0 +1,243 @@
+/* VARIABLES OVERWRITE */
+@import 'theme_variables';
+
+@import '../admin';
+@import '../badge';
+@import '../core';
+@import '../file';
+@import '../gallery';
+@import '../oauth';
+@import '../page';
+@import '../social';
+@import '../user';
+@import 'application';
+
+.btn {
+    color: black;
+    &:hover {
+	color: black;
+    }
+}
+
+/* LOGIN */
+#login-page, #registration-page {
+    #narrow-panel{
+	background-color: #E9E9E9;
+	border-radius: 1px;
+	border: none;
+    }
+    input{
+	border: none;
+	border-radius: 11px;
+    }
+    .login-button{
+	background-color: #FFFFFF;
+	/* border-color: #f1b435; */
+	border: solid 2px #f1b435;
+	border-radius: 10px;
+	font-weight: 600;
+	font-size: 16px;
+    }
+    .management-links{
+	a{
+	    color: black;
+	    
+	    &:hover{
+		color:black;
+	}
+	}
+	margin-top: -15px;
+	
+	 .col-sm-6 {
+	    width:100%;
+	    text-align: center;
+	}
+    }
+}
+
+
+/*REGISTER */
+
+
+
+/*navbar*/
+
+
+.logo-image-url{
+        width: 155px;
+    height: 38px;
+    background-image: url("/img/extra/theme/logo.png");
+}
+
+.logo-image-icon-url {
+    width: 43px;
+    height: 48px;
+    background-image: url("/img/extra/theme/system_logo.png");
+}
+
+.system-image-url {
+    width: 80px;
+    height: 90px;
+    background-image: url("/img/extra/theme/logo_icon.png");
+}
+
+.issuedbyobf-image-url{
+    width: 195px;
+    height: 50px;
+    background-image: url("/img/extra/kirkwood/issuedbyobf.png");
+}
+
+.verifiedissuedbyobf-image-url {
+    width: 220px;
+    height: 44px;
+    background-image: url("/img/extra/kirkwood/verifiedissuedbyobf.png");
+}
+
+
+
+#grid-filter .btn, #buttons .col-xs-8 .btn {
+    color: #ffffff;
+    background-color: $button-color;
+    border-color:black;
+    margin: 0 3px 6px 0;
+    &.btn-active, &.btn:hover{
+        color: #ffffff;
+        background-color: $button-hover;//darken($text-color,20% );//#463c44;
+        border-color: darken($text-color,25% );
+        box-shadow: 0px 2px $box-shadow;
+    }
+}
+
+a#login-button{
+    color: #FFFFFF;
+    background-color:#1E1A33;
+    text-transform: none;
+    font-size: 16px;
+
+}
+
+.btn-primary:active:focus, .btn-primary:focus {
+    background-color: $button-color;
+    border-color: #f1b435;
+    &:hover {
+        background-color: $button-hover;
+    }
+}
+
+.btn[disabled]{
+    opacity:0.4;
+}
+
+.btn-warning {
+    background-color: $button-color;
+    border-color: red;
+        &:hover{
+	background-color: rgba(255, 0, 0, 0.1);
+    }
+}
+
+//body
+
+body, body.anon{
+    background: url('/img/extra/theme/bg.png') repeat  #ffffff;
+}
+
+//NAVBAR FIXED TOP
+ .navbar-fixed-top {
+     margin-right: 80px;
+ }
+
+.logo-main, .logo-icon {
+    height: 48px;
+}
+header#navbar {
+    background: #f1b435;
+}
+
+.title-row {
+    color: #f1b435;
+}
+
+#f1b435
+
+ul.side-links {
+    li a {
+        color: $button-hover;
+    }
+    li.active a, li a:hover {
+        color: $menu-active;
+    }
+    @media (max-width: 767px){
+        li.active a {
+            background-color: $button-hover;
+            color: #FFF;
+            //border: 1px solid #d8d8d8;
+            border-bottom: 0px;
+            margin-bottom: -1px;
+        }
+    }
+}
+.media.message-item .media-body a {
+    color:$grid-link;
+}
+
+ul#secondary-menu-links li a i.fa {
+    color: $button-hover;
+}
+
+.badge-container-pending .btn-primary {
+    border-color: green;
+    &:hover{
+	background-color: rgba(0, 255, 0, 0.1);
+    }
+}
+
+
+message-item.media button.close {
+    color: #1e1a34;
+}
+
+/*#my-badges #grid .grid-container .media-content .icons{
+    text-align:left;
+    .visibility-icon{
+        width:30px;
+        font-size: 20px;
+        padding-bottom: 5px;
+        display: inline-block;
+        text-align: left;
+        i{
+            cursor: pointer;
+        }
+    }
+    .righticon {
+        text-align: right;
+        float:right;
+        font-size: 18px;
+        display: inline-block;
+        line-height: 1em;
+        &.revoked, &.expired {
+            cursor: pointer;
+            color:#8c2e0b;
+        }
+    }
+    .lefticon {
+            color:#8c2e0b;
+            font-size: 14px;
+            text-transform: uppercase;
+            display: inline-block;
+            i {
+                font-size: 20px;
+                margin-right: 8px;
+                vertical-align:middle;
+                display: inline-block;
+                color:#8c2e0b;
+            }
+       }
+}
+legend, .form-horizontal legend.control-label {
+    text-align:left;
+    color:inherit;
+    font-size: inherit;
+    border:none;
+    font-weight: bold;
+}*/

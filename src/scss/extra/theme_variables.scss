@@ -1,0 +1,22 @@
+$titlebar-color: #1F1B35;
+
+$menu-color: #1F1B35;
+$menu-active: darken($menu-color, 18%);
+$title-color: $menu-color;
+
+$link-color:#467d91;
+$link-hover:  #999999;//lighten($link-color, 5%);
+$grid-link:  #333333;
+$grid-link-hover: lighten($grid-link, 5%);
+
+$badge-title:#1e1a34;
+$badge-title-hover:#999;
+
+$button-color: #FFFFFF;
+$button-hover: rgba(0,0,0,0.1);//lighten($button-color, 5%);
+
+$icon-color: #1F1B35;
+
+$text-color: #1F1B35;
+
+$green:  #5cb85c;

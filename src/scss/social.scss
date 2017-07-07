@@ -210,13 +210,17 @@
 		margin:5px 25px 0px 10px;
 	}
 	button.close {
-		position: absolute;
-		top:-3px;
-		right:0px;
-		color:#dc5c10;
-		opacity: 0.8;
-		&:hover {
-			opacity: 1;
+	    span{
+		font-size: 21px;
+		color:#1F1B35;
+	    }
+	    position: absolute;
+	    top:-3px;
+	    right:0px;
+	    
+	    opacity: 0.8;
+	    &:hover {
+		opacity: 1;
 		}
 	}
 	.deletemessage .alert-warning{

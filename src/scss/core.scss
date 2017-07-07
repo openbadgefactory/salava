@@ -118,6 +118,10 @@ button.close {
 }
 
 a#login-button {
+
+    @media (max-width: 496px){
+        margin-right: 10px;
+    }
     margin-top: 5px;
     height: 36px;
     width: 125px;

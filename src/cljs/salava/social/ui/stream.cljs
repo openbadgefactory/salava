@@ -18,8 +18,6 @@
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated?]]))
 
 
-
-
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/social/events" true)

@@ -70,11 +70,11 @@
        (t :user/Emailinfotext)]]
 
       [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-password"}
        (t :user/Password)
        [:span.form-required " *"]]
-       [:div.col-xs-8
+       [:div.col-sm-8
         [:div {:class (str "form-bar " (if (and (input/password-valid? @password-atom) (=@password-atom @password-verify-atom))  "form-bar-success" ""))}         
          [:input {:class     "form-control"
                   :id        "input-password"
@@ -83,11 +83,11 @@
                   :on-change #(reset! password-atom (.-target.value %))
                   :value     @password-atom}]]]]
      [:div.form-group
-      [:label {:class "col-xs-4"
+      [:label {:class "col-sm-4"
                :for "input-password-verify"}
        (t :user/Verifypassword)
        [:span.form-required " *"]]
-      [:div.col-xs-8
+      [:div.col-sm-8
        [:div {:class (str "form-bar " (if (and (input/password-valid? @password-verify-atom) (=@password-atom @password-verify-atom)) "form-bar-success" ""))}        
         [:input {:class     "form-control"
                  :id        "input-password-verify"
@@ -145,10 +145,12 @@
                            (send-registration state))}
       (t :user/Createnewaccount)]]))
 
+
 (defn oauth-registration-form []
   [:div {:class "row"}
-   [:div {:class "col-xs-6"} (facebook-link false true)]
-   [:div.col-sm-6 (linkedin-link nil "register")]])
+   [:div {:class "col-sm-6 left-column"} (facebook-link false true)]
+   [:div.col-sm-6.right-column (linkedin-link nil "register")]])
+
 
 (defn registeration-content [state]
   [:div
