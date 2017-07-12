@@ -31,8 +31,11 @@ UPDATE user_badge SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id 
 --name: update-user-visibility!
 UPDATE user SET profile_visibility  = 'internal', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
---name: update-badges-visibility!
+--name: update-user-badge-visibility-by-badge-id!
 UPDATE user_badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_id= :badge_id
+
+--name: update-badge-visibility-by-badge-id!
+UPDATE badge SET published = 0  WHERE id= :badge_id
 
 --name: insert-report-ticket<!
 --add new report ticket
@@ -80,8 +83,7 @@ SELECT email FROM user_email
 --name: select-user-id-by-badge-id
 SELECT user_id FROM badge WHERE id=:id
 
---name: select-users-id-by-badge-content-id
--- FIXME (badge_content_id)
+--name: select-users-id-by-badge-id
 select user_id from user_badge WHERE badge_id = :badge_id AND deleted = 0
 
 
@@ -97,6 +99,9 @@ DELETE FROM badge_view WHERE user_id = :user_id
 
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
+
+--name: update-badge-deleted-by-badge-id!
+UPDATE user_badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_id = :badge_id
 
 --name: update-badge-deleted-by-badge-content-id!
 UPDATE user_badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_id = :badge_id

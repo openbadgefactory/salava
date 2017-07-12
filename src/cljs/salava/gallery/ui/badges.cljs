@@ -78,7 +78,7 @@
 
 (defn fetch-badges [state]
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value]} @state
-        ajax-message-atom                                                                                                                     (cursor state [:ajax-message])
+        ajax-message-atom (cursor state [:ajax-message])
         page-count-atom (cursor state [:page_count])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (reset! page-count-atom 0)
@@ -349,7 +349,7 @@
        [:div {:class "pull-left"}
         ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
         ]
-       (admin-gallery-badge badge_id "badges" state init-data)]]))
+       (admin-gallery-badge badge_id "badges" state fetch-badges)]]))
 
 (defn load-more [state]
   (if (pos? (:badge_count @state))

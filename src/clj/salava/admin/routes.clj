@@ -99,12 +99,13 @@
                   (ok (a/get-badge-modal ctx id)))
 
              (GET "/badges/:id" []
-                  :return schemas/Badges
+                  ;;:return schemas/Badges
                   :path-params [id :- s/Str]
                   :summary "Get badges name, image and info"
                   :auth-rules access/admin
                   :current-user current-user
-                  (ok (a/get-public-badge-content-modal ctx id)))
+                  
+                  (ok (a/get-public-badge-content-modal ctx id (:id current-user))))
              
              (GET "/page/:id" []
                   :return schemas/Page

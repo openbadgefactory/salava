@@ -2,6 +2,8 @@
   (:require
     [salava.core.i18n :refer [t]]
     [salava.core.ui.helper :refer [path-for]]
+    [salava.core.helper :refer [dump]]
+    [clojure.string :refer [blank?]]
     [salava.core.time :refer [unix-time date-from-unix-time]]
     ))
 
@@ -22,8 +24,8 @@
        [:label (t :badge/Issuedon) ":"]
        [:span (date-from-unix-time (* 1000 issued))]]))
 
-  (defn issuer-image [image]
-    (if image
+(defn issuer-image [image]
+  (if-not (blank? image)
       [:div {:class "issuer-image pull-left"}
        [:img {:src (str "/" image)}]]))
 

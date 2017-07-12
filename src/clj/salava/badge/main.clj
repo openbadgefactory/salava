@@ -326,11 +326,11 @@
     {:status "error"}))
 
 
-(defn delete-badge-with-db! [db badge-id]
-  (delete-badge-tags! {:badge_id badge-id} db)
-  (delete-badge-views! {:badge_id badge-id} db)
-  (delete-badge-congratulations! {:badge_id badge-id} db)
-  (update-badge-set-deleted! {:id badge-id} db))
+(defn delete-badge-with-db! [db user-badge-id]
+  (delete-badge-tags! {:user_badge_id user-badge-id} db)
+  (delete-badge-views! {:user_badge_id user-badge-id} db)
+  (delete-badge-congratulations! {:user_badge_id user-badge-id} db)
+  (update-badge-set-deleted! {:id user-badge-id} db))
 
 (defn delete-badge!
   "Set badge deleted and delete tags"
