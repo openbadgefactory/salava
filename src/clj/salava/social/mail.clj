@@ -107,9 +107,7 @@
                    (-> current
                        (assoc-in [key :first_name] (:first_name item))
                        (assoc-in [key :last_name] (:last_name item))
-                       (assoc-in  [key typecount]  (inc (get-in current [key typecount] 0)))
-                       )
-                   ))
+                       (assoc-in  [key typecount]  (inc (get-in current [key typecount] 0))))))
         
         reduced-events (vals (reduce helper {} (reverse message-events)))]
     (map (fn [item] (follow-message item lng)) reduced-events)))
@@ -125,7 +123,6 @@
                           (if (and (not (nil? (first follow-events))) (not (empty? follow-events)))
                             follow-events)
                           ])))
-(events ctx {:id 1} "en")
 
 
 
