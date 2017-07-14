@@ -96,12 +96,12 @@
 
 
 #grid-filter .btn, #buttons .col-xs-8 .btn {
-    color: #ffffff;
+    color: black;
     background-color: $button-color;
     border-color:black;
     margin: 0 3px 6px 0;
     &.btn-active, &.btn:hover{
-        color: #ffffff;
+        color: black;
         background-color: $button-hover;//darken($text-color,20% );//#463c44;
         border-color: darken($text-color,25% );
         box-shadow: 0px 2px $box-shadow;
