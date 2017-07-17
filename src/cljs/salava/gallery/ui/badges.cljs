@@ -39,7 +39,7 @@
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
-(defn autocomplete-search [state country]
+#_(defn autocomplete-search [state country]
   (ajax/GET
      (path-for "/obpv1/gallery/badges/autocomplete")     
      {:params  {:country           (trim country)}
@@ -163,19 +163,6 @@
           }]]])))
 
 
-
-#_(defn init-data1 [state user-id]
-  (ajax/POST
-    (path-for (str "/obpv1/gallery/badges/" user-id))
-    {:params {:country ""
-              :badge ""
-              :issuer ""
-              :recipient ""}
-     :handler (fn [data]
-                (let [{:keys [badges countries user-country]} data]
-                  (swap! state assoc :badges badges
-                                     :countries countries
-                                     :country-selected user-country)))}))
 (defn init-data [state init-params]
   (ajax/GET
    (path-for "/obpv1/gallery/badges")
@@ -189,24 +176,6 @@
                         :badge_count badge_count
                         :countries countries
                         :country-selected user-country)))}))
-
-#_(defn init-data [state user-id]
-  (ajax/GET
-   (path-for (str "/obpv1/gallery/badges/" user-id))
-   
-    {:params {:country ""
-              :badge ""
-              :issuer ""
-              :recipient ""}
-     :handler (fn [data]
-                (let [{:keys [badges countries user-country]} data]
-                  (swap! state assoc :badges badges
-                                     :countries countries
-                                     :country-selected user-country)))}))
-
-
-
-
 
 
 (defn search-timer [state]
@@ -251,10 +220,7 @@
                                      :tags-badge-ids '()
                                      :tags '()
                                      :full-tags '())
-                              ;(autocomplete-search state @country-atom)
-                              (fetch-badges state)
-                              
-                              )}
+                              (fetch-badges state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
@@ -427,8 +393,6 @@
                                 :timer                  nil
                                 :ajax-message           nil})]
     (init-data state init-values)
-    ;(autocomplete-search state (:country init-values))
-    ;(init-data state user-id)
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_id])
