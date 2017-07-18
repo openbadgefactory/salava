@@ -121,37 +121,15 @@
   (let [event_ids (map  #(:event_id %) events)]
     (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))
     ))
-(defn get-user-admin-events [ctx user_id]
+#_(defn get-user-admin-events [ctx user_id]
   (select-admin-events {:user_id user_id} (get-db ctx)))
 
-(defn get-user-admin-events-sorted [ctx user_id]
+#_(defn get-user-admin-events-sorted [ctx user_id]
   (let [events (get-user-admin-events ctx user_id)]
    (if (not-empty events)
      (update-last-viewed ctx events user_id))
    events))
 
-
-
-
-(defn get-user-badge-events
-  "get users badge  message and follow events"
-  [ctx user_id]
-  (let [events (select-user-events {:user_id user_id} (get-db ctx)) ;get all events where type = badge
-        reduced-events (badge-events-reduce events) ;bundle events together with object and verb
-        badge-ids (map #(:object %) reduced-events)
-        messages (if (not (empty? badge-ids)) (select-messages-with-badge-id {:badge_ids badge-ids :user_id user_id} (get-db ctx)) ())
-        messages-map (badge-message-map messages)
-        message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
-        follow-events (filter-own-events reduced-events user_id)
-        badge-events (into follow-events message-events)]
-    badge-events))
-
-(defn get-user-badge-events-sorted-and-filtered [ctx user_id]
-  (let [badge-events (get-user-badge-events ctx user_id)
-        sorted (take 25 (sort-by :ctime #(> %1 %2) (vec badge-events)))]
-    (if (not-empty sorted)
-      (update-last-viewed ctx sorted user_id))
-    sorted))
 
 (defn hide-user-event! [ctx user_id event_id]
   (try+
@@ -178,12 +156,6 @@
    (catch Object _
      {:status "error" :connected? nil})))
 
-(defn get-badge-messages [ctx badge_id user_id]
-  (let [badge-messages (select-badge-messages {:badge_id badge_id} (get-db ctx))]
-    (do
-      (messages-viewed ctx badge_id user_id)
-      badge-messages
-      )))
 
 (defn get-badge-message-count [ctx badge_id user-id]
   (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_id badge_id} (get-db ctx))
@@ -211,20 +183,13 @@
 (defn delete-message! [ctx message_id user_id]
   (try+
    (let [message-owner (message-owner? ctx message_id user_id)
-         admin (ah/user-admin? ctx user_id)
-         ;badge-id (select-badge-id-by-message-id {:message_id message_id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))
-         ]
+         admin (ah/user-admin? ctx user_id)]
      (if (or message-owner admin)
-       (do
-         (update-badge-message-deleted! {:message_id message_id} (get-db ctx))
-         )))
+       (update-badge-message-deleted! {:message_id message_id} (get-db ctx))))
    "success"
    (catch Object _
      "error"
      )))
-
-
-
 
 
 (defn create-connection-badge-by-badge-id! [ctx user_id user_badge_id]
@@ -253,8 +218,7 @@
 
 
 (defn get-connections-badge [ctx user_id]
-  (select-user-connections-badge {:user_id user_id} (get-db ctx))
-  )
+  (select-user-connections-badge {:user_id user_id} (get-db ctx)))
 
 (defn get-users-not-verified-emails [ctx user_id]
   (select-user-not-verified-emails {:user_id user_id} (get-db ctx)))

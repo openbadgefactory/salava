@@ -13,7 +13,7 @@
             [salava.core.ui.share :as s]
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
-            [salava.gallery.ui.badges :as b]
+            [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
@@ -21,30 +21,21 @@
             [salava.core.ui.error :as err]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            [salava.admin.ui.reporttool :refer [reporttool]]))
+            [salava.admin.ui.reporttool :refer [reporttool1]]))
 
 
 
 (defn init-data [state id]
-  (let [reporttool-init {:description ""
-                         :report-type "bug"
-                         :item-id ""
-                         :item-content-id ""
-                         :item-url   ""
-                         :item-name "" ;
-                         :item-type "" ;badge/user/page/badges
-                         :reporter-id ""
-                         :status "false"}]
-   (ajax/GET
+  (ajax/GET
     (path-for (str "/obpv1/badge/info/" id))
     {:handler (fn [data]
                 (reset! state (assoc data :id id
                                      :show-link-or-embed-code nil
                                      :initializing false
                                      :content-language (init-content-language (:content data))
-                                     :permission "success"
-                                     :reporttool reporttool-init)))}
-    (fn [] (swap! state assoc :permission "error")))))
+                                     :permission "success")))}
+    (fn [] (swap! state assoc :permission "error")))
+  )
 
 (defn toggle-visibility [state]
   (let [id (:id @state)
@@ -94,19 +85,20 @@
 
 
 
-
-
-
-
 (defn content [state]
-  (let [{:keys [id badge_id  owner? visibility show_evidence rating issued_on expires_on revoked first_name last_name user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion  qr_code owner message_count content]} @state
-        expired? (bh/badge-expired? expires_on)
-        show-recipient-name-atom (cursor state [:show_recipient_name])
-        reporttool-atom (cursor state [:reporttool])
-        revoked (pos? revoked)
-        selected-language (cursor state [:content-language])
-        {:keys [name description tags criteria_content image_file image_file issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
-        ]
+  (let [{:keys [id badge_id  owner? visibility show_evidence rating issued_on expires_on
+                revoked first_name last_name user-logged-in? congratulated? congratulations
+                view_count evidence_url issued_by_obf verified_by_obf obf_url
+                recipient_count assertion  qr_code owner message_count content]} @state
+        expired?                                                                 (bh/badge-expired? expires_on)
+        show-recipient-name-atom                                                 (cursor state [:show_recipient_name])
+        revoked                                                                  (pos? revoked)
+        selected-language                                                        (cursor state [:content-language])
+        {:keys [name description tags criteria_content image_file image_file
+                issuer_content_name issuer_content_url issuer_contact
+                issuer_image issuer_description criteria_url
+                creator_name creator_url creator_email
+                creator_image creator_description message_count]}                (content-setter @selected-language content)]
     [:div {:id "badge-info"}
      [m/modal-window]
      [:div.panel
@@ -174,9 +166,9 @@
              [:div.row {:id "badge-views"}
               [:div.col-xs-12
                [:a.link {:href     "#"
-                    :on-click #(do
-                                 (b/open-modal badge_id false nil nil)
-                                 (.preventDefault %))} (t :badge/Otherrecipients)]]]) ;tähän
+                         :on-click #(do
+                                      (mo/open-modal [:gallery :badges] {:badge-id badge_id})
+                                      (.preventDefault %))} (t :badge/Otherrecipients)]]])
            [:div.row
             [:div.col-xs-12 {:id "badge-congratulated"}
              (if (and user-logged-in? (not owner?))
@@ -212,8 +204,8 @@
                [:div {:id "assertion-link"}
                 [:label (t :badge/Metadata)": "]
                 [:a.link {:href     "#"
-                     :on-click #(do (.preventDefault %)
-                                    (m/modal! [a/assertion-modal assertion] {:size :lg}))}
+                          :on-click #(do (.preventDefault %)
+                                         (m/modal! [a/assertion-modal assertion] {:size :lg}))}
                  (t :badge/Openassertion) "..."]])
              (if (pos? @show-recipient-name-atom)
                (if (and user-logged-in? (not owner?))
@@ -241,7 +233,7 @@
                            :let           [{:keys [id first_name last_name profile_picture]} congratulation]]
                        (uh/profile-link-inline id first_name last_name profile_picture)))]])
            ]]
-       (if owner? "" (reporttool id name "badge" reporttool-atom))]]]
+       (if owner? "" (reporttool1 id name "badge"))]]]
     ))
 
 
@@ -249,8 +241,7 @@
 (defn handler [site-navi params]
   (let [id (:badge-id params)
         state (atom {:initializing true
-                     :permission "initial"
-                     :reporttool {}})
+                     :permission "initial"})
         user (session/get :user)]
     (init-data state id)
     (fn []

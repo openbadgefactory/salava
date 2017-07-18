@@ -97,7 +97,8 @@
                    [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
         ]]
-      [reporttool1 badge_id name "badges"]]]
+      (if (and badge_id name)
+        [reporttool1 badge_id name "badges"])]]
     ))
 
 

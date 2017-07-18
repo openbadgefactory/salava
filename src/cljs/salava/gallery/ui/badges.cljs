@@ -13,43 +13,15 @@
             [salava.core.helper :refer [dump]]
             [cemerick.url :as url]
             [clojure.string :as s]
-            [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             [komponentit.autocomplete :refer [multiple-autocomplete]]
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
 
 
-(defn open-modal ([badge-id messages?]
-                  (open-modal badge-id messages? nil nil))
-  ([badge-id messages? init-data state]
-   (let [reporttool (atom {:description     ""
-                           :report-type     "bug"
-                           :item-id         ""
-                           :item-content-id ""
-                           :item-url        ""
-                           :item-name       "" ;
-                           :item-type       "" ;badge/user/page/badges
-                           :reporter-id     ""
-                           :status          "false"})]
-     (ajax/GET
-      (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
-      {:handler (fn [data]
-                  (do
-                    (m/modal! [badge-content-modal data reporttool messages? init-data state] {:size :lg})))}))))
+
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
-#_(defn autocomplete-search [state country]
-  (ajax/GET
-     (path-for "/obpv1/gallery/badges/autocomplete")     
-     {:params  {:country           (trim country)}
-      :handler (fn [data]
-                 (let [{:keys [tags names]} data]
-                   (swap! state assoc
-                          :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_ids v)]) tags))
-                          :tags  #{} ;todo: katso jos on toisessakin olemassa
-                          :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))})
-  )
 
 (defn hashtag? [text]
   (re-find #"^#" text))
@@ -73,8 +45,7 @@
     (swap! state assoc
            :full-tags (into (sorted-map) (map-indexed (fn [i v] [(inc i) (:badge_ids v)]) tag-items))
            :value new-value
-           :autocomplete-items items)
-    ))
+           :autocomplete-items items)))
 
 (defn fetch-badges [state]
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value]} @state
@@ -102,9 +73,9 @@
 
 
 (defn get-more-badges [state]
-  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value page_count]} @state
-        ajax-message-atom                                                                                                                     (cursor state [:ajax-message])]
-    ;(reset! ajax-message-atom (t :gallery/Searchingbadges))
+  (let [{:keys [user-id country-selected badge-name recipient-name issuer-name
+                tags order full-tags tags-badge-ids value page_count]} @state
+        ajax-message-atom (cursor state [:ajax-message])]
     (ajax/GET
       (path-for (str "/obpv1/gallery/badges"))
       {:params  {:country        (trim country-selected)
@@ -122,7 +93,6 @@
                          :page_count (inc (:page_count @state))
                          :badge_count (:badge_count data)))
        :finally (fn []
-                  ;(ajax-stop ajax-message-atom)
                   )})))
 
 
@@ -313,7 +283,6 @@
         [:div.media-description description]]]
       [:div.media-bottom
        [:div {:class "pull-left"}
-        ;[:a.bottom-link {:href (path-for (str "/gallery/badgeview/" badge-id))} [:i {:class "fa fa-share-alt"}] (t :badge/Share)]
         ]
        (admin-gallery-badge badge_id "badges" state fetch-badges)]]))
 
@@ -353,12 +322,7 @@
                                     )])
                  :component-did-mount (fn []
                                         (if badge_id
-                                          (open-modal badge_id true)
-                                          )
-                                        )
-                 ;:component-did-update #(scroll-bottom)
-                 })
-  )
+                                          (mo/open-modal [:gallery :badges] {:badge-id badge_id})))}))
 
 
 (defn init-values

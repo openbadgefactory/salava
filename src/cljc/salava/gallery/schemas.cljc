@@ -37,26 +37,26 @@
                             :user-country s/Str})
 
 
-(s/defschema MultilanguageContent {:default_language_code                               s/Str
-                                   :language_code       s/Str
-                                   :name                s/Str
-                                   :badge_id            s/Str
-                                   :image_file          s/Str
-                                   :description         s/Str
-                                   :issuer_content_name s/Str
-                                   :issuer_content_url  s/Str
-                                   :issuer_description  s/Str
-                                   :issuer_verified     (s/maybe s/Int)
-                                   :issuer_contact      (s/maybe s/Str)
-                                   :issuer_image        (s/maybe s/Str)
-                                   :creator_name        (s/maybe s/Str)
-                                   :creator_description (s/maybe s/Str)
-                                   :creator_url         (s/maybe s/Str)
-                                   :creator_email       (s/maybe s/Str)
-                                   :creator_image       (s/maybe s/Str)
-                                   :criteria_content    s/Str
-                                   :criteria_url        s/Str
-                                   :remote_url          s/Str})
+(s/defschema MultilanguageContent {:default_language_code s/Str
+                                   :language_code         s/Str
+                                   :name                  s/Str
+                                   :badge_id              s/Str
+                                   :image_file            s/Str
+                                   :description           s/Str
+                                   :issuer_content_name   s/Str
+                                   :issuer_content_url    s/Str
+                                   :issuer_description    s/Str
+                                   :issuer_verified       (s/maybe s/Int)
+                                   :issuer_contact        (s/maybe s/Str)
+                                   :issuer_image          (s/maybe s/Str)
+                                   :creator_name          (s/maybe s/Str)
+                                   :creator_description   (s/maybe s/Str)
+                                   :creator_url           (s/maybe s/Str)
+                                   :creator_email         (s/maybe s/Str)
+                                   :creator_image         (s/maybe s/Str)
+                                   :criteria_content      s/Str
+                                   :criteria_url          s/Str
+                                   :remote_url            s/Str})
 
 (s/defschema BadgeContent {:badge {:badge_id        s/Str
                                    :average_rating  (s/maybe s/Num)

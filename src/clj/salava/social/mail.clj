@@ -6,29 +6,7 @@
 
 
 
-(def ctx {:config {:core {:site-name "Perus salava"
- 
-                          :share {:site-name "jeejjoee"
-                                  :hashtag "KovisKisko"}
-                          
-                          :site-url "http://localhost:3000"
-                          
-                          :base-path "/app"
-                          
-                          :asset-version 2
-                          
-                          :languages [:en :fi]
-                          
-                          :plugins [:badge :page :gallery :file :user :oauth :admin  :social :extra/socialuser :registerlink :mail :factory]
 
-                          :http {:host "localhost" :port 3000 :max-body 100000000}
-                          :mail-sender "sender@example.com"}
-                   :user {:email-notifications true}}
-          :db (hikari-cp.core/make-datasource {:adapter "mysql",
-                                               :username "root",
-                                               :password "isokala",
-                                               :database-name "salava_extra2",
-                                               :server-name "localhost"})})
 
 (defn filter-last-checked [events]
   (filter #(nil? (:last_checked %)) events))
@@ -47,7 +25,7 @@
     
    text])
 
-(defn admin-events-message [ctx user lng]
+#_(defn admin-events-message [ctx user lng]
   (let [user-id (:id user)
         admin-events  (filter-last-checked (so/get-user-admin-events ctx user-id))]
     (if (and (not (nil? (first admin-events))) (not (empty? admin-events)))
@@ -128,15 +106,15 @@
 
 (defn email-new-messages-block [ctx user lng]
   (let [admin? (= "admin" (:role user))
-        admin-events (if admin? (admin-events-message ctx user lng) nil)
+        ;admin-events (if admin? (admin-events-message ctx user lng) nil)
         events (events ctx user lng)
         social-url (str (get-full-path ctx) "/social")]
-    (if (or (not (empty? admin-events)) (not (empty? events)))
+    (if (not (empty? events)) 
       [:table
        {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
        (html-mail-body-item  [:strong (str (t :user/Emailnotificationtext2 lng) ":")] )
        (html-mail-body-item [:ul
-                             admin-events
+                            ; admin-events
                              ])
        events
        (html-mail-body-item [:div (str (t :user/Emailnotificationtext3 lng) " ") [:a {:href social-url  :target "_blank"} (t :badge/Gohere lng)] "."])])))

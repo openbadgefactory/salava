@@ -101,7 +101,6 @@
 
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
-        reporttool-atom (cursor state [:reporttool])
         badge-small-view (cursor state [:badge-small-view])
         page-small-view (cursor state [:page-small-view])
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])

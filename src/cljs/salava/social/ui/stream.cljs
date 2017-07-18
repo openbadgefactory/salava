@@ -22,11 +22,11 @@
   (ajax/GET
     (path-for "/obpv1/social/events" true)
     {:handler (fn [data]
-                (swap! state assoc :events (:new-events data)
+                (swap! state assoc :events (:events data)
                        :initial false
                        :pending-badges (:pending-badges data)
                        :tips (:tips data))
-                (if (:admin-events data)
+                #_(if (:admin-events data)
                   (swap! state assoc :admin-events (:admin-events data))))}))
 
 

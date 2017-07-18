@@ -121,7 +121,7 @@
      (= item-type "user") (path-for (str "/user/profile/" id))
     :else (current-path)))
 
-(defn reporttool [id item-name item-type state]
+#_(defn reporttool [id item-name item-type state]
   (let [status (cursor state [:status])
         item-url (url-creator item-type id)
         reporter-id (session/get-in [:user :id])
