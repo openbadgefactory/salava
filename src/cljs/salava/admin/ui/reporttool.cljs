@@ -121,30 +121,6 @@
      (= item-type "user") (path-for (str "/user/profile/" id))
     :else (current-path)))
 
-#_(defn reporttool [id item-name item-type state]
-  (let [status (cursor state [:status])
-        item-url (url-creator item-type id)
-        reporter-id (session/get-in [:user :id])
-        item-content-id (if (= item-type "badges") id nil)
-        item-id (if (= item-type "badges") nil (js/parseInt id))]
-    
-    (swap! state assoc
-           :item-id item-id
-           :item-content-id item-content-id
-           :item-name item-name
-           :item-type item-type
-           :item-url item-url
-           :reporter-id reporter-id)
-    
-    
-    (if reporter-id
-      [:div
-       (cond
-         (= @status "false") (open-reportform-button true status)
-         (= @status "true")  (reportform state status)
-         (= @status "sent")  (confirmedtext) 
-         :else               "")]
-      "")))
 
 (defn reporttool1 [id item-name item-type]
   (let [state (atom {:description ""

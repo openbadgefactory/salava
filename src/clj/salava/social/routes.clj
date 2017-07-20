@@ -115,7 +115,7 @@
                    (do
                      (f/save-pending-assertions ctx (:id current-user))
                      (ok (let [pending-badges (b/user-badges-pending ctx (:id current-user))
-                               events (so/get-all-events ctx (:id current-user))
+                               events (so/get-all-events-add-viewed ctx (:id current-user))
                                tips (so/get-user-tips ctx (:id current-user))
                                ;admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
                                events {:tips tips

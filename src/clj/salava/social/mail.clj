@@ -5,9 +5,6 @@
             [salava.core.util :refer [get-full-path]]))
 
 
-
-
-
 (defn filter-last-checked [events]
   (filter #(nil? (:last_checked %)) events))
 
@@ -22,14 +19,7 @@
 
 (defn html-mail-body-li [text]
   [:li
-    
    text])
-
-#_(defn admin-events-message [ctx user lng]
-  (let [user-id (:id user)
-        admin-events  (filter-last-checked (so/get-user-admin-events ctx user-id))]
-    (if (and (not (nil? (first admin-events))) (not (empty? admin-events)))
-      (html-mail-body-li (str (t :social/Emailadmintickets lng) " " (count admin-events) "." )))))
 
 (defn badge-message [item lng]
   (let [new-messages (get-in item [:message :new_messages] ) ]
@@ -40,17 +30,15 @@
 
 
 
-(defn message-events
-  "create message events example:
-  ([:li\"test badge\" badge has 1 new comment.])"
-  [events lng]
+(defn message-events [events lng]
   (let [message-helper (fn [item]
                          (when (and (get-in item [:message :new_messages] )
                                     (< 0 (get-in item [:message :new_messages] ))
                                     (= "message" (:verb item)))
                            (badge-message item lng)))
         message-events (map message-helper events)]
-    (map message-helper events)))
+    (if-not (empty? message-events)
+      (map message-helper events))))
 
 
 (defn follow-message [item lng]
@@ -78,7 +66,7 @@
   "create message events example:
   ([:li Test user has published 1 badge and 2 pages])"
   [events lng]
-  (let [message-events (filter #(= "publish" (:verb %)) events)
+  (let [follow-events (filter #(= "publish" (:verb %)) events)
         helper (fn [current item]
                  (let [key [(:subject item)]
                        typecount (keyword (str (:type item) "_count" ))]
@@ -87,37 +75,50 @@
                        (assoc-in [key :last_name] (:last_name item))
                        (assoc-in  [key typecount]  (inc (get-in current [key typecount] 0))))))
         
-        reduced-events (vals (reduce helper {} (reverse message-events)))]
-    (map (fn [item] (follow-message item lng)) reduced-events)))
+        reduced-events (vals (reduce helper {} (reverse follow-events)))]
+    (if-not (empty? follow-events)
+      (map (fn [item] (follow-message item lng)) reduced-events))))
+
+
+(defn admin-events
+  "create message events example:
+  ([:li Open notifications in the platform 1.])"
+  [events lng]
+  (let [admin-events (filter #(= "ticket" (:verb %)) events)]
+    (if (pos? (count admin-events))
+      (str (t :social/Emailadmintickets lng) " " (count admin-events) "." ))
+    ))
 
 (defn events [ctx user lng]
   (let [events (or (filter-last-checked (so/get-all-events ctx (:id user))) nil)
-        message-event (message-events events lng)
+        message-events (message-events events lng)
         follow-events (follow-events events lng)
-        ]
-    (html-mail-body-item [:ul
-                          (if (and (not (nil? (first message-events))) (not (empty? message-events)))
-                            message-events)
-                          (if (and (not (nil? (first follow-events))) (not (empty? follow-events)))
-                            follow-events)
-                          ])))
+        admin-events (admin-events events lng)]
+    (if (or admin-events follow-events message-events)
+      (html-mail-body-item [:ul
+                            (if-not (empty? admin-events)
+                              admin-events)                            
+                            (if-not (empty? follow-events)
+                              follow-events)
+                            (if-not (empty? message-events)
+                                message-events)]))))
+
+
 
 
 
 (defn email-new-messages-block [ctx user lng]
   (let [admin? (= "admin" (:role user))
-        ;admin-events (if admin? (admin-events-message ctx user lng) nil)
         events (events ctx user lng)
         social-url (str (get-full-path ctx) "/social")]
     (if (not (empty? events)) 
       [:table
        {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
        (html-mail-body-item  [:strong (str (t :user/Emailnotificationtext2 lng) ":")] )
-       (html-mail-body-item [:ul
-                            ; admin-events
-                             ])
        events
        (html-mail-body-item [:div (str (t :user/Emailnotificationtext3 lng) " ") [:a {:href social-url  :target "_blank"} (t :badge/Gohere lng)] "."])])))
+
+
 
 
 (defmulti get-fragment #(last %&))

@@ -15,10 +15,17 @@
 (defn insert-social-event! [ctx data]
   (insert-social-event<! data (get-db ctx)))
 
+
+
 (defn get-all-owners [ctx data]
   (let [funs (plugin-fun (get-plugins ctx) "event" "owners")]
     (set (mapcat (fn [f] (try (f ctx data) (catch Throwable _ ()))) funs)))
   )
+
+(defn update-last-viewed [ctx events user_id]
+  (let [event_ids (map  #(:event_id %) events)]
+    (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))
+    ))
 
 (defn get-all-events [ctx user_id]
   (let [funs (plugin-fun (get-plugins ctx) "event" "events")
@@ -36,7 +43,11 @@
       (log/error "insert-event-owners!: failed to save event owners")
       (log/error (.toString ex)))))
 
-
+(defn get-all-events-add-viewed [ctx user_id]
+  (let [events (get-all-events ctx user_id)]
+    (update-last-viewed ctx events user_id)
+    events
+    ))
 
 (defn messages-viewed
  "Save information about viewing messages."
@@ -117,10 +128,7 @@
   (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events) )
 
 
-(defn update-last-viewed [ctx events user_id]
-  (let [event_ids (map  #(:event_id %) events)]
-    (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))
-    ))
+
 #_(defn get-user-admin-events [ctx user_id]
   (select-admin-events {:user_id user_id} (get-db ctx)))
 
