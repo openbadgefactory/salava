@@ -1,6 +1,7 @@
 /* VARIABLES OVERWRITE */
 @import 'theme_variables';
 
+@import url('/css/extra/fonts/MyFontsWebfontsKit.css');
 @import '../admin';
 @import '../badge';
 @import '../core';
@@ -41,13 +42,11 @@
     .management-links{
 	a{
 	    color: black;
-	    
 	    &:hover{
 		color:black;
 	}
 	}
 	margin-top: -15px;
-	
 	 .col-sm-6 {
 	    width:100%;
 	    text-align: center;
@@ -140,6 +139,9 @@ a#login-button{
 
 body, body.anon{
     background: url('/img/extra/theme/bg.png') repeat  #ffffff;
+    font-family: FrutigerLTPro-Roman;
+    font-weight: normal;
+    font-style: normal;
 }
 
 //NAVBAR FIXED TOP

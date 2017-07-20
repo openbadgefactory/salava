@@ -56,7 +56,7 @@
                                    :creator_image         (s/maybe s/Str)
                                    :criteria_content      s/Str
                                    :criteria_url          s/Str
-                                   :remote_url            s/Str})
+                                   :remote_url            (s/maybe s/Str)})
 
 (s/defschema BadgeContent {:badge {:badge_id        s/Str
                                    :average_rating  (s/maybe s/Num)
@@ -65,7 +65,7 @@
                                                 :issued_by_obf   s/Bool
                                                 :issuer_verified (s/maybe s/Int)
                                                 :obf_url         s/Str
-                                                :remote_url      s/Str
+                                                :remote_url      (s/maybe s/Str)
                                                 :rating_count    (s/maybe s/Int)}
                            :public_users       (s/maybe [{:id              s/Int
                                                           :first_name      s/Str
