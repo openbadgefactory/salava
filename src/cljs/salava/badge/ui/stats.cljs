@@ -4,7 +4,11 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
+            [salava.core.ui.modal :as mo]
+            [reagent-modals.modals :as m]
             [salava.core.time :refer [date-from-unix-time]]))
+
+
 
 (defn views-panel [views visible-area-atom]
   (let [panel-identity :views
@@ -26,7 +30,11 @@
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:div.col-md-12
                   [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
-                  [:div.col-md-5 [:a {:href (path-for (str "/badge/info/" id))} name]]
+                  [:div.col-md-5 [:a {:href "#"
+                                 :on-click #(do
+                                              (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                                              (.preventDefault %)) }  name]]
                   [:div.col-md-2 [:label (t :badge/Loggedinusers)] reg_count]
                   [:div.col-md-2 [:label (t :badge/Anonymoususers)]anon_count]
                   [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]))])]))
@@ -53,7 +61,11 @@
                  [:tr
                   [:td [:img.badge-icon {:src (str "/"  image_file)
                                          :alt name}]]
-                  [:td.name [:a {:href (path-for (str "/badge/info/" id))} name]]
+                  [:td.name [:a {:href "#"
+                                 :on-click #(do
+                                              (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                                              (.preventDefault %)) } name]]
                   [:td congratulation_count]
                   [:td (if latest_congratulation (date-from-unix-time (* 1000 latest_congratulation)))]]))]])]))
 
@@ -72,13 +84,18 @@
                 (into [:div.issuer-badges]
                       (for [badge badges
                             :let [{:keys [id image_file name]} badge]]
-                        [:a {:href (path-for (str "/badge/info/" id))}
+                        [:a {:href "#"
+                                 :on-click #(do
+                                              (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                                              (.preventDefault %)) }
                          [:img.badge-icon {:src (str "/"  image_file) :title name :alt name}]]))])))]))
 
 (defn content [state]
   (let [{:keys [badge_count expired_badge_count badge_views badge_congratulations badge_issuers]} @state
         visible-area-atom (cursor state [:visible_area])]
     [:div {:id "badge-stats"}
+     [m/modal-window]
      [:h1.uppercase-header
       (t :badge/Badgestatistics)]
      [:h3 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]

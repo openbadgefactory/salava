@@ -10,8 +10,10 @@
     }
     box-shadow: none;
     margin-bottom:3px;
+    color: #ffffff;
     &:hover {
         box-shadow: none;
+	color: #ffffff;
     }
     &:active, &:visited {
         color: #ffffff;
@@ -21,7 +23,7 @@
 .btn-facebook {
     background-color: #3d5e99;
     border: 1px solid #314b7a;
-    color: #ffffff;
+    color: #ffffff !important;
     &:hover, &:focus, &:active, &:active:focus {
         background-color: #314b7a;
         border: 1px solid #3d5e99;

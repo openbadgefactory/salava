@@ -3,9 +3,10 @@
              [salava.core.i18n :as i18n :refer [t]]
              [salava.core.ui.helper :refer [base-path]]
              [salava.gallery.ui.badges :as b]
-             [salava.gallery.ui.badge-view :as bv]
+             ;[salava.gallery.ui.badge-view :as bv]
              [salava.gallery.ui.pages :as p]
-             [salava.gallery.ui.profiles :as u]))
+             [salava.gallery.ui.profiles :as u]
+             [salava.gallery.ui.modal :as modal]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -15,11 +16,12 @@
   {(str (base-path context) "/gallery") [["" b/handler]
                                          ["/badges" b/handler]
                                          [["/badges/" :user-id] b/handler]
-                                         [["/badges/" :user-id "/" :badge_content_id] b/handler]
+                                         [["/badges/" :user-id "/" :badge_id] b/handler]
                                          ["/pages" p/handler]
                                          [["/pages/" :user-id] p/handler]
                                          ["/profiles" u/handler]
-                                         [["/badgeview/" :badge-content-id] bv/handler]]})
+                                         ;[["/badgeview/" :badge-content-id] bv/handler]
+                                         ]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/gallery")                {:weight 40 :title (t :gallery/Gallery) :top-navi true :breadcrumb (t :gallery/Gallery " / " :gallery/Sharedbadges)}

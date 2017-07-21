@@ -33,26 +33,25 @@
     }
 }
 
-.login-links, .oauth-buttons, #registration-page {
-    .col-xs-6, .col-sm-6 {
-	width: 50%;
-	float:left;
-    }
-    .col-xs-6 {
+@media (min-width: 768px) {
+    .left-column{
 	text-align: right;
     }
-    .col-sm-6 {
+    .right-column{
 	text-align: left;
     }
 }
-@media (max-width: 479px) {
-    #registration-page, .oauth-buttons{
-	.col-xs-6,  .col-sm-6 {
-	    width: 100%;
-	    text-align: center;
-	}
+@media (max-width: 768px) {
+    .right-column{
+	text-align: center;
     }
+    .left-column{
+	text-align: center;
+    }
+    
 }
+
+
 .form-required {
     color: #f00f00;
 }
@@ -238,4 +237,15 @@ li.user-link-inline {
 #cancel-account {
     #cancel-info {
     }
+}
+
+
+.margin-0 {
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+}
+
+.user-inputs{
+    margin-top: 30px;
+    margin-bottom: 20px;
 }

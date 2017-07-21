@@ -199,7 +199,8 @@
 			}
 		}
 		img {
-			max-height: 90px;
+		    max-height: 90px;
+		    width: 90px;
 		}
 	}
 	.date {
@@ -210,13 +211,17 @@
 		margin:5px 25px 0px 10px;
 	}
 	button.close {
-		position: absolute;
-		top:-3px;
-		right:0px;
-		color:#dc5c10;
-		opacity: 0.8;
-		&:hover {
-			opacity: 1;
+	    span{
+		font-size: 21px;
+		color:#1F1B35;
+	    }
+	    position: absolute;
+	    top:-3px;
+	    right:0px;
+	    
+	    opacity: 0.8;
+	    &:hover {
+		opacity: 1;
 		}
 	}
 	.deletemessage .alert-warning{
@@ -306,8 +311,14 @@
 		margin:5px 0px 0px 0px;
 	}
 	.btn-primary.follow, .btn-primary.unfollow {
-		margin-right: 15px;
-		margin-top:15px;
+		//margin-right: 30px;
+		//margin-top:-25px;
+	}
+	.modal-footer{
+	    padding: 0px;
+	}
+	#backbutton{
+	    font-size:30px;
 	}
 	#badge-contents  .message-item {
 		.pull-left {
@@ -369,4 +380,51 @@
 	&:hover {
 		background-color:#756A70;
 	}
+}
+
+
+
+
+/* PENDING CONNECTIONS */
+
+
+.connections-container-pending {
+    border: 1px solid #f2f2f2;
+    background-color: #ffffff;
+    padding: 25px 70px;
+    margin-bottom: 10px;
+
+    .pull-left {
+        padding-right: 25px;
+        img {
+            width: 75px;
+            padding: 10px;
+            box-shadow: none;
+            border: none;
+            margin-bottom: 15px;
+        }
+    }
+    .media-heading {
+        font-family: 'Open Sans Condensed',sans-serif;
+        font-size: 25px;
+        margin: 10px 0px;
+    }
+    .button-row {
+        margin-top: 10px;
+        border-top: 2px dashed #bfbfbf;
+        padding-top: 10px;
+        text-align: center;
+
+        button {
+            font-size: 13px;
+        }
+        .btn-decline {
+            background: none;
+            background-color: #ffffff;
+            border: none;
+            color: $button-color;
+            box-shadow: none;
+            -webkit-box-shadow: none;
+        }
+    }
 }

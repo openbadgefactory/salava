@@ -1,5 +1,6 @@
 (ns salava.core.ui.ajax-utils
   (:require [ajax.core :as ajax]
+            [reagent.session :as session]
             [salava.core.ui.helper :refer [navigate-to]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
@@ -7,7 +8,7 @@
 (defn error-handler [additional-error-fn]
   {:error-handler (fn [{:keys [status status-text]}]
                     (do
-                      (if (= status 401)
+                      (if (and (not (session/get :user)) (= status 401))
                         (navigate-to "/user/login")
                         (additional-error-fn))
                       ))})

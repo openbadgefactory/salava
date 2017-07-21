@@ -12,7 +12,8 @@
             [autoclave.core :refer [markdown-processor markdown-to-html]]
             [net.cgrand.enlive-html :as html]
             [salava.core.helper :refer [plugin-str]]
-            [pantomime.mime :refer [extension-for-name mime-type-of]])
+            [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
            (java.util Base64)))
 
@@ -62,7 +63,6 @@
 
 (defn bytes->base64 [input]
   (.encodeToString (Base64/getEncoder) input))
-
 
 (defn hex-digest [algo string]
   (case algo
@@ -124,7 +124,7 @@
        (curl url opt)))))
 
 (defn json-get [url]
-  (log/info "json-get: GET" url)
+  ;(log/info "json-get: GET" url)
   (http-get url {:as :json :accept :json :throw-entire-message? true}))
 
 (defn- file-extension [filename]
@@ -181,7 +181,7 @@
     (let [base64-data (subs data-str (inc comma-pos))
           content (base64->bytes base64-data)
           content-str (base64->str base64-data)
-          ext (-> content mime-type-of extension-for-name)
+          ext (if (re-find #"^data:image/svg" data-str) ".svg" ".png")
           path (public-path-from-content content-str ext)]
       (save-file-data ctx content path))))
 
@@ -244,3 +244,16 @@
         md-url (some #(when (and (= (:rel %) "alternate") (= (:type %) "text/x-markdown")) (:href %))
                      (map :attrs link-tags))]
     (try (http-get md-url) (catch Exception _ ""))))
+
+
+
+(defn publish [ctx topic data]
+  (if-not (map? data)
+    (throw (IllegalArgumentException. "Publish: Data must be a map")))
+  (if-not  (keyword? topic)
+    (throw (IllegalArgumentException. "Publish: Topic must be a keyword")))
+  (>!! (:input-chan ctx) (assoc data :topic topic)))
+
+(defn event [ctx subject verb object type]
+  ;TODO VALIDATE DATA
+  (publish ctx :event {:subject subject :verb verb :object object :type type}))

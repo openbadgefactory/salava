@@ -81,3 +81,9 @@
   (if (session/get :private)
     (session/get :private false)
     (session/get-in [:user :private] false)))
+
+(defn not-activated? []
+  (not (session/get-in [:user :activated] false)))
+
+
+

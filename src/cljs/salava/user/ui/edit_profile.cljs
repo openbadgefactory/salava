@@ -6,7 +6,6 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
             [salava.file.ui.my :as file]
             [salava.user.schemas :refer [contact-fields]]
@@ -133,6 +132,8 @@
                           (f/add-field profile-fields-atom empty-field))}
      (t :user/Addfield)]]])
 
+
+
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
         profile-picture-atom (cursor state [:user :profile_picture])
@@ -161,6 +162,7 @@
                             :checked   (= "public" @visibility-atom)
                             :on-change #(reset! visibility-atom (.-target.value %))}                               ]
             (t :core/Public)]]])
+       
        [profile-picture-gallery pictures-atom profile-picture-atom]
        [:div.form-group
         [:label.col-xs-12 (t :user/Aboutme)]

@@ -118,6 +118,10 @@ button.close {
 }
 
 a#login-button {
+
+    @media (max-width: 496px){
+        margin-right: 10px;
+    }
     margin-top: 5px;
     height: 36px;
     width: 125px;
@@ -183,7 +187,7 @@ input[type=checkbox], input[type=radio] {
 }
 .radio-inline{
     margin-right:15px;
-    margin-left: 0px;
+    margin-left: 0px !important;
 }
 .checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline {
    // margin-left:15px;
@@ -466,7 +470,6 @@ ul.side-dropdown-links {
         color: $title-color;
         font-size: 40px;
         padding-bottom: 15px;
-        margin: 0px;
         @media (max-width:992px){
             font: 300 28px "Open Sans Condensed",sans-serif;
         }
@@ -563,7 +566,11 @@ ol.welcome-text li {
     border: 1px solid #bdbdc0;
     box-shadow: 0px 3px 6px #000;
     font-size: 13px;
-    .modal-body > .row{
+     button.close span {
+                    font-size: 40px;
+                    line-height: 24px;
+                }
+    /*.modal-body > .row{
         margin:0px 30px;
         &:first-child{
             margin-right: 0px;
@@ -578,7 +585,7 @@ ol.welcome-text li {
         @media (max-width:992px){
             margin:0px -15px;
         }
-    }
+    }*/
     #badge-contents {
         margin:0px 45px;
     }
@@ -733,4 +740,70 @@ body.anon {
     text-align:left;
     /* inline-block space fix */
     margin-right:-4px;
+}
+
+.btn-fix {
+    margin-top: 0px;
+    margin-left: 1px;
+}
+
+
+/* Badge certification*/
+
+.btn-oauth {
+    i {
+        padding-right: 10px;
+        border-right: 1px solid #ffffff;
+        margin-right: 10px;
+    }
+    box-shadow: none;
+    margin-bottom:3px;
+    &:hover {
+        box-shadow: none;
+    }
+    &:active, &:visited {
+        color: #ffffff;
+    }
+}
+.btn-linkedin {
+    background-color: #007bb6;
+    color: #ffffff !important;
+    border: 1px solid #006292;
+    &:hover, &:focus, &:active {
+        background-color: #006292;
+        border: 1px solid #007bb6;
+    }
+}
+
+.input-btn{
+    font-size:14px !important;
+    margin-top:0px !important;
+}
+.certification{
+    .guide-text{
+	h3{
+	    margin-top:-15px;
+	}
+
+    }
+    .margin-bottom{
+	
+	margin-bottom:15px
+    }
+    .image-view {
+	margin-bottom:15px;
+    }
+}
+
+.badge-language-selector {
+    a {
+	margin-right:5px;
+    }
+    .chosen{
+        font-weight:700 !important;
+    }
+    
+}
+.inline{
+    display:inline;
 }

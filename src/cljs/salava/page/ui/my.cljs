@@ -2,7 +2,8 @@
   (:require [reagent.core :refer [atom]]
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for not-activated?]]
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
@@ -98,25 +99,27 @@
         pages (if (= order :mtime)
                 (sort-by order > pages)
                 (sort-by (comp clojure.string/upper-case order) pages))]
-    [:div {:class "row"
-           :id    "grid"}
-     [:div {:class "col-xs-12 col-sm-6 col-md-4"
-            :id "add-element"
-            :key "new-page"}
-      [:div {:class "media grid-container"}
-       [:a {:class "add-element-link"
-            :href "#"
-            :on-click #(create-page)}
-        [:div.media-content
-         [:div.media-body
-          [:div {:id "add-element-icon"}
-           [:i {:class "fa fa-plus"}]]
-          [:div {:id "add-element-link"}
-           (t :page/Addpage)]]]]]]
-     (doall
-       (for [element-data pages]
-         (if (page-visible? element-data state)
-           (page-grid-element element-data state))))]))
+    (if (not-activated?)
+      (not-activated-banner)
+      [:div {:class "row"
+             :id    "grid"}
+       [:div {:class "col-xs-12 col-sm-6 col-md-4"
+              :id    "add-element"
+              :key   "new-page"}
+        [:div {:class "media grid-container"}
+         [:a {:class    "add-element-link"
+              :href     "#"
+              :on-click #(create-page)}
+          [:div.media-content
+           [:div.media-body
+            [:div {:id "add-element-icon"}
+             [:i {:class "fa fa-plus"}]]
+            [:div {:id "add-element-link"}
+             (t :page/Addpage)]]]]]]
+       (doall
+        (for [element-data pages]
+          (if (page-visible? element-data state)
+            (page-grid-element element-data state))))])))
 
 (defn content [state]
   [:div {:class "my-badges pages"}

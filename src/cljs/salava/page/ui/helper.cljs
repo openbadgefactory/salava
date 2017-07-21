@@ -9,13 +9,15 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool1]]
             ))
 
 (defn delete-page [id]
   (ajax/DELETE
     (path-for (str "/obpv1/page/" id))
-    {:handler (fn [] (navigate-to "/page"))}))
+    {:handler (fn [] (do
+                       (m/close-modal!)
+                       (navigate-to "/page")))}))
 
 (defn delete-page-modal [page-id]
   [:div
@@ -39,15 +41,18 @@
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
 
+
+
+
 (defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url]}]
-  [:div {:class "row badge-block"}
+  [:div {:class "row badge-block badge-info"}
    [:div {:class "col-md-4 badge-image"}
     [:img {:src (str "/" image_file)}]]
    [:div {:class "col-md-8"}
     [:div.row
      [:div.col-md-12
       [:h3.badge-name name]]]
-    [:div.row
+    #_[:div.row
      [:div
       (bh/issuer-image issuer_image)]]
      [:div.row
@@ -76,7 +81,7 @@
        [:div.row
         [:div {:class                   "col-md-12"
                :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
-    (if (and show_evidence evidence_url)
+    (if (and (pos? show_evidence) evidence_url)
             [:div.row
              [:div.col-md-12
               [:h2.uppercase-header (t :badge/Evidence)]
@@ -177,7 +182,7 @@
                       "tag" (tag-block block)
                       nil)]))]]]])]))
 
-(defn render-page-modal [page reporttool-atom]
+(defn render-page-modal [page]
   [:div {:id "badge-content"}
    [:div.modal-body
     [:div.row
@@ -190,12 +195,12 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]
    [:div {:class "modal-footer page-content"}
-   (reporttool (:id page) (:name page) "page" reporttool-atom)
+   (reporttool1 (:id page) (:name page) "page")
     ]
    ])
 
-(defn view-page-modal [page reporttool-atom]
-  (create-class {:reagent-render (fn [] (render-page-modal page reporttool-atom))
+(defn view-page-modal [page]
+  (create-class {:reagent-render (fn [] (render-page-modal page))
                  :component-will-unmount (fn [] (m/close-modal!))}))
 
 (defn edit-page-header [header]

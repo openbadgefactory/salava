@@ -4,17 +4,20 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for hyperlink private?]]
+            [salava.core.ui.helper :refer [path-for hyperlink private? not-activated? plugin-fun]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.helper :refer [dump]]
+            [salava.core.ui.modal :as mo]
             [reagent-modals.modals :as m]
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool1]]
             ))
+
+
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
@@ -41,12 +44,20 @@
       [:div.media-content
        (if image_file
          [:div.media-left
-          [:a {:href (path-for (str "/badge/info/" id))}
+          [:a{:href "#"
+              :on-click #(do
+                           (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                           (.preventDefault %)) } 
             [:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/badge/info/" id))}
+         [:a.heading-link {:href "#"
+                           :on-click #(do
+                                        (mo/open-modal [:badge :info] {:badge-id id})
+                                        ;(b/open-modal id false init-data state)
+                                        (.preventDefault %)) } 
           name]]
         [:div.media-issuer
          [:p issuer_content_name]]]]]
@@ -61,7 +72,7 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/page/view/" id))} name]]
+         [:a.heading-link  {:href "#" :on-click #(mo/open-modal [:page :view] {:page-id id})}  name]]
         [:div.media-content
          [:div.page-owner
           [:a {:href "#"} first_name " " last_name]]
@@ -86,9 +97,15 @@
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
           (page-grid-element element-data profile_picture))))
 
+(defn connect-user [user-id]
+  (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
+    (if connectuser
+      [connectuser user-id]
+      [:div ""])))
+
+
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
-        reporttool-atom (cursor state [:reporttool])
         badge-small-view (cursor state [:badge-small-view])
         page-small-view (cursor state [:page-small-view])
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
@@ -100,14 +117,18 @@
      [:div.panel-body
       (if owner?
         [:div.row
-         (if-not (private?)
+         (if-not (or (not-activated?) (private?))  
            (profile-visibility-input visibility-atom))
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
-          [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)]]]
-        (admintool user-id "user"))
+          (if-not (not-activated?)
+            [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)])]]
+        [:div 
+         (connect-user user-id)
+         (admintool user-id "user")])
       [:h1.uppercase-header fullname]
+      
       [:div.row
        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
@@ -155,7 +176,7 @@
          [page-grid pages profile_picture @page-small-view]
          (if (< 6 (count pages))
            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
-      (reporttool user-id fullname "user" reporttool-atom)
+      (reporttool1 user-id fullname "user")
       ]]))
 
 (defn init-data [user-id state]
@@ -183,7 +204,6 @@
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
                      :permission "initial"
-                     :reporttool {}
                      :badge-small-view false
                      :pages-small-view true})
         user (session/get :user)]

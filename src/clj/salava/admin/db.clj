@@ -4,19 +4,28 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
+            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
             [clojure.tools.logging :as log]
             [salava.badge.main :as b]
             [salava.page.main :as p]
-            [salava.social.db :refer [insert-event!]]
             [salava.mail.mail :as m]
             [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
 
+(defn get-owners [ctx]
+  (select-admin-users-id {} (get-db ctx)))
+
+
+(defn get-user-admin-events [ctx user_id]
+  (select-admin-events {:user_id user_id} (get-db ctx)))
+
+(defn get-admin-events [ctx user_id]
+  (let [events (get-user-admin-events ctx user_id)]
+   events))
 
 
 (defn register-users-count
@@ -71,9 +80,10 @@
      "error")))
 
 
-(defn private-badges! [ctx badge_content_id]
+(defn private-badges! [ctx badge_id]
   (try+
-   (update-badges-visibility!{:badge_content_id badge_content_id} (get-db ctx))
+   (update-user-badge-visibility-by-badge-id!{ :badge_id badge_id} (get-db ctx))
+   (update-badge-visibility-by-badge-id! {:badge_id badge_id} (get-db ctx))
    "success"
    (catch Object _
      "error")))
@@ -97,7 +107,7 @@
 (defn ticket [ctx description report_type item_id item_url item_name item_type reporter_id item_content_id]
   (try+
    (let [ticket (insert-report-ticket<! {:description description :report_type report_type :item_id item_id :item_url item_url :item_name item_name :item_type item_type :reporter_id reporter_id :item_content_id item_content_id} (get-db ctx))]
-     (insert-event! ctx reporter_id "ticket" (:generated_key ticket) "admin")
+     (util/event ctx reporter_id "ticket" (:generated_key ticket) "admin")
      "success")
    (catch Object _
      "error")))
@@ -127,13 +137,14 @@
    (catch Object _
      "error")))
 
-(defn delete-badges! [ctx badge-content-id subject message]
+(defn delete-badges! [ctx badge-id subject message]
   (try+
-   (let [user-ids (select-users-id-by-badge-content-id {:badge_content_id badge-content-id}(into {:row-fn :user_id} (get-db ctx)))
+   (let [user-ids (select-users-id-by-badge-id {:badge_id badge-id}(into {:row-fn :user_id} (get-db ctx)))
          users-email (select-users-email {:user_id user-ids} (into {:result-set-fn vec :row-fn :email} (get-db ctx)))]
      (if (and (< 1 (count subject)) (< 1 (count message)))
        (m/send-mail ctx subject message users-email))
-     (update-badge-deleted-by-badge-content-id! {:badge_content_id badge-content-id} (get-db ctx)))
+     (update-badge-deleted-by-badge-id! {:badge_id badge-id} (get-db ctx))
+     (update-badge-visibility-by-badge-id! {:badge_id badge-id} (get-db ctx)))
    "success"
    (catch Object _
      "error")))
@@ -157,6 +168,15 @@
    (delete-user-badge-congratulations! {:user_id user-id}(get-db ctx))
    (delete-user-badge-views! {:user_id user-id}(get-db ctx))
    (update-user-deleted! {:id user-id} (get-db ctx))
+   "success"
+   (catch Object _
+     "error")))
+
+(defn delete-user-full! [ctx user-id subject message email]
+  (try+
+   (if (and (< 1 (count subject)) (< 1 (count message)))
+     (m/send-mail ctx subject message [email]))
+   (u/delete-user ctx user-id nil true)
    "success"
    (catch Object _
      "error")))
@@ -214,22 +234,24 @@
                      :creator_image (:creator_image badge)
                      :emails emails})))
 
-(defn get-public-badge-content-modal [ctx badge-content-id]
-  (let [badge (g/select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
-        badge-content (g/select-badge-criteria-issuer-by-date {:badge_content_id badge-content-id} (into {:result-set-fn first} (get-db ctx)))
-        recipients (g/select-badge-recipients {:badge_content_id badge-content-id} (get-db ctx))]
-    (hash-map :name (:name badge)
-              :image_file (:image_file badge)
-              :item_owner_id  (vec (map :id recipients))
-              :item_owner (vec (map (fn [x] (str (:first_name x) " " (:last_name x))) recipients))
+(defn get-public-badge-content-modal [ctx badge-id user-id]
+  (let [badge (g/public-multilanguage-badge-content ctx badge-id user-id)
+                                        ;badge (g/select-common-badge-content {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
+        badge-content (first (filter #(= (:language_code %) (:default_language_code %)) (get-in badge [:badge :content]))) ;(g/select-badge-criteria-issuer-by-date {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
+        ;recipients (g/select-badge-recipients {:badge_id badge-id} (get-db ctx))
+        ]
+    (hash-map :name (:name badge-content)
+              :image_file (:image_file badge-content)
+              :item_owner_id  (vec (map :id (:public_users badge)))
+              :item_owner (vec (map (fn [x] (str (:first_name x) " " (:last_name x))) (:public_users badge)))
               :info {:issuer_content_name (:issuer_content_name badge-content)
-                     :issuer_content_url (:issuer_content_url badge-content)
-                     :issuer_contact (:issuer_contact badge-content)
-                     :issuer_image (:issuer_image badge-content)
-                     :creator_name (:creator_name badge-content)
-                     :creator_url (:creator_url badge-content)
-                     :creator_email (:creator_email badge-content)
-                     :creator_image (:creator_image badge-content)})))
+                     :issuer_content_url  (:issuer_content_url badge-content)
+                     :issuer_contact      (:issuer_contact badge-content)
+                     :issuer_image        (:issuer_image badge-content)
+                     :creator_name        (:creator_name badge-content)
+                     :creator_url         (:creator_url badge-content)
+                     :creator_email       (:creator_email badge-content)
+                     :creator_image       (:creator_image badge-content)})))
 
 
 (defn get-page-modal [ctx pageid]
@@ -278,7 +300,7 @@
                          [where params])
         query (str "SELECT u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted, GROUP_CONCAT(ue.email,' ', ue.primary_address) AS email FROM user AS u
 JOIN user_email AS ue ON ue.user_id = u.id
-WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
+WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND u.role <> 'deleted' "
                    where
                    " GROUP BY u.id, u.first_name, u.last_name, u.country, u.ctime, u.deleted "
                    order
@@ -286,6 +308,7 @@ WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') "
         profiles (jdbc/with-db-connection
                    [conn (:connection (get-db ctx))]
                    (jdbc/query conn (into [query] params)))]
+    
     (->> profiles
          (take 50))))
 

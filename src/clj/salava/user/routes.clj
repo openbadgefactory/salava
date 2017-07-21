@@ -25,6 +25,7 @@
              (layout/main ctx "/activate/:userid/:timestamp/:code")
              (layout/main ctx "/activate/:userid/:timestamp/:code/:lang")
              (layout/main ctx "/edit")
+             (layout/main ctx "/edit/password")
              (layout/main ctx "/edit/email-addresses")
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
@@ -41,8 +42,8 @@
                   :current-user current-user
                   (if current-user
                     (do
-                      (u/verify-email-address ctx verification_key (:id current-user))
-                      (found (str (get-base-path ctx) "/user/edit/email-addresses")))
+                      (u/verify-email-address ctx verification_key (:id current-user) (:activated current-user))
+                      (u/set-session ctx (found (str (get-base-path ctx) "/user/edit/email-addresses"))  (:id current-user)))
                     (found (str (get-base-path ctx) "/user/login")))))
 
     (context "/obpv1/user" []
@@ -54,7 +55,7 @@
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (assoc-in (ok login-status) [:session :identity] {:id (:id login-status) :role (:role login-status) :private (:private login-status)})
+                       (u/set-session ctx (ok login-status) (:id login-status))
                        (ok login-status))))
 
              (POST "/logout" []
@@ -67,18 +68,29 @@
                     (ok {:languages (get-in ctx [:config :core :languages])})))
 
              (POST "/register" []
-                   :return {:status (s/enum "success" "error")
-                            :message (s/maybe s/Str)}
+                   ;:return
+                   #_{:status  (s/maybe  (s/enum "success" "error"))
+                    :message (s/maybe s/Str)
+                    :id      (s/maybe s/Int)
+                    :role    (s/maybe s/Str)
+                    :private (s/maybe s/Bool)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (let [{:keys [email first_name last_name country language]} form-content
-                         save (u/register-user ctx email first_name last_name country language)]
+                   (let [{:keys [email first_name last_name country language password password_verify]} form-content
+                         save (u/register-user ctx email first_name last_name country language password password_verify)]
                      (if (not (private? ctx))
-                       (ok save)
+                                        ;(ok save)
+                       (let [login-status (u/login-user ctx email password)]
+                         (if (= "success" (:status login-status))
+                           (u/set-session ctx (ok login-status) (:id login-status))
+                           (ok login-status)))
                        (cond
-                         (not (right-token? ctx (:token form-content))) (forbidden)
+                         (not (right-token? ctx (:token form-content)))        (forbidden)
                          (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
-                         :else (ok save))))
+                         :else                                                 (let [login-status (u/login-user ctx email password)]
+                                                                                 (if (= "success" (:status login-status))
+                                                                                   (u/set-session ctx (ok login-status) (:id login-status))
+                                                                                   (ok login-status))))))
                    )
 
              (POST "/activate" []
@@ -91,7 +103,7 @@
 
              (GET "/edit" []
                   :summary "Get user information for editing"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [user-info (u/user-information ctx (:id current-user))]
                     (ok {:user      (-> user-info
@@ -100,19 +112,36 @@
                          :languages (get-in ctx [:config :core :languages])
                          :email-notifications (get-in ctx [:config :user :email-notifications] false)})))
 
+             (GET "/edit/password" []
+                  :summary "Get user information for editing"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok {:password? (u/has-password? ctx (:id current-user))})
+                  )
+
+             (POST "/edit/password" []
+                  :return {:status (s/enum "success" "error")
+                            :message (s/maybe s/Str)}
+                  :body [user-data schemas/EditUserPassword]
+                  :summary "Get user information for editing"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (u/edit-user-password ctx user-data (:id current-user)))
+                  )
+
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")
                             :message (s/maybe s/Str)}
                    :body [user-data schemas/EditUser]
                    :summary "Save user information"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/edit-user ctx user-data (:id current-user))))
 
              (GET "/email-addresses" []
                   :return [schemas/EmailAddress]
                   :summary "Get user email addresses"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (u/email-addresses ctx (:id current-user))))
 
@@ -122,7 +151,7 @@
                             (s/optional-key :new-email) schemas/EmailAddress}
                    :body-params [email :- (:email schemas/User)]
                    :summary "Add new unverified email address"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/add-email-address ctx email (:id current-user))))
 
@@ -130,15 +159,25 @@
                    :return {:status (s/enum "success" "error")}
                    :body-params [email :- (:email schemas/User)]
                    :summary "Remove email address"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/delete-email-address ctx email (:id current-user))))
+
+             (POST "/send_verified_link" []
+                   :return {:status (s/enum "success" "error")
+                            (s/optional-key :message) s/Str
+                            (s/optional-key :new-email) schemas/EmailAddress}
+                   :body-params [email :- (:email schemas/User)]
+                   :summary ""
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (ok (u/send-email-verified-link ctx email (:id current-user))))
 
              (POST "/set_primary_email" []
                    :return {:status (s/enum "success" "error")}
                    :body-params [email :- (:email schemas/User)]
                    :summary "Set primary email address"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (u/set-primary-email-address ctx email (:id current-user))))
 
@@ -157,7 +196,7 @@
              (GET "/edit/profile" []
                   ;:return
                   :summary "Get user information and profile fields for editing"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (u/user-profile-for-edit ctx (:id current-user))))
 
@@ -165,7 +204,7 @@
                    :return (:profile_visibility schemas/User)
                    :body-params [visibility :- (:profile_visibility schemas/User)]
                    :summary "Update profile visibility"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (if (:private current-user)
                      (forbidden)
@@ -178,7 +217,7 @@
                                  about :- (:about schemas/User)
                                  fields :- [{:field (apply s/enum (map :type schemas/contact-fields)) :value (s/maybe s/Str)}]]
                    :summary "Save user's profile fields, visibility, picture and about text"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (str (u/save-user-profile ctx profile_visibility profile_picture about fields (:id current-user)))))
 
@@ -191,7 +230,7 @@
              (POST "/delete" []
                    :body-params [password :- (:password schemas/User)]
                    :summary "Delete user account"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (let [result (u/delete-user ctx (:id current-user) password)]
                      (if (= "success" (:status result))
@@ -200,12 +239,12 @@
 
              (GET "/test" []
                   :summary "Test is user authenticated"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   (ok))
              
              (GET "/public-access" []
                   :summary "Test is user authenticated and in private mode"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (if (:private current-user)
                     (forbidden)

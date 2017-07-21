@@ -52,16 +52,27 @@
          [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (t :user/Email) :aria-label (t :user/Email)}]]
         [:div.form-group
          [input/text-field {:name "password" :atom password-atom :error-message-atom error-message-atom :placeholder (t :user/Password) :aria-label (t :user/Password) :password? true}]]
-        [:button {:class    "btn btn-primary"
+        [:button {:class    "btn btn-primary login-button"
                   :on-click #(do (.preventDefault %) (login state))
                   :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
          (t :user/Login)]
         [:div {:class "row login-links"}
-         (if-not (private?)
-           [:div {:class "col-xs-6"}
-            [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
-         [:div {:class (if (private?) "col-xs-12" "col-sm-6")}
-          [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]
+         [:div.management-links
+          (if-not (private?)
+            [:div {:class "col-sm-6 left-column"}
+             [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
+          [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
+           [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
+         [:div {:class "row oauth-buttons"}
+          [:div {:class "col-sm-6 left-column"} (facebook-link false nil)]
+          [:div.col-sm-6.right-column (linkedin-link nil nil)]]]
+        #_[:div {:class "row login-links"}
+         [:div.management-links
+          (if-not (private?)
+            [:div {:class "col-xs-6"}
+             [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
+          [:div {:class (if (private?) "col-xs-12" "col-sm-6")}
+           [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
          [:div {:class "row oauth-buttons"}
           [:div {:class "col-xs-6"} (facebook-link false nil)]
           [:div.col-sm-6 (linkedin-link nil nil)]]]]]]]))

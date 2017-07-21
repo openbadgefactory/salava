@@ -51,7 +51,8 @@
 
 (defn settings-modal [{:keys [id name image_file issued_on expires_on show_evidence revoked]} state init-data badgeinfo?]
   (let [expired? (bh/badge-expired? expires_on)
-        show-recipient-name-atom (cursor state [:show_recipient_name])]
+        show-recipient-name-atom (cursor state [:show_recipient_name])
+        revoked (pos? revoked)]
     [:div {:id "badge-settings"}
      [:div.modal-body
       [:div.row

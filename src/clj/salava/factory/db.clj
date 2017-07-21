@@ -50,11 +50,11 @@
     (log/info "try to save pending assertion: " pending-assertion)
     (try
       (and
-        (db/save-badge! ctx
-                        (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-                            (p/str->badge (:assertion_url pending-assertion))))
+        (db/save-user-badge! ctx
+                             (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                                 (p/str->badge (:assertion_url pending-assertion))))
         (delete-duplicate-pending-badges! pending-assertion (u/get-db ctx)))
-      (catch Exception ex
+      #_(catch Exception ex
         (log/error "save-pending-assertions: failed to save badge")
         (log/error (.toString ex))))))
 

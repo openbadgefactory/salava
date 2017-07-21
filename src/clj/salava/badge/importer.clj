@@ -21,11 +21,8 @@
 
 ;;;
 
-(defn- badge-checksum [badge]
-  (u/map-sha256
-    (select-keys badge [:badge_content
-                        :issuer_content
-                        :criteria_content])))
+(defn- badge-checksum [user-badge]
+  (u/map-sha256 (:badge user-badge)))
 
 (defn- get-remote-id [email base-url]
   (try
@@ -76,21 +73,24 @@
   (let [previous-id (b/user-owns-badge-id ctx (assoc badge :user_id (:id user)))
         expired? (if (nil? (:expires_on badge)) false (< (:expires_on badge) (u/now)))
         exists? (not (nil? previous-id))
-        error (:error (meta badge))]
-    {:status      (if (or expired? exists? error) "invalid" "ok")
-     :message     (cond
-                    exists? "badge/Alreadyowned"
-                    expired? "badge/Badgeisexpired"
-                    error "badge/Invalidbadge"
-                    :else "badge/Savethisbadge")
-     :error       error
-     :name        (get-in badge [:badge_content :name])
-     :description (get-in badge [:badge_content :description])
-     :image_file  (get-in badge [:badge_content :image_file])
-     :issuer_content_name (get-in badge [:issuer_content :name])
-     :issuer_content_url  (get-in badge [:issuer_content :url])
-     :previous-id previous-id
-     :import-key  (:checksum (meta badge))}))
+        error (:error (meta badge))
+        content (first (get-in badge [:badge :content])) ;TODO check default language
+        issuer (first (get-in badge [:badge :issuer]))  ;TODO check default language
+        ] 
+    {:status              (if (or expired? exists? error) "invalid" "ok")
+     :message             (cond
+                            exists?  "badge/Alreadyowned"
+                            expired? "badge/Badgeisexpired"
+                            error    "badge/Invalidbadge"
+                            :else    "badge/Savethisbadge")
+     :error               error
+     :name                (:name content)
+     :description         (:description content) 
+     :image_file          (:image_file content) 
+     :issuer_content_name (:name issuer) 
+     :issuer_content_url  (:url issuer) 
+     :previous-id         previous-id
+     :import-key          (:checksum (meta badge))}))
 
 (defn user-backpack-emails
   "Get list of user's email addresses"
@@ -123,7 +123,7 @@
           user {:id user-id :emails (user/verified-email-addresses ctx user-id)}
           key-set (set keys)
           badges-to-save (filter #(key-set (:checksum (meta %))) (all-public-badges user base-url))
-          badge-ids (remove nil? (map #(db/save-badge! ctx (assoc % :status "accepted")) badges-to-save))]
+          badge-ids (remove nil? (map #(db/save-user-badge! ctx (assoc % :status "accepted")) badges-to-save))]
       {:status      "success"
        :message     "badge/Badgessaved"
        :saved-count (count badge-ids)
@@ -137,10 +137,10 @@
 (defn upload-badge [ctx uploaded-file user-id]
   (log/info "upload-badge: got new upload from user id" user-id)
   (try
-    (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-        (p/file->badge uploaded-file)
-        (assoc :status "accepted")
-        (partial db/save-badge! ctx))
+    (db/save-user-badge! ctx
+                         (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                             (p/file->badge uploaded-file)
+                             (assoc :status "accepted")))
     {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
     (catch Throwable ex
       (log/error "upload-badge: upload failed")

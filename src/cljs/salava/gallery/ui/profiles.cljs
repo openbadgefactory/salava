@@ -6,8 +6,10 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
+            [reagent-modals.modals :as m]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
+            [salava.core.ui.modal :as mo]
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn ajax-stop [ajax-message-atom]
@@ -130,7 +132,7 @@
                :alt (str first_name " " last_name)}]]
        [:div.media-body
         [:div {:class "media-heading profile-heading"}
-         [:a {:href (path-for (str "/user/profile/" id))} first_name " " last_name]]
+         [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})} first_name " " last_name]]
         [:div.media-profile
          [:div.join-date
           (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
@@ -148,13 +150,15 @@
             (profile-gallery-grid-element element-data)))))
 
 (defn content [state]
-  [:div {:id "profile-gallery"}
-   [profile-gallery-grid-form state]
-   (if (:ajax-message @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (:ajax-message @state)]]
-     [profile-gallery-grid state])])
+  [:div
+   [m/modal-window]
+   [:div {:id "profile-gallery"}
+    [profile-gallery-grid-form state]
+    (if (:ajax-message @state)
+      [:div.ajax-message
+       [:i {:class "fa fa-cog fa-spin fa-2x "}]
+       [:span (:ajax-message @state)]]
+      [profile-gallery-grid state])]])
 
 (defn init-data [state]
   (let [country (session/get-in [:user :country] "all")]

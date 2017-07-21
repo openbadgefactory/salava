@@ -1,10 +1,17 @@
 (ns salava.core.i18n
-  #?(:cljs (:require-macros [taoensso.tower :as tower-macros]))
+  #?(:cljs (:require-macros [taoensso.tower :as tower-macros]
+                            [salava.core.helper :refer [io-resource]]))
      (:require
        #?@(:cljs [[reagent.session :as session]
                   [salava.translator.ui.main :as tr]
                   [taoensso.tower :as tower :refer-macros (with-tscope)]])
        #?(:clj  [taoensso.tower :as tower :refer (with-tscope)])))
+
+#?(:cljs
+    (def iso-639 (-> (io-resource "i18n/iso-639.json") (js/JSON.parse) (js->clj :keywordize-keys true) :iso639)))
+
+#?(:cljs
+    (def lang-lookup (reduce (fn [coll lang] (assoc coll (:code lang) (:name lang))) {} iso-639)))
 
 (def tconfig
   #?(:clj {:fallback-locale :en

@@ -11,10 +11,10 @@ SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND last_login 
 SELECT COUNT(DISTINCT id) AS count FROM user WHERE activated = 1 AND ctime > :time;
 
 --name: count-all-badges
-SELECT COUNT(DISTINCT id) AS count FROM badge WHERE deleted = 0 AND status != 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE deleted = 0 AND status != 'declined';
 
 --name: count-all-badges-after-date
-SELECT COUNT(DISTINCT id) AS count FROM badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
+SELECT COUNT(DISTINCT id) AS count FROM user_badge WHERE ctime > :time AND deleted = 0 AND status != 'declined';
 
 --name: count-all-pages
 SELECT COUNT(DISTINCT id) AS count FROM page WHERE  deleted = 0;
@@ -26,13 +26,16 @@ SELECT role FROM user WHERE id= :id;
 UPDATE page SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-badge-visibility!
-UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
+UPDATE user_badge SET visibility = 'private', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-user-visibility!
 UPDATE user SET profile_visibility  = 'internal', mtime = UNIX_TIMESTAMP() WHERE id = :id
 
---name: update-badges-visibility!
-UPDATE badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_content_id= :badge_content_id
+--name: update-user-badge-visibility-by-badge-id!
+UPDATE user_badge SET visibility = 'private', mtime = UNIX_TIMESTAMP()  WHERE badge_id= :badge_id
+
+--name: update-badge-visibility-by-badge-id!
+UPDATE badge SET published = 0  WHERE id= :badge_id
 
 --name: insert-report-ticket<!
 --add new report ticket
@@ -80,8 +83,8 @@ SELECT email FROM user_email
 --name: select-user-id-by-badge-id
 SELECT user_id FROM badge WHERE id=:id
 
---name: select-users-id-by-badge-content-id
-select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted = 0
+--name: select-users-id-by-badge-id
+select user_id from user_badge WHERE badge_id = :badge_id AND deleted = 0
 
 
 
@@ -89,7 +92,7 @@ select user_id from badge WHERE badge_content_id = :badge_content_id AND deleted
 UPDATE page SET visibility = 'private' WHERE user_id = :user_id
 
 --name: update-user-badges-set-private!
-UPDATE badge SET visibility = 'private' WHERE user_id = :user_id
+UPDATE user_badge SET visibility = 'private' WHERE user_id = :user_id
 
 --name: delete-user-badge-views!
 DELETE FROM badge_view WHERE user_id = :user_id
@@ -97,8 +100,11 @@ DELETE FROM badge_view WHERE user_id = :user_id
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
---name: update-badge-deleted-by-badge-content-id! 
-UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_content_id = :badge_content_id
+--name: update-badge-deleted-by-badge-id!
+UPDATE user_badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_id = :badge_id
+
+--name: update-badge-deleted-by-badge-content-id!
+UPDATE user_badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE badge_id = :badge_id
 
 --name: select-users-name-and-email
 SELECT first_name, last_name, ue.email, deleted FROM user AS u
@@ -127,3 +133,16 @@ REPLACE INTO config (name, value)
 
 --name: select-name-value-config
 SELECT name, value FROM config WHERE name = :name
+
+
+--name: select-admin-users-id
+SELECT id AS owner FROM user WHERE role='admin'
+
+
+--name: select-admin-events
+SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked, seo.hidden, re.item_name, re.report_type FROM social_event_owners AS seo
+     JOIN social_event AS se ON seo.event_id = se.id
+     LEFT JOIN report_ticket AS re  ON se.object = re.id
+     WHERE seo.owner = :user_id AND se.verb = 'ticket' AND se.type = 'admin' AND re.status = 'open'
+     ORDER BY se.ctime DESC
+     LIMIT 1000;

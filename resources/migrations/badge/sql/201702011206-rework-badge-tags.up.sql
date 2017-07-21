@@ -15,4 +15,4 @@ CREATE TABLE `badge_content_tag` (
 --;;
 
 INSERT IGNORE INTO badge_content_tag (badge_content_id, tag)
-    SELECT badge_content_id, tag FROM badge_content_tag_old;
+       SELECT badge_content_id, tag FROM badge_content_tag_old;

@@ -16,6 +16,8 @@ SELECT DISTINCT p.assertion_url, p.email FROM pending_factory_badge AS p
 DELETE FROM pending_factory_badge WHERE email = :email AND assertion_url = :assertion_url
 
 --name: select-badge-updates
-SELECT id, user_id, email, assertion_url, mtime, evidence_url, rating FROM badge
-       WHERE status = 'accepted' AND deleted = 0 AND user_id = :user_id AND id = :id
+-- FIXME (evidence_url)
+SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evidence_url, ub.rating FROM user_badge AS ub
+       LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+       WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
 
