@@ -25,81 +25,20 @@
     (context "/obpv1/gallery" []
              :tags ["gallery"]
              (GET "/badges" [country tags badge-name issuer-name order recipient-name tags-ids page_count]
-                  ;:return schemas/BadgeAdverts
-                  :summary "Get badges"
+                  :return schemas/Badgesgallery
+                  :summary "Get badges, countries,tags and user-country"
                   :current-user current-user
                   :auth-rules access/signed
-                  
                   (let [badges-and-tags (g/get-gallery-badges ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
                         countries       (g/badge-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)
-                                          country)
-                                        ;tags (g/get-autocomplete ctx "" country tags-ids)
-                        ]
+                                          country)]
                     (ok (into badges-and-tags countries))))
-
-             (GET "/badges/autocomplete" [country badge_content_ids]
-                  ;:return [{:iframe s/Str :language s/Str}]
-                  :summary "Get autocomplete data"
-                  :current-user current-user
-                  :auth-rules access/signed
-                  (ok (g/get-autocomplete ctx "" country badge_content_ids)))
-             
-             (POST "/badges" []
-                   ;:return [}
-                   :body-params [country :- (s/maybe s/Str)
-                                 badge :- (s/maybe s/Str)
-                                 issuer :- (s/maybe s/Str)
-                                 recipient :- (s/maybe s/Str)]
-                   :summary "Get public badges"
-                   :auth-rules access/signed
-                   :current-user current-user
-                   (let [countries       (g/badge-countries ctx (:id current-user))
-                         current-country (if (empty? country)
-                                           (:user-country countries)
-                                           country)]
-                     
-                     (ok (into {:badges (g/public-badges ctx current-country badge issuer recipient)} countries))))
-             
-             (POST "/badges/:userid" []
-                   ;:return []
-                   :path-params [userid :- s/Int]
-                   :summary "Get user's public badges."
-                   :current-user current-user
-                   (ok (hash-map :badges (g/public-badges-by-user ctx userid (if current-user "internal" "public")))))
 
              
              (GET "/public_badge_content/:badge-id" []
-                  ;:return
-                  #_{:badge              {:name                  s/Str
-                                        :ctime                 s/Int
-                                        :image_file            (s/maybe s/Str)
-                                        :description           (s/maybe s/Str)
-                                        :average_rating        (s/maybe s/Num)
-                                        :rating_count          (s/maybe s/Int)
-                                        :issuer_content_name   (s/maybe s/Str)
-                                        :issuer_content_url    (s/maybe s/Str)
-                                        :issuer_contact        (s/maybe s/Str)
-                                        :issuer_image          (s/maybe s/Str)
-                                        :creator_name          (s/maybe s/Str)
-                                        :creator_url           (s/maybe s/Str)
-                                        :creator_email         (s/maybe s/Str)
-                                        :creator_image         (s/maybe s/Str)
-                                        :criteria_content      (s/maybe s/Str)
-                                        :criteria_url          (s/maybe s/Str)
-                                        :badge_url             (s/maybe s/Str)
-                                        :badge_content_id      (s/maybe s/Str)
-                                        :verified_by_obf       s/Bool
-                                        :issued_by_obf         s/Bool
-                                        :issuer_verified       (s/maybe s/Bool)
-                                        :obf_url               s/Str
-                                        (s/optional-key :tags) (s/maybe s/Str)}
-                   :public_users       (s/maybe [{:id              s/Int
-                                                  :first_name      s/Str
-                                                  :last_name       s/Str
-                                                  :profile_picture (s/maybe s/Str)}])
-                   :private_user_count (s/maybe s/Int)}
+                  :return schemas/BadgeContent
                   :path-params [badge-id :- s/Str]
                   :summary "Get public badge data"
                   :current-user current-user

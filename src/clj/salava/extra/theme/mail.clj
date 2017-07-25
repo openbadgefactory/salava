@@ -17,7 +17,7 @@
       [:img.banner
        {:alt    "Open Badge Passport",
         :style  "max-width: 640px;",
-        :src    (str site-url "/img/extra/passport/logo.png"),
+        :src    (str site-url "/img/extra/theme/logo.png"),
         :height "auto",
         :width  "auto"}]]]))
 

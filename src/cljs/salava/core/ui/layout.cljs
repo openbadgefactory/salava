@@ -62,8 +62,8 @@
 [:a {:class "logo pull-left"
      :title (session/get :site-name)
      :aria-label "to index" 
-     :href  (if (session/get :user) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-     :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url))  "")}
+     :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
+     :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
           :title "OBP logo"
           :aria-label "OBP logo"}]
@@ -116,8 +116,8 @@
    [:div {:class "container-fluid"}
     [:div {:class "navbar-header"}
      [:a {:class "logo pull-left"
-          :href  (if (session/get :user) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-          :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url)) "") 
+          :href  (if  (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
+          :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url)) "") 
           :title (session/get :site-name)}
       [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
       [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]]]])

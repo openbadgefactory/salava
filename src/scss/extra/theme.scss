@@ -1,6 +1,7 @@
 /* VARIABLES OVERWRITE */
 @import 'theme_variables';
 
+@import url('/css/extra/fonts/MyFontsWebfontsKit.css');
 @import '../admin';
 @import '../badge';
 @import '../core';
@@ -41,13 +42,11 @@
     .management-links{
 	a{
 	    color: black;
-	    
 	    &:hover{
 		color:black;
 	}
 	}
 	margin-top: -15px;
-	
 	 .col-sm-6 {
 	    width:100%;
 	    text-align: center;
@@ -84,24 +83,24 @@
 .issuedbyobf-image-url{
     width: 195px;
     height: 50px;
-    background-image: url("/img/extra/kirkwood/issuedbyobf.png");
+    background-image: url("/img/extra/theme/issuedbyobf.png");
 }
 
 .verifiedissuedbyobf-image-url {
     width: 220px;
     height: 44px;
-    background-image: url("/img/extra/kirkwood/verifiedissuedbyobf.png");
+    background-image: url("/img/extra/theme/verifiedissuedbyobf.png");
 }
 
 
 
 #grid-filter .btn, #buttons .col-xs-8 .btn {
-    color: #ffffff;
+    color: black;
     background-color: $button-color;
     border-color:black;
     margin: 0 3px 6px 0;
     &.btn-active, &.btn:hover{
-        color: #ffffff;
+        color: black;
         background-color: $button-hover;//darken($text-color,20% );//#463c44;
         border-color: darken($text-color,25% );
         box-shadow: 0px 2px $box-shadow;
@@ -140,6 +139,9 @@ a#login-button{
 
 body, body.anon{
     background: url('/img/extra/theme/bg.png') repeat  #ffffff;
+    font-family: FrutigerLTPro-Roman;
+    font-weight: normal;
+    font-style: normal;
 }
 
 //NAVBAR FIXED TOP

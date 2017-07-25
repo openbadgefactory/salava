@@ -53,22 +53,23 @@
 
 (defn context-js [ctx]
   (let [site-name (get-in ctx [:config :core :site-name])
-        share {:site-name (get-in ctx [:config :core :share :site-name] site-name)
-               :hashtag (get-in ctx [:config :core :share :hashtag] (->> (split site-name #" ")
-                                                                           (map capitalize)
-                                                                           join)) }
-        ctx-out {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
-                 :user            (:user ctx)
-                 :flash-message   (:flash-message ctx)
-                 :site-url        (get-in ctx [:config :core :site-url])
-                 :site-name       site-name
-                 :share           share
-                 :base-path       (get-in ctx [:config :core :base-path])
-                 :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
-                 :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
-                 :languages       (map name (get-in ctx [:config :core :languages]))
-                 :private         (private? ctx)
-                 }]
+        share     {:site-name (get-in ctx [:config :core :share :site-name] site-name)
+                   :hashtag   (get-in ctx [:config :core :share :hashtag] (->> (split site-name #" ")
+                                                                               (map capitalize)
+                                                                               join)) }
+        ctx-out   {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
+                   :user            (:user ctx)
+                   :flash-message   (:flash-message ctx)
+                   :site-url        (get-in ctx [:config :core :site-url])
+                   :site-name       site-name
+                   :share           share
+                   :base-path       (get-in ctx [:config :core :base-path])
+                   :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
+                   :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
+                   :languages       (map name (get-in ctx [:config :core :languages]))
+                   :private         (private? ctx)
+                   :footer          (get-in ctx [:config :extra/theme :footer] nil)
+                   }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
 

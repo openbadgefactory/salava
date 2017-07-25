@@ -14,7 +14,7 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            [salava.admin.ui.reporttool :refer [reporttool1]]
             ))
 
 
@@ -106,7 +106,6 @@
 
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
-        reporttool-atom (cursor state [:reporttool])
         badge-small-view (cursor state [:badge-small-view])
         page-small-view (cursor state [:page-small-view])
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
@@ -177,7 +176,7 @@
          [page-grid pages profile_picture @page-small-view]
          (if (< 6 (count pages))
            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
-      (reporttool user-id fullname "user" reporttool-atom)
+      (reporttool1 user-id fullname "user")
       ]]))
 
 (defn init-data [user-id state]
@@ -205,7 +204,6 @@
   (let [user-id (:user-id params)
         state (atom {:user-id user-id
                      :permission "initial"
-                     :reporttool {}
                      :badge-small-view false
                      :pages-small-view true})
         user (session/get :user)]
