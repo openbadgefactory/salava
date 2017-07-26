@@ -112,7 +112,7 @@
   (ajax/GET
     (path-for "/obpv1/user/edit/password" true)
     {:handler (fn [data]
-                (swap! state assoc :password? data))}))
+                (swap! state assoc :password? (:password? data)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:new_password_verify nil
