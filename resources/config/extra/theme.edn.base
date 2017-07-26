@@ -1,7 +1,18 @@
-{:css ["/css/extra/theme.css"]
-;; Footer contents, you can remove or add more rows
-;; you can remove or add items
-;; types: text, email, link
+{:css ["/css/theme.css"]
+ ;;image for mail
+ :mail-banner "/css/logo.png"
+ ;;favicon:
+ :favicon {:icon "/css/favicon.icon"
+           :png "/css/favicon.png"}
+
+ 
+ ;; Footer contents, you can remove or add more rows
+ ;; you can remove or add items
+ ;;looks:
+
+ ;; footer text | example@example.com | example link
+  ;;               second row text
+
  :footer [;;row 1.
  	  [{:type "text"
             :text "footer text"}
@@ -13,9 +24,3 @@
 	   ;;row 2.
           [{:type "text"
             :text "second row text"}]]}
-
-;;looks:
-  ;; footer text | example@example.com | example link
-  ;;               second row text
-
-

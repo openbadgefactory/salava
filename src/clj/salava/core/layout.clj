@@ -84,7 +84,7 @@
 (defn favicon [ctx]
   (let [favicon-url (first (plugin-fun (get-plugins ctx) "block" "favicon"))]
     (if favicon-url
-      (favicon-url)
+      (favicon-url ctx)
       {:icon "/img/favicon.icon"
        :png  "/img/favicon.png"})))
 

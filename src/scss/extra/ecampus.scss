@@ -1,7 +1,7 @@
 /* VARIABLES OVERWRITE */
-@import 'theme_variables';
+@import 'ecampus_variables';
 
-@import url('/css/extra/fonts/MyFontsWebfontsKit.css');
+@import url('fonts/MyFontsWebfontsKit.css');
 @import '../admin';
 @import '../badge';
 @import '../core';
@@ -65,31 +65,31 @@
 .logo-image-url{
         width: 155px;
     height: 38px;
-    background-image: url("/img/extra/theme/logo.png");
+    background-image: url("logo.png");
 }
 
 .logo-image-icon-url {
     width: 43px;
     height: 48px;
-    background-image: url("/img/extra/theme/system_logo.png");
+    background-image: url("system_logo.png");
 }
 
 .system-image-url {
     width: 80px;
     height: 90px;
-    background-image: url("/img/extra/theme/logo_icon.png");
+    background-image: url("logo_icon.png");
 }
 
 .issuedbyobf-image-url{
     width: 195px;
     height: 50px;
-    background-image: url("/img/extra/theme/issuedbyobf.png");
+    background-image: url("issuedbyobf.png");
 }
 
 .verifiedissuedbyobf-image-url {
     width: 220px;
     height: 44px;
-    background-image: url("/img/extra/theme/verifiedissuedbyobf.png");
+    background-image: url("verifiedissuedbyobf.png");
 }
 
 
@@ -138,7 +138,7 @@ a#login-button{
 //body
 
 body, body.anon{
-    background: url('/img/extra/theme/bg.png') repeat  #ffffff;
+    background: url('bg.png') repeat  #ffffff;
     font-family: FrutigerLTPro-Roman;
     font-weight: normal;
     font-style: normal;

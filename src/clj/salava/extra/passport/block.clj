@@ -3,6 +3,6 @@
             [salava.core.util :refer [get-site-url]]))
 
 
-(defn favicon []
+(defn favicon [ctx]
   {:icon "/img/extra/passport/favicon.icon"
    :png "/img/extra/passport/favicon.png" } )

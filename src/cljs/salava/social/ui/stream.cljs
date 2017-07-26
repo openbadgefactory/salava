@@ -25,9 +25,7 @@
                 (swap! state assoc :events (:events data)
                        :initial false
                        :pending-badges (:pending-badges data)
-                       :tips (:tips data))
-                #_(if (:admin-events data)
-                  (swap! state assoc :admin-events (:admin-events data))))}))
+                       :tips (:tips data)))}))
 
 
 (defn pending-connections [reload-fn]
@@ -42,14 +40,9 @@
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
-     [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id user_id})} (str first_name " "last_name)]
-    ;[:span (str (t :social/Commented) ":") ]
-    ]
-                                        ;(date-from-unix-time (* 1000 ctime) "minutes")
+     [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id user_id})} (str first_name " "last_name)]]
     (into [:div] (for [ item (clojure.string/split-lines message)]
-                   [:p item]))]
-   ]
-  )
+                   [:p item]))]])
 
 (defn update-status [id new-status state]
   (ajax/POST
@@ -58,10 +51,8 @@
       :keywords? true
       :params {:status new-status} 
       :handler (fn []
-                 (init-data state)
-                 )
-      :error-handler (fn [{:keys [status status-text]}]
-                       )}))
+                 (init-data state) )
+      :error-handler (fn [{:keys [status status-text]}])}))
 
 (defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
   [:div.row {:key id}
@@ -142,7 +133,6 @@
        [:a {:href "#"
             :on-click #(do
                          (mo/open-modal [:gallery :badges] {:badge-id object})
-                        ;(b/open-modal object false init-data state)
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
        (t :social/Youstartedfollowbadge)]]

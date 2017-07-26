@@ -5,7 +5,7 @@
 
 
 (defn link [text link]
-  [:a {:key text :class "bottom-link" :href "https://hpi.openbadgepassport.com/"}
+  [:a {:key text :class "bottom-link" :href link}
         text])
 
 (defn email [email]

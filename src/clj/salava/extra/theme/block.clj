@@ -3,6 +3,9 @@
             [salava.core.util :refer [get-site-url]]))
 
 
-(defn favicon []
-  {:icon "/img/extra/theme/favicon.png"
-   :png "/img/extra/theme/favicon.png" } )
+(defn favicon [ctx]
+  (let [favicon (get-in ctx [:config :extra/theme :favicon] nil)]
+    (if favicon
+          favicon
+          {:icon "/img/favicon.icon"
+           :png  "/img/favicon.png"})))
