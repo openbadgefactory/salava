@@ -109,92 +109,72 @@
       (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))))
 
 
-
-(defn save-criteria-content! [ctx input]
+(defn save-criteria-content! [t-con input]
   (s/validate schemas/CriteriaContent input)
   (let [id (content-id input)]
-    (insert-criteria-content! (assoc input :id id) (u/get-db ctx))
+    (insert-criteria-content! (assoc input :id id) {:connection t-con})
     id))
 
-(defn save-issuer-content! [ctx input]
+(defn save-issuer-content! [t-con input]
   (s/validate schemas/IssuerContent input)
   (let [id (content-id input)]
-    (insert-issuer-content! (assoc input :id id) (u/get-db ctx))
+    (insert-issuer-content! (assoc input :id id) {:connection t-con})
     id))
 
-(defn save-creator-content! [ctx input]
+(defn save-creator-content! [t-con input]
   (when input
     (s/validate schemas/CreatorContent input)
     (let [id (content-id input)]
-      (insert-creator-content! (assoc input :id id) (u/get-db ctx))
+      (insert-creator-content! (assoc input :id id) {:connection t-con})
       id)))
 
-(defn save-badge-content! [ctx input]
+(defn save-badge-content! [t-con input]
   (s/validate schemas/BadgeContent input)
   (let [id (content-id input)]
-    (jdbc/with-db-transaction  [t-con (:connection (u/get-db ctx))]
-      (insert-badge-content! (assoc input :id id) {:connection t-con})
-      (doseq [tag (:tags input)]
-        (insert-badge-content-tag! {:badge_content_id id :tag tag} {:connection t-con}))
-      (doseq [a (:alignment input)]
-        (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con})))
+    (insert-badge-content! (assoc input :id id) {:connection t-con})
+    (doseq [tag (:tags input)]
+      (insert-badge-content-tag! {:badge_content_id id :tag tag} {:connection t-con}))
+    (doseq [a (:alignment input)]
+      (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con}))
     id))
 
 ;;
 
-#_(defn save-badge! [ctx badge]
-  (try
-    (let [badge_content_id    (->> (:badge_content badge) (save-image ctx) (save-badge-content! ctx))
-          issuer_content_id   (->> (:issuer_content badge) (save-image ctx) (save-issuer-content! ctx))
-          criteria_content_id (save-criteria-content! ctx (:criteria_content badge))
-          creator_content_id  (->> (:creator_content badge) (save-image ctx) (save-creator-content! ctx))]
-      (-> badge
-          (dissoc :badge_content :issuer_content :criteria_content :creator_content)
-          (assoc    :badge_content_id badge_content_id
-                   :issuer_content_id issuer_content_id
-                 :criteria_content_id criteria_content_id
-                  :creator_content_id creator_content_id)
-          (insert-badge<! (u/get-db ctx))))
-    (catch Exception ex
-      (log/error "save-badge!: failed to save badge data")
-      (log/error (.toString ex)))))
-
-(defn save-badge! [ctx badge]
-  (let [badge-content-id (sort (map #(save-badge-content! ctx %) (:content badge)))
-        criteria-content-id (sort (map #(save-criteria-content! ctx %) (:criteria badge)))
-        issuer-content-id (sort (map #(save-issuer-content! ctx %) (:issuer badge)))
-        creator-content-id (sort (map #(save-creator-content! ctx %) (:creator badge)))
+(defn save-badge! [tx badge]
+  (let [badge-content-id (sort (map #(save-badge-content! tx %) (:content badge)))
+        criteria-content-id (sort (map #(save-criteria-content! tx %) (:criteria badge)))
+        issuer-content-id (sort (map #(save-issuer-content! tx %) (:issuer badge)))
+        creator-content-id (sort (map #(save-creator-content! tx %) (:creator badge)))
         badge-id (u/hex-digest "sha256" (apply str (concat badge-content-id
                                                            criteria-content-id
                                                            issuer-content-id
                                                            creator-content-id)))]
-    (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-      (doseq [content-id badge-content-id]
-        (jdbc/execute! tx ["INSERT IGNORE INTO badge_badge_content (badge_id, badge_content_id) VALUES (?,?)"
-                           badge-id content-id]))
-      (doseq [criteria-id criteria-content-id]
-        (jdbc/execute! tx ["INSERT IGNORE INTO badge_criteria_content (badge_id, criteria_content_id) VALUES (?,?)"
-                           badge-id criteria-id]))
-      (doseq [issuer-id issuer-content-id]
-        (jdbc/execute! tx ["INSERT IGNORE INTO badge_issuer_content (badge_id, issuer_content_id) VALUES (?,?)"
-                           badge-id issuer-id]))
-      (doseq [creator-id creator-content-id]
-        (jdbc/execute! tx ["INSERT IGNORE INTO badge_creator_content (badge_id, creator_content_id) VALUES (?,?)"
-                           badge-id creator-id]))
-      (-> badge
-          (dissoc :content :criteria :issuer :creator)
-          (assoc :id badge-id)
-          (insert-badge! {:connection tx})))
+    (doseq [content-id badge-content-id]
+      (jdbc/execute! tx ["INSERT IGNORE INTO badge_badge_content (badge_id, badge_content_id) VALUES (?,?)"
+                         badge-id content-id]))
+    (doseq [criteria-id criteria-content-id]
+      (jdbc/execute! tx ["INSERT IGNORE INTO badge_criteria_content (badge_id, criteria_content_id) VALUES (?,?)"
+                         badge-id criteria-id]))
+    (doseq [issuer-id issuer-content-id]
+      (jdbc/execute! tx ["INSERT IGNORE INTO badge_issuer_content (badge_id, issuer_content_id) VALUES (?,?)"
+                         badge-id issuer-id]))
+    (doseq [creator-id creator-content-id]
+      (jdbc/execute! tx ["INSERT IGNORE INTO badge_creator_content (badge_id, creator_content_id) VALUES (?,?)"
+                         badge-id creator-id]))
+    (-> badge
+        (dissoc :content :criteria :issuer :creator)
+        (assoc :id badge-id)
+        (insert-badge! {:connection tx}))
     badge-id))
 
 
 (defn save-user-badge! [ctx user-badge]
-  (try
-    (let [badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! ctx))]
-      (-> user-badge
-          (dissoc :badge)
-          (assoc :badge_id badge-id)
-          (insert-user-badge<! (u/get-db ctx))))
-    #_(catch Exception ex
-      (log/error "save-user-badge!: failed to save badge data")
-      (log/error (.toString ex)))))
+  (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+    (let [badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! tx))
+          user-badge-id (-> user-badge
+                            (dissoc :badge)
+                            (assoc :badge_id badge-id)
+                            (insert-user-badge<! {:connection tx})
+                            :generated_key)]
+      (doseq [evidence (:evidence user-badge)]
+        (jdbc/insert! tx "user_badge_evidence" (-> evidence (dissoc :id) (assoc :user_badge_id user-badge-id)))))))

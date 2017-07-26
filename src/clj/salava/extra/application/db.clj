@@ -156,35 +156,36 @@
 
 
 (defn- advert-content [ctx data]
-  (let [badge (u/json-get (:badge data))
-        client (u/json-get (:client data))
-        criteria (u/http-get (:criteria_url data))]
-    {:badge_content_id
-     (b/save-badge-content! ctx
-                            {:id ""
-                             :language_code ""
-                             :name (:name badge)
-                             :image_file (u/file-from-url ctx (:image badge))
-                             :description (:description badge)
-                             :alignment (get badge :alignment [])
-                             :tags (get badge :tags [])})
-     :issuer_content_id
-     (b/save-issuer-content! ctx
-                             {:id ""
-                              :language_code ""
-                              :name (:name client)
-                              :description (:description client)
-                              :url (:url client)
-                              :email (:email client)
-                              :image_file (if-not (string/blank? (:image client))
-                                            (u/file-from-url ctx (:image client)))
-                              :revocation_list_url (:revocationList client)})
-     :criteria_content_id
-     (b/save-criteria-content! ctx
+  (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+    (let [badge (u/json-get (:badge data))
+          client (u/json-get (:client data))
+          criteria (u/http-get (:criteria_url data))]
+      {:badge_content_id
+       (b/save-badge-content! tx
+                              {:id ""
+                               :language_code ""
+                               :name (:name badge)
+                               :image_file (u/file-from-url ctx (:image badge))
+                               :description (:description badge)
+                               :alignment (get badge :alignment [])
+                               :tags (get badge :tags [])})
+       :issuer_content_id
+       (b/save-issuer-content! tx
                                {:id ""
                                 :language_code ""
-                                :url (:criteria_url data)
-                                :markdown_text (u/alt-markdown criteria)})}))
+                                :name (:name client)
+                                :description (:description client)
+                                :url (:url client)
+                                :email (:email client)
+                                :image_file (if-not (string/blank? (:image client))
+                                              (u/file-from-url ctx (:image client)))
+                                :revocation_list_url (:revocationList client)})
+       :criteria_content_id
+       (b/save-criteria-content! tx
+                                 {:id ""
+                                  :language_code ""
+                                  :url (:criteria_url data)
+                                  :markdown_text (u/alt-markdown criteria)})})))
 
 (defn publish-badge [ctx data]
   (try
