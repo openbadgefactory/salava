@@ -167,14 +167,20 @@
         (insert-badge! {:connection tx}))
     badge-id))
 
-
 (defn save-user-badge! [ctx user-badge]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-    (let [badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! tx))
+    (let [now (u/now)
+          badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! tx))
           user-badge-id (-> user-badge
                             (dissoc :badge)
                             (assoc :badge_id badge-id)
                             (insert-user-badge<! {:connection tx})
                             :generated_key)]
-      (doseq [evidence (:evidence user-badge)]
-        (jdbc/insert! tx "user_badge_evidence" (-> evidence (dissoc :id) (assoc :user_badge_id user-badge-id)))))))
+      (when (seq (:evidence user-badge))
+        (doseq [evidence (:evidence user-badge)]
+          (when (map? evidence)
+            (jdbc/insert! tx "user_badge_evidence" (-> evidence
+                                                       (dissoc :id)
+                                                       (assoc :user_badge_id user-badge-id
+                                                              :ctime now
+                                                              :mtime now)))))))))
