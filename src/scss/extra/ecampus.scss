@@ -28,17 +28,24 @@
 	border: none;
     }
     input{
-	border: none;
-	border-radius: 11px;
+        border: none;
+        border-radius: 11px;
     }
-    .login-button{
-	background-color: #FFFFFF;
-	/* border-color: #f1b435; */
-	border: solid 2px #f1b435;
-	border-radius: 10px;
-	font-weight: 600;
-	font-size: 16px;
+    .login-button {
+        background-color: #FFFFFF;
+        /* border-color: #f1b435; */
+        border: solid 2px #f1b435;
+        border-radius: 10px;
+        font-size: 16px;
+        height: 35px;
+        vertical-align: middle;
     }
+    .login-button:disabled,
+    .login-button[disabled] {
+        background-color: white;
+        opacity: 1;
+    }
+
     .management-links{
 	a{
 	    color: black;
@@ -112,7 +119,10 @@ a#login-button{
     background-color:#1E1A33;
     text-transform: none;
     font-size: 16px;
-
+    border-radius: 10px;
+    min-width: 140px;
+    height: 40px;
+    vertical-align: middle;
 }
 
 .btn-primary:active:focus, .btn-primary:focus {
@@ -135,11 +145,10 @@ a#login-button{
     }
 }
 
-//body
+/* body */
 
 body, body.anon{
     background: url('bg.png') repeat  #ffffff;
-    font-family: FrutigerLTPro-Roman;
     font-weight: normal;
     font-style: normal;
 }
@@ -158,6 +167,10 @@ header#navbar {
 
 .title-row {
     color: #f1b435;
+    h1 {
+        font-size: 27px;
+        font-weight: 600;
+    }
 }
 
 #f1b435
@@ -185,6 +198,13 @@ ul.side-links {
 
 ul#secondary-menu-links li a i.fa {
     color: $button-hover;
+}
+
+
+#navbar {
+    i.fa.fa-caret-right {
+        color: #1e1a34;
+    }
 }
 
 .badge-container-pending .btn-primary {
