@@ -14,18 +14,20 @@
 @import 'application';
 
 .btn {
+    border-radius: 10px;
     color: black;
-    &:hover {
-	color: black;
-    }
+}
+
+.btn:hover {
+    color: black;
 }
 
 /* LOGIN */
 #login-page, #registration-page {
     #narrow-panel{
-	background-color: #E9E9E9;
-	border-radius: 1px;
-	border: none;
+        background-color: #E9E9E9;
+        border-radius: 1px;
+        border: none;
     }
     input{
         border: none;
@@ -67,7 +69,26 @@
 
 
 /*navbar*/
+.navbar-header {
+    padding: 8px 0 5px 0;
+}
 
+@media (min-width: 1200px) {
+    .navbar-header {
+        padding: 10px 0;
+    }
+}
+
+
+.userpic {
+    float: right;
+    padding: 5px;
+    img {
+        height: 54px;
+        border: 1px solid $icon-color;
+        border-radius: 3px;
+    }
+}
 
 .logo-image-url{
         width: 155px;
@@ -103,14 +124,15 @@
 
 #grid-filter .btn, #buttons .col-xs-8 .btn {
     color: black;
-    background-color: $button-color;
-    border-color:black;
+    background-color: $button-hover;//darken($text-color,20% );//#463c44;
+    border-color: $button-hover;
+    box-shadow: 0px 2px $box-shadow;
+    border-radius: 10px;
     margin: 0 3px 6px 0;
     &.btn-active, &.btn:hover{
-        color: black;
-        background-color: $button-hover;//darken($text-color,20% );//#463c44;
-        border-color: darken($text-color,25% );
-        box-shadow: 0px 2px $box-shadow;
+        color: white;
+        background-color: black;
+        border-color:black;
     }
 }
 
@@ -125,11 +147,16 @@ a#login-button{
     vertical-align: middle;
 }
 
+nav a#login-button{
+    /* client request, no top row login button */
+    display: none;
+}
+
 .btn-primary:active:focus, .btn-primary:focus {
     background-color: $button-color;
     border-color: #f1b435;
     &:hover {
-        background-color: $button-hover;
+        background-color: $button-color;
     }
 }
 
@@ -137,12 +164,25 @@ a#login-button{
     opacity:0.4;
 }
 
-.btn-warning {
-    background-color: $button-color;
-    border-color: red;
-        &:hover{
-	background-color: rgba(255, 0, 0, 0.1);
+.btn-warning, .btn-success {
+    color: black;
+    background-color: white;
+    border-color: $button-color;
+    &:hover{
+        background-color: $button-color;
+        border-color: $button-color;
     }
+    &:focus{
+        background-color: white;
+        color: black;
+        border-color: $button-color;
+    }
+}
+
+.btn-primary:hover {
+    background-color: $button-color;
+    border-color: $button-color;
+    color: white;
 }
 
 /* body */
@@ -173,11 +213,9 @@ header#navbar {
     }
 }
 
-#f1b435
-
 ul.side-links {
     li a {
-        color: $button-hover;
+        color: black;
     }
     li.active a, li a:hover {
         color: $menu-active;
@@ -192,6 +230,7 @@ ul.side-links {
         }
     }
 }
+
 .media.message-item .media-body a {
     color:$grid-link;
 }
@@ -207,17 +246,36 @@ ul#secondary-menu-links li a i.fa {
     }
 }
 
-.badge-container-pending .btn-primary {
-    border-color: green;
-    &:hover{
-	background-color: rgba(0, 255, 0, 0.1);
-    }
-}
 
 
 message-item.media button.close {
     color: #1e1a34;
 }
+
+#grid-filter.form-horizontal {
+    background-color: #E9E9E9;
+    padding: 15px;
+    max-width: 860px;
+
+    .col-sm-2 {
+        width: 10%;
+    }
+
+    .form-control {
+        border-radius: 10px;
+    }
+}
+
+select.form-control {
+    -webkit-appearance: none;
+    background: #FFF url(down_arrow.png) no-repeat top right;
+}
+
+/* hide default IE down arrow */
+select.form-control::-ms-expand {
+    display: none;
+}
+
 
 /*#my-badges #grid .grid-container .media-content .icons{
     text-align:left;
