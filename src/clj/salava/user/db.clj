@@ -324,9 +324,9 @@
       (f/remove-file! ctx path))))
 
 (defn remove-user-badges [db user-id]
-  (let [badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
-    (doseq [badge-id badge-ids]
-      (b/delete-badge-with-db! db badge-id))))
+  (let [user-badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
+    (doseq [user-badge-id user-badge-ids]
+      (b/delete-badge-with-db! db user-badge-id))))
 
 
 

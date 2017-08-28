@@ -117,7 +117,7 @@ INSERT INTO user_profile (user_id, field, value, field_order) VALUES (:user_id, 
 SELECT id, path FROM user_file WHERE user_id = :user_id
 
 --name: select-user-badge-ids
-SELECT id  FROM badge WHERE user_id = :user_id
+SELECT id  FROM user_badge WHERE user_id = :user_id
 
 --name: update-user-badges-set-deleted!
 UPDATE badge SET visibility = 'private', deleted = 1 WHERE user_id = :user_id

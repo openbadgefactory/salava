@@ -43,11 +43,12 @@
       (log/error "insert-event-owners!: failed to save event owners")
       (log/error (.toString ex)))))
 
+
 (defn get-all-events-add-viewed [ctx user_id]
   (let [events (get-all-events ctx user_id)]
-    (update-last-viewed ctx events user_id)
-    events
-    ))
+    (if-not (empty? events)
+      (update-last-viewed ctx events user_id))
+    events))
 
 (defn messages-viewed
  "Save information about viewing messages."

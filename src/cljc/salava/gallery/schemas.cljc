@@ -45,7 +45,7 @@
                                    :description           s/Str
                                    :issuer_content_name   s/Str
                                    :issuer_content_url    s/Str
-                                   :issuer_description    s/Str
+                                   :issuer_description    (s/maybe s/Str)
                                    :issuer_verified       (s/maybe s/Int)
                                    :issuer_contact        (s/maybe s/Str)
                                    :issuer_image          (s/maybe s/Str)
