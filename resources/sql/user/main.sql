@@ -90,7 +90,7 @@ UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTA
 UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
 
 --name: update-verified-email-address-verification-key!
-UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email AND verified = 1
+UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
 
 --name: update-set-primary-email-address-verification-key-null!
 UPDATE user_email SET verification_key = NULL WHERE user_id = :user_id AND primary_address = 1

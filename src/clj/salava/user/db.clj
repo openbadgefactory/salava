@@ -304,7 +304,7 @@
         base-path (get-base-path ctx)
         {:keys [id first_name last_name verified primary_address language]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
-    (if (and id verified)
+    (if id ;(and id verified)
       (do
         (update-verified-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
         (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key language) (str first_name " " last_name) email language)
