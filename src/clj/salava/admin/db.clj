@@ -4,7 +4,7 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
+            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name plugin-fun get-plugins]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.user.db :as u]
@@ -203,9 +203,15 @@
               :email (:email user))))
 
 
+(defn get-oauth-user-services [ctx user_id]
+  (let [fun (first (plugin-fun (get-plugins ctx) "block" "user-information"))]
+    (fun ctx user_id))
+  )
+
 (defn get-user [ctx user_id]
   (let [user (u/user-information-with-registered-and-last-login ctx user_id)
-        emails (vec (u/email-addresses ctx user_id))]
+        emails (vec (u/email-addresses ctx user_id))
+        user-services (vec (get-oauth-user-services ctx user_id))]
     (hash-map :name (str (:first_name user) " " (:last_name user))
               :image_file (:profile_picture user)
               :item_owner_id (:id user)
@@ -214,7 +220,9 @@
                      :last_login (:last_login user)
                      :ctime (:ctime user)
                      :deleted (:deleted user)
-                     :activated (:activated user)})))
+                     :activated (:activated user)
+                     :has_password? (:has_password user)
+                     :service user-services})))
 
 
 (defn get-badge-modal [ctx badgeid]
@@ -348,3 +356,24 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
      "success"
      (catch Object _
      "error"))))
+
+(defn user-information
+  "Get user data by user-id"
+  [ctx user-id]
+  (let [select-user (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+        private (get-in ctx [:config :core :private] false)
+        user (assoc select-user :private private)]
+    user))
+
+(defn set-fake-session [ctx ok-status user-id real-user-id]
+  (let [{:keys [role id private activated]} (user-information ctx user-id)]
+    ;; syslogiin tieto "admin-id 1 kirjautui user-id 2:lla" 
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :real-id real-user-id})
+
+    )
+  )
+
+(defn set-session [ctx ok-status user-id]
+  (let [{:keys [role id private activated]} (user-information ctx user-id)]
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated}))
+  )

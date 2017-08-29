@@ -92,3 +92,6 @@
 
 (defn update-user-last_login [ctx user-id]
   (update-user-last_login! {:id user-id} (get-db ctx)))
+
+(defn get-user-information [ctx user-id]
+  (select-oauth-user-service {:user_id user-id}  (into {:row-fn :service} (get-db ctx))))

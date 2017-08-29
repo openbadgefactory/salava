@@ -43,6 +43,11 @@
   (ajax/POST
     (path-for "/obpv1/user/logout")
     {:handler (fn [] (js-navigate-to "/user/login"))}))
+
+(defn return-to-admin []
+  (ajax/POST
+    (path-for "/obpv1/admin/return_to_admin")
+    {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
  
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
@@ -85,10 +90,16 @@
     [:li [:a {:href (path-for "/user/edit")}
           [:i {:class "fa fa-caret-right"}]
           (t :user/Myaccount)]]
-    [:li [:a {:href     "#"
+    (if (session/get-in  [:user :real-id])
+     [:li [:a {:href     "#"
+              :on-click #(return-to-admin)}
+          [:i {:class "fa fa-caret-right"}]
+           (t :admin/Returntoadmin)]]
+     [:li [:a {:href     "#"
               :on-click #(logout)}
           [:i {:class "fa fa-caret-right"}]
-          (t :user/Logout)]]]
+          (t :user/Logout)]])
+    ]
    [:div.userpic
     [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
@@ -191,6 +202,9 @@
 
 (defn default [site-navi content]
   [:div {:role "main"}
+   (if (session/get-in  [:user :real-id])
+     (let [current-user (session/get :user)]
+       [:div {:class "alert alert-warning text-center"} (str  (t :admin/Loggedas) " " (:first_name current-user) " " (:last_name current-user) ". ") [:a {:href "#" :on-click #(return-to-admin)} (t :admin/Returntoadmin)]]))
    [:header {:id "navbar"}
     (top-navi site-navi)]
    [:img {:id "print-logo" :src "/img/logo.png"}]
