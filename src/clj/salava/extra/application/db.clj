@@ -15,21 +15,6 @@
 
 (defqueries "sql/extra/application/queries.sql")
 
-;;temp advert
-(def advert
-  {:remote_url "http://www.google.fi"
-   :remote_id "352"
-   :remote_issuer_id "22"
-   :info "" 
-   :application_url "https://openbadgefactory.com/c/earnablebadge/NM6JZVe7HCeH/apply"
-   :issuer_content_id "92feb6b74b24f02fddac55bdd11a985e7726a6808b23368e0692752e29a13f8e"
-   :badge_content_id "3368c6f212f79433f2e0c912edb82ae36cf980fa1608fb22d2467769b980b9eb"
-   :criteria_content_id "0f26821bd6f068b3676058fb1bb59a5bae2c6121eec71e1bda0fbfb5615ef4cc" 
-   :kind "application"
-   :country "fi"
-   :not_before nil
-   :not_after nil})
-
 
 (defn add-badge-advert [ctx advert]
   (let [{:keys [remote_url remote_id remote_issuer_id info application_url issuer_content_id badge_content_id criteria_content_id kind country not_before not_after]} advert]

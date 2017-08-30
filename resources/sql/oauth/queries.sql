@@ -29,3 +29,6 @@ DELETE FROM oauth_user WHERE user_id = :user_id
 
 --name: update-user-last_login!
 UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: select-oauth-user-service
+SELECT service from oauth_user where user_id = :user_id

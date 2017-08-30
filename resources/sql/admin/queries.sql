@@ -146,3 +146,8 @@ SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked
      WHERE seo.owner = :user_id AND se.verb = 'ticket' AND se.type = 'admin' AND re.status = 'open'
      ORDER BY se.ctime DESC
      LIMIT 1000;
+     
+--name: select-user
+-- get user by id
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0
+
