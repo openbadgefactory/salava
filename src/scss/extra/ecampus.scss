@@ -43,9 +43,12 @@
         vertical-align: middle;
     }
     .login-button:disabled,
+    .login-button:hover,
     .login-button[disabled] {
+        color: black;
         background-color: white;
         opacity: 1;
+        cursor: pointer;
     }
 
     .management-links{
