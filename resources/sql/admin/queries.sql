@@ -151,3 +151,8 @@ SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked
 -- get user by id
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0
 
+--name: update-admin-to-user!
+UPDATE user SET role = 'user' WHERE id = :id
+
+--name: update-user-to-admin!
+UPDATE user SET role = 'admin' WHERE id = :id

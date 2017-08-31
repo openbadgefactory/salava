@@ -218,6 +218,7 @@
               :item_owner_id (:id user)
               :item_owner (str (:first_name user) " " (:last_name user))
               :info {:emails emails
+                     :role (:role user)
                      :last_login (:last_login user)
                      :ctime (:ctime user)
                      :deleted (:deleted user)
@@ -368,7 +369,7 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 
 (defn set-fake-session [ctx ok-status user-id real-user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)]
-    ;; syslogiin tieto "admin-id 1 kirjautui user-id 2:lla" 
+    (log/info "admin-id: " real-user-id " is login as user-id: " user-id)
     (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :real-id real-user-id})
 
     )
@@ -376,5 +377,16 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)]
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated}))
+    (log/info "admin-id: " user-id " logged out from user")
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated})))
+
+(defn update-user-to-admin [ctx user-id]
+  (log/info "admin set user-id: " user-id "to admin.")
+  (update-user-to-admin! {:id user-id} (get-db ctx))
+  "success"
+  )
+
+(defn update-admin-to-user [ctx user-id]
+  (log/info "admin set user-id:" user-id "to admin.")
+  (update-admin-to-user! {:id user-id} (get-db ctx))
   )

@@ -6,10 +6,11 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
-            [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun]]
+            [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun input-valid?]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.helper :refer [dump]]
+            [salava.user.schemas :as schemas]
             [salava.core.i18n :refer [t translate-text]]))
 
 (defn follow-up-url []
@@ -31,7 +32,9 @@
        :handler (fn [data]
                   (if (= (:status data) "success")
                     (js-navigate-to (follow-up-url))
-                    (swap! state assoc :error-message (:message data))))})))
+                    (swap! state assoc :error-message (:message data))))}
+      ;(swap! state assoc :error-message "user/Loginfailed")
+      )))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])
@@ -53,8 +56,10 @@
         [:div.form-group
          [input/text-field {:name "password" :atom password-atom :error-message-atom error-message-atom :placeholder (t :user/Password) :aria-label (t :user/Password) :password? true}]]
         [:button {:class    "btn btn-primary login-button"
-                  :on-click #(do (.preventDefault %) (login state))
-                  :disabled (not (and (input/email-valid? @email-atom) (input/password-valid? @password-atom)))}
+                  :on-click #(do (.preventDefault %)
+                                 (if-not (input-valid? schemas/LoginUser {:email @email-atom :password @password-atom})
+                                   (swap! state assoc :error-message "user/Loginfailed"))
+                                 (login state))}
          (t :user/Login)]
         [:div {:class "row login-links"}
          [:div.management-links

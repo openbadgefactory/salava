@@ -10,7 +10,7 @@
             [salava.page.main :as p]
             [salava.badge.main :as b]
             [salava.oauth.db :as o]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun get-email-notifications]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun get-email-notifications]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -74,6 +74,7 @@
             new-user            (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications :pass (hash-password password)} (get-db ctx))
             user-id             (:generated_key new-user)]
         (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
+        (u/publish ctx :new-user {:user-id user-id})
         (m/send-verification ctx site-url (email-verification-link site-url base-path activation_code) (str first-name " " last-name) email language)
         
         {:status "success" :message ""}))))
