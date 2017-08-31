@@ -119,7 +119,8 @@
 
 
 (defn main-response [ctx current-user flash-message meta-tags]
-  (let [user (if current-user (u/user-information ctx (:id current-user)))]
+  (let [user (if current-user (-> (u/user-information ctx (:id current-user))
+                                  (assoc  :real-id (:real-id current-user))))] ;;real-id is for admin login as user
     (-> (main-view (assoc ctx :user user :flash-message flash-message) meta-tags)
         (ok)
         (content-type "text/html; charset=\"UTF-8\""))))

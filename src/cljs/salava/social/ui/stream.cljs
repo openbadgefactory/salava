@@ -27,6 +27,11 @@
                        :pending-badges (:pending-badges data)
                        :tips (:tips data)))}))
 
+(defn pending-connections [reload-fn]
+  (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
+    (if connections
+      [connections reload-fn]
+      [:div ""])))
 
 (defn pending-connections [reload-fn]
   (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
@@ -41,6 +46,7 @@
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
      [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id user_id})} (str first_name " "last_name)]]
+
     (into [:div] (for [ item (clojure.string/split-lines message)]
                    [:p item]))]])
 

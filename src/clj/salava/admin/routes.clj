@@ -237,6 +237,25 @@
                    :current-user current-user
                    (ok (a/send-user-activation-message ctx id)))
 
+
+             (POST "/fake_session/:user_id" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Login as other user"
+                   :path-params [user_id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (a/set-fake-session ctx (ok {:status "success" :real-id (:id current-user)}) user_id (:id current-user))
+                   )
+
+             (POST "/return_to_admin" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Login back as admin"
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (if (:real-id current-user)
+                     (a/set-session ctx (ok) (:real-id current-user)))
+                   )
+
              (POST "/profiles" []
                    ;:return
                    #_{:users     [schemas/UserProfiles]

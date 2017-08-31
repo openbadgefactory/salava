@@ -27,7 +27,7 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated FROM user WHERE id = :id
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated, IF(pass IS NULL, 0,1) AS has_password FROM user WHERE id = :id
 
 --name: select-user-password
 SELECT pass FROM user WHERE id = :id 
@@ -90,7 +90,7 @@ UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTA
 UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
 
 --name: update-verified-email-address-verification-key!
-UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email AND verified = 1
+UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
 
 --name: update-set-primary-email-address-verification-key-null!
 UPDATE user_email SET verification_key = NULL WHERE user_id = :user_id AND primary_address = 1

@@ -24,22 +24,6 @@
 
 
 
-
-
-(defn admin-events-reduce [events]
-  (let [helper (fn [current item]
-                  (let [key [(:verb item)]]
-                    (-> current
-                        (assoc  key item)
-                        (assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
-                        )))
-        reduced-events (vals (reduce helper {} (reverse events)))]
-    (filter #(false? (:hidden %)) reduced-events)))
-
-
-
-
-
 (defn badge-message-map
   "returns newest message and count new messages"
   [messages]
