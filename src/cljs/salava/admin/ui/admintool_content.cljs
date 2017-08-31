@@ -395,13 +395,12 @@
         (str (t :admin/Upgradeuser) " " item_owner )
         [:button {:type         "button"
                   :class        "btn btn-primary pull-right"
+                  :data-dismiss "modal"
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/upgrade_user_to_admin/" item_owner_id ))
                                   {:response-format :json
-                                   :keywords?       true         
+                                   :keywords?       true
                                    :handler         (fn [data]
-                                                      (dump "jee")
-                                        ;(reset! status data)
                                                       )
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
@@ -422,13 +421,15 @@
         (str (t :admin/Downgradeuser) " " item_owner )
         [:button {:type         "button"
                   :class        "btn btn-primary pull-right"
+                  
+                  :data-dismiss "modal"
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/downgrade_admin_to_user/" item_owner_id ))
                                   {:response-format :json
-                                   :keywords?       true         
+                                   :keywords?       true
                                    :handler         (fn [data]
-                                                      (dump "jee")
-                                        ;(reset! status data)
+                                                      
+                                                      
                                                       )
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
