@@ -256,6 +256,23 @@
                      (a/set-session ctx (ok) (:real-id current-user)))
                    )
 
+             (POST "/upgrade_user_to_admin/:id" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Update user to admin"
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/update-user-to-admin ctx id)))
+             
+             (POST "/downgrade_admin_to_user/:id" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Update admin to user"
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/update-admin-to-user ctx id) ))
+
+             
              (POST "/profiles" []
                    ;:return
                    #_{:users     [schemas/UserProfiles]
