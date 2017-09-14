@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom create-class]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [path-for current-path]]
+            [salava.core.ui.helper :refer [path-for current-path not-activated?]]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]))
@@ -11,10 +11,11 @@
   (atom nil))
 
 
-(defn follow-button-badge [badge-content-id followed?]
-  [:button {:class    "btn btn-primary follow"
+(defn follow-button-badge [badge-id followed?]
+  [:button {:class    "btn btn-primary follow "
+            :disabled (if (not-activated?) "disabled" "")
             :on-click #(ajax/POST
-                        (path-for (str "/obpv1/social/create_connection_badge/" badge-content-id))
+                        (path-for (str "/obpv1/social/create_connection_badge/" badge-id))
                         {:response-format :json
                          :keywords?       true          
                          :handler         (fn [data]
@@ -25,9 +26,9 @@
                                             )})}
    (str " " (t :social/Follow)) ])
 
-(defn unfollow-ajax-post [badge-content-id]
+(defn unfollow-ajax-post [badge-id]
   (ajax/POST
-   (path-for (str "/obpv1/social/delete_connection_badge/" badge-content-id))
+   (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
    {:response-format :json
     :keywords?       true          
     :handler         (fn [data]
@@ -37,30 +38,30 @@
                        (.log js/console (str status " " status-text)))}))
 
 
-(defn unfollow-button-badge [badge-content-id followed?]
-  [:button {:class    "btn btn-primary unfollow"
-            :on-click #(unfollow-ajax-post badge-content-id)}
+(defn unfollow-button-badge [badge-id followed?]
+  [:button {:class    "btn btn-primary unfollow "
+            :on-click #(unfollow-ajax-post badge-id)}
     (str " " (t :social/Unfollow)) ])
 
 
 
 
 
-(defn init-data [badge-content-id]
+(defn init-data [badge-id]
   (ajax/GET
-   (path-for (str "/obpv1/social/connected/" badge-content-id))
+   (path-for (str "/obpv1/social/connected/" badge-id))
    {:handler (fn [data]
                (reset! followed? data)
                 )}))
 
-(defn follow-badge [badge-content-id init-followed?]
+(defn follow-badge [badge-id init-followed?]
   (let [user (session/get :user)]
-    (init-data badge-content-id)
+    (init-data badge-id)
     (if (and user (social-plugin?))
         (create-class {:component-will-mount (fn [] (reset! followed? init-followed?))
                        :reagent-render (fn [] (if @followed?
-                                                (unfollow-button-badge badge-content-id followed?)
-                                                (follow-button-badge badge-content-id followed?)))
+                                                (unfollow-button-badge badge-id followed?)
+                                                (follow-button-badge badge-id followed?)))
                        :component-will-unmount (fn [] (reset! followed? nil))})
         )))
 

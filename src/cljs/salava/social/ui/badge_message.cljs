@@ -7,15 +7,17 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid? hyperlink]]
+            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid? hyperlink not-activated?]]
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.social.ui.follow :as f]
+            [salava.core.ui.modal :refer [set-new-view]]
             [salava.core.time :refer [date-from-unix-time]]))
 
 (defn init-data [state]
   (ajax/GET
-   (path-for (str "/obpv1/social/messages/" (:badge_content_id @state) "/" (:page_count @state)))
+   (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
    {:handler (fn [data]
                (swap! state assoc
                       :messages (into (:messages @state) (:messages data))
@@ -24,10 +26,10 @@
                       :messages_left (:messages_left data)))}))
 
 
-(defn save-message [state]
-  (let [{:keys [message user_id badge_content_id]} @state]
+(defn save-message [state reload-fn]
+  (let [{:keys [message user_id badge_id]} @state]
     (ajax/POST
-     (path-for (str "/obpv1/social/messages/" badge_content_id))
+     (path-for (str "/obpv1/social/messages/" badge_id))
      {:response-format :json
       :keywords? true
       :params {:message message
@@ -36,13 +38,16 @@
                  (do
                    (if (= "success" (:connected? data))
                      (do
-                       (f/init-data badge_content_id)
+                       
+                       (f/init-data badge_id)
                        (swap! state assoc :start-following true))
                      (swap! state assoc :start-following false))
                    (swap! state assoc
                           :messages []
                           :page_count 0)
-                   (init-data state)))
+                   (init-data state)
+                   (reload-fn)
+                   ))
       :error-handler (fn [{:keys [status status-text]}]
                        (dump (str status " " status-text)))})))
 
@@ -104,7 +109,8 @@
      [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
     [:div {:class "media-body"}
      [:h4 {:class "media-heading"}
-      [:a {:href (path-for (str "/user/profile/" user_id)) :target "_blank"} (str first_name " "last_name)]
+      [:a {:href "#"
+           :on-click #(set-new-view [:user :profile] {:user-id user_id})} (str first_name " "last_name)]
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]]
      (into [:div] (for [ item (clojure.string/split-lines message)]
                     (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item)) 
@@ -141,19 +147,20 @@
                  ;:component-did-update #(scroll-bottom)
                  }))
 
-(defn message-textarea [state]
+(defn message-textarea [state reload-fn]
   (let [message-atom (cursor state [:message])]
     [:div
      [:div {:class "form-group"}
       [:textarea {:class    "form-control"
                   :rows     "5"
                   :value    @message-atom
+                  :disabled (if (not-activated?) "disabled" "")
                   :onChange #(reset! message-atom (.-target.value %))} ]]
      [:div {:class "form-group"}
       [:button {:class    "btn btn-primary"
                 :disabled (if (blank? @message-atom) "disabled" "")
                 :on-click #(do
-                             (save-message state)
+                             (save-message state reload-fn)
                              (.preventDefault %))} 
       (t :social/Postnew)]]]))
 
@@ -166,7 +173,7 @@
                     (.preventDefault %))} "Refresh"])
 
 (defn start-following-alert [state]
-  (let [{:keys [badge_content_id]} @state]
+  (let [{:keys [badge_id]} @state]
     [:div {:class (str "alert ""alert-success")}
      [:div.deletemessage
       [:button {:type       "button"
@@ -180,29 +187,35 @@
      (str (t :social/Youstartedfollowbadge) "! ")
      [:a {:href "#"
           :on-click #(do
-                       (f/unfollow-ajax-post badge_content_id)
+                       (f/unfollow-ajax-post badge_id)
                        (swap! state assoc :start-following false))}
       (t :social/Cancelfollowingbadge)]]))
 
-(defn content [state]
+
+
+(defn content [state reload-fn]
   (let [{:keys [messages start-following]} @state]
     [:div
-     (message-textarea state)
+     (if (not-activated?)
+       (not-activated-banner))
+     [message-textarea state reload-fn]
      (if start-following
        (start-following-alert state))
      [message-list messages state]]))
 
 
-(defn badge-message-handler [badge_content_id]
+(defn badge-message-handler [badge_id reload-fn]
   (let [state (atom {:messages [] 
                      :user_id (session/get-in [:user :id])
                      :user_role (session/get-in [:user :role])
                      :message ""
-                     :badge_content_id badge_content_id
+                     :badge_id badge_id
                      :show false
                      :page_count 0
                      :messages_left 0
-                     :start-following false})]
+                     :start-following false})
+        reload-fn (or reload-fn (fn []))]
+    
     (init-data state)
     (fn []
-      (content state))))
+      (content state reload-fn))))

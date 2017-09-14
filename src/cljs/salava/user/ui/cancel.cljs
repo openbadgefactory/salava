@@ -72,7 +72,7 @@
         (cancel-form state)]]]
      [:div {:class "panel"}
       [:span (t :oauth/Cannotunlink) " " (t :oauth/Setpasswordfrom)
-                " " [:a {:href (path-for "/user/edit")} (t :oauth/accountsettings)] "."]])])
+                " " [:a {:href (path-for "/user/edit/password")} (t :user/Passwordsettings)] "."]])])
 
 (defn init-data [state]
   (ajax/GET

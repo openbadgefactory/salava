@@ -8,7 +8,8 @@
             [salava.page.ui.embed :as embed]
             [salava.page.ui.theme :as theme]
             [salava.page.ui.settings :as settings]
-            [salava.page.ui.preview :as preview]))
+            [salava.page.ui.preview :as preview]
+            [salava.page.ui.modal :as pagemodel]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/page") [["" my/handler]

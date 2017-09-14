@@ -6,6 +6,7 @@
             [salava.badge.schemas :as schemas] ;cljc
             [salava.badge.main :as b]
             [salava.badge.importer :as i]
+            [salava.factory.db :as f]
             [salava.core.layout :as layout]
             [salava.core.access :as access]
             salava.core.restructure))
@@ -28,9 +29,10 @@
              (GET "/" []
                   :return [schemas/UserBadgeContent]
                   :summary "Get the badges of a current user"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (do
+                    ;(f/save-pending-assertions ctx (:id current-user))
                     (ok (b/user-badges-all ctx (:id current-user)))))
 
              (GET "/info/:badgeid" []
@@ -83,13 +85,13 @@
                      (forbidden)
                      (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user))))))
 
-             (POST "/set_status/:badgeid" []
-                   :path-params [badgeid :- Long]
+             (POST "/set_status/:user-badge-id" []
+                   :path-params [user-badge-id :- Long]
                    :body-params [status :- (s/enum "accepted" "declined")]
                    :summary "Set badge status"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (b/set-status! ctx badgeid status (:id current-user)))))
+                   (ok (str (b/set-status! ctx user-badge-id status (:id current-user)))))
 
              (POST "/toggle_recipient_name/:badgeid" []
                    :path-params [badgeid :- Long]
@@ -118,7 +120,7 @@
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
                   :summary "Get the badges of a specified user for export"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [emails (i/user-backpack-emails ctx (:id current-user))]
                     (if (:private current-user)
@@ -129,7 +131,7 @@
              (GET "/import" []
                   :return schemas/Import
                   :summary "Fetch badges from Mozilla Backpack to import"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (if (:private current-user)
                     (forbidden)
@@ -156,13 +158,13 @@
                      (forbidden)
                      (ok (i/upload-badge ctx file (:id current-user)))))
 
-             (GET "/settings/:badgeid" []
+             (GET "/settings/:user-badge-id" []
                   ;return schemas/UserBadgeContent
-                  :path-params [badgeid :- Long]
+                  :path-params [user-badge-id :- Long]
                   :summary "Get badge settings"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (b/badge-settings ctx badgeid (:id current-user))))
+                  (ok (b/badge-settings ctx user-badge-id (:id current-user))))
 
              (POST "/save_settings/:badgeid" []
                    :return {:status (s/enum "success" "error")}
@@ -196,6 +198,6 @@
              (GET "/stats" []
                   :return schemas/BadgeStats
                   :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (b/badge-stats ctx (:id current-user)))))))

@@ -41,12 +41,20 @@
                     (reset! profile-picture-atom (:path data)))
                   (m/modal! (file/upload-modal status message reason)))})))
 
-(defn gallery-element [picture-data profile-picture-atom]
-  (let [{:keys [path]} picture-data]
+(defn gallery-element [picture-data profile-picture-atom pictures-atom]
+  (let [{:keys [path id]} picture-data
+        current-profile-picture (session/get-in  [:user :profile_picture])]
     [:div {:key path
            :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
            :on-click #(reset! profile-picture-atom path)}
-     [:img {:src (profile-picture path)}]]))
+     [:img {:src (profile-picture path)}]
+     (if (and (not (nil? id)) (not (= path current-profile-picture)))
+       [:a {:class    "delete-icon"
+            :title    (t :file/Delete)
+            :on-click (fn []
+                        (m/modal! [file/delete-file-modal id pictures-atom]
+                                  {:size :lg}))}
+        [:i {:class "fa fa-trash"}]])]))
 
 (defn profile-picture-gallery [pictures-atom profile-picture-atom]
   [:div {:id "profile-picture-gallery" :class "row"}
@@ -55,7 +63,7 @@
     [gallery-element {:path nil} profile-picture-atom]
     (into [:div]
           (for [picture-elem (map first (vals (group-by :path @pictures-atom)))]
-            [gallery-element picture-elem profile-picture-atom]))]
+            [gallery-element picture-elem profile-picture-atom pictures-atom]))]
    [:div.col-xs-12 {:id "profile-picture-upload-button"}
     [:button {:class "btn btn-primary"
               :on-click #(.preventDefault %)}
@@ -124,6 +132,8 @@
                           (f/add-field profile-fields-atom empty-field))}
      (t :user/Addfield)]]])
 
+
+
 (defn content [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
         profile-picture-atom (cursor state [:user :profile_picture])
@@ -152,6 +162,7 @@
                             :checked   (= "public" @visibility-atom)
                             :on-change #(reset! visibility-atom (.-target.value %))}                               ]
             (t :core/Public)]]])
+       
        [profile-picture-gallery pictures-atom profile-picture-atom]
        [:div.form-group
         [:label.col-xs-12 (t :user/Aboutme)]

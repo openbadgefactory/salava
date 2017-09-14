@@ -1,5 +1,5 @@
-(defproject salava "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+(defproject salava "2.0.0"
+  :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
             :url  "http://www.apache.org/licenses/LICENSE-2.0"}
@@ -61,7 +61,10 @@
                  [cljs-ajax "0.5.8"]
                  [org.clojars.frozenlock/reagent-modals "0.2.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
-
+                 [metosin/komponentit "0.2.2"]
+                 [com.cemerick/url "0.1.1"]
+                 [cljsjs/clipboard "1.6.1-1"]
+                 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
                  [org.webjars/font-awesome "4.7.0"]
@@ -87,6 +90,7 @@
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :java-source-paths ["src/java"]
   :test-paths ["test/clj" "test/cljs" "test/cljc"]
+
   :profiles {:dev     {:source-paths   ["src/dev-clj"]
                        :dependencies   [[figwheel-sidecar "0.5.8"]
                                         [com.cemerick/piggieback "0.2.1"]
@@ -103,6 +107,7 @@
                        :main           salava.core.main
                        :aot            [salava.core.main]}}
 
+
   :scss  {:builds
           {:dev {:source-dir "src/scss"
                  :dest-dir   "target/generated/public/css"
@@ -114,11 +119,13 @@
                  :args       ["-I" "src/scss/" "-t" "compressed"]}}}
 
 
+
   :figwheel {:http-server-root "public"
-             :server-port      3449
+             :server-port      3450
              :css-dirs         ["target/generated/public/css"]
-             :repl             true
+             :repl             false
              :server-logfile   "target/figwheel-logfile.log"}
+
 
   :cljsbuild {:builds {:dev {:source-paths ["src/cljs" "src/cljc" "src/dev-cljs"]
                              :compiler     {:main           "salava.core.ui.figwheel"

@@ -43,6 +43,11 @@
   (ajax/POST
     (path-for "/obpv1/user/logout")
     {:handler (fn [] (js-navigate-to "/user/login"))}))
+
+(defn return-to-admin []
+  (ajax/POST
+    (path-for "/obpv1/admin/return_to_admin")
+    {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
  
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
@@ -62,8 +67,8 @@
 [:a {:class "logo pull-left"
      :title (session/get :site-name)
      :aria-label "to index" 
-     :href  (if (session/get :user) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-     :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url))  "")}
+     :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
+     :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
           :title "OBP logo"
           :aria-label "OBP logo"}]
@@ -85,10 +90,16 @@
     [:li [:a {:href (path-for "/user/edit")}
           [:i {:class "fa fa-caret-right"}]
           (t :user/Myaccount)]]
-    [:li [:a {:href     "#"
+    (if (session/get-in  [:user :real-id])
+     [:li [:a {:href     "#"
+              :on-click #(return-to-admin)}
+          [:i {:class "fa fa-caret-right"}]
+           (t :admin/Returntoadmin)]]
+     [:li [:a {:href     "#"
               :on-click #(logout)}
           [:i {:class "fa fa-caret-right"}]
-          (t :user/Logout)]]]
+          (t :user/Logout)]])
+    ]
    [:div.userpic
     [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
@@ -116,8 +127,8 @@
    [:div {:class "container-fluid"}
     [:div {:class "navbar-header"}
      [:a {:class "logo pull-left"
-          :href  (if (session/get :user) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-          :on-click #(if (not (session/get :user)) (set! (.-location.href js/window) (session/get :site-url)) "") 
+          :href  (if  (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
+          :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url)) "") 
           :title (session/get :site-name)}
       [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
       [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]]]])
@@ -191,6 +202,9 @@
 
 (defn default [site-navi content]
   [:div {:role "main"}
+   (if (session/get-in  [:user :real-id])
+     (let [current-user (session/get :user)]
+       [:div {:class "alert alert-warning text-center"} (str  (t :admin/Loggedas) " " (:first_name current-user) " " (:last_name current-user) ". ") [:a {:href "#" :on-click #(return-to-admin)} (t :admin/Returntoadmin)]]))
    [:header {:id "navbar"}
     (top-navi site-navi)]
    [:img {:id "print-logo" :src "/img/logo.png"}]

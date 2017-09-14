@@ -1,5 +1,7 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
+            [clojure.tools.logging :as log]
+            [clj-http.client :as http]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
             [clojure.string :refer [blank? split upper-case lower-case capitalize]]
@@ -21,7 +23,7 @@
   (str (u/get-site-url ctx) (u/get-base-path ctx) "/badge/info/" badge-id))
 
 (defn assoc-badge-tags [badge tags]
-  (assoc badge :tags (map :tag (filter #(= (:badge_id %) (:id badge))
+  (assoc badge :tags (map :tag (filter #(= (:user_badge_id %) (:id badge))
                                        tags))))
 (defn map-badges-tags [badges tags]
   (map (fn [b] (assoc-badge-tags b tags))
@@ -46,41 +48,56 @@
     (catch Exception _
       issuer-verified-initial)))
 
+(defn badge-publish-update! [ctx user-badge-id visibility]
+  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)) )]
+    (if (not= visibility "private")
+      (update-badge-published! {:badge_id badge-id :value 1} (u/get-db ctx))
+      (let [visibility-count (select-badge-visibility-recipients-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :visibility_count} (u/get-db ctx)) )]
+        (if (not (pos? visibility-count))
+          (update-badge-published! {:badge_id badge-id :value 0} (u/get-db ctx)))))))
+
+;FIXME
 (defn badge-issued-and-verified-by-obf
   "Check if badge is issued by Open Badge Factory and if the issuer is verified"
   [ctx badge]
   (try
-    (let [obf-url (get-in ctx [:config :factory :url] "")
-          obf-base (-> obf-url (split #"://") second)
-          {:keys [id badge_url issuer_url mtime issuer_verified]} badge
-          issued-by-obf (if (and obf-base badge_url) (-> obf-base re-pattern (re-find badge_url) boolean))
-          verified-by-obf (and issued-by-obf (check-issuer-verified! ctx id issuer_url mtime issuer_verified))]
+    (let [obf-url (get-in ctx [:config :factory :url])
+          {:keys [id remote_url issuer_url mtime issuer_verified]} badge
+          issued-by-obf   (and (not (nil? obf-url)) (not (nil? remote_url)) (= remote_url obf-url))
+          verified-by-obf (and issued-by-obf (or (= issuer_verified true) (= issuer_verified 1)))]
       (assoc badge :issued_by_obf (boolean issued-by-obf)
                    :verified_by_obf (boolean verified-by-obf)
                    :obf_url obf-url))
     (catch Exception _
       badge)))
 
+
+(defn check-metabadge!
+  "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
+  [ctx assertion-url])
+
+
 (defn user-badges-all
   "Returns all the badges of a given user"
   [ctx user-id]
-  (let [badges (select-user-badges-all {:user_id user-id} (u/get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (u/get-db ctx)))
-        badges-with-tags (map-badges-tags badges tags)]
+    (let [badges (map (fn [b] (assoc b :revoked (= 1 (b :revoked))))
+                      (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
+          tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
+          badges-with-tags (map-badges-tags badges tags)]
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
   "Returns valid badges of a given user"
   [ctx user-id]
   (let [badges (select-user-badges-to-export {:user_id user-id} (u/get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :id badges)} (u/get-db ctx)))]
+        tags (if-not (empty? badges)  (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
   [ctx user-id]
   (let [badges (select-user-badges-pending {:user_id user-id} (u/get-db ctx))
-        tags (if-not (empty? badges) (select-taglist {:badge_ids (map :badge_content_id badges)} (u/get-db ctx)))]
+        tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
 
 (defn user-owns-badge?
@@ -123,22 +140,34 @@
           expires   (u/str->epoch (:expires assertion))]
       (assoc (dissoc assertion :issued_on) :issuedOn (if issued-on (date-from-unix-time (* 1000 issued-on)) "-")
                                            :expires (if expires (date-from-unix-time (* 1000 expires)) "-")))
-    (catch Object _)))
+    (catch Object _
+      (log/error "parse-assertion-json: " _))))
+
+
+
+
+(defn fetch-badge [ctx badge-id]
+  (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
+        content (map (fn [content] (update content :criteria_content u/md->html) ) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
+    (assoc my-badge :content content))
+  )
+
+
 
 (defn get-badge
   "Get badge by id"
   [ctx badge-id user-id]
-  (let [badge (update (select-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
+  (let [badge (fetch-badge ctx badge-id) ;(update (select-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
         owner? (= user-id (:owner badge))
         ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
         ;followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))
-        all-congratulations (if user-id (select-all-badge-congratulations {:badge_id badge-id} (u/get-db ctx)))
+        all-congratulations (if user-id (select-all-badge-congratulations {:user_badge_id badge-id} (u/get-db ctx)))
         user-congratulation? (and user-id
                                   (not owner?)
                                   (some #(= user-id (:id %)) all-congratulations))
-        view-count (if owner? (select-badge-view-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))
+        view-count (if owner? (select-badge-view-count {:user_badge_id badge-id} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))
         badge (badge-issued-and-verified-by-obf ctx badge)
-        recipient-count (select-badge-recipient-count {:badge_content_id (:badge_content_id badge) :visibility (if user-id "internal" "public")}
+        recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))]
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
@@ -148,6 +177,7 @@
                  ;:followed? followed?
                  :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
                  :assertion (parse-assertion-json (:assertion_json badge))
+
                  :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))))
 
 
@@ -165,25 +195,37 @@
   "Save tags associated to badge. Delete existing tags."
   [ctx tags badge-id]
   (let [valid-tags (filter #(not (blank? %)) (distinct tags))]
-    (delete-badge-tags! {:badge_id badge-id} (u/get-db ctx))
+    (delete-badge-tags! {:user_badge_id badge-id} (u/get-db ctx))
     (doall (for [tag valid-tags]
-             (replace-badge-tag! {:badge_id badge-id :tag tag} (u/get-db ctx))))))
+             (replace-badge-tag! {:user_badge_id badge-id :tag tag} (u/get-db ctx))))))
 
 (defn set-visibility!
   "Set badge visibility"
-  [ctx badge-id visibility user-id]
-  (if (badge-owner? ctx badge-id user-id)
-    (update-visibility! {:id badge-id :visibility visibility} (u/get-db ctx))))
+  [ctx user-badge-id visibility user-id]
+  (if (badge-owner? ctx user-badge-id user-id)
+    (do
+      (update-visibility! {:id user-badge-id :visibility visibility} (u/get-db ctx))
+      (badge-publish-update! ctx user-badge-id visibility)
+      (if (= "public" visibility)
+        (u/event ctx user-id "publish" user-badge-id "badge")
+        (u/event ctx user-id "unpublish" user-badge-id "badge")))))
+
+
+(defn set-recipient-count! [ctx user-badge-id]
+  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)) )]
+    (update-badge-recipient-count! {:badge_id badge-id} (u/get-db ctx))))
 
 (defn set-status!
   "Set badge status"
-  [ctx badge-id status user-id]
-  (if (badge-owner? ctx badge-id user-id)
-    (update-status! {:id badge-id :status status} (u/get-db ctx)))
+  [ctx user-badge-id status user-id]
+  (if (badge-owner? ctx user-badge-id user-id)
+    (update-status! {:id user-badge-id :status status} (u/get-db ctx)))
   (if (= "accepted" status)
-    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
-      (so/create-connection-badge-by-badge-id! ctx user-id badge-id)))
-  badge-id)
+    (do
+      (set-recipient-count! ctx user-badge-id)
+      (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+        (so/create-connection-badge-by-badge-id! ctx user-id user-badge-id))))
+  user-badge-id)
 
 (defn toggle-show-recipient-name!
   "Toggle recipient name visibility"
@@ -201,44 +243,76 @@
   "User congratulates badge receiver"
   [ctx badge-id user-id]
   (try+
-    (let [congratulation (select-badge-congratulation {:badge_id badge-id :user_id user-id} (into {:result-set-fn first} (u/get-db ctx)))]
+    (let [congratulation (select-badge-congratulation {:user_badge_id badge-id :user_id user-id} (into {:result-set-fn first} (u/get-db ctx)))]
       (if congratulation
         (throw+ "User have congratulated owner already"))
       (if (badge-owner? ctx badge-id user-id)
         (throw+ "User cannot congratulate himself"))
-      (insert-badge-congratulation<! {:badge_id badge-id :user_id user-id} (u/get-db ctx))
+      (insert-badge-congratulation<! {:user_badge_id badge-id :user_id user-id} (u/get-db ctx))
+      (u/event ctx user-id "congratulate" badge-id "badge")
       {:status "success" :message ""})
     (catch Object _
       {:status "error" :message _})))
 
 (defn badge-settings
   "Get badge settings"
-  [ctx badge-id user-id]
-  (if (badge-owner? ctx badge-id user-id)
-    (let [badge (update (select-badge-settings {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
-          tags (select-taglist {:badge_ids [badge-id]} (u/get-db ctx))]
+  [ctx user-badge-id user-id]
+  (if (badge-owner? ctx user-badge-id user-id)
+    (let [badge (update (select-badge-settings {:id user-badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
+          tags (select-taglist {:user_badge_ids [user-badge-id]} (u/get-db ctx))]
       (assoc-badge-tags badge tags))))
 
+(defn send-badge-info-to-obf [ctx user-badge-id user-id]
+  (let [obf-url (get-in ctx [:config :core :obf :url])
+        site-url (get-in ctx [:config :core :site-url])]
+    (if (string? obf-url)
+      (let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
+        (if (re-find (re-pattern obf-url) (str assertion-url))
+          (try+
+            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
+            (catch Object _
+              (log/error "send-badge-info-to-obf: " _))))))))
+
+
+
+
+
+
+
+(defn user-badge-evidence
+  [ctx user-badge-id url]
+  (let [id (select-user-badge-evidence-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :id} (u/get-db ctx)))]
+    (if id
+      (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
+      (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
+
+;TODO rework evidence
 (defn save-badge-settings!
   "Update badge settings"
-  [ctx badge-id user-id visibility evidence-url rating tags]
+  [ctx user-badge-id user-id visibility evidence-url rating tags]
   (try+
-   (if (badge-owner? ctx badge-id user-id)
-     (let [data {:id          badge-id
+   (if (badge-owner? ctx user-badge-id user-id)
+     (let [data {:id          user-badge-id
                  :visibility   visibility
-                 :evidence_url (if (blank? evidence-url) nil evidence-url)
+                 ;:evidence_url (if (blank? evidence-url) nil evidence-url)
                  :rating       rating}]
        (if (and (private? ctx) (= "public" visibility))
-         (throw+ {:status "error" :badge-id badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
-       (if (blank? evidence-url) (toggle-show-evidence! ctx badge-id 0 user-id))
+         (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
+       (if (blank? evidence-url) (toggle-show-evidence! ctx user-badge-id 0 user-id))
        (update-badge-settings! data (u/get-db ctx))
-       (save-badge-tags! ctx tags badge-id)
+       (save-badge-tags! ctx tags user-badge-id)
+       (send-badge-info-to-obf ctx user-badge-id user-id)
+       (if evidence-url
+         (user-badge-evidence ctx user-badge-id evidence-url))
+       (badge-publish-update! ctx user-badge-id visibility)
+       (if (or (= "internal" visibility) (= "public" visibility))
+         (u/event ctx user-id "publish" user-badge-id "badge")
+         (u/event ctx user-id "unpublish" user-badge-id "badge"))
        {:status "success"})
      (throw+ {:status "error"}))
    (catch Object ex
      (log/error "trying save badge visibilty as public in private mode: " ex)
-     {:status "error"}))
-  )
+     {:status "error"})))
 
 (defn save-badge-raiting!
   "Update badge raiting"
@@ -247,15 +321,16 @@
     (let [data {:id          badge-id
                 :rating       rating}]
       (update-badge-raiting! data (u/get-db ctx))
+      (send-badge-info-to-obf ctx badge-id user-id)
       {:status "success"})
     {:status "error"}))
 
 
-(defn delete-badge-with-db! [db badge-id]
-  (delete-badge-tags! {:badge_id badge-id} db)
-  (delete-badge-views! {:badge_id badge-id} db)
-  (delete-badge-congratulations! {:badge_id badge-id} db)
-  (update-badge-set-deleted! {:id badge-id} db))
+(defn delete-badge-with-db! [db user-badge-id]
+  (delete-badge-tags! {:user_badge_id user-badge-id} db)
+  (delete-badge-views! {:user_badge_id user-badge-id} db)
+  (delete-badge-congratulations! {:user_badge_id user-badge-id} db)
+  (update-badge-set-deleted! {:id user-badge-id} db))
 
 (defn delete-badge!
   "Set badge deleted and delete tags"
@@ -287,7 +362,7 @@
 (defn badge-viewed
   "Save information about viewing a badge. If user is not logged in user-id is nil."
   [ctx badge-id user-id]
-  (insert-badge-viewed! {:badge_id badge-id :user_id user-id} (u/get-db ctx)))
+  (insert-badge-viewed! {:user_badge_id badge-id :user_id user-id} (u/get-db ctx)))
 
 (defn badges-by-issuer [badges-issuers]
   (reduce (fn [result issuer-badge]

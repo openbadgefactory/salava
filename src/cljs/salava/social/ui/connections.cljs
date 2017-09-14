@@ -1,12 +1,13 @@
 (ns salava.social.ui.connections
   (:require [salava.core.ui.layout :as layout]
             [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.gallery.ui.badges :as b]
             [reagent-modals.modals :as m]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]))
+            [salava.core.ui.modal :as mo]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
 
 (defn init-data [state]
   (ajax/GET
@@ -15,9 +16,9 @@
                 (swap! state assoc :badges data))}))
 
 
-(defn unfollow [badge-content-id state]
+(defn unfollow [badge-id state]
   [:a {:href "#" :on-click #(ajax/POST
-                                (path-for (str "/obpv1/social/delete_connection_badge/" badge-content-id))
+                                (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
                                 {:response-format :json
                                  :keywords?       true          
                                  :handler         (fn [data]
@@ -44,23 +45,34 @@
                (for [badge-views badges
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:tr
-                  [:td [:img.badge-icon {:src (str "/" image_file)
+                  [:td.icon [:img.badge-icon {:src (str "/" image_file)
                                          :alt name}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
-                                              (b/open-modal id false init-data state)
+                                              (mo/open-modal [:gallery :badges] {:badge-id id})
+                                              ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } name]]
-                   [:td (unfollow id state)]
+                   [:td.action (unfollow id state)]
                   ]))]]
      ])
 
 
+(defn user-connections []
+  (let [connections (first (plugin-fun (session/get :plugins) "block" "connections"))]
+    (if connections
+      [connections]
+      [:div ""])))
+
 (defn content [state]
   (let [badges (:badges @state)]
-    [:div {:id "badge-stats"}
+    [:div
      [m/modal-window]
-     (badge-connections badges state)
-     
+     [:div {:id "badge-stats"}
+      
+      (badge-connections badges state)
+      
+      ]
+     (user-connections)
      ]))
 
 

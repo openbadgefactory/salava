@@ -14,7 +14,7 @@
                     :badge_url (s/maybe s/Str)
                     :criteria_url (s/maybe s/Str)
                     :criteria_content (s/maybe s/Str)
-                    :badge_content_id (s/maybe s/Str)
+                    :badge_id (s/maybe s/Str)
                     :image_file (s/maybe s/Str)
                     :issuer_content_id (s/maybe s/Str)
                     :issuer_email (s/maybe s/Str)
@@ -51,17 +51,19 @@
    :visibility                           (s/maybe (s/enum "private" "internal" "public"))
    :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
    :mtime                                s/Int
-   :badge_content_id                     (s/maybe s/Str)
-   :issuer_url                           (s/maybe s/Str)
-   :badge_url                            (s/maybe s/Str)
+   :badge_id                     (s/maybe s/Str)
+;  :issuer_url                           (s/maybe s/Str)
+;  :badge_url                            (s/maybe s/Str)
    :obf_url                              (s/maybe s/Str)
    :issued_by_obf                        s/Bool
    :verified_by_obf                      s/Bool
-   :issuer_verified                      (s/maybe s/Bool)
+   :issuer_verified                      (s/maybe s/Int)
    (s/optional-key :issuer_content_name) (s/maybe s/Str)
    (s/optional-key :issuer_content_url)  (s/maybe s/Str)
    (s/optional-key :email)               (s/maybe s/Str)
    (s/optional-key :assertion_url)       (s/maybe s/Str)
+   (s/optional-key :meta_badge)          (s/maybe s/Bool)
+   (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
    (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
                                           :all-messages (s/maybe s/Int)}
    (s/optional-key :tags)                (s/maybe [s/Str])})
@@ -70,7 +72,7 @@
                                                 :issued_on :expires_on :visibility
                                                 :mtime :status :badge_content_id
                                                 :email :assertion_url :tags
-                                                :issuer_content_name :issuer_url
+                                                :issuer_content_name ;:issuer_url
                                                 :issuer_content_url]))
 
 (s/defschema BadgeToImport {:status  (s/enum "ok" "invalid")
@@ -107,7 +109,10 @@
                                                      (select-keys [:issuer_content_id :issuer_content_name :issuer_content_url])
                                                      (assoc :badges [(select-keys Badge [:id :name :image_file])]))]})
 
+
+
 (s/defschema BadgeContent {:id    s/Str
+                           :language_code s/Str
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
@@ -117,6 +122,7 @@
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema IssuerContent {:id   s/Str
+                            :language_code s/Str
                             :name s/Str
                             :url  s/Str
                             :description (s/maybe s/Str)
@@ -126,8 +132,10 @@
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
-                                (assoc :json_url s/Str)))
+                                (assoc  :json_url s/Str)))
 
 (s/defschema CriteriaContent {:id s/Str
-                              :html_content s/Str
-                              :markdown_content (s/maybe s/Str)})
+                              :language_code s/Str
+                              :url s/Str
+                              :markdown_text (s/maybe s/Str)})
+

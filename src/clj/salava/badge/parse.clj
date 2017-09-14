@@ -7,11 +7,13 @@
             [clojure.xml :as xml]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
+            [salava.core.http :as http]
             [schema.core :as s])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
 
 (s/defschema BadgeContent {:id    s/Str
+                           :language_code s/Str
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
@@ -21,6 +23,7 @@
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema IssuerContent {:id   s/Str
+                            :language_code s/Str
                             :name s/Str
                             :url  s/Str
                             :description (s/maybe s/Str)
@@ -30,137 +33,356 @@
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
-                                (assoc :json_url s/Str)))
+                                (assoc  :json_url s/Str)))
 
 (s/defschema CriteriaContent {:id s/Str
-                              :html_content s/Str
-                              :markdown_content (s/maybe s/Str)})
+                              :language_code s/Str
+                              :url s/Str
+                              :markdown_text (s/maybe s/Str)})
 
-(s/defschema Badge {:id (s/maybe s/Int)
-                    :user_id s/Int
-                    :email   s/Str
-                    :assertion_url    (s/maybe s/Str)
-                    :assertion_jws    (s/maybe s/Str)
-                    :assertion_json   s/Str
-                    :badge_url        (s/maybe s/Str)
-                    :issuer_url       (s/maybe s/Str)
-                    :creator_url      (s/maybe s/Str)
-                    :criteria_url     s/Str
-                    :badge_content    BadgeContent
-                    :issuer_content   IssuerContent
-                    :criteria_content CriteriaContent
-                    :creator_content  (s/maybe CreatorContent)
-                    :issued_on  s/Int
-                    :expires_on (s/maybe s/Int)
-                    :evidence_url (s/maybe s/Str)
-                    :status     (s/enum "pending" "accepted" "declined")
-                    :visibility (s/enum "private" "internal" "public")
-                    :show_recipient_name (s/enum 0 1)
-                    :rating (s/maybe (s/enum 0 1))
-                    :ctime s/Int
-                    :mtime s/Int
-                    :deleted (s/enum 0 1)
-                    :revoked (s/enum 0 1)
+(s/defschema Badge {:id s/Str
+                    :remote_url (s/maybe s/Str)
+                    :remote_id (s/maybe s/Str)
+                    :remote_issuer_id (s/maybe s/Str)
                     :issuer_verified (s/enum 0 1)
-                    :show_evidence   (s/enum 0 1)
-                    :last_checked (s/maybe s/Int)
-                    :old_id (s/maybe s/Int)})
+                    :default_language_code s/Str
+                    :content [BadgeContent]
+                    :criteria [CriteriaContent]
+                    :issuer [IssuerContent]
+                    :creator [(s/maybe CreatorContent)]
+                    :published (s/enum 0 1)
+                    :last_received s/Int
+                    :recipient_count s/Int})
 
-(def valid-badge (s/validator Badge))
+(s/defschema Evidence {:id (s/maybe s/Int)
+                       :user_badge_id (s/maybe s/Int)
+                       :url (s/maybe s/Str)
+                       :narrative (s/maybe s/Str)
+                       :name (s/maybe s/Str)
+                       :description (s/maybe s/Str)
+                       :genre (s/maybe s/Str)
+                       :audience (s/maybe s/Str)
+                       :ctime s/Int
+                       :mtime s/Int})
+
+
+(s/defschema UserBadge {:id (s/maybe s/Int)
+                        :badge Badge
+                        :user_id s/Int
+                        :email   s/Str
+                        :assertion_url  (s/maybe s/Str)
+                        :assertion_jws  (s/maybe s/Str)
+                        :assertion_json s/Str
+                        :issued_on  s/Int
+                        :expires_on (s/maybe s/Int)
+                        :evidence [(s/maybe Evidence)]
+                        :status     (s/enum "pending" "accepted" "declined")
+                        :visibility (s/enum "private" "internal" "public")
+                        :show_recipient_name (s/enum 0 1)
+                        :rating (s/maybe (s/enum 0 1))
+                        :ctime s/Int
+                        :mtime s/Int
+                        :deleted (s/enum 0 1)
+                        :revoked (s/enum 0 1)
+                        :issuer_verified (s/enum 0 1)
+                        :show_evidence   (s/enum 0 1)
+                        :last_checked (s/maybe s/Int)
+                        :old_id (s/maybe s/Int)})
+
+(def valid-badge (s/validator UserBadge))
 
 ;;;
 
+
 (defn- domain [url]
-  (last (re-find #"^https?://([^/]+)" url)))
+  (last (re-find #"^https?://([^/]+)" (str url))))
 
 (defn- badge-image [input]
   (let [image (if (map? input) (get-in input [:badge :image] "") input)]
     (if-let [match (re-find #"(?s)^data.+,(.+)" image)]
       (u/base64->bytes (last match))
       (try
-        (u/http-get image)
+        (http/http-get image)
         (catch Throwable ex
           (if (contains? (meta input) :image)
             (:image (meta input))
             (throw (Exception. "image missing"))))))))
 
+(defn- capitalize-name [email]
+  (when-let [m (re-matches #"([^\.@]+)\.([^\.@]+)@(.+)" (string/lower-case email))]
+    (str (-> m rest first string/capitalize) "." (-> m rest second string/capitalize) "@" (last m))))
 
 (defn- email-variations [emails]
-  (mapcat #(list (string/upper-case %)
+  (remove nil? (mapcat #(list %
+                 (string/upper-case %)
                  (string/lower-case %)
-                 (string/capitalize %)) emails))
+                 (string/capitalize %)
+                 (capitalize-name %)) emails)))
 
 ;;;
 
+(defn assertion-version [_ asr]
+  (cond
+    (and (contains? asr :id)
+         (= ((keyword "@context") asr) "https://w3id.org/openbadges/v2")) :v2.0
+    (map? (:badge asr)) :v0.5.0
+    (and (contains? asr :id) (contains? asr :type)) :v1.1
+    :else :v1.0))
+
 ;; See https://github.com/mozilla/openbadges-backpack/wiki/Assertion-Specification-Changes
-(defmulti badge-content (fn [_ assertion]
-                          (cond
-                            (map? (:badge assertion)) :v0.5.0
-                            (and (contains? assertion :id) (contains? assertion :type)) :v1.1
-                            :else :v1.0)))
+(defmulti badge-content assertion-version)
 
 (defmethod badge-content :v0.5.0 [initial assertion]
-  (if (contains? initial :assertion_url)
-    (if (not= (domain (get-in assertion [:badge :issuer :origin])) (domain (:assertion_url initial)))
-      (throw (IllegalArgumentException. "invalid assertion, origin url mismatch"))))
-
-  (let [q-url (fn [url]
+  (let [now (u/now)
+        q-url (fn [url]
                 (if (re-find #"^/" (str url))
                   (str (get-in assertion [:badge :issuer :origin]) url) url))
         badge    (:badge assertion)
         issuer   (:issuer badge)
-        criteria (u/http-get (q-url (:criteria badge)))]
+        criteria (http/http-get (q-url (:criteria badge)))
+        evidence_url (q-url (:evidence assertion))]
 
-    (merge initial
-           {:badge_url    nil
-            :issuer_url   nil
-            :criteria_url (q-url (:criteria badge))
-            :creator_url  nil
-            :badge_content {:id ""
-                            :name (:name badge)
-                            :image_file (q-url (:image badge))
-                            :description (:description badge)
-                            :alignment []
-                            :tags (get badge :tags [])}
-            :issuer_content {:id ""
+    (assoc initial
+           :badge {:id ""
+                   :remote_url nil
+                   :remote_id nil
+                   :remote_issuer_id nil
+                   :issuer_verified 0
+                   :default_language_code ""
+                   :content [{:id ""
+                              :language_code ""
+                              :name (:name badge)
+                              :image_file (q-url (:image badge))
+                              :description (:description badge)
+                              :alignment []
+                              :tags (get badge :tags [])}]
+                   :criteria [{:id ""
+                               :language_code ""
+                               :url (q-url (:criteria badge))
+                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
+                   :issuer [{:id ""
+                             :language_code ""
                              :name (str (:name issuer) ": " (:org issuer))
                              :description (:description issuer)
                              :url (q-url (:origin issuer))
                              :email (:contact issuer)
                              :image_file nil
-                             :revocation_list_url nil}
-            :criteria_content {:id ""
-                               :html_content criteria
-                               :markdown_content (u/alt-markdown criteria)}
-            :creator_content  nil
-            :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
-            :expires_on (u/str->epoch (:expires assertion))
-            :evidence_url (q-url (:evidence assertion))})))
+                             :revocation_list_url nil}]
+                   :creator nil
+                   :published 0
+                   :last_received 0
+                   :recipient_count 0}
+           :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
+           :expires_on (u/str->epoch (:expires assertion))
+           :evidence [(when-not (nil? evidence_url)
+                       {:id nil
+                         :user_badge_id nil
+                         :url evidence_url
+                         :narrative nil
+                         :name nil
+                         :description nil
+                         :genre nil
+                         :audience nil
+                         :ctime now
+                         :mtime now})])))
 
+
+; old v0.5.0 badge content
+#_{:badge_url    nil
+  :issuer_url   nil
+  :criteria_url (q-url (:criteria badge))
+  :creator_url  nil
+  :badge_content {}
+  :issuer_content {:id ""
+                   :name (str (:name issuer) ": " (:org issuer))
+                   :description (:description issuer)
+                   :url (q-url (:origin issuer))
+                   :email (:contact issuer)
+                   :image_file nil
+                   :revocation_list_url nil}
+  :criteria_content {:id ""
+                     :html_content criteria
+                     :markdown_text (http/alternate-get "text/x-markdown" criteria)}
+  :creator_content  nil
+  :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
+  :expires_on (u/str->epoch (:expires assertion))
+  :evidence_url (q-url (:evidence assertion))}
+
+;;
+
+(defmethod badge-content :v2.0 [initial assertion]
+  (let [parser (fn [badge]
+                 (let [language (get badge (keyword "@language") "")
+                       issuer (if (map? (:issuer badge)) (:issuer badge) (http/json-get (:issuer badge)))
+                       criteria-url  (if (map? (:criteria badge)) (get-in badge [:criteria :id]) (:criteria badge))
+                       criteria-text (if (map? (:criteria badge))
+                                       (get-in badge [:criteria :narrative]
+                                               (http/alternate-get "text/x-markdown" criteria-url))
+                                       (http/alternate-get "text/x-markdown" (:criteria badge)))
+                       creator-url (get-in badge [:extensions:OriginalCreator :url])]
+
+                   {:content  [{:id ""
+                                :language_code language
+                                :name (:name badge)
+                                :image_file (:image badge)
+                                :description (:description badge)
+                                :alignment (get badge :alignment [])
+                                :tags (get badge :tags [])}]
+                    :criteria [{:id ""
+                                :language_code language
+                                :url (str criteria-url)
+                                :markdown_text criteria-text}]
+                    :issuer   [{:id ""
+                                :language_code language
+                                :name (:name issuer)
+                                :description (:description issuer)
+                                :url (:url issuer)
+                                :email (:contact issuer)
+                                :image_file nil
+                                :revocation_list_url nil}]
+                    :creator (when creator-url
+                               (let [data (http/json-get creator-url)]
+                                 [{:id ""
+                                  :language_code language
+                                  :name        (:name data)
+                                  :image_file  (:image data)
+                                  :description (:description data)
+                                  :url   (:url data)
+                                  :email (:email data)
+                                  :json_url creator-url}]))}))
+        now (u/now)
+        evidence (cond
+                   ;; inline narrative
+                   (string? (:narrative assertion)) [{:id nil
+                                                      :user_badge_id nil
+                                                      :url nil
+                                                      :narrative (:narrative assertion)
+                                                      :name nil
+                                                      :description nil
+                                                      :genre nil
+                                                      :audience nil
+                                                      :ctime now
+                                                      :mtime now}]
+                   ;; url
+                   (string? (:evidence assertion)) [{:id nil
+                                                     :user_badge_id nil
+                                                     :url (:evidence assertion)
+                                                     :narrative nil
+                                                     :name nil
+                                                     :description nil
+                                                     :genre nil
+                                                     :audience nil
+                                                     :ctime now
+                                                     :mtime now}]
+                   ;; inline evidence object
+                   (map? (:evidence assertion)) [{:id nil
+                                                  :user_badge_id nil
+                                                  :url (get-in assertion [:evidence :id])
+                                                  :narrative (get-in assertion [:evidence :narrative])
+                                                  :name (get-in assertion [:evidence :name])
+                                                  :description (get-in assertion [:evidence :description])
+                                                  :genre (get-in assertion [:evidence :genre])
+                                                  :audience (get-in assertion [:evidence :audience])
+                                                  :ctime now
+                                                  :mtime now}]
+                   ;; list of evidences
+                   (coll? (:evidence assertion)) (mapv #({:id nil
+                                                            :user_badge_id nil
+                                                            :url (:id %)
+                                                            :narrative (:narrative %)
+                                                            :name (:name %)
+                                                            :description (:description %)
+                                                            :genre (:genre %)
+                                                            :audience (:audience %)
+                                                            :ctime now
+                                                            :mtime now}) (:evidence assertion))
+                   :else [])
+        badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
+        related (->> (get badge :related [])
+                     (map #(http/json-get (:id %)))
+                     (remove #(nil? ((keyword "@language") %))))
+        default-language (get badge (keyword "@language") "")]
+    (assoc initial
+           :badge (merge {:id ""
+                          :remote_url nil
+                          :remote_id nil
+                          :remote_issuer_id nil
+                          :issuer_verified 0
+                          :default_language_code default-language
+                          :published 0
+                          :last_received 0
+                          :recipient_count 0}
+                          (apply merge-with (cons concat (map parser (cons badge related)))))
+           :issued_on  (u/str->epoch (:issuedOn assertion))
+           :expires_on (u/str->epoch (:expires assertion))
+           :evidence evidence)))
+
+;;;
 
 (defmethod badge-content :default [initial assertion]
-  (if (contains? initial :assertion_url)
-    (if (not= (get-in assertion [:verify :url]) (:assertion_url initial))
-      (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
-  (if (not= (domain (get-in assertion [:verify :url])) (domain (:badge assertion)))
-    (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
+  (let [now (u/now)
+        badge  (http/json-get (:badge assertion))
+        issuer (http/json-get (:issuer badge))
+        criteria (http/http-get (:criteria badge))
+        evidence_url (:evidence assertion)
+        creator-url (get-in badge [:extensions:OriginalCreator :url])
+        creator (if-not (nil? creator-url)
+                  (let [data (http/json-get creator-url)]
+                    [{:id ""
+                      :language_code ""
+                      :name        (:name data)
+                      :image_file  (:image data)
+                      :description (:description data)
+                      :url   (:url data)
+                      :email (:email data)
+                      :json_url creator-url}]))]
 
-  (let [badge  (u/json-get (:badge assertion))
-        issuer (u/json-get (:issuer badge))
-        criteria (u/http-get (:criteria badge))
-        creator-url (:extensions:OriginalCreator badge)
-        creator (if creator-url
-                  (let [data (u/json-get creator-url)]
-                    {:id ""
-                     :name        (:name data)
-                     :image_file  (:image data)
-                     :description (:description data)
-                     :url   (:url data)
-                     :email (:email data)
-                     :json_url creator-url}))]
+    (assoc initial
+           :badge {:id ""
+                   :remote_url nil
+                   :remote_id nil
+                   :remote_issuer_id nil
+                   :issuer_verified 0
+                   :default_language_code ""
+                   :content [{:id ""
+                              :language_code ""
+                              :name (:name badge)
+                              :image_file (:image badge)
+                              :description (:description badge)
+                              :alignment (get badge :alignment [])
+                              :tags (get badge :tags [])}]
+                   :criteria [{:id ""
+                               :language_code ""
+                               :url (:criteria badge)
+                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
+                   :issuer [{:id ""
+                             :language_code ""
+                             :name (:name issuer)
+                             :description (:description issuer)
+                             :url (:url issuer)
+                             :email (:contact issuer)
+                             :image_file nil
+                             :revocation_list_url nil}]
+                   :creator creator
+                   :published 0
+                   :last_received 0
+                   :recipient_count 0}
+           :issued_on  (u/str->epoch (:issuedOn assertion))
+           :expires_on (u/str->epoch (:expires assertion))
+           :evidence [(when-not (nil? evidence_url)
+                        {:id nil
+                         :user_badge_id nil
+                         :url evidence_url
+                         :narrative nil
+                         :name nil
+                         :description nil
+                         :genre nil
+                         :audience nil
+                         :ctime now
+                         :mtime now})])))
 
-    (merge initial
-           {:badge_url    (:badge assertion)
+; old v1.0/v1.1 badge content
+#_{:badge_url    (:badge assertion)
             :issuer_url   (:issuer badge)
             :criteria_url (:criteria badge)
             :creator_url  creator-url
@@ -179,12 +401,11 @@
                              :revocation_list_url (:revocationList issuer)}
             :criteria_content {:id ""
                                :html_content criteria
-                               :markdown_content (u/alt-markdown criteria)}
+                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}
             :creator_content  creator
             :issued_on  (u/str->epoch (:issuedOn assertion))
             :expires_on (u/str->epoch (:expires assertion))
-            :evidence_url (:evidence assertion)})))
-
+            :evidence_url (:evidence assertion)}
 ;;;
 
 (defmulti recipient (fn [_ asr] (:recipient asr)))
@@ -210,9 +431,35 @@
 
 ;;;
 
+(defmulti verify-assertion assertion-version)
+
+(defmethod verify-assertion :v0.5.0 [url asr]
+  (if-not (nil? url)
+    (if (not= (domain (get-in asr [:badge :issuer :origin])) (domain url))
+      (throw (IllegalArgumentException. "invalid assertion, origin url mismatch")))))
+
+(defmethod verify-assertion :v2.0 [url asr]
+  (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
+    (when (and (not (nil? url)) (or (= kind "hosted") (= kind "HostedBadge")))
+      (if (not= (:id asr) url)
+        (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
+      (if (map? (:badge asr))
+        (if (not= (domain (get-in asr [:badge :id])) (domain (:id asr)))
+          (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
+        (if (not= (domain (:badge asr)) (domain (:id asr)))
+          (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))))))
+
+(defmethod verify-assertion :default [url asr]
+  (if-not (nil? url)
+    (if (not= (get-in asr [:verify :url]) url)
+      (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
+  (if (not= (domain (get-in asr [:verify :url])) (domain (:badge asr)))
+    (throw (IllegalArgumentException. "invalid assertion, verify url mismatch"))))
+
 (defn assertion->badge
   ([user assertion] (assertion->badge user assertion {}))
   ([user assertion initial]
+   (verify-assertion (:assertion_url initial) assertion)
    (let [now (u/now)]
      (-> initial
          (assoc :id nil
@@ -243,12 +490,13 @@
                          (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
 
 (defmethod str->badge :json [user input]
-  (let [content (json/read-str input :key-fn keyword)]
-    (if (= ((get-in content [:verify :type])) "hosted")
-      (str->badge user (get-in content [:verify :url])))))
+  (let [content (json/read-str input :key-fn keyword)
+        kind (get-in content [:verify :type] (get-in content [:verification :type]))]
+    (if (or (= kind "hosted") (= kind "HostedBadge"))
+      (str->badge user (get-in content [:verify :url] (:id content))))))
 
 (defmethod str->badge :url [user input]
-  (let [body (u/http-get input)]
+  (let [body (http/http-get input)]
     (assertion->badge user
                       (json/read-str body :key-fn keyword)
                       {:assertion_url input :assertion_json body :assertion_jws nil})))
@@ -257,10 +505,9 @@
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
         header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
-        public-key (-> (get-in payload [:verify :url]) u/http-get keys/str->public-key)
+        public-key (-> (get-in payload [:verify :url]) http/http-get keys/str->public-key)
         body       (-> input (jws/unsign public-key {:alg (keyword (:alg header))}) (String. "UTF-8"))]
     (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
-
 
 (defmethod str->badge :blank [_ _]
   (throw (IllegalArgumentException. "missing assertion string")))
@@ -277,11 +524,12 @@
                             (get-in upload [:headers "Content-Type"]))))
 
 (defmethod file->badge "image/png" [user upload]
-  (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
-           .getMetadata
-           #(or (.getTxtForKey % "openbadges") (.getTxtForKey % "openbadge"))
-           string/trim
-           (str->badge user)))
+  (let [get-txt (fn [m] (or (.getTxtForKey m "openbadges") (.getTxtForKey m "openbadge")))]
+    (some->> (doto (PngReader. (or (:tempfile upload) (:body upload))) (.readSkippingAllRows))
+             .getMetadata
+             get-txt
+             string/trim
+             (str->badge user))))
 
 (defmethod file->badge "image/svg+xml" [user upload]
   (some->> (xml/parse (or (:tempfile upload) (:body upload)))

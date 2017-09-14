@@ -1,6 +1,6 @@
 (ns salava.admin.ui.admintool-content
-  (:require [reagent.core :refer [atom cursor]]
-            [reagent-modals.modals :as m]
+  (:require [reagent.core :refer [atom cursor create-class]]
+            [reagent-modals.modals :as m :refer [close-modal!]]
             [clojure.string :refer [trim blank?]]
             [salava.badge.ui.helper :as bh]
             [reagent.session :as session]
@@ -8,7 +8,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.user.ui.helper :refer [profile-picture profile-link-inline]]
-            [salava.core.ui.helper :refer [path-for current-path navigate-to input-valid?]]
+            [salava.core.ui.helper :refer [path-for current-path navigate-to js-navigate-to input-valid?]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -124,6 +124,18 @@
    [:label.col-xs-4 (t :admin/Created) ":"]
    [:div.col-xs-6
     (date-from-unix-time (* 1000 (:ctime info)) "minutes")]]
+  (if-not (empty? (:service info))
+    [:div {:class "row"}
+     [:label.col-xs-4 (t :admin/Service) ":"]
+     [:div.col-xs-6
+      (interpose ", " (:service info))]])
+  (if-not (empty? (:service info))
+    [:div {:class "row"}
+     [:label.col-xs-4 (t :admin/Haspassword?) ":"]
+     [:div.col-xs-6
+      (if (pos? (:has_password? info))
+        (t :admin/Hassetpassword)
+        (t :admin/Hasntsetpassword))]])
   [:div {:class "clearfix row"}
     [:label.col-xs-4 (t :admin/Lastlogin) ":"]
    [:div.col-xs-6
@@ -272,6 +284,10 @@
           (str (t :user/Email) ":")]
          (email-select (:emails info) email-atom) ]
         (message-form mail)
+        [:div
+         [:p (str (t :admin/Lock) " " (t :admin/Whatlockmeans) ".")]
+         [:p (str (t :admin/Delete) " " (t :admin/Whatdeletemeans) ".")]
+         ]
         [:button {:type         "button"
                   :class        "btn btn-primary"
                   :data-dismiss "modal"
@@ -290,7 +306,26 @@
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
 
-         (t :admin/Lock)]]
+         (t :admin/Lock)]
+        [:button {:type         "button"
+                  :class        "btn btn-primary"
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/full_delete_user/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :params          {:subject (:subject @mail)
+                                                     :message (:message @mail)
+                                                     :email  @email-atom}
+                                   :handler         (fn [data]
+                                                      (if (and (= "success" data) init-data)
+                                                        (init-data gallery-state)
+                                                        (navigate-to "/admin"))
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+
+         (t :admin/Delete)]]
        )]))
 
 
@@ -313,6 +348,88 @@
                                    :keywords?       true         
                                    :handler         (fn [data]
                                                       (reset! status data)
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+         (t :core/Yes)]
+        (status-handler status "")])]))
+
+
+
+
+(defn login-as-user [state visible_area item_owner]
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        status (cursor state [:status])
+        ]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "login-as-user" @visible_area) "" "login-as-user")))
+      :class (if (=  "login-as-user" @visible_area) "opened" "")}  (t :admin/Loginasuser) ]]
+     (if (= @visible_area  "login-as-user")
+       [:div.col-md-12
+        (str (t :admin/Loginasuser) " " item_owner )
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/fake_session/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true         
+                                   :handler         (fn [data]
+                                                      (js-navigate-to "/social"))
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+         (t :core/Yes)]
+        (status-handler status "")])]))
+
+
+(defn upgrade-user [state visible_area item_owner]
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        status (cursor state [:status])
+        ]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "upgrade-user" @visible_area) "" "upgrade-user")))
+      :class (if (=  "upgrade-user" @visible_area) "opened" "")}  (t :admin/Upgradeuser) ]]
+     (if (= @visible_area  "upgrade-user")
+       [:div.col-md-12
+        (str (t :admin/Upgradeuser) " " item_owner )
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/upgrade_user_to_admin/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :handler         (fn [data]
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+         (t :core/Yes)]
+        (status-handler status "")])]))
+
+
+(defn downgrade-user [state visible_area item_owner]
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        status (cursor state [:status])
+        ]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "downgrade-user" @visible_area) "" "downgrade-user")))
+      :class (if (=  "downgrade-user" @visible_area) "opened" "")}  (t :admin/Downgradeuser) ]]
+     (if (= @visible_area  "downgrade-user")
+       [:div.col-md-12
+        (str (t :admin/Downgradeuser) " " item_owner )
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/downgrade_admin_to_user/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :handler         (fn [data]
+                                                      
+                                                      
                                                       )
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
@@ -367,7 +484,7 @@
       [:div {:class "col-sm-9 badge-info"}
        [:div {:class "row info"}
         [:div {:class "col-md-12"}
-         [:h1.uppercase-header name]
+         [:h1.uppercase-header name (if (= "admin" (:role info)) " (ADMIN)")]
          (info-block state item_type)]]
        [:div.actions
 
@@ -388,21 +505,30 @@
        (if (and (= item_type "user") (:activated info) no-verified-emails)
          (delete-no-verified-email state visible_area item_owner))
        (if  (and (= item_type "user") (not (:activated info))) 
-         (send-activation-message state visible_area item_owner)) ]]]]))
+         (send-activation-message state visible_area item_owner))
+        (if (and (= item_type "user") (not (:deleted info)))  
+          (login-as-user state visible_area item_owner))
+        (if (and (= item_type "user") (not (:deleted info)) (= "user" (:role info)))   
+          (upgrade-user state visible_area item_owner))
+        (if (and (= item_type "user") (not (:deleted info)) (= "admin" (:role info)))  
+          (downgrade-user state visible_area item_owner))
+        ]]]]))
 
 
 (defn admin-modal [state]
-  [:div
-   [:div.modal-header
-    [:button {:type         "button"
-              :class        "close"
-              :data-dismiss "modal"
-              :aria-label   "OK"}
-     [:span {:aria-hidden             "true"
-             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-   [:div.modal-body
-
-    (admin-modal-container state)]
-   [:div.modal-footer
-
-    ]])
+  (create-class {:reagent-render         (fn [] [:div
+                                                 [:div.modal-header
+                                                  [:button {:type         "button"
+                                                            :class        "close"
+                                                            :data-dismiss "modal"
+                                                            :aria-label   "OK"}
+                                                   [:span {:aria-hidden             "true"
+                                                           :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+                                                 [:div.modal-body
+                                                  
+                                                  (admin-modal-container state)]
+                                                 [:div.modal-footer
+                                                  
+                                                  ]])
+                 :component-will-unmount (fn [](close-modal!))})
+  )

@@ -49,11 +49,10 @@
   (doseq [pending-assertion (select-pending-badges-by-user {:user_id user-id} (u/get-db ctx))]
     (log/info "try to save pending assertion: " pending-assertion)
     (try
-      (and
-        (db/save-badge! ctx
-                        (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-                            (p/str->badge (:assertion_url pending-assertion))))
-        (delete-duplicate-pending-badges! pending-assertion (u/get-db ctx)))
+      (db/save-user-badge! ctx
+                           (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                               (p/str->badge (:assertion_url pending-assertion))))
+      (delete-duplicate-pending-badges! (assoc pending-assertion :user_id user-id) (u/get-db ctx))
       (catch Exception ex
         (log/error "save-pending-assertions: failed to save badge")
         (log/error (.toString ex))))))

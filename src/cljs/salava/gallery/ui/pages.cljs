@@ -11,23 +11,16 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.helper :refer [path-for]]
             [salava.user.ui.helper :as u]
+            [salava.core.ui.modal :as mo]
             [salava.admin.ui.admintool :refer [admintool-gallery-page]]
-            [salava.gallery.ui.badge-content :refer [badge-content-modal]]))
+           ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
+            ))
 
 (defn open-modal [page-id]
-  (let [reporttool-atom (atom {:description     ""
-                               :report-type     "bug"
-                               :item-id         ""
-                               :item-content-id ""
-                               :item-url        ""
-                               :item-name       "" ;
-                               :item-type       "" ;badge/user/page/badges
-                               :reporter-id     ""
-                               :status          "false"})]
-    (ajax/GET
+  (ajax/GET
      (path-for (str "/obpv1/page/view/" page-id))
      {:handler (fn [data]
-                 (m/modal! [view-page-modal (:page data) reporttool-atom] {:size :lg}))})))
+                 (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -117,7 +110,7 @@
       [:div.media-content
        [:div.media-body
         [:div.media-heading
-         [:a.heading-link {:on-click #(open-modal id)}
+         [:a.heading-link {:href "#" :on-click #(mo/open-modal [:page :view] {:page-id id})}
           name]]
         [:div.media-content
          [:div.page-owner
@@ -145,14 +138,15 @@
             (page-gallery-grid-element element-data state)))))
 
 (defn content [state]
-  [:div {:id "page-gallery"}
+  [:div 
    [m/modal-window]
-   [page-gallery-grid-form state]
-   (if (:ajax-message @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (:ajax-message @state)]]
-     [page-gallery-grid state])])
+   [:div {:id "page-gallery"}
+    [page-gallery-grid-form state]
+    (if (:ajax-message @state)
+      [:div.ajax-message
+       [:i {:class "fa fa-cog fa-spin fa-2x "}]
+       [:span (:ajax-message @state)]]
+      [page-gallery-grid state])]])
 
 
 

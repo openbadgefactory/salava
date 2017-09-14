@@ -6,12 +6,14 @@
             [clojure.set :as set :refer [intersection]]
             [clojure.string :refer [upper-case]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated?]]
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.badge.ui.settings :as s]
             [salava.badge.ui.helper :as bh]
             [salava.core.helper :refer [dump]]
+            ;[salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
@@ -169,7 +171,9 @@
 
 
 (defn no-badges-text []
-  [:div (t :badge/Youhavenobadgesyet) (str ".")])
+  [:div
+   #_(if (application-plugin?)  [:div (t :badge/Youhavenobadgesyet) (str ". ") (t :social/Getyourfirstbadge) [:a {:href (path-for "/gallery/application") } (str " ") (t :badge/Gohere)] (str ".")] [:div (t :badge/Youhavenobadgesyet) (str ".")]) ] )
+
 
 (defn content [state]
   [:div {:id "my-badges"}
@@ -180,9 +184,11 @@
       [:span (str (t :core/Loading) "...")]]
      [:div
       [badge-grid-form state]
-      (if (empty? (:badges @state))
-        [no-badges-text]
-        [badge-grid state])
+      (cond
+        (not-activated?) (not-activated-banner)
+        (empty? (:badges @state)) [no-badges-text]
+        :else [badge-grid state])
+      
       ]
      )])
 

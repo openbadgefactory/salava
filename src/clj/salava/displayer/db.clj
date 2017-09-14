@@ -22,10 +22,10 @@
            (map #(rename-keys % {:id :groupId}))
            (cons {:groupId 0 :name "Public badges" :badges public-badge-count})))))
 
-(defn fetch-badges [ctx user-id tag]
+#_(defn fetch-badges [ctx user-id tag]
   (let [[where params] (if tag
-                         ["JOIN badge_tag AS bt ON b.id = bt.badge_id WHERE b.user_id = ? AND bt.tag = ? AND b.visibility = \"public\" AND b.deleted = 0" [user-id tag]]
-                         ["WHERE b.user_id = ? AND b.visibility = \"public\" AND b.deleted = 0" [user-id]])
+                         ["JOIN badge_tag AS bt ON b.id = bt.badge_id WHERE b.user_id = ? AND bt.tag = ? AND b.visibility = 'public' AND b.deleted = 0" [user-id tag]]
+                         ["WHERE b.user_id = ? AND b.visibility = 'public' AND b.deleted = 0" [user-id]])
         query (str "SELECT b.badge_url, b.criteria_url, b.issuer_url AS issuer_json_url, b.assertion_url, b.assertion_json, b.evidence_url, b.issued_on, b.expires_on, b.last_checked, b.ctime,
                            bc.name, bc.description, bc.image_file,
                            ic.name AS issuer_name, ic.url AS issuer_url, ic.email AS issuer_email, ic.description AS issuer_description, ic.image_file AS issuer_image FROM badge AS b
@@ -35,6 +35,11 @@
     (jdbc/with-db-connection
       [conn (:connection (get-db ctx))]
       (jdbc/query conn (into [query] params)))))
+
+(defn fetch-badges [ctx user-id tag]
+  (if tag
+   (select-user-badges-with-tag {:user_id user-id :tag tag} (get-db ctx))
+   (select-all-user-badges {:user_id user-id} (get-db ctx))))
 
 (defn remove-nil-values [map]
   (postwalk
@@ -49,8 +54,9 @@
 (defn parse-badge [ctx badge]
   (try+
     (let [site-url (get-in ctx [:config :core :site-url])
-          {:keys [name description image_file criteria_url assertion_json assertion_url issuer_json_url last_checked ctime badge_url issued_on expires_on evidence_url issuer_name issuer_description issuer_email issuer_url issuer_image]} badge
+          {:keys [name description image_file criteria_url assertion_json assertion_url last_checked ctime issued_on expires_on evidence_url issuer_name issuer_description issuer_email issuer_url issuer_image]} badge
           assertion (if-not (empty? assertion_json) (json/read-str assertion_json :key-fn keyword))
+          badge_url (:badge assertion)
           last-validated (or last_checked ctime)
           recipient (if (string? (:recipient assertion)) (:recipient assertion) (get-in assertion [:recipient :identity]))
           salt (if (:salt assertion) (:salt assertion) (get-in assertion [:recipient :salt]))
@@ -68,8 +74,7 @@
                                                                               :email       (str issuer_email)
                                                                               :url         (str issuer_url)
                                                                               :image       (if issuer_image (str site-url "/" issuer_image))
-                                                                              :origin      issuer_url
-                                                                              :_location   (re-matches #"^http.*" (str issuer_json_url))}}
+                                                                              :origin      (str issuer_url)}}
                                            :uid                (:uid assertion)
                                            :issued_on          issued_on
                                            :issuedOn           issued_on

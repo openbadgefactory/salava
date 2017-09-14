@@ -26,14 +26,14 @@
              (GET "/" []
                   :return [schemas/Page]
                   :summary "Get user pages"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (p/user-pages-all ctx (:id current-user))))
 
              (POST "/create" []
                    :return s/Str
                    :summary "Create a new empty page"
-                   :auth-rules access/authenticated
+                   :auth-rules access/signed
                    :current-user current-user
                    (ok (str (p/create-empty-page! ctx (:id current-user)))))
 
@@ -41,7 +41,7 @@
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
                   :summary "Edit page theme"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (let [page (p/page-with-blocks-for-owner ctx pageid (:id current-user))]
                     (ok (assoc page :owner? (= (:id current-user) (:user_id page))))))

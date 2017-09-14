@@ -10,7 +10,7 @@ SELECT email FROM user_email
 
 -- name: select-email-address
 -- check if email address exists
-SELECT user_id FROM user_email WHERE email = :email
+SELECT user_id, verified FROM user_email WHERE email = :email
 
 -- name: select-user-by-email-address
 -- get user data by email address
@@ -24,10 +24,10 @@ SELECT id, first_name, last_name, pass, activated FROM user WHERE id = :id AND d
 
 --name: select-user
 -- get user by id
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications FROM user WHERE id = :id AND deleted = 0
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0
 
 --name: select-user-with-register-last-login
-SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated FROM user WHERE id = :id
+SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated, IF(pass IS NULL, 0,1) AS has_password FROM user WHERE id = :id
 
 --name: select-user-password
 SELECT pass FROM user WHERE id = :id 
@@ -38,7 +38,7 @@ SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 
 -- name: insert-user<!
 -- add new user
-INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), :email_notifications)
+INSERT INTO user (first_name, last_name, role, language, country, ctime, mtime, email_notifications, pass) VALUES (:first_name, :last_name, 'user', :language, :country, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), :email_notifications, :pass)
 
 -- name: insert-user-email!
 -- add new unverified email address to user
@@ -51,6 +51,9 @@ SELECT verification_key, activated, ue.mtime, email, primary_address FROM user A
 
 -- name: update-user-password-and-activate!
 UPDATE user SET activated = 1, pass = :pass, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+-- name: update-user-activate!
+UPDATE user SET activated = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 -- name: select-password-by-user-id
 -- get user password by user-id
@@ -83,8 +86,11 @@ UPDATE user_email SET verified = 1 WHERE user_id = :user_id AND primary_address 
 --name: update-primary-email-address-verification-key!
 UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email AND primary_address = 1
 
+--name: update-email-address-verification-key!
+UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
+
 --name: update-verified-email-address-verification-key!
-UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email AND verified = 1
+UPDATE user_email SET verification_key = :verification_key, mtime = UNIX_TIMESTAMP() WHERE email = :email
 
 --name: update-set-primary-email-address-verification-key-null!
 UPDATE user_email SET verification_key = NULL WHERE user_id = :user_id AND primary_address = 1
@@ -111,7 +117,7 @@ INSERT INTO user_profile (user_id, field, value, field_order) VALUES (:user_id, 
 SELECT id, path FROM user_file WHERE user_id = :user_id
 
 --name: select-user-badge-ids
-SELECT id  FROM badge WHERE user_id = :user_id
+SELECT id  FROM user_badge WHERE user_id = :user_id
 
 --name: update-user-badges-set-deleted!
 UPDATE badge SET visibility = 'private', deleted = 1 WHERE user_id = :user_id
@@ -133,6 +139,12 @@ DELETE FROM user_email WHERE user_id = :user_id
 
 --name: delete-user!
 DELETE FROM user WHERE id = :id
+
+--name: update-user-set-deleted!
+UPDATE user SET first_name = :first_name, last_name = :last_name, mtime = UNIX_TIMESTAMP(), email_notifications = 0, deleted = 1, role = 'deleted', profile_picture = NULL, profile_visibility = 'internal', about = NULL  WHERE id = :id 
+
+--name: update-user-email-set-deleted!
+UPDATE user_email SET email = :deletedemail, backpack_id = NULL WHERE user_id = :user_id AND email = :email
 
 --name: update-user-last_login!
 UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id

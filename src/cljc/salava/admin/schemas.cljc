@@ -25,10 +25,14 @@
                                     :backpack_id      (s/maybe s/Int)
                                     :ctime            s/Int
                                     :mtime            s/Int}]
+                          
+                          :role        (s/enum "user" "admin")
                           :ctime s/Int
                           :last_login (s/maybe s/Int)
                           :deleted s/Bool
-                          :activated  s/Bool}})
+                          :activated  s/Bool
+                          :has_password? s/Int
+                          :service [(s/maybe s/Str)]}})
 
 (s/defschema Page {:name s/Str
                    :image_file (s/maybe s/Str)

@@ -6,7 +6,7 @@
     box-shadow: 0px 4px 0px #dcdcdc;
     -webkit-box-shadow: 0px 4px 0px #dcdcdc;
     padding: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     margin-top: 0;
     line-height: 1.4;
     #closed{
@@ -159,7 +159,8 @@
 #profile, #badge-gallery, #page-gallery, #badge-info, #page-view, #badge-content {
     .row.report-form {
         a#open-reportform-button {
-            padding-top:15px;
+            padding-top:25px;
+	    padding-right:15px;
             @media (max-width:1530px){
                 padding-right: 15px;
             }
@@ -185,7 +186,7 @@
     a#open-reportform-button{
         float:right;
         display: block;
-        padding-bottom:3px;
+        padding-top:15px;
         cursor: pointer;
         padding-bottom: 20px ;
     }

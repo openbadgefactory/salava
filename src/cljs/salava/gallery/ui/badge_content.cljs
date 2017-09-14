@@ -1,4 +1,4 @@
-(ns salava.gallery.ui.badge-content
+#_(ns salava.gallery.ui.badge-content
   (:require [reagent.core :refer [atom create-class]]
             [reagent-modals.modals :refer [close-modal!]]
             [reagent.session :as session]
@@ -7,14 +7,14 @@
             [salava.user.ui.helper :refer [profile-link-inline]]
             [salava.core.ui.rate-it :as r]
             [salava.core.helper :refer [dump]]
-            [salava.admin.ui.reporttool :refer [reporttool]]
+            ;[salava.admin.ui.reporttool :refer [reporttool]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
             [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
             ))
 
-(defn badge-content [{:keys [badge public_users private_user_count]} messages?]
-  (let [{:keys [badge_content_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge
+#_(defn badge-content [{:keys [badge public_users private_user_count]} messages?]
+  (let [{:keys [badge_id name image_file description issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_content criteria_url average_rating rating_count obf_url verified_by_obf issued_by_obf creator_name creator_url creator_email creator_image creator_description message_count]} badge
         show-messages (atom messages?)
         ]
     (fn []
@@ -31,14 +31,14 @@
                     (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                     (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
          [:div
-          [gallery-modal-message-info-link show-messages badge_content_id]
+          [gallery-modal-message-info-link show-messages badge_id]
           ]]
         [:div {:class "col-md-9 badge-info"}
          
          (if @show-messages
            [:div.rowmessage
             [:h1.uppercase-header (str name " - " (t :social/Messages))]
-            [badge-message-handler badge_content_id]]
+            [badge-message-handler badge_id]]
             
            [:div.rowcontent
             [:h1.uppercase-header name]
@@ -75,13 +75,13 @@
                     [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
         ]]])))
 
-(defn badge-content-modal-render [data reporttool-atom messages?]
+#_(defn badge-content-modal-render [data reporttool-atom messages?]
   [:div {:id "badge-content"}
    [:div.modal-body
     [:div.row
      [:div.col-md-12
       [:div {:class "text-right"}
-       [follow-badge (get-in data [:badge :badge_content_id])]
+       [follow-badge (get-in data [:badge :badge_id])]
        [:button {:type         "button"
                  :class        "close"
                  :data-dismiss "modal"
@@ -90,10 +90,11 @@
                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
     [badge-content data messages?]]
    [:div.modal-footer
-    (reporttool (get-in data [:badge :badge_content_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
+    ;(reporttool (get-in data [:badge :badge_id]) (get-in data [:badge :name]) "badges" reporttool-atom)
     ]])
 
-(defn badge-content-modal [modal-data reporttool-atom messages? init-data state]
+
+#_(defn badge-content-modal [modal-data reporttool-atom messages? init-data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data reporttool-atom messages?))
                  :component-will-unmount (fn [] (do (close-modal!)
                                                     (if (and init-data state)

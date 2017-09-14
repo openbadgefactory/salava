@@ -99,12 +99,13 @@
                   (ok (a/get-badge-modal ctx id)))
 
              (GET "/badges/:id" []
-                  :return schemas/Badges
+                  ;;:return schemas/Badges
                   :path-params [id :- s/Str]
                   :summary "Get badges name, image and info"
                   :auth-rules access/admin
                   :current-user current-user
-                  (ok (a/get-public-badge-content-modal ctx id)))
+                  
+                  (ok (a/get-public-badge-content-modal ctx id (:id current-user))))
              
              (GET "/page/:id" []
                   :return schemas/Page
@@ -157,6 +158,17 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/delete-user! ctx id subject message email)))
+
+             (POST "/full_delete_user/:id" []
+                   :return (s/enum "success" "error")
+                   :summary "Delete user"
+                   :body-params [subject :- s/Str
+                                 message :- s/Str
+                                 email   :- s/Str]
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/delete-user-full! ctx id subject message email)))
 
              (POST "/delete_no_activated_user/:user_id" []
                    :return (s/enum "success" "error")
@@ -225,18 +237,58 @@
                    :current-user current-user
                    (ok (a/send-user-activation-message ctx id)))
 
+
+             (POST "/fake_session/:user_id" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Login as other user"
+                   :path-params [user_id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (a/set-fake-session ctx (ok {:status "success" :real-id (:id current-user)}) user_id (:id current-user))
+                   )
+
+             (POST "/return_to_admin" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Login back as admin"
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (if (:real-id current-user)
+                     (a/set-session ctx (ok) (:real-id current-user)))
+                   )
+
+             (POST "/upgrade_user_to_admin/:id" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Update user to admin"
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/update-user-to-admin ctx id)))
+             
+             (POST "/downgrade_admin_to_user/:id" []
+                   ;:return (s/enum "success" "error")
+                   :summary "Update admin to user"
+                   :path-params [id :- s/Int]
+                   :auth-rules access/admin
+                   :current-user current-user
+                   (ok (a/update-admin-to-user ctx id) ))
+
+             
              (POST "/profiles" []
-                   :return {:users [schemas/UserProfiles]
-                            :countries [schemas/Countries]}
-                   :body [search-params {:name (s/maybe s/Str)
-                                         :country (s/maybe s/Str)
+                   ;:return
+                   #_{:users     [schemas/UserProfiles]
+                    :countries [schemas/Countries]
+                    }
+                   :body [search-params {:name     (s/maybe s/Str)
+                                         :country  (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
-                                         :email (s/maybe s/Str)
-                                         :filter (s/enum 1 0)}]
+                                         :email    (s/maybe s/Str)
+                                         :filter   (s/enum 1 0)}]
                    :summary "Get public user profiles"
                    :auth-rules access/admin
                    :current-user current-user
-                   (let [users (a/all-profiles ctx search-params (:id current-user))
-                         countries (a/profile-countries ctx (:id current-user))]         
+                   
+                   (let [users     (a/all-profiles ctx search-params (:id current-user))
+                         countries (a/profile-countries ctx (:id current-user))]
                      (ok {:users     (vec users)
-                          :countries (vec countries)}))))))
+                          :countries countries
+                          }))))))

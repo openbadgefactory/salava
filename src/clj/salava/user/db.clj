@@ -10,7 +10,7 @@
             [salava.page.main :as p]
             [salava.badge.main :as b]
             [salava.oauth.db :as o]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun get-email-notifications]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path get-site-name get-plugins plugin-fun get-email-notifications]]
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
@@ -56,20 +56,28 @@
   [ctx email]
   (select-email-address {:email email} (into {:result-set-fn first :row-fn :user_id} (get-db ctx))))
 
+
+
+
+
 (defn register-user
   "Create new user"
-  [ctx email first-name last-name country language]
+  [ctx email first-name last-name country language password password-verify]
   (if (email-exists? ctx email)
     {:status "error" :message "user/Enteredaddressisalready"}
-    (let [site-url (get-site-url ctx)
-          base-path (get-base-path ctx)
-          activation_code (generate-activation-id)
-          email_notifications (get-email-notifications ctx)
-          new-user (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications} (get-db ctx))
-          user-id (:generated_key new-user)]
-      (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
-      (m/send-activation-message ctx site-url (activation-link site-url base-path user-id activation_code language) (login-link site-url base-path) (str first-name " " last-name) email language)
-      {:status "success" :message ""})))
+    (if-not (= password password-verify)
+      {:status "error" :message "user/Passwordmissmatch"}
+      (let [site-url            (get-site-url ctx)
+            base-path           (get-base-path ctx)
+            activation_code     (generate-activation-id)
+            email_notifications (get-email-notifications ctx)
+            new-user            (insert-user<! {:first_name first-name :last_name last-name :email email :country country :language language :email_notifications email_notifications :pass (hash-password password)} (get-db ctx))
+            user-id             (:generated_key new-user)]
+        (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
+        (u/publish ctx :new-user {:user-id user-id})
+        (m/send-verification ctx site-url (email-verification-link site-url base-path activation_code) (str first-name " " last-name) email language)
+        
+        {:status "success" :message ""}))))
 
 (defn set-password-and-activate
   "Activate user account and set password. Do not change password if user account is already activated and verification key is older than a day. If account is not yet activated, verify primary email address."
@@ -93,39 +101,52 @@
             )
             {:status "success" :message (if activated "user/Accountpasswordchangedsuccessfully" "user/Accountactivatedsuccessfully")}))))))
 
+(defn get-user-by-email [ctx email]
+  (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx))))
+
+
 (defn login-user
-  "Check if user exists and password matches. User account must be activated. Email address must be user's primary address and verified."
+  "Check if user exists and password matches. User account must be activated."
   [ctx email plain-password]
   (try+
-(let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
-      private (get-in ctx [:config :core :private] false)]
-     (if (and id pass activated verified (not deleted) (check-password ctx plain-password pass))
+(let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+     (if (and id pass (not deleted) (check-password ctx plain-password pass)) ;activated verified
        (do
          (update-user-last_login! {:id id} (get-db ctx))
-         {:status "success" :id id :role role :private private})
-       (if (and id pass activated verified deleted (check-password ctx plain-password pass))
+         {:status "success" :id id})
+       (if (and id pass deleted (check-password ctx plain-password pass))
          {:status "error" :message "user/Accountdeleted"}
          {:status "error" :message "user/Loginfailed"})))
    (catch Object _
      {:status "error" :message "user/Loginfailed"})))
 
-(defn edit-user
+
+(defn edit-user-password
   "Edit user information."
   [ctx user-information user-id]
   (try+
-   (let [{:keys [first_name last_name country language current_password new_password new_password_verify email_notifications]} user-information]
+   (let [{:keys [current_password new_password new_password_verify]} user-information]
      (when new_password
        (if (not (= new_password new_password_verify))
          (throw+ "user/Passwordmissmatch"))
        (let [pass (select-password-by-user-id {:id user-id} (into {:result-set-fn first :row-fn :pass} (get-db ctx)))]
          (if (and pass (not (check-password ctx current_password pass)))
             (throw+ "user/Wrongpassword"))))
-      (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country :email_notifications email_notifications} (get-db ctx))
-      (if new_password
-        (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx)))
+      (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx))
+      
       {:status "success" :message "core/Thechangeshavebeensaved" })
    (catch Object _
       {:status "error" :message _})))
+
+(defn edit-user
+  "Edit user information."
+  [ctx user-information user-id]
+  (try+
+   (let [{:keys [first_name last_name country language email_notifications]} user-information]
+     (update-user! {:id user-id :first_name (trim first_name) :last_name (trim last_name) :language language :country country :email_notifications email_notifications} (get-db ctx))
+     {:status "success" :message "core/Thechangeshavebeensaved" })
+   (catch Object _
+     {:status "error" :message _})))
 
 (defn email-addresses
   "Get all user email addresses"
@@ -145,6 +166,22 @@
         (insert-user-email! {:user_id user-id :email email :primary_address 0 :verification_key verification-key} (get-db ctx))
         (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email language)
         {:status "success" :message (str (t :user/Emailaddress language) " " email " " (t :user/added language)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}}))
+    (catch Object _
+      {:status "error" :message "user/Errorwhileaddingemail"})))
+
+(defn send-email-verified-link
+  "Send verififed link to address"
+  [ctx email user-id]
+  (try+
+   (if (:verified (email-exists? ctx email))
+     (throw+ {:status "error" :message "user/Emailisalreadyverified"}))
+   (let [site-url (get-site-url ctx)
+            base-path (get-base-path ctx)
+            verification-key (generate-activation-id)
+            {:keys [first_name last_name language]} (select-user {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
+        (update-email-address-verification-key! { :email email :verification_key verification-key} (get-db ctx))
+        (m/send-verification ctx site-url (email-verification-link site-url base-path verification-key) (str first_name " " last_name) email language)
+        {:status "success" :message (str (t :user/Emailaddress language) " " email " " (t :user/added language)) :new-email {:email email :verified false :primary_address false :backpack_id nil :ctime (unix-time) :mtime (unix-time)}})
     (catch Object _
       {:status "error" :message "user/Errorwhileaddingemail"})))
 
@@ -173,10 +210,20 @@
 
 (defn verify-email-address
   "Verify email address"
-  [ctx key user-id]
-  (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
-    (if (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
-      (update-verify-email-address! {:email email :user_id user_id} (get-db ctx)))))
+  [ctx key user-id activated]
+  (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
+        verified-emails (verified-email-addresses ctx user-id)]
+    (try+
+     (if-not (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
+       (throw+ {:status "error"}))
+     (if-not activated
+       (update-user-activate! {:id user_id} (get-db ctx)))
+     (update-verify-email-address! {:email email :user_id user_id} (get-db ctx))
+     (if (= 0 (count verified-emails))
+       (set-primary-email-address ctx email user-id))
+     "success"
+     (catch Object _
+     "error"))))
 
 (defn user-information
   "Get user data by user-id"
@@ -203,16 +250,16 @@
 (defn user-information-and-profile
   "Get user informatin, profile, public badges and pages"
   [ctx user-id current-user-id]
-  (let [user (user-information ctx user-id)
-        user-profile (user-profile ctx user-id)
-        visibility (if current-user-id "internal" "public")
+  (let [user          (user-information ctx user-id)
+        user-profile  (user-profile ctx user-id)
+        visibility    (if current-user-id "internal" "public")
         recent-badges (g/public-badges-by-user ctx user-id visibility)
-        recent-pages (g/public-pages-by-user ctx user-id visibility)]
-    {:user user
+        recent-pages  (g/public-pages-by-user ctx user-id visibility)]
+    {:user    user
      :profile user-profile
-     :badges (take 6 recent-badges)
-     :pages (take 6 recent-pages)
-     :owner? (= user-id current-user-id)}))
+     :badges  recent-badges 
+     :pages   recent-pages
+     :owner?  (= user-id current-user-id)}))
 
 (defn user-profile-for-edit
   "Get user profile visibility, profile picture, about text and profile fields for editing"
@@ -258,7 +305,7 @@
         base-path (get-base-path ctx)
         {:keys [id first_name last_name verified primary_address language]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))
         verification-key (generate-activation-id)]
-    (if (and id verified)
+    (if id ;(and id verified)
       (do
         (update-verified-email-address-verification-key! {:verification_key verification-key :email email} (get-db ctx))
         (m/send-password-reset-message ctx site-url (activation-link site-url base-path id verification-key language) (str first_name " " last_name) email language)
@@ -278,32 +325,44 @@
       (f/remove-file! ctx path))))
 
 (defn remove-user-badges [db user-id]
-  (let [badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
-    (doseq [badge-id badge-ids]
-      (b/delete-badge-with-db! db badge-id))))
+  (let [user-badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
+    (doseq [user-badge-id user-badge-ids]
+      (b/delete-badge-with-db! db user-badge-id))))
+
+
 
 (defn delete-user
   "Delete user and all user data"
-  [ctx user-id plain-password]
-  (try+
-    (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))]
-      (if-not (and (check-password ctx plain-password pass) id activated)
-        (throw+ "Invalid password")))
-    (jdbc/with-db-transaction
-      [tr-cn (get-datasource ctx)]
-      (remove-user-files ctx {:connection tr-cn} user-id)
-      (remove-user-badges {:connection tr-cn} user-id)
-      (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
-      (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
-      (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
-      (delete-user-profile! {:user_id user-id} {:connection tr-cn})
-      (delete-email-addresses! {:user_id user-id} {:connection tr-cn})
-      (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
-        (o/remove-oauth-user-all-services ctx user-id))
-      (delete-user! {:id user-id} {:connection tr-cn}))
-    {:status "success"}
+  ([ctx user-id plain-password]
+            (delete-user ctx user-id plain-password false))
+  ([ctx user-id plain-password admin?]
+   (try+
+    (let [{:keys [id pass activated]} (select-user-by-id {:id user-id} (into {:result-set-fn first} (get-db ctx)))
+          emails                      (email-addresses ctx user-id)]
+      (if-not (and (or admin? (check-password ctx plain-password pass)) id)
+        (throw+ "Invalid password"))
+      (jdbc/with-db-transaction
+        [tr-cn (get-datasource ctx)]
+        (remove-user-files ctx {:connection tr-cn} user-id)
+        (remove-user-badges {:connection tr-cn} user-id)
+        (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
+        (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
+        (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
+        (delete-user-profile! {:user_id user-id} {:connection tr-cn})
+        
+        (if activated
+          (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn} ) emails))
+          (delete-email-addresses! {:user_id user-id} {:connection tr-cn}))
+        
+        (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
+          (o/remove-oauth-user-all-services ctx user-id))
+        
+        (if activated
+          (delete-user! {:id user-id} {:connection tr-cn})
+          (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id } {:connection tr-cn})))
+      {:status "success"})
     (catch Object _
-      {:status "error"})))
+      {:status "error"}))))
 
 (defn meta-tags [ctx id]
   (let [user (select-user {:id id} (into {:result-set-fn first} (get-db ctx)))]
@@ -312,6 +371,11 @@
        :description (str (get-site-name ctx) " user profile")
        :image       (:profile_picture user)})))
 
+
+(defn set-session [ctx ok-status user-id]
+  (let [{:keys [role id private activated]} (user-information ctx user-id)]
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated}))
+  )
 
 ;; --- Email sender --- ;;
 

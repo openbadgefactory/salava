@@ -2,6 +2,8 @@
   (:require
     [salava.core.i18n :refer [t]]
     [salava.core.ui.helper :refer [path-for]]
+    [salava.core.helper :refer [dump]]
+    [clojure.string :refer [blank?]]
     [salava.core.time :refer [unix-time date-from-unix-time]]
     ))
 
@@ -22,8 +24,8 @@
        [:label (t :badge/Issuedon) ":"]
        [:span (date-from-unix-time (* 1000 issued))]]))
 
-  (defn issuer-image [image]
-    (if image
+(defn issuer-image [image]
+  (if-not (blank? image)
       [:div {:class "issuer-image pull-left"}
        [:img {:src (str "/" image)}]]))
 
@@ -60,11 +62,12 @@
   (if (or name url email image)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left  (t :badge/Issuedby) ":"]
-     (issuer-image image)
-     [:div {:class "issuer-links pull-left"}
-      [:a {:target "_blank" :href url} " " name]
-      (if (not-empty email)
-        [:span [:br] [:a {:href (str "mailto:" email)} email]])]]))
+     [:div {:class "issuer-links pull-left inline"}
+       (issuer-image image)
+       [:a {:target "_blank" :href url} " " name]
+       (if (not-empty email)
+         [:span [:br] [:a {:href (str "mailto:" email)} email]])]
+     ]))
 
 (defn creator-label-image-link [name url email image]
   (if (or name url email image)    
@@ -78,7 +81,7 @@
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   (let [class-name (if verified-by-obf? "verifiedissuedbyobf-image-url" "issuedbyobf-image-url")]
-  [:div.row
-   [:div.col-xs-12
-     [:div {:class class-name} [:a {:href obf-url :target "_blank"}]]]]))
+    [:div.row
+     [:div.col-xs-12
+      [:a {:class class-name :href obf-url :target "_blank" :style {:display "block"}}]]]))
 
