@@ -381,6 +381,61 @@
          (t :core/Yes)]
         (status-handler status "")])]))
 
+
+(defn upgrade-user [state visible_area item_owner]
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        status (cursor state [:status])
+        ]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "upgrade-user" @visible_area) "" "upgrade-user")))
+      :class (if (=  "upgrade-user" @visible_area) "opened" "")}  (t :admin/Upgradeuser) ]]
+     (if (= @visible_area  "upgrade-user")
+       [:div.col-md-12
+        (str (t :admin/Upgradeuser) " " item_owner )
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/upgrade_user_to_admin/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :handler         (fn [data]
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+         (t :core/Yes)]
+        (status-handler status "")])]))
+
+
+(defn downgrade-user [state visible_area item_owner]
+  (let [{:keys [mail item_owner_id gallery-state init-data info]} @state
+        status (cursor state [:status])
+        ]
+    [:div {:class "row"}
+     [:div {:class "col-md-12 sub-heading"}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible_area (if (= "downgrade-user" @visible_area) "" "downgrade-user")))
+      :class (if (=  "downgrade-user" @visible_area) "opened" "")}  (t :admin/Downgradeuser) ]]
+     (if (= @visible_area  "downgrade-user")
+       [:div.col-md-12
+        (str (t :admin/Downgradeuser) " " item_owner )
+        [:button {:type         "button"
+                  :class        "btn btn-primary pull-right"
+                  
+                  :data-dismiss "modal"
+                  :on-click     #(ajax/POST
+                                  (path-for (str "/obpv1/admin/downgrade_admin_to_user/" item_owner_id ))
+                                  {:response-format :json
+                                   :keywords?       true
+                                   :handler         (fn [data]
+                                                      
+                                                      
+                                                      )
+                                   :error-handler   (fn [{:keys [status status-text]}]
+                                                      (.log js/console (str status " " status-text)) )})}
+         (t :core/Yes)]
+        (status-handler status "")])]))
+
 (defn delete-no-activated-user [state visible_area item_owner]
   (let [{:keys [mail item_owner_id gallery-state init-data info]} @state]
     [:div {:class "row"}
@@ -429,7 +484,7 @@
       [:div {:class "col-sm-9 badge-info"}
        [:div {:class "row info"}
         [:div {:class "col-md-12"}
-         [:h1.uppercase-header name]
+         [:h1.uppercase-header name (if (= "admin" (:role info)) " (ADMIN)")]
          (info-block state item_type)]]
        [:div.actions
 
@@ -451,8 +506,13 @@
          (delete-no-verified-email state visible_area item_owner))
        (if  (and (= item_type "user") (not (:activated info))) 
          (send-activation-message state visible_area item_owner))
-        (if (= item_type "user")  
-         (login-as-user state visible_area item_owner))]]]]))
+        (if (and (= item_type "user") (not (:deleted info)))  
+          (login-as-user state visible_area item_owner))
+        (if (and (= item_type "user") (not (:deleted info)) (= "user" (:role info)))   
+          (upgrade-user state visible_area item_owner))
+        (if (and (= item_type "user") (not (:deleted info)) (= "admin" (:role info)))  
+          (downgrade-user state visible_area item_owner))
+        ]]]]))
 
 
 (defn admin-modal [state]
