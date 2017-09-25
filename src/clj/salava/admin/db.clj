@@ -4,7 +4,6 @@
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump]]
             [slingshot.slingshot :refer :all]
-            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name]]
             [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name plugin-fun get-plugins]]
             [salava.core.time :refer [unix-time get-date-from-today]]
             [salava.core.countries :refer [all-countries sort-countries]]
@@ -16,6 +15,11 @@
             [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
+
+(defn admin-count
+  "Count users with admin role"
+  [ctx]
+  (:count (select-admin-count {} (util/get-db-1 ctx))))
 
 (defn get-owners [ctx]
   (select-admin-users-id {} (get-db ctx)))

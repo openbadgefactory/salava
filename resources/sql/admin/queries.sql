@@ -156,3 +156,6 @@ UPDATE user SET role = 'user' WHERE id = :id
 
 --name: update-user-to-admin!
 UPDATE user SET role = 'admin' WHERE id = :id
+
+--name: select-admin-count
+SELECT COUNT(*) AS count FROM user WHERE role = 'admin' AND activated = 1 AND deleted = 0;
