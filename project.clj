@@ -105,7 +105,8 @@
                        :resource-paths ["target/generated"]}
              :uberjar {:resource-paths ["target/adv"]
                        :main           salava.core.main
-                       :aot            [salava.core.main]}}
+                       :omit-source    true
+                       :aot            :all}}
 
 
   :scss  {:builds
@@ -144,11 +145,10 @@
                                             :elide-asserts true
                                             :pretty-print  false}}}}
 
-  :uberjar-name      "salava.jar"
   :auto-clean        false
-  :min-lein-version  "2.6.1"
+  :min-lein-version  "2.7.1"
 
-  :pedantic? :warn
+  :pedantic? :abort
 
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "css" ["do" ["pdo" ["scss" ":dev" "boring"]]]
