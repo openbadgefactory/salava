@@ -1,8 +1,8 @@
 (ns salava.badge.signed
   (:require [slingshot.slingshot :refer :all]
-            [clj-http.client :as http]
             [clojure.data.json :as json]
             [salava.core.util :as u]
+            [salava.core.http :as http]
             [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]))
 
@@ -15,7 +15,7 @@
 
 (defn fetch-public-key [url]
   (try+
-    (:body (http/get url))
+    (:body (http/http-get url))
     (catch Object _)))
 
 (defn signed-assertion [metadata]

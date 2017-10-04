@@ -1,10 +1,10 @@
 (ns salava.badge.importer
   (:require [clojure.tools.logging :as log]
-            [clj-http.client :as client]
             [salava.badge.main :as b]
             [salava.badge.db :as db]
             [salava.badge.parse :as p]
             [salava.core.util :as u]
+            [salava.core.http :as http]
             [salava.user.db :as user]))
 
 (defonce import-cache (atom {}))
@@ -27,7 +27,7 @@
 (defn- get-remote-id [email base-url]
   (try
     (-> (str base-url "/convert/email")
-        (client/post {:as :json :form-params {:email email}})
+        (http/http-post {:as :json :form-params {:email email}})
         (get-in [:body :userId] 0))
     (catch Exception _ 0)))
 
@@ -40,7 +40,7 @@
   (try
     (if hostedUrl
       (p/str->badge  user hostedUrl)
-      (p/file->badge user (client/get imageUrl {:as :stream})))
+      (p/file->badge user (http/http-get imageUrl {:as :stream})))
     (catch Throwable ex
       (let [info (ex-data ex)]
         (log/error "failed to parse assertion from" (or hostedUrl imageUrl))
@@ -49,14 +49,14 @@
           (log/error (.toString ex)))))))
 
 (defn- public-group-badges [user base-url remote-id {:keys [groupId name]}]
-  (->> (u/json-get (str base-url "/" remote-id "/group/" groupId ".json"))
+  (->> (http/json-get (str base-url "/" remote-id "/group/" groupId ".json"))
        :badges
        (map (partial assertion user))
        (remove nil?)
        (map #(with-meta % {:tag name :checksum (badge-checksum %)}))))
 
 (defn- public-badges [user base-url remote-id]
-  (->> (u/json-get (str base-url "/" remote-id "/groups.json"))
+  (->> (http/json-get (str base-url "/" remote-id "/groups.json"))
        :groups
        (pmap (partial public-group-badges user base-url remote-id))
        flatten))

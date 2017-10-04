@@ -10,7 +10,8 @@
             [salava.core.countries :refer [all-countries sort-countries]]
             [slingshot.slingshot :refer :all]
             [clojure.set :refer [subset?]]
-            [salava.core.util :as u]))
+            [salava.core.util :as u]
+            [salava.core.http :as http]))
 
 
 (defqueries "sql/extra/application/queries.sql")
@@ -142,9 +143,9 @@
 
 (defn- advert-content [ctx data]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-    (let [badge (u/json-get (:badge data))
-          client (u/json-get (:client data))
-          criteria (u/http-get (:criteria_url data))]
+    (let [badge (http/json-get (:badge data))
+          client (http/json-get (:client data))
+          criteria (http/http-get (:criteria_url data))]
       {:badge_content_id
        (b/save-badge-content! tx
                               {:id ""

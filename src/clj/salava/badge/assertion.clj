@@ -11,12 +11,14 @@
             [net.cgrand.enlive-html :as html]
             [markdown.core :as md]
             [salava.badge.png :as p]
-            [salava.core.util :as u]))
+            [salava.core.util :as u]
+            [salava.core.http :as http]
+            ))
 
 
 (defn fetch-json-data [url]
   (log/info "fetch-json-data: GET" url)
-  (u/http-get url {:as :json :accept :json :throw-entire-message? true})
+  (http/http-get url {:as :json :accept :json :throw-entire-message? true})
 
   #_(try+
     (catch :status e
@@ -51,12 +53,12 @@
 (defn get-criteria-markdown [criteria-url]
   "Get criteria markdown, if available."
   (try
-    (let [html  (html/html-resource (io/input-stream (u/http-get criteria-url {:as :byte-array})))
+    (let [html  (html/html-resource (io/input-stream (http/http-get criteria-url {:as :byte-array})))
           links (filter #(and (= (get-in % [:attrs :rel]) "alternate")
                               (= (get-in % [:attrs :type]) "text/x-markdown")) (html/select html [:head :link]))
           href (first (map #(get-in % [:attrs :href]) links))]
       (if href
-        (u/http-get href)))
+        (http/http-get href)))
     (catch Exception ex
       (log/error "get-criteria-markdown: failed to fetch content")
       (log/error (.toString ex))
@@ -157,7 +159,7 @@
     (if-let [match (re-find #"(?s)^data.+,(.+)" image)]
       (u/base64->bytes (last match))
       (try
-        (u/http-get image)
+        (http/http-get image)
         (catch Throwable ex
           (if (contains? (meta input) :image)
             (:image (meta input))
@@ -214,8 +216,8 @@
   (if (not= (domain (get-in input [:verify :url])) (domain (:badge input)))
     (throw (Exception. "badge/VerifyURLMismatch")))
 
-  (let [badge  (json/read-str (u/http-get (:badge input)))
-        issuer (json/read-str (u/http-get (:issuer badge)))]
+  (let [badge  (json/read-str (http/http-get (:badge input)))
+        issuer (json/read-str (http/http-get (:issuer badge)))]
     (-> input
         (assoc :expires  (u/str->epoch (:expires input)))
         (assoc :issuedOn (u/str->epoch (:issuedOn input)))
@@ -239,14 +241,14 @@
 
 (defmethod assertion-map :url [input]
   (let [meta (or (meta input) {})]
-    (with-meta (assertion-map (u/http-get input)) (assoc meta :assertion_url input))))
+    (with-meta (assertion-map (http/http-get input)) (assoc meta :assertion_url input))))
 
 (defmethod assertion-map :jws [input]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
         header (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
         public-key (-> (get-in payload [:verify :url])
-                       u/http-get
+                       http/http-get
                        keys/str->public-key)
         asr (-> input
                 (jws/unsign public-key {:alg (keyword (:alg header))})

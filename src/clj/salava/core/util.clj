@@ -12,6 +12,7 @@
             [autoclave.core :refer [markdown-processor markdown-to-html]]
             [net.cgrand.enlive-html :as html]
             [salava.core.helper :refer [plugin-str]]
+            [salava.core.http :as http]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
@@ -88,45 +89,6 @@
   [coll]
   (hex-digest "sha256" (apply str (flat-coll coll))))
 
-(defn- curl [url opt]
-  (let [accept (case (:accept opt)
-                 :json "-H'Accept: application/json, */*'"
-                 nil   "-H'Accept: */*'")
-        out-fn (case (:as opt)
-                 :json #(json/read-str % :key-fn keyword)
-                 :byte-array identity
-                 nil         identity)
-        out-enc (case (:as opt)
-                  :byte-array :bytes
-                  :json "UTF-8"
-                  nil   "UTF-8")
-        res (sh "/usr/bin/curl" "-f" "-s" "-L" "-m30" accept url :out-enc out-enc)]
-    (if (= (:exit res) 0)
-      (do
-        (log/info "curl request ok")
-        (out-fn (:out res)))
-      (throw (Exception. (str "GET request to " url " failed"))))))
-
-
-(defn http-get
-  "Run simple HTTP GET request. Uses clj-http.client with curl as fallback. Returns body of the response as string."
-  ([url] (http-get url {}))
-  ([url opt]
-   (if (str/blank? url)
-     (throw (IllegalArgumentException. "http-get: missing url parameter")))
-   (try
-     (:body (client/get url opt))
-     (catch Exception ex
-       (log/error "http-get: clj-http client request failed")
-       (log/error "url:" url)
-       (log/error (.toString ex))
-       (log/error "falling back to curl")
-       (curl url opt)))))
-
-(defn json-get [url]
-  ;(log/info "json-get: GET" url)
-  (http-get url {:as :json :accept :json :throw-entire-message? true}))
-
 (defn- file-extension [filename]
   (try+
     (let [file (if (re-find #"https?" (str filename)) (java.net.URL. filename) filename)]
@@ -169,7 +131,7 @@
 
 (defn save-file-from-http-url
   [ctx url]
-  (let [content   (http-get url {:as :byte-array})
+  (let [content   (http/http-get url {:as :byte-array})
         extension (-> content mime-type-of extension-for-name)
         path (public-path-from-content content extension)]
     (save-file-data ctx content path)))
@@ -243,7 +205,7 @@
   (let [link-tags (-> (StringReader. input) (html/html-resource) (html/select [:head :link]))
         md-url (some #(when (and (= (:rel %) "alternate") (= (:type %) "text/x-markdown")) (:href %))
                      (map :attrs link-tags))]
-    (try (http-get md-url) (catch Exception _ ""))))
+    (try (http/http-get md-url) (catch Exception _ ""))))
 
 
 
