@@ -12,7 +12,7 @@
 (def video-link-en "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/YJJ8lZshqbY\" frameborder=\"0\"></iframe>")
 
 (defn clipboard-button [target status]
-  
+
   (let [clipboard-atom (atom nil)]
     (create-class
      {:display-name "clipboard-button"
@@ -106,7 +106,7 @@
                                   (add-to-profile-image)]
                             [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
                          [:div.row
-                          
+
                           [:div.col-md-6.copy-boxes
                            [:form {:class "form-horizontal"}
                             [input-button (t :core/Certificationname)  "name" name]
@@ -191,7 +191,7 @@
              :href     "#"
              :on-click (fn []
                          (do
-                           
+
                            #_(-> (js* "$('#reagent-modal .modal-dialog')")
                                (.addClass "modal-lg" )
                                (.removeClass "modal-sm"))
@@ -204,7 +204,7 @@
          (t :core/Addtoprofile)]]
        [:div (str (t :core/Sharelinkedinupdate) ":") ]
        [:div
-        [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
+        [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
          [:i {:class "fa fa-linkedin"}]
          (t :badge/Share)]
         ]]]
@@ -266,7 +266,7 @@
                 :target "_blank"}
             [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
-          [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" title "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
+          [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
          )
        ]
@@ -274,10 +274,10 @@
        [google-plus url]]
       [:div.share-button
        [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank"} [:i {:class "fa fa-facebook-square"}]]]
-      
+
       [:div.share-button
        (if is-badge?
-         [:a {:href            (str "https://www.pinterest.com/pin/create/button/?url=" url "&media=" (base-url) "/" image-file "&description=" title) 
+         [:a {:href            (str "https://www.pinterest.com/pin/create/button/?url=" url "&media=" (base-url) "/" image-file "&description=" title)
               :data-pin-do     "buttonPin"
               :data-pin-custom "true"
               :target "_blank"
