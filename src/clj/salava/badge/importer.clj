@@ -10,7 +10,7 @@
 (defonce import-cache (atom {}))
 
 (defn- put-import-cache [key data]
-  (swap! import-cache assoc key {:ttl (+ (u/now) 600) :data data})
+  (swap! import-cache assoc key {:ttl (+ (u/now) 200) :data data})
   data)
 
 (defn- get-import-cache [key]
@@ -61,9 +61,9 @@
        (pmap (partial public-group-badges user base-url remote-id))
        flatten))
 
-(defn- all-public-badges [user base-url]
+(defn- all-public-badges [user base-url cached?]
   (let [cache-key [(:id user) base-url]]
-    (if-let [cached (get-import-cache cache-key)]
+    (if-let [cached (and cached? (get-import-cache cache-key))]
       cached
       (->> (remote-ids user base-url)
            (mapcat (partial public-badges user base-url))
@@ -103,7 +103,7 @@
   (try
     (let [base-url "https://backpack.openbadges.org/displayer" ;TODO support other sources
           user {:id user-id :emails (user/verified-email-addresses ctx user-id)}]
-      {:badges (->> (all-public-badges user base-url)
+      {:badges (->> (all-public-badges user base-url false)
                     (map (partial import-info ctx user))
                     (sort-by :message #(compare %2 %1)))
        :status "success"
@@ -122,7 +122,7 @@
     (let [base-url "https://backpack.openbadges.org/displayer" ;TODO support other sources
           user {:id user-id :emails (user/verified-email-addresses ctx user-id)}
           key-set (set keys)
-          badges-to-save (filter #(key-set (:checksum (meta %))) (all-public-badges user base-url))
+          badges-to-save (filter #(key-set (:checksum (meta %))) (all-public-badges user base-url true))
           badge-ids (remove nil? (map #(db/save-user-badge! ctx (assoc % :status "accepted")) badges-to-save))]
       {:status      "success"
        :message     "badge/Badgessaved"
