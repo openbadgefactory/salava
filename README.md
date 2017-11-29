@@ -104,21 +104,21 @@ Install sass compiler
 
 Install the database.
 
-  MacOs
-    $ brew install mariadb #MacOS
+    #MacOs
+      $ brew install mariadb
 
-  Linux
-    $ sudo apt-get install mariadb-server
+    #Linux
+      $ sudo apt-get install mariadb-server
 
 
 
 Start the database:
 
-  MacOS
-    $ mysql.server start
+    #MacOS
+      $ mysql.server start
 
-  Linux
-    $sudo mysqld
+    #Linux
+      $ sudo mysqld
 
 
 Create the database:
