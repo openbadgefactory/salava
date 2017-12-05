@@ -33,12 +33,6 @@
       [connections reload-fn]
       [:div ""])))
 
-(defn pending-connections [reload-fn]
-  (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
-    (if connections
-      [connections reload-fn]
-      [:div ""])))
-
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
   [:div {:class "media" :key id}
    [:span {:class "pull-left"}
