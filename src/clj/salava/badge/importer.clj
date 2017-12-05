@@ -1,5 +1,6 @@
 (ns salava.badge.importer
   (:require [clojure.tools.logging :as log]
+            [clojure.pprint :refer [pprint]]
             [salava.badge.main :as b]
             [salava.badge.db :as db]
             [salava.badge.parse :as p]
@@ -40,7 +41,7 @@
   (try
     (if hostedUrl
       (p/str->badge  user hostedUrl)
-      (p/file->badge user (http/http-get imageUrl {:as :stream})))
+      (p/file->badge user (http/http-req {:method :get :url imageUrl :as :stream})))
     (catch Throwable ex
       (let [info (ex-data ex)]
         (log/error "failed to parse assertion from" (or hostedUrl imageUrl))
