@@ -7,16 +7,18 @@
 (def test-user {:id 1 :role "user" :private false})
 
 (def registration-data
-  {:first_name "Testing"
-   :last_name "Registration"
+  {
    :email "test.registration@example.com"
-   :country "US"
-   :password "123456"
+   :first_name "Testing"
+   :last_name "Registration"
    :language "fi"
-   :password-verify "123456"})
+   :country "FI"
+   :password "123456"
+   :password_verify "123456"
+   :token "registerationToken"})
 
 (t/deftest-ctx main-test [ctx]
-  
+
  #_ (testing "register user"
     (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password-verify registration-data))]
       (is (=  "success" (:status connect)))
@@ -28,9 +30,10 @@
      (is (=  "user/Enteredaddressisalready" (:message connect)))
      ))
   (testing "get current state of configs"
-    (let [{:keys [status body]} (t/test-api-request ctx :post "/app/obpv1/user/register" {:params registration-data})]
+    (let [{:keys [status body]} (t/test-api-request ctx :post "/obpv1/user/register" {:params registration-data})]
         (is (= 200 status))
-        (is (= "accepted" body))))
+;;         (is (= "success" status))
+      ))
   )
 ;(migrator/run-test-reset)
 (migrator/reset-seeds (migrator/test-config))

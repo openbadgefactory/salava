@@ -1,4 +1,21 @@
 (
+  {
+  :table "report_ticket"
+  :data {
+;;          :item_id 1
+         :item_name "Test User"
+         :item_type "user"
+;;          :item_url "/app/user/profile/1"
+         :item_content_id nil
+         :reporter_id 1
+         :report_type "bug"
+         :status "open"
+         :description "typerä juttu"
+         :ctime 1491990746
+         :mtime 1491990746
+         }
+  }
+
  {:table "social_event"
   :data {
          :subject 1
@@ -17,21 +34,11 @@
          :last_checked nil
          }}
 
- {:table "badge_message"
+  {:table "social_event"
   :data {
-         :user_id 1
-         :badge_id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
-         :message "message"
-         :ctime 1491990746
-         :mtime 1491990746
-         :deleted 0
-         }}
-
- {:table "social_event"
-  :data {
-         :subject 1
-         :verb "message"
-         :object "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
+         :subject 2
+         :verb "follow"
+         :object 2
          :type "badge"
          :ctime 1491990746
          :mtime 1491990746
@@ -39,117 +46,20 @@
 
  {:table "social_event_owners"
   :data {
-         :owner 1
+         :owner 2
          :event_id 2
          :hidden 0
          :last_checked nil
          }}
 
-{:table "social_connections_badge"
+ {:table "badge_message"
   :data {
-         :user_id 1
-         :badge_id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
-         :ctime 1491990746
-         }}
-
-
- {:table "social_event"
-  :data {
-         :subject 1
-         :verb "follow"
-         :object "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
-         :type "badge"
+         :user_id 2
+;;          :badge_id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
+         :message "message"
          :ctime 1491990746
          :mtime 1491990746
-         }}
-
- {:table "social_event_owners"
-  :data {
-         :owner 1
-         :event_id 3
-         :hidden 0
-         :last_checked nil
-         }}
-
-
-
-
-  {:table "badge_message"
-  :data {
-         :user_id 1
-         :badge_id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
-         :message "message 2"
-         :ctime 1491990756
-         :mtime 1491990756
          :deleted 0
          }}
-
- {:table "social_event"
-  :data {
-         :subject 1
-         :verb "message"
-         :object "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
-         :type "badge"
-         :ctime 1491990746
-         :mtime 1491990746
-         }}
-
- {:table "social_event_owners"
-  :data {
-         :owner 1
-         :event_id 4
-         :hidden 0
-         :last_checked nil
-         }}
- {:table "badge_message_view"
-  :data {
-         :user_id 1
-         :badge_id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
-         :mtime 1491990746
-         }}
-
- {:table "social_event"
-  :data {
-         :subject 2
-         :verb "publish"
-         :object "3"
-         :type "badge"
-         :ctime 1491990746
-         :mtime 1491990746
-         }}
-
- {:table "social_event_owners"
-  :data {
-         :owner 1
-         :event_id 5
-         :hidden 0
-         :last_checked nil
-         }}
-
- {:table "social_event"
-  :data {
-         :subject 1
-         :verb "follow"
-         :object 2
-         :type "user"
-         :ctime 1491990746
-         :mtime 1491990746
-         }}
-
- {:table "social_event_owners"
-  :data {
-         :owner 1
-         :event_id 6
-         :hidden 0
-         :last_checked nil
-         }}
- {:table "social_event_owners"
-  :data {
-         :owner 2
-         :event_id 6
-         :hidden 0
-         :last_checked nil
-         }}
-
 
  )
