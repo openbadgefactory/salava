@@ -5,6 +5,7 @@
             [salava.core.test-utils :as t])
   (:import (ar.com.hjg.pngj PngjInputException)
            (org.xml.sax SAXParseException)))
+
 (def test-user {:id 1 :role "user" :private false})
 (def invalid-file {:content-type "text/plain" :tempfile (io/as-file (io/resource "test/not-an-image.txt"))})
 (def invalid-image {:content-type "image/bmp" :tempfile (io/as-file (io/resource "test/invalid-filetype.bmp"))})
@@ -18,15 +19,15 @@
 #_(def valid-svg   {:content-type "image/svg+xml" :tempfile (io/as-file (io/resource "test/"))})
 #_(def valid-png   {:content-type "image/png" :tempfile (io/as-file (io/resource "test/"))})
 
-#_(t/deftest-ctx parse-test [ctx]
-  (testing "file->assertion"
+(t/deftest-ctx parse-test [ctx]
+  (testing "file->badge"
     (testing "with invalid file"
-      (is (thrown? IllegalArgumentException (p/file->assertion invalid-file)))
-      (is (thrown? IllegalArgumentException (p/file->assertion invalid-image)))
-      (is (thrown? PngjInputException       (p/file->assertion invalid-png-1)))
-      (is (thrown? IllegalArgumentException (p/file->assertion invalid-png-2)))
-      (is (thrown? IllegalArgumentException (p/file->assertion invalid-png-3)))
-      (is (thrown? SAXParseException        (p/file->assertion invalid-svg))))
+      (is (thrown? IllegalArgumentException (p/file->badge test-user invalid-file)))
+      (is (thrown? IllegalArgumentException (p/file->badge test-user invalid-image)))
+      (is (thrown? PngjInputException       (p/file->badge test-user invalid-png-1)))
+      (is (thrown? IllegalArgumentException (p/file->badge test-user invalid-png-2)))
+      (is (thrown-with-msg? Exception #"badge/Userdoesnotownthisbadge" (p/file->badge test-user invalid-png-3)))
+      (is (thrown? SAXParseException        (p/file->badge test-user invalid-svg))))
 
     (testing "with valid png file"
 
