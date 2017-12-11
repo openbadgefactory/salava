@@ -78,7 +78,7 @@
 
       (testing " check can login with user"
         (let [emails (db/email-addresses ctx (:id registered-user))]
-          (is (= "deleted-test.registration@example.com.so.deleted"  (get-in (first emails) [:email] )))))
+          (is (= "deleted-test.registration@example.com.so.deleted" (:email (first emails))))))
 
       ))
 
