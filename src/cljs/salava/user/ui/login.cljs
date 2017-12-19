@@ -16,8 +16,8 @@
 (defn follow-up-url []
   (let [referrer js/document.referrer
         site-url (str (session/get :site-url) (base-path))
-        path (if (and referrer site-url) (string/replace referrer site-url ""))]
-                                        ;(if (social-plugin?) "/social/stream" "/badge/mybadges")
+        path (if (and referrer site-url (string/starts-with? referrer site-url))
+               (string/replace referrer site-url ""))]
     (if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
       "/social/stream"
       path)
