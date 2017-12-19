@@ -1,5 +1,6 @@
 (ns salava.mail.mail
   (:require [clojure.java.io :as io]
+            [clojure.tools.logging :as log]
             [hiccup.core :refer :all]
             [postal.core :refer [send-message]]
             [salava.core.util :refer [get-site-url get-base-path get-site-name get-plugins plugin-fun]]
@@ -18,9 +19,8 @@
       (if (nil? mail-host-config)
         (send-message data)
         (send-message mail-host-config data)))
-    (catch Object _
-      ;TODO log an error
-      )))
+    (catch Object ex
+      ex)))
 
 (defn send-html-mail [ctx subject message recipients]
   (try+
@@ -46,7 +46,8 @@
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailactivation7 lng) "\n"
                      login-link
                      " " (t :core/Emailactivation8 lng) ".\n\n--  "site-name " -"(t :core/Team lng))]
-    (send-mail ctx subject message [email-address])))
+    (log/info "sending to" email-address)
+    (-> (send-mail ctx subject message [email-address]) log/info)))
 
 (defn send-password-reset-message [ctx site-url activation-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
@@ -56,7 +57,8 @@
                      activation-link
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n--  "
                       site-name " -"(t :core/Team lng))]
-    (send-mail ctx subject message [email-address])))
+    (log/info "sending to" email-address)
+    (-> (send-mail ctx subject message [email-address]) log/info)))
 
 (defn send-verification [ctx site-url email-verification-link fullname email lng]
   (let [site-name (get-in ctx [:config :core :site-name])
@@ -64,7 +66,8 @@
         message (str fullname "\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-url".\n" (t :core/Emailverification4 lng) ":\n\n"
                      email-verification-link
                      "\n\n" (t :core/Emailverification6 lng)".\n")]
-    (send-mail ctx subject message [email])))
+    (log/info "sending to" email)
+    (-> (send-mail ctx subject message [email]) log/info)))
 
 
 
