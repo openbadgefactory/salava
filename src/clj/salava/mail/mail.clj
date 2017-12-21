@@ -8,34 +8,32 @@
             [slingshot.slingshot :refer :all]
             [salava.core.i18n :refer [t]]))
 
-(defn send-mail [ctx subject message recipients]
+(defn- send-mail-to [mail-host-config msg to]
   (try+
-    (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
-          data {:from    (get-in ctx [:config :core :mail-sender])
-                :bcc      recipients
-                :subject subject
-                :body    [{:type    "text/plain; charset=utf-8"
-                           :content message}]}]
-      (if (nil? mail-host-config)
-        (send-message data)
-        (send-message mail-host-config data)))
+    (log/info "sending to" to)
+    (if (nil? mail-host-config)
+      (send-message (assoc msg :to to))
+      (send-message mail-host-config (assoc msg :to to)))
     (catch Object ex
-      ex)))
+      (log/error ex))))
+
+(defn send-mail [ctx subject message recipients]
+  (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
+        data {:from    (get-in ctx [:config :core :mail-sender])
+              :subject subject
+              :body    [{:type    "text/plain; charset=utf-8"
+                         :content message}]}]
+    (doseq [to recipients]
+      (-> (send-mail-to mail-host-config data to) log/info))))
 
 (defn send-html-mail [ctx subject message recipients]
-  (try+
-    (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
-          data {:from    (get-in ctx [:config :core :mail-sender])
-                :bcc      recipients
-                :subject subject
-                :body    [{:type "text/html; charset=utf-8"
-                           :content message}]}]
-      (if (nil? mail-host-config)
-        (send-message data)
-        (send-message mail-host-config data)))
-    (catch Object _
-      ;TODO log an error
-      )))
+  (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
+        data {:from    (get-in ctx [:config :core :mail-sender])
+              :subject subject
+              :body    [{:type "text/html; charset=utf-8"
+                         :content message}]}]
+    (doseq [to recipients]
+      (-> (send-mail-to mail-host-config data to) log/info))))
 
 (defn send-activation-message [ctx site-url activation-link login-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
@@ -46,8 +44,7 @@
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailactivation7 lng) "\n"
                      login-link
                      " " (t :core/Emailactivation8 lng) ".\n\n--  "site-name " -"(t :core/Team lng))]
-    (log/info "sending to" email-address)
-    (-> (send-mail ctx subject message [email-address]) log/info)))
+    (send-mail ctx subject message [email-address])))
 
 (defn send-password-reset-message [ctx site-url activation-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
@@ -56,9 +53,8 @@
                      ".\n\n" (t :core/Emailactivation4 lng)":\n\n"
                      activation-link
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n--  "
-                      site-name " -"(t :core/Team lng))]
-    (log/info "sending to" email-address)
-    (-> (send-mail ctx subject message [email-address]) log/info)))
+                     site-name " -"(t :core/Team lng))]
+    (send-mail ctx subject message [email-address])))
 
 (defn send-verification [ctx site-url email-verification-link fullname email lng]
   (let [site-name (get-in ctx [:config :core :site-name])
@@ -66,8 +62,7 @@
         message (str fullname "\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-url".\n" (t :core/Emailverification4 lng) ":\n\n"
                      email-verification-link
                      "\n\n" (t :core/Emailverification6 lng)".\n")]
-    (log/info "sending to" email)
-    (-> (send-mail ctx subject message [email]) log/info)))
+    (send-mail ctx subject message [email])))
 
 
 
