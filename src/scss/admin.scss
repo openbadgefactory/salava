@@ -332,3 +332,205 @@
         }
     }
 }
+
+/** RTL **/
+@import 'variables';
+/* TICKETS */
+html[dir="rtl"] #ticket-container {
+    border-left: unset;
+    border-right:3px solid;
+    &.inappropriate {
+        border-left-color: unset;
+        border-right-color: purple;
+    }
+    &.bug {
+        border-left-color: unset;
+        border-right-color: red;
+    }
+    &.fakebadge {
+        border-left-color: unset;
+        border-right-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: unset;
+        border-right-color: DarkCyan;
+    }
+
+}
+
+html[dir="rtl"] .admintool-caret-up{
+    padding-left: unset;
+    padding-right: 5px;
+}
+
+html[dir="rtl"] #private-button{
+    margin:0px 0px 10px 17px;
+}
+
+
+html[dir="rtl"].title-bar {
+    padding-left: unset;
+    padding-right: 5px;
+    //border-right: 3px solid transparent;
+}
+html[dir="rtl"] .media-bottom-admin{
+            margin-top: 5px;
+            padding-top: 10px;
+
+            i.fa {
+
+                padding-right: unset;
+                padding-left: 7px;
+
+            }
+            a.bottom-link {
+                i.fa {
+                    padding-right: unset;
+                    padding-left:10px;
+                }
+
+            }
+}
+html[dir="rtl"] #ticket-container {
+    border-left: unset;
+    border-right:3px solid;
+    &.inappropriate {
+        border-left-color: unset;
+        border-right-color: purple;
+    }
+    &.bug {
+        border-left-color: unset;
+        border-right-color: red;
+    }
+    &.fakebadge {
+        border-left-color: unset;
+        border-right-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: unset;
+        border-right-color: DarkCyan;
+    }
+}
+/* Admin stats */
+html[dir="rtl"] .admin-stats{
+
+    label {
+
+        padding-right: unset;
+        padding-left: 15px;
+        @media (max-width:992px){
+            width:80%;
+        }
+    }
+}
+/* REPORT FORM */
+
+html[dir="rtl"] #profile, #badge-gallery, #page-gallery, #badge-info, #page-view, #badge-content {
+    .row.report-form {
+        a#open-reportform-button {
+
+      padding-right: unset;
+	    padding-left:15px;
+            @media (max-width:1530px){
+                padding-right: unset;
+                padding-left: 15px;
+            }
+        }
+
+        .form-group > label {
+            margin-right: unset;
+            margin-left: 20px;
+        }
+
+    }
+    a#open-reportform-button{
+        float:unset;
+    }
+}
+html[dir="rtl"] #profile {
+    .row.report-form {
+        margin-left:-16px;
+        margin-right:-16px;
+        a#open-reportform-button {
+
+            margin-right:-5px;
+            margin-left: -5px;
+            text-align: left;
+        }
+    }
+}
+
+html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
+    .modal-footer {
+        margin-left: unset;
+        margin-right: 0px;
+       > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+        }
+    }
+    .row.report-form {
+        margin-left: 15px;
+        margin-right:15px;
+    }
+}
+html[dir="rtl"] #page-gallery .modal-dialog .modal-footer {
+
+    > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+html[dir="rtl"] #page-view {
+    .row.report-form {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+html[dir="rtl"] #badge-info {
+    div#reportform {
+           > div:not(.form-group) {
+               border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+/* ADMIN MODALS */
+html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
+    .sub-heading{
+    a{
+        &:before {
+            margin-right: unset;
+            margin-left: 12px;
+        }
+        &.opened:before{
+
+            margin-right: unset;
+            margin-left: 5px;
+        }
+        }
+
+    }
+
+    .issuer-image img {
+        margin-left: unset;
+        margin-right:5px;
+    }
+    .actions .col-md-12:not(.sub-heading) {
+
+        padding-left: unset;
+        padding-right: 35px;
+    }
+}
+

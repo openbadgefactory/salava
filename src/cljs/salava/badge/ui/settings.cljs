@@ -45,7 +45,7 @@
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value}
        :handler (fn [] (do
-                         
+
                          (swap! state assoc-in [:badge-settings :show_evidence] new-value)
                          (swap! state assoc :show_evidence new-value)))})))
 
@@ -113,7 +113,7 @@
                (t :badge/Private)]]]]])
             (if (and (not revoked) (not expired?))
                [:div.form-group
-             [:fieldset {:class "col-md-12 checkbox"}
+             [:fieldset {:class "col-md-12 checkbox fieldset_rtl"}
              [:legend {:class "col-md-12 sub-heading"}
               (t :badge/Earnervisibility)]
               [:div.col-md-12 [:label {:for "show-name"}

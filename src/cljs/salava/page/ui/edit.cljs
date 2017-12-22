@@ -262,7 +262,7 @@
           [:div.move-down {:on-click #(f/move-field :down blocks index)}
            [:i {:class "fa fa-chevron-down"}]])]]
       [:div.field-content
-       [:div.form-group
+       [:div {:class "form-group row_reverse"}
         [:div.col-xs-8
          [block-type block-atom]]
         [:div {:class "col-xs-4 field-remove"
@@ -291,7 +291,7 @@
      (t :page/Addblock)]]])
 
 (defn page-description [description]
-  [:div.form-group
+  [:div {:class "form-group row_reverse"}
    [:label {:class "col-md-2"
             :for "page-description"}
     (t :page/Description)]
@@ -302,7 +302,7 @@
                 :on-change #(reset! description (.-target.value %))}]]])
 
 (defn page-title [name]
-  [:div.form-group
+  [:div {:class "form-group row_reverse"}
    [:label {:class "col-md-2"
             :for "page-name"}
      (t :page/Title)]

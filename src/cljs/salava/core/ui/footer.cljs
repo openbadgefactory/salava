@@ -5,6 +5,12 @@
 (defn base-footer []
   [:footer.footer
    [:div.footer-container
+     [:div
+     [:button {:class "btn btn-primary" :on-click #(do (.preventDefault %)
+                                                       (let [x (.-dir js/document)]
+                                                       (js/console.log x)
+                                                       (if (identical? x "rtl") (set! (.-dir js/document) "ltr") (set! (.-dir js/document) "rtl"))
+                                                       ))} "RTL"]]
     [:p.text-muted
      "Open Badge Passport community edition"]
     [:p.text-muted
