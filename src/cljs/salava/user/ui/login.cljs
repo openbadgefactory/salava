@@ -28,7 +28,6 @@
         path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url "") )]
 
     (session/put! :referrer nil)
-    (js/console.log (str "man referrer: " manual-referrer))
     (cond
       (not (empty? verification-key))  (str "/user/verify_email/" verification-key)
       (and (not (empty? manual-referrer)) (string/starts-with? manual-referrer "/")) manual-referrer
@@ -46,15 +45,12 @@
                   (if (= (:status data) "success")
                     (js-navigate-to (follow-up-url))
                     (swap! state assoc :error-message (:message data))))}
-      ;(swap! state assoc :error-message "user/Loginfailed")
       )))
 
 (defn content [state]
-   (dump js/window.location.search)
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
         error-message-atom (cursor state [:error-message])
-        ;login-info (first (plugin-fun (session/get :plugins) "block" "login_info"))
         ]
     [:div {:id "login-page"}
      [:div {:id "narrow-panel"
@@ -63,7 +59,6 @@
        (if @error-message-atom
          [:div {:class "alert alert-warning"}
           (translate-text @error-message-atom)])
-       ;(if login-info (login-info))
        [:form
         [:div.form-group {:aria-label "email"}
          [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (t :user/Email) :aria-label (t :user/Email)}]]
