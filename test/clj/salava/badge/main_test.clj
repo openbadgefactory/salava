@@ -5,5 +5,5 @@
 
 (t/deftest-ctx main-test [ctx]
   (testing "with correct values"
-    (is (= "http://localhost:3000/app/badge/info/1" (b/badge-url ctx 1)))))
+    (is (= "http://localhost:5000/badge/info/1" (b/badge-url ctx 1)))))
 

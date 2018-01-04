@@ -1,4 +1,4 @@
-(
+      (
  {
   :table "user"
   :data {
@@ -22,7 +22,7 @@
           :ctime 1438954261
           :mtime 1438954261}
    }
- 
+
   {:table "user_email"
    :data {
           :user_id 1
@@ -60,7 +60,7 @@
  {:table "user_properties"
   :data  {
           :user_id 2
-          :name    "user_connect_accepting" 
+          :name    "user_connect_accepting"
           :value   "accepted"}
   }
  {
@@ -90,7 +90,7 @@
  {:table "user_properties"
    :data {
           :user_id 3
-          :name "user_connect_accepting" 
+          :name "user_connect_accepting"
           :value "pending"}
    }
   {
@@ -140,7 +140,7 @@
  {:table "user_properties"
    :data {
           :user_id 5
-          :name "user_connect_accepting" 
+          :name "user_connect_accepting"
           :value "accepted"}
    }
   {
@@ -263,7 +263,7 @@
  {:table "user_properties"
    :data {
           :user_id 10
-          :name "user_connect_accepting" 
+          :name "user_connect_accepting"
           :value "pending"}
   }
  {
@@ -291,6 +291,7 @@
  {:table "user_properties"
    :data {
           :user_id 11
-          :name "user_connect_accepting" 
+          :name "user_connect_accepting"
           :value "declined"}
-   })
+   }
+  )

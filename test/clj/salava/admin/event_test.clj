@@ -7,11 +7,11 @@
 (def test-user {:id 1 :role "user" :private false})
 
 (t/deftest-ctx main-test [ctx]
-  
+
   (testing "Get Admin events"
     (let [connects (event/events ctx (:id test-user))]
-      (is (=  1 (count connects)))
-     
+     (is (= 1  (count connects)))
+
       )))
 ;(migrator/run-test-reset)
 (migrator/reset-seeds (migrator/test-config))
