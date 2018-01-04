@@ -1,0 +1,319 @@
+
+(
+
+  {
+       :table "badge"
+       :data {
+               :id 1
+               :remote_url nil
+               :remote_id nil
+               :remote_issuer_id nil
+               :issuer_verified 0
+               :default_language_code nil
+               :published 0
+               :last_received nil
+               :recipient_count nil}}
+   {
+      :table "badge_content"
+      :data {
+               :id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"
+               :name "Open Badge Passport - Member"
+               :description "This Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage."
+               :image_file "file/e/4/3/c/e43c48360a8a0a6b75caf225d2fab021b3812dc5032b158fa834ae658a3d9b04.png"
+             }}
+
+   {
+       :table "user_badge"
+       :data {
+               :user_id 1
+               :badge_id 1
+               :email "test.user@example.com"
+               :assertion_url "http://example.com/assertion-1.json"
+               :assertion_jws nil
+               :assertion_json "{\"uid\":\"e0d524c88cc2df8ea9ce00cf72f4586ecbf13eb8\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-1.json\",\"verify\":{\"url\":\"http://example.com/assertion-1.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494262\"}"
+               :issued_on 1428494262
+               :expires_on nil
+               :status "accepted"
+               :visibility "private"
+               :show_recipient_name 0
+               :rating nil
+               :ctime 1438954261
+               :mtime 1438954261
+               :deleted 0
+               :revoked 0
+               :show_evidence 0
+  ;;              :last-checked nil
+  ;;              :old_id nil
+               }}
+
+ {
+   :table "badge_tag"
+   :data {
+           :user_badge_id 1
+           :tag "Tag"
+          }}
+
+   {
+       :table "badge_badge_content"
+       :data {
+              :badge_id 1
+              :badge_content_id "da8df30fd44386d82d1c21f7040bdb8d69af2c50d659782e1d568d627d57b1f3"}}
+
+   {
+        :table "criteria_content"
+        :data {
+               :id "fadbc66860da96b905ca29002898d597e7a1683a07169bb0fa169ede4cb73cc7"
+               :url "http://example.com/criteria-1.json"
+               :markdown_text "This Open Badge has been issued to a person, who has created an account to Open Badge Passport / who has taken Open Badge Passport into usage.
+              Open Badge Passport is a free service developed by Discendum, where the user can save / store the Open Badges they’ve earned. The user can share their Open Badges to other users inside the service as well as outside the service to different social media services. Open Badge Passport has also a tool with which the user can create miniportfolio pages consisting of their Open Badges and other content and publish those pages to other users as well as to the internet.
+              **Helpful links**
+              [More information about Open Badge Passport ](https://openbadgepassport.com/en/about)
+              [More information about the Open Badges -concept](http://openbadges.org)
+              [Create your own Open Badge Passport account](https://openbadgepassport.com/en/user/register)"}}
+
+
+   {
+     :table "badge_criteria_content"
+     :data {
+               :badge_id 1
+               :criteria_content_id "fadbc66860da96b905ca29002898d597e7a1683a07169bb0fa169ede4cb73cc7"}}
+
+   {
+     :table "badge_issuer_content"
+     :data {
+             :badge_id 1
+             :issuer_content_id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"}}
+
+  {
+      :table "issuer_content"
+      :data {
+               :id "2cffaf693df38a50a9d3df08c4b51053ac6c7f5ca957ed68a7a695bf1d767d8c"
+               :name "Discendum Oy"
+               :url "http://www.discendum.com"
+               :description "Discendum Oy"
+               :image_file nil
+               :email "info@discendum.com"
+               :revocation_list_url nil}}
+
+   {
+     :table "user_badge_evidence"
+     :data {
+             :user_badge_id 1
+             :ctime 1438954261
+             :mtime 1438954261}}
+
+  {
+   :table "badge_congratulation"
+   :data {
+          :user_badge_id 1
+          :user_id 3
+          :ctime 1459763679}}
+
+
+ {
+      :table "user_badge"
+      :data {
+             :user_id 2
+             :badge_id 2
+             :email "another.user@example.com"
+             :assertion_url "http://example.com/assertion-3.json"
+             :assertion_jws nil
+             :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-3.json\",\"verify\":{\"url\":\"http://example.com/assertion-3.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+             :expires_on nil
+             :status "accepted"
+             :visibility "public"
+             :show_recipient_name 1
+             :rating nil
+             :ctime 1450343848
+             :mtime 1450343848
+             :deleted 0
+             :revoked 0}}
+
+  {
+   :table "badge_content"
+   :data {
+          :id "f6e2a6480a832a29200007cfc602ed7e79b9ccb00b2611c58041e71a681216ea"
+          :name "Badge for testing gallery"
+          :description "This Open Badge has been issued for test purposes only,"
+          :image_file "file/e/f/3/d/ef3da902d0f2ec03210d918b44ba693cdfddd3f166c43f51b4143f55422b7dfe.png"}}
+
+  {
+   :table "criteria_content"
+   :data {
+          :id "3387e2daa896acd073e98f52d29f682f9e394403aec51e8c460b7490b0a64138"
+          :url "http://example.com/criteria-3.json"
+          :markdown_text "### Test criteria\n\nThis badge is used only for testing purposes.
+          * * *
+          1.  List item one
+          2.  List item two"}}
+
+  {
+   :table "issuer_content"
+   :data {
+          :id "406ead52e773027e6c7893a81ff03dad75b0f27d74ca10a465bf6b96dfd0cdb7"
+          :name "Test issuer"
+          :url "http://www.example.com"
+          :description "This is a test issuer"
+          :image_file nil
+          :email "contact@example.com"
+          :revocation_list_url nil }}
+
+   {
+       :table "badge"
+       :data {
+               :id 3
+               :remote_url nil
+               :remote_id nil
+               :remote_issuer_id nil
+               :issuer_verified 0
+               :default_language_code nil
+               :published 0
+               :last_received nil
+               :recipient_count nil}}
+  {
+   :table "user_badge"
+   :data {
+          :user_id 2
+          :badge_id 3
+          :email "another.user@example.com"
+          :assertion_url "http://example.com/assertion-7.json"
+          :assertion_jws nil
+          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-4.json\",\"verify\":{\"url\":\"http://example.com/assertion-7.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+          :issued_on 1453975481
+          :expires_on nil
+          :status "accepted"
+          :visibility "private"
+          :show_recipient_name 1
+          :rating 4
+          :ctime 1453975481
+          :mtime 1453975481
+          :deleted 0
+          :revoked 0}}
+    {
+       :table "badge_badge_content"
+       :data {
+              :badge_id 3
+              :badge_content_id "f6e2a6480a832a29200007cfc602ed7e79b9ccb00b2611c58041e71a681216ea"}}
+
+  {
+     :table "badge_criteria_content"
+     :data {
+               :badge_id 3
+               :criteria_content_id "3387e2daa896acd073e98f52d29f682f9e394403aec51e8c460b7490b0a64138"}}
+
+  {
+     :table "badge_issuer_content"
+     :data {
+             :badge_id 3
+             :issuer_content_id "406ead52e773027e6c7893a81ff03dad75b0f27d74ca10a465bf6b96dfd0cdb7"}}
+  {
+     :table "user_badge_evidence"
+     :data {
+             :user_badge_id 3
+             :ctime 1438954262
+             :mtime 1438954262}}
+  {
+   :table "user_badge"
+   :data {
+          :user_id 4
+          :badge_id 3
+          :email "fourth.user@example.com"
+          :assertion_url "http://example.com/assertion-4.json"
+          :assertion_jws nil
+          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-4.json\",\"verify\":{\"url\":\"http://example.com/assertion-4.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+          :issued_on 1453975481
+          :expires_on nil
+          :status "accepted"
+          :visibility "public"
+          :show_recipient_name 1
+          :rating 4
+          :ctime 1453975481
+          :mtime 1453975481
+          :deleted 0
+          :revoked 0}}
+  {
+   :table "user_badge"
+   :data {
+          :user_id 5
+          :badge_id 3
+          :email "fifth.user@example.com"
+          :assertion_url "http://example.com/assertion-5.json"
+          :assertion_jws nil
+          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-4.json\",\"verify\":{\"url\":\"http://example.com/assertion-5.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+          :issued_on 1453975481
+          :expires_on nil
+          :status "accepted"
+          :visibility "public"
+          :show_recipient_name 1
+          :rating 2.5
+          :ctime 1453975481
+          :mtime 1453975481
+          :deleted 0
+          :revoked 0}}
+    {
+       :table "badge"
+       :data {
+               :id 4
+               :remote_url nil
+               :remote_id nil
+               :remote_issuer_id nil
+               :issuer_verified 0
+
+               :published 0
+               :last_received nil
+               :recipient_count 0
+           }}
+
+  {
+   :table "badge_content"
+   :data {
+          :id "c1a766b5c505e158b4ee1fb3c97df553d7aaac9bcbc49e450a6e71fd1cde8546"
+          :name "Badge for testing gallery 2"
+          :description "This Open Badge has been issued for test purposes only,"
+          :image_file "file/4/e/1/6/4e169f788f9c6dd4c3af1b25404b347304833d334c1270366279d9e85202362.png"}}
+  {
+   :table "user_badge"
+   :data {
+          :user_id 4
+          :badge_id 3
+          :email "fourth.user@example.com"
+          :assertion_url "http://example.com/assertion-6.json"
+          :assertion_jws nil
+          :assertion_json "{\"uid\":\"d553e18cccace2443a5ec3fe4ae7448f0cbafbf2\",\"recipient\":{\"hashed\":true,\"salt\":\"JPS3nqpCFh\",\"identity\":\"sha256$17c20973c6c2c9aeeea3a409df9d9f1fde3a5a8dceed9edbd622b7c1896054b2\",\"type\":\"email\"},\"badge\":\"http://example.com/badge-4.json\",\"verify\":{\"url\":\"http://example.com/assertion-5.json\",\"type\":\"hosted\"},\"evidence\":\"\",\"issuedOn\":\"1428494739\"}"
+          :issued_on 1453975481
+          :expires_on nil
+          :status "accepted"
+          :visibility "internal"
+          :show_recipient_name 1
+          :rating nil
+          :ctime 1453975481
+          :mtime 1453975481
+          :deleted 0
+          :revoked 0}}
+  {
+       :table "badge_badge_content"
+       :data {
+              :badge_id 4
+              :badge_content_id "c1a766b5c505e158b4ee1fb3c97df553d7aaac9bcbc49e450a6e71fd1cde8546"}}
+
+  {
+     :table "badge_criteria_content"
+     :data {
+               :badge_id 4
+               :criteria_content_id "3387e2daa896acd073e98f52d29f682f9e394403aec51e8c460b7490b0a64138"}}
+
+  {
+     :table "badge_issuer_content"
+     :data {
+             :badge_id 4
+             :issuer_content_id "406ead52e773027e6c7893a81ff03dad75b0f27d74ca10a465bf6b96dfd0cdb7"}}
+  {
+     :table "user_badge_evidence"
+     :data {
+             :user_badge_id 3
+             :ctime 1453975481
+             :mtime 1453975481}}
+
+)
+
+

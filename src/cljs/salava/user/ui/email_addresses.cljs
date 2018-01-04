@@ -109,16 +109,16 @@
   [:table.table.hidden-xs
    [:thead
     [:tr
-     [:th (t :user/Email)]
+     [:th {:class "th_rtl"} (t :user/Email)]
      [:th.text-center (t :user/Verified)]
-     [:th (t :user/Actions)]]]
+     [:th {:class "th_rtl"} (t :user/Actions)]]]
    (into [:tbody]
          (for [address (sort-by :ctime (:emails @state))
                :let [{:keys [email verified primary_address]} address]]
            [:tr
             [:td email]
             [:td.text-center (if verified [:i {:class "fa fa-check"}])]
-            [:td (if (and primary_address verified) 
+            [:td (if (and primary_address verified)
                    (t :user/Loginaddress)
                    (email-options email verified primary_address state))]]))])
 
@@ -127,14 +127,14 @@
    [:thead
     [:tr
      [:th (t :user/Email) ]
-     
+
      [:th (t :user/Actions)]]]
    (into [:tbody]
          (for [address (sort-by :ctime (:emails @state))
                :let [{:keys [email verified primary_address]} address]]
            [:tr
             [:td [:div email (if verified [:i {:class "fa fa-check" }])]]
-            [:td (if (and primary_address verified) 
+            [:td (if (and primary_address verified)
                    (t :user/Loginaddress)
                    (email-options email verified primary_address state))]]))])
 

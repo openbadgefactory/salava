@@ -44,7 +44,7 @@
         last-name-atom (cursor state [:user :last_name])
         country-atom (cursor state [:user :country])
         message (:message @state)
-        
+
         email-notifications-atom (cursor state [:user :email_notifications])]
     [:div {:class "panel" :id "edit-user"}
      (if message
@@ -52,24 +52,24 @@
        (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       [:div.form-group
+       [:div {:class "form-group row_reverse"}
         [:label {:for "languages"
                  :class "col-md-3"}
          (t :user/Language)]
         [:div.col-md-9
          [input/radio-button-selector (:languages @state) language-atom]]]
 
-       [:div.form-group
+       [:div{:class "form-group row_reverse"}
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "first-name" :atom first-name-atom}]]]
 
-       [:div.form-group
+       [:div{:class "form-group row_reverse"}
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last-name" :atom last-name-atom}]]]
 
-       [:div.form-group
+       [:div{:class "form-group row_reverse"}
         [:label {:for "input-country"
                  :class "col-md-3"}
          (t :user/Country)]
@@ -97,7 +97,7 @@
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
                                           (input/country-valid? @country-atom)
-                                          
+
                                           )
                                "disabled")
                    :on-click #(do

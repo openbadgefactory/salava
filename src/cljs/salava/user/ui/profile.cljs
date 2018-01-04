@@ -48,7 +48,7 @@
               :on-click #(do
                            (mo/open-modal [:badge :info] {:badge-id id})
                                         ;(b/open-modal id false init-data state)
-                           (.preventDefault %)) } 
+                           (.preventDefault %)) }
             [:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
@@ -57,7 +57,7 @@
                            :on-click #(do
                                         (mo/open-modal [:badge :info] {:badge-id id})
                                         ;(b/open-modal id false init-data state)
-                                        (.preventDefault %)) } 
+                                        (.preventDefault %)) }
           name]]
         [:div.media-issuer
          [:p issuer_content_name]]]]]
@@ -111,25 +111,25 @@
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
-    
+
     [:div.panel {:id "profile"}
      [m/modal-window]
      [:div.panel-body
       (if owner?
         [:div.row
-         (if-not (or (not-activated?) (private?))  
+         (if-not (or (not-activated?) (private?))
            (profile-visibility-input visibility-atom))
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           (if-not (not-activated?)
             [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)])]]
-        [:div 
+        [:div
          (connect-user user-id)
          (admintool user-id "user")])
       [:h1.uppercase-header fullname]
-      
-      [:div.row
+
+      [:div {:class "row row_reverse"}
        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
         [:img.profile-picture {:src (profile-picture profile_picture)
@@ -189,7 +189,7 @@
                          :item-type "" ;badge/user/page/badges
                          :reporter-id ""
                          :status "false"}]
-    
+
     (ajax/GET
      (path-for (str "/obpv1/user/profile/" user-id) true)
      {:handler (fn [data]
@@ -208,7 +208,7 @@
                      :pages-small-view true})
         user (session/get :user)]
     (init-data user-id state)
-    
+
     (fn []
       (cond
         (= "initial" (:permission @state)) (layout/default site-navi [:div])

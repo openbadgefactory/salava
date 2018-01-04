@@ -6,8 +6,8 @@
     [:table {:id "assertion-info"}
      [:thead
       [:tr
-       [:th (t :badge/Property)]
-       [:th (t :badge/Value)]]]
+       [:th {:class "th_rtl"} (t :badge/Property)]
+       [:th {:class "th_rtl"}(t :badge/Value)]]]
      (into
       [:tbody]
       (for [prop-1 (keys assertion)

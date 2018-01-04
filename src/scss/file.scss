@@ -53,3 +53,17 @@
     font-size: 11px;
     color: #8b8b8b;
 }
+
+/*RTL*/
+html[dir="rtl"] #my-files {
+
+    .media-left {
+        padding: 10px 5px 0 15px;
+    }
+
+    #grid-file-upload {
+       left: unset;
+       right: 0;
+
+    }
+}

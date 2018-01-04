@@ -24,7 +24,7 @@
      (if (:error-message @state)
        [:div {:class "alert alert-warning" :role "alert"}
         (translate-text (:error-message @state))])
-     [:div.form-group
+     [:div {:class "form-group row_reverse"}
       [:label {:class "col-xs-3"
                :for "input-password"}
        (t :user/Password)
@@ -39,7 +39,7 @@
                 :on-focus    #(.removeAttribute (.-target %) "readonly")
                 :placeholder (t :user/Tocancelaccountenterpassword)
                 :value       @password-atom}]]]
-     [:button {:class    "btn btn-warning"
+     [:button {:class    "btn btn-warning button-padding"
                :disabled (if-not (password-valid? @password-atom)
                            "disabled")
                :on-click #(cancel-account state)}

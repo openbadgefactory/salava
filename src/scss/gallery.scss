@@ -109,3 +109,32 @@
         }
     }
 }
+
+/**RTL **/
+
+/*BADGE GALLERY*/
+html[dir="rtl"] #badge-gallery {
+    #grid.row .grid-container .media-bottom {
+        float:left;
+    }
+}
+/*PAGE GALLERY*/
+html[dir="rtl"] #page-gallery, #user-pages #grid .grid-container {
+
+    .grid-container .media-content .media-body .media-heading {
+        margin-right: unset;
+        margin-left:0px;
+    }
+}
+/*PROFILE GALLERY*/
+html[dir="rtl"] #profile-gallery #grid {
+    .media.grid-container {
+        .media-content {
+            .media-heading {
+                margin-right: unset;
+                margin-left:0px;
+            }
+        }
+    }
+}
+

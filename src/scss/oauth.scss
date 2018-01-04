@@ -39,3 +39,15 @@
         border: 1px solid #007bb6;
     }
 }
+
+/* RTL */
+html[dir="rtl"]  .btn-oauth {
+    i {
+        padding-right: unset;
+        padding-left: 10px;
+        border-right: unset;
+        border-left: 1px solid #ffffff;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}

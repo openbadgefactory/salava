@@ -111,11 +111,11 @@
        [:div.col-xs-12[:div.pull-right
          (connect-user user-id)]]
         )
-     
+
      [:div {:id "profile"}
       [:div.col-xs-12
        [:h1.uppercase-header fullname]
-       [:div.row
+       [:div {:class "row row_reverse"}
         [:div {:class "col-md-3 col-sm-3 col-xs-12"}
          [:div.profile-picture-wrapper
           [:img.profile-picture {:src (profile-picture profile_picture)
@@ -161,7 +161,7 @@
           [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentpages)]
           [page-grid pages profile_picture @page-small-view]
           (if (< 6 (count pages))
-            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
+            [:div {:class "row row_reverse"}  [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
        [reporttool1 user-id fullname "user"]
        ]]]))
 
@@ -176,7 +176,7 @@
      (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [params]
-  
+
   (let [user-id (:user-id params)
         state (atom {:user-id (:user-id params)
                      :permission "initial"
@@ -184,14 +184,14 @@
                      :pages-small-view true})
         user (session/get :user)]
     (init-data user-id state)
-    
+
     (fn []
       (cond
         (= "initial" (:permission @state)) [:div ""]
-        (and user (= "error" (:permission @state)))(err/error-content) 
-        (= "error" (:permission @state)) (err/error-content) 
-        (= (:id user) (js/parseInt user-id)) (content state) 
-        (and (= "success" (:permission @state)) user)(content state) 
+        (and user (= "error" (:permission @state)))(err/error-content)
+        (= "error" (:permission @state)) (err/error-content)
+        (= (:id user) (js/parseInt user-id)) (content state)
+        (and (= "success" (:permission @state)) user)(content state)
         :else (content state)))))
 
 

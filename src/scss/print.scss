@@ -7,7 +7,7 @@ a[href]::after{
 }
 
 #print-logo {
-    //display: block; TODO theme specific image ?!
+    /*display: block; TODO theme specific image ?!*/
 }
 
 
@@ -58,4 +58,28 @@ a[href]::after{
 }
 footer.footer {
     display: none;
+}
+
+
+/* RTL */
+html[dir="rtl"] #badge-info {
+
+    .col-md-3 {
+        float: right;
+    }
+
+    .col-md-9 {
+        float: right;
+    }
+}
+
+html[dir="rtl"] #page-view {
+
+    .col-md-4 {
+        float: right;
+    }
+
+    .col-md-8 {
+        float: right;
+    }
 }

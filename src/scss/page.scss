@@ -1283,3 +1283,225 @@
         }
     }
 }
+
+/* RTL */
+
+/* GRID */
+ html[dir="rtl"] .pages #grid, #page-gallery #grid, #user-pages #grid, #profile-gallery #grid, #my-files #grid{
+      .media-content {
+        padding-right: unset;
+        padding-left:0px;
+            .media-body {
+                position: relative;
+                 .visibility-icon {
+
+                    position: relative;
+                    right: unset;
+                    left: 0;
+
+                }
+                .media-heading {
+                    margin-right: unset;
+                    margin-left: 35px;
+                }
+                .page-badges {
+                    img {
+                        margin:3px 0px 5px 3px;
+                    }
+                }
+            }
+    }
+    .media-bottom {
+            a.bottom-link {
+            i.fa {
+                   padding-right: unset;
+                    padding-left:0px;
+                }
+
+            }
+    }
+
+}
+
+/* SHARE BUTTONS*/
+ html[dir="rtl"] #page-buttons-share {
+
+    #buttons {
+        float:left;
+    }
+    .share-wrapper {
+        margin-right:150px;
+        margin-left: 220px;
+        @media (max-width:650px){
+            clear:right;
+        }
+    }
+    #share-buttons {
+
+        padding-left: unset;
+        padding-right: 5px;
+    }
+    .checkbox {
+        float:right;
+        margin-right: unset;
+        margin-left: 15px;
+        i {
+            font-size: 20px;
+            margin-right: unset;
+            margin-left: 8px;
+        }
+
+        label {
+            padding-left: unset;
+            padding-right:0px;
+        }
+    }
+    .linkinput, .form-horizontal{
+            margin-right: -150px;
+            margin-left: -220px;
+        }
+}
+/* Content */
+ html[dir="rtl"] .page-content {
+    .panel-left {
+        background-position: top right;
+        padding-left: unset;
+        padding-right: 103px;
+        @media (max-width: 767px) {
+            padding-left: unset;
+            padding-right: 20px;
+        }
+    }
+    .panel-right {
+        background-position: top left;
+        padding-right: unset;
+        padding-left: 103px;
+        @media (max-width: 767px) {
+            padding-right: unset;
+            padding-left: 20px;
+        }
+    }
+
+    a.small-badge-image {
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}
+/* WIZARD */
+ html[dir="rtl"] #buttons {
+    #buttons-right {
+        text-align: left;
+    }
+}
+ html[dir="rtl"] #page-edit {
+
+    .field {
+        .field-move {
+            left:unset;
+            right: 0;
+
+            .move-arrows {
+
+                .move-up {
+
+                    padding: 0 5px 10px 5px;
+                }
+                .move-down {
+
+                    padding: 10px 5px 0 5px;
+                }
+            }
+        }
+        .field-content {
+            border-left: unset;
+            border-right: 1px solid #cccccc;
+            margin-left: unset;
+            margin-right: 25px;
+            .field-remove {
+                text-align: left;
+            }
+            .badge-image {
+                padding-right: unset;
+                padding-left: 40px;
+                text-align: left;
+
+            }
+        }
+    }
+}
+ html[dir="rtl"] #page-edit {
+
+    .page-file-upload {
+      left: unset;
+        right: 0;
+
+    }
+    .html-block-content {
+        .edit-icon {
+            right: unset;
+            left: 15px;
+        }
+    }
+    .add-field-after {
+        .btn-success:before{
+            padding-right: unset;
+            padding-left: 10px;
+        }
+    }
+}
+ html[dir="rtl"] #page-edit, #page-edit-theme, #page-settings, #page-preview {
+    #buttons #buttons-right {
+        .delete-link {
+            margin-right: unset;
+            margin-left: 20px;
+            i {
+                margin-right: unset;
+                margin-left: 5px;
+
+            }
+        }
+    }
+}
+ html[dir="rtl"] #page-edit .field .field-content .field-remove span.remove-button{
+
+   margin-right: unset;
+   margin-left:-10px;
+
+}
+
+ html[dir="rtl"] .select-border-wrapper {
+    float: right;
+    margin-right: unset;
+    margin-left: 15px;
+}
+
+/* THEMES */
+
+
+
+/* THEMES END */
+
+ html[dir="rtl"] .file-block {
+    .attachment {
+        margin-right: unset;
+        margin-left: 15px;
+    }
+}
+
+ html[dir="rtl"] .page-file-icon {
+
+    margin-right: unset;
+    margin-left: 10px;
+}
+
+ html[dir="rtl"] #field-editor {
+    .field {
+        .field-content {
+            .badge-image {
+                padding-right: unset;
+                padding-left: 40px;
+                text-align: left;
+            }
+        }
+    }
+}

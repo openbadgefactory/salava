@@ -3,7 +3,7 @@
             [salava.core.i18n :refer [t]]))
 
 (defn grid-buttons [title buttons key all-key state]
-  [:div.form-group
+  [:div {:class "form-group row_reverse"}
    [:legend {:class "control-label col-sm-2"} title]
    [:div.col-sm-10
     (let [all-checked? (= ((keyword all-key) @state) true)
@@ -34,7 +34,7 @@
               value])))])]])
 
 (defn grid-search-field [title field-name placeholder key state]
-  [:div.form-group
+  [:div {:class "form-group row_reverse"}
    [:label {:class "control-label col-sm-2" :for (str "grid-search-" field-name)} title]
    [:div.col-sm-10
     [:input {:class       (str field-name " form-control")
@@ -47,7 +47,7 @@
                             (swap! state assoc key (-> x .-target .-value)))}]]])
 
 (defn grid-select [title id key options state]
-  [:div.form-group
+  [:div {:class "form-group row_reverse"}
    [:label {:class "control-label col-sm-2" :for id} title]
    [:div.col-sm-10
     [:select {:class "form-control"
@@ -64,7 +64,7 @@
    (grid-radio-buttons title name radio-buttons key state nil))
   ([title name radio-buttons key state func]
    (let [checked (get @state key)]
-     [:fieldset.form-group
+     [:fieldset {:class "form-group row_reverse"}
       [:legend {:class "control-label col-sm-2"} title]
       [:div.col-sm-10
        (for [button radio-buttons]

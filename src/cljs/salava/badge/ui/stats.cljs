@@ -22,9 +22,10 @@
         [:div {:class "row header"}
          [:div.col-md-12
            [:div.col-md-6]
-           [:div.col-md-2 (t :badge/Loggedinusers)]
-           [:div.col-md-2 (t :badge/Anonymoususers)]
-           [:div.col-md-2 (t :badge/Latestview)]]]
+           [:div {:class "row_reverse_table"}
+           [:div {:class "col-md-2 "} (t :badge/Loggedinusers)]
+           [:div {:class "col-md-2 "} (t :badge/Anonymoususers)]
+           [:div {:class "col-md-2 "} (t :badge/Latestview)]]]]
          (into [:div {:class "row body"}]
                (for [badge-views views
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
