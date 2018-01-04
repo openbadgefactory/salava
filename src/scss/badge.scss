@@ -286,14 +286,14 @@ button {
                         display: inline-block;
                         width: auto;
                         margin-bottom:10px;
-                        
+
                     }
                 }
                 .row.header {
                     display: none;
                 }
             }
-            
+
         }
     }
 }
@@ -323,7 +323,7 @@ button {
             padding:0px;
         }
     }
- 
+
     .description {
         font-weight: bold;
         margin: 20px 0 5px 0;
@@ -338,13 +338,15 @@ button {
         .panel-body {
             padding-top:0px;
             @media (max-width:992px){
-                
+
             }
         }
     }
     #badge-share-inputs .col-sm-3.text-right {
         float:right;
     }
+
+
 
     #reportform {
         border: 1px solid #f0f0f0;
@@ -613,7 +615,7 @@ button {
                 position: relative;
                 margin-bottom:5px;
 		margin-right: 3px;
-		
+
             }
             label {
                 padding-left:0px;
@@ -771,3 +773,318 @@ button {
         height: 285px;
     }
 }
+
+/* RTL */
+
+/* PENDING BADGES */
+
+html[dir="rtl"] .pull-label-left{float: right !important;}
+
+html[dir="rtl"] .badge-container-pending {
+
+    .pull-left {
+        padding-right: unset;
+        padding-left: 25px;
+    }
+
+}
+
+
+html[dir="rtl"] .ajax-message {
+
+    span {
+        padding-left: unset;
+        padding-right: 5px;
+    }
+}
+
+/* BADGE SETTINGS */
+html[dir="rtl"] #badge-settings {
+    .settings-content {
+        label {
+            margin-right: 5px;
+            margin-left: 20px;
+        }
+    }
+}
+
+html[dir="rtl"] #badge-settings  {
+    .settings-content .sub-heading, label.sub-heading, legend.sub-heading {
+        margin-left: unset;
+        margin-right:0px;
+    }
+    .delete-button {
+        i {
+            margin-right: unset;
+            margin-left: 5px;
+        }
+    }
+    .settings-content .modal-footer{
+        margin-left: unset;
+        margin-right:0px;
+        padding-left: unset;
+        padding-right: 0px;
+        padding-top:15px;
+        > button.btn-primary {
+            margin-right: unset;
+            margin-left: 20px;
+        }
+    }
+}
+/* BADGE STATS */
+html[dir="rtl"] #badge-stats {
+
+    .panel {
+        .panel-body {
+            padding-top: 5px;
+            table {
+                td, th {
+                    border-bottom: 0px;
+                    border-top: 0px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+                td.name {
+
+                    text-align: right;
+                }
+                th:nth-child(2) {
+                    text-align: right;
+                }
+            }
+            .issuer-badges-wrapper {
+                padding: 5px 15px 15px 15px;
+                .issuer-badges {
+                    a {
+                        padding-right: unset;
+                        padding-left: 15px;
+                    }
+                }
+            }
+
+            .row.body {
+                .col-md-5 {
+                    text-align: right;
+                }
+
+            }
+            @media (max-width:992px){
+                .row.body{
+                    text-align: right;
+                }
+            }
+
+        }
+    }
+}
+/* BADGE INFO */
+html[dir="rtl"] #badge-info {
+
+    h2.uppercase-header {
+        padding: 15px 0 0 0;
+    }
+
+    #badge-share-inputs .col-sm-3.text-right {
+        float:left;
+    }
+
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+
+html[dir="rtl"] #badge-info, #badge-content {
+    .checkbox {
+        margin-right: unset;
+        margin-left: -4px;
+        i {
+            margin-right: unset;
+            margin-left: 8px;
+        }
+
+    }
+    .publishshare {
+        opacity: 0;
+        position: absolute;
+    }
+    .fa-share-alt {
+        font-size: 20px;
+        margin-right: unset;
+        margin-left: 5px;
+    }
+    #badge-share-inputs {
+        padding-bottom: 20px;
+        .linkinput, .form-horizontal{
+            margin-right: -150px;
+            margin-left: -220px;
+        }
+
+        }
+    }
+    .expiresin {
+        i {
+
+            margin-right: unset;
+            margin-left: 5px;
+        }
+    }
+    .share-wrapper {
+        margin-right: 340px;
+        margin-left:150px;
+    }
+    .issuer-data .issuer-links{
+        margin-left: unset;
+        margin-right: 0px;
+    }
+
+
+html[dir="rtl"] #share #share-buttons {
+    i {
+        margin-right: unset;
+        margin-left: 6px;
+    }
+}
+
+
+
+
+
+html[dir="rtl"] .issued-on {
+    label {
+        margin-right: unset;
+        margin-left: 5px;
+    }
+}
+
+html[dir="rtl"] .issuer-data {
+
+    .issuer-links{
+        margin-left: unset;
+        margin-right: 5px;
+    }
+}
+
+html[dir="rtl"] .issuer-image {
+            img {
+                margin-left: 10px;
+                margin-right: 0px;
+
+            }
+        }
+
+html[dir="rtl"] .issuer-description{
+          margin-right: 20px;
+          margin-left: 5px;
+}
+
+/* BADGE GRID */
+html[dir="rtl"] #badge-gallery, #my-badges, #export-badges, .import-badges, #user-badges {
+    #grid .grid-container {
+        float: right;
+        margin-right: unset;
+        margin-left: 20px;
+    .media-content {
+        .icons {
+            text-align: right;
+        }
+        .visibility-icon {
+            text-align: left;
+        }
+        .media-body{
+
+            .media-heading{
+                margin:15px 0px 5px 0px;
+
+            }
+        }
+
+    }
+    .media-bottom{
+        a.bottom-link, a.badge-download {
+            i.fa {
+
+                padding-right: unset;
+                padding-left: 0px;
+            }
+
+        }
+        .checkbox {
+            input{
+
+    margin-right: unset;
+		margin-left: 3px;
+
+            }
+            label {
+                padding-left: unset;
+                padding-right:0px;
+                span {
+                    padding-left: unset;
+                    padding-right:8px;
+                }
+            }
+        }
+
+    }
+
+        }
+        .visibility-icon, .lefticon {
+            i {
+
+                margin-right: unset;
+                margin-left: 8px;
+            }
+        }
+        .icons {
+            text-align: right;
+            .visibility-icon {
+
+
+                i {
+                    margin-right: unset;
+                    margin-left:0px;
+                }
+            }
+        }
+        .righticon {
+            float: left;
+        }
+        &~.media-bottom{
+            div:before{
+                padding-right: unset;
+                padding-left: 7px;
+                float: right;
+
+            }
+
+        }
+
+}
+
+/* IMPORT BADGES */
+html[dir="rtl"] .import-badges #grid.row .grid-container{
+    &.error{
+        .media-bottom {
+            div:before{
+                padding-right: unset;
+                padding-left: 7px;
+                float: right;
+
+            }
+        }
+    }
+    &.duplicate{
+        .media-bottom {
+            div:before {
+                padding-right: unset;
+                padding-left: 7px;
+
+            }
+        }
+    }
+}
+

@@ -64,7 +64,7 @@ button {
     margin: 0 3px 6px 0;
     &.btn-active, &.btn:hover{
         color: #ffffff;
-        background-color: darken($text-color,20% );//#463c44;
+        background-color: darken($text-color,20% );/*#463c44*/;
         border-color: darken($text-color,25% );
         box-shadow: 0px 2px $box-shadow;
     }
@@ -185,6 +185,7 @@ select.form-control  {
 input[type=checkbox], input[type=radio] {
     margin-top:6px;
 }
+
 .radio-inline{
     margin-right:15px;
     margin-left: 0px !important;
@@ -459,7 +460,7 @@ ul.side-dropdown-links {
 .main-container {
     margin-top: 15px;
     margin-bottom: 30px;
-    
+
 }
 
 #content {
@@ -486,7 +487,7 @@ ul.side-dropdown-links {
     label {
         text-align: left;
     }
-    
+
 }
 #grid.row {
     margin:0px;
@@ -660,7 +661,7 @@ body.anon {
             }
         }
     }
-   
+
     .navbar-toggle {
         //display: none;
     }
@@ -697,15 +698,15 @@ body.anon {
 /*logos*/
 
 .logo-image-icon {
-    background-size:     cover;                     
+    background-size:     cover;
     background-repeat:   no-repeat;
-    background-position: center center; 
+    background-position: center center;
 }
 
 .logo-image {
-    background-size:     cover;                     
+    background-size:     cover;
     background-repeat:   no-repeat;
-    background-position: center center;  
+    background-position: center center;
 }
 .logo-image-url{
     width: 200px;
@@ -787,7 +788,7 @@ body.anon {
 
     }
     .margin-bottom{
-	
+
 	margin-bottom:15px
     }
     .image-view {
@@ -802,8 +803,350 @@ body.anon {
     .chosen{
         font-weight:700 !important;
     }
-    
+
 }
 .inline{
     display:inline;
+}
+
+/* RTL */
+html[dir="rtl"] .button-padding {
+  position: relative !important;
+  margin-left: -100px;
+}
+
+html[dir="rtl"] .th_rtl{
+  text-align: start !important;}
+/*manually flip contents of container*/
+
+.row_reverse_header{
+  display:flex;
+  justify-content: space-around;
+  flex-wrap: nowrap;
+  flex-direction: row
+}
+
+html[dir="rtl"] .row_reverse_header{
+  display:flex;
+  justify-content: space-around;
+  flex-wrap: nowrap;
+  flex-direction: row
+}
+
+html[dir="rtl"] .row_reverse_table{
+  display:flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  flex-direction: row;
+}
+
+html[dir="rtl"] .row_reverse_pages{
+  display:flex;
+  flex-wrap: wrap;
+  flex-direction: row
+}
+
+
+
+html[dir="rtl"] .fieldset_rtl{ margin-left: 20px;}
+
+/* .row_reverse{
+  display:flex;
+  margin-buttom:5px;
+  flex-wrap: nowrap;
+  flex-direction: row} */
+
+ html[dir="rtl"] .row_reverse{
+
+  display:flex;
+  margin-buttom:5px;
+  flex-wrap: nowrap;
+  flex-direction: row}
+
+html[dir="rtl"] .row_reverse_modal{
+
+  display:flex;
+  margin-buttom:5px;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  flex-direction: row}
+
+/* BUTTONS */
+
+
+html[dir="rtl"].btn {
+    margin-right: unset;
+    margin-left: 3px;
+}
+
+html[dir="rtl"] #grid-filter .btn, #buttons .col-xs-8 .btn {
+    margin: 0 0 6px 3px;
+    }
+
+
+
+
+html[dir="rtl"] a#login-button {
+
+    @media (max-width: 496px){
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}
+
+html[dir="rtl"] .settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
+
+    &:before {
+
+        margin-right: unset;
+        margin-left: 5px;
+        float:right;
+    }
+}
+
+/* FORM */
+
+html[dir="rtl"] select.form-control  {
+    background: #FFF url(/img/down_arrow.png) no-repeat top left;
+}
+
+html[dir="rtl"] input[type=checkbox], input[type=radio] {
+
+    margin-top: 4px;
+    margin-left: unset;
+    margin-right: -18px;
+
+}
+
+html[dir="rtl"].radio-inline{
+    margin-left:15px;
+    margin-right: 0px !important;
+}
+
+
+html[dir="rtl"] fieldset.checkbox {
+    padding-left: unset;
+    padding-right: 0px;
+}
+
+html[dir="rtl"] .tag-labels {
+    .label {
+        margin-right: unset;
+        margin-left: 5px;
+        a.remove-tag {
+            margin-left: unset;
+            margin-right: 5px;
+
+        }
+    }
+}
+
+html[dir="rtl"] .form-bar {
+    padding-right: unset;
+    padding-left: 5px;
+    border-right: unset;
+    border-left: 3px solid transparent;
+}
+
+/* NAVI */
+
+//MAIN HEADER - right navbar margin
+html[dir="rtl"] #main-header{
+    @media (max-width: 1100px) and (min-width: 768px){
+        margin-right: unset;
+        margin-left: 3px;
+    }
+}
+
+
+
+html[dir="rtl"] ul#secondary-menu-links {
+    float: right;
+    padding-left: unset;
+    padding-right: 0px;
+    border-left: unset;
+    border-right: 2px solid $icon-color;
+    li {
+        a {
+            i.fa {
+                color: $badge-title;
+                padding-right: unset;
+                padding-left: 10px;
+            }
+        }
+    }
+}
+
+html[dir="rtl"] .userpic {
+    float: left;
+}
+
+
+
+
+html[dir="rtl"] ul.side-dropdown-links {
+    padding-left: unset;
+    padding-right: 18px;
+    > li {
+        list-style: none;
+    }
+}
+
+
+
+/* GRID */
+html[dir="rtl"] #grid-filter {
+    padding-right: unset;
+    padding-left: 15px;
+    label {
+        text-align: right;
+    }
+
+}
+
+ @media (min-width: 992px){
+html[dir="rtl"] #grid .col-md-4 {
+    width: auto;
+    padding-right: 0px;
+    padding-left: 20px;
+}}
+
+
+
+/* custom rateit jquery-plugin styles */
+html[dir="rtl"] .rateit .rateit-selected {
+    background-position: right -32px;
+}
+
+/* share buttons */
+html[dir="rtl"] #share {
+    #share-buttons {
+        //padding: 10px 15px 5px 15px;
+        .share-button {
+            margin-right: unset;
+            margin-left: 3px;
+            vertical-align: top;
+            display: inline-block;
+            line-height: 1;
+            .fb-share {
+                margin-top: -2px;
+            }
+            #tweet-button {
+                width:60px !important;
+            }
+        }
+        .share-link {
+            vertical-align: top;
+            display: inline-block;
+            margin-left: unset;
+            margin-right: 10px;
+            a {
+                color: $text-color;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+html[dir="rtl"] .media-left{
+  padding-right: unset !important;
+  padding-left: 10px;
+}
+
+html[dir="rtl"] .float_left {
+  float:left;
+  margin-right: 18.5%;
+}
+
+
+//Forced LTR
+html[dir="rtl"] .forced-ltr {
+  direction: ltr !important;
+  display:inline-block}
+
+
+html[dir="rtl"] .modal-content {
+    .modal-footer {
+        text-align: right;
+    }
+}
+
+html[dir="rtl"] .alert-warning, .alert-danger{
+    border-left: unset;
+    border-right:3px solid $dark-red;
+}
+
+html[dir="rtl"] #my-files .modal-content {
+    .modal-footer{
+        margin-left: unset;
+        margin-right: 0px;
+    }
+}
+.panel img {
+    //max-width: 100%;
+}
+
+
+    @media (max-width:550px){
+        html[dir="rtl"].container-fluid{
+            padding:0px;
+        }
+        header#navbar {
+            padding:0px 25px 0px 10px;
+        }
+    }
+    @media (max-width:360px){
+        .logo-main {
+            display: none;
+        }
+        .logo-icon {
+            display: block;
+        }
+
+}
+
+/*Columns*/
+
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+html[dir="rtl"] .col-centered {
+    /* reset the text-align */
+    text-align:right;
+    /* inline-block space fix */
+    margin-right: unset;
+    margin-left:-4px;
+}
+
+html[dir="rtl"] .btn-fix {
+    margin-left: unset;
+    margin-right: 1px;
+}
+
+
+/* Badge certification*/
+
+html[dir="rtl"] .btn-oauth {
+    i {
+        padding-right: unset;
+        padding-left: 10px;
+        border-right: unset;
+        border-left: 1px solid #ffffff;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+
+}
+
+html[dir="rtl"] .badge-language-selector {
+    a {
+  margin-right: unset;
+	margin-left:5px;
+    }
+
 }

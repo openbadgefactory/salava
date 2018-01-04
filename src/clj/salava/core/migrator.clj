@@ -85,6 +85,7 @@
 (defn run-seed [conf plugin]
   (when-let [data-file (io/resource (str (seed-dir plugin) "/data.edn"))]
     (log/info "running seed functions for plugin" (plugin-str plugin))
+    (seed-delete conf data-file)
     (seed-insert conf data-file)
     (seed-copy conf plugin)))
 

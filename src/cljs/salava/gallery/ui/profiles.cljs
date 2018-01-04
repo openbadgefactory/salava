@@ -37,7 +37,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div {:class "form-group row_reverse "}
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -51,7 +51,7 @@
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div {:class "form-group row_reverse "}
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -68,8 +68,8 @@
 
 (defn common-badges-checkbox [state]
   (let [common-badges-atom (cursor state [:common-badges?])]
-    [:div.form-group
-     [:div {:class "col-sm-10 col-sm-offset-2"}
+    [:div {:class "form-group row_reverse "}
+     [:div {:class "col-sm-10 col-sm-offset-2 float_left"}
       [:div.checkbox
        [:label
         [:input {:type "checkbox"
@@ -80,7 +80,7 @@
 
 (defn order-buttons [state]
   (let [order-atom (cursor state [:order_by])]
-    [:div.form-group
+    [:div {:class "form-group row_reverse "}
      [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
      [:div.col-sm-10
       [:label.radio-inline {:for "radio-date"}
@@ -139,12 +139,12 @@
       [:div.common-badges
        (if (= id current-user)
          (t :gallery/ownprofile)
-         [:span common_badge_count " " (if (= common_badge_count 1)
+         [:span {:class "forced-ltr"}  common_badge_count  " " (if (= common_badge_count 1)
                                          (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]))
 
 (defn profile-gallery-grid [state]
   (let [users (:users @state)]
-    (into [:div {:class "row"
+    (into [:div {:class "row row_reverse"
                  :id    "grid"}]
           (for [element-data users]
             (profile-gallery-grid-element element-data)))))

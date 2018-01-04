@@ -43,11 +43,11 @@
                     (reset! status (if (= "true" @status) "false" "true")))}  (if closed? (t :admin/Reportproblem) (t :core/Close))])
 
 (defn reportform [state status]
-  (let [description-atom (cursor state [:description]) 
+  (let [description-atom (cursor state [:description])
         report-type-atom (cursor state [:report-type])]
     [:div  {:class "row report-form"}
      (open-reportform-button false status)
-     
+
      [:div {:class "col-xs-12" :id "reportform"}
       [:h4 (t :admin/Reportproblem)]
       [:div.form-group
@@ -77,7 +77,7 @@
                    :name     "visibility"
                    :checked  (= @report-type-atom "bug")
                    :onChange #(reset! report-type-atom "bug")}]
-          (t :admin/bug)]] 
+          (t :admin/bug)]]
         [:div.radio
          [:label
           [:input {:type     "radio"
@@ -95,12 +95,12 @@
                    }]
           (t :admin/other)]]]
        [:div.form-group
-        [:label 
+        [:label
          (str (t :admin/Description) ":")]
         [:textarea {:class    "form-control"
                     :rows     "5"
                     :value    @description-atom
-                    :onChange #(reset! description-atom (.-target.value %))}]]   
+                    :onChange #(reset! description-atom (.-target.value %))}]]
        [:div.form-group
         [:button {:class    "btn btn-primary"
                   :on-click #(do
@@ -116,7 +116,7 @@
 
 (defn url-creator [item-type id]
   (cond
-    (= item-type "badges") (path-for (str "/gallery/badgeview/" id))  
+    (= item-type "badges") (path-for (str "/gallery/badgeview/" id))
     (= item-type "page") (path-for (str "/page/view/" id))
      (= item-type "user") (path-for (str "/user/profile/" id))
     :else (current-path)))
@@ -134,14 +134,14 @@
                      :status "false"})
         status (cursor state [:status])
         reporter-id (:reporter-id @state)]
-    
+
     (fn []
-      
+
       (if reporter-id
         [:div
          (cond
            (= @status "false") (open-reportform-button true status)
            (= @status "true")  (reportform state status)
-           (= @status "sent")  (confirmedtext) 
+           (= @status "sent")  (confirmedtext)
          :else               "")]
         ""))))

@@ -5,14 +5,16 @@
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
+
 (defn error-handler [additional-error-fn]
   {:error-handler (fn [{:keys [status status-text]}]
                     (do
                       (if (and (not (session/get :user)) (= status 401))
-                        (navigate-to "/user/login")
+                       (do
+                         (session/put! :referrer (.-location.pathname js/window))
+                        (navigate-to "/user/login"))
                         (additional-error-fn))
                       ))})
-
 (defn loading-message []
   [:div.ajax-message
    [:i {:class "fa fa-cog fa-spin fa-2x "}]

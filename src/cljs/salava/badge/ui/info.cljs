@@ -59,7 +59,7 @@
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value}
        :handler (fn [] (swap! state assoc :show_evidence new-value))})))
-       
+
 (defn show-settings-dialog [badge-id state init-data]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
@@ -79,7 +79,7 @@
   (ajax/POST
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
-    
+
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
@@ -104,7 +104,7 @@
      [:div.panel
       [:div.panel-body
        (if (and owner? (not expired?) (not revoked))
-         [:div.row {:id "badge-share-inputs"}
+         [:div {:class "row" :id "badge-share-inputs"}
           (if-not (private?)
             [:div.pull-left
              [:div {:class (str "checkbox " visibility)}
@@ -140,7 +140,7 @@
            (admintool id "badge")))
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-         [:div.row
+         [:div {:class "row row_reverse"}
           [:div {:class "col-md-3 badge-image"}
            [:div.row
             [:div.col-xs-12
@@ -195,7 +195,7 @@
              [:h1.uppercase-header name]
              (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
              (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
-             
+
              (if (and issued_on (> issued_on 0))
                [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
@@ -245,7 +245,7 @@
         user (session/get :user)]
     (init-data state id)
     (fn []
-      
+
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
