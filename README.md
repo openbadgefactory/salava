@@ -29,33 +29,114 @@ The code is known to work with Ubuntu Linux, Oracle Java 8 and MariaDb 10. We us
 [Leiningen](http://leiningen.org/) as dependency manager. For building scss files you need a sass
 compiler, such as [sassc](https://github.com/sass/sassc). On OS X you can use [Homebrew](http://brew.sh):
 
+Install sass compiler
+
+  MacOS Users
+
     $ brew install sassc
 
-Install the database. With Homebrew:
+  Linux Users
+  -- a system installation of sassc is recommended
 
-    $ brew install mariadb
+   1 Install libtool
+
+    apt-get install autotools-dev autoconf libtool # Alpine
+    yum install automake libtool # RedHat Linux
+
+   2 Get sources
+    # using git is preferred
+
+    git clone https://github.com/sass/libsass.git
+    git clone https://github.com/sass/sassc.git
+
+   3 Compile LibSass
+
+      #Create configure script
+
+        cd libsass  #navigate to libsass repo
+        autoreconf --force --install
+        cd ..
+
+      #then create custom makefiles
+
+        cd libsass
+        ./configure \
+        --disable-tests \
+        --enable-shared \
+        --prefix=/usr
+        cd ..
+
+      #Then build the library
+
+        make -C libsass -j4
+
+      #Install the library
+
+        make -C libsass install
+
+  4 Compile SassC
+
+      #Create configure script
+
+        cd sassc  #navigate to libsass repo
+        autoreconf --force --install
+        cd ..
+
+      #then create custom makefiles
+
+        cd sassc
+        ./configure \
+        --enable-shared \
+        --prefix=/usr
+        cd ..
+
+      #Then build the library
+
+        make -C sassc -j4
+
+      #Install the library
+
+        make -C sassc install
+
+      #Check if compiler installed properly
+
+        sassc --version
+
+Install the database.
+
+    #MacOs
+      $ brew install mariadb
+
+    #Linux
+      $ sudo apt-get install mariadb-server
+
+
 
 Start the database:
 
-    mysql.server start
+    #MacOS
+      $ mysql.server start
+
+    #Linux
+      $ sudo mysqld
+
 
 Create the database:
 
-    mysql -uroot
-    create database salava;
-    create database salava_test;
-    create user salava identified by 'salava';
-    grant all privileges on salava.* to 'salava'@'localhost';
-    grant all privileges on salava_test.* to 'salava'@'localhost';
-    quit
+    $mysql -u root -p
+    >create database salava;
+    >create database salava_test;
+    >create user 'salava'@'localhost' identified by 'salava';
+    >grant all privileges on salava.* to 'salava'@'localhost';
+    >grant all privileges on salava_test.* to 'salava'@'localhost';
+    >quit
 
 Create your config files for development and testing:
 
     $ cp resources/config/core.edn.base resources/config/core.edn
     $ cp resources/test_config/core.edn.base resources/test_config/core.edn
 
-Edit the files and add your db settings etc. (Don't forget to create the
-databases as well).
+Edit the files and add your db settings etc.
 
 Create a directory to store files that are uploaded or created by Salava. Add
 the directory to the config file (keyword :data-dir).
@@ -87,17 +168,16 @@ After that:
 
 ## TODO
 
-- OAuth
+- OAuth (Google)
 - Full text search
-- User groups
 - Admin tools
+- Fix existing tests
 - More tests
-
 
 
 ## License
 
-Copyright (c) 2015-2016 Discendum Oy and contributors.
+Copyright (c) 2015-2017 Discendum Oy and contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

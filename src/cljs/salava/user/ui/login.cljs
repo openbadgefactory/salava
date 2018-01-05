@@ -13,15 +13,25 @@
             [salava.user.schemas :as schemas]
             [salava.core.i18n :refer [t translate-text]]))
 
+(defn verification-token [url]
+  (if-let [match (re-find #"verification_key=([\w-]+)" url) ]
+    (second match)))
+
 (defn follow-up-url []
-  (let [referrer js/document.referrer
+
+  (let [
+        verification-key (verification-token js/window.location.search)
+        manual-referrer (session/get :referrer)
+        referrer js/document.referrer
         site-url (str (session/get :site-url) (base-path))
-        path (if (and referrer site-url (string/starts-with? referrer site-url))
-               (string/replace referrer site-url ""))]
-    (if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
-      "/social/stream"
-      path)
-    ))
+        path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url "") )]
+
+    (session/put! :referrer nil)
+    (cond
+      (not (empty? verification-key))  (str "/user/verify_email/" verification-key)
+      (and (not (empty? manual-referrer)) (string/starts-with? manual-referrer "/")) manual-referrer
+      (and (not (empty? path)) (not= "/user/login" path) (not= path (path-for "/user/login"))) path
+      :else "/social/stream")))
 
 (defn login [state]
   (let [{:keys [email password]} @state]
@@ -33,14 +43,13 @@
                   (if (= (:status data) "success")
                     (js-navigate-to (follow-up-url))
                     (swap! state assoc :error-message (:message data))))}
-      ;(swap! state assoc :error-message "user/Loginfailed")
       )))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
         error-message-atom (cursor state [:error-message])
-        ;login-info (first (plugin-fun (session/get :plugins) "block" "login_info"))
+
         ]
     [:div {:id "login-page"}
      [:div {:id "narrow-panel"
@@ -91,4 +100,5 @@
     (if (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))
     (fn []
+
       (layout/landing-page site-navi (content state)))))

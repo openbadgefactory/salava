@@ -38,44 +38,40 @@
 (defn send-activation-message [ctx site-url activation-link login-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
         subject (str (t :core/Welcometo lng) " " site-name (t :core/Service lng))
-        message (str fullname
-                     ",\n\n" (t :core/Emailactivation2 lng) " " site-url  ".\n" (t :core/Emailactivation4 lng) ":\n\n"
+        message (str (t :core/Hello lng) " " fullname
+                     ",\n\n" (t :core/Emailactivation2 lng) " " site-name  ".\n" (t :core/Emailactivation4 lng) ":\n\n"
                      activation-link
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailactivation7 lng) "\n"
                      login-link
-                     " " (t :core/Emailactivation8 lng) ".\n\n--  "site-name " -"(t :core/Team lng))]
+                     " " (t :core/Emailactivation8 lng) ".\n\n"
+                     (t :user/Emailnotificationtext4 lng) ", " site-name " " (t :core/Team lng))]
     (send-mail ctx subject message [email-address])))
 
 (defn send-password-reset-message [ctx site-url activation-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
         subject (str  site-name " " (t :core/Emailresetheader lng))
-        message (str fullname ",\n\n" (t :core/Emailresetmessage1 lng) " " site-url
+        message (str (t :core/Hello lng) " " fullname ",\n\n" (t :core/Emailresetmessage1 lng) " " site-name
                      ".\n\n" (t :core/Emailactivation4 lng)":\n\n"
                      activation-link
-                     "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n--  "
-                     site-name " -"(t :core/Team lng))]
+                     "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n"
+                     (t :user/Emailnotificationtext4 lng) ", " site-name " " (t :core/Team lng))]
     (send-mail ctx subject message [email-address])))
 
 (defn send-verification [ctx site-url email-verification-link fullname email lng]
   (let [site-name (get-in ctx [:config :core :site-name])
         subject (str (t :core/Emailverification1 lng) " " site-name )
-        message (str fullname "\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-url".\n" (t :core/Emailverification4 lng) ":\n\n"
+        message (str (t :core/Hello lng) " " fullname ",\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-name".\n" (t :core/Emailverification4 lng) ":\n\n"
                      email-verification-link
-                     "\n\n" (t :core/Emailverification6 lng)".\n")]
+                     "\n\n" (t :core/Emailverification6 lng)".\n\n"
+                     (t :user/Emailnotificationtext4 lng) ", " site-name " " (t :core/Team lng))]
     (send-mail ctx subject message [email])))
-
-
-
-
 
 
 (defn get-fragments
   ([ctx type] (get-fragments ctx nil nil type))
   ([ctx user lng type]
-   (let [funs (plugin-fun (get-plugins ctx) "mail" "get-fragment")] 
-     (remove nil? (map (fn [f] (try (f ctx user lng type) (catch Throwable _))) funs))
-     ))
-  )
+   (let [funs (plugin-fun (get-plugins ctx) "mail" "get-fragment")]
+     (remove nil? (map (fn [f] (try (f ctx user lng type) (catch Throwable _))) funs)))))
 
 
 (def style-string (slurp (io/resource "public/css/email.css")))
@@ -106,7 +102,6 @@
         [:tr.emailTitle
          [:td
           banner]]]]]]))
-
 
 
 (defn html-mail-header-title [text]
@@ -151,9 +146,6 @@
           [:p (str (t :user/Emailnotificationtext4 lng) ",") ]
           [:p site-name " - "(t :core/Team lng)]
           ]]]]]]))
-
-
-
 
 
 (defn html-mail-template [ctx user lng subject type]
@@ -217,8 +209,4 @@
          [:br]
         [:br]
         footer
-        "<!-- Email wrapper : END -->"]
-       
-       
-       ))
-    ))
+        "<!-- Email wrapper : END -->"]))))

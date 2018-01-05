@@ -14,19 +14,20 @@
    :country "US"
    :password "123456"
    :language "fi"
-   :password-verify "123456"})
+   :password_verify "123456"
+   })
 
 
 
 (t/deftest-ctx main-test [ctx]
   (testing "register user "
     (testing "register user with correct data"
-      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password-verify registration-data))]
+      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password_verify registration-data))]
         (is (=  "success" (:status connect)))
         (is (=  "" (:message connect)))
         ))
     (testing "register user again with same data"
-      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password-verify registration-data))]
+      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password_verify registration-data))]
         (is (=  "error" (:status connect)))
         (is (=  "user/Enteredaddressisalready" (:message connect)))
         )))
@@ -41,16 +42,16 @@
         (let [login (db/login-user ctx (:email registration-data) (:password registration-data))]
           (is (= "error" (:status login)))
           (is (= "user/Loginfailed" (:message login)))))
-      
+
       (testing " check can login with user"
         (let [emails (db/email-addresses ctx (:id registered-user))]
-          (is (= "deleted-test.registration@example.com.so.deleted" (:email (first emails))))))
-      
+           (is (= "deleted-test.registration@example.com.so.deleted" (:email (first emails))))))
+
       ))
-  
+
   (testing "register user and  verify email"
     (testing "register user with correct data"
-      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password-verify registration-data))]
+      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password_verify registration-data))]
         (is (=  "success" (:status connect)))
         (is (=  "" (:message connect)))
         ))
@@ -74,14 +75,14 @@
         (let [login (db/login-user ctx (:email registration-data) (:password registration-data))]
           (is (= "error" (:status login)))
           (is (= "user/Loginfailed" (:message login)))))
-      
+
       (testing " check can login with user"
         (let [emails (db/email-addresses ctx (:id registered-user))]
           (is (= "deleted-test.registration@example.com.so.deleted" (:email (first emails))))))
-      
+
       ))
 
-  
+
   )
 
 ;(migrator/run-test-reset)

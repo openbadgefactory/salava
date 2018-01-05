@@ -12,6 +12,7 @@
             [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]))
 
+
 (defn follow-up-url []
   (let [referrer js/document.referrer
         site-url (str (session/get :site-url) (base-path))
@@ -40,7 +41,34 @@
                    (swap! state assoc :error-message (:message data))
                    (js-navigate-to (follow-up-url))))})))
 
-(defn registration-form [state]
+(defn verify-registration-data
+  "Verifies registration form data"
+  [state]
+  (let [email-atom (cursor state [:email])
+        first-name-atom (cursor state [:first-name])
+        language-atom (cursor state [:language])
+        last-name-atom (cursor state [:last-name])
+        country-atom (cursor state [:country])
+        languages (:languages @state)
+        validation-message (cursor state [:error-message])
+        password-atom (cursor state [:password])
+        password-verify-atom (cursor state [:password-verify])]
+
+
+        (cond
+          (not (input/email-valid? @email-atom)) (reset! validation-message (t :user/Invalidemail))
+          (not (input/password-valid? @password-atom)) (reset! validation-message (t :user/Invalidpassword))
+          (not (input/password-valid? @password-verify-atom)) (reset! validation-message (t :user/Invalidpassword))
+          (not (input/first-name-valid? @first-name-atom)) (reset! validation-message (t :user/FirstNameInvalidinput))
+          (not (input/last-name-valid? @last-name-atom)) (reset! validation-message (t :user/LastNameInvalidinput))
+          (not (input/country-valid? @country-atom)) (reset! validation-message (t :user/InvalidCountryInput))
+          (not (input/language-valid? @language-atom)) (reset! validation-message (t :user/InvalidLanguageInput))))
+          :else (send-registration state))
+
+
+(defn registration-form
+  "Registration form"
+  [state]
   (let [email-atom (cursor state [:email])
         first-name-atom (cursor state [:first-name])
         language-atom (cursor state [:language])
@@ -51,9 +79,9 @@
         password-atom (cursor state [:password])
         password-verify-atom (cursor state [:password-verify])]
     [:form {:class "form-horizontal"}
-     (if (:error-message @state)
-       [:div {:class "alert alert-danger" :role "alert"}
-        (translate-text (:error-message @state))])
+
+     (when   (and (:error-message @state) (not (string/blank? (:error-message @state))))
+       [:div {:class "alert alert-danger" :role "alert"} (translate-text (:error-message @state))])
 
      [:div.form-group
       [:label {:class "col-sm-4"
@@ -64,7 +92,7 @@
        [:div {:class (str "form-bar " (if (input/email-valid? @email-atom) "form-bar-success" "form-bar-error"))}
         (if email-whitelist
           [input/email-whitelist email-whitelist email-atom]
-          
+
           [input/text-field {:name "email" :atom email-atom}])]]
       #_[:div.col-xs-12
        (t :user/Emailinfotext)]]
@@ -75,7 +103,7 @@
        (t :user/Password)
        [:span.form-required " *"]]
        [:div.col-sm-8
-        [:div {:class (str "form-bar " (if (and (input/password-valid? @password-atom) (=@password-atom @password-verify-atom))  "form-bar-success" ""))}         
+        [:div {:class (str "form-bar " (if (and (input/password-valid? @password-atom) (=@password-atom @password-verify-atom))  "form-bar-success" ""))}
          [:input {:class     "form-control"
                   :id        "input-password"
                   :type      "password"
@@ -88,7 +116,7 @@
        (t :user/Verifypassword)
        [:span.form-required " *"]]
       [:div.col-sm-8
-       [:div {:class (str "form-bar " (if (and (input/password-valid? @password-verify-atom) (=@password-atom @password-verify-atom)) "form-bar-success" ""))}        
+       [:div {:class (str "form-bar " (if (and (input/password-valid? @password-verify-atom) (=@password-atom @password-verify-atom)) "form-bar-success" ""))}
         [:input {:class     "form-control"
                  :id        "input-password-verify"
                  :type      "password"
@@ -113,7 +141,7 @@
         [:div {:class (str "form-bar " (if (input/last-name-valid? @last-name-atom) "form-bar-success" "form-bar-error"))}
          [input/text-field {:name "last-name" :atom last-name-atom}]]]]
 
-      
+
       [:div.row
        [:div.form-group.margin-0.col-sm-6
         [:label {:class ""
@@ -131,18 +159,13 @@
         [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
          [input/country-selector country-atom]]]]]
 
-     [:button {:class    "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2"
-               :disabled (if-not (and (input/email-valid? @email-atom)
-                                      (input/first-name-valid? @first-name-atom)
-                                      (input/last-name-valid? @last-name-atom)
-                                      (input/password-valid? @password-atom)
-                                      (input/password-valid? @password-verify-atom)
-                                      (input/country-valid? @country-atom)
-                                      (input/language-valid? @language-atom))
-                           "disabled")
+     [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2"
                :on-click #(do
                            (.preventDefault %)
-                           (send-registration state))}
+                            (swap! state assoc :error-message "")
+                            (verify-registration-data state)
+
+                            )}
       (t :user/Createnewaccount)]]))
 
 
@@ -196,7 +219,7 @@
       (session/assoc-in! [:user :language] lang)
       (swap! state assoc :language lang))
     (init-data state)
-    
+
     (fn []
       (cond
         (= "initial" (:permission @state)) (layout/landing-page site-navi [:div])
