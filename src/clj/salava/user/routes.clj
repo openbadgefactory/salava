@@ -44,7 +44,7 @@
                     (do
                       (u/verify-email-address ctx verification_key (:id current-user) (:activated current-user))
                       (u/set-session ctx (found (str (get-base-path ctx) "/user/edit/email-addresses"))  (:id current-user)))
-                    (found (str (get-base-path ctx) "/user/login")))))
+                    (found (str (get-base-path ctx) "/user/login/?verification_key=" verification_key)))))
 
     (context "/obpv1/user" []
              :tags ["user"]
@@ -243,7 +243,7 @@
                   :summary "Test is user authenticated"
                   :auth-rules access/signed
                   (ok))
-             
+
              (GET "/public-access" []
                   :summary "Test is user authenticated and in private mode"
                   :auth-rules access/signed
