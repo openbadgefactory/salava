@@ -4,8 +4,8 @@
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [reagent.session :as session]
+            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for]]))
-
 
 
 (defn error-view [state]
@@ -19,8 +19,8 @@
             [:div "The owner of the badge has set it private and therefore it can’t be shown."]]]]]])
 
 (defn success-view [state]
-  (let [{:keys [content permission]} @state
-        {:keys [id image_file name description issuer_content_name issuer_content_url recipients]} (first (filter  #(= (:language_code %) (:default_language_code %)) content))
+  (let [{:keys [id content permission]} @state
+        {:keys [image_file name description issuer_content_name issuer_content_url recipients]} (first (filter  #(= (:language_code %) (:default_language_code %)) content))
         url (str (session/get :site-url) (path-for (str "/badge/info/" id)))]
     [:div {:id "badge-gallery"}
      [:div {:id "grid"}
@@ -38,8 +38,6 @@
             name]]
           [:div.media-issuer
            issuer_content_name]
-          
-          
           [:div.media-description description]]]]
        [:div.media-bottom
         [:div {:class "pull-left"}
@@ -50,7 +48,6 @@
 (defn content [state]
   (let [{:keys [id permission]} @state
         url                     (str (session/get :site-url) (path-for (str "/badge/info/" id)))]
-    
     (cond
       (= "success" permission) (success-view state)
       (= "error" permission)   (error-view state)
@@ -70,7 +67,7 @@
 
 
 (defn handler [site-navi params]
-  (let [id (:badge-id params) 
+  (let [id (:badge-id params)
         state (atom {:permission "initial"}) ]
     (init-data state id)
     (fn []
