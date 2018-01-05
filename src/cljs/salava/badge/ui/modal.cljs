@@ -86,7 +86,7 @@
               [:div {:id "assertion-link"}
                [:label (t :badge/Metadata)": "]
                [:a {:href     "#"
-                    :on-click #(set-new-view [:badge :metadata] assertion)}
+                    :on-click #(set-new-view [:badge :metadata] (dissoc assertion :evidence))}
                 (t :badge/Openassertion) "..."]])
             (if (pos? @show-recipient-name-atom)
               (if (and user-logged-in? (not owner?))
@@ -99,7 +99,7 @@
           [:div {:class "row criteria-html"}
            [:div.col-md-12
             {:dangerouslySetInnerHTML {:__html criteria_content}}]]
-          (if (and show_evidence evidence_url)
+          (if (and (pos? show_evidence) evidence_url)
             [:div.row
              [:div.col-md-12
               [:h2.uppercase-header (t :badge/Evidence)]

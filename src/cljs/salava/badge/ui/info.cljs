@@ -205,7 +205,7 @@
                 [:label (t :badge/Metadata)": "]
                 [:a.link {:href     "#"
                           :on-click #(do (.preventDefault %)
-                                         (m/modal! [a/assertion-modal assertion] {:size :lg}))}
+                                         (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
                  (t :badge/Openassertion) "..."]])
              (if (pos? @show-recipient-name-atom)
                (if (and user-logged-in? (not owner?))
