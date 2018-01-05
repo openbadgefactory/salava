@@ -1,3 +1,6 @@
+#content {
+    width: 100% !important;
+}
 a[href]::after{
     content: none !important;
 }
@@ -54,6 +57,10 @@ a[href]::after{
     .col-md-8 {
         width: 70%;
         float: left;
+    }
+
+    .page-content .panel-right {
+        padding-right: 0;
     }
 }
 footer.footer {
