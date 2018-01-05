@@ -1,6 +1,7 @@
 (ns salava.badge.parse
   (:require [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]
+            [clojure.pprint :refer [pprint]]
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.data.json :as json]

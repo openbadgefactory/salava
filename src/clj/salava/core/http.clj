@@ -9,8 +9,8 @@
 
 
 (defn http-req [opt]
-  (-> {:socket-timeout 60000
-       :conn-timeout   60000
+  (-> {:socket-timeout 30000
+       :conn-timeout   30000
        :max-redirects  5
        :throw-exceptions true
        :throw-entire-message? true}
@@ -32,9 +32,7 @@
                   nil   "UTF-8")
         res (sh "/usr/bin/curl" "-f" "-s" "-L" "-m30" accept url :out-enc out-enc)]
     (if (= (:exit res) 0)
-      (do
-        (log/info "curl request ok")
-        (out-fn (:out res)))
+      (out-fn (:out res))
       (throw (Exception. (str "GET request to " url " failed"))))))
 
 
@@ -47,14 +45,9 @@
    (try
      (:body (http-req (assoc opt :method :get :url url)))
      (catch Exception ex
-       (log/error "http-get: clj-http client request failed")
-       (log/error "url:" url)
-       (log/error (.toString ex))
-       (log/error "falling back to curl")
        (curl url opt)))))
 
 (defn json-get [url]
-  ;(log/info "json-get: GET" url)
   (http-get url {:as :json :accept :json :throw-entire-message? true}))
 
 

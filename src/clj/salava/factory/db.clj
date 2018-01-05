@@ -4,6 +4,7 @@
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.util :as u]
+            [salava.core.http :as http]
             [salava.badge.parse :as p]
             [salava.badge.main :as b]
             [salava.badge.db :as db]
@@ -70,9 +71,9 @@
       (let [url-match (partial re-find (re-pattern (str "^" (get-in ctx [:config :factory :url] "-"))))]
         (or (url-match (get badge :assertion_url ""))
             (some-> (:assertion_url badge)
-                    u/json-get
+                    http/json-get
                     (get-in [:related :id])
-                    u/json-get
+                    http/json-get
                     (get-in [:verify :url])
                     url-match)))
       (catch Exception _))))
@@ -81,10 +82,10 @@
   (boolean
     (try
       (some-> (:assertion_url badge)
-              u/json-get
+              http/json-get
               (get-in [:badge :issuer])
               (string/replace #"&event=.+" "")
-              u/json-get
+              http/json-get
               :verified)
       (catch Exception _))))
 
