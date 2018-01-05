@@ -1,5 +1,6 @@
 (ns salava.mail.mail
   (:require [clojure.java.io :as io]
+            [clojure.tools.logging :as log]
             [hiccup.core :refer :all]
             [postal.core :refer [send-message]]
             [salava.core.util :refer [get-site-url get-base-path get-site-name get-plugins plugin-fun]]
@@ -7,77 +8,70 @@
             [slingshot.slingshot :refer :all]
             [salava.core.i18n :refer [t]]))
 
-(defn send-mail [ctx subject message recipients]
+(defn- send-mail-to [mail-host-config msg to]
   (try+
-    (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
-          data {:from    (get-in ctx [:config :core :mail-sender])
-                :bcc      recipients
-                :subject subject
-                :body    [{:type    "text/plain; charset=utf-8"
-                           :content message}]}]
-      (if (nil? mail-host-config)
-        (send-message data)
-        (send-message mail-host-config data)))
-    (catch Object _
-      ;TODO log an error
-      )))
+    (log/info "sending to" to)
+    (if (nil? mail-host-config)
+      (send-message (assoc msg :to to))
+      (send-message mail-host-config (assoc msg :to to)))
+    (catch Object ex
+      (log/error ex))))
+
+(defn send-mail [ctx subject message recipients]
+  (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
+        data {:from    (get-in ctx [:config :core :mail-sender])
+              :subject subject
+              :body    [{:type    "text/plain; charset=utf-8"
+                         :content message}]}]
+    (doseq [to recipients]
+      (-> (send-mail-to mail-host-config data to) log/info))))
 
 (defn send-html-mail [ctx subject message recipients]
-  (try+
-    (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
-          data {:from    (get-in ctx [:config :core :mail-sender])
-                :bcc      recipients
-                :subject subject
-                :body    [{:type "text/html; charset=utf-8"
-                           :content message}]}]
-      (if (nil? mail-host-config)
-        (send-message data)
-        (send-message mail-host-config data)))
-    (catch Object _
-      ;TODO log an error
-      )))
+  (let [mail-host-config (get-in ctx [:config :core :mail-host-config])
+        data {:from    (get-in ctx [:config :core :mail-sender])
+              :subject subject
+              :body    [{:type "text/html; charset=utf-8"
+                         :content message}]}]
+    (doseq [to recipients]
+      (-> (send-mail-to mail-host-config data to) log/info))))
 
 (defn send-activation-message [ctx site-url activation-link login-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
         subject (str (t :core/Welcometo lng) " " site-name (t :core/Service lng))
-        message (str fullname
-                     ",\n\n" (t :core/Emailactivation2 lng) " " site-url  ".\n" (t :core/Emailactivation4 lng) ":\n\n"
+        message (str (t :core/Hello lng) " " fullname
+                     ",\n\n" (t :core/Emailactivation2 lng) " " site-name  ".\n" (t :core/Emailactivation4 lng) ":\n\n"
                      activation-link
                      "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailactivation7 lng) "\n"
                      login-link
-                     " " (t :core/Emailactivation8 lng) ".\n\n--  "site-name " -"(t :core/Team lng))]
+                     " " (t :core/Emailactivation8 lng) ".\n\n"
+                     (t :user/Emailnotificationtext4 lng) ", " site-name " " (t :core/Team lng))]
     (send-mail ctx subject message [email-address])))
 
 (defn send-password-reset-message [ctx site-url activation-link fullname email-address lng]
   (let [site-name (get-in ctx [:config :core :site-name])
         subject (str  site-name " " (t :core/Emailresetheader lng))
-        message (str fullname ",\n\n" (t :core/Emailresetmessage1 lng) " " site-url
+        message (str (t :core/Hello lng) " " fullname ",\n\n" (t :core/Emailresetmessage1 lng) " " site-name
                      ".\n\n" (t :core/Emailactivation4 lng)":\n\n"
                      activation-link
-                     "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n--  "
-                      site-name " -"(t :core/Team lng))]
+                     "\n\n" (t :core/Emailactivation5 lng) "\n" (t :core/Emailactivation6 lng) ".\n\n" (t :core/Emailresetmessage2 lng) ".\n\n"
+                     (t :user/Emailnotificationtext4 lng) ", " site-name " " (t :core/Team lng))]
     (send-mail ctx subject message [email-address])))
 
 (defn send-verification [ctx site-url email-verification-link fullname email lng]
   (let [site-name (get-in ctx [:config :core :site-name])
         subject (str (t :core/Emailverification1 lng) " " site-name )
-        message (str fullname "\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-url".\n" (t :core/Emailverification4 lng) ":\n\n"
+        message (str (t :core/Hello lng) " " fullname ",\n\n" (t :core/Emailverification2 lng) " '" email "' " (t :core/Emailverification3 lng) " " site-name".\n" (t :core/Emailverification4 lng) ":\n\n"
                      email-verification-link
-                     "\n\n" (t :core/Emailverification6 lng)".\n")]
+                     "\n\n" (t :core/Emailverification6 lng)".\n\n"
+                     (t :user/Emailnotificationtext4 lng) ", " site-name " " (t :core/Team lng))]
     (send-mail ctx subject message [email])))
-
-
-
-
 
 
 (defn get-fragments
   ([ctx type] (get-fragments ctx nil nil type))
   ([ctx user lng type]
-   (let [funs (plugin-fun (get-plugins ctx) "mail" "get-fragment")] 
-     (remove nil? (map (fn [f] (try (f ctx user lng type) (catch Throwable _))) funs))
-     ))
-  )
+   (let [funs (plugin-fun (get-plugins ctx) "mail" "get-fragment")]
+     (remove nil? (map (fn [f] (try (f ctx user lng type) (catch Throwable _))) funs)))))
 
 
 (def style-string (slurp (io/resource "public/css/email.css")))
@@ -108,7 +102,6 @@
         [:tr.emailTitle
          [:td
           banner]]]]]]))
-
 
 
 (defn html-mail-header-title [text]
@@ -153,9 +146,6 @@
           [:p (str (t :user/Emailnotificationtext4 lng) ",") ]
           [:p site-name " - "(t :core/Team lng)]
           ]]]]]]))
-
-
-
 
 
 (defn html-mail-template [ctx user lng subject type]
@@ -219,8 +209,4 @@
          [:br]
         [:br]
         footer
-        "<!-- Email wrapper : END -->"]
-       
-       
-       ))
-    ))
+        "<!-- Email wrapper : END -->"]))))
