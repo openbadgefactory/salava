@@ -9,7 +9,9 @@
   {:error-handler (fn [{:keys [status status-text]}]
                     (do
                       (if (and (not (session/get :user)) (= status 401))
-                        (navigate-to "/user/login")
+                       (do
+                         (session/put! :referrer (.-location.pathname js/window))
+                        (navigate-to "/user/login"))
                         (additional-error-fn))
                       ))})
 
