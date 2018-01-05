@@ -146,16 +146,16 @@ SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked
      WHERE seo.owner = :user_id AND se.verb = 'ticket' AND se.type = 'admin' AND re.status = 'open'
      ORDER BY se.ctime DESC
      LIMIT 1000;
-
-
+     
 --name: select-user
 -- get user by id
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0
-
-
 
 --name: update-admin-to-user!
 UPDATE user SET role = 'user' WHERE id = :id
 
 --name: update-user-to-admin!
 UPDATE user SET role = 'admin' WHERE id = :id
+
+--name: select-admin-count
+SELECT COUNT(*) AS count FROM user WHERE role = 'admin' AND activated = 1 AND deleted = 0;
