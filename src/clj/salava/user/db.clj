@@ -214,7 +214,7 @@
   (let [{:keys [user_id email verified verification_key mtime]} (select-email-by-verification-key {:verification_key key :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
         verified-emails (verified-email-addresses ctx user-id)]
     (try+
-     (if-not (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) 86400)))
+      (if-not (and email (= user_id user-id) (not verified) (= key verification_key) (>= mtime (- (unix-time) (* 5 24 60 60))))
        (throw+ {:status "error"}))
      (if-not activated
        (update-user-activate! {:id user_id} (get-db ctx)))
