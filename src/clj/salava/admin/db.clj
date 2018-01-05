@@ -16,6 +16,11 @@
 
 (defqueries "sql/admin/queries.sql")
 
+(defn admin-count
+  "Count users with admin role"
+  [ctx]
+  (:count (select-admin-count {} (util/get-db-1 ctx))))
+
 (defn get-owners [ctx]
   (select-admin-users-id {} (get-db ctx)))
 
