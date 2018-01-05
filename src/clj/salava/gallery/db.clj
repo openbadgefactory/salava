@@ -68,9 +68,7 @@
     (select-gallery-tags {:badge_ids badge_ids} (get-db ctx))))
 
 (defn str-ids [ids]
-  (if (empty? ids)
-      "()"
-      (str "(" (reduce (fn [x y] (str x ",'" y "'"  )) (str "'"(first ids)"'") (rest ids)) ")")))
+    (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
 
 (defn badge-count [search page_count]
   (let [limit 48
