@@ -9,14 +9,13 @@
             [salava.user.ui.input :as input]))
 
 (defn send-password-reset-link [state]
+  (swap! state assoc :reset-status "in-progress")
   (let [email (:email @state)]
     (ajax/POST
       (path-for "/obpv1/user/reset/")
       {:params  {:email email}
        :handler (fn [data]
-                  (do
-                    (swap! state assoc :reset-link-sent (:status data))
-                    (swap! state assoc :form-display "none")))})))
+                  (swap! state assoc :reset-status (:status data)))})))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])]
@@ -25,11 +24,13 @@
             :class "panel"}
       [:div.panel-body
        (cond
-         (= "success" (:reset-link-sent @state)) [:div {:class "alert alert-success" :role "alert"}
-                                                  (t :user/Passwordresetlinksent) ": " (:email @state)]
-         (= "error" (:reset-link-sent @state)) [:div {:class "alert alert-warning" :role "alert"}
-                                                (t :user/Errorsendingresetlink)])
-       [:form {:style {:display (:form-display @state)}}
+         (= "in-progress" (:reset-status @state)) [:div.text-center
+                                                   [:progress]]
+         (= "success" (:reset-status @state)) [:div {:class "alert alert-success" :role "alert"}
+                                               (t :user/Passwordresetlinksent) ": " (:email @state)]
+         (= "error" (:reset-status @state)) [:div {:class "alert alert-warning" :role "alert"}
+                                             (t :user/Errorsendingresetlink)])
+       [:form {:style {:display (if (:reset-status @state) "none" "block")}}
         [:div.form-group
          [:label {:for "input-email"} (t :user/Emailaddress)]
          [input/text-field {:name "email" :atom email-atom}]]
@@ -40,8 +41,7 @@
 
 (defn handler [site-navi params]
   (let [state (atom {:email ""
-                     :reset-link-sent nil
-                     :form-display "block"})
+                     :reset-status nil})
         lang (:lang params)]
     (if (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))
