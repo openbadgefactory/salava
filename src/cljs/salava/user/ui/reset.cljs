@@ -14,7 +14,9 @@
       (path-for "/obpv1/user/reset/")
       {:params  {:email email}
        :handler (fn [data]
-                  (swap! state assoc :reset-link-sent (:status data)))})))
+                  (do
+                    (swap! state assoc :reset-link-sent (:status data))
+                    (swap! state assoc :form-display "none")))})))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])]
@@ -27,7 +29,7 @@
                                                   (t :user/Passwordresetlinksent) ": " (:email @state)]
          (= "error" (:reset-link-sent @state)) [:div {:class "alert alert-warning" :role "alert"}
                                                 (t :user/Errorsendingresetlink)])
-       [:form
+       [:form {:style {:display (:form-display @state)}}
         [:div.form-group
          [:label {:for "input-email"} (t :user/Emailaddress)]
          [input/text-field {:name "email" :atom email-atom}]]
@@ -38,7 +40,8 @@
 
 (defn handler [site-navi params]
   (let [state (atom {:email ""
-                     :reset-link-sent nil})
+                     :reset-link-sent nil
+                     :form-display "block"})
         lang (:lang params)]
     (if (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))
