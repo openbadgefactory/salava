@@ -112,11 +112,11 @@
   :scss  {:builds
           {:dev {:source-dir "src/scss"
                  :dest-dir   "target/generated/public/css"
-                 :executable "sassc"
+                 :executable "sass"
                  :args       ["--line-numbers" "-I" "src/scss" "-t" "nested"]}
            :adv {:source-dir "src/scss"
                  :dest-dir   "target/adv/public/css"
-                 :executable "sassc"
+                 :executable "sass"
                  :args       ["-I" "src/scss/" "-t" "compressed"]}}}
 
 
