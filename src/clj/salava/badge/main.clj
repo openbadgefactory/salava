@@ -1,9 +1,10 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
+            [clj-http.client :as http]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
-            [clojure.string :refer [blank? split upper-case lower-case capitalize]]
+            [clojure.string :refer [blank? split upper-case lower-case capitalize starts-with? includes?]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time date-from-unix-time]]
@@ -13,7 +14,6 @@
             [salava.social.db :as so]
             [clojure.tools.logging :as log]
             [salava.core.util :as u]
-            [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
@@ -148,9 +148,38 @@
 
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
-        content (map (fn [content] (update content :criteria_content u/md->html) ) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
-    (assoc my-badge :content content))
-  )
+        content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
+        endorsements (get-endorsement-info {:id (:badge_id my-badge)} (u/get-db ctx))
+        issuer-id (:issuer_content_id (first content))
+        issuer-endorsements (into [] (get-issuer-endorsements {:id issuer-id} (u/get-db ctx)))
+        endorsement-container (atom ())
+        filtered-id-container (atom #{})
+        client-ids (get-all-client-endorsements {} (u/get-db ctx))
+        endorser-atom (atom [])]
+
+;; process badge endorsement and endorser endorsement
+    (when (seq? endorsements)
+     (doseq [endorsement endorsements
+             :let [endorsement-endorser-id (:endorser_id endorsement)
+                   cid client-ids]]
+       (reset! filtered-id-container #{})
+       (doseq [id cid
+              :when (and (includes? (:client_id id) endorsement-endorser-id) (> (count (:client_id id)) (count endorsement-endorser-id)))]
+         (swap! filtered-id-container conj (:client_id id)))
+
+       (if (empty? @filtered-id-container)
+          (swap! endorsement-container conj endorsement)
+          (do
+            (reset! endorser-atom [])
+            (doseq [id @filtered-id-container
+                     :let [endorser (get-endorser-endorsements {:id id} (into {:result-set-fn first} (u/get-db ctx)))]]
+                 (swap! endorser-atom conj endorser))
+            (swap! endorsement-container conj (assoc endorsement :endorser_endorsements @endorser-atom))))))
+
+     (assoc my-badge :content content
+                     :endorsements @endorsement-container
+                     :issuer-endorsements issuer-endorsements)))
+
 
 
 
@@ -168,7 +197,9 @@
         view-count (if owner? (select-badge-view-count {:user_badge_id badge-id} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
-                                                      (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))]
+                                                      (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
+
+    ]
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count
@@ -269,7 +300,7 @@
       (let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
         (if (re-find (re-pattern obf-url) (str assertion-url))
           (try+
-            (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
+            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
             (catch Object _
               (log/error "send-badge-info-to-obf: " _))))))))
 
@@ -340,7 +371,9 @@
       (throw+ "User does not own this badge"))
     (jdbc/with-db-transaction
       [tr-cn (u/get-datasource ctx)]
-      (delete-badge-with-db! {:connection tr-cn} badge-id))
+      (do
+       #_(db/delete-badge-endorsements ctx badge-id)
+      (delete-badge-with-db! {:connection tr-cn} badge-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
       (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
     {:status "success" :message "Badge deleted"}
@@ -385,7 +418,7 @@
      :expired_badge_count expired-badge-count
      :badge_views badge-views
      :badge_congratulations badge-congratulations
-     :badge_issuers issuer-stats})) 
+     :badge_issuers issuer-stats}))
 
 (defn meta-tags [ctx id]
   (let [badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]

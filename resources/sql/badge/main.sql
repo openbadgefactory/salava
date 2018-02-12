@@ -20,12 +20,12 @@ GROUP BY ub.id
 -- name: select-user-badges-to-export
 SELECT ub.id,
        bc.name, bc.description, bc.image_file,
-       ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status, 
+       ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.status,
        ub.email,
        ic.name AS issuer_content_name, ic.url AS issuer_content_url, ub.assertion_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
@@ -138,7 +138,7 @@ select COUNT(visibility) AS visibility_count from user_badge where badge_id = :b
 --get badge by id
 SELECT ub.id, ub.user_id,
 ub.badge_id, ub.email,
-ub.assertion_url, 
+ub.assertion_url,
 ub.assertion_json, ub.issued_on,
 ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
@@ -178,7 +178,7 @@ GROUP BY ub.id
 --get badge by id
 SELECT ub.id, ub.user_id,
 ub.badge_id, ub.email,
-ub.assertion_url, 
+ub.assertion_url,
 ub.assertion_json, ub.issued_on,
 ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
@@ -191,7 +191,7 @@ ube.url AS evidence_url,
 u.id AS owner, u.first_name, u.last_name
 FROM user_badge AS ub
 LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
-JOIN badge as b ON (b.id = ub.badge_id) 
+JOIN badge as b ON (b.id = ub.badge_id)
 JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
@@ -204,6 +204,7 @@ badge.id as badge_id, badge.default_language_code,
 bc.language_code,
 bc.name, bc.description,
 bc.image_file,
+ic.id AS issuer_content_id,
 ic.name AS issuer_content_name,
 ic.url AS issuer_content_url,
 ic.description AS issuer_description,
@@ -214,18 +215,87 @@ crc.email AS creator_email,
 crc.image_file AS creator_image,
 crc.description AS creator_description,
 cc.markdown_text AS criteria_content,
-cc.url AS criteria_url
-FROM badge AS badge 
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
+cc.url AS criteria_url,
+COUNT(bec.endorsement_content_id) AS endorsement_count
+FROM badge AS badge
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
-JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) 
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id)
 LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
-LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id) 
+LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)
+LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = badge.id)
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code)
 WHERE badge.id = :id
 GROUP BY badge.id, bc.language_code, cc.language_code, ic.language_code
+
+--name: get-endorsement-info
+SELECT badge_id,
+ec.id AS endorsement_id,
+ec.endorsement_comment AS endorsement_comment,
+ec.endorser AS endorser_id,
+ec.issuedOn AS endorsement_issuedOn,
+endc.image_file AS endorser_image,
+endc.name AS endorser_name,
+endc.description AS endorser_description,
+endc.url AS endorser_url,
+endc.email AS endorser_email
+/* COUNT(cec.client_content_id) AS endorser_endorsement_count */
+FROM badge_endorsement_content AS bec
+JOIN endorsement_content AS ec ON (ec.id = bec.endorsement_content_id)
+JOIN endorser_content AS endc ON (endc.id = ec.endorser)
+/* LEFT JOIN client_endorsement_content AS cec ON (cec.client_content_id = endc.id) */
+WHERE badge_id = :id
+
+
+--name: get-endorser-info
+SELECT ec.endorsement_comment AS endorsement_comment,
+ec.endorser AS endorser_id,
+ec.issuedOn AS endorsement_issuedOn,
+endc.name AS endorser_name,
+endc.description AS endorser_description,
+endc.image_file AS endorser_image,
+endc.url AS endorser_url,
+endc.email AS endorser_email
+FROM client_endorsement_content AS cec
+JOIN endorsement_content AS ec ON (ec.id = cec.endorsement_content_id)
+JOIN endorser_content AS endc ON (endc.id = cec.client_content_id)
+WHERE client_content_id = :id
+
+--name: get-issuer-endorsements
+SELECT ec.endorsement_comment AS endorsement_comment,
+ec.issuedOn AS endorsement_issuedOn,
+ec.endorser AS endorser_id,
+endc.name AS endorser_name,
+endc.description AS endorser_description,
+endc.image_file AS endorser_image,
+endc.url AS endorser_url,
+endc.email AS endorser_email
+FROM client_endorsement_content AS cec
+JOIN endorsement_content AS ec ON (ec.id = cec.endorsement_content_id)
+JOIN issuer_content AS ic ON (ic.id = cec.client_content_id)
+JOIN endorser_content AS endc ON (endc.id = ec.endorser)
+WHERE client_content_id = :id
+
+--name: get-endorser-endorsements
+SELECT ec.endorsement_comment AS endorsement_comment,
+ec.issuedOn AS endorsement_issuedOn,
+ec.endorser AS endorser_id,
+endc.name AS endorser_name,
+endc.description AS endorser_description,
+endc.image_file AS endorser_image,
+endc.url AS endorser_url,
+endc.email AS endorser_email
+FROM client_endorsement_content AS cec
+JOIN endorsement_content AS ec ON (ec.id = cec.endorsement_content_id)
+LEFT JOIN endorser_content AS endc ON (endc.id = ec.endorser)
+WHERE client_content_id =:id
+
+--name: get-all-client-endorsements
+SELECT cec.client_content_id AS client_id
+FROM client_endorsement_content AS cec
+
 
 --name: replace-badge-tag!
 REPLACE INTO badge_tag (user_badge_id, tag)
@@ -327,7 +397,7 @@ UPDATE user_badge SET deleted = 1, visibility = 'private' WHERE id = :id
 
 --name: select-badges-images-names
 SELECT ub.id,
-bc.name, 
+bc.name,
 bc.image_file
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
@@ -352,6 +422,8 @@ JOIN badge_tag AS bt ON bt.user_badge_id = ub.id
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND bt.tag = :badge_tag
+
+
 
 --name: select-badge-owner
 --get badge owner's user_id
@@ -417,7 +489,7 @@ ORDER BY latest_view DESC
 SELECT ub.id,
 bc.name, bc.image_file,
 COUNT(bco.user_id) AS congratulation_count,
-MAX(bco.ctime) AS latest_congratulation 
+MAX(bco.ctime) AS latest_congratulation
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
@@ -483,7 +555,13 @@ INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email
 INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url, language_code)
         VALUES (:id, :name, :url, :description, :image_file, :email, :json_url, :language_code);
 
+--name: insert-endorsement-content!
+INSERT IGNORE INTO endorsement_content (id, endorsement_comment, issuedOn, endorser)
+        VALUES (:id, :endorsement_comment, :issuedOn, :endorser);
 
+-- name: insert-endorser-content!
+INSERT IGNORE INTO endorser_content (id, name, url, description, image_file, email)
+        VALUES (:id, :name, :url, :description, :image_file, :email);
 
 
 --name: select-user-events

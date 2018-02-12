@@ -15,6 +15,7 @@
             [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
+            [salava.badge.ui.endorsement :refer [endorsement-modal-link]]
             ))
 
 
@@ -27,9 +28,9 @@
 
 (defn content [state show-messages]
   (let [{:keys [badge public_users private_user_count reload-fn]} @state
-        {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf]} badge
+        {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count endorsements]} badge
         selected-language (cursor state [:content-language])
-        {:keys [name description tags criteria_content image_file image_file issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
+        {:keys [name description tags criteria_content image_file image_file issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description issuer-endorsements criteria_url  creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
     [:div
      [:div.col-xs-12
@@ -50,19 +51,23 @@
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
         [:div
          [gallery-modal-message-info-link show-messages badge_id]
-         ]]
+         ]
+
+        (if (> endorsement_count 0)
+            [endorsement-modal-link endorsement_count endorsements])
+         ]
        [:div {:class "col-md-9 badge-info"}
         (content-language-selector selected-language content)
         (if @show-messages
           [:div.rowmessage
            [:h1.uppercase-header (str name " - " (t :social/Messages))]
            [badge-message-handler badge_id reload-fn]]
-          
+
           [:div.rowcontent
            [:h1.uppercase-header name]
            [:div
-            (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-            (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+            (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
+            (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
             [:div.row
              [:div {:class "col-md-12 description"}
               description]]
@@ -105,8 +110,8 @@
 (defn init-data [badge-id state]
   (ajax/GET
      (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
-     {:handler (fn [data]               
-                 (reset! state (assoc data 
+     {:handler (fn [data]
+                 (reset! state (assoc data
                                       :permission "success"
                                       :reload-fn (:reload-fn @state)
                                       :content-language (init-content-language  (get-in data [:badge :content])))))}
