@@ -286,14 +286,14 @@ button {
                         display: inline-block;
                         width: auto;
                         margin-bottom:10px;
-                        
+
                     }
                 }
                 .row.header {
                     display: none;
                 }
             }
-            
+
         }
     }
 }
@@ -323,7 +323,7 @@ button {
             padding:0px;
         }
     }
- 
+
     .description {
         font-weight: bold;
         margin: 20px 0 5px 0;
@@ -338,7 +338,7 @@ button {
         .panel-body {
             padding-top:0px;
             @media (max-width:992px){
-                
+
             }
         }
     }
@@ -613,7 +613,7 @@ button {
                 position: relative;
                 margin-bottom:5px;
 		margin-right: 3px;
-		
+
             }
             label {
                 padding-left:0px;
@@ -769,5 +769,121 @@ button {
 #export-badges{
     #grid .grid-container {
         height: 285px;
+    }
+}
+
+/*Endorsements*/
+
+#endorsement-info {
+    width: 100%;
+    th {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 13px;
+        color: #f59f48;
+        border-bottom: 3px solid #ccc;
+    }
+    td:first-child {
+        font-weight: bold;
+        font-style: italic;
+        font-size: 12px;
+    }
+
+}
+
+.endorser-body {
+  margin-top: 10px;
+  margin-right: auto;
+  .name {color: $link-color}
+  h4{
+        font-family: 'Open Sans Condensed',sans-serif;
+        font-size: 50px;
+        padding-bottom: 0px;
+  }
+
+}
+
+.endorsement-content-item{
+
+    position: relative;
+    padding-bottom: 10px;
+    padding-left:2px;
+    margin-left: 25px;
+    margin-top: 10px;
+    border-bottom: 1px solid #dddddd;
+
+    .commentbox { max-width: 680px; }
+
+    .endcontent { display:flex; align-items:center;}
+
+    i {
+
+          vertical-align: bottom;
+          font-weight: normal;
+          color: $orange-hover;
+          padding: 5px;
+          border-radius: 4px;
+          margin-top: 10px;
+          margin-right: 10px;
+          margin-left: 0px;
+    }
+
+    h4 { font-size: 14px; }
+
+    font-size: 14px;
+
+    &:not(.tips):last-child{
+      border-bottom: none;
+    }
+
+    .namedate{
+        display:flex;
+
+      .name{
+        flex:0 0 700px;
+        display:inline-flex;
+      }
+
+      .date{
+        span{
+          font-weight:bold;
+        }
+      }
+    }
+ }
+
+
+.endorsement-link{
+  padding-left:5px;
+
+
+    &:before{
+        content: "\f087";
+        font-family: "FontAwesome";
+      color:$orange-hover !important;
+        font-size: 22px;
+        text-align: center;
+        margin-right: 5px;
+        padding-right: 3px;
+        vertical-align: bottom;
+        font-weight: normal;
+    }
+
+
+}
+
+.endorsementhr{
+  margin-top:5px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.endorser-info{
+  display: flex;
+  }
+.endorser-header {
+
+    h1 {
+      margin-left: 10px;
     }
 }

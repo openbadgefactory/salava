@@ -63,7 +63,7 @@
        [:div.col-md-12
         (str (t :admin/Sendmessageforuser) " " item_owner ".")
         [:div.form-group
-         [:label 
+         [:label
           (str (t :user/Email) ":")]
          (email-select (:emails info) email-atom) ]
         (message-form mail)
@@ -79,7 +79,7 @@
                                    :keywords?       true
                                    :params        {:subject (:subject @mail)
                                                    :message (:message @mail)
-                                                   :email  @email-atom}  
+                                                   :email  @email-atom}
                                    :handler         (fn [data]
                                         ;(navigate-to "/admin")
                                                       (reset! status data)
@@ -98,10 +98,10 @@
 
 
 (defn badge-info-block [info owner owner_id]
-  (let [{:keys [issuer_content_name issuer_content_url issuer_contact issuer_image creator_name creator_url creator_email creator_image]} info]
+  (let [{:keys [issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements creator_name creator_url creator_description creator_email creator_image]} info]
     [:div
-     (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-     (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+     (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
+     (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
      (if (and owner (not (blank? owner_id)))
        [:div {:class "issuer-data clearfix"}
         [:label.pull-left  (t :admin/Owner) ":"]
@@ -280,7 +280,7 @@
        [:div.col-md-12
         (str (t :admin/Lockuser) " " item_owner "?")
         [:div.form-group
-         [:label 
+         [:label
           (str (t :user/Email) ":")]
          (email-select (:emails info) email-atom) ]
         (message-form mail)
@@ -345,7 +345,7 @@
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/send_activation_message/" item_owner_id ))
                                   {:response-format :json
-                                   :keywords?       true         
+                                   :keywords?       true
                                    :handler         (fn [data]
                                                       (reset! status data)
                                                       )
@@ -373,7 +373,7 @@
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/fake_session/" item_owner_id ))
                                   {:response-format :json
-                                   :keywords?       true         
+                                   :keywords?       true
                                    :handler         (fn [data]
                                                       (js-navigate-to "/social"))
                                    :error-handler   (fn [{:keys [status status-text]}]
@@ -421,15 +421,15 @@
         (str (t :admin/Downgradeuser) " " item_owner )
         [:button {:type         "button"
                   :class        "btn btn-primary pull-right"
-                  
+
                   :data-dismiss "modal"
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/downgrade_admin_to_user/" item_owner_id ))
                                   {:response-format :json
                                    :keywords?       true
                                    :handler         (fn [data]
-                                                      
-                                                      
+
+
                                                       )
                                    :error-handler   (fn [{:keys [status status-text]}]
                                                       (.log js/console (str status " " status-text)) )})}
@@ -451,7 +451,7 @@
                   :on-click     #(ajax/POST
                                   (path-for (str "/obpv1/admin/delete_no_activated_user/" item_owner_id ))
                                   {:response-format :json
-                                   :keywords?       true         
+                                   :keywords?       true
                                    :handler         (fn [data]
                                                       (if (and (= "success" data) init-data)
                                                         (init-data gallery-state)
@@ -472,7 +472,7 @@
   (let [{:keys [item_type item_id item_owner_id image_file name info item_owner gallery-state init-data]} @state
         visible_area (cursor state [:visible_area])
         item_owner (item-owner-creator item_owner item_type)
-        
+
         mail (cursor state [:mail])
         no-verified-emails (some #(not (:verified %)) (:emails info))]
     [:div {:class "admin-modal"}
@@ -504,13 +504,13 @@
          (delete-no-activated-user state visible_area item_owner))
        (if (and (= item_type "user") (:activated info) no-verified-emails)
          (delete-no-verified-email state visible_area item_owner))
-       (if  (and (= item_type "user") (not (:activated info))) 
+       (if  (and (= item_type "user") (not (:activated info)))
          (send-activation-message state visible_area item_owner))
-        (if (and (= item_type "user") (not (:deleted info)))  
+        (if (and (= item_type "user") (not (:deleted info)))
           (login-as-user state visible_area item_owner))
-        (if (and (= item_type "user") (not (:deleted info)) (= "user" (:role info)))   
+        (if (and (= item_type "user") (not (:deleted info)) (= "user" (:role info)))
           (upgrade-user state visible_area item_owner))
-        (if (and (= item_type "user") (not (:deleted info)) (= "admin" (:role info)))  
+        (if (and (= item_type "user") (not (:deleted info)) (= "admin" (:role info)))
           (downgrade-user state visible_area item_owner))
         ]]]]))
 
@@ -525,10 +525,10 @@
                                                    [:span {:aria-hidden             "true"
                                                            :dangerouslySetInnerHTML {:__html "&times;"}}]]]
                                                  [:div.modal-body
-                                                  
+
                                                   (admin-modal-container state)]
                                                  [:div.modal-footer
-                                                  
+
                                                   ]])
                  :component-will-unmount (fn [](close-modal!))})
   )

@@ -1,7 +1,6 @@
 (ns salava.badge.parse
   (:require [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]
-            [clojure.pprint :refer [pprint]]
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.data.json :as json]
@@ -23,6 +22,7 @@
                                                  :description s/Str})]
                            :tags      [(s/maybe s/Str)]})
 
+
 (s/defschema IssuerContent {:id   s/Str
                             :language_code s/Str
                             :name s/Str
@@ -30,7 +30,10 @@
                             :description (s/maybe s/Str)
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
-                            :revocation_list_url (s/maybe s/Str)})
+                            :revocation_list_url (s/maybe s/Str)
+            (s/optional-key :endorsement)      [(s/maybe s/Str)]
+                            })
+
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
@@ -40,6 +43,17 @@
                               :language_code s/Str
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
+
+(s/defschema EndorserContent (-> IssuerContent
+                 (dissoc :language_code
+                         :revocation_list_url)))
+
+
+(s/defschema EndorsementContent {:id s/Str
+                                 :endorsement_comment (s/maybe s/Str)
+                                 :issuedOn (s/maybe s/Int)
+                                 :endorser (s/maybe s/Str)
+                                 :endorser_info EndorserContent})
 
 (s/defschema Badge {:id s/Str
                     :remote_url (s/maybe s/Str)
@@ -51,6 +65,7 @@
                     :criteria [CriteriaContent]
                     :issuer [IssuerContent]
                     :creator [(s/maybe CreatorContent)]
+                    :endorsement [(s/maybe EndorsementContent)]
                     :published (s/enum 0 1)
                     :last_received s/Int
                     :recipient_count s/Int})
@@ -65,6 +80,8 @@
                        :audience (s/maybe s/Str)
                        :ctime s/Int
                        :mtime s/Int})
+
+
 
 
 (s/defschema UserBadge {:id (s/maybe s/Int)
@@ -89,6 +106,7 @@
                         :show_evidence   (s/enum 0 1)
                         :last_checked (s/maybe s/Int)
                         :old_id (s/maybe s/Int)})
+
 
 (def valid-badge (s/validator UserBadge))
 
@@ -210,17 +228,45 @@
   :evidence_url (q-url (:evidence assertion))}
 
 ;;
+(defn get-endorser-info [url]
+  (when-not (nil? url)
+    (let [endorser-data (http/json-get (:issuer url))]
+       [{:id (:id endorser-data)
+         :name (:name endorser-data)
+         :url (:url endorser-data)
+         :description (:description endorser-data)
+         :image_file (:image_file endorser-data)
+         :email (:email endorser-data)
+         :endorsement (if-not (nil? (:endorsement endorser-data))
+                        (let [endorsements (http/json-get (:endorsement endorser-data))]
+                               (mapv #((json/write-str
+                                        {:id (:id %)
+                                        :endorsement_comment (get-in % [:claim :endorsement_comment])
+                                        :endorser (:issuer %)
+                                        :issuedOn (:issuedOn %)
+                                        :endorser_info (get-endorser-info (:issuer %))})) endorsements )))
+         }])))
+
 
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
                  (let [language (get badge (keyword "@language") "")
                        issuer (if (map? (:issuer badge)) (:issuer badge) (http/json-get (:issuer badge)))
+                       issuer-endorsement (when-not (nil? (:endorsement issuer))
+                                             (let [endorsements (http/json-get (:endorsement issuer))]
+                                                (mapv #({:id (:id %)
+                                                         :endorsement_comment (get-in % [:claim :endorsement_comment])
+                                                         :endorser (:issuer %)
+                                                         :issuedOn (:issuedOn %)
+                                                         :endorser_info (get-endorser-info (:issuer %))}) endorsements )))
+
                        criteria-url  (if (map? (:criteria badge)) (get-in badge [:criteria :id]) (:criteria badge))
                        criteria-text (if (map? (:criteria badge))
                                        (get-in badge [:criteria :narrative]
                                                (http/alternate-get "text/x-markdown" criteria-url))
                                        (http/alternate-get "text/x-markdown" (:criteria badge)))
-                       creator-url (get-in badge [:extensions:OriginalCreator :url])]
+                       creator-url (get-in badge [:extensions:OriginalCreator :url]) ]
+
 
                    {:content  [{:id ""
                                 :language_code language
@@ -240,7 +286,9 @@
                                 :url (:url issuer)
                                 :email (:contact issuer)
                                 :image_file nil
-                                :revocation_list_url nil}]
+                                :revocation_list_url nil
+                                :endorsement issuer-endorsement
+                                }]
                     :creator (when creator-url
                                (let [data (http/json-get creator-url)]
                                  [{:id ""
@@ -250,7 +298,15 @@
                                   :description (:description data)
                                   :url   (:url data)
                                   :email (:email data)
-                                  :json_url creator-url}]))}))
+                                  :json_url creator-url}]))
+
+                    :endorsement  (if-not (nil? (:endorsement badge))
+                                     (let [endorsements (http/json-get (:endorsement badge))]
+                                            (mapv #({:id (:id %)
+                                                      :endorsement_comment (get-in % [:claim :endorsement_comment])
+                                                      :endorser (:issuer %)
+                                                      :issuedOn (:issuedOn %)
+                                                      :endorser_info (get-endorser-info (:issuer %))}) endorsements )))}))
         now (u/now)
         evidence (cond
                    ;; inline narrative
@@ -298,11 +354,13 @@
                                                             :ctime now
                                                             :mtime now}) (:evidence assertion))
                    :else [])
+
         badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
         related (->> (get badge :related [])
                      (map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")]
+
     (assoc initial
            :badge (merge {:id ""
                           :remote_url nil
@@ -312,12 +370,13 @@
                           :default_language_code default-language
                           :published 0
                           :last_received 0
-                          :recipient_count 0}
+                          :recipient_count 0
+                          }
                           (apply merge-with (cons concat (map parser (cons badge related)))))
            :issued_on  (u/str->epoch (:issuedOn assertion))
            :expires_on (u/str->epoch (:expires assertion))
-           :evidence evidence)))
-
+           :evidence evidence
+           )))
 ;;;
 
 (defmethod badge-content :default [initial assertion]
@@ -507,7 +566,7 @@
         header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
         public-key (-> (get-in payload [:verify :url]) http/http-get keys/str->public-key)
-        body       (-> input (jws/unsign public-key {:alg (-> header :alg string/lower-case keyword)}) (String. "UTF-8"))]
+        body       (-> input (jws/unsign public-key {:alg (keyword (:alg header))}) (String. "UTF-8"))]
     (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
 
 (defmethod str->badge :blank [_ _]

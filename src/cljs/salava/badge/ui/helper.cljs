@@ -4,7 +4,10 @@
     [salava.core.ui.helper :refer [path-for]]
     [salava.core.helper :refer [dump]]
     [clojure.string :refer [blank?]]
+    [salava.user.ui.helper :as uh]
     [salava.core.time :refer [unix-time date-from-unix-time]]
+    [reagent.core :refer [atom cursor create-class]]
+    [reagent-modals.modals :as m]
     ))
 
 
@@ -15,8 +18,7 @@
   (if meta_badge
     [:div.metabadge [:label (t :badge/Milestonebadge)]])
   (if meta_badge_req
-    [:div.metabadge [:label (t :badge/Requiredbadge)]])
-    )
+    [:div.metabadge [:label (t :badge/Requiredbadge)]]))
 
   (defn issued-on [issued]
     (when (> issued 0)
@@ -43,8 +45,7 @@
 
   (defn creator-image [image]
     [:div {:class "issuer-image pull-left"}
-     [:img {:src (str "/" image)}]]
-    )
+     [:img {:src (str "/" image)}]])
 
   (defn creator-label-and-link [name url email]
     [:div {:class "issuer-data clearfix"}
@@ -57,26 +58,143 @@
   (defn creator-description [creator_description]
     [:div [:div {:class "w3-container issuer-description"} creator_description]])
 
+  (defn endorser-image [image]
+      [:div {:class "endorser-image fa-10x pull-left"}
+       #_[:img {:src (if (nil? image) uh/default-profile-picture (str "/" image))}]])
 
-(defn issuer-label-image-link [name url email image]
+  (defn endorsement-displayer [endorsement]
+        [:div {:class "media endorsement-content-item"}
+         [:div.endcontent
+            [:div [:i {:class "fa fa-thumbs-o-up" :style {:font-size "20px"}}]]
+            [:div {:class "endorsement-body-container"}
+             [:div.namedate
+              [:div.name [:h4 {:class "media-heading endorser-body"}
+              #_[:a {:href "#"
+                    :on-click #(do (.preventDefault %) #_(set-new-view (endorser-content endorsement)))
+                   } (or (:issuer_name endorsement)(:endorser_name endorsement))]
+                [:span.name (:endorser_name endorsement)]
+              ]]
+              [:div.date [:span (date-from-unix-time (* 1000 (:endorsement_issuedon endorsement)))]]
+              ]
+              [:div.commentbox
+                [:span {:style {:font-style "italic"} } (:endorsement_comment endorsement)]]]]])
+
+  (defn endorser-info-displayer [name url description email image endorsements]
+    [:div.panel {:id "profile"}
+     [:div.panel-body
+      [:div.row
+        [:div.col-xs-12
+           [:div.row.endorser-header
+            [:div [:h1.uppercase-header name]]]
+
+            [:div.row.endorser-info
+             [:div {:class "col-md-9 col-sm-9 col-xs-12"}
+              (if (not-empty description)
+                [:div {:class "row about"}
+                 [:div.col-xs-12 [:b (t :badge/About) ":"]]
+                 [:div.col-xs-12 description]])
+              (if (not-empty email)
+                [:div {:class "row"}
+                 [:div.col-xs-12 [:b (t :badge/Contact)":"]]
+                 [:div.col-xs-12
+                  [:span [:a {:href (str "mailto:" email)} email]]]])
+              (if (not-empty url)
+                [:div {:class "row"}
+                 [:div.col-xs-12 [:b (t :badge/Website) ":"]]
+                 [:div.col-xs-12
+                  [:a {:target "_blank" :href url} name]]])]
+              (when (not-empty image)
+               [:div {:class "col-md-3 col-sm-3 col-xs-12"}
+                [:div.profile-picture-wrapper
+                [:img.profile-picture {:src (str "/" image)}]]])]]]
+
+      (when (not-empty endorsements)
+        [:div.row
+         [:div.col-xs-12
+          [:div [:h2.uppercase-header (t :badge/endorsements)]]
+          [:div.row
+            (into [:div]
+                  (for [endorsement endorsements]
+                    (endorsement-displayer endorsement)))]]])]])
+
+(defn issuer-modal [name url description email image issuer-endorsements]
+
+    [:div {:id "badge-content"}
+     [:div.modal-body
+      [:div
+       [:div.col-md-12
+        [:div {:class "text-right"}
+         [:button {:type         "button"
+                   :class        "close"
+                   :data-dismiss "modal"
+                   :aria-label   "OK"}
+          [:span {:aria-hidden             "true"
+                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
+
+       [:div.panel {:id "profile"}
+     [:div.panel-body
+      [:div.row
+        [:div.col-xs-12
+           [:div.row.endorser-header
+            [:div [:h1.uppercase-header name]]]
+
+            [:div.row.endorser-info
+             [:div {:class "col-md-9 col-sm-9 col-xs-12"}
+              (if (not-empty description)
+                [:div {:class "row about"}
+                 [:div.col-xs-12 [:b (t :badge/About) ":"]]
+                 [:div.col-xs-12 description]])
+              (if (not-empty email)
+                [:div {:class "row"}
+                 [:div.col-xs-12 [:b (t :badge/Contact)":"]]
+                 [:div.col-xs-12
+                  [:span [:a {:href (str "mailto:" email)} email]]]])
+              (if (not-empty url)
+                [:div {:class "row"}
+                 [:div.col-xs-12 [:b (t :badge/Website) ":"]]
+                 [:div.col-xs-12
+                  [:a {:target "_blank" :href url} name]]])]
+              (when (not-empty image)
+               [:div {:class "col-md-3 col-sm-3 col-xs-12"}
+                [:div.profile-picture-wrapper
+                [:img.profile-picture {:src (str "/" image)}]]])]]]
+
+      (when (not-empty issuer-endorsements)
+        [:div.row
+         [:div.col-xs-12
+          [:div [:h2.uppercase-header (t :badge/endorsements)]]
+          [:div.row
+            (into [:div]
+                  (for [endorsement issuer-endorsements]
+                    (endorsement-displayer endorsement)))]]])]]
+
+      [:div.modal-footer]]])
+  (defn issuer-label-image-link [name url description email image issuer-endorsements]
+    (if (or name url email image)
+      [:div {:class "issuer-data clearfix"}
+       [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+       [:div {:class "issuer-links pull-label-left inline"}
+         #_(issuer-image image)
+         [:a {:target "_blank" :href "#"
+              :on-click #(do
+                            (.preventDefault %)
+                            (m/modal! [issuer-modal name url description email image issuer-endorsements] {:size :lg}))} name]
+         #_(if (not-empty email)
+           [:span [:br] [:a {:href (str "mailto:" email)} email]])]]))
+
+(defn creator-label-image-link [name url description email image]
   (if (or name url email image)
     [:div {:class "issuer-data clearfix"}
-     [:label.pull-left  (t :badge/Issuedby) ":"]
-     [:div {:class "issuer-links pull-left inline"}
-       (issuer-image image)
-       [:a {:target "_blank" :href url} " " name]
-       (if (not-empty email)
-         [:span [:br] [:a {:href (str "mailto:" email)} email]])]
-     ]))
-
-(defn creator-label-image-link [name url email image]
-  (if (or name url email image)    
-    [:div {:class "issuer-data clearfix"}
      [:label.pull-left (t :badge/Createdby) ":"]
-     (issuer-image image)
+     #_(issuer-image image)
      [:div {:class "issuer-links pull-left"}
-      [:a {:target "_blank" :href url} " " name]
-      (if (not-empty email)
+      [:a {:target "_blank"
+           :href "#"
+           :on-click #(do
+                        (.preventDefault %)
+                        (m/modal! [issuer-modal name url description email image] {:size :lg}))} name]
+
+      #_(if (not-empty email)
         [:span [:br] [:a {:href (str "mailto:" email)} email]])]]))
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]

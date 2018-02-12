@@ -37,7 +37,6 @@
                     :mtime s/Int
                     :deleted (s/maybe s/Bool)
                     :revoked (s/maybe s/Bool)
-                    :tag (s/maybe s/Str)
                     :tags (s/maybe [s/Str])})
 
 (s/defschema UserBadgeContent
@@ -66,7 +65,8 @@
    (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
    (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
                                           :all-messages (s/maybe s/Int)}
-   (s/optional-key :tags)                (s/maybe [s/Str])})
+   (s/optional-key :tags)                (s/maybe [s/Str])
+   })
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
                                                 :issued_on :expires_on :visibility
@@ -121,6 +121,7 @@
                                                  :description s/Str})]
                            :tags      [(s/maybe s/Str)]})
 
+
 (s/defschema IssuerContent {:id   s/Str
                             :language_code s/Str
                             :name s/Str
@@ -128,7 +129,23 @@
                             :description (s/maybe s/Str)
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
-                            :revocation_list_url (s/maybe s/Str)})
+                            :revocation_list_url (s/maybe s/Str)
+            (s/optional-key :endorsement) [(s/maybe s/Str)]})
+
+
+(s/defschema EndorserContent (-> IssuerContent
+                 (dissoc :language_code
+                         :revocation_list_url
+                         )))
+
+
+(s/defschema EndorsementContent {:id s/Str
+                                 :endorsement_comment (s/maybe s/Str)
+                                 :issuedOn (s/maybe s/Int)
+                                 :endorser (s/maybe s/Str)
+                                 :endorser_info EndorserContent})
+
+
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
@@ -138,4 +155,10 @@
                               :language_code s/Str
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
+
+
+
+
+
+
 
