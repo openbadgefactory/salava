@@ -1,7 +1,6 @@
 (ns salava.badge.main
   (:require [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
-            [clj-http.client :as http]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
             [clojure.string :refer [blank? split upper-case lower-case capitalize includes?]]
@@ -14,6 +13,7 @@
             [salava.social.db :as so]
             [clojure.tools.logging :as log]
             [salava.core.util :as u]
+            [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]))
 
 (defqueries "sql/badge/main.sql")
@@ -296,7 +296,7 @@
       (let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
         (if (re-find (re-pattern obf-url) (str assertion-url))
           (try+
-            (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
+            (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
             (catch Object _
               (log/error "send-badge-info-to-obf: " _))))))))
 
