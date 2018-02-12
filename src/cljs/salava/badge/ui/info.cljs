@@ -99,8 +99,6 @@
                 creator_name creator_url creator_email
                 creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
 
-    (dump issuer-endorsements)
-
     [:div {:id "badge-info"}
      [m/modal-window]
      [:div.panel

@@ -18,8 +18,7 @@
   (if meta_badge
     [:div.metabadge [:label (t :badge/Milestonebadge)]])
   (if meta_badge_req
-    [:div.metabadge [:label (t :badge/Requiredbadge)]])
-    )
+    [:div.metabadge [:label (t :badge/Requiredbadge)]]))
 
   (defn issued-on [issued]
     (when (> issued 0)
@@ -46,8 +45,7 @@
 
   (defn creator-image [image]
     [:div {:class "issuer-image pull-left"}
-     [:img {:src (str "/" image)}]]
-    )
+     [:img {:src (str "/" image)}]])
 
   (defn creator-label-and-link [name url email]
     [:div {:class "issuer-data clearfix"}
@@ -117,8 +115,7 @@
           [:div.row
             (into [:div]
                   (for [endorsement endorsements]
-                    (endorsement-displayer endorsement)))]]])]]
-    )
+                    (endorsement-displayer endorsement)))]]])]])
 
 (defn issuer-modal [name url description email image issuer-endorsements]
 
@@ -183,8 +180,7 @@
                             (.preventDefault %)
                             (m/modal! [issuer-modal name url description email image issuer-endorsements] {:size :lg}))} name]
          #_(if (not-empty email)
-           [:span [:br] [:a {:href (str "mailto:" email)} email]])]
-     ]))
+           [:span [:br] [:a {:href (str "mailto:" email)} email]])]]))
 
 (defn creator-label-image-link [name url description email image]
   (if (or name url email image)

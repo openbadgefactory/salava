@@ -241,27 +241,10 @@ endc.name AS endorser_name,
 endc.description AS endorser_description,
 endc.url AS endorser_url,
 endc.email AS endorser_email
-/* COUNT(cec.client_content_id) AS endorser_endorsement_count */
 FROM badge_endorsement_content AS bec
 JOIN endorsement_content AS ec ON (ec.id = bec.endorsement_content_id)
 JOIN endorser_content AS endc ON (endc.id = ec.endorser)
-/* LEFT JOIN client_endorsement_content AS cec ON (cec.client_content_id = endc.id) */
 WHERE badge_id = :id
-
-
---name: get-endorser-info
-SELECT ec.endorsement_comment AS endorsement_comment,
-ec.endorser AS endorser_id,
-ec.issuedOn AS endorsement_issuedOn,
-endc.name AS endorser_name,
-endc.description AS endorser_description,
-endc.image_file AS endorser_image,
-endc.url AS endorser_url,
-endc.email AS endorser_email
-FROM client_endorsement_content AS cec
-JOIN endorsement_content AS ec ON (ec.id = cec.endorsement_content_id)
-JOIN endorser_content AS endc ON (endc.id = cec.client_content_id)
-WHERE client_content_id = :id
 
 --name: get-issuer-endorsements
 SELECT ec.endorsement_comment AS endorsement_comment,

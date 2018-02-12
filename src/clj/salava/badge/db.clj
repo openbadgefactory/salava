@@ -160,8 +160,6 @@
                          endorser-id id])
         id)))
 
-
-
 (defn save-issuer-content! [t-con input]
   (s/validate schemas/IssuerContent input)
   (let [ id (content-id (-> input
@@ -183,10 +181,6 @@
       (insert-creator-content! (assoc input :id id) {:connection t-con})
       id)))
 
-
-
-
-
 (defn save-badge-content! [t-con input]
   (s/validate schemas/BadgeContent input)
   (let [id (content-id input)]
@@ -196,10 +190,6 @@
     (doseq [a (:alignment input)]
       (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con}))
     id))
-
-
-
-;;
 
 (defn save-badge! [tx badge]
   (let [badge-content-id (sort (map #(save-badge-content! tx %) (:content badge)))
@@ -230,7 +220,6 @@
     (doseq [endorsement-id endorsement-content-id]
       (jdbc/execute! tx ["INSERT IGNORE INTO badge_endorsement_content (badge_id, endorsement_content_id) VALUES (?,?)"
                          badge-id endorsement-id]))
-
 
     (-> badge
         (dissoc :content :criteria :issuer :creator :endorsement )

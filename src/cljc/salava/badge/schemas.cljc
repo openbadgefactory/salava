@@ -121,15 +121,6 @@
                                                  :description s/Str})]
                            :tags      [(s/maybe s/Str)]})
 
-#_(s/defschema IssuerContent {:id   s/Str
-                            :language_code s/Str
-                            :name s/Str
-                            :url  s/Str
-                            :description (s/maybe s/Str)
-                            :image_file (s/maybe s/Str)
-                            :email (s/maybe s/Str)
-                            :revocation_list_url (s/maybe s/Str)})
-
 
 (s/defschema IssuerContent {:id   s/Str
                             :language_code s/Str
@@ -141,12 +132,11 @@
                             :revocation_list_url (s/maybe s/Str)
             (s/optional-key :endorsement) [(s/maybe s/Str)]})
 
+
 (s/defschema EndorserContent (-> IssuerContent
                  (dissoc :language_code
                          :revocation_list_url
                          )))
-
-
 
 
 (s/defschema EndorsementContent {:id s/Str

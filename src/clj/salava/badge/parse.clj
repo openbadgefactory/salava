@@ -6,7 +6,6 @@
             [clojure.data.json :as json]
             [clojure.xml :as xml]
             [net.cgrand.enlive-html :as html]
-            [salava.core.helper :refer [dump]]
             [salava.core.util :as u]
             [salava.core.http :as http]
             [schema.core :as s])
@@ -44,7 +43,7 @@
                               :language_code s/Str
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
-;; endorserContent
+
 (s/defschema EndorserContent (-> IssuerContent
                  (dissoc :language_code
                          :revocation_list_url)))
@@ -360,12 +359,8 @@
         related (->> (get badge :related [])
                      (map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
-        default-language (get badge (keyword "@language") "")
+        default-language (get badge (keyword "@language") "")]
 
-
-
-
-       ]
     (assoc initial
            :badge (merge {:id ""
                           :remote_url nil

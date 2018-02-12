@@ -4,7 +4,7 @@
             [clj-http.client :as http]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
-            [clojure.string :refer [blank? split upper-case lower-case capitalize starts-with? includes?]]
+            [clojure.string :refer [blank? split upper-case lower-case capitalize includes?]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time date-from-unix-time]]
@@ -144,8 +144,6 @@
       (log/error "parse-assertion-json: " _))))
 
 
-
-
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
         content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
@@ -179,8 +177,6 @@
      (assoc my-badge :content content
                      :endorsements @endorsement-container
                      :issuer-endorsements issuer-endorsements)))
-
-
 
 
 (defn get-badge
@@ -303,11 +299,6 @@
             (http/get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
             (catch Object _
               (log/error "send-badge-info-to-obf: " _))))))))
-
-
-
-
-
 
 
 (defn user-badge-evidence
