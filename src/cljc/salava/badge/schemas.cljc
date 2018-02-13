@@ -110,6 +110,18 @@
                                                      (assoc :badges [(select-keys Badge [:id :name :image_file])]))]})
 
 
+(s/defschema Endorsement {:id s/Str
+                          :content s/Str
+                          :issued_on s/Int
+                          :issuer {:id   s/Str
+                                   :language_code s/Str
+                                   :name s/Str
+                                   :url  s/Str
+                                   :description (s/maybe s/Str)
+                                   :image_file (s/maybe s/Str)
+                                   :email (s/maybe s/Str)
+                                   :revocation_list_url (s/maybe s/Str)
+                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]}})
 
 (s/defschema BadgeContent {:id    s/Str
                            :language_code s/Str
@@ -121,7 +133,6 @@
                                                  :description s/Str})]
                            :tags      [(s/maybe s/Str)]})
 
-
 (s/defschema IssuerContent {:id   s/Str
                             :language_code s/Str
                             :name s/Str
@@ -130,21 +141,7 @@
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
                             :revocation_list_url (s/maybe s/Str)
-            (s/optional-key :endorsement) [(s/maybe s/Str)]})
-
-
-(s/defschema EndorserContent (-> IssuerContent
-                 (dissoc :language_code
-                         :revocation_list_url
-                         )))
-
-
-(s/defschema EndorsementContent {:id s/Str
-                                 :endorsement_comment (s/maybe s/Str)
-                                 :issuedOn (s/maybe s/Int)
-                                 :endorser (s/maybe s/Str)
-                                 :endorser_info EndorserContent})
-
+                            :endorsement [(s/maybe Endorsement)]})
 
 
 (s/defschema CreatorContent (-> IssuerContent

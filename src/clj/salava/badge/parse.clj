@@ -22,8 +22,20 @@
                                                  :description s/Str})]
                            :tags      [(s/maybe s/Str)]})
 
+(s/defschema Endorsement {:id s/Str
+                          :content s/Str
+                          :issued_on s/Int
+                          :issuer {:id s/Str
+                                   :language_code s/Str
+                                   :name s/Str
+                                   :url  s/Str
+                                   :description (s/maybe s/Str)
+                                   :image_file (s/maybe s/Str)
+                                   :email (s/maybe s/Str)
+                                   :revocation_list_url (s/maybe s/Str)
+                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]}})
 
-(s/defschema IssuerContent {:id   s/Str
+(s/defschema IssuerContent {:id s/Str
                             :language_code s/Str
                             :name s/Str
                             :url  s/Str
@@ -31,8 +43,7 @@
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
                             :revocation_list_url (s/maybe s/Str)
-            (s/optional-key :endorsement)      [(s/maybe s/Str)]
-                            })
+                            :endorsement [(s/maybe Endorsement)]})
 
 
 (s/defschema CreatorContent (-> IssuerContent
@@ -44,17 +55,6 @@
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
 
-(s/defschema EndorserContent (-> IssuerContent
-                 (dissoc :language_code
-                         :revocation_list_url)))
-
-
-(s/defschema EndorsementContent {:id s/Str
-                                 :endorsement_comment (s/maybe s/Str)
-                                 :issuedOn (s/maybe s/Int)
-                                 :endorser (s/maybe s/Str)
-                                 :endorser_info EndorserContent})
-
 (s/defschema Badge {:id s/Str
                     :remote_url (s/maybe s/Str)
                     :remote_id (s/maybe s/Str)
@@ -65,7 +65,7 @@
                     :criteria [CriteriaContent]
                     :issuer [IssuerContent]
                     :creator [(s/maybe CreatorContent)]
-                    :endorsement [(s/maybe EndorsementContent)]
+                    :endorsement [(s/maybe Endorsement)]
                     :published (s/enum 0 1)
                     :last_received s/Int
                     :recipient_count s/Int})
@@ -80,8 +80,6 @@
                        :audience (s/maybe s/Str)
                        :ctime s/Int
                        :mtime s/Int})
-
-
 
 
 (s/defschema UserBadge {:id (s/maybe s/Int)
@@ -185,9 +183,11 @@
                              :description (:description issuer)
                              :url (q-url (:origin issuer))
                              :email (:contact issuer)
+                             :endorsement []
                              :image_file nil
                              :revocation_list_url nil}]
                    :creator nil
+                   :endorsement []
                    :published 0
                    :last_received 0
                    :recipient_count 0}
@@ -228,45 +228,43 @@
   :evidence_url (q-url (:evidence assertion))}
 
 ;;
-(defn get-endorser-info [url]
-  (when-not (nil? url)
-    (let [endorser-data (http/json-get (:issuer url))]
-       [{:id (:id endorser-data)
-         :name (:name endorser-data)
-         :url (:url endorser-data)
-         :description (:description endorser-data)
-         :image_file (:image_file endorser-data)
-         :email (:email endorser-data)
-         :endorsement (if-not (nil? (:endorsement endorser-data))
-                        (let [endorsements (http/json-get (:endorsement endorser-data))]
-                               (mapv #((json/write-str
-                                        {:id (:id %)
-                                        :endorsement_comment (get-in % [:claim :endorsement_comment])
-                                        :endorser (:issuer %)
-                                        :issuedOn (:issuedOn %)
-                                        :endorser_info (get-endorser-info (:issuer %))})) endorsements )))
-         }])))
 
+(defn- get-endorsement
+  ([item] (get-endorsement item true))
+  ([item recur?]
+   (if (empty? (:endorsement item))
+     []
+     (->> (:endorsement item)
+          (map #(if (map? %) % (http/json-get %)))
+          (map (fn [e]
+                 {:id ""
+                  :content (get-in e [:claim :endorsementComment] "")
+                  :issued_on (u/str->epoch (:issuedOn e))
+                  :issuer (as-> (:issuer e) $
+                            (if (map? $) $ (http/json-get $))
+                            {:id ""
+                             :language_code ""
+                             :name (:name $)
+                             :description (:description $)
+                             :url (:url $)
+                             :email (:contact $)
+                             :image_file nil ;;TODO (:image $)
+                             :revocation_list_url nil})}))
+          (map (fn [e]
+                 (if recur?
+                   (assoc-in e [:issuer :endorsement] (get-endorsement (:issuer e) false))
+                   (assoc-in e [:issuer :endorsement] []))))))))
 
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
                  (let [language (get badge (keyword "@language") "")
                        issuer (if (map? (:issuer badge)) (:issuer badge) (http/json-get (:issuer badge)))
-                       issuer-endorsement (when-not (nil? (:endorsement issuer))
-                                             (let [endorsements (http/json-get (:endorsement issuer))]
-                                                (mapv #({:id (:id %)
-                                                         :endorsement_comment (get-in % [:claim :endorsement_comment])
-                                                         :endorser (:issuer %)
-                                                         :issuedOn (:issuedOn %)
-                                                         :endorser_info (get-endorser-info (:issuer %))}) endorsements )))
-
                        criteria-url  (if (map? (:criteria badge)) (get-in badge [:criteria :id]) (:criteria badge))
                        criteria-text (if (map? (:criteria badge))
                                        (get-in badge [:criteria :narrative]
                                                (http/alternate-get "text/x-markdown" criteria-url))
                                        (http/alternate-get "text/x-markdown" (:criteria badge)))
-                       creator-url (get-in badge [:extensions:OriginalCreator :url]) ]
-
+                       creator-url (get-in badge [:extensions:OriginalCreator :url])]
 
                    {:content  [{:id ""
                                 :language_code language
@@ -287,26 +285,19 @@
                                 :email (:contact issuer)
                                 :image_file nil
                                 :revocation_list_url nil
-                                :endorsement issuer-endorsement
-                                }]
+                                :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
                                (let [data (http/json-get creator-url)]
                                  [{:id ""
-                                  :language_code language
-                                  :name        (:name data)
-                                  :image_file  (:image data)
-                                  :description (:description data)
-                                  :url   (:url data)
-                                  :email (:email data)
-                                  :json_url creator-url}]))
-
-                    :endorsement  (if-not (nil? (:endorsement badge))
-                                     (let [endorsements (http/json-get (:endorsement badge))]
-                                            (mapv #({:id (:id %)
-                                                      :endorsement_comment (get-in % [:claim :endorsement_comment])
-                                                      :endorser (:issuer %)
-                                                      :issuedOn (:issuedOn %)
-                                                      :endorser_info (get-endorser-info (:issuer %))}) endorsements )))}))
+                                   :language_code language
+                                   :name        (:name data)
+                                   :image_file  (:image data)
+                                   :description (:description data)
+                                   :url   (:url data)
+                                   :email (:email data)
+                                   :endorsement (get-endorsement data)
+                                   :json_url creator-url}]))
+                    :endorsement (get-endorsement badge)}))
         now (u/now)
         evidence (cond
                    ;; inline narrative
@@ -395,6 +386,7 @@
                       :description (:description data)
                       :url   (:url data)
                       :email (:email data)
+                      :endorsement []
                       :json_url creator-url}]))]
 
     (assoc initial
@@ -422,8 +414,10 @@
                              :url (:url issuer)
                              :email (:contact issuer)
                              :image_file nil
+                             :endorsement []
                              :revocation_list_url nil}]
                    :creator creator
+                   :endorsement []
                    :published 0
                    :last_received 0
                    :recipient_count 0}
@@ -538,7 +532,8 @@
                 :last_checked nil
                 :old_id nil)
          (badge-content assertion)
-         valid-badge))))
+         valid-badge
+         ))))
 
 ;;;
 

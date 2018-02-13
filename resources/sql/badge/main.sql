@@ -539,8 +539,8 @@ INSERT IGNORE INTO creator_content (id, name, url, description, image_file, emai
         VALUES (:id, :name, :url, :description, :image_file, :email, :json_url, :language_code);
 
 --name: insert-endorsement-content!
-INSERT IGNORE INTO endorsement_content (id, endorsement_comment, issuedOn, endorser)
-        VALUES (:id, :endorsement_comment, :issuedOn, :endorser);
+INSERT IGNORE INTO endorsement_content (id, issuer_content_id, content, issued_on)
+        VALUES (:id, :issuer_id, :content, :issued_on);
 
 -- name: insert-endorser-content!
 INSERT IGNORE INTO endorser_content (id, name, url, description, image_file, email)

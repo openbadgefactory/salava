@@ -3,6 +3,7 @@
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
+            [clojure.pprint :refer [pprint]]
             [clojure.data.json :as json]
             [schema.core :as s]
             [salava.core.helper :refer [dump]]
@@ -84,6 +85,7 @@
     item
     (assoc item :image_file (u/file-from-url ctx (:image_file item)))))
 
+;;;TODO endorsement images
 (defn save-images [ctx badge]
   (-> badge
       (update :content  (fn [content]  (mapv #(save-image ctx %) content)))
@@ -93,13 +95,14 @@
 
 
 (defn save-criteria-content! [t-con input]
+  (log/debug "save-criteria-content!")
   (s/validate schemas/CriteriaContent input)
   (let [id (content-id input)]
     (insert-criteria-content! (assoc input :id id) {:connection t-con})
     id))
 
 
-(defn save-endorser-endorsements [t-con input]
+#_(defn save-endorser-endorsements [t-con input]
     (let [ endorser-id (content-id (-> input
                                      (dissoc :endorsement)))
            endorsements (:endorsement input)]
@@ -129,42 +132,47 @@
                          (str endorser-id endorser) endorsement-id])))
   endorser-id))
 
-(defn save-endorsement-content! [t-con input]
-  (when input
-    (s/validate schemas/EndorsementContent input)
-    (let [ endorser-id (save-endorser-endorsements t-con (:endorser_info input))
-           id (content-id (-> input
-                             (dissoc :endorser_info)
-                             (assoc :endorser endorser-id)))]
-        (insert-endorsement-content! (assoc input :id id
-                                                  :endorser endorser-id) {:connection t-con})
-
-        (jdbc/execute! t-con ["INSERT IGNORE INTO client_endorsement_content (client_content_id, endorsement_content_id) VALUES (?,?)"
-                         endorser-id id])
-        id)))
+(declare save-endorsement-content!)
 
 (defn save-issuer-content! [t-con input]
+  (log/debug "save-issuer-content!")
   (s/validate schemas/IssuerContent input)
-  (let [ id (content-id (-> input
-                            (dissoc :endorsement)))]
-
+  (let [id (content-id (-> input (dissoc :endorsement)))]
     (insert-issuer-content! (assoc input :id id) {:connection t-con})
-
     (doseq [endorsement (:endorsement input)
-            :let [ endorsement-id (save-endorsement-content! t-con (json/read-str endorsement :key-fn keyword) )]]
+            :let [endorsement-id (save-endorsement-content! t-con endorsement)]]
+      (jdbc/execute! t-con ["INSERT IGNORE INTO issuer_endorsement_content (issuer_content_id, endorsement_content_id) VALUES (?,?)"
+                            id endorsement-id]))
+    id))
 
-      (jdbc/execute! t-con ["INSERT IGNORE INTO client_endorsement_content (client_content_id, endorsement_content_id) VALUES (?,?)"
-                         id endorsement-id])
-      ) id))
+(defn save-endorsement-content! [t-con input]
+  (when input
+    (log/debug "save-endorsement-content!")
+    (s/validate schemas/Endorsement input)
+    (let [issuer-id (save-issuer-content! t-con (:issuer input))
+          id (content-id (-> input
+                             (assoc :issuer_content_id issuer-id)
+                             (dissoc :issuer)))]
+      (insert-endorsement-content! (-> input
+                                       (assoc :id id)
+                                       (assoc :issuer_content_id issuer-id))
+                                   {:connection t-con})
+      id)))
 
 (defn save-creator-content! [t-con input]
   (when input
+    (log/debug "save-creator-content!")
     (s/validate schemas/CreatorContent input)
-    (let [id (content-id input)]
+    (let [id (content-id (-> input (dissoc :endorsement)))]
       (insert-creator-content! (assoc input :id id) {:connection t-con})
+      (doseq [endorsement (:endorsement input)
+              :let [endorsement-id (save-endorsement-content! t-con endorsement)]]
+        (jdbc/execute! t-con ["INSERT IGNORE INTO issuer_endorsement_content (issuer_content_id, endorsement_content_id) VALUES (?,?)"
+                              id endorsement-id]))
       id)))
 
 (defn save-badge-content! [t-con input]
+  (log/debug "save-badge-content!")
   (s/validate schemas/BadgeContent input)
   (let [id (content-id input)]
     (insert-badge-content! (assoc input :id id) {:connection t-con})
@@ -211,6 +219,7 @@
     badge-id))
 
 (defn save-user-badge! [ctx user-badge]
+  #_(pprint (get-in user-badge [:badge :endorsement]))
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
     (let [now (u/now)
           badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! tx))
@@ -228,4 +237,3 @@
                                                        (assoc :user_badge_id user-badge-id
                                                               :ctime now
                                                               :mtime now)))))))))
-
