@@ -566,7 +566,7 @@
         header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
         public-key (-> (get-in payload [:verify :url]) http/http-get keys/str->public-key)
-        body       (-> input (jws/unsign public-key {:alg (keyword (:alg header))}) (String. "UTF-8"))]
+        body       (-> input (jws/unsign public-key {:alg (-> header :alg string/lower-case keyword)}) (String. "UTF-8"))]
     (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
 
 (defmethod str->badge :blank [_ _]
