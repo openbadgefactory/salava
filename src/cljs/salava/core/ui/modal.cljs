@@ -9,19 +9,13 @@
             ;[salava.core.ui.dispatch :refer [site-navi]]
             ))
 
-
 (defn modal-navi []
   (apply merge (plugin-fun (session/get :plugins) "modal" "modalroutes")))
 
 (def views (atom []))
 
 (defn set-new-view [route params]
-  (reset! views (conj @views [((get-in (modal-navi) route) params)]))
-)
-
-
-
-
+  (reset! views (conj @views [((get-in (modal-navi) route) params)])))
 
 (defn modal-content [] 
   [:div {:id "badge-content"}
@@ -45,9 +39,7 @@
         [:span {:aria-hidden             "true"
                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
     [:div (last @views)]]
-   [:div.modal-footer ]
-   
-   ])
+   [:div.modal-footer ]])
 
 (defn modal-init [view]
   (create-class {:component-will-mount   (fn [] (reset! views [view]))
@@ -57,7 +49,7 @@
                                                     #_(if (and init-data state)
                                                         (init-data state))))}))
 
-
-
 (defn open-modal [route params]
-  (m/modal! [modal-init [((get-in (modal-navi) route) params)]] {:size :lg}))
+  (if (empty? @views)
+    (m/modal! [modal-init [((get-in (modal-navi) route) params)]] {:size :lg})
+    (set-new-view route params)))

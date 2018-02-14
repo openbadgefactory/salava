@@ -7,6 +7,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
+            [salava.badge.ui.modal :as bm]
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.endorsement :as end]
             [salava.badge.ui.settings :as se]
@@ -84,19 +85,49 @@
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
+
+#_(defn badge-endorsement-modal-link [badge-id endorsement-count]
+  [:div.row
+   [:div.col.xs-12
+    [:hr.endorsementhr]
+    [:a.endorsementlink {:class "endorsement-link"
+                         :href "#"
+                         :on-click #(do (.preventDefault %)
+                                        (mo/open-modal [:badge :endorsement] badge-id))}
+     (if (== endorsement-count 1)
+       (str  endorsement-count " " (t :badge/endorsement))
+       (str  endorsement-count " " (t :badge/endorsements)))]]])
+
+#_(defn issuer-modal-link [issuer-id name]
+      [:div {:class "issuer-data clearfix"}
+       [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+       [:div {:class "issuer-links pull-label-left inline"}
+        [:a {:href "#"
+             :on-click #(do (.preventDefault %)
+                            (mo/open-modal [:badge :issuer] issuer-id))} name]]])
+
+#_(defn creator-modal-link [creator-id name]
+      [:div {:class "issuer-data clearfix"}
+       [:label.pull-left (t :badge/Createdby) ":"]
+       [:div {:class "issuer-links pull-label-left inline"}
+        [:a {:href "#"
+             :on-click #(do (.preventDefault %)
+                            (mo/open-modal [:badge :creator] creator-id))} name]]])
+
+
 (defn content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issued_on expires_on
                 revoked first_name last_name user-logged-in? congratulated? congratulations
                 view_count evidence_url issued_by_obf verified_by_obf obf_url
-                recipient_count assertion  qr_code owner message_count content issuer-endorsements endorsements]} @state
+                recipient_count assertion  qr_code owner message_count content issuer-endorsements]} @state
         expired?                                                                 (bh/badge-expired? expires_on)
         show-recipient-name-atom                                                 (cursor state [:show_recipient_name])
         revoked                                                                  (pos? revoked)
         selected-language                                                        (cursor state [:content-language])
         {:keys [name description tags criteria_content image_file
-                issuer_content_name issuer_content_url issuer_contact
+                issuer_content_id issuer_content_name issuer_content_url issuer_contact
                 issuer_image issuer_description criteria_url
-                creator_name creator_url creator_email
+                creator_content_id creator_name creator_url creator_email
                 creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
 
     [:div {:id "badge-info"}
@@ -185,8 +216,7 @@
            (if (session/get :user)
              [badge-message-link message_count badge_id])
 
-           (when (> endorsement_count 0)
-                 [end/endorsement-modal-link endorsement_count endorsements])]
+           (bm/badge-endorsement-modal-link id endorsement_count)]
 
           [:div {:class "col-md-9 badge-info"}
            [:div.row
@@ -197,8 +227,8 @@
              (if expired?
                [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
              [:h1.uppercase-header name]
-             (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
-             (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
+             (bm/issuer-modal-link issuer_content_id issuer_content_name)
+             (bm/creator-modal-link creator_content_id creator_name)
 
              (if (and issued_on (> issued_on 0))
                [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])

@@ -230,6 +230,38 @@ JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND bc.language_
 WHERE badge.id = :id
 GROUP BY badge.id, bc.language_code, cc.language_code, ic.language_code
 
+--name: select-badge-endorsements
+SELECT e.id, e.content, e.issued_on,
+    i.id AS issuer_id,
+    i.name AS issuer_name,
+    i.description AS issuer_description,
+    i.image_file AS issuer_image,
+    i.url AS issuer_url,
+    i.email AS issuer_email
+FROM endorsement_content e
+INNER JOIN badge_endorsement_content be ON e.id = be.endorsement_content_id
+INNER JOIN issuer_content i ON e.issuer_content_id = i.id
+WHERE be.badge_id = :id
+ORDER BY e.issued_on
+
+--name: select-issuer
+SELECT * FROM issuer_content WHERE id = :id
+
+--name: select-issuer-endorsements
+SELECT e.id, e.content, e.issued_on,
+    i.id AS issuer_id,
+    i.name AS issuer_name,
+    i.description AS issuer_description,
+    i.image_file AS issuer_image,
+    i.url AS issuer_url,
+    i.email AS issuer_email
+FROM endorsement_content e
+INNER JOIN issuer_endorsement_content ie ON e.id = ie.endorsement_content_id
+INNER JOIN issuer_content i ON e.issuer_content_id = i.id
+WHERE ie.issuer_content_id = :id
+ORDER BY e.issued_on
+
+-- FIXME
 --name: get-endorsement-info
 SELECT badge_id,
 ec.id AS endorsement_id,
@@ -246,21 +278,23 @@ JOIN endorsement_content AS ec ON (ec.id = bec.endorsement_content_id)
 JOIN endorser_content AS endc ON (endc.id = ec.endorser)
 WHERE badge_id = :id
 
+-- FIXME
 --name: get-issuer-endorsements
-SELECT ec.endorsement_comment AS endorsement_comment,
-ec.issuedOn AS endorsement_issuedOn,
-ec.endorser AS endorser_id,
-endc.name AS endorser_name,
-endc.description AS endorser_description,
-endc.image_file AS endorser_image,
-endc.url AS endorser_url,
-endc.email AS endorser_email
-FROM client_endorsement_content AS cec
-JOIN endorsement_content AS ec ON (ec.id = cec.endorsement_content_id)
-JOIN issuer_content AS ic ON (ic.id = cec.client_content_id)
-JOIN endorser_content AS endc ON (endc.id = ec.endorser)
-WHERE client_content_id = :id
+SELECT ec.content,
+    ec.issued_on
+    e.id AS endorser_id,
+    e.name AS endorser_name,
+    e.description AS endorser_description,
+    e.image_file AS endorser_image,
+    e.url AS endorser_url,
+    e.email AS endorser_email
+FROM issuer_endorsement_content ie
+    INNER JOIN endorsement_content ec ON ie.endorsement_content_id = ec.id
+    INNER JOIN issuer_content i ON ie.issuer_content_id = i.id
+    INNER JOIN issuer_content e ON ec.issuer_content_id = e.id
+WHERE ie.issuer_content_id = :id
 
+-- FIXME
 --name: get-endorser-endorsements
 SELECT ec.endorsement_comment AS endorsement_comment,
 ec.issuedOn AS endorsement_issuedOn,
@@ -275,9 +309,9 @@ JOIN endorsement_content AS ec ON (ec.id = cec.endorsement_content_id)
 LEFT JOIN endorser_content AS endc ON (endc.id = ec.endorser)
 WHERE client_content_id =:id
 
+-- FIXME
 --name: get-all-client-endorsements
-SELECT cec.client_content_id AS client_id
-FROM client_endorsement_content AS cec
+SELECT issuer_content_id AS client_id FROM issuer_endorsement_content
 
 
 --name: replace-badge-tag!
@@ -540,7 +574,7 @@ INSERT IGNORE INTO creator_content (id, name, url, description, image_file, emai
 
 --name: insert-endorsement-content!
 INSERT IGNORE INTO endorsement_content (id, issuer_content_id, content, issued_on)
-        VALUES (:id, :issuer_id, :content, :issued_on);
+        VALUES (:id, :issuer_content_id, :content, :issued_on);
 
 -- name: insert-endorser-content!
 INSERT IGNORE INTO endorser_content (id, name, url, description, image_file, email)

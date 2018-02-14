@@ -98,9 +98,9 @@
 
 
 (defn badge-info-block [info owner owner_id]
-  (let [{:keys [issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements creator_name creator_url creator_description creator_email creator_image]} info]
+  (let [{:keys [issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image creator_name creator_url creator_description creator_email creator_image]} info]
     [:div
-     (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
+     (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image)
      (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
      (if (and owner (not (blank? owner_id)))
        [:div {:class "issuer-data clearfix"}

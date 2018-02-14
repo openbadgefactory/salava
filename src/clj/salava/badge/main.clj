@@ -146,37 +146,8 @@
 
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
-        content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
-        endorsements (get-endorsement-info {:id (:badge_id my-badge)} (u/get-db ctx))
-        issuer-id (:issuer_content_id (first content))
-        issuer-endorsements (into [] (get-issuer-endorsements {:id issuer-id} (u/get-db ctx)))
-        endorsement-container (atom ())
-        filtered-id-container (atom #{})
-        client-ids (get-all-client-endorsements {} (u/get-db ctx))
-        endorser-atom (atom [])]
-
-;; process badge endorsement and endorser endorsement
-    (when (seq? endorsements)
-     (doseq [endorsement endorsements
-             :let [endorsement-endorser-id (:endorser_id endorsement)
-                   cid client-ids]]
-       (reset! filtered-id-container #{})
-       (doseq [id cid
-              :when (and (includes? (:client_id id) endorsement-endorser-id) (> (count (:client_id id)) (count endorsement-endorser-id)))]
-         (swap! filtered-id-container conj (:client_id id)))
-
-       (if (empty? @filtered-id-container)
-          (swap! endorsement-container conj endorsement)
-          (do
-            (reset! endorser-atom [])
-            (doseq [id @filtered-id-container
-                     :let [endorser (get-endorser-endorsements {:id id} (into {:result-set-fn first} (u/get-db ctx)))]]
-                 (swap! endorser-atom conj endorser))
-            (swap! endorsement-container conj (assoc endorsement :endorser_endorsements @endorser-atom))))))
-
-     (assoc my-badge :content content
-                     :endorsements @endorsement-container
-                     :issuer-endorsements issuer-endorsements)))
+        content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
+    (assoc my-badge :content content)))
 
 
 (defn get-badge
@@ -206,6 +177,44 @@
                  :assertion (parse-assertion-json (:assertion_json badge))
 
                  :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))))
+
+
+(defn get-endorsements [ctx badge-id user-id]
+  (let [user-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
+        visible (or (= user-id (:owner user-badge)) (not= "private" (:visibility user-badge)))]
+    (if visible
+      (map (fn [e]
+             {:id (:id e)
+              :content (:content e)
+              :issued_on (:issued_on e)
+              :issuer {:id (:issuer_id e)
+                       :language_code ""
+                       :name (:issuer_name e)
+                       :url  (:issuer_url e)
+                       :description (:issuer_description e)
+                       :image_file (:issuer_image e)
+                       :email (:issuer_email e)
+                       :revocation_list_url nil
+                       :endorsement []}})
+           (select-badge-endorsements {:id (:badge_id user-badge)} (u/get-db ctx)))
+      [])))
+
+(defn get-issuer-endorsements [ctx issuer-id]
+  (let [issuer (select-issuer {:id issuer-id} (u/get-db-1 ctx))]
+    (assoc issuer :endorsement (map (fn [e]
+                                       {:id (:id e)
+                                        :content (:content e)
+                                        :issued_on (:issued_on e)
+                                        :issuer {:id (:issuer_id e)
+                                                 :language_code ""
+                                                 :name (:issuer_name e)
+                                                 :url  (:issuer_url e)
+                                                 :description (:issuer_description e)
+                                                 :image_file (:issuer_image e)
+                                                 :email (:issuer_email e)
+                                                 :revocation_list_url nil
+                                                 :endorsement []}})
+                                     (select-issuer-endorsements {:id issuer-id} (u/get-db ctx))))))
 
 
 (defn- check-email [recipient email]

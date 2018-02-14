@@ -5,6 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
+            [salava.badge.ui.modal :as bm]
             [salava.user.ui.helper :refer [profile-link-inline-modal]]
             [salava.core.ui.rate-it :as r]
             [clojure.string :as s]
@@ -15,7 +16,7 @@
             [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
-            [salava.badge.ui.endorsement :refer [endorsement-modal-link]]
+            ;[salava.badge.ui.endorsement :refer [endorsement-modal-link]]
             ))
 
 
@@ -28,9 +29,9 @@
 
 (defn content [state show-messages]
   (let [{:keys [badge public_users private_user_count reload-fn]} @state
-        {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count endorsements]} badge
+        {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
         selected-language (cursor state [:content-language])
-        {:keys [name description tags criteria_content image_file image_file issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description issuer-endorsements criteria_url  creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
+        {:keys [name description tags criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
     [:div
      [:div.col-xs-12
@@ -50,12 +51,10 @@
                    (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
         [:div
-         [gallery-modal-message-info-link show-messages badge_id]
-         ]
+         [gallery-modal-message-info-link show-messages badge_id]]
 
-        (if (> endorsement_count 0)
-            [endorsement-modal-link endorsement_count endorsements])
-         ]
+        (bm/badge-endorsement-modal-link badge_id endorsement_count)]
+
        [:div {:class "col-md-9 badge-info"}
         (content-language-selector selected-language content)
         (if @show-messages
@@ -66,8 +65,10 @@
           [:div.rowcontent
            [:h1.uppercase-header name]
            [:div
-            (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
-            (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
+            #_(bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
+            #_(bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
+            (bm/issuer-modal-link issuer_content_id issuer_content_name)
+            (bm/creator-modal-link creator_content_id creator_name)
             [:div.row
              [:div {:class "col-md-12 description"}
               description]]
