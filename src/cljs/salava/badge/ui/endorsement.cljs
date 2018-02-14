@@ -32,7 +32,8 @@
     (init-badge-endorsements endorsements badge-id)
     (fn []
       [:div.row
-       [:h1.uppercase-header.endorsement-heading  (t :badge/endorsements)]
-       (into [:div]
-             (for [endorsement @endorsements]
-               (endorsement-row endorsement)))])))
+       [:div.col-xs-12
+        [:h3 (t :badge/BadgeEndorsedBy)]
+        (into [:div]
+              (for [endorsement @endorsements]
+                (endorsement-row endorsement)))]])))
