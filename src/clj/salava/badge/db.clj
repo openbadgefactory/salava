@@ -85,13 +85,21 @@
     item
     (assoc item :image_file (u/file-from-url ctx (:image_file item)))))
 
+
+(defn- save-endorsement-images [ctx endorsements]
+  (mapv (fn [e]
+          (let [issuer (save-image ctx (:issuer e))]
+            (assoc e :issuer (update issuer :endorsement #(save-endorsement-images ctx %)))))
+        endorsements))
+
 ;;;TODO endorsement images
 (defn save-images [ctx badge]
   (-> badge
       (update :content  (fn [content]  (mapv #(save-image ctx %) content)))
       (update :criteria (fn [criteria] (mapv #(save-image ctx %) criteria)))
       (update :issuer   (fn [issuer]   (mapv #(save-image ctx %) issuer)))
-      (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))))
+      (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))
+      (update :endorsement (fn [e] (save-endorsement-images ctx e)))))
 
 
 (defn save-criteria-content! [t-con input]
@@ -139,6 +147,8 @@
   (s/validate schemas/IssuerContent input)
   (let [id (content-id (-> input (dissoc :endorsement)))]
     (insert-issuer-content! (assoc input :id id) {:connection t-con})
+
+    (jdbc/execute! t-con ["DELETE FROM issuer_endorsement_content WHERE issuer_content_id = ?" id])
     (doseq [endorsement (:endorsement input)
             :let [endorsement-id (save-endorsement-content! t-con endorsement)]]
       (jdbc/execute! t-con ["INSERT IGNORE INTO issuer_endorsement_content (issuer_content_id, endorsement_content_id) VALUES (?,?)"
@@ -165,6 +175,8 @@
     (s/validate schemas/CreatorContent input)
     (let [id (content-id (-> input (dissoc :endorsement)))]
       (insert-creator-content! (assoc input :id id) {:connection t-con})
+
+      (jdbc/execute! t-con ["DELETE FROM issuer_endorsement_content WHERE issuer_content_id = ?" id])
       (doseq [endorsement (:endorsement input)
               :let [endorsement-id (save-endorsement-content! t-con endorsement)]]
         (jdbc/execute! t-con ["INSERT IGNORE INTO issuer_endorsement_content (issuer_content_id, endorsement_content_id) VALUES (?,?)"
@@ -189,11 +201,11 @@
         creator-content-id (sort (map #(save-creator-content! tx %) (:creator badge)))
         endorsement-content-id  (sort (map #(save-endorsement-content! tx %) (:endorsement badge)))
 
+        ;;NB: endorsements are not included in badge id hash
         badge-id (u/hex-digest "sha256" (apply str (concat badge-content-id
                                                            criteria-content-id
                                                            issuer-content-id
-                                                           creator-content-id
-                                                           endorsement-content-id)))]
+                                                           creator-content-id)))]
 
     (doseq [content-id badge-content-id]
       (jdbc/execute! tx ["INSERT IGNORE INTO badge_badge_content (badge_id, badge_content_id) VALUES (?,?)"
@@ -208,6 +220,7 @@
       (jdbc/execute! tx ["INSERT IGNORE INTO badge_creator_content (badge_id, creator_content_id) VALUES (?,?)"
                          badge-id creator-id]))
 
+    (jdbc/execute! tx ["DELETE FROM badge_endorsement_content WHERE badge_id = ?" badge-id])
     (doseq [endorsement-id endorsement-content-id]
       (jdbc/execute! tx ["INSERT IGNORE INTO badge_endorsement_content (badge_id, endorsement_content_id) VALUES (?,?)"
                          badge-id endorsement-id]))
@@ -219,7 +232,6 @@
     badge-id))
 
 (defn save-user-badge! [ctx user-badge]
-  #_(pprint (get-in user-badge [:badge :endorsement]))
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
     (let [now (u/now)
           badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! tx))

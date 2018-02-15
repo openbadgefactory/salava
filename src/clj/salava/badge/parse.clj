@@ -4,6 +4,7 @@
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.data.json :as json]
+            [clojure.pprint :refer [pprint]]
             [clojure.xml :as xml]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
@@ -230,30 +231,37 @@
 ;;
 
 (defn- get-endorsement
-  ([item] (get-endorsement item true))
-  ([item recur?]
-   (if (empty? (:endorsement item))
-     []
-     (->> (:endorsement item)
-          (map #(if (map? %) % (http/json-get %)))
-          (map (fn [e]
-                 {:id ""
-                  :content (get-in e [:claim :endorsementComment] "")
-                  :issued_on (u/str->epoch (:issuedOn e))
-                  :issuer (as-> (:issuer e) $
-                            (if (map? $) $ (http/json-get $))
-                            {:id ""
-                             :language_code ""
-                             :name (:name $)
-                             :description (:description $)
-                             :url (:url $)
-                             :email (:contact $)
-                             :image_file nil ;;TODO (:image $)
-                             :revocation_list_url nil})}))
-          (map (fn [e]
-                 (if recur?
-                   (assoc-in e [:issuer :endorsement] (get-endorsement (:issuer e) false))
-                   (assoc-in e [:issuer :endorsement] []))))))))
+  ([item] (get-endorsement item 3))
+  ([item depth]
+   (let [item-id (:id item)]
+     (if (empty? (:endorsement item))
+       []
+       (->> (:endorsement item)
+            (map #(if (map? %) % (http/json-get %)))
+            (map (fn [e]
+                   (if (= item-id (get-in e [:claim :id]))
+                     {:id ""
+                      :content (get-in e [:claim :endorsementComment] "")
+                      :issued_on (u/str->epoch (:issuedOn e))
+                      :issuer (as-> (:issuer e) $
+                                (if (map? $) $ (http/json-get $))
+                                {:id (:id $)
+                                 :language_code ""
+                                 :name (:name $)
+                                 :description (:description $)
+                                 :url (:url $)
+                                 :email (:contact $)
+                                 :image_file (:image $)
+                                 :revocation_list_url nil})}
+                     nil)))
+            (remove nil?)
+            (map (fn [e]
+                   (if (pos? depth)
+                     (assoc-in e [:issuer :endorsement]
+                               (-> (get-in e [:issuer :id])
+                                   http/json-get
+                                   (get-endorsement (dec depth))))
+                     (assoc-in e [:issuer :endorsement] [])))))))))
 
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
@@ -283,7 +291,7 @@
                                 :description (:description issuer)
                                 :url (:url issuer)
                                 :email (:contact issuer)
-                                :image_file nil
+                                :image_file (:image issuer)
                                 :revocation_list_url nil
                                 :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
