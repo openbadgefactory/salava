@@ -57,7 +57,21 @@
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
-             
+
+             (GET "/issuer/:issuerid" []
+                  :return schemas/IssuerContent
+                  :path-params [issuerid :- String]
+                  :summary "Get issuer details"
+                  :current-user current-user
+                  (ok (b/get-issuer-endorsements ctx issuerid)))
+
+             (GET "/endorsement/:badgeid" []
+                  :return [schemas/Endorsement]
+                  :path-params [badgeid :- Long]
+                  :summary "Get badge endorsements"
+                  :current-user current-user
+                  (ok (b/get-endorsements ctx badgeid (:id current-user))))
+
              (GET "/info-embed/:badgeid" []
                   ;:return schemas/UserBadgeContent
                   :path-params [badgeid :- Long]

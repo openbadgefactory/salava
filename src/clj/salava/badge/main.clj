@@ -3,7 +3,7 @@
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
-            [clojure.string :refer [blank? split upper-case lower-case capitalize]]
+            [clojure.string :refer [blank? split upper-case lower-case capitalize includes?]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time date-from-unix-time]]
@@ -144,14 +144,10 @@
       (log/error "parse-assertion-json: " _))))
 
 
-
-
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
-        content (map (fn [content] (update content :criteria_content u/md->html) ) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
-    (assoc my-badge :content content))
-  )
-
+        content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
+    (assoc my-badge :content content)))
 
 
 (defn get-badge
@@ -168,7 +164,9 @@
         view-count (if owner? (select-badge-view-count {:user_badge_id badge-id} (into {:result-set-fn first :row-fn :count} (u/get-db ctx))))
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
-                                                      (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))]
+                                                      (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
+
+    ]
     (assoc badge :congratulated? user-congratulation?
                  :congratulations all-congratulations
                  :view_count view-count
@@ -179,6 +177,44 @@
                  :assertion (parse-assertion-json (:assertion_json badge))
 
                  :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))))
+
+
+(defn get-endorsements [ctx badge-id user-id]
+  (let [user-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
+        visible (or (= user-id (:owner user-badge)) (not= "private" (:visibility user-badge)))]
+    (if visible
+      (map (fn [e]
+             {:id (:id e)
+              :content (:content e)
+              :issued_on (:issued_on e)
+              :issuer {:id (:issuer_id e)
+                       :language_code ""
+                       :name (:issuer_name e)
+                       :url  (:issuer_url e)
+                       :description (:issuer_description e)
+                       :image_file (:issuer_image e)
+                       :email (:issuer_email e)
+                       :revocation_list_url nil
+                       :endorsement []}})
+           (select-badge-endorsements {:id (:badge_id user-badge)} (u/get-db ctx)))
+      [])))
+
+(defn get-issuer-endorsements [ctx issuer-id]
+  (let [issuer (select-issuer {:id issuer-id} (u/get-db-1 ctx))]
+    (assoc issuer :endorsement (map (fn [e]
+                                       {:id (:id e)
+                                        :content (:content e)
+                                        :issued_on (:issued_on e)
+                                        :issuer {:id (:issuer_id e)
+                                                 :language_code ""
+                                                 :name (:issuer_name e)
+                                                 :url  (:issuer_url e)
+                                                 :description (:issuer_description e)
+                                                 :image_file (:issuer_image e)
+                                                 :email (:issuer_email e)
+                                                 :revocation_list_url nil
+                                                 :endorsement []}})
+                                     (select-issuer-endorsements {:id issuer-id} (u/get-db ctx))))))
 
 
 (defn- check-email [recipient email]
@@ -274,11 +310,6 @@
               (log/error "send-badge-info-to-obf: " _))))))))
 
 
-
-
-
-
-
 (defn user-badge-evidence
   [ctx user-badge-id url]
   (let [id (select-user-badge-evidence-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :id} (u/get-db ctx)))]
@@ -340,7 +371,9 @@
       (throw+ "User does not own this badge"))
     (jdbc/with-db-transaction
       [tr-cn (u/get-datasource ctx)]
-      (delete-badge-with-db! {:connection tr-cn} badge-id))
+      (do
+       #_(db/delete-badge-endorsements ctx badge-id)
+      (delete-badge-with-db! {:connection tr-cn} badge-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
       (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
     {:status "success" :message "Badge deleted"}
@@ -385,7 +418,7 @@
      :expired_badge_count expired-badge-count
      :badge_views badge-views
      :badge_congratulations badge-congratulations
-     :badge_issuers issuer-stats})) 
+     :badge_issuers issuer-stats}))
 
 (defn meta-tags [ctx id]
   (let [badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]

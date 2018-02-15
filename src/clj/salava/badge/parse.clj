@@ -1,10 +1,10 @@
 (ns salava.badge.parse
   (:require [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]
-            [clojure.pprint :refer [pprint]]
             [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.data.json :as json]
+            [clojure.pprint :refer [pprint]]
             [clojure.xml :as xml]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
@@ -23,14 +23,29 @@
                                                  :description s/Str})]
                            :tags      [(s/maybe s/Str)]})
 
-(s/defschema IssuerContent {:id   s/Str
+(s/defschema Endorsement {:id s/Str
+                          :content s/Str
+                          :issued_on s/Int
+                          :issuer {:id s/Str
+                                   :language_code s/Str
+                                   :name s/Str
+                                   :url  s/Str
+                                   :description (s/maybe s/Str)
+                                   :image_file (s/maybe s/Str)
+                                   :email (s/maybe s/Str)
+                                   :revocation_list_url (s/maybe s/Str)
+                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]}})
+
+(s/defschema IssuerContent {:id s/Str
                             :language_code s/Str
                             :name s/Str
                             :url  s/Str
                             :description (s/maybe s/Str)
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
-                            :revocation_list_url (s/maybe s/Str)})
+                            :revocation_list_url (s/maybe s/Str)
+                            :endorsement [(s/maybe Endorsement)]})
+
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
@@ -51,6 +66,7 @@
                     :criteria [CriteriaContent]
                     :issuer [IssuerContent]
                     :creator [(s/maybe CreatorContent)]
+                    :endorsement [(s/maybe Endorsement)]
                     :published (s/enum 0 1)
                     :last_received s/Int
                     :recipient_count s/Int})
@@ -89,6 +105,7 @@
                         :show_evidence   (s/enum 0 1)
                         :last_checked (s/maybe s/Int)
                         :old_id (s/maybe s/Int)})
+
 
 (def valid-badge (s/validator UserBadge))
 
@@ -167,9 +184,11 @@
                              :description (:description issuer)
                              :url (q-url (:origin issuer))
                              :email (:contact issuer)
+                             :endorsement []
                              :image_file nil
                              :revocation_list_url nil}]
                    :creator nil
+                   :endorsement []
                    :published 0
                    :last_received 0
                    :recipient_count 0}
@@ -211,6 +230,39 @@
 
 ;;
 
+(defn- get-endorsement
+  ([item] (get-endorsement item 3))
+  ([item depth]
+   (let [item-id (:id item)]
+     (if (empty? (:endorsement item))
+       []
+       (->> (:endorsement item)
+            (map #(if (map? %) % (http/json-get %)))
+            (map (fn [e]
+                   (if (= item-id (get-in e [:claim :id]))
+                     {:id ""
+                      :content (get-in e [:claim :endorsementComment] "")
+                      :issued_on (u/str->epoch (:issuedOn e))
+                      :issuer (as-> (:issuer e) $
+                                (if (map? $) $ (http/json-get $))
+                                {:id (:id $)
+                                 :language_code ""
+                                 :name (:name $)
+                                 :description (:description $)
+                                 :url (:url $)
+                                 :email (:contact $)
+                                 :image_file (:image $)
+                                 :revocation_list_url nil})}
+                     nil)))
+            (remove nil?)
+            (map (fn [e]
+                   (if (pos? depth)
+                     (assoc-in e [:issuer :endorsement]
+                               (-> (get-in e [:issuer :id])
+                                   http/json-get
+                                   (get-endorsement (dec depth))))
+                     (assoc-in e [:issuer :endorsement] [])))))))))
+
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
                  (let [language (get badge (keyword "@language") "")
@@ -239,18 +291,21 @@
                                 :description (:description issuer)
                                 :url (:url issuer)
                                 :email (:contact issuer)
-                                :image_file nil
-                                :revocation_list_url nil}]
+                                :image_file (:image issuer)
+                                :revocation_list_url nil
+                                :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
                                (let [data (http/json-get creator-url)]
                                  [{:id ""
-                                  :language_code language
-                                  :name        (:name data)
-                                  :image_file  (:image data)
-                                  :description (:description data)
-                                  :url   (:url data)
-                                  :email (:email data)
-                                  :json_url creator-url}]))}))
+                                   :language_code language
+                                   :name        (:name data)
+                                   :image_file  (:image data)
+                                   :description (:description data)
+                                   :url   (:url data)
+                                   :email (:email data)
+                                   :endorsement (get-endorsement data)
+                                   :json_url creator-url}]))
+                    :endorsement (get-endorsement badge)}))
         now (u/now)
         evidence (cond
                    ;; inline narrative
@@ -298,11 +353,13 @@
                                                             :ctime now
                                                             :mtime now}) (:evidence assertion))
                    :else [])
+
         badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
         related (->> (get badge :related [])
                      (map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")]
+
     (assoc initial
            :badge (merge {:id ""
                           :remote_url nil
@@ -312,12 +369,13 @@
                           :default_language_code default-language
                           :published 0
                           :last_received 0
-                          :recipient_count 0}
+                          :recipient_count 0
+                          }
                           (apply merge-with (cons concat (map parser (cons badge related)))))
            :issued_on  (u/str->epoch (:issuedOn assertion))
            :expires_on (u/str->epoch (:expires assertion))
-           :evidence evidence)))
-
+           :evidence evidence
+           )))
 ;;;
 
 (defmethod badge-content :default [initial assertion]
@@ -336,6 +394,7 @@
                       :description (:description data)
                       :url   (:url data)
                       :email (:email data)
+                      :endorsement []
                       :json_url creator-url}]))]
 
     (assoc initial
@@ -363,8 +422,10 @@
                              :url (:url issuer)
                              :email (:contact issuer)
                              :image_file nil
+                             :endorsement []
                              :revocation_list_url nil}]
                    :creator creator
+                   :endorsement []
                    :published 0
                    :last_received 0
                    :recipient_count 0}
@@ -479,7 +540,8 @@
                 :last_checked nil
                 :old_id nil)
          (badge-content assertion)
-         valid-badge))))
+         valid-badge
+         ))))
 
 ;;;
 

@@ -37,7 +37,6 @@
                     :mtime s/Int
                     :deleted (s/maybe s/Bool)
                     :revoked (s/maybe s/Bool)
-                    :tag (s/maybe s/Str)
                     :tags (s/maybe [s/Str])})
 
 (s/defschema UserBadgeContent
@@ -66,7 +65,8 @@
    (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
    (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
                                           :all-messages (s/maybe s/Int)}
-   (s/optional-key :tags)                (s/maybe [s/Str])})
+   (s/optional-key :tags)                (s/maybe [s/Str])
+   })
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
                                                 :issued_on :expires_on :visibility
@@ -110,6 +110,18 @@
                                                      (assoc :badges [(select-keys Badge [:id :name :image_file])]))]})
 
 
+(s/defschema Endorsement {:id s/Str
+                          :content s/Str
+                          :issued_on s/Int
+                          :issuer {:id   s/Str
+                                   :language_code s/Str
+                                   :name s/Str
+                                   :url  s/Str
+                                   :description (s/maybe s/Str)
+                                   :image_file (s/maybe s/Str)
+                                   :email (s/maybe s/Str)
+                                   :revocation_list_url (s/maybe s/Str)
+                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]}})
 
 (s/defschema BadgeContent {:id    s/Str
                            :language_code s/Str
@@ -128,7 +140,9 @@
                             :description (s/maybe s/Str)
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
-                            :revocation_list_url (s/maybe s/Str)})
+                            :revocation_list_url (s/maybe s/Str)
+                            :endorsement [(s/maybe Endorsement)]})
+
 
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
@@ -138,4 +152,10 @@
                               :language_code s/Str
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
+
+
+
+
+
+
 

@@ -3,6 +3,7 @@
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
+            [clojure.pprint :refer [pprint]]
             [clojure.data.json :as json]
             [schema.core :as s]
             [salava.core.helper :refer [dump]]
@@ -21,7 +22,6 @@
                         )))
         reduced-events (vals (reduce helper {} (reverse events)))]
     (filter #(false? (:hidden %)) reduced-events)))
-
 
 
 (defn badge-message-map
@@ -85,34 +85,106 @@
     item
     (assoc item :image_file (u/file-from-url ctx (:image_file item)))))
 
+
+(defn- save-endorsement-images [ctx endorsements]
+  (mapv (fn [e]
+          (let [issuer (save-image ctx (:issuer e))]
+            (assoc e :issuer (update issuer :endorsement #(save-endorsement-images ctx %)))))
+        endorsements))
+
+;;;TODO endorsement images
 (defn save-images [ctx badge]
   (-> badge
       (update :content  (fn [content]  (mapv #(save-image ctx %) content)))
       (update :criteria (fn [criteria] (mapv #(save-image ctx %) criteria)))
       (update :issuer   (fn [issuer]   (mapv #(save-image ctx %) issuer)))
-      (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))))
+      (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))
+      (update :endorsement (fn [e] (save-endorsement-images ctx e)))))
 
 
 (defn save-criteria-content! [t-con input]
+  (log/debug "save-criteria-content!")
   (s/validate schemas/CriteriaContent input)
   (let [id (content-id input)]
     (insert-criteria-content! (assoc input :id id) {:connection t-con})
     id))
 
+
+#_(defn save-endorser-endorsements [t-con input]
+    (let [ endorser-id (content-id (-> input
+                                     (dissoc :endorsement)))
+           endorsements (:endorsement input)]
+
+    (insert-endorser-content! (assoc input :id endorser-id) {:connection t-con})
+
+    (when-not (empty? endorsements)
+      (doseq [endorsement endorsements
+              :let [
+                     parsed-endorsement (json/read-str endorsement :key-fn keyword)
+                     endorser (content-id (-> (:endorser_info parsed-endorsement)))
+                     endorsement-id (content-id (-> parsed-endorsement
+                                                   (dissoc :endorser_info)
+                                                   #_(assoc :endorser endorser-id)))]]
+
+
+        (-> parsed-endorsement
+            (update :endorser_info (fn [endorser-info] (map #(save-image t-con %) endorser-info))))
+
+
+        (insert-endorser-content! (assoc (:endorser_info parsed-endorsement) :id endorser) {:connection t-con})
+
+        (insert-endorsement-content! (assoc parsed-endorsement :id endorsement-id
+                                                  :endorser endorser) {:connection t-con})
+
+         (jdbc/execute! t-con ["INSERT IGNORE INTO client_endorsement_content (client_content_id, endorsement_content_id) VALUES (?,?)"
+                         (str endorser-id endorser) endorsement-id])))
+  endorser-id))
+
+(declare save-endorsement-content!)
+
 (defn save-issuer-content! [t-con input]
+  (log/debug "save-issuer-content!")
   (s/validate schemas/IssuerContent input)
-  (let [id (content-id input)]
+  (let [id (content-id (-> input (dissoc :endorsement)))]
     (insert-issuer-content! (assoc input :id id) {:connection t-con})
+
+    (jdbc/execute! t-con ["DELETE FROM issuer_endorsement_content WHERE issuer_content_id = ?" id])
+    (doseq [endorsement (:endorsement input)
+            :let [endorsement-id (save-endorsement-content! t-con endorsement)]]
+      (jdbc/execute! t-con ["INSERT IGNORE INTO issuer_endorsement_content (issuer_content_id, endorsement_content_id) VALUES (?,?)"
+                            id endorsement-id]))
     id))
+
+(defn save-endorsement-content! [t-con input]
+  (when input
+    (log/debug "save-endorsement-content!")
+    (s/validate schemas/Endorsement input)
+    (let [issuer-id (save-issuer-content! t-con (:issuer input))
+          id (content-id (-> input
+                             (assoc :issuer_content_id issuer-id)
+                             (dissoc :issuer)))]
+      (insert-endorsement-content! (-> input
+                                       (assoc :id id)
+                                       (assoc :issuer_content_id issuer-id))
+                                   {:connection t-con})
+      id)))
 
 (defn save-creator-content! [t-con input]
   (when input
+    (log/debug "save-creator-content!")
     (s/validate schemas/CreatorContent input)
-    (let [id (content-id input)]
+    (let [id (content-id (-> input (dissoc :endorsement)))]
       (insert-creator-content! (assoc input :id id) {:connection t-con})
+
+      (jdbc/execute! t-con ["DELETE FROM issuer_endorsement_content WHERE issuer_content_id = ?" id])
+      (doseq [endorsement (:endorsement input)
+              :let [endorsement-id (save-endorsement-content! t-con endorsement)]]
+        (jdbc/execute! t-con ["INSERT IGNORE INTO issuer_endorsement_content (issuer_content_id, endorsement_content_id) VALUES (?,?)"
+                              id endorsement-id]))
       id)))
 
 (defn save-badge-content! [t-con input]
+  (log/debug "save-badge-content!")
   (s/validate schemas/BadgeContent input)
   (let [id (content-id input)]
     (insert-badge-content! (assoc input :id id) {:connection t-con})
@@ -122,17 +194,19 @@
       (insert-badge-content-alignment! (assoc a :badge_content_id id) {:connection t-con}))
     id))
 
-;;
-
 (defn save-badge! [tx badge]
   (let [badge-content-id (sort (map #(save-badge-content! tx %) (:content badge)))
         criteria-content-id (sort (map #(save-criteria-content! tx %) (:criteria badge)))
         issuer-content-id (sort (map #(save-issuer-content! tx %) (:issuer badge)))
         creator-content-id (sort (map #(save-creator-content! tx %) (:creator badge)))
+        endorsement-content-id  (sort (map #(save-endorsement-content! tx %) (:endorsement badge)))
+
+        ;;NB: endorsements are not included in badge id hash
         badge-id (u/hex-digest "sha256" (apply str (concat badge-content-id
                                                            criteria-content-id
                                                            issuer-content-id
                                                            creator-content-id)))]
+
     (doseq [content-id badge-content-id]
       (jdbc/execute! tx ["INSERT IGNORE INTO badge_badge_content (badge_id, badge_content_id) VALUES (?,?)"
                          badge-id content-id]))
@@ -145,8 +219,14 @@
     (doseq [creator-id creator-content-id]
       (jdbc/execute! tx ["INSERT IGNORE INTO badge_creator_content (badge_id, creator_content_id) VALUES (?,?)"
                          badge-id creator-id]))
+
+    (jdbc/execute! tx ["DELETE FROM badge_endorsement_content WHERE badge_id = ?" badge-id])
+    (doseq [endorsement-id endorsement-content-id]
+      (jdbc/execute! tx ["INSERT IGNORE INTO badge_endorsement_content (badge_id, endorsement_content_id) VALUES (?,?)"
+                         badge-id endorsement-id]))
+
     (-> badge
-        (dissoc :content :criteria :issuer :creator)
+        (dissoc :content :criteria :issuer :creator :endorsement )
         (assoc :id badge-id)
         (insert-badge! {:connection tx}))
     badge-id))
@@ -160,6 +240,7 @@
                             (assoc :badge_id badge-id)
                             (insert-user-badge<! {:connection tx})
                             :generated_key)]
+
       (when (seq (:evidence user-badge))
         (doseq [evidence (:evidence user-badge)]
           (when (map? evidence)

@@ -60,9 +60,9 @@
       (bh/issued-on issued_on)]]
      [:div.row
       [:div.col-md-12
-       (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
-       
-       (bh/creator-label-image-link creator_name creator_url creator_email creator_image)
+       (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image)
+
+       (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
        ]]
 
     [:div.row
@@ -209,7 +209,7 @@
     [:h1 header]]])
 
 (defn edit-page-buttons [id target save-function]
-  [:div {:class "row"
+  [:div {:class "row row_reverse"
          :id "buttons"}
    [:div.col-xs-8
     [:a {:class (str "btn" (if (= target :content) " btn-active"))
