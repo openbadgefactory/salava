@@ -35,7 +35,6 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn badge-endorsement-modal-link [badge-id endorsement-count]
-  (println badge-id)
   (when (pos? endorsement-count)
     [:div.row
      [:div.col.xs-12
