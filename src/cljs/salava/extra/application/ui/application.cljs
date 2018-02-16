@@ -119,7 +119,7 @@
          [:div.rowcontent
           [:h1.uppercase-header name]
           [:div.badge-stats
-           (bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_contact issuer_image)
+           (bh/issuer-label-image-link issuer_content_name issuer_content_url "" issuer_contact issuer_image)
            [:div 
             description]
            (if-not (blank? criteria_url)
