@@ -43,6 +43,7 @@
                                    :badge_id              s/Str
                                    :image_file            s/Str
                                    :description           s/Str
+                                   :issuer_content_id     s/Str
                                    :issuer_content_name   s/Str
                                    :issuer_content_url    s/Str
                                    :issuer_description    (s/maybe s/Str)
@@ -56,17 +57,19 @@
                                    :creator_image         (s/maybe s/Str)
                                    :criteria_content      s/Str
                                    :criteria_url          s/Str
+                                   :endorsement_count     (s/maybe s/Int)
                                    :remote_url            (s/maybe s/Str)})
 
 (s/defschema BadgeContent {:badge {:badge_id        s/Str
                                    :average_rating  (s/maybe s/Num)
-                                                :content         [MultilanguageContent]
-                                                :verified_by_obf s/Bool
-                                                :issued_by_obf   s/Bool
-                                                :issuer_verified (s/maybe s/Int)
-                                                :obf_url         s/Str
-                                                :remote_url      (s/maybe s/Str)
-                                                :rating_count    (s/maybe s/Int)}
+                                   :content         [MultilanguageContent]
+                                   :verified_by_obf s/Bool
+                                   :issued_by_obf   s/Bool
+                                   :issuer_verified (s/maybe s/Int)
+                                   :obf_url         s/Str
+                                   :remote_url      (s/maybe s/Str)
+                                   :rating_count    (s/maybe s/Int)
+                                   :endorsement_count (s/maybe s/Int)}
                            :public_users       (s/maybe [{:id              s/Int
                                                           :first_name      s/Str
                                                           :last_name       s/Str

@@ -18,9 +18,7 @@
                            :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] (:id issuer)))
                            } (:name issuer)]]]
           [:div.date [:span (date-from-unix-time (* 1000 issued_on))]]]
-          [:div.commentbox
-           ;;TODO markdown
-            [:span {:style {:font-style "italic"} } content]]]]]))
+          [:div.commentbox {:dangerouslySetInnerHTML {:__html content}}]]]]))
 
 (defn init-badge-endorsements [state badge-id]
   (ajax/GET

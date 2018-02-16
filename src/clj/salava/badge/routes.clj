@@ -67,10 +67,10 @@
 
              (GET "/endorsement/:badgeid" []
                   :return [schemas/Endorsement]
-                  :path-params [badgeid :- Long]
+                  :path-params [badgeid :- String]
                   :summary "Get badge endorsements"
                   :current-user current-user
-                  (ok (b/get-endorsements ctx badgeid (:id current-user))))
+                  (ok (b/get-endorsements ctx badgeid)))
 
              (GET "/info-embed/:badgeid" []
                   ;:return schemas/UserBadgeContent

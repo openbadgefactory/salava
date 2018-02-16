@@ -16,10 +16,13 @@
   (let [state (atom {:issuer nil :endorsement []})]
     (init-issuer-content state issuer-id)
     (fn []
-      (let [{:keys [name description email url image]} @state]
+      (let [{:keys [name description email url image_file]} @state]
         [:div.row
          [:div.col-xs-12
-          [:h1.uppercase-header name]
+          [:h1.uppercase-header
+           (when (not-empty image_file)
+             [:img.profile-picture {:src (str "/" image_file) :style {:width "70px"}}])
+           name]
 
           [:div.row
            [:div {:class "col-md-9 col-sm-9 col-xs-12"}
@@ -35,12 +38,7 @@
 
             (if (not-empty description)
               [:div {:class "row about"}
-               [:div.col-xs-12 description]])]
-
-           (when (not-empty image)
-             [:div {:class "col-md-3 col-sm-3 col-xs-12"}
-              [:div.profile-picture-wrapper
-               [:img.profile-picture {:src (str "/" image)}]]])]
+               [:div.col-xs-12 description]])]]
 
           (when-not (empty? (:endorsement @state))
             [:div.row

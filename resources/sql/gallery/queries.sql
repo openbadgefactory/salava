@@ -53,6 +53,7 @@ badge.default_language_code,
 bc.language_code,
 bc.name, bc.description,
 bc.image_file,
+ic.id AS issuer_content_id,
 ic.name AS issuer_content_name,
 ic.url AS issuer_content_url,
 ic.description AS issuer_description,
@@ -63,7 +64,8 @@ crc.email AS creator_email,
 crc.image_file AS creator_image,
 crc.description AS creator_description,
 cc.markdown_text AS criteria_content,
-cc.url AS criteria_url
+cc.url AS criteria_url,
+COUNT(bec.endorsement_content_id) AS endorsement_count
 FROM badge AS badge 
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
@@ -71,6 +73,7 @@ JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) 
 LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = badge.id)
 LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id) 
+LEFT JOIN badge_endorsement_content AS bec ON badge.id = bec.badge_id
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND bc.language_code = cc.language_code AND ic.language_code = cc.language_code
 WHERE badge.id = :id

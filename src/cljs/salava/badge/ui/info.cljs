@@ -216,7 +216,7 @@
            (if (session/get :user)
              [badge-message-link message_count badge_id])
 
-           (bm/badge-endorsement-modal-link id endorsement_count)]
+           (bm/badge-endorsement-modal-link badge_id endorsement_count)]
 
           [:div {:class "col-md-9 badge-info"}
            [:div.row
