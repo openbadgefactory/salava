@@ -38,7 +38,7 @@
 
             (if (not-empty description)
               [:div {:class "row about"}
-               [:div.col-xs-12 description]])]]
+               [:div.col-xs-12 {:dangerouslySetInnerHTML {:__html description}}]])]]
 
           (when-not (empty? (:endorsement @state))
             [:div.row

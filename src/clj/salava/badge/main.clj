@@ -196,7 +196,7 @@
        (select-badge-endorsements {:id badge-id} (u/get-db ctx))))
 
 (defn get-issuer-endorsements [ctx issuer-id]
-  (let [issuer (select-issuer {:id issuer-id} (u/get-db-1 ctx))]
+  (let [issuer (some-> (select-issuer {:id issuer-id} (u/get-db-1 ctx)) (update :description u/md->html))]
     (assoc issuer :endorsement (map (fn [e]
                                        {:id (:id e)
                                         :content (u/md->html (:content e))
