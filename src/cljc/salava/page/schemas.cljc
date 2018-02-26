@@ -63,14 +63,20 @@
                                                                                    (assoc BadgeBlock :id s/Int
                                                                                                      :show_evidence (s/maybe s/Int)
                                                                                                      :block_order s/Int)
-                                                                                   (select-keys Badge [:name :criteria_content :criteria_url :description :image_file :issued_on :issuer_email :issuer_content_name :issuer_content_url :issuer_image :creator_email :creator_name :creator_url :creator_image :evidence_url :show_evidence]))
+                                                                                   (select-keys Badge [:name :criteria_content :criteria_url :description
+                                                                                                       :image_file :issued_on :issuer_email :issuer_content_name
+                                                                                                       :issuer_content_url :issuer_image :creator_email :creator_name
+                                                                                                       :creator_url :creator_image :evidence_url :show_evidence]))
                                                           #(= (:type %) "html") (assoc HtmlBlock :id s/Int
                                                                                                  :block_order
                                                                                                  s/Int)
                                                           #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
                                                           #(= (:type %) "tag") (assoc TagBlock :id s/Int
                                                                                                :block_order s/Int
-                                                                                               :badges [(select-keys Badge [:id :name :criteria_content :criteria_url :description :image_file :issued_on :expires_on :visibility :mtime :status :badge_id :tag])]))]))
+                                                                                               :badges [(-> Badge
+                                                                                                            (select-keys [:id :name :criteria_content :criteria_url :description
+                                                                                                                          :image_file :issued_on :expires_on :visibility :mtime :status :badge_id])
+                                                                                                            (assoc :tag (s/maybe s/Str)))]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int
