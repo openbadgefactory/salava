@@ -34,7 +34,7 @@
 
             (if (not-empty email)
               [:div {:class "row"}
-               [:div.col-xs-12
+               [:div.col-xs-12 {:style {:margin-bottom "20px"}}
                 [:span [:a {:href (str "mailto:" email)} email]]]])
 
             (if (not-empty description)

@@ -55,13 +55,14 @@
          :on-click #(do (.preventDefault %)
                         (mo/open-modal [:badge :issuer] issuer-id))} name]]])
 
-;;;TODO test me
+;;;TODO use modal
 (defn creator-modal-link [creator-id name]
-  (when creator-id
+  (when (and creator-id name)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left (t :badge/Createdby) ":"]
      [:div {:class "issuer-links pull-label-left inline"}
-      [:a {:href "#"
+      name
+      #_[:a {:href "#"
            :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
