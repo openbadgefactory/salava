@@ -17,11 +17,12 @@
     (init-issuer-content state issuer-id)
     (fn []
       (let [{:keys [name description email url image_file]} @state]
-        [:div.row
+        [:div.row {:id "badge-contents"}
          [:div.col-xs-12
-          [:h1.uppercase-header
+          [:h2.uppercase-header
            (when (not-empty image_file)
-             [:img.profile-picture {:src (str "/" image_file) :style {:width "70px"}}])
+             [:img.profile-picture {:src (str "/" image_file) :style {:width "50px"}}])
+           " "
            name]
 
           [:div.row
@@ -43,12 +44,14 @@
           (when-not (empty? (:endorsement @state))
             [:div.row
              [:div.col-xs-12
-              [:h3 (t :badge/IssuerEndorsedBy)]
+              [:hr]
+              [:h4 {:style {:margin-bottom "20px"}} (t :badge/IssuerEndorsedBy)]
               (into [:div]
                     (for [endorsement (:endorsement @state)]
                       (endr/endorsement-row endorsement)))]])]]))))
 
+;;TODO
 (defn creator-content [creator-id]
-  [:div "TODO"]
+  [:div ""]
 
   )
