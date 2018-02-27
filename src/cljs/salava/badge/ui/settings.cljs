@@ -45,7 +45,7 @@
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value}
        :handler (fn [] (do
-                         
+
                          (swap! state assoc-in [:badge-settings :show_evidence] new-value)
                          (swap! state assoc :show_evidence new-value)))})))
 
@@ -64,7 +64,7 @@
                   }
          [:span {:aria-hidden             "true"
                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-      [:div.row
+      [:div.row.flip
        [:div {:class "col-md-3 badge-image modal-left"}
 
         [:img {:src (str "/" image_file) :alt name}]

@@ -91,8 +91,9 @@
 (defn main-view
   ([ctx] (main-view ctx nil))
   ([ctx meta-tags]
-   (let [favicon (favicon ctx)]
-     (html5
+   (let [favicon (favicon ctx)
+         direction (first (plugin-fun (get-plugins ctx) "layout" "set-page-direction"))]
+     (html5 {:dir (:dir (direction ctx))}
       [:head
        [:title (get-in ctx [:config :core :site-name])]
        [:meta {:charset "utf-8"}]
@@ -106,7 +107,7 @@
        [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
        [:link {:rel "shortcut icon" :href (:icon favicon) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicon)}]
-       
+
        [:script {:type "text/javascript"} (context-js ctx)]]
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]

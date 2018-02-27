@@ -1,0 +1,1401 @@
+/** RTL **/
+/*ADMIN*/
+
+@import 'variables';
+/* TICKETS */
+html[dir="rtl"] #ticket-container {
+    border-left: unset;
+    border-right:3px solid;
+    &.inappropriate {
+        border-left-color: unset;
+        border-right-color: purple;
+    }
+    &.bug {
+        border-left-color: unset;
+        border-right-color: red;
+    }
+    &.fakebadge {
+        border-left-color: unset;
+        border-right-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: unset;
+        border-right-color: DarkCyan;
+    }
+
+}
+
+#med
+html[dir="rtl"] .admintool-caret-up{
+    padding-left: unset;
+    padding-right: 5px;
+}
+
+html[dir="rtl"] #private-button{
+    margin:0px 0px 10px 17px;
+}
+
+
+html[dir="rtl"].title-bar {
+    padding-left: unset;
+    padding-right: 5px;
+    //border-right: 3px solid transparent;
+}
+html[dir="rtl"] .media-bottom-admin{
+            margin-top: 5px;
+            padding-top: 10px;
+
+            i.fa {
+
+                padding-right: unset;
+                padding-left: 7px;
+
+            }
+            a.bottom-link {
+                i.fa {
+                    padding-right: unset;
+                    padding-left:10px;
+                }
+
+            }
+}
+html[dir="rtl"] #ticket-container {
+    border-left: unset;
+    border-right:3px solid;
+    &.inappropriate {
+        border-left-color: unset;
+        border-right-color: purple;
+    }
+    &.bug {
+        border-left-color: unset;
+        border-right-color: red;
+    }
+    &.fakebadge {
+        border-left-color: unset;
+        border-right-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: unset;
+        border-right-color: DarkCyan;
+    }
+}
+/* Admin stats */
+html[dir="rtl"] .admin-stats{
+
+    label {
+
+        padding-right: unset;
+        padding-left: 15px;
+        @media (max-width:992px){
+            width:80%;
+        }
+    }
+}
+/* REPORT FORM */
+
+html[dir="rtl"] #profile, #badge-gallery, #page-gallery, #badge-info, #page-view, #badge-content {
+    .row.report-form {
+        a#open-reportform-button {
+
+      padding-right: unset;
+	    padding-left:15px;
+            @media (max-width:1530px){
+                padding-right: unset;
+                padding-left: 15px;
+            }
+        }
+
+        .form-group > label {
+            margin-right: unset;
+            margin-left: 20px;
+        }
+
+    }
+    a#open-reportform-button{
+        float:unset;
+    }
+
+}
+html[dir="rtl"] #profile {
+    .row.report-form {
+        margin-left:-16px;
+        margin-right:-16px;
+        a#open-reportform-button {
+
+            margin-right:-5px;
+            margin-left: -5px;
+            text-align: left;
+        }
+    }
+   .checkbox{
+        margin-right: 15px;
+  }
+}
+
+
+html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
+    .modal-footer {
+        margin-left: unset;
+        margin-right: 0px;
+       > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+        }
+    }
+    .row.report-form {
+        margin-left: 15px;
+        margin-right:15px;
+    }
+}
+html[dir="rtl"] #page-gallery .modal-dialog .modal-footer {
+
+    > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+html[dir="rtl"] #page-view {
+    .row.report-form {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+html[dir="rtl"] #badge-info {
+    div#reportform {
+           > div:not(.form-group) {
+               border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+/* ADMIN MODALS */
+html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
+    .sub-heading{
+    a{
+        &:before {
+            margin-right: unset;
+            margin-left: 12px;
+        }
+        &.opened:before{
+
+            margin-right: unset;
+            margin-left: 5px;
+        }
+        }
+
+    }
+
+    .issuer-image img {
+        margin-left: unset;
+        margin-right:5px;
+    }
+    .actions .col-md-12:not(.sub-heading) {
+
+        padding-left: unset;
+        padding-right: 35px;
+    }
+}
+
+/*Badge*/
+/* RTL */
+
+/* PENDING BADGES */
+
+/* html[dir="rtl"] .pull-label-left{float: right !important;} */
+
+/* html[dir="rtl"] .badge-container-pending {
+
+    .pull-left {
+        padding-right: unset;
+        padding-left: 25px;
+    }
+
+} */
+
+
+/* html[dir="rtl"] .ajax-message {
+
+    span {
+        padding-left: unset;
+        padding-right: 5px;
+    }
+}
+ */
+/* BADGE SETTINGS */
+/* html[dir="rtl"] #badge-settings {
+    .settings-content {
+        label {
+            margin-right: 5px;
+            margin-left: 20px;
+        }
+    }
+} */
+
+/* html[dir="rtl"] #badge-settings  {
+    .settings-content .sub-heading, label.sub-heading, legend.sub-heading {
+        margin-left: unset;
+        margin-right:0px;
+    }
+    .delete-button {
+        i {
+            margin-right: unset;
+            margin-left: 5px;
+        }
+    }
+    .settings-content .modal-footer{
+        margin-left: unset;
+        margin-right:0px;
+        padding-left: unset;
+        padding-right: 0px;
+        padding-top:15px;
+        > button.btn-primary {
+            margin-right: unset;
+            margin-left: 20px;
+        }
+    }
+} */
+
+/*Assertion*/
+#assertion-info {
+
+  th{
+      text-align: start;
+  }
+
+}
+
+/* BADGE STATS */
+html[dir="rtl"] #badge-stats {
+
+    .panel {
+        .panel-body {
+/*             padding-top: 5px; */
+/*             table {
+                td, th {
+                    border-bottom: 0px;
+                    border-top: 0px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+                td.name {
+
+                    text-align: right;
+                }
+                th:nth-child(2) {
+                    text-align: right;
+                }
+            } */
+/*             .issuer-badges-wrapper {
+                padding: 5px 15px 15px 15px;
+                .issuer-badges {
+                    a {
+                        padding-right: unset;
+                        padding-left: 15px;
+                    }
+                }
+            } */
+
+            .row.body {
+                .col-md-5 {
+                    text-align: right;
+                }
+
+            }
+
+          @media (max-width:992px){
+                .row.body{
+                    text-align: right;
+/*                     padding:10px 0px; */
+/*                     label {
+                        display: inline-block;
+                        width:68%;
+                        font-weight: 600;
+                    } */
+/*                     .col-md-1, .col-md-5 {
+                        display: inline-block;
+                        width: auto;
+                        margin-bottom:10px;
+
+                    } */
+                }
+/*                 .row.header {
+                    display: none;
+                } */
+            }
+
+
+        }
+    }
+}
+
+
+/* BADGE INFO */
+/*
+html[dir="rtl"] #badge-info, #badge-content {
+
+    .checkbox {
+        margin-left: 15px;
+        i {
+            font-size: 20px;
+            margin-left: 8px;
+        }
+    }
+    .fa-share-alt {
+        margin-left: 5px;
+    }
+    #badge-share-inputs {
+        .linkinput, .form-horizontal{
+            margin-right: -150px;
+            margin-left: -220px;
+        }
+        @media (max-width:992px){
+            .pull-right.text-right {
+                float:none !important;
+            }
+            .linkinput, .form-horizontal{
+                margin:0px;
+            }
+        }
+    }
+    .expiresin {
+        i {
+            margin-left: 5px;
+        }
+    }
+    .share-wrapper {
+        margin-left: 340px;
+        margin-right:150px;
+        @media (max-width:992px){
+            margin:0px;
+            width: 100%;
+        }
+    }
+    .issuer-data .issuer-links{
+        margin-right: 0px;
+    }
+} */
+
+
+
+/* BADGE GRID */
+html[dir="rtl"] #badge-gallery, #my-badges, #export-badges, .import-badges, #user-badges {
+    #grid .grid-container {
+        .icons {
+            text-align: right !important;
+        }
+
+      .media-bottom{
+
+        .col-xs-9 {
+          float:right;
+        }
+
+      }
+        &~.media-bottom{
+            div:before{
+                padding-right: unset;
+                padding-left: 7px;
+                float: right;
+
+            }
+
+        }
+
+  }
+}
+
+/* IMPORT BADGES */
+/* html[dir="rtl"] .import-badges #grid.row .grid-container{
+    &.error{
+        .media-bottom {
+            div:before{
+                padding-right: unset;
+                padding-left: 7px;
+                float: right;
+
+            }
+        }
+    }
+    &.duplicate{
+        .media-bottom {
+            div:before {
+                padding-right: unset;
+                padding-left: 7px;
+
+            }
+        }
+    }
+
+} */
+
+/*CORE*/
+
+/* RTL */
+html[dir="rtl"] .button-padding {
+  position: relative !important;
+  margin-left: -100px;
+}
+
+/*flip (mirror) contents of header*/
+/* html[dir="rtl"] .flip-header{
+  display:flex;
+  justify-content: space-around;
+  flex-direction: row;
+  @media screen and (max-width: 768px){
+   flex-direction: column;
+
+  }
+
+} */
+
+html[dir="rtl"] .close {
+  float:left;
+}
+
+html[dir="rtl"] .flip-table{
+  display:flex;
+  justify-content: space-around;
+  flex-wrap: nowrap;
+  flex-direction: row;
+
+  @media (max-width:992px){
+  flex-direction: column;
+  }
+}
+
+
+html[dir="rtl"] .wrap-grid{
+  display:flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+
+}
+
+/* html[dir="rtl"] .fieldset_rtl{ margin-left: 20px;} */
+
+/*flip (mirror) contents of container*/
+html[dir="rtl"] .flip{
+  display:flex;
+  margin-buttom:5px;
+  flex-wrap: nowrap;
+  flex-direction: row;
+
+@media (max-width:768px){
+  flex-direction: column;
+  }
+}
+
+html[dir="rtl"] .flip-modal{
+
+  display:flex;
+  margin-buttom:5px;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  flex-direction: row}
+
+/* BUTTONS */
+
+
+html[dir="rtl"].btn {
+    margin-right: unset;
+    margin-left: 3px;
+}
+
+html[dir="rtl"] #grid-filter .btn, #buttons .col-xs-8 .btn {
+    margin: 0 0 6px 3px;
+    }
+
+/* html[dir="rtl"] a#login-button {
+
+    @media (max-width: 496px){
+        margin-right: unset;
+        margin-left: 10px;
+    }
+} */
+
+html[dir="rtl"] .settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
+
+    &:before {
+
+        margin-right: unset;
+        margin-left: 5px;
+        float:right;
+    }
+}
+
+/* FORM */
+
+html[dir="rtl"] select.form-control  {
+    background: #FFF url(/img/down_arrow.png) no-repeat top left;
+}
+
+html[dir="rtl"] input[type=checkbox], input[type=radio] {
+
+    margin-top: 4px;
+    margin-left: unset;
+    margin-right: -18px;
+
+}
+
+html[dir="rtl"].radio-inline{
+    margin-left:15px;
+    margin-right: 0px !important;
+}
+
+
+html[dir="rtl"] fieldset.checkbox {
+    padding-left: unset;
+    padding-right: 0px;
+}
+
+html[dir="rtl"] .tag-labels {
+    .label {
+        margin-right: unset;
+        margin-left: 5px;
+        a.remove-tag {
+            margin-left: unset;
+            margin-right: 5px;
+
+        }
+    }
+}
+
+html[dir="rtl"] .form-bar {
+    padding-right: unset;
+    padding-left: 5px;
+    border-right: unset;
+    border-left: 3px solid transparent;
+}
+
+/* NAVI */
+
+//MAIN HEADER - right navbar margin
+html[dir="rtl"] #main-header{
+  float:left;
+    @media (max-width: 1100px) and (min-width: 768px){
+        margin-right: unset;
+        margin-left: 3px;
+    }
+}
+
+
+
+html[dir="rtl"] ul#secondary-menu-links {
+    float: right;
+    padding-left: unset;
+    padding-right: 0px;
+    border-left: unset;
+    border-right: 2px solid $icon-color;
+    li {
+        a {
+            i.fa {
+                color: $badge-title;
+                padding-right: unset;
+                padding-left: 10px;
+            }
+        }
+    }
+}
+
+
+
+/* html[dir="rtl"] .userpic {
+    float: left;
+} */
+
+
+
+
+html[dir="rtl"] ul.side-dropdown-links {
+    padding-left: unset;
+    padding-right: 18px;
+    > li {
+        list-style: none;
+    }
+}
+
+
+
+/* GRID */
+html[dir="rtl"] #grid-filter {
+    padding-right: unset;
+    padding-left: 15px;
+    label {
+        text-align: right;
+    }
+
+  .checkbox{
+       margin-right: 23.5%;
+
+     @media (max-width: 990px){
+     margin-right: 25%;
+    }
+
+    @media (max-width: 770px){
+       margin-right: 15px;
+    }
+  }
+
+}
+
+ @media (min-width: 992px){
+html[dir="rtl"] #grid .col-md-4 {
+    width: auto;
+    padding-right: 0px;
+    padding-left: 20px;
+    }
+ }
+
+
+
+/* custom rateit jquery-plugin styles */
+html[dir="rtl"] .rateit .rateit-selected {
+    background-position: right -32px;
+}
+
+/* share buttons */
+html[dir="rtl"] #share {
+    #share-buttons {
+        //padding: 10px 15px 5px 15px;
+        .share-button {
+            margin-right: unset;
+            margin-left: 3px;
+            vertical-align: top;
+            display: inline-block;
+            line-height: 1;
+            .fb-share {
+                margin-top: -2px;
+            }
+            #tweet-button {
+                width:60px !important;
+            }
+        }
+        .share-link {
+            vertical-align: top;
+            display: inline-block;
+            margin-left: unset;
+            margin-right: 10px;
+            a {
+                color: $text-color;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+html[dir="rtl"] .media-left{
+  padding-right: unset !important;
+  padding-left: 10px;
+}
+
+//Forced LTR
+html[dir="rtl"] .no-flip {
+  direction: ltr !important;
+  display:inline-block}
+
+
+html[dir="rtl"] .modal-content {
+    .modal-footer {
+        text-align: right;
+    }
+}
+
+html[dir="rtl"] .alert-warning, .alert-danger{
+    border-left: unset;
+    border-right:3px solid $dark-red;
+}
+
+html[dir="rtl"] #my-files .modal-content {
+    .modal-footer{
+        margin-left: unset;
+        margin-right: 0px;
+    }
+}
+.panel img {
+    //max-width: 100%;
+}
+
+
+    @media (max-width:550px){
+        html[dir="rtl"].container-fluid{
+            padding:0px;
+        }
+        header#navbar {
+            padding:0px 25px 0px 10px;
+        }
+    }
+    @media (max-width:360px){
+        .logo-main {
+            display: none;
+        }
+        .logo-icon {
+            display: block;
+        }
+
+}
+
+/*Columns*/
+
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+html[dir="rtl"] .col-centered {
+    /* reset the text-align */
+    text-align:right;
+    /* inline-block space fix */
+    margin-right: unset;
+    margin-left:-4px;
+}
+
+html[dir="rtl"] .btn-fix {
+    margin-left: unset;
+    margin-right: 1px;
+}
+
+
+/* Badge certification*/
+
+html[dir="rtl"] .btn-oauth {
+    i {
+        padding-right: unset;
+        padding-left: 10px;
+        border-right: unset;
+        border-left: 1px solid #ffffff;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+
+}
+
+html[dir="rtl"] .badge-language-selector {
+    a {
+  margin-right: unset;
+	margin-left:5px;
+    }
+
+}
+
+/*FILE*/
+
+/*RTL*/
+html[dir="rtl"] #my-files {
+
+    .media-left {
+        padding: 10px 5px 0 15px;
+    }
+
+    #grid-file-upload {
+       left: unset;
+       right: 0;
+
+    }
+}
+
+/*GALLERY*/
+
+/*BADGE GALLERY*/
+html[dir="rtl"] #badge-gallery {
+    #grid.row .grid-container .media-bottom {
+        float:left;
+    }
+}
+/*PAGE GALLERY*/
+/* html[dir="rtl"] #page-gallery, #user-pages #grid .grid-container {
+
+    .grid-container .media-content .media-body .media-heading {
+        margin-right: unset;
+        margin-left:0px;
+    }
+} */
+/*PROFILE GALLERY*/
+/* html[dir="rtl"] #profile-gallery #grid {
+    .media.grid-container {
+        .media-content {
+            .media-heading {
+                margin-right: unset;
+                margin-left:0px;
+            }
+        }
+    }
+} */
+
+/*OAUTH*/
+/* RTL */
+html[dir="rtl"]  .btn-oauth {
+    i {
+        padding-right: unset;
+        padding-left: 10px;
+        border-right: unset;
+        border-left: 1px solid #ffffff;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}
+
+/*PAGE*/
+/* RTL */
+/* GRID */
+ html[dir="rtl"] .pages #grid, #page-gallery #grid, #user-pages #grid, #profile-gallery #grid, #my-files #grid{
+      .media-content {
+        padding-right: unset;
+        padding-left:0px;
+            .media-body {
+                position: relative;
+                 .visibility-icon {
+                    position: relative;
+                    right: unset;
+                    left: 0;
+                }
+                .media-heading {
+                    margin-right: unset;
+                    margin-left: 35px;
+                }
+                .page-badges {
+                    img {
+                        margin:3px 0px 5px 3px;
+                    }
+                }
+            }
+    }
+}
+
+/* SHARE BUTTONS*/
+ html[dir="rtl"] #page-buttons-share {
+/*
+    #buttons {
+        float:left;
+    }
+    .share-wrapper {
+        margin-right:150px;
+        margin-left: 220px;
+        @media (max-width:650px){
+            clear:right;
+        }
+    } */
+/*     #share-buttons {
+
+        padding-left: unset;
+        padding-right: 5px;
+    }
+    .checkbox {
+        float:right;
+        margin-right: unset;
+        margin-left: 15px;
+        i {
+            font-size: 20px;
+            margin-right: unset;
+            margin-left: 8px;
+        }
+
+        label {
+            padding-left: unset;
+            padding-right:0px;
+        }
+    }
+    .linkinput, .form-horizontal{
+            margin-right: -150px;
+            margin-left: -220px;
+        } */
+}
+/* Content */
+ html[dir="rtl"] .page-content {
+    .panel-left {
+        background-position: top right;
+        padding-left: unset;
+        padding-right: 103px;
+        @media (max-width: 767px) {
+            padding-left: unset;
+            padding-right: 20px;
+        }
+    }
+    .panel-right {
+        background-position: top left;
+        padding-right: unset;
+        padding-left: 103px;
+        @media (max-width: 767px) {
+            padding-right: unset;
+            padding-left: 20px;
+        }
+    }
+
+    a.small-badge-image {
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}
+/* WIZARD */
+ html[dir="rtl"] #buttons {
+    #buttons-right {
+        text-align: left;
+    }
+}
+ html[dir="rtl"] #page-edit {
+
+    .field {
+        .field-move {
+            left:unset;
+            right: 0;
+
+            .move-arrows {
+
+                .move-up {
+
+                    padding: 0 5px 10px 5px;
+                }
+                .move-down {
+
+                    padding: 10px 5px 0 5px;
+                }
+            }
+        }
+        .field-content {
+            border-left: unset;
+            border-right: 1px solid #cccccc;
+            margin-left: unset;
+            margin-right: 25px;
+            .field-remove {
+                text-align: left;
+            }
+            .badge-image {
+                padding-right: unset;
+                padding-left: 40px;
+                text-align: left;
+
+            }
+        }
+    }
+}
+ html[dir="rtl"] #page-edit {
+
+    .page-file-upload {
+      left: unset;
+        right: 0;
+
+    }
+    .html-block-content {
+        .edit-icon {
+            right: unset;
+            left: 15px;
+        }
+    }
+    .add-field-after {
+        .btn-success:before{
+            padding-right: unset;
+            padding-left: 10px;
+        }
+    }
+}
+ html[dir="rtl"] #page-edit, #page-edit-theme, #page-settings, #page-preview {
+    #buttons #buttons-right {
+        .delete-link {
+            margin-right: unset;
+
+        }
+    }
+}
+ html[dir="rtl"] #page-edit .field .field-content .field-remove span.remove-button{
+
+   margin-right: unset;
+   margin-left:-10px;
+
+}
+
+ html[dir="rtl"] .select-border-wrapper {
+    float: right;
+    margin-right: unset;
+    margin-left: 15px;
+}
+
+ html[dir="rtl"] .file-block {
+    .attachment {
+        margin-right: unset;
+        margin-left: 15px;
+    }
+}
+
+ html[dir="rtl"] .page-file-icon {
+
+    margin-right: unset;
+    margin-left: 10px;
+}
+
+ html[dir="rtl"] #field-editor {
+    .field {
+        .field-content {
+            .badge-image {
+                padding-right: unset;
+                padding-left: 40px;
+                text-align: left;
+            }
+        }
+    }
+}
+
+/*PRINT*/
+/* RTL */
+html[dir="rtl"] #badge-info {
+
+    .col-md-3 {
+        float: right;
+    }
+
+    .col-md-9 {
+        float: right;
+    }
+  .flip{
+  @media (max-width:992px){
+  flex-direction: column;
+  }
+}
+}
+
+html[dir="rtl"] #page-view {
+
+    .col-md-4 {
+        float: right;
+    }
+
+    .col-md-8 {
+        float: right;
+    }
+}
+
+/*SOCIAL*/
+/* RTL */
+/* html[dir="rtl"] .badge-message-link{
+    &:before{
+        margin-right: unset;
+        margin-left: 10px;
+    }} */
+
+html[dir="rtl"] .message-item.media {
+	h3.media-heading {
+		.new {
+      left: unset;
+			right:23px;
+		}
+		&:before{
+			float:right;
+			margin-right: unset;
+			margin-left: 15px;
+		}
+	}
+
+	&.follow {
+		h3.media-heading{
+			~ span {
+        padding-left: unset;
+				padding-right: 57px;
+			}
+		}
+	}
+	&.tips {
+		i.fa {
+
+			float:right;
+      margin-right: unset;
+			margin-left: 15px;
+			~ div {
+        margin-left: unset;
+				margin-right: 57px;
+			}
+
+		}
+		@media (max-width: 480px) {
+			i.fa {
+				margin-right:0px;
+				margin-left: 0px;
+        padding-left: unset;
+				padding-right: 60px;
+				~ div {
+          margin-left: unset;
+					margin-right: 0px;
+
+					}
+			}
+			h3{
+				a {
+          margin-left: unset;
+					margin-right: 0px !important;
+				}
+			}
+		}
+	    h3.media-heading{
+			~ .media-body {
+				ul {
+          padding-left: unset;
+					padding-right:20px;
+				}
+			}
+			~ a {
+        padding-left: unset;
+				padding-right: 0px !important;
+			}
+	    }
+	}
+	h4.media-heading{
+		span {
+      padding-left: unset;
+			padding-right:2px
+		}
+	}
+
+	.media-left {
+    padding-right: unset;
+		padding-left: 40px;
+		~ .media-body {
+			.media-body {
+        padding-right: unset;
+				padding-left:25px;
+			}
+			.pull-left {
+        padding-right: unset;
+				padding-left: 15px;
+			}
+			.badge {
+          margin-left: unset;
+					margin-right: 10px;
+			}
+
+			.media-heading ~ a {
+				padding-right: 57px;
+			}
+		}
+	}
+	.date {
+		float:left;
+		margin:5px 10px 0px 25px;
+    @media (max-width:480px){
+    float:none;
+    }
+	}
+	button.close {
+      right:unset;
+	    left:0px;
+	}
+	@media (max-width:480px){
+		.media-left{
+      padding-right: unset;
+			padding-left: 0px;
+
+			~ .media-body {
+				.media-body {
+          padding-right: unset;
+					padding-left:0px;
+				}
+
+				h3.media-heading {
+          margin-left: unset;
+					margin-right:60px;
+					&:before{
+						float: right;
+            margin-right: unset;
+						margin-left: 0px;
+					}
+					 ~ a {
+            padding-left: unset;
+						padding-right:0px;
+					}
+					.new {
+            left: unset;
+						right:50%;
+					}
+				}
+			}
+		}
+		.date {
+      margin-left: unset;
+			margin-right:0px;
+		}
+	}
+}
+
+@media (max-width: 480px){
+    html[dir="rtl"].message-item.media.tips{
+		.media-left{
+			//padding-top:35px;
+			~ .media-body h3.media-heading{
+				~ .media-body {
+          padding-left: unset;
+					padding-right:0px;
+				}
+			}
+		}
+
+		.media-left .system-image-url {width:55px; height:55px;}
+	}
+	.message-item.media.follow h3.media-heading ~ span {
+    padding-left: unset;
+		padding-right:0px;
+	}
+}
+
+html[dir="rtl"] #badge-content{
+	.message-item.media {
+		margin:5px 0px 0px 0px;
+	}
+
+	#badge-contents  .message-item {
+		.pull-left {
+      padding-right: unset;
+			padding-left:20px;
+		}
+	}
+	@media (max-width:500px){
+		#badge-contents {
+			.date {
+				float:right;
+        margin-left: unset;
+				margin-right: 0px;
+			}
+		}
+	}
+}
+html[dir="rtl"] .btn-primary.follow, .btn-primary.unfollow{
+
+	&:before {
+    margin-right: unset;
+		margin-left: 5px;
+		float: right;
+	}
+}
+
+/* PENDING CONNECTIONS */
+html[dir="rtl"] .connections-container-pending {
+    .pull-left {
+        padding-right: unset;
+        padding-left: 25px;
+    }
+}
+
+/*USER*/
+/*RTL*/
+
+
+
+html[dir="rtl"] #login-page {
+
+    .form-group{
+	margin-left: auto;
+	margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    html[dir="rtl"].left-column{
+	text-align: left;
+    }
+    html[dir="rtl"] .right-column{
+	text-align: right;
+    }
+}
+@media (max-width: 768px) {
+    html[dir="rtl"] .right-column{
+	text-align: center;
+    }
+    html[dir="rtl"] .left-column{
+	text-align: center;
+    }
+
+}
+
+html[dir="rtl"] #registration-page .input-group-btn{
+    .btn {
+		.caret{
+      margin-left: unset;
+			margin-right:5px;
+		}
+    }
+
+}
+html[dir="rtl"] #profile {
+
+
+    .about {
+    margin-right: unset;
+		margin-left: 30px;
+    }
+
+    .table {
+        td.profile-field {
+            padding-left: unset;
+            padding-right: 0;
+        }
+    }
+}
+
+html[dir="rtl"] #edit-profile {
+
+    #profile-picture-gallery {
+        .profile-picture-gallery-element {
+            float: right;
+            margin-right: unset;
+            margin-left: 10px;
+
+	    .delete-icon{
+    left: unset;
+		right: 92px;
+	    }
+        }
+    }
+
+    #profile-picture-upload {
+       left:unset;
+       right: 0;
+    }
+  .radio {
+      margin-right: 15px;
+  }
+
+}
+
+html[dir="rtl"] #edit-user {
+
+    #cancel-button {
+        margin-left: unset;
+        margin-right: 10px;
+    }
+
+  th{
+
+    text-align: start;
+  }
+
+  i{
+     margin-left: 30px;
+  }
+
+/*   .col-md-3, .col-md-9 {
+    padding-left: unset;
+    padding-top: 15px;
+  } */
+}
+
+html[dir="rtl"] li.user-link-inline {
+    img {
+        margin-right: unset;
+        margin-left: 3px;
+    }
+    padding-right: unset;
+    padding-left: 10px;
+}
+
+
+
