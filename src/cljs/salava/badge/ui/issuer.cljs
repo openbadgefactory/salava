@@ -12,6 +12,12 @@
     (path-for (str "/obpv1/badge/issuer/" issuer-id))
     {:handler (fn [data] (reset! state data))}))
 
+(defn- issuer-image [path]
+  (when (not-empty path)
+    [:img.profile-picture
+     {:src (if (re-find #"^file/" path) (str "/" path) path)
+      :style {:width "50px"}}]))
+
 (defn content [issuer-id]
   (let [state (atom {:issuer nil :endorsement []})]
     (init-issuer-content state issuer-id)
@@ -20,8 +26,7 @@
         [:div.row {:id "badge-contents"}
          [:div.col-xs-12
           [:h2.uppercase-header
-           (when (not-empty image_file)
-             [:img.profile-picture {:src (str "/" image_file) :style {:width "50px"}}])
+           (issuer-image image_file)
            " "
            name]
 

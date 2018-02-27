@@ -9,7 +9,7 @@
 
 (defn endorsement-row [endorsement]
   (let [{:keys [issuer content issued_on]} endorsement]
-   [:div
+   [:div {:style {:margin-bottom "20px"}}
     [:h5
      [:a {:href "#"
           :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] (:id issuer)))
