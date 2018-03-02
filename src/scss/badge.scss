@@ -856,9 +856,8 @@ button {
 .endorsement-link{
   padding-left:5px;
 
-
     &:before{
-        content: "\f087";
+        content: "\f2b5";
         font-family: "FontAwesome";
       color:$orange-hover !important;
         font-size: 22px;
@@ -868,8 +867,6 @@ button {
         vertical-align: bottom;
         font-weight: normal;
     }
-
-
 }
 
 .endorsementhr{

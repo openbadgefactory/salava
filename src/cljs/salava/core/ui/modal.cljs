@@ -23,15 +23,15 @@
     [:div
      [:div.col-md-12
       (if (< 1 (count @views))
-        [:div {:class "pull-left"}       
+        [:div {:class "pull-left"}
          [:button {:type  "button"
                    :class "close"
                    :aria-label "OK"
                    :on-click #(do
                                 (reset! views (pop @views))
                                 (.preventDefault %))}
-          [:i {:class "fa fa-arrow-circle-left" :aria-hidden "true"}]]])
-      [:div {:class "text-right"}       
+          [:i {:class "fa fa-arrow-circle-left fa-lg" :aria-hidden "true"}]]])
+      [:div {:class "text-right"}
        [:button {:type         "button"
                  :class        "close"
                  :data-dismiss "modal"
