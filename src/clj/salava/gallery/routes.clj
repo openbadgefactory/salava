@@ -36,9 +36,9 @@
                                           country)]
                     (ok (into badges-and-tags countries))))
 
-             
+
              (GET "/public_badge_content/:badge-id" []
-                  :return schemas/BadgeContent
+;;                   :return schemas/BadgeContent
                   :path-params [badge-id :- s/Str]
                   :summary "Get public badge data"
                   :current-user current-user

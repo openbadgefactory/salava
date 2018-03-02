@@ -28,7 +28,7 @@
       {:params {:current_password current-password
                 :new_password new-password
                 :new_password_verify new-password-verify}
-       
+
        :handler (fn [data]
                   (if (= (:status data) "success")
                     (do
@@ -65,9 +65,9 @@
        (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       
+
        (if current-password?
-         [:div.form-group
+         [:div.form-group.flip
           [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
           [:div {:class "col-md-9"}
            [:input {:class       "form-control"
@@ -82,11 +82,12 @@
        [:div.form-group
         [:div.col-md-12 (t :user/Tochangecurrentpassword)]
         [:br]
+        [:div.flip
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]
+         [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]]
 
-       [:div.form-group
+       [:div.form-group.flip
         [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]]

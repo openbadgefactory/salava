@@ -43,6 +43,7 @@
      [:div {:class "media grid-container"}
       [:div.media-content
        [:div.media-body
+        [:div.flip-modal
         [:div.media-heading
          [:a.heading-link {:href (path-for (str "/page/view/" id))}
           name]]
@@ -52,16 +53,16 @@
            "password" [:i {:class "fa fa-lock" :title (t :page/Passwordprotected)}]
            "internal" [:i {:class "fa fa-group" :title (t :page/Forregistered)}]
            "public" [:i {:class "fa fa-globe" :title (t :page/Public)}]
-           nil)]
+           nil)]]
         [:div.media-description
-         [:div.page-create-date
+         [:div.page-create-date.no-flip
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
                         :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]]
-      [:div {:class "media-bottom"}
+      [:div {:class "media-bottom flip-modal"}
        [:a {:class "bottom-link"
             :title (t :page/Edit)
             :href  (path-for (str "/page/edit/" id))}
@@ -101,7 +102,7 @@
                 (sort-by (comp clojure.string/upper-case order) pages))]
     (if (not-activated?)
       (not-activated-banner)
-      [:div {:class "row"
+      [:div {:class "row wrap-grid"
              :id    "grid"}
        [:div {:class "col-xs-12 col-sm-6 col-md-4"
               :id    "add-element"
