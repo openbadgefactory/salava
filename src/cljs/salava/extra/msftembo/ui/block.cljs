@@ -1,6 +1,19 @@
 (ns salava.extra.msftembo.ui.block
   (:require [salava.core.i18n :refer [t]]))
 
+(defn ^:export login_top
+  "Content inserted above login box"
+  []
+  [:div {:key "msftembo"}
+   ; ...
+   ])
+
+(defn ^:export login_bottom
+  "Content inserted below login box"
+  []
+  [:div {:key "msftembo"}
+   ; ...
+   ])
 
 (defn ^:export footer []
   [:footer.footer

@@ -17,6 +17,12 @@
   (if-let [match (re-find #"verification_key=([\w-]+)" url) ]
     (second match)))
 
+
+
+(defn plugin-blocks [fn-name]
+  (let [blocks (plugin-fun (session/get :plugins) "block" fn-name)]
+    [:div (doall (map #(%) blocks))]))
+
 (defn follow-up-url []
 
   (let [
@@ -52,6 +58,7 @@
 
         ]
     [:div {:id "login-page"}
+     (plugin-blocks "login_top")
      [:div {:id "narrow-panel"
             :class "panel"}
       [:div {:class "panel-body"}
@@ -89,7 +96,8 @@
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
          [:div {:class "row oauth-buttons"}
           [:div {:class "col-xs-6"} (facebook-link false nil)]
-          [:div.col-sm-6 (linkedin-link nil nil)]]]]]]]))
+          [:div.col-sm-6 (linkedin-link nil nil)]]]]]]
+     (plugin-blocks "login_bottom")]))
 
 (defn handler [site-navi params]
   (let [flash-message (t (keyword (session/get! :flash-message)))
