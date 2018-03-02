@@ -250,7 +250,7 @@
                                  :name (:name $)
                                  :description (:description $)
                                  :url (:url $)
-                                 :email (:contact $)
+                                 :email (:email $)
                                  :image_file (:image $)
                                  :revocation_list_url nil})}
                      nil)))
@@ -290,7 +290,7 @@
                                 :name (:name issuer)
                                 :description (:description issuer)
                                 :url (:url issuer)
-                                :email (:contact issuer)
+                                :email (:email issuer)
                                 :image_file (:image issuer)
                                 :revocation_list_url nil
                                 :endorsement (get-endorsement issuer)}]
@@ -420,7 +420,7 @@
                              :name (:name issuer)
                              :description (:description issuer)
                              :url (:url issuer)
-                             :email (:contact issuer)
+                             :email (:email issuer)
                              :image_file nil
                              :endorsement []
                              :revocation_list_url nil}]

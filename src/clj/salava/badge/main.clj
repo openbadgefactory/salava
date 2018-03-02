@@ -179,31 +179,27 @@
                  :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))))
 
 
-(defn get-endorsements [ctx badge-id user-id]
-  (let [user-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
-        visible (or (= user-id (:owner user-badge)) (not= "private" (:visibility user-badge)))]
-    (if visible
-      (map (fn [e]
-             {:id (:id e)
-              :content (:content e)
-              :issued_on (:issued_on e)
-              :issuer {:id (:issuer_id e)
-                       :language_code ""
-                       :name (:issuer_name e)
-                       :url  (:issuer_url e)
-                       :description (:issuer_description e)
-                       :image_file (:issuer_image e)
-                       :email (:issuer_email e)
-                       :revocation_list_url nil
-                       :endorsement []}})
-           (select-badge-endorsements {:id (:badge_id user-badge)} (u/get-db ctx)))
-      [])))
+(defn get-endorsements [ctx badge-id]
+  (map (fn [e]
+         {:id (:id e)
+          :content (u/md->html (:content e))
+          :issued_on (:issued_on e)
+          :issuer {:id (:issuer_id e)
+                   :language_code ""
+                   :name (:issuer_name e)
+                   :url  (:issuer_url e)
+                   :description (:issuer_description e)
+                   :image_file (:issuer_image e)
+                   :email (:issuer_email e)
+                   :revocation_list_url nil
+                   :endorsement []}})
+       (select-badge-endorsements {:id badge-id} (u/get-db ctx))))
 
 (defn get-issuer-endorsements [ctx issuer-id]
-  (let [issuer (select-issuer {:id issuer-id} (u/get-db-1 ctx))]
+  (let [issuer (some-> (select-issuer {:id issuer-id} (u/get-db-1 ctx)) (update :description u/md->html))]
     (assoc issuer :endorsement (map (fn [e]
                                        {:id (:id e)
-                                        :content (:content e)
+                                        :content (u/md->html (:content e))
                                         :issued_on (:issued_on e)
                                         :issuer {:id (:issuer_id e)
                                                  :language_code ""

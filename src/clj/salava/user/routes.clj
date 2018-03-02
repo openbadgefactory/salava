@@ -78,6 +78,7 @@
                    :summary "Create new user account"
                    (let [{:keys [email first_name last_name country language password password_verify]} form-content
                          save (u/register-user ctx email first_name last_name country language password password_verify)]
+
                      (if (= "error" (:status save))
                        ;return error status from save
                        (ok save)

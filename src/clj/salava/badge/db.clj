@@ -92,13 +92,16 @@
             (assoc e :issuer (update issuer :endorsement #(save-endorsement-images ctx %)))))
         endorsements))
 
-;;;TODO endorsement images
+(defn- save-issuer-images [ctx issuer]
+  (-> (save-image ctx issuer)
+      (update :endorsement (fn [e] (save-endorsement-images ctx e)))))
+
 (defn save-images [ctx badge]
   (-> badge
       (update :content  (fn [content]  (mapv #(save-image ctx %) content)))
       (update :criteria (fn [criteria] (mapv #(save-image ctx %) criteria)))
-      (update :issuer   (fn [issuer]   (mapv #(save-image ctx %) issuer)))
-      (update :creator  (fn [creator]  (mapv #(save-image ctx %) creator)))
+      (update :issuer   (fn [issuer]   (mapv #(save-issuer-images ctx %) issuer)))
+      (update :creator  (fn [creator]  (mapv #(save-issuer-images ctx %) creator)))
       (update :endorsement (fn [e] (save-endorsement-images ctx e)))))
 
 
