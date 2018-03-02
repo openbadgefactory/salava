@@ -90,7 +90,7 @@
           [:i {:class "fa fa-download"}]]]]]]))
 
 (defn badge-grid [state]
-  [:div {:class "row"
+  [:div {:class "row wrap-grid"
          :id "grid"}
    (doall (let [badges (:badges @state)
                 order (:order @state)]
@@ -158,7 +158,7 @@
                      :initializing true})]
     (init-data state)
     (fn []
-      (cond 
+      (cond
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
         (= "success" (:permission @state)) (layout/default site-navi (content state))
         :else (layout/default site-navi (err/error-content)))

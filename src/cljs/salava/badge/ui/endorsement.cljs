@@ -10,7 +10,7 @@
   (let [{:keys [issuer content issued_on]} endorsement]
    [:div {:class "media endorsement-content-item"}
      [:div.endcontent
-        [:div [:i {:class "fa fa-thumbs-o-up" :style {:font-size "20px"}}]]
+        [:div [:i {:class "fa fa-handshake-o" :style {:font-size "20px"}}]]
         [:div {:class "endorsement-body-container"}
          [:div.namedate
           [:div.name [:h4 {:class "media-heading endorser-body"}

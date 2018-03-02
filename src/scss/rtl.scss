@@ -1,8 +1,17 @@
-/** RTL **/
-/*ADMIN*/
+/*********************** RTL *******************/
 
 @import 'variables';
+/*ADMIN*/
 /* TICKETS */
+html[dir="rtl"] #userlist {
+  th {
+      text-align:start;
+  }
+}
+html[dir="rtl"] #archived input[type="checkbox"]{
+  margin-top:10px;
+  margin-right: unset;
+}
 html[dir="rtl"] #ticket-container {
     border-left: unset;
     border-right:3px solid;
@@ -24,8 +33,6 @@ html[dir="rtl"] #ticket-container {
     }
 
 }
-
-#med
 html[dir="rtl"] .admintool-caret-up{
     padding-left: unset;
     padding-right: 5px;
@@ -78,6 +85,9 @@ html[dir="rtl"] #ticket-container {
         border-left-color: unset;
         border-right-color: DarkCyan;
     }
+  .pull-right{
+    float:left !important;
+  }
 }
 /* Admin stats */
 html[dir="rtl"] .admin-stats{
@@ -109,12 +119,10 @@ html[dir="rtl"] #profile, #badge-gallery, #page-gallery, #badge-info, #page-view
             margin-right: unset;
             margin-left: 20px;
         }
-
     }
     a#open-reportform-button{
         float:unset;
     }
-
 }
 html[dir="rtl"] #profile {
     .row.report-form {
@@ -131,8 +139,6 @@ html[dir="rtl"] #profile {
         margin-right: 15px;
   }
 }
-
-
 html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
     .modal-footer {
         margin-left: unset;
@@ -207,46 +213,27 @@ html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
     }
 }
 
-/*Badge*/
-/* RTL */
+/*BADGE*/
+html[dir="rtl"] #badge-info
 
-/* PENDING BADGES */
+  #pull-right.badge-image{
 
-/* html[dir="rtl"] .pull-label-left{float: right !important;} */
-
-/* html[dir="rtl"] .badge-container-pending {
-
-    .pull-left {
-        padding-right: unset;
-        padding-left: 25px;
+    @media (max-width: 992px) {
+        margin-left:170px;
+    }
+    @media (max-width: 550px) {
+        margin-left:unset;
     }
 
-} */
+
+/*     .modal-content
+      @media (max-width: 550px) {
+        margin-left:unset;
+    } */
 
 
-/* html[dir="rtl"] .ajax-message {
-
-    span {
-        padding-left: unset;
-        padding-right: 5px;
-    }
 }
- */
-/* BADGE SETTINGS */
-/* html[dir="rtl"] #badge-settings {
-    .settings-content {
-        label {
-            margin-right: 5px;
-            margin-left: 20px;
-        }
-    }
-} */
-
-/* html[dir="rtl"] #badge-settings  {
-    .settings-content .sub-heading, label.sub-heading, legend.sub-heading {
-        margin-left: unset;
-        margin-right:0px;
-    }
+html[dir="rtl"] #badge-settings  {
     .delete-button {
         i {
             margin-right: unset;
@@ -264,15 +251,13 @@ html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
             margin-left: 20px;
         }
     }
-} */
+}
 
-/*Assertion*/
+/*ASSERTION*/
 #assertion-info {
-
   th{
       text-align: start;
   }
-
 }
 
 /* BADGE STATS */
@@ -280,118 +265,56 @@ html[dir="rtl"] #badge-stats {
 
     .panel {
         .panel-body {
-/*             padding-top: 5px; */
-/*             table {
-                td, th {
-                    border-bottom: 0px;
-                    border-top: 0px;
-                    text-align: center;
-                    vertical-align: middle;
-                }
-
-                td.name {
-
-                    text-align: right;
-                }
-                th:nth-child(2) {
-                    text-align: right;
-                }
-            } */
-/*             .issuer-badges-wrapper {
-                padding: 5px 15px 15px 15px;
-                .issuer-badges {
-                    a {
-                        padding-right: unset;
-                        padding-left: 15px;
-                    }
-                }
-            } */
-
+            padding-top: 5px;
             .row.body {
                 .col-md-5 {
                     text-align: right;
                 }
 
             }
-
-          @media (max-width:992px){
+            @media (max-width:992px){
                 .row.body{
                     text-align: right;
-/*                     padding:10px 0px; */
-/*                     label {
-                        display: inline-block;
-                        width:68%;
-                        font-weight: 600;
-                    } */
-/*                     .col-md-1, .col-md-5 {
-                        display: inline-block;
-                        width: auto;
-                        margin-bottom:10px;
-
-                    } */
                 }
-/*                 .row.header {
-                    display: none;
-                } */
             }
-
-
         }
     }
 }
 
 
 /* BADGE INFO */
-/*
+
 html[dir="rtl"] #badge-info, #badge-content {
 
     .checkbox {
-        margin-left: 15px;
+        margin-right: unset;
         i {
-            font-size: 20px;
             margin-left: 8px;
         }
     }
-    .fa-share-alt {
-        margin-left: 5px;
-    }
-    #badge-share-inputs {
-        .linkinput, .form-horizontal{
-            margin-right: -150px;
-            margin-left: -220px;
-        }
-        @media (max-width:992px){
-            .pull-right.text-right {
-                float:none !important;
-            }
-            .linkinput, .form-horizontal{
-                margin:0px;
-            }
-        }
-    }
-    .expiresin {
-        i {
-            margin-left: 5px;
-        }
-    }
     .share-wrapper {
-        margin-left: 340px;
-        margin-right:150px;
-        @media (max-width:992px){
-            margin:0px;
-            width: 100%;
-        }
-    }
-    .issuer-data .issuer-links{
-        margin-right: 0px;
-    }
-} */
 
+        direction: ltr !important;
+    }
+}
 
+/*ENDORSEMENTS*/
+html[dir="rtl"] #badge-content{
+
+  .endorser-body {
+      margin-right:unset;
+  }
+  .endorsement-body-container {
+    padding-right: 5px;
+  }
+
+}
 
 /* BADGE GRID */
 html[dir="rtl"] #badge-gallery, #my-badges, #export-badges, .import-badges, #user-badges {
     #grid .grid-container {
+      margin-right: unset;
+      margin-left:20px;
         .icons {
             text-align: right !important;
         }
@@ -408,127 +331,59 @@ html[dir="rtl"] #badge-gallery, #my-badges, #export-badges, .import-badges, #use
                 padding-right: unset;
                 padding-left: 7px;
                 float: right;
-
             }
-
-        }
-
+    }
   }
 }
-
-/* IMPORT BADGES */
-/* html[dir="rtl"] .import-badges #grid.row .grid-container{
-    &.error{
-        .media-bottom {
-            div:before{
-                padding-right: unset;
-                padding-left: 7px;
-                float: right;
-
-            }
-        }
-    }
-    &.duplicate{
-        .media-bottom {
-            div:before {
-                padding-right: unset;
-                padding-left: 7px;
-
-            }
-        }
-    }
-
-} */
 
 /*CORE*/
 
-/* RTL */
-html[dir="rtl"] .button-padding {
-  position: relative !important;
-  margin-left: -100px;
-}
-
-/*flip (mirror) contents of header*/
-/* html[dir="rtl"] .flip-header{
-  display:flex;
-  justify-content: space-around;
-  flex-direction: row;
-  @media screen and (max-width: 768px){
-   flex-direction: column;
-
-  }
-
-} */
-
-html[dir="rtl"] .close {
-  float:left;
-}
-
 html[dir="rtl"] .flip-table{
   display:flex;
+  display:-webkit-flex;
+  -webkit-justify-content: space-around;
   justify-content: space-around;
-  flex-wrap: nowrap;
+  -webkit-flex-direction: row;
   flex-direction: row;
 
   @media (max-width:992px){
+  -webkit-flex-direction: column;
   flex-direction: column;
   }
 }
-
-
 html[dir="rtl"] .wrap-grid{
   display:flex;
+  display:-webkit-flex;
+  -webkit-flex-wrap: wrap;
   flex-wrap: wrap;
-  flex-direction: row;
-
 }
-
-/* html[dir="rtl"] .fieldset_rtl{ margin-left: 20px;} */
 
 /*flip (mirror) contents of container*/
 html[dir="rtl"] .flip{
   display:flex;
-  margin-buttom:5px;
-  flex-wrap: nowrap;
+  display:-webkit-flex;
+  -webkit-flex-direction: row;
   flex-direction: row;
 
-@media (max-width:768px){
+  @media (max-width:767px){
+  -webkit-flex-direction: column;
   flex-direction: column;
   }
 }
 
 html[dir="rtl"] .flip-modal{
-
   display:flex;
-  margin-buttom:5px;
+  display:-webkit-flex;
+  -webkit-justify-content: space-between;
   justify-content: space-between;
-  flex-wrap: nowrap;
-  flex-direction: row}
-
-/* BUTTONS */
-
-
-html[dir="rtl"].btn {
-    margin-right: unset;
-    margin-left: 3px;
 }
 
+/* BUTTONS */
 html[dir="rtl"] #grid-filter .btn, #buttons .col-xs-8 .btn {
     margin: 0 0 6px 3px;
     }
-
-/* html[dir="rtl"] a#login-button {
-
-    @media (max-width: 496px){
-        margin-right: unset;
-        margin-left: 10px;
-    }
-} */
-
 html[dir="rtl"] .settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
-
     &:before {
-
         margin-right: unset;
         margin-left: 5px;
         float:right;
@@ -536,40 +391,17 @@ html[dir="rtl"] .settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit
 }
 
 /* FORM */
-
 html[dir="rtl"] select.form-control  {
     background: #FFF url(/img/down_arrow.png) no-repeat top left;
 }
 
 html[dir="rtl"] input[type=checkbox], input[type=radio] {
-
-    margin-top: 4px;
     margin-left: unset;
     margin-right: -18px;
-
 }
-
-html[dir="rtl"].radio-inline{
-    margin-left:15px;
-    margin-right: 0px !important;
-}
-
-
 html[dir="rtl"] fieldset.checkbox {
     padding-left: unset;
     padding-right: 0px;
-}
-
-html[dir="rtl"] .tag-labels {
-    .label {
-        margin-right: unset;
-        margin-left: 5px;
-        a.remove-tag {
-            margin-left: unset;
-            margin-right: 5px;
-
-        }
-    }
 }
 
 html[dir="rtl"] .form-bar {
@@ -582,16 +414,33 @@ html[dir="rtl"] .form-bar {
 /* NAVI */
 
 //MAIN HEADER - right navbar margin
-html[dir="rtl"] #main-header{
-  float:left;
+html[dir="rtl"] #main-header-right{
+  float:left !important;
     @media (max-width: 1100px) and (min-width: 768px){
         margin-right: unset;
-        margin-left: 3px;
+/*         margin-left: 3px; */
     }
 }
 
+html[dir="rtl"] #navbar {
+  .container-fluid {
+    @media (max-width: 550px) {
+      display:flex;
+      display: -webkit-flex;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+      -webkit-justify-content: space-around;
+      justify-content:space-around;
+    }
 
-
+  }
+.navbar-header {
+    float:right;
+  @media (max-width: 767px) {
+    float:none;
+  }
+  }
+}
 html[dir="rtl"] ul#secondary-menu-links {
     float: right;
     padding-left: unset;
@@ -609,56 +458,34 @@ html[dir="rtl"] ul#secondary-menu-links {
     }
 }
 
-
-
-/* html[dir="rtl"] .userpic {
-    float: left;
-} */
-
-
-
-
 html[dir="rtl"] ul.side-dropdown-links {
     padding-left: unset;
     padding-right: 18px;
-    > li {
-        list-style: none;
-    }
 }
 
-
-
 /* GRID */
+
 html[dir="rtl"] #grid-filter {
     padding-right: unset;
     padding-left: 15px;
     label {
         text-align: right;
     }
-
   .checkbox{
-       margin-right: 23.5%;
-
-     @media (max-width: 990px){
-     margin-right: 25%;
+    margin-right: 22.8%;
+    @media (max-width: 1024px) {
+    margin-right: 23.5%;
     }
 
-    @media (max-width: 770px){
-       margin-right: 15px;
+    @media (max-width: 768px) {
+    margin-right: 25%;
+    }
+
+    @media (max-width: 550px) {
+    margin-right: 5%;
     }
   }
-
 }
-
- @media (min-width: 992px){
-html[dir="rtl"] #grid .col-md-4 {
-    width: auto;
-    padding-right: 0px;
-    padding-left: 20px;
-    }
- }
-
-
 
 /* custom rateit jquery-plugin styles */
 html[dir="rtl"] .rateit .rateit-selected {
@@ -668,33 +495,9 @@ html[dir="rtl"] .rateit .rateit-selected {
 /* share buttons */
 html[dir="rtl"] #share {
     #share-buttons {
-        //padding: 10px 15px 5px 15px;
         .share-button {
             margin-right: unset;
             margin-left: 3px;
-            vertical-align: top;
-            display: inline-block;
-            line-height: 1;
-            .fb-share {
-                margin-top: -2px;
-            }
-            #tweet-button {
-                width:60px !important;
-            }
-        }
-        .share-link {
-            vertical-align: top;
-            display: inline-block;
-            margin-left: unset;
-            margin-right: 10px;
-            a {
-                color: $text-color;
-                font-weight: bold;
-                font-size: 12px;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
         }
     }
 }
@@ -704,16 +507,23 @@ html[dir="rtl"] .media-left{
   padding-left: 10px;
 }
 
-//Forced LTR
+/*Forced LTR*/
 html[dir="rtl"] .no-flip {
   direction: ltr !important;
-  display:inline-block}
+  display:inline-block
+}
 
 
 html[dir="rtl"] .modal-content {
     .modal-footer {
         text-align: right;
+      .delete-button{
+        padding-right: 10px;
+      }
     }
+  #badge-contents {
+    margin:45px 45px;
+  }
 }
 
 html[dir="rtl"] .alert-warning, .alert-danger{
@@ -727,35 +537,10 @@ html[dir="rtl"] #my-files .modal-content {
         margin-right: 0px;
     }
 }
-.panel img {
-    //max-width: 100%;
-}
-
-
-    @media (max-width:550px){
-        html[dir="rtl"].container-fluid{
-            padding:0px;
-        }
-        header#navbar {
-            padding:0px 25px 0px 10px;
-        }
-    }
-    @media (max-width:360px){
-        .logo-main {
-            display: none;
-        }
-        .logo-icon {
-            display: block;
-        }
-
-}
 
 /*Columns*/
 
 /* centered columns styles */
-.row-centered {
-    text-align:center;
-}
 html[dir="rtl"] .col-centered {
     /* reset the text-align */
     text-align:right;
@@ -771,7 +556,6 @@ html[dir="rtl"] .btn-fix {
 
 
 /* Badge certification*/
-
 html[dir="rtl"] .btn-oauth {
     i {
         padding-right: unset;
@@ -786,8 +570,8 @@ html[dir="rtl"] .btn-oauth {
 
 html[dir="rtl"] .badge-language-selector {
     a {
-  margin-right: unset;
-	margin-left:5px;
+      margin-right: unset;
+      margin-left:5px;
     }
 
 }
@@ -817,24 +601,11 @@ html[dir="rtl"] #badge-gallery {
     }
 }
 /*PAGE GALLERY*/
-/* html[dir="rtl"] #page-gallery, #user-pages #grid .grid-container {
+html[dir="rtl"] #page-gallery, #user-pages #grid {
+  margin-right: unset;
+  margin-left: 30px;
+}
 
-    .grid-container .media-content .media-body .media-heading {
-        margin-right: unset;
-        margin-left:0px;
-    }
-} */
-/*PROFILE GALLERY*/
-/* html[dir="rtl"] #profile-gallery #grid {
-    .media.grid-container {
-        .media-content {
-            .media-heading {
-                margin-right: unset;
-                margin-left:0px;
-            }
-        }
-    }
-} */
 
 /*OAUTH*/
 /* RTL */
@@ -850,16 +621,21 @@ html[dir="rtl"]  .btn-oauth {
 }
 
 /*PAGE*/
-/* RTL */
+
 /* GRID */
+html[dir="rtl"] #theme-12 .flip{
+  @media (max-width:992px){
+    flex-direction:column;
+    -webkit-flex-direction:column;
+  }
+
+}
  html[dir="rtl"] .pages #grid, #page-gallery #grid, #user-pages #grid, #profile-gallery #grid, #my-files #grid{
       .media-content {
         padding-right: unset;
         padding-left:0px;
             .media-body {
-                position: relative;
                  .visibility-icon {
-                    position: relative;
                     right: unset;
                     left: 0;
                 }
@@ -872,47 +648,18 @@ html[dir="rtl"]  .btn-oauth {
                         margin:3px 0px 5px 3px;
                     }
                 }
-            }
+           }
     }
 }
 
 /* SHARE BUTTONS*/
  html[dir="rtl"] #page-buttons-share {
-/*
-    #buttons {
-        float:left;
-    }
-    .share-wrapper {
-        margin-right:150px;
-        margin-left: 220px;
-        @media (max-width:650px){
-            clear:right;
-        }
-    } */
-/*     #share-buttons {
-
-        padding-left: unset;
-        padding-right: 5px;
-    }
-    .checkbox {
-        float:right;
-        margin-right: unset;
-        margin-left: 15px;
-        i {
-            font-size: 20px;
-            margin-right: unset;
-            margin-left: 8px;
-        }
-
-        label {
-            padding-left: unset;
-            padding-right:0px;
-        }
-    }
-    .linkinput, .form-horizontal{
-            margin-right: -150px;
-            margin-left: -220px;
-        } */
+   .share-wrapper {
+       direction:ltr;
+   }
+   .checkbox i{
+       padding-left: 10px;
+   }
 }
 /* Content */
  html[dir="rtl"] .page-content {
@@ -942,9 +689,12 @@ html[dir="rtl"]  .btn-oauth {
 }
 /* WIZARD */
  html[dir="rtl"] #buttons {
+   -webkit-flex-direction:row;
+   flex-direction:row;
     #buttons-right {
         text-align: left;
     }
+
 }
  html[dir="rtl"] #page-edit {
 
@@ -984,6 +734,24 @@ html[dir="rtl"]  .btn-oauth {
 }
  html[dir="rtl"] #page-edit {
 
+   #page-blocks .flip{
+
+       @media (max-width: 992px){
+         -webkit-flex-direction:row;
+         flex-direction: row;
+       }
+
+     }
+
+     #title-and-description .flip{
+
+       @media (max-width: 992px){
+         -webkit-flex-direction:column;
+         flex-direction: column;
+       }
+
+     }
+
     .page-file-upload {
       left: unset;
         right: 0;
@@ -1005,10 +773,15 @@ html[dir="rtl"]  .btn-oauth {
  html[dir="rtl"] #page-edit, #page-edit-theme, #page-settings, #page-preview {
     #buttons #buttons-right {
         .delete-link {
-            margin-right: unset;
-
+            padding-left: 15px;
         }
     }
+   #settings-panel{
+     .radio{
+         margin-right:15px;
+     }
+   }
+
 }
  html[dir="rtl"] #page-edit .field .field-content .field-remove span.remove-button{
 
@@ -1048,44 +821,48 @@ html[dir="rtl"]  .btn-oauth {
     }
 }
 
-/*PRINT*/
-/* RTL */
 html[dir="rtl"] #badge-info {
-
-    .col-md-3 {
-        float: right;
-    }
-
-    .col-md-9 {
-        float: right;
-    }
   .flip{
-  @media (max-width:992px){
-  flex-direction: column;
+        @media (max-width:992px){
+        -webkit-flex-direction:column;
+        flex-direction: column;
+    }
   }
-}
 }
 
 html[dir="rtl"] #page-view {
-
-    .col-md-4 {
-        float: right;
+ .flip{
+        @media (max-width:992px){
+        -webkit-flex-direction:column;
+        flex-direction: column;
     }
-
-    .col-md-8 {
-        float: right;
-    }
+  }
 }
 
 /*SOCIAL*/
-/* RTL */
+
 /* html[dir="rtl"] .badge-message-link{
     &:before{
-        margin-right: unset;
+        content: unset;
+    }
+  &:after {
+        content: "\f0e6";
+       font-family: "FontAwesome";
+        font-size: 26px;
+        text-align: center;
         margin-left: 10px;
-    }} */
+        vertical-align: top;
+        font-weight: normal;
+  }
+} */
 
 html[dir="rtl"] .message-item.media {
+ .flip{
+        @media (max-width:768px){
+        -webkit-flex-direction:row;
+        flex-direction: row;
+    }
+  }
 	h3.media-heading {
 		.new {
       left: unset;
@@ -1166,6 +943,7 @@ html[dir="rtl"] .message-item.media {
 				padding-left:25px;
 			}
 			.pull-left {
+        float:right !important;
         padding-right: unset;
 				padding-left: 15px;
 			}
@@ -1248,12 +1026,10 @@ html[dir="rtl"] .message-item.media {
 }
 
 html[dir="rtl"] #badge-content{
-	.message-item.media {
-		margin:5px 0px 0px 0px;
-	}
 
 	#badge-contents  .message-item {
 		.pull-left {
+      float: right !important;
       padding-right: unset;
 			padding-left:20px;
 		}
@@ -1268,8 +1044,8 @@ html[dir="rtl"] #badge-content{
 		}
 	}
 }
-html[dir="rtl"] .btn-primary.follow, .btn-primary.unfollow{
 
+html[dir="rtl"] .btn-primary.follow, .btn-primary.unfollow{
 	&:before {
     margin-right: unset;
 		margin-left: 5px;
@@ -1286,24 +1062,19 @@ html[dir="rtl"] .connections-container-pending {
 }
 
 /*USER*/
-/*RTL*/
-
-
-
 html[dir="rtl"] #login-page {
-
     .form-group{
-	margin-left: auto;
-	margin-right: auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
 @media (min-width: 768px) {
     html[dir="rtl"].left-column{
-	text-align: left;
+	    text-align: left;
     }
     html[dir="rtl"] .right-column{
-	text-align: right;
+	    text-align: right;
     }
 }
 @media (max-width: 768px) {
@@ -1322,15 +1093,15 @@ html[dir="rtl"] #registration-page .input-group-btn{
       margin-left: unset;
 			margin-right:5px;
 		}
-    }
+  }
 
 }
 html[dir="rtl"] #profile {
 
 
     .about {
-    margin-right: unset;
-		margin-left: 30px;
+    margin-right: 0px
+/* 		margin-left: 30px; */
     }
 
     .table {
@@ -1367,25 +1138,29 @@ html[dir="rtl"] #edit-profile {
 }
 
 html[dir="rtl"] #edit-user {
-
     #cancel-button {
         margin-left: unset;
         margin-right: 10px;
     }
 
   th{
+    text-align: start;}
 
-    text-align: start;
+  .fa{
+        margin-right:13px;
+        display:flex;
+        @media (max-width:768px){
+            margin-right:unset;
+            display:inline-block;
+    }
   }
 
-  i{
-     margin-left: 30px;
+  .flip{
+        @media (max-width:992px){
+        -webkit-flex-direction:column;
+        flex-direction: column;
+    }
   }
-
-/*   .col-md-3, .col-md-9 {
-    padding-left: unset;
-    padding-top: 15px;
-  } */
 }
 
 html[dir="rtl"] li.user-link-inline {

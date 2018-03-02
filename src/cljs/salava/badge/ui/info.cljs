@@ -172,7 +172,7 @@
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
          [:div {:class "row flip"}
-          [:div {:class "col-md-3 badge-image"}
+          [:div {:id "pull-right" :class "col-md-3 badge-image"}
            [:div.row
             [:div.col-xs-12
              [:img {:src (str "/" image_file)}]]]

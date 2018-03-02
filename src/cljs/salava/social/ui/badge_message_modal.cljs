@@ -21,6 +21,7 @@
                        (str (:new-messages message_count) " " (t :social/Newmessages ))
                        "")
         all-messages (str all-messages new-messages)]
+    (dump (str "test: "image_file))
     (fn []
       [:div {:id "badge-contents"}
        [:div.row
@@ -61,7 +62,7 @@
   ([badge-id]
    (open-modal badge-id nil nil))
   ([badge-id init-data state]
-   
+
    (ajax/GET
     (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
     {:handler (fn [data]

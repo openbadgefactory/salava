@@ -21,7 +21,7 @@
         [:p sorted-text " " [:a {:href "#" :on-click #(do
                                                         (reset! show-atom false)
                                                         (.preventDefault %))} (t :admin/Showmore)]]
-        [:div text " " [:a {:href "#" :on-click #(do                                  
+        [:div text " " [:a {:href "#" :on-click #(do
                                                    (reset! show-atom true)
                                                    (.preventDefault %))} (t :admin/Showless)] ]))
     ))
@@ -33,11 +33,11 @@
         status (cursor state [:status])
         email-atom (cursor state [:selected-email])
         ]
-    
-  [:div {:class "row"}
+
+  [:div {:class "row flip"}
    [:div {:class "col-xs-12"}
       [:div.form-group
-        [:label 
+        [:label
          (str (t :user/Email) ":")]
         (email-select (:emails info) email-atom) ]
       (message-form mail)
@@ -53,7 +53,7 @@
                                  :keywords?       true
                                  :params        {:subject (:subject @mail)
                                                  :message (:message @mail)
-                                                 :email  @email-atom}  
+                                                 :email  @email-atom}
                                  :handler         (fn [data]
                                                     (reset! status data)
                                                     (reset! mail {:subject ""
@@ -118,7 +118,7 @@
      (path-for (str "/obpv1/admin/user/" user-id))
      {:handler (fn [data]
                  (do
-                   (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]                      
+                   (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]
                      (swap! state assoc :name (:name data)
                             :image_file (:image_file data)
                             :user (:item_owner data)
@@ -135,14 +135,14 @@
     [:div {:class (str "media " report_type) :id "ticket-container"}
      [:div.media-body
       [:div {:class (str "title-bar title-bar-" report_type ) :id (if open? "" "closed")}
-       [:div {:class "pull-right"}  (if open? (date-from-unix-time (* 1000 ctime) "minutes") (str (t :admin/Closed) ": " (date-from-unix-time (* 1000 mtime) "minutes")))]
+       [:div {:id "ticket" :class "pull-right"}  (if open? (date-from-unix-time (* 1000 ctime) "minutes") (str (t :admin/Closed) ": " (date-from-unix-time (* 1000 mtime) "minutes")))]
        [:h3 {:class "media-heading"}
         [:u (t (keyword (str "admin/" report_type)))]]
        [:h4 {:class "media-heading"}
         [:a {:href item_url :target "_blank"}
          (str (t (keyword (str "admin/" item_type))) " - " item_name)]]]
       [:div.media-descriprtion
-       [:div {:class "col-xs-12"  :id (if open? "" "closed")} 
+       [:div {:class "col-xs-12"  :id (if open? "" "closed")}
         [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description) ]
         [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/user/profile/" reporter_id))}(str first_name " " last_name)]]]
        [:button {:class    "btn btn-primary"
@@ -179,7 +179,7 @@
     true false))
 
 (defn grid-buttons-with-translates [title buttons key all-key state]
-  [:div.form-group
+  [:div.form-group.flip
    [:label {:class "control-label col-sm-2"} title]
    [:div.col-sm-10
     (let [all-checked? (= ((keyword all-key) @state) true)
@@ -211,7 +211,7 @@
 
 (defn grid-show-closed-tickets [state]
   (let [show-closed?  (cursor state [:show-closed?])]
-    [:div.form-group
+    [:div {:id "archived" :class "form-group flip"}
      [:label {:class "control-label col-sm-2 col-xs-3"}
       (str (t :admin/Archived) ": ")]
      [:div.col-sm-10.col-xs-9

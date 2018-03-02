@@ -55,7 +55,7 @@
         revoked (pos? revoked)]
     [:div {:id "badge-settings"}
      [:div.modal-body
-      [:div.row
+      [:div.row.flip
        [:div.col-md-12
         [:button {:type         "button"
                   :class        "close"

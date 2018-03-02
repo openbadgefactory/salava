@@ -59,7 +59,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -73,7 +73,7 @@
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -115,7 +115,7 @@
         [:div.media-content
          [:div.page-owner
           [:a {:href (path-for (str "/user/profile/" user_id))} first_name " " last_name]]
-         [:div.page-create-date
+         [:div.page-create-date.no-flip
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
@@ -132,13 +132,13 @@
         pages (if (= order :mtime)
                  (sort-by order > pages)
                  (sort-by order pages))]
-    (into [:div {:class "row"
+    (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data pages]
             (page-gallery-grid-element element-data state)))))
 
 (defn content [state]
-  [:div 
+  [:div
    [m/modal-window]
    [:div {:id "page-gallery"}
     [page-gallery-grid-form state]

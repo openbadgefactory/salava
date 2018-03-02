@@ -4,4 +4,4 @@
 (defn set-page-direction [ctx]
   (let [user-lang (get-in ctx [:user :language])
         rtl?  (contains? (set (get-in ctx [:config :core :plugins])) :rtl)]
-    (if (and (= user-lang "en") rtl?) {:dir "rtl"} {})))
+    (if (and (= user-lang "ar") rtl?) {:dir "rtl"} {})))

@@ -41,7 +41,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -55,7 +55,7 @@
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -74,7 +74,7 @@
 
 (defn filter-buttons [state]
   (let [filter-atom (cursor state [:filter])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2"} (str (t :core/Show) ":")]
      [:div.col-sm-10
       [:label.radio-inline {:for "radio-date"}
@@ -135,13 +135,13 @@
          (email-item i)))]
      [:td
       (admintool-admin-page id "user" state fetch-users)
-      
+
       ]
      ]))
 
 (defn userlist-table [state]
   (let [users (:users @state)]
-    [:table {:class "table"}
+    [:table {:id "userlist" :class "table"}
      [:thead
       [:tr
        [:th (t :admin/Name)]
