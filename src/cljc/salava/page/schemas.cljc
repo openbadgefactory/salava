@@ -65,7 +65,7 @@
                                                                                                      :block_order s/Int)
 
                                                                                    (select-keys Badge [:name :criteria_content :criteria_url :description
-                                                                                                       :image_file :issued_on :issuer_email :issuer_content_name
+                                                                                                       :image_file :issued_on :issuer_email :issuer_content_id :issuer_content_name
                                                                                                        :issuer_content_url :issuer_image :creator_email :creator_name
                                                                                                        :creator_url :creator_image :evidence_url :show_evidence]))
 

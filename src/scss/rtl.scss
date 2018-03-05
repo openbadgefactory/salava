@@ -1,17 +1,25 @@
 /*********************** RTL *******************/
-
 @import 'variables';
 /*ADMIN*/
-/* TICKETS */
-html[dir="rtl"] #userlist {
-  th {
-      text-align:start;
+html[dir="rtl"] #archived {
+  input[type="checkbox"]{
+    margin-right:unset;
+    margin-top:12px;
   }
+   @media(max-width: 768px){
+         input[type="checkbox"]{
+              margin-right:unset;
+              margin-top:6px;
+            }
+        -webkit-flex-direction:row ;
+        flex-direction:row ;
+   }
 }
-html[dir="rtl"] #archived input[type="checkbox"]{
-  margin-top:10px;
-  margin-right: unset;
+
+html[dir="rtl"] #userlist th{
+  text-align:start;
 }
+
 html[dir="rtl"] #ticket-container {
     border-left: unset;
     border-right:3px solid;
@@ -32,7 +40,12 @@ html[dir="rtl"] #ticket-container {
         border-right-color: DarkCyan;
     }
 
+  .media-body .pull-right{
+      float:left !important;
+  }
+
 }
+
 html[dir="rtl"] .admintool-caret-up{
     padding-left: unset;
     padding-right: 5px;
@@ -41,7 +54,6 @@ html[dir="rtl"] .admintool-caret-up{
 html[dir="rtl"] #private-button{
     margin:0px 0px 10px 17px;
 }
-
 
 html[dir="rtl"].title-bar {
     padding-left: unset;
@@ -66,6 +78,7 @@ html[dir="rtl"] .media-bottom-admin{
 
             }
 }
+
 html[dir="rtl"] #ticket-container {
     border-left: unset;
     border-right:3px solid;
@@ -85,10 +98,8 @@ html[dir="rtl"] #ticket-container {
         border-left-color: unset;
         border-right-color: DarkCyan;
     }
-  .pull-right{
-    float:left !important;
-  }
 }
+
 /* Admin stats */
 html[dir="rtl"] .admin-stats{
 
@@ -101,9 +112,9 @@ html[dir="rtl"] .admin-stats{
         }
     }
 }
-/* REPORT FORM */
 
-html[dir="rtl"] #profile, #badge-gallery, #page-gallery, #badge-info, #page-view, #badge-content {
+/* REPORT FORM */
+html[dir="rtl"] #profile, html[dir="rtl"] #badge-gallery, html[dir="rtl"] #page-gallery, html[dir="rtl"] #badge-info, html[dir="rtl"] #page-view, html[dir="rtl"] #badge-content {
     .row.report-form {
         a#open-reportform-button {
 
@@ -119,10 +130,14 @@ html[dir="rtl"] #profile, #badge-gallery, #page-gallery, #badge-info, #page-view
             margin-right: unset;
             margin-left: 20px;
         }
+
     }
     a#open-reportform-button{
-        float:unset;
+        float:left;
     }
+  input[type=radio] {
+    margin-top:4px;
+  }
 }
 html[dir="rtl"] #profile {
     .row.report-form {
@@ -135,10 +150,8 @@ html[dir="rtl"] #profile {
             text-align: left;
         }
     }
-   .checkbox{
-        margin-right: 15px;
-  }
 }
+
 html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
     .modal-footer {
         margin-left: unset;
@@ -155,6 +168,7 @@ html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
         margin-right:15px;
     }
 }
+
 html[dir="rtl"] #page-gallery .modal-dialog .modal-footer {
 
     > div > div#reportform {
@@ -164,6 +178,7 @@ html[dir="rtl"] #page-gallery .modal-dialog .modal-footer {
             }
     }
 }
+
 html[dir="rtl"] #page-view {
     .row.report-form {
         margin-right: 0px;
@@ -177,6 +192,7 @@ html[dir="rtl"] #page-view {
             }
     }
 }
+
 html[dir="rtl"] #badge-info {
     div#reportform {
            > div:not(.form-group) {
@@ -185,6 +201,7 @@ html[dir="rtl"] #badge-info {
             }
     }
 }
+
 /* ADMIN MODALS */
 html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
     .sub-heading{
@@ -224,15 +241,8 @@ html[dir="rtl"] #badge-info
     @media (max-width: 550px) {
         margin-left:unset;
     }
-
-
-/*     .modal-content
-      @media (max-width: 550px) {
-        margin-left:unset;
-    } */
-
-
 }
+
 html[dir="rtl"] #badge-settings  {
     .delete-button {
         i {
@@ -281,9 +291,7 @@ html[dir="rtl"] #badge-stats {
     }
 }
 
-
 /* BADGE INFO */
-
 html[dir="rtl"] #badge-info, #badge-content {
 
     .checkbox {
@@ -311,10 +319,10 @@ html[dir="rtl"] #badge-content{
 }
 
 /* BADGE GRID */
-html[dir="rtl"] #badge-gallery, #my-badges, #export-badges, .import-badges, #user-badges {
+html[dir="rtl"] #badge-gallery, html[dir="rtl"] #my-badges, html[dir="rtl"] #export-badges, html[dir="rtl"] .import-badges, html[dir="rtl"] #user-badges {
     #grid .grid-container {
-      margin-right: unset;
-      margin-left:20px;
+          margin-right: unset;
+          margin-left:20px;
         .icons {
             text-align: right !important;
         }
@@ -337,7 +345,6 @@ html[dir="rtl"] #badge-gallery, #my-badges, #export-badges, .import-badges, #use
 }
 
 /*CORE*/
-
 html[dir="rtl"] .flip-table{
   display:flex;
   display:-webkit-flex;
@@ -351,6 +358,7 @@ html[dir="rtl"] .flip-table{
   flex-direction: column;
   }
 }
+
 html[dir="rtl"] .wrap-grid{
   display:flex;
   display:-webkit-flex;
@@ -380,8 +388,9 @@ html[dir="rtl"] .flip-modal{
 
 /* BUTTONS */
 html[dir="rtl"] #grid-filter .btn, #buttons .col-xs-8 .btn {
-    margin: 0 0 6px 3px;
+      margin: 0 0 6px 3px;
     }
+
 html[dir="rtl"] .settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
     &:before {
         margin-right: unset;
@@ -399,6 +408,7 @@ html[dir="rtl"] input[type=checkbox], input[type=radio] {
     margin-left: unset;
     margin-right: -18px;
 }
+
 html[dir="rtl"] fieldset.checkbox {
     padding-left: unset;
     padding-right: 0px;
@@ -412,7 +422,6 @@ html[dir="rtl"] .form-bar {
 }
 
 /* NAVI */
-
 //MAIN HEADER - right navbar margin
 html[dir="rtl"] #main-header-right{
   float:left !important;
@@ -438,9 +447,10 @@ html[dir="rtl"] #navbar {
     float:right;
   @media (max-width: 767px) {
     float:none;
-  }
+    }
   }
 }
+
 html[dir="rtl"] ul#secondary-menu-links {
     float: right;
     padding-left: unset;
@@ -464,7 +474,6 @@ html[dir="rtl"] ul.side-dropdown-links {
 }
 
 /* GRID */
-
 html[dir="rtl"] #grid-filter {
     padding-right: unset;
     padding-left: 15px;
@@ -513,7 +522,6 @@ html[dir="rtl"] .no-flip {
   display:inline-block
 }
 
-
 html[dir="rtl"] .modal-content {
     .modal-footer {
         text-align: right;
@@ -539,7 +547,6 @@ html[dir="rtl"] #my-files .modal-content {
 }
 
 /*Columns*/
-
 /* centered columns styles */
 html[dir="rtl"] .col-centered {
     /* reset the text-align */
@@ -553,7 +560,6 @@ html[dir="rtl"] .btn-fix {
     margin-left: unset;
     margin-right: 1px;
 }
-
 
 /* Badge certification*/
 html[dir="rtl"] .btn-oauth {
@@ -577,8 +583,6 @@ html[dir="rtl"] .badge-language-selector {
 }
 
 /*FILE*/
-
-/*RTL*/
 html[dir="rtl"] #my-files {
 
     .media-left {
@@ -593,7 +597,6 @@ html[dir="rtl"] #my-files {
 }
 
 /*GALLERY*/
-
 /*BADGE GALLERY*/
 html[dir="rtl"] #badge-gallery {
     #grid.row .grid-container .media-bottom {
@@ -601,11 +604,10 @@ html[dir="rtl"] #badge-gallery {
     }
 }
 /*PAGE GALLERY*/
-html[dir="rtl"] #page-gallery, #user-pages #grid {
-  margin-right: unset;
-  margin-left: 30px;
+html[dir="rtl"] #page-gallery, html[dir="rtl"] #user-pages #grid {
+  margin-right: -15px;
+  margin-left: -15px;
 }
-
 
 /*OAUTH*/
 /* RTL */
@@ -621,7 +623,6 @@ html[dir="rtl"]  .btn-oauth {
 }
 
 /*PAGE*/
-
 /* GRID */
 html[dir="rtl"] #theme-12 .flip{
   @media (max-width:992px){
@@ -630,7 +631,7 @@ html[dir="rtl"] #theme-12 .flip{
   }
 
 }
- html[dir="rtl"] .pages #grid, #page-gallery #grid, #user-pages #grid, #profile-gallery #grid, #my-files #grid{
+ html[dir="rtl"] .pages #grid, html[dir="rtl"] #page-gallery #grid, html[dir="rtl"] #user-pages #grid, html[dir="rtl"] #profile-gallery #grid, html[dir="rtl"] #my-files #grid{
       .media-content {
         padding-right: unset;
         padding-left:0px;
@@ -639,9 +640,9 @@ html[dir="rtl"] #theme-12 .flip{
                     right: unset;
                     left: 0;
                 }
-                .media-heading {
-                    margin-right: unset;
-                    margin-left: 35px;
+                 .media-heading{
+                   margin-right: unset;
+                   margin-left: 35px;
                 }
                 .page-badges {
                     img {
@@ -651,7 +652,6 @@ html[dir="rtl"] #theme-12 .flip{
            }
     }
 }
-
 /* SHARE BUTTONS*/
  html[dir="rtl"] #page-buttons-share {
    .share-wrapper {
@@ -840,22 +840,6 @@ html[dir="rtl"] #page-view {
 }
 
 /*SOCIAL*/
-
-/* html[dir="rtl"] .badge-message-link{
-    &:before{
-        content: unset;
-    }
-  &:after {
-        content: "\f0e6";
-       font-family: "FontAwesome";
-        font-size: 26px;
-        text-align: center;
-        margin-left: 10px;
-        vertical-align: top;
-        font-weight: normal;
-  }
-} */
-
 html[dir="rtl"] .message-item.media {
  .flip{
         @media (max-width:768px){
@@ -1101,7 +1085,6 @@ html[dir="rtl"] #profile {
 
     .about {
     margin-right: 0px
-/* 		margin-left: 30px; */
     }
 
     .table {
@@ -1110,6 +1093,7 @@ html[dir="rtl"] #profile {
             padding-right: 0;
         }
     }
+
 }
 
 html[dir="rtl"] #edit-profile {
@@ -1171,6 +1155,3 @@ html[dir="rtl"] li.user-link-inline {
     padding-right: unset;
     padding-left: 10px;
 }
-
-
-
