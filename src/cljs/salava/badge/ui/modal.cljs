@@ -73,7 +73,7 @@
         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
-        {:keys [name description tags criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
+        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
     (dump endorsement_count)
     [:div
 
@@ -131,12 +131,24 @@
                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
               )
-            [:div.description description]
-            [:h2.uppercase-header (t :badge/Criteria)]
-            [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]]]
+            [:div.description description]]]
+
+          (when-not (empty? alignment)
+            [:div.row
+             [:div.col-md-12
+              [:h2.uppercase-header (t :badge/Alignments)]
+              (doall
+                (map (fn [{:keys [name url description]}]
+                       [:p {:key url}
+                        [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                     alignment))]])
+
           [:div {:class "row criteria-html"}
            [:div.col-md-12
-            {:dangerouslySetInnerHTML {:__html criteria_content}}]]
+            [:h2.uppercase-header (t :badge/Criteria)]
+            [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
+            [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
+
           (if (and (pos? show_evidence) evidence_url)
             [:div.row
              [:div.col-md-12

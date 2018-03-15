@@ -146,7 +146,12 @@
 
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
-        content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
+        content (map (fn [content]
+                       (-> content
+                           (update :criteria_content u/md->html)
+                           (assoc  :alignment (select-alignment-content {:badge_content_id (:badge_content_id content)} (u/get-db ctx)))
+                           (dissoc :badge_content_id)))
+                     (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
     (assoc my-badge :content content)))
 
 

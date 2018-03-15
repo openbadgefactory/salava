@@ -50,6 +50,7 @@ GROUP BY badge.id
 SELECT
 badge.id as badge_id, badge.remote_url, badge.issuer_verified,
 badge.default_language_code,
+bbc.badge_content_id,
 bc.language_code,
 bc.name, bc.description,
 bc.image_file,

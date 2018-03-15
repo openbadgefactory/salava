@@ -202,6 +202,7 @@ GROUP BY ub.id
 --get badge by id
 SELECT
 badge.id as badge_id, badge.default_language_code,
+bbc.badge_content_id,
 bc.language_code,
 bc.name, bc.description,
 bc.image_file,
@@ -245,6 +246,12 @@ INNER JOIN badge_endorsement_content be ON e.id = be.endorsement_content_id
 INNER JOIN issuer_content i ON e.issuer_content_id = i.id
 WHERE be.badge_id = :id
 ORDER BY e.issued_on
+
+--name: select-alignment-content
+SELECT name, url, description
+FROM badge_content_alignment
+WHERE badge_content_id = :badge_content_id
+ORDER BY name
 
 --name: select-issuer
 SELECT * FROM issuer_content WHERE id = :id
