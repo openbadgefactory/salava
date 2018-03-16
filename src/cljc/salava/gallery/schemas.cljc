@@ -57,6 +57,9 @@
                                    :creator_image         (s/maybe s/Str)
                                    :criteria_content      s/Str
                                    :criteria_url          s/Str
+                                   :alignment             [(s/maybe {:name s/Str
+                                                                     :url  s/Str
+                                                                     :description s/Str})]
                                    :endorsement_count     (s/maybe s/Int)
                                    :remote_url            (s/maybe s/Str)})
 

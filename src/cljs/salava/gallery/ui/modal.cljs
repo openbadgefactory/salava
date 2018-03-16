@@ -31,7 +31,7 @@
   (let [{:keys [badge public_users private_user_count reload-fn]} @state
         {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
         selected-language (cursor state [:content-language])
-        {:keys [name description tags criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
+        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
     [:div
      [:div.col-xs-12
@@ -72,6 +72,17 @@
             [:div.row
              [:div {:class "col-md-12 description"}
               description]]
+
+           (when-not (empty? alignment)
+             [:div.row
+              [:div.col-md-12
+               [:h2.uppercase-header (t :badge/Alignments)]
+               (doall
+                 (map (fn [{:keys [name url description]}]
+                        [:p {:key url}
+                         [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                      alignment))]])
+
             [:div.row
              [:div {:class "col-md-12 badge-info"}
               [:h2.uppercase-header (t :badge/Criteria)]
