@@ -60,13 +60,14 @@ ic.url AS issuer_content_url,
 ic.description AS issuer_description,
 ic.email AS issuer_contact,
 ic.image_file AS issuer_image,
+crc.id AS creator_content_id,
 crc.name AS creator_name, crc.url AS creator_url,
 crc.email AS creator_email,
 crc.image_file AS creator_image,
 crc.description AS creator_description,
 cc.markdown_text AS criteria_content,
 cc.url AS criteria_url,
-COUNT(bec.endorsement_content_id) AS endorsement_count
+COUNT(DISTINCT bec.endorsement_content_id) AS endorsement_count
 FROM badge AS badge 
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id) 
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)

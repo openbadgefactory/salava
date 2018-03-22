@@ -50,6 +50,7 @@
                                    :issuer_verified       (s/maybe s/Int)
                                    :issuer_contact        (s/maybe s/Str)
                                    :issuer_image          (s/maybe s/Str)
+                                   :creator_content_id    (s/maybe s/Str)
                                    :creator_name          (s/maybe s/Str)
                                    :creator_description   (s/maybe s/Str)
                                    :creator_url           (s/maybe s/Str)
