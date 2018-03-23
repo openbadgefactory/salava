@@ -14,6 +14,7 @@
             [salava.user.schemas :as schemas]
             [salava.core.i18n :refer [t translate-text]]))
 
+
 (defn verification-token [url]
   (if-let [match (re-find #"verification_key=([\w-]+)" url) ]
     (second match)))
@@ -43,16 +44,15 @@
                  :password password}
        :handler (fn [data]
                   (if (= (:status data) "success")
-                    (js-navigate-to (follow-up-url))
+                      (js-navigate-to (follow-up-url))
                     (swap! state assoc :error-message (:message data))))}
       )))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
-        error-message-atom (cursor state [:error-message])
+        error-message-atom (cursor state [:error-message])]
 
-        ]
     [:div {:id "login-page"}
      [:div {:id "narrow-panel"
             :class "panel"}

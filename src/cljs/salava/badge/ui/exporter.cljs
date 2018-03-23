@@ -9,7 +9,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.badge.ui.info :as bi]))
 
 (defn email-options [state]
   (map #(hash-map :value % :title %) (:emails @state)))
@@ -98,6 +99,16 @@
               (if (badge-visible? element-data state)
                 (grid-element element-data state)))))])
 
+(defn export-to-pdf [state]
+  (let [badges-to-export (:badges-selected @state)
+        badge-info (vec (filter (fn [b] (and (some #(= % (:id b)) badges-to-export)
+                                                                (badge-visible? b state))) (:badges @state)))]
+    (ajax/POST
+      (path-for (str "/obpv1/badge/export-to-pdf"))
+      {:params {:badges_to_export badge-info}
+        })
+    ))
+
 (defn export-badges [state]
   (let [badges-to-export (:badges-selected @state)
         assertion-urls (map :assertion_url (filter (fn [b] (and (some #(= % (:id b)) badges-to-export)
@@ -134,6 +145,10 @@
                      :on-click #(export-badges state)
                      :disabled (= 0 (count (:badges-selected @state)))}
             (t :badge/Exportselected)]
+           [:button {:class "btn btn-primary"
+                     :on-click #(export-to-pdf state)
+                     :disabled (= 0 (count (:badges-selected @state)))}
+            (t :badge/Exporttopdf)]
            [badge-grid state]])]))])
 
 (defn init-data [state]

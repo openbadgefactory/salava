@@ -8,10 +8,18 @@
 
 
 
+#_(defn not-activated-banner []
+  (if (not-activated?)
+    [:div {:class (str "alert ""alert-warning")}
+     (str #_(t :core/Notactivedpannerhelptext) (t :core/Notactivedpannerhelptextedit) ". ")
+     [:a {:href (path-for "/user/edit/email-addresses")}
+      (str (t :core/Activatehere) ".")]]
+    ))
+
 (defn not-activated-banner []
   (if (not-activated?)
     [:div {:class (str "alert ""alert-warning")}
-     (str (t :core/Notactivedpannerhelptext)  ". ")
+     (str (t :core/Notactivedpannerhelptextedit) ". ")
      [:a {:href (path-for "/user/edit/email-addresses")}
-      (str (t :core/Activatehere) ".")]]
+      (str (t :core/Resendactivation) ".")]]
     ))

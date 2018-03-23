@@ -81,7 +81,7 @@
                         badge-owner-id (:owner badge)
                         visibility (:visibility badge)
                         owner? (= user-id badge-owner-id)]
-                    (if (= visibility "public") 
+                    (if (= visibility "public")
                       (do
                         (if badge
                           (b/badge-viewed ctx badgeid user-id))
@@ -130,6 +130,14 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/congratulate! ctx badgeid (:id current-user))))
+
+             (POST "/export-to-pdf" []
+                   :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
+                   :body-params[badges_to_export :- [schemas/BadgesToExport]]
+                   :summary "Export badges to PDF"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (b/generatePDF ctx badges_to_export)))
 
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
@@ -191,7 +199,7 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
-                   
+
              (POST "/save_raiting/:badgeid" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [badgeid :- Long]

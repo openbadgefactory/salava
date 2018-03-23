@@ -50,6 +50,8 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]
+                 [clj-pdf "2.2.31"]
+                 [clj-pdf-markdown "0.2.0"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.9.456"]
@@ -64,7 +66,8 @@
                  [metosin/komponentit "0.2.2"]
                  [com.cemerick/url "0.1.1"]
                  [cljsjs/clipboard "1.6.1-1"]
-                 
+
+
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]
                  [org.webjars/font-awesome "4.7.0"]

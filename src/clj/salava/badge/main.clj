@@ -14,7 +14,10 @@
             [clojure.tools.logging :as log]
             [salava.core.util :as u]
             [salava.core.http :as http]
-            [salava.badge.assertion :refer [fetch-json-data]]))
+            [salava.badge.assertion :refer [fetch-json-data]]
+            [clj-pdf.core :refer [pdf template]]
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
+            [clj.qrgen :as q]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -72,6 +75,10 @@
       badge)))
 
 
+
+
+
+
 (defn check-metabadge!
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
   [ctx assertion-url])
@@ -84,6 +91,7 @@
                       (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
           tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
           badges-with-tags (map-badges-tags badges tags)]
+
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
@@ -92,6 +100,7 @@
   (let [badges (select-user-badges-to-export {:user_id user-id} (u/get-db ctx))
         tags (if-not (empty? badges)  (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
+
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
@@ -144,10 +153,14 @@
       (log/error "parse-assertion-json: " _))))
 
 
+
+
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
         content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
-    (assoc my-badge :content content)))
+    (assoc my-badge :content content)
+    ))
+
 
 
 (defn get-badge
@@ -177,6 +190,73 @@
                  :assertion (parse-assertion-json (:assertion_json badge))
 
                  :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))))
+
+(defn pdf-generator-helper [ctx input]
+  (let [badge-with-content (map #(fetch-badge ctx (:id %)) input)
+        badge-ids (map #(:badge_id (first (get-in % [:content]))) badge-with-content)
+        temp (map #(select-multi-language-badge-content {:id %} (into {:result-set-fn first} (u/get-db ctx))) badge-ids)
+        badges (map #(-> %1
+                           (assoc :qr_code (u/str->qr-base64 (badge-url ctx (:id %1))))
+                           (dissoc :content)
+                           (merge  %2)) badge-with-content temp)]
+    badges))
+
+(defn generatePDF
+  "gets selected badges and generates a pdf document"
+  [ctx input]
+    (let [data-dir (get-in ctx [:config :core :data-dir])
+          badges (pdf-generator-helper ctx input)
+          stylesheet {:heading-name {:color [127 113 121]
+                                     :family :times-roman
+                                     :align :center}
+
+                      :generic {:family :times-roman
+                                :color [127 113 121]}
+                      :link {:family :times-roman
+                             :color [66 100 162]}
+                       }
+          badge-template (template
+                            [[:paragraph
+                               [:image {:width 100 :height 100 :align :center} (str data-dir $image_file)]]
+                               [:spacer]
+                             [:heading.heading-name $name]
+                             [:paragraph {:indent 20 :align :center}[:line] [:spacer] ]
+
+                             [:paragraph.generic {:indent 20 :align :left} $description][:spacer]
+                             [:paragraph.generic {:indent 20}
+                               [:chunk {:style :bold} "Recipient: "] (str $first_name  " " $last_name ) "\n"
+                               [:chunk {:style :bold} "Issued by: "] $issuer_content_name"\n"
+                               [:chunk {:style :bold} "Issuer website: "] [:anchor {:target $issuer_content_url :style{:family :times-roman :color [66 100 162]}} $issuer_content_url] "\n"
+                               (when-not (empty? $issuer_contact)
+                                [:paragraph.generic
+                                [:chunk {:style :bold} "Issuer contact: "] $issuer_contact])
+                                (when-not (empty? $creator_name)
+                                  [:paragraph.generic
+                                   [:chunk {:style :bold} "Created by: "] $creator_name])
+                                (when-not (empty? $creator_url)
+                                  [:paragraph.generic
+                                   [:chunk {:style :bold} "Issuer website: "] [:anchor {:target $issuer_content_url :style{:family :times-roman :color [66 100 162]}} $issuer_content_url] "\n"
+                                   ])
+                                (when-not (empty? $creator_email)
+                                  [:paragraph.generic
+                                    [:chunk {:style :bold} "Issuer contact: "] $issuer_contact])
+                              [:chunk {:style :bold} "Issued on: "] (date-from-unix-time (long (* 1000 $issued_on)) "date") "\n"
+                              [:paragraph
+                               [:chunk {:style :bold} "Criteria url: "] [:anchor {:target $criteria_url :style{:family :times-roman :color [66 100 162]}} $criteria_url]
+                               ]
+                              ][:spacer]
+                             (when-not (blank? $criteria_content)
+                             [:paragraph.generic {:indent 20}
+                             [:chunk {:style :bold} "Criteria"] "\n"
+                             (markdown->clj-pdf {:wrap {:global-wrapper :paragraph }} $criteria_content)])
+                             [:spacer]
+                             [:image {:width 60 :height 60 :align :right}(str data-dir (u/file-from-url ctx (str "data:image/png;base64," $qr_code)))]
+                             [:pagebreak]]
+                       )]
+      (dump badges)
+
+    (pdf (into [{:stylesheet stylesheet :footer {:text "Open badge passport" :page-numbers false :align :center}}] (badge-template badges)) "badge.pdf")
+    ))
 
 
 (defn get-endorsements [ctx badge-id]
