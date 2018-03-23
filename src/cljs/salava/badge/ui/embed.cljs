@@ -25,7 +25,7 @@
     [:div {:id "badge-gallery"}
      [:div {:id "grid"}
       [:div {:class "media grid-container"}
-       [:a {:href url :target "_blank"}
+       [:a {:href url :target "_blank" :rel "noopener noreferrer"}
         [:div.media-content
          (if image_file
            [:div.media-left

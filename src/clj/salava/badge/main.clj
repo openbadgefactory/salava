@@ -422,11 +422,18 @@
      :badge_issuers issuer-stats}))
 
 (defn meta-tags [ctx id]
-  (let [badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
+  (let [base-url (u/get-full-path ctx)
+        badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
     (if (= "public" (:visibility badge))
       (-> badge
           (select-keys [:name :description :image_file])
-          (rename-keys {:image_file :image :name :title})))))
+          (rename-keys {:image_file :image :name :title})
+          (assoc :json-oembed
+                 [:link {:rel "alternate"
+                         :type "application/json+oembed"
+                         :href (str base-url "/obpv1/oembed?url=" base-url "/badge/info/" id)
+                         :title (:name badge)}])))))
+
 
 (defn old-id->id [ctx old-id user-id]
   (if user-id
