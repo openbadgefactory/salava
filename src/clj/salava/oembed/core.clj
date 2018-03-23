@@ -7,7 +7,7 @@
 (defqueries "sql/oembed/queries.sql")
 
 (def iframe
-  "<iframe frameborder='0' scrolling='no' src='%s/%s/badge/info/%d/embed' width='%d' height='%d'></iframe>")
+  "<iframe frameborder='0' scrolling='no' src='%s/badge/info/%d/embed' width='%d' height='%d'></iframe>")
 
 (defn- url->id [url]
   (when-let [[_ id] (re-find #"/badge/info/([0-9]+)$" url)]
@@ -23,12 +23,12 @@
    :referrer referrer
    :width w
    :height h
-   :html (format iframe (:url provider) (:path provider) (:id badge) w h)})
+   :html (format iframe (str (:url provider) (:path provider)) (:id badge) w h)})
 
 (defn badge [ctx url w h referrer]
   (let [provider {:name (get-in ctx [:config :core :site-name])
                   :url (get-in ctx [:config :core :site-url])
-                  :path (get-in ctx [:config :core :site-path])}]
+                  :path (get-in ctx [:config :core :base-path])}]
     (some-> url
             url->id
             (select-public-badge (u/get-db ctx))
