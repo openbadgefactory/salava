@@ -1,6 +1,7 @@
 (ns salava.badge.routes
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
+            [ring.util.io :as io]
             [ring.swagger.upload :as upload]
             [schema.core :as s]
             [salava.badge.schemas :as schemas] ;cljc
@@ -131,13 +132,19 @@
                    :current-user current-user
                    (ok (b/congratulate! ctx badgeid (:id current-user))))
 
-             (POST "/export-to-pdf" []
-                   :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
-                   :body-params[badges_to_export :- [schemas/BadgesToExport]]
+
+             (GET "/export-to-pdf/:user_id/:badges_to_export/:lang" []
+                   :path-params[user_id :- (s/maybe s/Str)
+                                badges_to_export
+                                lang :- (s/maybe s/Str)]
                    :summary "Export badges to PDF"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/generatePDF ctx badges_to_export)))
+                     (-> (io/piped-input-stream (b/generatePDF ctx user_id (read-string badges_to_export) lang))
+                         ok
+                         (header "Content-Disposition" "attachment; filename=\"badges.pdf\"")
+                         (header "Content-Type" "application/pdf")
+                         ))
 
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}

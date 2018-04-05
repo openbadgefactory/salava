@@ -1,11 +1,12 @@
 (ns salava.badge.ui.exporter
   (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
+            [reagent-modals.modals :as m]
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [unique-values path-for not-activated?]]
+            [salava.core.ui.helper :refer [unique-values path-for not-activated? js-navigate-to]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
@@ -101,13 +102,50 @@
 
 (defn export-to-pdf [state]
   (let [badges-to-export (:badges-selected @state)
-        badge-info (vec (filter (fn [b] (and (some #(= % (:id b)) badges-to-export)
-                                                                (badge-visible? b state))) (:badges @state)))]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/export-to-pdf"))
-      {:params {:badges_to_export badge-info}
-        })
-    ))
+        lang-option (:pdf-option @state)
+        user-id  (:id (session/get :user))]
+
+    (ajax/GET
+      (path-for (str "/obpv1/badge/export-to-pdf/" user-id "/" badges-to-export "/" lang-option) true)
+      {:handler (js-navigate-to (str "/obpv1/badge/export-to-pdf/" user-id "/" badges-to-export "/" lang-option))}
+      )))
+
+(defn export-to-pdf-modal [state]
+   [:div {:id "badge-settings"}
+     [:div.modal-body
+      [:div.row
+       [:div.col-md-12
+        [:button {:type         "button"
+                :class        "close"
+                :data-dismiss "modal"
+                :aria-label   "OK"
+                }
+         [:span {:aria-hidden             "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+
+      [:div
+       [:form {:class "form-horizontal"}
+              [:div.form-group
+             [:fieldset {:id "export-pdf" :class "col-md-12 checkbox"}
+              [:div.col-md-12 [:label
+               [:input {:type     "checkbox"
+                        :on-change (fn [e]
+                                     (if (.. e -target -checked)
+                                         (swap! state assoc :pdf-option "all")(swap! state assoc :pdf-option "default")))}]
+               (t :badge/ExportAllLang)]]]]]]]
+    [:div.modal-footer
+      [:button {:type         "button"
+              :class        "btn btn-primary"
+              :data-dismiss "modal"}
+     (t :core/Close)]
+      [:button {:type         "button"
+              :class        "btn btn-primary"
+              :on-click  #(export-to-pdf state)
+              :data-dismiss "modal"
+              }
+     (t :badge/Export)]]])
+
+
 
 (defn export-badges [state]
   (let [badges-to-export (:badges-selected @state)
@@ -123,6 +161,7 @@
 
 (defn content [state]
   [:div {:id "export-badges"}
+   [m/modal-window]
    [:h1.uppercase-header (t :badge/Exportordownload)]
    (if (not-activated?)
      (not-activated-banner)
@@ -146,7 +185,11 @@
                      :disabled (= 0 (count (:badges-selected @state)))}
             (t :badge/Exportselected)]
            [:button {:class "btn btn-primary"
-                     :on-click #(export-to-pdf state)
+                     :on-click #(do (.preventDefault %)
+                                     (swap! state assoc :pdf-option "default")
+                                         (m/modal![export-to-pdf-modal state] {:size :lg}))
+
+;;                      #(export-to-pdf state)
                      :disabled (= 0 (count (:badges-selected @state)))}
             (t :badge/Exporttopdf)]
            [badge-grid state]])]))])
@@ -170,6 +213,8 @@
                      :tags-selected []
                      :badges-all false
                      :badges-selected []
+                     :pdf-option "default"
+                     :user-id (:id (session/get :user))
                      :initializing true})]
     (init-data state)
     (fn []
