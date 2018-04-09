@@ -71,6 +71,12 @@
                         (unauthorized)
                         (not-found)))))
 
+             (GET "/export-to-pdf/:pageid" []
+                  :path-params [pageid :- s/Int]
+                  :summary "Export page to pdf"
+                  :current-user current-user
+                  (ok (p/generate-pdf ctx pageid)))
+
              (POST "/password/:pageid" []
                    :return schemas/ViewPage
                    :path-params [pageid :- s/Int]

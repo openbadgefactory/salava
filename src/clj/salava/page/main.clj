@@ -5,14 +5,16 @@
             [clojure.set :refer [rename-keys]]
             [slingshot.slingshot :refer :all]
             [autoclave.core :refer :all]
-            [salava.core.time :refer [unix-time]]
+            [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
             [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
             [salava.badge.main :as b]
             [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
-            [salava.file.db :as f]))
+            [salava.file.db :as f]
+            [clj-pdf.core :as pdf]
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]))
 
 (defqueries "sql/page/main.sql")
 
@@ -106,6 +108,59 @@
                 :border (border-attributes (:border page))
                 :qr_code (str->qr-base64 (page-url ctx page-id)))))
 
+
+(defn generate-pdf [ctx page-id]
+  (let [ blocks (page-blocks ctx page-id)
+         badge-block-with-markdown (:criteria_content (select-pages-badge-blocks {:page_id page-id} (into {:result-set-fn first} (get-db ctx))))
+         page (conj () (-> (select-page {:id page-id} (get-db ctx))
+                           first
+                           (assoc :blocks blocks)))
+        data-dir (get-in ctx [:config :core :data-dir])
+        page-template (pdf/template
+                        (let [template #(cons [:paragraph] [[:heading {:size :15 :align :center} $name] [:spacer 0]
+                                                            [:paragraph {:align :center}
+                                                             [:chunk (str $first_name " " $last_name)]][:spacer 1]
+                                                            [:line {:dotted true}]
+                                                            [:spacer 2]
+                                                            [:pdf-table {:width-percent 100 :cell-border false }
+                                                             [25 75]
+                                                             [[:pdf-cell {:align :right}
+                                                               (when-not (nil? (:image_file %))
+                                                               [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))])
+                                                               ]
+                                                              [:pdf-cell
+                                                               (when-not (nil? (:name %))
+                                                               [:heading (:name %)][:spacer 1])
+                                                               #_[:paragraph
+                                                                 [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
+                                                                 #_[:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
+                                                                 [:spacer 1]
+                                                                 (:description %) "\n"
+;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
+                                                                 [:spacer 0]
+                                                                [:paragraph
+                                                                 [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
+                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
+
+
+                                                                 ]
+
+                                                               ]]]
+                                                             ]
+                                                            #_[:paragraph
+                                                             [:image {:width 70 :height 70 :align :center} (str data-dir (:image_file %))]]
+
+                                                            [:spacer 0]])
+
+                              content (map template $blocks)
+                              ]
+                         (reduce into [] content)))]
+    (dump page)
+;;     (dump badge-block-with-markdown)
+   (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
+
+    ))
+
 (defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
     (page-with-blocks ctx page-id)))
@@ -141,7 +196,7 @@
 
 (defn create-files-block! [ctx block]
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
-    
+
     (save-files-block-content ctx (assoc block :id block-id))))
 
 (defn url-checker [ctx]
@@ -179,7 +234,7 @@
                              :allow-attributes ["summary" :on-elements ["table"]]
                              :allow-attributes ["target" :on-elements ["a"]]
                              :allow-attributes ["rowspan" :on-elements ["td" "th"]]
-                             :allow-attributes ["title" :on-elements ["img"]]                        
+                             :allow-attributes ["title" :on-elements ["img"]]
                              :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
                              :allow-attributes ["src" :on-elements ["iframe"]]
                              :allow-standard-url-protocols
@@ -189,7 +244,7 @@
 
 
 (defn save-page-content! [ctx page-id page-content user-id]
-  
+
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))

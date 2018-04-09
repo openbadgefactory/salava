@@ -15,7 +15,8 @@
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]
-            [clj-pdf.core :refer [pdf template]]
+            [clj-pdf.core :as pdf]
+;;             [clj-pdf-tools.graphics :as graphics]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clj.qrgen :as q]
             [salava.core.i18n :refer [t]]))
@@ -204,10 +205,12 @@
                            (assoc :qr_code (u/str->qr-base64 (badge-url ctx (:id %1)))
                                   :endorsements (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx))) #_(get-endorsements ctx (:badge_id %1))
                                   :content %2)) badge-with-content temp)]
+    (dump badges)
     badges))
 
 (defn generatePDF [ctx user-id input lang]
     (let [data-dir (get-in ctx [:config :core :data-dir])
+          site-url (get-in ctx [:config :core :site-url])
           badges (pdf-generator-helper ctx user-id input)
           stylesheet {:heading-name {:color [127 113 121]
                                      :family :times-roman
@@ -220,13 +223,13 @@
                              :color [66 100 162]}
                       :chunk {:size 11
                               :style :bold}}
-          badge-template (template
-                           (let [template #(cons [:paragraph]  [[:paragraph
+          badge-template (pdf/template
+                           (let [template #(cons [:paragraph]  [#_[:paragraph (graphics/image-background "http://i.imgur.com/1GjPKvB.png")][:paragraph
                                                    [:image {:width 100 :height 100 :align :center} (str data-dir (:image_file %))]]
                                                    [:spacer 0]
 
                                                    [:heading.heading-name (:name %)]
-                                                   [:paragraph {:indent 20 :align :center}[:line] [:spacer]]
+                                                   [:paragraph {:indent 20 :align :center}#_[:line] [:spacer]]
                                                    [:paragraph.generic {:align :left} (:description %)][:spacer]
                                                    [:paragraph.generic
                                                     [:chunk.chunk (str (t :badge/Recipient)": ")] (str $first_name  " " $last_name ) "\n"
@@ -256,7 +259,7 @@
                                                     [:spacer 0]
                                                     [:phrase.generic
                                                      [:chunk.chunk  (t :badge/Criteria)] ]"\n"
-                                                     (markdown->clj-pdf {:wrap {:global-wrapper :paragraph}} (:criteria_content %))]
+                                                     (markdown->clj-pdf {:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} (:criteria_content %))]
 
                                                   (when-not (empty? $endorsements)
                                                     [:paragraph.generic
@@ -268,14 +271,17 @@
                                                             #_[:chunk.chunk "Endorser: " ] (:issuer_name e) "\n"
                                                             #_[:chunk.chunk "Issuer url: "] [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (:issuer_url e)] "\n"
                                                             #_[:chunk.chunk "Issued on: "][:chunk (date-from-unix-time (long (* 1000 (:issued_on e))))] "\n"
-                                                            (markdown->clj-pdf (:content e)) #_[:spacer 0]]))])
-                                                   [:pagebreak]
+                                                            (markdown->clj-pdf (:content e))]))])
+
+
+                                                    [:line {:dotted true}]
+                                                    [:spacer 0]
                                                     [:heading.heading-name (t :badge/IssuerInfo)]
-                                                    [:spacer]
+                                                    [:spacer 0]
                                                     (when-not (empty? (:issuer_description %))
                                                       [:paragraph.generic
                                                         [:chunk.chunk (str (t :badge/IssuerDescription)": ")] (:issuer_description %)])
-                                                   [:spacer 0]
+                                                   [:spacer 1]
                                                      [:paragraph.generic
                                                       [:chunk.chunk (str (t :badge/IssuerWebsite)": ")]
                                                       [:anchor {:target (:issuer_content_url %) :style{:family :times-roman :color [66 100 162]}} (:issuer_content_url %)]]
@@ -305,7 +311,16 @@
                                                                 #_[:chunk.chunk "Issued on: "][:chunk.link (date-from-unix-time (long (* 1000 (:issued_on e))))] "\n"
                                                                 (markdown->clj-pdf (:content e))]))]))
 
-                                                    [:image {:width 60 :height 60 :align :right}(str data-dir (u/file-from-url ctx (str "data:image/png;base64," $qr_code)))]
+                                                     #_[:paragraph.generic {:align :right :keep-together false};[:chunk.chunk "Validate this badge"]
+                                                     [:spacer 0]
+                                                     [:image {:width 85 :height 85 :base64 true} $qr_code #_(str data-dir (u/file-from-url ctx (str "data:image/png;base64," $qr_code)))]
+                                                     [:chunk.link {:indent 20 :style :italic} (str site-url "/badge/info/" $id)]]
+                                                    [:pdf-table {:horizontal-align :right :width-percent 100 :cell-border false}
+                                                     nil
+                                                     [[:pdf-cell [:image {:width 85 :height 85 :base64 true} $qr_code #_(str data-dir (u/file-from-url ctx (str "data:image/png;base64," $qr_code)))]
+                                                      [:phrase [:chunk.link {:style :italic} (str site-url "/badge/info/" $id)]]]
+                                                     ]]
+
                                                     [:pagebreak]])
 
                                  content (if (= lang "all") (map template $content) (map template (filter #(= (:default_language_code %) (:language_code %)) $content)))]
@@ -314,7 +329,7 @@
 ;;TODO Test alignments
 
  (fn [output-stream]
-   (pdf (into [{:stylesheet stylesheet  :footer {:text "Open badge passport" :page-numbers false :align :center :style :bold}}] (badge-template badges)) output-stream)))
+   (pdf/pdf (into [{:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers true :align :right}}] (badge-template badges)) output-stream)))
 )
 
 

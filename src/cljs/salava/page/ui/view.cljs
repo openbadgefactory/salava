@@ -11,6 +11,7 @@
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.core.helper :refer [dump]]
             ))
 
 (defn check-password [password-atom page-id state]
@@ -58,6 +59,12 @@
                 :on-click #(check-password password-atom (:page-id @state) state)}
        (t :core/Submit)]]]))
 
+(defn export-page-to-pdf [state]
+  (let [id (:page-id @state)]
+;;   (dump @state)
+  (ajax/GET
+    (path-for (str "obpv1/page/export-to-pdf/" id)) {})))
+
 (defn page-content [page state]
   (let [show-link-or-embed-atom (cursor state [:show-link-or-embed-code])
         visibility-atom (cursor state [:page :visibility])]
@@ -72,7 +79,10 @@
           (t :page/Edit)]
          [:button {:class "btn btn-primary print-btn"
                    :on-click #(.print js/window)}
-          (t :core/Print)]]
+          (t :core/Print)]
+         [:button {:class "btn btn-primary"
+                   :on-click #(export-page-to-pdf state)}
+          (t :badge/Exporttopdf)]]
         (if-not (private?)
           [:div {:class (str "checkbox " @visibility-atom)}
            [:label
