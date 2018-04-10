@@ -117,44 +117,48 @@
                            (assoc :blocks blocks)))
         data-dir (get-in ctx [:config :core :data-dir])
         page-template (pdf/template
-                        (let [template #(cons [:paragraph] [[:heading {:size :15 :align :center} $name] [:spacer 0]
-                                                            [:paragraph {:align :center}
+                        (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
+                                                            #_[:paragraph {:align :center}
                                                              [:chunk (str $first_name " " $last_name)]][:spacer 1]
                                                             [:line {:dotted true}]
                                                             [:spacer 2]
+                                                            (if (= "heading"  (:type %))
+                                                                 [:paragraph {:align :center}
+                                                                   [:heading (:content %)]] " ")
+                                                            (if (= "badge" (:type %))
                                                             [:pdf-table {:width-percent 100 :cell-border false }
                                                              [25 75]
                                                              [[:pdf-cell {:align :right}
-                                                               (when-not (nil? (:image_file %))
-                                                               [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))])
-                                                               ]
+                                                               (if (contains? % :image_file)
+                                                               [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
+                                                               [:spacer 2]]
                                                               [:pdf-cell
-                                                               (when-not (nil? (:name %))
-                                                               [:heading (:name %)][:spacer 1])
-                                                               #_[:paragraph
+                                                               (if (contains? % :name )
+                                                               [:heading (:name %)] " ")
+                                                               [:spacer]
+                                                               #_(if (contains? % :type)
+                                                                 [:paragraph
+                                                                   [:heading (:content %)]] " ")
+                                                               (if (or
+                                                                       (contains? % :issuer_content_name) (contains? % :issued_on) (contains? % :description) (contains? % :criteria_url))
+                                                               [:paragraph
                                                                  [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
-                                                                 #_[:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
+                                                                 [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
                                                                  [:spacer 1]
                                                                  (:description %) "\n"
 ;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
                                                                  [:spacer 0]
                                                                 [:paragraph
                                                                  [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
-
-
-                                                                 ]
-
-                                                               ]]]
-                                                             ]
-                                                            #_[:paragraph
-                                                             [:image {:width 70 :height 70 :align :center} (str data-dir (:image_file %))]]
+                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
+                                                             ] " ")
 
                                                             [:spacer 0]])
 
                               content (map template $blocks)
                               ]
-                         (reduce into [] content)))]
+                         (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
+                                                             [:chunk (str $first_name " " $last_name)]]]] content)))]
     (dump page)
 ;;     (dump badge-block-with-markdown)
    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")

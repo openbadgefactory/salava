@@ -224,7 +224,8 @@
                       :chunk {:size 11
                               :style :bold}}
           badge-template (pdf/template
-                           (let [template #(cons [:paragraph]  [#_[:paragraph (graphics/image-background "http://i.imgur.com/1GjPKvB.png")][:paragraph
+                           (let [ pages 0
+                                  template #(cons [:paragraph]  [#_[:paragraph (graphics/image-background "http://i.imgur.com/1GjPKvB.png")][:spacer 2][:paragraph
                                                    [:image {:width 100 :height 100 :align :center} (str data-dir (:image_file %))]]
                                                    [:spacer 0]
 
@@ -317,7 +318,7 @@
                                                      [:chunk.link {:indent 20 :style :italic} (str site-url "/badge/info/" $id)]]
                                                     [:pdf-table {:horizontal-align :right :width-percent 100 :cell-border false}
                                                      nil
-                                                     [[:pdf-cell [:image {:width 85 :height 85 :base64 true} $qr_code #_(str data-dir (u/file-from-url ctx (str "data:image/png;base64," $qr_code)))]
+                                                     [[:pdf-cell [:image {:width 85 :height 85 :base64 true} $qr_code]
                                                       [:phrase [:chunk.link {:style :italic} (str site-url "/badge/info/" $id)]]]
                                                      ]]
 
@@ -325,11 +326,11 @@
 
                                  content (if (= lang "all") (map template $content) (map template (filter #(= (:default_language_code %) (:language_code %)) $content)))]
 
-                             (reduce into [] content)))]
+                             (reduce into [[:chapter ]] content)))]
 ;;TODO Test alignments
 
  (fn [output-stream]
-   (pdf/pdf (into [{:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers true :align :right}}] (badge-template badges)) output-stream)))
+   (pdf/pdf (into [{:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}}] (badge-template badges)) output-stream)))
 )
 
 
