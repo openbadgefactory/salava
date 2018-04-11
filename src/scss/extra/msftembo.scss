@@ -82,7 +82,7 @@ header#navbar {
 
 ul.side-links {
     li a {
-        color: $button-hover;
+        color: $menu-color;
     }
     li.active a, li a:hover {
         color: $menu-active;
@@ -102,7 +102,14 @@ ul.side-links {
 }
 
 ul#secondary-menu-links li a i.fa {
-    color: $button-hover;
+    color: $link-color;
+}
+
+.btn{
+    font-weight:bold;
+}
+.endorsement-link:before{
+  color: $link-color !important;
 }
 
 /*#my-badges #grid .grid-container .media-content .icons{
