@@ -123,8 +123,11 @@
                                                             [:line {:dotted true}]
                                                             [:spacer 2]
                                                             (if (= "heading"  (:type %))
-                                                                 [:paragraph {:align :center}
-                                                                   [:heading (:content %)]] " ")
+                                                              (case (:size %)
+                                                                 "h1" [:paragraph {:align :center}
+                                                                   [:heading (:content %)]]
+                                                                 "h2" [:paragraph {:align :center}
+                                                                        [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
                                                             (if (= "badge" (:type %))
                                                             [:pdf-table {:width-percent 100 :cell-border false }
                                                              [25 75]
@@ -152,6 +155,9 @@
                                                                  [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
                                                                  [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
                                                              ] " ")
+                                                            (if (= "html" (:type %))
+                                                              [:paragraph {:align :center}
+                                                               (:content %)] "")
 
                                                             [:spacer 0]])
 
@@ -159,9 +165,9 @@
                               ]
                          (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
                                                              [:chunk (str $first_name " " $last_name)]]]] content)))]
+
     (dump page)
-;;     (dump badge-block-with-markdown)
-   (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
+    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
 
     ))
 
