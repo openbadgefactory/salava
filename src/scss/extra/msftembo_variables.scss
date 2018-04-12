@@ -1,18 +1,18 @@
-$titlebar-color: #910000;
+$titlebar-color: #4a93a2;
 
-$menu-color: #756A70;
-$menu-active: darken($menu-color, 18%);
+$menu-color: #000000;
+$menu-active: #c8001a;
 $title-color: $menu-color;
 
-$link-color:#910000;
-$link-hover: lighten($link-color, 5%);
-$grid-link:  #333333;
-$grid-link-hover: lighten($grid-link, 5%);
+$link-color:darken($menu-active, 10%);
+$link-hover:#0d0d0d;
+$grid-link:  #c8001a;
+$grid-link-hover: lighten($link-color, 5%);
 
-$badge-title:#910000;
+$badge-title:#c8001a;
 $badge-title-hover:#910000;
 
-$button-color: #910000;
+$button-color: $link-color;
 $button-hover: lighten($link-color, 5%);
 
 $icon-color: #a28f9b;
