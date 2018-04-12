@@ -7,7 +7,7 @@
 (defqueries "sql/oembed/queries.sql")
 
 (def iframe
-  "<iframe frameborder='0' scrolling='no' src='%s/badge/info/%d/embed' width='%d' height='%d'></iframe>")
+  "<iframe frameborder=\"0\" scrolling=\"no\" src=\"%s/badge/info/%d/embed\" width=\"%d\" height=\"%d\"></iframe>")
 
 (defn- url->id [url]
   (when-let [[_ id] (re-find #"/badge/info/([0-9]+)$" url)]
