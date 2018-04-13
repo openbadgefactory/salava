@@ -1,0 +1,28 @@
+$titlebar-color: #cce800;
+$login-button-active: darken($titlebar-color, 5%);
+
+$menu-color: #023b6b;
+$menu-active: #fc4c02;
+$title-color: $menu-color;
+
+$link-color:#F28648;
+$link-hover:darken($link-color, 5%);
+$grid-link:  #023b6b;
+$grid-link-hover: lighten($grid-link, 5%);
+
+$badge-title: $link-color;
+$badge-title-hover:#fc4c02;
+
+$button-color: $titlebar-color;
+$button-hover: $login-button-active;
+
+$icon-color: #a28f9b;
+
+$green: #7f7179;
+
+$text-color: #00315a;
+$orange-color: #fc4c02;
+$orange-hover: #fc4c02;
+
+$background-color: #F9F7F2;
+
