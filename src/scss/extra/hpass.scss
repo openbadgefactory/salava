@@ -74,6 +74,7 @@ body.anon{
       text-decoration: underline;
       font-weight:bold;
       color: $titlebar-color;
+
   }
 
   img{
@@ -89,6 +90,7 @@ a#login-button, #login-page .btn-primary, .btn-primary:active:focus, .btn-primar
     border-color: $titlebar-color;
     color: #000000;
     font-weight:bold;
+    box-shadow:none;
     &:hover {
         background-color: $login-button-active;
         border-color: $login-button-active;
@@ -136,10 +138,14 @@ ul.side-links {
     background:$button-color;
     border-color:$button-color;
     line-height: 19px;
+    box-shadow:none;
+    color:#000000;
+    font-weight: bold;
     &.btn-active {
+        box-shadow:none;
         background: #a7e03c;
         border-color:#a7e03c;
-        color:$text-color;
+/*         color:$text-color; */
     }
 }
 body {
@@ -177,10 +183,7 @@ ul.navbar-nav {
         color:black;
     }
     li.active a {
-/*         color: $titlebar-color; */
-      text-decoration: underline;
-      text-decoration-color: $titlebar-color;
-      text-decoration-style:solid;
+      border-bottom: 4px solid $titlebar-color;
     }
     @media (max-width: 1120px){
         margin-top:20px;
@@ -337,6 +340,7 @@ body.anon{
     border-color: $button-hover;
     color:#000000;
     font-weight:bold;
+    box-shadow:none;
     &:hover {
         background-color: $button-hover;
         border-color: $button-hover;
