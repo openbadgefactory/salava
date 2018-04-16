@@ -50,7 +50,7 @@
 .system-image-url {
     width: 90px;
     height: 90px;
-    background-image: url("/img/extra/hpass/logo_system.png");
+    background-image: url("/img/extra/hpass/logo_icon.png");
 }
 
 .issuedbyobf-image-url{
@@ -177,7 +177,10 @@ ul.navbar-nav {
         color:black;
     }
     li.active a {
-        color: $titlebar-color;
+/*         color: $titlebar-color; */
+      text-decoration: underline;
+      text-decoration-color: $titlebar-color;
+      text-decoration-style:solid;
     }
     @media (max-width: 1120px){
         margin-top:20px;
@@ -234,7 +237,7 @@ header#navbar {
 }
 button.navbar-toggle {
     position:absolute;
-    left:0px;
+    right:0px;
     margin-top:45px;
 }
 
@@ -318,9 +321,14 @@ body.anon{
     .text-muted{
       color:#000000;
     }
+
+    a{
+      color:#000000;
+      text-decoration: none;
+    }
     margin-top: 55px;
     border-top: none;
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 
