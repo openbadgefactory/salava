@@ -115,6 +115,7 @@
          page (conj () (-> (select-page {:id page-id} (get-db ctx))
                            first
                            (assoc :blocks blocks)))
+         badges (map #(:id (filter (= "badge" :type %))) (:blocks (first page)))
         data-dir (get-in ctx [:config :core :data-dir])
         page-template (pdf/template
                         (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
@@ -153,7 +154,10 @@
                                                                  [:spacer 0]
                                                                 [:paragraph
                                                                  [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
+                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
+                                                                 [:spacer]
+                                                                  (markdown->clj-pdf (:criteria_content %))
+                                                                 ]] " ")]]
                                                              ] " ")
                                                             (if (= "html" (:type %))
                                                               [:paragraph {:align :center}
@@ -167,6 +171,7 @@
                                                              [:chunk (str $first_name " " $last_name)]]]] content)))]
 
     (dump page)
+    (dump badges)
     (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
 
     ))
