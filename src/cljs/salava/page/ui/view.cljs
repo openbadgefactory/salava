@@ -4,7 +4,7 @@
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [navigate-to path-for private? js-navigate-to]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [reagent-modals.modals :as m]
@@ -63,7 +63,9 @@
   (let [id (:page-id @state)]
 ;;   (dump @state)
   (ajax/GET
-    (path-for (str "obpv1/page/export-to-pdf/" id)) {})))
+    (path-for (str "obpv1/page/export-to-pdf/" id))
+     {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id))
+                                                      })))
 
 (defn page-content [page state]
   (let [show-link-or-embed-atom (cursor state [:show-link-or-embed-code])

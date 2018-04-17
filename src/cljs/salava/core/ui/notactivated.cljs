@@ -23,3 +23,7 @@
      [:a {:href (path-for "/user/edit/email-addresses")}
       (str (t :core/Resendactivation) ".")]]
     ))
+
+ (defn email-sent-banner []
+   [:div {:class (str "success" "success-alert")}
+    "Email sent!"])

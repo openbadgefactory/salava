@@ -7,6 +7,7 @@
             [schema.core :as s]
             [salava.page.schemas :as schemas]
             [salava.core.access :as access]
+            [ring.util.io :as io]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -75,7 +76,11 @@
                   :path-params [pageid :- s/Int]
                   :summary "Export page to pdf"
                   :current-user current-user
-                  (ok (p/generate-pdf ctx pageid)))
+                  (-> (io/piped-input-stream (p/generate-pdf ctx pageid))
+                      ok
+                      (header "Content-Disposition" "attachment; filename=\"page.pdf\"")
+                      (header "Content-Type" "application/pdf"))
+                  #_(ok (p/generate-pdf ctx pageid)))
 
              (POST "/password/:pageid" []
                    :return schemas/ViewPage

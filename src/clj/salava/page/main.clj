@@ -117,6 +117,7 @@
                            (assoc :blocks blocks)))
          badges (map #(:id (filter (= "badge" :type %))) (:blocks (first page)))
         data-dir (get-in ctx [:config :core :data-dir])
+        site-url (get-in ctx [:config :core :site-url])
         page-template (pdf/template
                         (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
                                                             #_[:paragraph {:align :center}
@@ -130,7 +131,7 @@
                                                                  "h2" [:paragraph {:align :center}
                                                                         [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
                                                             (if (= "badge" (:type %))
-                                                            [:pdf-table {:width-percent 100 :cell-border false }
+                                                            [:pdf-table {:width-percent 100 :cell-border false :keep-together false}
                                                              [25 75]
                                                              [[:pdf-cell {:align :right}
                                                                (if (contains? % :image_file)
@@ -162,6 +163,12 @@
                                                             (if (= "html" (:type %))
                                                               [:paragraph {:align :center}
                                                                (:content %)] "")
+                                                            (if (= "file" (:type %))
+                                                              [:paragraph "Attachments"
+                                                              (into [:paragraph] (for [file (:files %)]
+
+                                                                 [:anchor {:target (str site-url "/"(:path file)) :style{:family :times-roman :color [66 100 162]}} (str site-url "/"(:path file))]
+                                                                 #_[:chunk (str "localhost:5000/"(:path file))]))])
 
                                                             [:spacer 0]])
 
@@ -172,7 +179,8 @@
 
     (dump page)
     (dump badges)
-    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
+    (fn [out]
+      (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) out))
 
     ))
 
