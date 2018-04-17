@@ -16,7 +16,7 @@
    [:p [:b "Get Recognised. Build your professional profile. Advance your career."][:br]
     "myHPass is a free platform for you as a humanitarian or volunteer. Store your digital badges and share your skills, learning and experience. "]
    [:br]
-   [:a {:href ""} "Learn more about HPass"]
+   [:a {:href "http://hpass.org/"} "Learn more about HPass"]
    [:br]
    [:br]
    [:div.footer]
