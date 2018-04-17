@@ -5,24 +5,25 @@ $menu-color: #023b6b;
 $menu-active: #fc4c02;
 $title-color: $menu-color;
 
-$link-color:#F28648;
+$link-color:#cce800;
 $link-hover:darken($link-color, 5%);
 $grid-link:  #023b6b;
 $grid-link-hover: lighten($grid-link, 5%);
 
 $badge-title: $link-color;
-$badge-title-hover:#fc4c02;
+$badge-title-hover:$link-hover;
 
 $button-color: $titlebar-color;
 $button-hover: $login-button-active;
 
-$icon-color: #a28f9b;
+$icon-color: #d2d2d2;
 
 $green: #7f7179;
 
-$text-color: #00315a;
-$orange-color: #fc4c02;
-$orange-hover: #fc4c02;
+$text-color: #1d1d1d;
+$grey: #d2d2d2;
+$orange-color: #db442c;
+$orange-hover: #db442c;
 
-$background-color: #F9F7F2;
+$background-color: #F4F4F4;
 

@@ -82,6 +82,36 @@ body.anon{
        width: 100%;
   }
 
+    .container.main-container{
+    width:100vw;
+    margin-left: 0px;
+    padding-left:0px
+  }
+  #narrow-panel{
+    max-width:568px;
+    border-top: none;
+    border-bottom: none;
+    margin-top: 0px;
+    border-radius: 0;
+  }
+
+  footer.footer .footer-container {
+    .text-muted{
+      color:#000000;
+    }
+
+    a{
+      color:#000000;
+      text-decoration: none;
+    }
+    margin-top: 55px;
+    border-top: none;
+    font-size: 14px;
+  }
+
+  #reset-password .panel-body form .btn-primary{
+  color: $text-color;
+  }
 
 }
 
@@ -127,6 +157,7 @@ ul.side-links {
 }
 .media.message-item .media-body a {
     color:$green;
+    font-weight: bold;
 
 }
 
@@ -152,6 +183,7 @@ body {
 
       font-family: "GT America", "Arial", sans-serif;
       background-color: $background-color;
+      color: $text-color;
 
     a{
       color:$badge-title;
@@ -160,6 +192,67 @@ body {
   #badge-info a{
 
     color:$badge-title
+  }
+
+  #content .uppercase-header {
+    color:$text-color;
+  }
+
+  .endorsement-link:before{
+    color:$link-color !important;
+  }
+
+  .pages #grid {
+     #add-element {
+        #add-element-link {
+          color: $link-color;
+          &:hover {
+                color: $link-hover;
+            }
+        }
+
+        #add-element-icon{
+          color:$icon-color;
+        }
+    }
+
+    .media-bottom a.bottom-link{
+      color:$icon-color;
+      &:hover {
+              color: $text-color;
+            }
+    }
+    .media-content {
+      .page-create-date {
+        color: $text-color;
+      }
+    }
+  }
+
+  #my-files #grid #add-element #add-element-link {
+      color: $link-color;
+  }
+
+  .pages #grid .media-content .media-body .media-heading a.heading-link {
+      color: $link-color;
+      font-weight: bold;
+         &:hover {
+              color: $link-hover;
+            }
+  }
+
+  .pages #grid .media-content .media-body .visibility-icon {
+    color:$grey;
+  }
+
+  #assertion-info th{
+    color: $link-color;
+  }
+
+  .message-item.media {
+    .date {
+      color: $text-color;
+    }
   }
 }
 
@@ -298,7 +391,7 @@ button.navbar-toggle {
   text-align: center;
 
   p {
-   color: #434343 !important;
+   color: $text-color !important;
   }
   .footer {
     background-color: $titlebar-color;
@@ -307,38 +400,10 @@ button.navbar-toggle {
 }
 
 
-body.anon{
-  .container.main-container{
-    width:100vw;
-    margin-left: 0px;
-    padding-left:0px
-  }
-  #narrow-panel{
-    max-width:568px;
-    border-top: none;
-    border-bottom: none;
-    margin-top: 0px;
-    border-radius: 0;
-  }
-  footer.footer .footer-container {
-    .text-muted{
-      color:#000000;
-    }
-
-    a{
-      color:#000000;
-      text-decoration: none;
-    }
-    margin-top: 55px;
-    border-top: none;
-    font-size: 14px;
-  }
-}
-
 .btn-primary {
     background-color: $button-color !important;
     border-color: $button-hover;
-    color:#000000;
+    color:$text-color;
     font-weight:bold;
     box-shadow:none;
     &:hover {
@@ -347,6 +412,28 @@ body.anon{
     }
 }
 
+ .btn-success {
+  background-color: $text-color !important;
+  border-color:$text-color !important;
+  font-weight:bold;
+  color:$background-color !important;
+   &:hover, &:focus, &:active:hover  {
+        background-color: $link-hover !important;
+        border-color: $link-hover !important;
+/*         box-shadow: 0px 2px $box-shadow; */
+    }
+}
+
+.btn-warning {
+  background-color: $orange-color !important;
+  border-color:$orange-color !important;
+  font-weight:bold;
+}
+
 ul#secondary-menu-links li a i.fa {
    color:$titlebar-color;
+}
+
+#my-badges #grid .grid-container .media-content .icons i {
+  color:$icon-color;
 }
