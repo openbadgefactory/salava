@@ -146,11 +146,11 @@ ul.side-links {
         color:#000000;
     }
     li.active a, li a:hover {
-        color: $link-color;
+        color: $titlebar-color;
     }
     @media (max-width: 767px){
         li.active a {
-            background-color: $button-hover;
+            background-color: $titlebar-color;
             color: #FFF;
         }
     }
