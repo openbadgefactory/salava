@@ -332,6 +332,9 @@ header#navbar {
 .pages #grid .media-content .media-body .media-heading a.heading-link, #page-gallery #grid .media-content .media-body .media-heading a.heading-link, #user-pages #grid .media-content .media-body .media-heading a.heading-link, #profile-gallery #grid .media-content .media-body .media-heading a.heading-link, #my-files #grid .media-content .media-body .media-heading a.heading-link
 {
   color: $text-color;
+  &:hover {
+    color: $link-color;
+  }
 }
 button.navbar-toggle {
     position:absolute;
