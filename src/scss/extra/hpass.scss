@@ -173,12 +173,10 @@ ul.side-links {
     color:#000000;
     font-weight: bold;
     &.btn-active {
-        box-shadow:none;
-        background: #a7e03c;
-        border-color:#a7e03c;
-/*         color:$text-color; */
+
     }
 }
+
 body {
 
       font-family: "GT America", "Arial", sans-serif;
@@ -330,6 +328,10 @@ header#navbar {
 
 .pages #grid .media-content .media-body .media-heading, #page-gallery #grid .media-content .media-body .media-heading, #user-pages #grid .media-content .media-body .media-heading, #profile-gallery #grid .media-content .media-body .media-heading, #my-files #grid .media-content .media-body .media-heading{
     line-height: 1.2em;
+}
+.pages #grid .media-content .media-body .media-heading a.heading-link, #page-gallery #grid .media-content .media-body .media-heading a.heading-link, #user-pages #grid .media-content .media-body .media-heading a.heading-link, #profile-gallery #grid .media-content .media-body .media-heading a.heading-link, #my-files #grid .media-content .media-body .media-heading a.heading-link
+{
+  color: $text-color;
 }
 button.navbar-toggle {
     position:absolute;

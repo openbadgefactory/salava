@@ -1,11 +1,12 @@
-$titlebar-color: #cce800;
+$titlebar-color: #94d100;
 $login-button-active: darken($titlebar-color, 5%);
 
 $menu-color: #023b6b;
 $menu-active: #fc4c02;
 $title-color: $menu-color;
 
-$link-color:#cce800;
+$link-color:#94d100;
+/* $link-color: #00cdb2; */
 $link-hover:darken($link-color, 5%);
 $grid-link:  #023b6b;
 $grid-link-hover: lighten($grid-link, 5%);
