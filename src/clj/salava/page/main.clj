@@ -8,13 +8,21 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html plugin-fun get-plugins file-from-url md->html]]
             [salava.badge.main :as b]
             [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
             [salava.file.db :as f]
             [clj-pdf.core :as pdf]
-            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]))
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
+            [clojure.zip :as zip]
+            [net.cgrand.enlive-html :as enlive]
+;;             [html-to-markdown.core :as htmlm]
+;;             [hickory.core :as hickory]
+;;             [hiccup.core :as hiccup]
+            [clojure.xml :refer [parse]]
+
+            ))
 
 (defqueries "sql/page/main.sql")
 
@@ -107,82 +115,6 @@
     (assoc page :blocks blocks
                 :border (border-attributes (:border page))
                 :qr_code (str->qr-base64 (page-url ctx page-id)))))
-
-
-(defn generate-pdf [ctx page-id]
-  (let [ blocks (page-blocks ctx page-id)
-         badge-block-with-markdown (:criteria_content (select-pages-badge-blocks {:page_id page-id} (into {:result-set-fn first} (get-db ctx))))
-         page (conj () (-> (select-page {:id page-id} (get-db ctx))
-                           first
-                           (assoc :blocks blocks)))
-         badges (map #(:id (filter (= "badge" :type %))) (:blocks (first page)))
-        data-dir (get-in ctx [:config :core :data-dir])
-        site-url (get-in ctx [:config :core :site-url])
-        page-template (pdf/template
-                        (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
-                                                            #_[:paragraph {:align :center}
-                                                             [:chunk (str $first_name " " $last_name)]][:spacer 1]
-                                                            [:line {:dotted true}]
-                                                            [:spacer 2]
-                                                            (if (= "heading"  (:type %))
-                                                              (case (:size %)
-                                                                 "h1" [:paragraph {:align :center}
-                                                                   [:heading (:content %)]]
-                                                                 "h2" [:paragraph {:align :center}
-                                                                        [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
-                                                            (if (= "badge" (:type %))
-                                                            [:pdf-table {:width-percent 100 :cell-border false :keep-together false}
-                                                             [25 75]
-                                                             [[:pdf-cell {:align :right}
-                                                               (if (contains? % :image_file)
-                                                               [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
-                                                               [:spacer 2]]
-                                                              [:pdf-cell
-                                                               (if (contains? % :name )
-                                                               [:heading (:name %)] " ")
-                                                               [:spacer]
-                                                               #_(if (contains? % :type)
-                                                                 [:paragraph
-                                                                   [:heading (:content %)]] " ")
-                                                               (if (or
-                                                                       (contains? % :issuer_content_name) (contains? % :issued_on) (contains? % :description) (contains? % :criteria_url))
-                                                               [:paragraph
-                                                                 [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
-                                                                 [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
-                                                                 [:spacer 1]
-                                                                 (:description %) "\n"
-;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
-                                                                 [:spacer 0]
-                                                                [:paragraph
-                                                                 [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
-                                                                 [:spacer]
-                                                                  (markdown->clj-pdf (:criteria_content %))
-                                                                 ]] " ")]]
-                                                             ] " ")
-                                                            (if (= "html" (:type %))
-                                                              [:paragraph {:align :center}
-                                                               (:content %)] "")
-                                                            (if (= "file" (:type %))
-                                                              [:paragraph "Attachments"
-                                                              (into [:paragraph] (for [file (:files %)]
-
-                                                                 [:anchor {:target (str site-url "/"(:path file)) :style{:family :times-roman :color [66 100 162]}} (str site-url "/"(:path file))]
-                                                                 #_[:chunk (str "localhost:5000/"(:path file))]))])
-
-                                                            [:spacer 0]])
-
-                              content (map template $blocks)
-                              ]
-                         (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
-                                                             [:chunk (str $first_name " " $last_name)]]]] content)))]
-
-    (dump page)
-    (dump badges)
-    (fn [out]
-      (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) out))
-
-    ))
 
 (defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)

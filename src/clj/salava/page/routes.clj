@@ -8,6 +8,7 @@
             [salava.page.schemas :as schemas]
             [salava.core.access :as access]
             [ring.util.io :as io]
+            [salava.page.pdf :as pdf]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -72,15 +73,15 @@
                         (unauthorized)
                         (not-found)))))
 
-             (GET "/export-to-pdf/:pageid" []
-                  :path-params [pageid :- s/Int]
+             (GET "/export-to-pdf/:pageid/:user-id" []
+                  :path-params [pageid :- s/Int
+                                user-id :- s/Int]
                   :summary "Export page to pdf"
                   :current-user current-user
-                  (-> (io/piped-input-stream (p/generate-pdf ctx pageid))
+                  (-> (io/piped-input-stream (pdf/generate-pdf ctx pageid user-id))
                       ok
                       (header "Content-Disposition" "attachment; filename=\"page.pdf\"")
-                      (header "Content-Type" "application/pdf"))
-                  #_(ok (p/generate-pdf ctx pageid)))
+                      (header "Content-Type" "application/pdf")))
 
              (POST "/password/:pageid" []
                    :return schemas/ViewPage

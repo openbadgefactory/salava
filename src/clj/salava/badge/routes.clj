@@ -10,6 +10,7 @@
             [salava.factory.db :as f]
             [salava.core.layout :as layout]
             [salava.core.access :as access]
+            [salava.badge.pdf :as pdf]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -140,7 +141,7 @@
                    :summary "Export badges to PDF"
                    :auth-rules access/authenticated
                    :current-user current-user
-                     (-> (io/piped-input-stream (b/generatePDF ctx user_id (read-string badges_to_export) lang))
+                     (-> (io/piped-input-stream (pdf/generatePDF ctx user_id (read-string badges_to_export) lang))
                          ok
                          (header "Content-Disposition" "attachment; filename=\"badges.pdf\"")
                          (header "Content-Type" "application/pdf")

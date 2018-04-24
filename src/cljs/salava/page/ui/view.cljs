@@ -60,11 +60,11 @@
        (t :core/Submit)]]]))
 
 (defn export-page-to-pdf [state]
-  (let [id (:page-id @state)]
-;;   (dump @state)
+  (let [id (:page-id @state)
+        user-id  (:id (session/get :user))]
   (ajax/GET
-    (path-for (str "obpv1/page/export-to-pdf/" id))
-     {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id))
+    (path-for (str "obpv1/page/export-to-pdf/" id "/"user-id))
+     {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/"user-id))
                                                       })))
 
 (defn page-content [page state]
