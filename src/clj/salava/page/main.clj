@@ -17,11 +17,6 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.zip :as zip]
             [net.cgrand.enlive-html :as enlive]
-;;             [html-to-markdown.core :as htmlm]
-;;             [hickory.core :as hickory]
-;;             [hiccup.core :as hiccup]
-            [clojure.xml :refer [parse]]
-
             ))
 
 (defqueries "sql/page/main.sql")

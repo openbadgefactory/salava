@@ -16,7 +16,6 @@
             [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]
             [clj-pdf.core :as pdf]
-;;             [clj-pdf-tools.graphics :as graphics]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clj.qrgen :as q]
             [salava.core.i18n :refer [t]]))
