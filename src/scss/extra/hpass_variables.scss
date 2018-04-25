@@ -5,9 +5,11 @@ $menu-color: #023b6b;
 $menu-active: #fc4c02;
 $title-color: $menu-color;
 
-$link-color:#a2b800;
+$text-color: #1d1d1d;
+
+$link-color: $titlebar-color;
 /* $link-color: #00cdb2; */
-$link-hover:darken($link-color, 5%);
+$link-hover:$text-color;
 $grid-link:  #023b6b;
 $grid-link-hover: lighten($grid-link, 5%);
 
@@ -20,11 +22,9 @@ $button-hover: $login-button-active;
 $icon-color: #d2d2d2;
 
 $green: #7f7179;
-
-$text-color: #1d1d1d;
 $grey: #d2d2d2;
 $orange-color: #db442c;
 $orange-hover: #db442c;
 
-$background-color: #FFFFFF;
+$background-color: #F4F4F4;
 

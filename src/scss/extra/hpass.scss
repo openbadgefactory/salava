@@ -158,7 +158,6 @@ ul.side-links {
 .media.message-item .media-body a {
     color:$green;
     font-weight: bold;
-
 }
 
 
@@ -185,11 +184,24 @@ body {
 
     a{
       color:$badge-title;
-
     }
+
   #badge-info a{
 
-    color:$badge-title
+    color:$text-color;
+    text-decoration: underline;
+  }
+  #badge-stats .panel .panel-heading a{
+    &:hover{
+      color: $titlebar-color;
+    }
+  }
+
+  #page-view .checkbox{
+    color:$text-color;
+    &:hover{
+    color:$titlebar-color;
+    }
   }
 
   #content .uppercase-header {
@@ -197,7 +209,7 @@ body {
   }
 
   .endorsement-link:before{
-    color:$link-color !important;
+    color:$text-color !important;
   }
 
   .pages #grid {
@@ -251,6 +263,9 @@ body {
     .date {
       color: $text-color;
     }
+  }
+  .form-bar-success{
+    border-color: $titlebar-color;
   }
 }
 
@@ -326,6 +341,14 @@ header#navbar {
     font-weight: 400 !important;
 }
 
+#badge-gallery #grid .grid-container .media-bottom .checkbox, #my-badges #grid .grid-container .media-bottom .checkbox, #export-badges #grid .grid-container .media-bottom .checkbox, .import-badges #grid .grid-container .media-bottom .checkbox, #user-badges #grid .grid-container .media-bottom .checkbox {
+  color: $text-color;
+}
+
+#badge-gallery #grid .grid-container .media-bottom a.bottom-link i.fa, #badge-gallery #grid .grid-container .media-bottom a.badge-download i.fa, #my-badges #grid .grid-container .media-bottom a.bottom-link i.fa, #my-badges #grid .grid-container .media-bottom a.badge-download i.fa, #export-badges #grid .grid-container .media-bottom a.bottom-link i.fa, #export-badges #grid .grid-container .media-bottom a.badge-download i.fa, .import-badges #grid .grid-container .media-bottom a.bottom-link i.fa, .import-badges #grid .grid-container .media-bottom a.badge-download i.fa, #user-badges #grid .grid-container .media-bottom a.bottom-link i.fa, #user-badges #grid .grid-container .media-bottom a.badge-download i.fa {
+  color: $grey;
+}
+
 .pages #grid .media-content .media-body .media-heading, #page-gallery #grid .media-content .media-body .media-heading, #user-pages #grid .media-content .media-body .media-heading, #profile-gallery #grid .media-content .media-body .media-heading, #my-files #grid .media-content .media-body .media-heading{
     line-height: 1.2em;
 }
@@ -346,6 +369,7 @@ button.navbar-toggle {
 .login-top-container{
   min-width:100%
 }
+
 .green-banner {
   margin:0;
   margin-top:-15px;
