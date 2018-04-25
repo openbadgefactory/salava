@@ -22,6 +22,7 @@
              (layout/main ctx "/import")
              (layout/main ctx "/export")
              (layout/main ctx "/upload")
+             (layout/main ctx "/receive/:id")
              (layout/main ctx "/stats"))
 
     (context "/obpv1/badge" []

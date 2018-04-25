@@ -1,6 +1,7 @@
 (ns salava.factory.db
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
+            [clojure.pprint :refer [pprint]]
             [yesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.util :as u]
@@ -95,3 +96,17 @@
      :issued_by_factory issued
      :verified_by_factory (and issued (verified-by-factory ctx badge))}))
 
+
+(defn receive-badge [ctx e k t]
+  (try
+    (let [receive-url (str (get-in ctx [:config :factory :url]) "/c/receive/check.json"
+                           "?t=" t "&k=" k "&e=" (u/url-encode e))
+          {:keys [email assertion_url]} (http/json-get receive-url)]
+      (if (and email assertion_url)
+        (if-let [id (select-badge-by-assertion {:email email :url assertion_url} (u/get-db-1 ctx))]
+          (:id id)
+          (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url)))
+        (log/error "receive-badge: failed to fetch pending badge")))
+    (catch Exception ex
+      (log/error "receive-badge: failed to fetch pending badge")
+      (log/error (.toString ex)))))
