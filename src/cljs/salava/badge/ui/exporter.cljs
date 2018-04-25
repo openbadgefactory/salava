@@ -10,8 +10,7 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
-            [salava.core.i18n :refer [t]]
-            [salava.badge.ui.info :as bi]))
+            [salava.core.i18n :refer [t]]))
 
 (defn email-options [state]
   (map #(hash-map :value % :title %) (:emails @state)))
@@ -102,12 +101,11 @@
 
 (defn export-to-pdf [state]
   (let [badges-to-export (:badges-selected @state)
-        lang-option (:pdf-option @state)
-        user-id  (:id (session/get :user))]
+        lang-option (:pdf-option @state)]
 
     (ajax/GET
-      (path-for (str "/obpv1/badge/export-to-pdf/" user-id "/" badges-to-export "/" lang-option) true)
-      {:handler (js-navigate-to (str "/obpv1/badge/export-to-pdf/" user-id "/" badges-to-export "/" lang-option))}
+      (path-for (str "/obpv1/badge/export-to-pdf/" badges-to-export "/" lang-option) true)
+      {:handler (js-navigate-to (str "/obpv1/badge/export-to-pdf/"badges-to-export "/" lang-option))}
       )))
 
 (defn export-to-pdf-modal [state]
@@ -115,14 +113,13 @@
      [:div.modal-body
       [:div.row
        [:div.col-md-12
-        [:button {:type         "button"
-                :class        "close"
-                :data-dismiss "modal"
-                :aria-label   "OK"
+        [:button {:type  "button"
+                  :class  "close"
+                  :data-dismiss "modal"
+                  :aria-label   "OK"
                 }
-         [:span {:aria-hidden             "true"
+         [:span {:aria-hidden  "true"
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-
       [:div
        [:form {:class "form-horizontal"}
               [:div.form-group
@@ -144,8 +141,6 @@
               :data-dismiss "modal"
               }
      (t :badge/Export)]]])
-
-
 
 (defn export-badges [state]
   (let [badges-to-export (:badges-selected @state)

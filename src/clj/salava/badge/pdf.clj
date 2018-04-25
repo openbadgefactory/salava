@@ -4,7 +4,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
             [salava.badge.main :refer [user-badges-to-export fetch-badge badge-url]]
-            [salava.core.util :as u :refer [get-db plugin-fun get-plugins file-from-url md->html str->qr-base64]]
+            [salava.core.util :as u :refer [get-db plugin-fun get-plugins md->html str->qr-base64]]
             [clj-pdf.core :as pdf]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]))
 
@@ -28,6 +28,8 @@
     (let [data-dir (get-in ctx [:config :core :data-dir])
           site-url (get-in ctx [:config :core :site-url])
           badges (pdf-generator-helper ctx user-id input)
+          font-path  (first (mapcat #(get-in ctx [:config % :font] []) (get-plugins ctx)))
+          font  {:ttf-name (str site-url font-path)}
           stylesheet {:heading-name {:color [127 113 121]
                                      :family :times-roman
                                      :align :center}
@@ -39,9 +41,10 @@
                              :color [66 100 162]}
                       :chunk {:size 11
                               :style :bold}}
+
+          pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
           badge-template (pdf/template
-                           (let [ pages 0
-                                  template #(cons [:paragraph]  [[:paragraph
+                           (let [ template #(cons [:paragraph]  [[:paragraph
                                                    [:image {:width 100 :height 100 :align :center} (str data-dir (:image_file %))]]
                                                    [:spacer 0]
 
@@ -65,7 +68,7 @@
                                                     (when-not (empty? $alignments)
                                                       [:paragraph.generic
                                                        [:spacer 0]
-                                                       [:phrase {:size 12 :style :bold} "Alignments"]
+                                                       [:phrase {:size 12 :style :bold} (t :badge/Alignments)]
                                                        [into [:paragraph ] (for [a $alignments]
                                                                              [:paragraph
                                                                               [:chunk.chunk "Name: "] (:name a) "\n"
@@ -141,5 +144,5 @@
 ;;TODO Test alignments
 
  (fn [output-stream]
-   (pdf/pdf (into [{:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}}] (badge-template badges)) output-stream)))
+   (pdf/pdf (into [pdf-settings] (badge-template badges)) output-stream)))
 )

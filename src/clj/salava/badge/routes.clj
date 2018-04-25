@@ -134,18 +134,19 @@
                    (ok (b/congratulate! ctx badgeid (:id current-user))))
 
 
-             (GET "/export-to-pdf/:user_id/:badges_to_export/:lang" []
-                   :path-params[user_id :- (s/maybe s/Str)
-                                badges_to_export
-                                lang :- (s/maybe s/Str)]
+             (GET "/export-to-pdf/:badges_to_export/:lang" []
+                   :path-params[badges_to_export :- s/Str
+                                lang :- s/Str]
                    :summary "Export badges to PDF"
                    :auth-rules access/authenticated
                    :current-user current-user
-                     (-> (io/piped-input-stream (pdf/generatePDF ctx user_id (read-string badges_to_export) lang))
+                  (let [badge-ids (read-string badges_to_export)
+                        h (if (> (count badge-ids) 1) (str "attachment; filename=\"badge-collection_"lang".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang ".pdf\""))]
+                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang))
                          ok
-                         (header "Content-Disposition" "attachment; filename=\"badges.pdf\"")
+                         (header "Content-Disposition" h)
                          (header "Content-Type" "application/pdf")
-                         ))
+                         )))
 
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}

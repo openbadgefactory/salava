@@ -73,14 +73,15 @@
                         (unauthorized)
                         (not-found)))))
 
-             (GET "/export-to-pdf/:pageid/:user-id" []
+             (GET "/export-to-pdf/:pageid/:page-name/:opt-header" []
                   :path-params [pageid :- s/Int
-                                user-id :- s/Int]
+                                opt-header :- s/Str
+                                page-name :- s/Str]
                   :summary "Export page to pdf"
                   :current-user current-user
-                  (-> (io/piped-input-stream (pdf/generate-pdf ctx pageid user-id))
+                  (-> (io/piped-input-stream (pdf/generate-pdf ctx pageid (:id current-user) opt-header))
                       ok
-                      (header "Content-Disposition" "attachment; filename=\"page.pdf\"")
+                      (header  "Content-Disposition" (str "attachment; filename=\""page-name".pdf\""))
                       (header "Content-Type" "application/pdf")))
 
              (POST "/password/:pageid" []

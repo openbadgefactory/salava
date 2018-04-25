@@ -61,11 +61,46 @@
 
 (defn export-page-to-pdf [state]
   (let [id (:page-id @state)
-        user-id  (:id (session/get :user))]
+        header (:pdf-header @state)
+        page-name (get-in @state [:page :name])]
   (ajax/GET
-    (path-for (str "obpv1/page/export-to-pdf/" id "/"user-id))
-     {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/"user-id))
-                                                      })))
+    (path-for (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))
+     {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
+
+(defn export-to-pdf-modal [state]
+   [:div {:id "badge-settings"}
+     [:div.modal-body
+      [:div.row
+       [:div.col-md-12
+        [:button {:type         "button"
+                  :class        "close"
+                  :data-dismiss "modal"
+                  :aria-label   "OK"
+                }
+         [:span {:aria-hidden  "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+      [:div
+       [:form {:class "form-horizontal"}
+              [:div.form-group
+             [:fieldset {:id "export-pdf" :class "col-md-12 checkbox"}
+              [:div.col-md-12 [:label
+               [:input {:type     "checkbox"
+                        :on-change (fn [e]
+                                     (if (.. e -target -checked)
+                                         (swap! state assoc :pdf-header "true")(swap! state assoc :pdf-header "false")))}]
+               (t :page/EnableHeader)]]]]]]]
+    [:div.modal-footer
+      [:button {:type         "button"
+              :class        "btn btn-primary"
+              :data-dismiss "modal"}
+     (t :core/Close)]
+      [:button {:type         "button"
+              :class        "btn btn-primary"
+              :on-click  #(export-page-to-pdf state)
+              :data-dismiss "modal"
+              }
+     (t :badge/Export)]]])
+
 
 (defn page-content [page state]
   (let [show-link-or-embed-atom (cursor state [:show-link-or-embed-code])
@@ -83,7 +118,9 @@
                    :on-click #(.print js/window)}
           (t :core/Print)]
          [:button {:class "btn btn-primary"
-                   :on-click #(export-page-to-pdf state)}
+                   :on-click #(do (.preventDefault %)
+                                    (swap! state assoc :pdf-header "false")
+                                     (m/modal![export-to-pdf-modal state] {:size :lg}))}
           (t :badge/Exporttopdf)]]
         (if-not (private?)
           [:div {:class (str "checkbox " @visibility-atom)}
@@ -131,7 +168,8 @@
                      :ask-password false
                      :password ""
                      :password-error false
-                     :show-link-or-embed-code nil})
+                     :show-link-or-embed-code nil
+                     :pdf-header "false"})
         user (session/get :user)]
     (init-data state id)
     (fn []

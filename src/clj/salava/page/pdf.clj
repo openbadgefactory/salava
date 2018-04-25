@@ -4,7 +4,7 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.core.util :as u :refer [get-db plugin-fun get-plugins file-from-url md->html]]
+            [salava.core.util :as u :refer [get-db plugin-fun get-plugins md->html]]
             [salava.page.main :refer [page-with-blocks]]
             [clj-pdf.core :as pdf]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
@@ -67,15 +67,27 @@
        ))
 
 
-(defn generate-pdf [ctx page-id user-id]
+(defn generate-pdf [ctx page-id user-id header?]
   (let [ badge-info-fn (first (plugin-fun (get-plugins ctx) "pdf" "pdf-generator-helper"))
          page (conj () (page-with-blocks ctx page-id))
          data-dir (get-in ctx [:config :core :data-dir])
          site-url (get-in ctx [:config :core :site-url])
+         plugins (get-plugins ctx)
+         font-path  (first (mapcat #(get-in ctx [:config % :font] []) (get-plugins ctx)))
+         font  {:ttf-name (str site-url font-path)}
          stylesheet  {:generic {:family :times-roman
                                :color [127 113 121]}
                      :link {:family :times-roman
-                             :color [66 100 162]}}
+                             :color [66 100 162]}
+                      :bold {:style :bold}}
+         header      (if (= "true" header?)
+                       {:table
+                         [:pdf-table {:border false}
+                          [100]
+                           [[:pdf-cell {:padding 5}[:image {:width 200 :height 48} (str site-url "/img/logo.png")] [:line] [:spacer 2]]
+                           ]]} nil)
+
+         pdf-settings  (if (empty? font-path) {:header header :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :header header :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
          page-template (pdf/template
                         (let [template #(cons [:paragraph][
                                                            (when (= "heading"  (:type %))
@@ -93,7 +105,7 @@
                                                             (when (= "badge" (:type %))
                                                               [:table {:widths [1 3] :border false :keep-together? false }
                                                                [[:cell {:align :center}
-                                                                [:paragraph {:align :center :keep-together? true}
+                                                                [:paragraph {:align :center :keep-together true}
                                                                  [:chunk [:image {:align :center :width 80 :height 80} (str data-dir (:image_file %))]][:spacer 2]]"\n"
 
                                                                  [:paragraph {:align :center}
@@ -105,13 +117,13 @@
                                                                  [:heading.generic (:name %)]
                                                                  [:spacer 0]
                                                                  [:paragraph.generic
-                                                                   [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
-                                                                   [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
+                                                                   [:chunk.bold (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
+                                                                   [:chunk.bold (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
                                                                    [:spacer 0]
                                                                    (:description %) "\n"
                                                                    [:spacer 0]
                                                                   [:paragraph {:keep-together true}
-                                                                   [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
+                                                                   [:phrase.bold (str (t :badge/Criteria)": ")] [:spacer 0]
                                                                    [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
                                                                    [:spacer 0]
                                                                     (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))
@@ -122,23 +134,22 @@
 
                                                             (when (= "html" (:type %))
                                                             [:paragraph.generic {:keep-together false :align :left}
-                                                               [:chunk {:size 11 :style :bold} "HTML: "]"\n"
+                                                               [:chunk.bold {:size 11 :style :bold} "HTML: "]"\n"
                                                              [:spacer 1]
                                                               (clojure.walk/postwalk
                                                                 (fn [n] (if (:tag n) (transform-node n) n))(strip-html-tags (:content %)))"\n"
-                                                               #_(strip-html-tags(:content %))
-                                                               [:spacer 0]
+                                                              #_[:spacer 0]
                                                                [:line {:dotted true}]
-                                                             [:spacer 1]])
+                                                             [:spacer 0]])
 
                                                             (when (= "file" (:type %))
                                                               [:paragraph.generic
+                                                               [:chunk.bold {:size 11} (upper-case (t :file/Files))]"\n"
                                                                [:spacer 0]
-                                                               [:chunk {:size 11 :style :bold} (upper-case (t :file/Files))]"\n"
                                                               (into [:paragraph] (for [file (:files %)]
                                                                          [:paragraph
-                                                                          [:chunk "Filename: "] [:chunk (:name file)]"\n"
-                                                                          [:chunk "Url: "][:anchor {:target (str site-url "/"(:path file)) :style{:family :times-roman :color [66 100 162]}} (str site-url "/"(:path file))]
+                                                                          [:chunk.bold "Filename: "] [:chunk (:name file)]"\n"
+                                                                          [:chunk.bold "Url: "][:anchor {:target (str site-url "/"(:path file)) :style{:family :times-roman :color [66 100 162]}} (str site-url "/"(:path file))]
                                                                          ]))
                                                                [:line {:dotted true}]])
 
@@ -153,12 +164,12 @@
                                                                                                        [:paragraph.generic
                                                                                                        [:heading (:name badge)]
 
-                                                                                                                [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name content)] "\n"
-                                                                                                                 [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on badge))) "date")] "\n"
+                                                                                                                [:chunk.bold (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name content)] "\n"
+                                                                                                                 [:chunk.bold (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on badge))) "date")] "\n"
                                                                                                                  (:description badge) "\n"
                                                                                                                 [:spacer 0]
                                                                                                                 [:paragraph {:keep-together true}
-                                                                                                                 [:phrase (str (t :badge/Criteria)": ")] "\n"
+                                                                                                                 [:phrase.bold (str (t :badge/Criteria)": ")] "\n"
                                                                                                                  [:anchor {:target (:criteria_url badge) :style{:family :times-roman :color [66 100 162]}} (:criteria_url badge)] "\n"
                                                                                                                 (markdown->clj-pdf {:spacer {:extra-starting-value 0 :allow-extra-line-breaks? false} :paragraph {:keep-together? true} :wrap {:global-wrapper :paragraph}} (:criteria_content content))
                                                                                                                  ]
@@ -171,7 +182,7 @@
                                                                 (into [[:cell {:colspan 5}]] (for [badge (:badges %)
                                                                                                     :let [b (badge-info-fn ctx user-id (conj () (:id badge)))
                                                                                                           content (first (:content (first b)))]]
-                                                                                                          [:cell {:padding-right 10}[:image {:width 65 :height 65}(str data-dir (:image_file badge))]]))]]]
+                                                                                                          [:cell {:padding-right 10}[:anchor {:target (str site-url "/badge/info/" (:id badge))} [:chunk [:image {:width 65 :height 65}(str data-dir (:image_file badge))]]]]))]]]
                                                              [[:cell [:line {:dotted true}]]]]))
                                                             [:spacer 3]
                                                            ])
@@ -190,16 +201,11 @@
                                         [:spacer 1]]
                                        [:paragraph.generic
                                         [:chunk {:style :italic} $description]
-                                        [:spacer]]] content)
+                                        [:spacer 1]]] content)
                           ))
          ]
-
-;; TODO HTML
+;; TODO FIX HTML
 
     (fn [out]
-      (pdf/pdf (into [{:header {:table
-                                 [:pdf-table {:border false}
-                                  [100]
-                                  [[:pdf-cell {:padding 5}[:image {:width 200 :height 48} (str data-dir (file-from-url ctx (str site-url "/img/logo.png")))] [:line] [:spacer 2]]
-                                   ]]} :stylesheet stylesheet} [:spacer 4]]
+      (pdf/pdf (into [pdf-settings [:spacer 4]]
                                        (page-template page)) out))))
