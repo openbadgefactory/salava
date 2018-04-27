@@ -1,5 +1,6 @@
 (ns salava.badge.routes
-  (:require [compojure.api.sweet :refer :all]
+  (:require [clojure.pprint :refer [pprint]]
+            [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.swagger.upload :as upload]
             [schema.core :as s]
@@ -58,6 +59,15 @@
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
+
+             (GET "/pending/:badgeid" req
+                  :path-params [badgeid :- Long]
+                  :summary "Get pending badge content"
+                  (if (= badgeid (get-in req [:session :pending :user-badge-id]))
+                    (ok (->> badgeid
+                             (b/fetch-badge ctx)
+                             (b/badge-issued-and-verified-by-obf ctx)))
+                      (not-found)))
 
              (GET "/issuer/:issuerid" []
                   :return schemas/IssuerContent

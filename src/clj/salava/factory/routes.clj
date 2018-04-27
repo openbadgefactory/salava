@@ -36,7 +36,7 @@
                   (if-let [user-badge-id (f/receive-badge ctx e k t)]
                     (-> (str (u/get-base-path ctx) (str "/badge/receive/" user-badge-id))
                         redirect
-                        (assoc :session {:user-badge-id user-badge-id}))
+                        (assoc-in [:session :pending] {:user-badge-id user-badge-id}))
                     (not-found "404 Not Found")))
 
              (POST "/backpack_email_list" []

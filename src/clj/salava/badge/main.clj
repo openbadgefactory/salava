@@ -1,5 +1,6 @@
 (ns salava.badge.main
-  (:require [yesql.core :refer [defqueries]]
+  (:require [clojure.pprint :refer [pprint]]
+            [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
@@ -145,7 +146,7 @@
 
 
 (defn fetch-badge [ctx badge-id]
-  (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
+  (let [my-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
         content (map (fn [content]
                        (-> content
                            (update :criteria_content u/md->html)
