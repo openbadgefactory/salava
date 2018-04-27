@@ -16,9 +16,6 @@
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]
-            [clj-pdf.core :as pdf]
-            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
-            [clj.qrgen :as q]
             [salava.core.i18n :refer [t]]))
 
 (defqueries "sql/badge/main.sql")
@@ -116,7 +113,7 @@
                     (into {:result-set-fn first}
                           (u/get-db ctx)))
                   (select-user-owns-signed-badge
-                    {:contentassertion_json (get-in assertion [:assertion_json])
+                    {:assertion_json (get-in assertion [:assertion_json])
                      :user_id user-id}
                     (into {:result-set-fn first}
                           (u/get-db ctx)))))))
