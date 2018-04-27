@@ -48,7 +48,7 @@
               :on-click #(do
                            (mo/open-modal [:badge :info] {:badge-id id})
                                         ;(b/open-modal id false init-data state)
-                           (.preventDefault %)) } 
+                           (.preventDefault %)) }
             [:img {:src (str "/" image_file)
                  :alt name}]]])
        [:div.media-body
@@ -57,7 +57,7 @@
                            :on-click #(do
                                         (mo/open-modal [:badge :info] {:badge-id id})
                                         ;(b/open-modal id false init-data state)
-                                        (.preventDefault %)) } 
+                                        (.preventDefault %)) }
           name]]
         [:div.media-issuer
          [:p issuer_content_name]]]]]
@@ -76,7 +76,7 @@
         [:div.media-content
          [:div.page-owner
           [:a {:href "#"} first_name " " last_name]]
-         [:div.page-create-date
+         [:div.page-create-date.no-flip
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
@@ -88,12 +88,12 @@
                :alt (str first_name " " last_name)}]]]]]))
 
 (defn badge-grid [badges badge-small-view]
-  (into [:div {:class "row" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
           (badge-grid-element element-data))))
 
 (defn page-grid [pages profile_picture page-small-view]
-  (into [:div {:class "row" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
           (page-grid-element element-data profile_picture))))
 
@@ -111,25 +111,25 @@
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
-    
+
     [:div.panel {:id "profile"}
      [m/modal-window]
      [:div.panel-body
       (if owner?
         [:div.row
-         (if-not (or (not-activated?) (private?))  
+         (if-not (or (not-activated?) (private?))
            (profile-visibility-input visibility-atom))
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           (if-not (not-activated?)
             [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)])]]
-        [:div 
+        [:div
          (connect-user user-id)
          (admintool user-id "user")])
       [:h1.uppercase-header fullname]
-      
-      [:div.row
+
+      [:div.row.flip
        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
         [:img.profile-picture {:src (profile-picture profile_picture)
@@ -140,7 +140,7 @@
            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
            [:div.col-xs-12 about]])
         (if (not-empty profile)
-          [:div.row
+          [:div.row.flip
            [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
            [:div.col-xs-12
             [:table.table
@@ -189,7 +189,7 @@
                          :item-type "" ;badge/user/page/badges
                          :reporter-id ""
                          :status "false"}]
-    
+
     (ajax/GET
      (path-for (str "/obpv1/user/profile/" user-id) true)
      {:handler (fn [data]
@@ -208,7 +208,7 @@
                      :pages-small-view true})
         user (session/get :user)]
     (init-data user-id state)
-    
+
     (fn []
       (cond
         (= "initial" (:permission @state)) (layout/default site-navi [:div])

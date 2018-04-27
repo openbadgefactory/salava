@@ -79,7 +79,7 @@
 
 (defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
-    [:div
+    [:div {:id "admin-link"}
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "badges" item-id state init-data))}
@@ -89,7 +89,7 @@
 
 (defn admintool-gallery-page [item-id item-type state init-data user-id]
   (if (admin?)
-    [:div
+    [:div {:id "admin-link"}
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "page" item-id state init-data))}

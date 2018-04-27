@@ -67,7 +67,7 @@
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
-                
+
                 (swap! state assoc :badge-settings data (assoc data :new-tag ""))
                 (m/modal! [s/settings-modal data state init-data]
                           {:size :lg}))}))
@@ -163,7 +163,7 @@
                                     reverse
                                     flatten)
                  badges)]
-    (into [:div {:class "row"
+    (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data badges]
             (if (badge-visible? element-data state)
@@ -188,7 +188,7 @@
         (not-activated?) (not-activated-banner)
         (empty? (:badges @state)) [no-badges-text]
         :else [badge-grid state])
-      
+
       ]
      )])
 

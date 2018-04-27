@@ -9,6 +9,7 @@
 
 (defn endorsement-row [endorsement]
   (let [{:keys [issuer content issued_on]} endorsement]
+
    [:div {:style {:margin-bottom "20px"}}
     [:h5
      [:a {:href "#"
