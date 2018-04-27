@@ -1,7 +1,7 @@
 (ns salava.core.util
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [clojure.data.json :as json]
             [digest :as d]
             [slingshot.slingshot :refer :all]
@@ -16,6 +16,7 @@
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
+           (java.net URLEncoder)
            (java.util Base64)))
 
 (defn get-db [ctx]
@@ -150,7 +151,7 @@
 (defn file-from-url
   [ctx url]
   (cond
-    (str/blank? url) (throw (Exception. "file-from-url: url parameter missing"))
+    (string/blank? url) (throw (Exception. "file-from-url: url parameter missing"))
     (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
     (re-find #"^data"    (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw (Exception. (str "Error in file url: " url)))))
@@ -174,7 +175,7 @@
   [s]
   (cond
     (integer? s) s
-    (str/blank? s) nil
+    (string/blank? s) nil
     (re-find #"^[0-9]+$" s) (Long. s)
     (re-find #"^\d{4}-\d\d-\d\d" s) (some-> (tc/to-long s) (quot 1000))))
 
@@ -188,7 +189,7 @@
                       (resolve sym))
                     (catch Throwable _)))]
         (->> plugins
-             (map #(str/replace (plugin-str %) #"/" "."))
+             (map #(string/replace (plugin-str %) #"/" "."))
              (map fun)
              (filter #(not (nil? %))))))))
 
@@ -207,6 +208,8 @@
                      (map :attrs link-tags))]
     (try (http/http-get md-url) (catch Exception _ ""))))
 
+(defn url-encode [v]
+  (some-> v str (URLEncoder/encode "UTF-8") (.replace "+" "%20")))
 
 
 (defn publish [ctx topic data]

@@ -226,7 +226,12 @@
 (defn public-multilanguage-badge-content
   "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
   [ctx badge-id user-id]
-  (let [badge-content (map (fn [content] (update content :criteria_content md->html) ) (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
+  (let [badge-content (map (fn [content]
+                             (-> content
+                                 (update :criteria_content md->html)
+                                 (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
+                                 (dissoc :badge_content_id)))
+                        (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
         {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
 
         rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))

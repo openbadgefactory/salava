@@ -1,5 +1,6 @@
 (ns salava.badge.main
-  (:require [yesql.core :refer [defqueries]]
+  (:require [clojure.pprint :refer [pprint]]
+            [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
@@ -76,10 +77,6 @@
       badge)))
 
 
-
-
-
-
 (defn check-metabadge!
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
   [ctx assertion-url])
@@ -101,7 +98,6 @@
   (let [badges (select-user-badges-to-export {:user_id user-id} (u/get-db ctx))
         tags (if-not (empty? badges)  (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
-
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
@@ -154,14 +150,15 @@
       (log/error "parse-assertion-json: " _))))
 
 
-
-
 (defn fetch-badge [ctx badge-id]
-  (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
-        content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
-    (assoc my-badge :content content)
-    ))
-
+  (let [my-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
+        content (map (fn [content]
+                       (-> content
+                           (update :criteria_content u/md->html)
+                           (assoc  :alignment (select-alignment-content {:badge_content_id (:badge_content_id content)} (u/get-db ctx)))
+                           (dissoc :badge_content_id)))
+                     (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
+    (assoc my-badge :content content)))
 
 
 (defn get-badge
@@ -431,11 +428,18 @@
      :badge_issuers issuer-stats}))
 
 (defn meta-tags [ctx id]
-  (let [badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
+  (let [base-url (u/get-full-path ctx)
+        badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
     (if (= "public" (:visibility badge))
       (-> badge
           (select-keys [:name :description :image_file])
-          (rename-keys {:image_file :image :name :title})))))
+          (rename-keys {:image_file :image :name :title})
+          (assoc :json-oembed
+                 [:link {:rel "alternate"
+                         :type "application/json+oembed"
+                         :href (str base-url "/obpv1/oembed?url=" base-url "/badge/info/" id)
+                         :title (:name badge)}])))))
+
 
 (defn old-id->id [ctx old-id user-id]
   (if user-id

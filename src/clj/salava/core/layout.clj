@@ -101,6 +101,8 @@
        [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
        [:meta {:property "og:sitename" :content (get-in ctx [:config :core :site-name])}]
        (seq (include-meta-tags ctx meta-tags))
+       (when (:json-oembed meta-tags)
+         (:json-oembed meta-tags))
        (apply include-css (css-list ctx))
        [:link {:type "text/css" :href "/css/custom.css" :rel "stylesheet" :media "screen"}]
        [:link {:type "text/css" :href "/css/print.css" :rel "stylesheet" :media "print"}]
