@@ -5,14 +5,19 @@
             [clojure.set :refer [rename-keys]]
             [slingshot.slingshot :refer :all]
             [autoclave.core :refer :all]
-            [salava.core.time :refer [unix-time]]
+            [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html plugin-fun get-plugins file-from-url md->html]]
             [salava.badge.main :as b]
             [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
-            [salava.file.db :as f]))
+            [salava.file.db :as f]
+            [clj-pdf.core :as pdf]
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
+            [clojure.zip :as zip]
+            [net.cgrand.enlive-html :as enlive]
+            ))
 
 (defqueries "sql/page/main.sql")
 
@@ -141,7 +146,7 @@
 
 (defn create-files-block! [ctx block]
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
-    
+
     (save-files-block-content ctx (assoc block :id block-id))))
 
 (defn url-checker [ctx]
@@ -179,7 +184,7 @@
                              :allow-attributes ["summary" :on-elements ["table"]]
                              :allow-attributes ["target" :on-elements ["a"]]
                              :allow-attributes ["rowspan" :on-elements ["td" "th"]]
-                             :allow-attributes ["title" :on-elements ["img"]]                        
+                             :allow-attributes ["title" :on-elements ["img"]]
                              :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
                              :allow-attributes ["src" :on-elements ["iframe"]]
                              :allow-standard-url-protocols
@@ -189,7 +194,7 @@
 
 
 (defn save-page-content! [ctx page-id page-content user-id]
-  
+
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))

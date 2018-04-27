@@ -128,6 +128,7 @@
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
+           (s/optional-key :obf_url)    (s/maybe s/Str)
                            :alignment [(s/maybe {:name s/Str
                                                  :url  s/Str
                                                  :description s/Str})]

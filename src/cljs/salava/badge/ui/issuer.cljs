@@ -30,7 +30,7 @@
            " "
            name]
 
-          [:div.row
+          [:div.row.flip
            [:div {:class "col-md-9 col-sm-9 col-xs-12"}
             (if (not-empty url)
               [:div {:class "row"}

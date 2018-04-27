@@ -1,6 +1,7 @@
 (ns salava.badge.routes
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
+            [ring.util.io :as io]
             [ring.swagger.upload :as upload]
             [schema.core :as s]
             [salava.badge.schemas :as schemas] ;cljc
@@ -9,6 +10,7 @@
             [salava.factory.db :as f]
             [salava.core.layout :as layout]
             [salava.core.access :as access]
+            [salava.badge.pdf :as pdf]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -81,7 +83,7 @@
                         badge-owner-id (:owner badge)
                         visibility (:visibility badge)
                         owner? (= user-id badge-owner-id)]
-                    (if (= visibility "public") 
+                    (if (= visibility "public")
                       (do
                         (if badge
                           (b/badge-viewed ctx badgeid user-id))
@@ -130,6 +132,21 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/congratulate! ctx badgeid (:id current-user))))
+
+
+             (GET "/export-to-pdf/:badges_to_export/:lang" []
+                   :path-params[badges_to_export :- s/Str
+                                lang :- s/Str]
+                   :summary "Export badges to PDF"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                  (let [badge-ids (read-string badges_to_export)
+                        h (if (> (count badge-ids) 1) (str "attachment; filename=\"badge-collection_"lang".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang ".pdf\""))]
+                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang))
+                         ok
+                         (header "Content-Disposition" h)
+                         (header "Content-Type" "application/pdf")
+                         )))
 
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
@@ -191,7 +208,7 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
-                   
+
              (POST "/save_raiting/:badgeid" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [badgeid :- Long]

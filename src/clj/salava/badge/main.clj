@@ -14,7 +14,11 @@
             [clojure.tools.logging :as log]
             [salava.core.util :as u]
             [salava.core.http :as http]
-            [salava.badge.assertion :refer [fetch-json-data]]))
+            [salava.badge.assertion :refer [fetch-json-data]]
+            [clj-pdf.core :as pdf]
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
+            [clj.qrgen :as q]
+            [salava.core.i18n :refer [t]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -72,6 +76,10 @@
       badge)))
 
 
+
+
+
+
 (defn check-metabadge!
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
   [ctx assertion-url])
@@ -84,6 +92,7 @@
                       (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
           tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
           badges-with-tags (map-badges-tags badges tags)]
+
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
@@ -92,6 +101,7 @@
   (let [badges (select-user-badges-to-export {:user_id user-id} (u/get-db ctx))
         tags (if-not (empty? badges)  (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
+
 
 (defn user-badges-pending
   "Returns pending badges of a given user"
@@ -110,7 +120,7 @@
                     (into {:result-set-fn first}
                           (u/get-db ctx)))
                   (select-user-owns-signed-badge
-                    {:assertion_json (get-in assertion [:assertion_json])
+                    {:contentassertion_json (get-in assertion [:assertion_json])
                      :user_id user-id}
                     (into {:result-set-fn first}
                           (u/get-db ctx)))))))
@@ -144,10 +154,14 @@
       (log/error "parse-assertion-json: " _))))
 
 
+
+
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
         content (map (fn [content] (update content :criteria_content u/md->html)) (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
-    (assoc my-badge :content content)))
+    (assoc my-badge :content content)
+    ))
+
 
 
 (defn get-badge

@@ -21,14 +21,16 @@
        [:div.panel-body
         [:div {:class "row header"}
          [:div.col-md-12
+           [:div.flip-table
            [:div.col-md-6]
-           [:div.col-md-2 (t :badge/Loggedinusers)]
+                      [:div.col-md-2 (t :badge/Loggedinusers)]
            [:div.col-md-2 (t :badge/Anonymoususers)]
-           [:div.col-md-2 (t :badge/Latestview)]]]
-         (into [:div {:class "row body"}]
+           [:div.col-md-2 (t :badge/Latestview)]]]]
+         (into [:div {:class "row body "}]
                (for [badge-views views
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:div.col-md-12
+                  [:div.flip-table
                   [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
                   [:div.col-md-5 [:a {:href "#"
                                  :on-click #(do
@@ -37,7 +39,7 @@
                                               (.preventDefault %)) }  name]]
                   [:div.col-md-2 [:label (t :badge/Loggedinusers)] reg_count]
                   [:div.col-md-2 [:label (t :badge/Anonymoususers)]anon_count]
-                  [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]))])]))
+                  [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
 
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations

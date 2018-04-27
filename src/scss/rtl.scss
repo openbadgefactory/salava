@@ -1,0 +1,1160 @@
+/*********************** RTL *******************/
+@import 'variables';
+/*ADMIN*/
+html[dir="rtl"] #archived {
+  input[type="checkbox"]{
+    margin-right:unset;
+    margin-top:12px;
+  }
+   @media(max-width: 768px){
+         input[type="checkbox"]{
+              margin-right:unset;
+              margin-top:6px;
+            }
+        -webkit-flex-direction:row ;
+        flex-direction:row ;
+   }
+}
+
+html[dir="rtl"] #userlist th{
+  text-align:start;
+}
+
+html[dir="rtl"] #ticket-container {
+    border-left: unset;
+    border-right:3px solid;
+    &.inappropriate {
+        border-left-color: unset;
+        border-right-color: purple;
+    }
+    &.bug {
+        border-left-color: unset;
+        border-right-color: red;
+    }
+    &.fakebadge {
+        border-left-color: unset;
+        border-right-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: unset;
+        border-right-color: DarkCyan;
+    }
+
+  .media-body .pull-right{
+      float:left !important;
+  }
+
+}
+
+html[dir="rtl"] .admintool-caret-up{
+    padding-left: unset;
+    padding-right: 5px;
+}
+
+html[dir="rtl"] #private-button{
+    margin:0px 0px 10px 17px;
+}
+
+html[dir="rtl"].title-bar {
+    padding-left: unset;
+    padding-right: 5px;
+    //border-right: 3px solid transparent;
+}
+html[dir="rtl"] .media-bottom-admin{
+            margin-top: 5px;
+            padding-top: 10px;
+
+            i.fa {
+
+                padding-right: unset;
+                padding-left: 7px;
+
+            }
+            a.bottom-link {
+                i.fa {
+                    padding-right: unset;
+                    padding-left:10px;
+                }
+
+            }
+}
+
+html[dir="rtl"] #ticket-container {
+    border-left: unset;
+    border-right:3px solid;
+    &.inappropriate {
+        border-left-color: unset;
+        border-right-color: purple;
+    }
+    &.bug {
+        border-left-color: unset;
+        border-right-color: red;
+    }
+    &.fakebadge {
+        border-left-color: unset;
+        border-right-color: orange;
+    }
+    &.mistranslation {
+        border-left-color: unset;
+        border-right-color: DarkCyan;
+    }
+}
+
+/* Admin stats */
+html[dir="rtl"] .admin-stats{
+
+    label {
+
+        padding-right: unset;
+        padding-left: 15px;
+        @media (max-width:992px){
+            width:80%;
+        }
+    }
+}
+
+/* REPORT FORM */
+html[dir="rtl"] #profile, html[dir="rtl"] #badge-gallery, html[dir="rtl"] #page-gallery, html[dir="rtl"] #badge-info, html[dir="rtl"] #page-view, html[dir="rtl"] #badge-content {
+    .row.report-form {
+        a#open-reportform-button {
+
+      padding-right: unset;
+	    padding-left:15px;
+            @media (max-width:1530px){
+                padding-right: unset;
+                padding-left: 15px;
+            }
+        }
+
+        .form-group > label {
+            margin-right: unset;
+            margin-left: 20px;
+        }
+
+    }
+    a#open-reportform-button{
+        float:left;
+    }
+  input[type=radio] {
+    margin-top:4px;
+  }
+}
+html[dir="rtl"] #profile {
+    .row.report-form {
+        margin-left:-16px;
+        margin-right:-16px;
+        a#open-reportform-button {
+
+            margin-right:-5px;
+            margin-left: -5px;
+            text-align: left;
+        }
+    }
+}
+
+html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
+    .modal-footer {
+        margin-left: unset;
+        margin-right: 0px;
+       > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+        }
+    }
+    .row.report-form {
+        margin-left: 15px;
+        margin-right:15px;
+    }
+}
+
+html[dir="rtl"] #page-gallery .modal-dialog .modal-footer {
+
+    > div > div#reportform {
+           > div:not(.report-form) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+
+html[dir="rtl"] #page-view {
+    .row.report-form {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    div#reportform {
+           > div:not(.form-group) {
+                border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+
+html[dir="rtl"] #badge-info {
+    div#reportform {
+           > div:not(.form-group) {
+               border-left: unset;
+                border-right: 3px solid $green;
+            }
+    }
+}
+
+/* ADMIN MODALS */
+html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
+    .sub-heading{
+    a{
+        &:before {
+            margin-right: unset;
+            margin-left: 12px;
+        }
+        &.opened:before{
+
+            margin-right: unset;
+            margin-left: 5px;
+        }
+        }
+
+    }
+
+    .issuer-image img {
+        margin-left: unset;
+        margin-right:5px;
+    }
+    .actions .col-md-12:not(.sub-heading) {
+
+        padding-left: unset;
+        padding-right: 35px;
+    }
+}
+
+/*BADGE*/
+html[dir="rtl"] #export-pdf {
+  padding-right: 20px !important;
+}
+html[dir="rtl"] #badge-info
+
+  #pull-right.badge-image{
+
+    @media (max-width: 992px) {
+        margin-left:170px;
+    }
+    @media (max-width: 550px) {
+        margin-left:unset;
+    }
+}
+
+html[dir="rtl"] #badge-settings  {
+    .delete-button {
+        i {
+            margin-right: unset;
+            margin-left: 5px;
+        }
+    }
+    .settings-content .modal-footer{
+        margin-left: unset;
+        margin-right:0px;
+        padding-left: unset;
+        padding-right: 0px;
+        padding-top:15px;
+        > button.btn-primary {
+            margin-right: unset;
+            margin-left: 20px;
+        }
+    }
+}
+
+/*ASSERTION*/
+#assertion-info {
+  th{
+      text-align: start;
+  }
+}
+
+/* BADGE STATS */
+html[dir="rtl"] #badge-stats {
+
+    .panel {
+        .panel-body {
+            padding-top: 5px;
+            .row.body {
+                .col-md-5 {
+                    text-align: right;
+                }
+
+            }
+            @media (max-width:992px){
+                .row.body{
+                    text-align: right;
+                }
+            }
+        }
+    }
+}
+
+/* BADGE INFO */
+html[dir="rtl"] #badge-info, #badge-content {
+
+    .checkbox {
+        margin-right: unset;
+        i {
+            margin-left: 8px;
+        }
+    }
+    .share-wrapper {
+
+        direction: ltr !important;
+    }
+}
+
+/*ENDORSEMENTS*/
+html[dir="rtl"] #badge-content{
+
+  .endorser-body {
+      margin-right:unset;
+  }
+  .endorsement-body-container {
+    padding-right: 5px;
+  }
+
+}
+
+/* BADGE GRID */
+html[dir="rtl"] #badge-gallery, html[dir="rtl"] #my-badges, html[dir="rtl"] #export-badges, html[dir="rtl"] .import-badges, html[dir="rtl"] #user-badges {
+    #grid .grid-container {
+          margin-right: unset;
+          margin-left:20px;
+        .icons {
+            text-align: right !important;
+        }
+
+      .media-bottom{
+
+        .col-xs-9 {
+          float:right;
+        }
+
+      }
+        &~.media-bottom{
+            div:before{
+                padding-right: unset;
+                padding-left: 7px;
+                float: right;
+            }
+    }
+  }
+}
+
+/*CORE*/
+html[dir="rtl"] .flip-table{
+  display:flex;
+  display:-webkit-flex;
+  -webkit-justify-content: space-around;
+  justify-content: space-around;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+
+  @media (max-width:992px){
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  }
+}
+
+html[dir="rtl"] .wrap-grid{
+  display:flex;
+  display:-webkit-flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+/*flip (mirror) contents of container*/
+html[dir="rtl"] .flip{
+  display:flex;
+  display:-webkit-flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+
+  @media (max-width:767px){
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  }
+}
+
+html[dir="rtl"] .flip-modal{
+  display:flex;
+  display:-webkit-flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+/* BUTTONS */
+html[dir="rtl"] #grid-filter .btn, #buttons .col-xs-8 .btn {
+      margin: 0 0 6px 3px;
+    }
+
+html[dir="rtl"] .settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
+    &:before {
+        margin-right: unset;
+        margin-left: 5px;
+        float:right;
+    }
+}
+
+/* FORM */
+html[dir="rtl"] select.form-control  {
+    background: #FFF url(/img/down_arrow.png) no-repeat top left;
+}
+
+html[dir="rtl"] input[type=checkbox], input[type=radio] {
+    margin-left: unset;
+    margin-right: -18px;
+}
+
+html[dir="rtl"] fieldset.checkbox {
+    padding-left: unset;
+    padding-right: 0px;
+}
+
+html[dir="rtl"] .form-bar {
+    padding-right: unset;
+    padding-left: 5px;
+    border-right: unset;
+    border-left: 3px solid transparent;
+}
+
+/* NAVI */
+//MAIN HEADER - right navbar margin
+html[dir="rtl"] #main-header-right{
+  float:left !important;
+    @media (max-width: 1100px) and (min-width: 768px){
+        margin-right: unset;
+/*         margin-left: 3px; */
+    }
+}
+
+html[dir="rtl"] #navbar {
+  .container-fluid {
+    @media (max-width: 550px) {
+      display:flex;
+      display: -webkit-flex;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+      -webkit-justify-content: space-around;
+      justify-content:space-around;
+    }
+
+  }
+.navbar-header {
+    float:right;
+  @media (max-width: 767px) {
+    float:none;
+    }
+  }
+}
+
+html[dir="rtl"] ul#secondary-menu-links {
+    float: right;
+    padding-left: unset;
+    padding-right: 0px;
+    border-left: unset;
+    border-right: 2px solid $icon-color;
+    li {
+        a {
+            i.fa {
+                color: $badge-title;
+                padding-right: unset;
+                padding-left: 10px;
+            }
+        }
+    }
+}
+
+html[dir="rtl"] ul.side-dropdown-links {
+    padding-left: unset;
+    padding-right: 18px;
+}
+
+/* GRID */
+html[dir="rtl"] #grid-filter {
+    padding-right: unset;
+    padding-left: 15px;
+    label {
+        text-align: right;
+    }
+  .checkbox{
+    margin-right: 22.8%;
+    @media (max-width: 1024px) {
+    margin-right: 23.5%;
+    }
+
+    @media (max-width: 768px) {
+    margin-right: 25%;
+    }
+
+    @media (max-width: 550px) {
+    margin-right: 5%;
+    }
+  }
+}
+
+/* custom rateit jquery-plugin styles */
+html[dir="rtl"] .rateit .rateit-selected {
+    background-position: right -32px;
+}
+
+/* share buttons */
+html[dir="rtl"] #share {
+    #share-buttons {
+        .share-button {
+            margin-right: unset;
+            margin-left: 3px;
+        }
+    }
+}
+
+html[dir="rtl"] .media-left{
+  padding-right: unset !important;
+  padding-left: 10px;
+}
+
+/*Forced LTR*/
+html[dir="rtl"] .no-flip {
+  direction: ltr !important;
+  display:inline-block
+}
+
+html[dir="rtl"] .modal-content {
+    .modal-footer {
+        text-align: right;
+      .delete-button{
+        padding-right: 10px;
+      }
+    }
+  #badge-contents {
+    margin:45px 45px;
+  }
+}
+
+html[dir="rtl"] .alert-warning, .alert-danger{
+    border-left: unset;
+    border-right:3px solid $dark-red;
+}
+
+html[dir="rtl"] #my-files .modal-content {
+    .modal-footer{
+        margin-left: unset;
+        margin-right: 0px;
+    }
+}
+
+/*Columns*/
+/* centered columns styles */
+html[dir="rtl"] .col-centered {
+    /* reset the text-align */
+    text-align:right;
+    /* inline-block space fix */
+    margin-right: unset;
+    margin-left:-4px;
+}
+
+html[dir="rtl"] .btn-fix {
+    margin-left: unset;
+    margin-right: 1px;
+}
+
+/* Badge certification*/
+html[dir="rtl"] .btn-oauth {
+    i {
+        padding-right: unset;
+        padding-left: 10px;
+        border-right: unset;
+        border-left: 1px solid #ffffff;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+
+}
+
+html[dir="rtl"] .badge-language-selector {
+    a {
+      margin-right: unset;
+      margin-left:5px;
+    }
+
+}
+
+/*FILE*/
+html[dir="rtl"] #my-files {
+
+    .media-left {
+        padding: 10px 5px 0 15px;
+    }
+
+    #grid-file-upload {
+       left: unset;
+       right: 0;
+
+    }
+}
+
+/*GALLERY*/
+/*BADGE GALLERY*/
+html[dir="rtl"] #badge-gallery {
+    #grid.row .grid-container .media-bottom {
+        float:left;
+    }
+}
+/*PAGE GALLERY*/
+html[dir="rtl"] #page-gallery, html[dir="rtl"] #user-pages #grid {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+/*OAUTH*/
+/* RTL */
+html[dir="rtl"]  .btn-oauth {
+    i {
+        padding-right: unset;
+        padding-left: 10px;
+        border-right: unset;
+        border-left: 1px solid #ffffff;
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}
+
+/*PAGE*/
+/* GRID */
+html[dir="rtl"] #theme-12 .flip{
+  @media (max-width:992px){
+    flex-direction:column;
+    -webkit-flex-direction:column;
+  }
+
+}
+ html[dir="rtl"] .pages #grid, html[dir="rtl"] #page-gallery #grid, html[dir="rtl"] #user-pages #grid, html[dir="rtl"] #profile-gallery #grid, html[dir="rtl"] #my-files #grid{
+      .media-content {
+        padding-right: unset;
+        padding-left:0px;
+            .media-body {
+                 .visibility-icon {
+                    right: unset;
+                    left: 0;
+                }
+                 .media-heading{
+                   margin-right: unset;
+                   margin-left: 35px;
+                }
+                .page-badges {
+                    img {
+                        margin:3px 0px 5px 3px;
+                    }
+                }
+           }
+    }
+}
+/* SHARE BUTTONS*/
+ html[dir="rtl"] #page-buttons-share {
+   .share-wrapper {
+       direction:ltr;
+   }
+   .checkbox i{
+       padding-left: 10px;
+   }
+}
+/* Content */
+ html[dir="rtl"] .page-content {
+    .panel-left {
+        background-position: top right;
+        padding-left: unset;
+        padding-right: 103px;
+        @media (max-width: 767px) {
+            padding-left: unset;
+            padding-right: 20px;
+        }
+    }
+    .panel-right {
+        background-position: top left;
+        padding-right: unset;
+        padding-left: 103px;
+        @media (max-width: 767px) {
+            padding-right: unset;
+            padding-left: 20px;
+        }
+    }
+
+    a.small-badge-image {
+        margin-right: unset;
+        margin-left: 10px;
+    }
+}
+/* WIZARD */
+ html[dir="rtl"] #buttons {
+   -webkit-flex-direction:row;
+   flex-direction:row;
+    #buttons-right {
+        text-align: left;
+    }
+
+}
+ html[dir="rtl"] #page-edit {
+
+    .field {
+        .field-move {
+            left:unset;
+            right: 0;
+
+            .move-arrows {
+
+                .move-up {
+
+                    padding: 0 5px 10px 5px;
+                }
+                .move-down {
+
+                    padding: 10px 5px 0 5px;
+                }
+            }
+        }
+        .field-content {
+            border-left: unset;
+            border-right: 1px solid #cccccc;
+            margin-left: unset;
+            margin-right: 25px;
+            .field-remove {
+                text-align: left;
+            }
+            .badge-image {
+                padding-right: unset;
+                padding-left: 40px;
+                text-align: left;
+
+            }
+        }
+    }
+}
+ html[dir="rtl"] #page-edit {
+
+   #page-blocks .flip{
+
+       @media (max-width: 992px){
+         -webkit-flex-direction:row;
+         flex-direction: row;
+       }
+
+     }
+
+     #title-and-description .flip{
+
+       @media (max-width: 992px){
+         -webkit-flex-direction:column;
+         flex-direction: column;
+       }
+
+     }
+
+    .page-file-upload {
+      left: unset;
+        right: 0;
+
+    }
+    .html-block-content {
+        .edit-icon {
+            right: unset;
+            left: 15px;
+        }
+    }
+    .add-field-after {
+        .btn-success:before{
+            padding-right: unset;
+            padding-left: 10px;
+        }
+    }
+}
+ html[dir="rtl"] #page-edit, #page-edit-theme, #page-settings, #page-preview {
+    #buttons #buttons-right {
+        .delete-link {
+            padding-left: 15px;
+        }
+    }
+   #settings-panel{
+     .radio{
+         margin-right:15px;
+     }
+   }
+
+}
+ html[dir="rtl"] #page-edit .field .field-content .field-remove span.remove-button{
+
+   margin-right: unset;
+   margin-left:-10px;
+
+}
+
+ html[dir="rtl"] .select-border-wrapper {
+    float: right;
+    margin-right: unset;
+    margin-left: 15px;
+}
+
+ html[dir="rtl"] .file-block {
+    .attachment {
+        margin-right: unset;
+        margin-left: 15px;
+    }
+}
+
+ html[dir="rtl"] .page-file-icon {
+
+    margin-right: unset;
+    margin-left: 10px;
+}
+
+ html[dir="rtl"] #field-editor {
+    .field {
+        .field-content {
+            .badge-image {
+                padding-right: unset;
+                padding-left: 40px;
+                text-align: left;
+            }
+        }
+    }
+}
+
+html[dir="rtl"] #badge-info {
+  .flip{
+        @media (max-width:992px){
+        -webkit-flex-direction:column;
+        flex-direction: column;
+    }
+  }
+}
+
+html[dir="rtl"] #page-view {
+ .flip{
+        @media (max-width:992px){
+        -webkit-flex-direction:column;
+        flex-direction: column;
+    }
+  }
+}
+
+/*SOCIAL*/
+html[dir="rtl"] .message-item.media {
+ .flip{
+        @media (max-width:768px){
+        -webkit-flex-direction:row;
+        flex-direction: row;
+    }
+  }
+	h3.media-heading {
+		.new {
+      left: unset;
+			right:23px;
+		}
+		&:before{
+			float:right;
+			margin-right: unset;
+			margin-left: 15px;
+		}
+	}
+
+	&.follow {
+		h3.media-heading{
+			~ span {
+        padding-left: unset;
+				padding-right: 57px;
+			}
+		}
+	}
+	&.tips {
+		i.fa {
+
+			float:right;
+      margin-right: unset;
+			margin-left: 15px;
+			~ div {
+        margin-left: unset;
+				margin-right: 57px;
+			}
+
+		}
+		@media (max-width: 480px) {
+			i.fa {
+				margin-right:0px;
+				margin-left: 0px;
+        padding-left: unset;
+				padding-right: 60px;
+				~ div {
+          margin-left: unset;
+					margin-right: 0px;
+
+					}
+			}
+			h3{
+				a {
+          margin-left: unset;
+					margin-right: 0px !important;
+				}
+			}
+		}
+	    h3.media-heading{
+			~ .media-body {
+				ul {
+          padding-left: unset;
+					padding-right:20px;
+				}
+			}
+			~ a {
+        padding-left: unset;
+				padding-right: 0px !important;
+			}
+	    }
+	}
+	h4.media-heading{
+		span {
+      padding-left: unset;
+			padding-right:2px
+		}
+	}
+
+	.media-left {
+    padding-right: unset;
+		padding-left: 40px;
+		~ .media-body {
+			.media-body {
+        padding-right: unset;
+				padding-left:25px;
+			}
+			.pull-left {
+        float:right !important;
+        padding-right: unset;
+				padding-left: 15px;
+			}
+			.badge {
+          margin-left: unset;
+					margin-right: 10px;
+			}
+
+			.media-heading ~ a {
+				padding-right: 57px;
+			}
+		}
+	}
+	.date {
+		float:left;
+		margin:5px 10px 0px 25px;
+    @media (max-width:480px){
+    float:none;
+    }
+	}
+	button.close {
+      right:unset;
+	    left:0px;
+	}
+	@media (max-width:480px){
+		.media-left{
+      padding-right: unset;
+			padding-left: 0px;
+
+			~ .media-body {
+				.media-body {
+          padding-right: unset;
+					padding-left:0px;
+				}
+
+				h3.media-heading {
+          margin-left: unset;
+					margin-right:60px;
+					&:before{
+						float: right;
+            margin-right: unset;
+						margin-left: 0px;
+					}
+					 ~ a {
+            padding-left: unset;
+						padding-right:0px;
+					}
+					.new {
+            left: unset;
+						right:50%;
+					}
+				}
+			}
+		}
+		.date {
+      margin-left: unset;
+			margin-right:0px;
+		}
+	}
+}
+
+@media (max-width: 480px){
+    html[dir="rtl"].message-item.media.tips{
+		.media-left{
+			//padding-top:35px;
+			~ .media-body h3.media-heading{
+				~ .media-body {
+          padding-left: unset;
+					padding-right:0px;
+				}
+			}
+		}
+
+		.media-left .system-image-url {width:55px; height:55px;}
+	}
+	.message-item.media.follow h3.media-heading ~ span {
+    padding-left: unset;
+		padding-right:0px;
+	}
+}
+
+html[dir="rtl"] #badge-content{
+
+	#badge-contents  .message-item {
+		.pull-left {
+      float: right !important;
+      padding-right: unset;
+			padding-left:20px;
+		}
+	}
+	@media (max-width:500px){
+		#badge-contents {
+			.date {
+				float:right;
+        margin-left: unset;
+				margin-right: 0px;
+			}
+		}
+	}
+}
+
+html[dir="rtl"] .btn-primary.follow, .btn-primary.unfollow{
+	&:before {
+    margin-right: unset;
+		margin-left: 5px;
+		float: right;
+	}
+}
+
+/* PENDING CONNECTIONS */
+html[dir="rtl"] .connections-container-pending {
+    .pull-left {
+        padding-right: unset;
+        padding-left: 25px;
+    }
+}
+
+/*USER*/
+html[dir="rtl"] #login-page {
+    .form-group{
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    html[dir="rtl"].left-column{
+	    text-align: left;
+    }
+    html[dir="rtl"] .right-column{
+	    text-align: right;
+    }
+}
+@media (max-width: 768px) {
+    html[dir="rtl"] .right-column{
+	text-align: center;
+    }
+    html[dir="rtl"] .left-column{
+	text-align: center;
+    }
+
+}
+
+html[dir="rtl"] #registration-page .input-group-btn{
+    .btn {
+		.caret{
+      margin-left: unset;
+			margin-right:5px;
+		}
+  }
+
+}
+html[dir="rtl"] #profile {
+
+
+    .about {
+    margin-right: 0px
+    }
+
+    .table {
+        td.profile-field {
+            padding-left: unset;
+            padding-right: 0;
+        }
+    }
+
+}
+
+html[dir="rtl"] #edit-profile {
+
+    #profile-picture-gallery {
+        .profile-picture-gallery-element {
+            float: right;
+            margin-right: unset;
+            margin-left: 10px;
+
+	    .delete-icon{
+    left: unset;
+		right: 92px;
+	    }
+        }
+    }
+
+    #profile-picture-upload {
+       left:unset;
+       right: 0;
+    }
+  .radio {
+      margin-right: 15px;
+  }
+
+}
+
+html[dir="rtl"] #edit-user {
+    #cancel-button {
+        margin-left: unset;
+        margin-right: 10px;
+    }
+
+  th{
+    text-align: start;}
+
+  .fa{
+        margin-right:13px;
+        display:flex;
+        @media (max-width:768px){
+            margin-right:unset;
+            display:inline-block;
+    }
+  }
+
+  .flip{
+        @media (max-width:992px){
+        -webkit-flex-direction:column;
+        flex-direction: column;
+    }
+  }
+}
+
+html[dir="rtl"] li.user-link-inline {
+    img {
+        margin-right: unset;
+        margin-left: 3px;
+    }
+    padding-right: unset;
+    padding-left: 10px;
+}

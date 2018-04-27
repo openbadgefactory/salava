@@ -18,7 +18,7 @@
   (let [map-fn (fn [[tr nv]]
                  (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (= (first (re-seq #"\w+" (route-path (str tr)))) (first (re-seq #"\w+" (current-route-path))))))))
         navi-list (sort-by :weight (map map-fn (select-keys navi key-list)))]
-    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) ))))) 
+    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) )))))
       (assoc-in (vec navi-list) [0 :active] true)
       navi-list)
     ))
@@ -48,7 +48,7 @@
   (ajax/POST
     (path-for "/obpv1/admin/return_to_admin")
     {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
- 
+
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
         :key target}
@@ -66,7 +66,7 @@
 (defn logo []
 [:a {:class "logo pull-left"
      :title (session/get :site-name)
-     :aria-label "to index" 
+     :aria-label "to index"
      :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
      :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
@@ -128,7 +128,7 @@
     [:div {:class "navbar-header"}
      [:a {:class "logo pull-left"
           :href  (if  (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-          :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url)) "") 
+          :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url)) "")
           :title (session/get :site-name)}
       [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
       [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]]]])
@@ -194,7 +194,7 @@
       [:div {:class "container"}
        [:h2 heading]]])
    [:div {:class "container main-container"}
-    [:div {:class "row"}
+    [:div {:class "row flip"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
      [:div {:class "col-md-9"} content]]]
   ])
@@ -212,7 +212,7 @@
     [:div {:class "container"}
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
-    [:div {:class "row"}
+    [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
    (footer site-navi)])
