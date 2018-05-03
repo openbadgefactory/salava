@@ -33,6 +33,7 @@
              (layout/main-meta ctx "/profile/:id/embed" :user)
              (layout/main ctx "/edit/profile")
              (layout/main ctx "/cancel")
+             (layout/main ctx "/data")
              (layout/main ctx "/remote/facebook")
              (layout/main ctx "/remote/linkedin")
 
@@ -60,6 +61,10 @@
 
              (POST "/logout" []
                    (assoc-in (ok) [:session :identity] nil))
+
+             (GET "/foo" []
+                  :summary "testing"
+                  (ok "Hello Foo"))
 
              (GET "/register" []
                   :summary "Get languages"
