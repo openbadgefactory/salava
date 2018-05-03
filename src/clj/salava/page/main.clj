@@ -8,13 +8,17 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path str->qr-base64 md->html plugin-fun get-plugins file-from-url md->html]]
             [salava.badge.main :as b]
             [clojure.tools.logging :as log]
             [salava.page.themes :refer [valid-theme-id valid-border-id border-attributes]]
             [salava.file.db :as f]
             [clj-pdf.core :as pdf]
-            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]))
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
+            [clojure.zip :as zip]
+            [net.cgrand.enlive-html :as enlive]
+            ))
+
 
 (defqueries "sql/page/main.sql")
 

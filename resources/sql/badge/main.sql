@@ -191,9 +191,9 @@ b.issuer_verified,
 ube.url AS evidence_url,
 u.id AS owner, u.first_name, u.last_name
 FROM user_badge AS ub
+INNER JOIN badge as b ON (b.id = ub.badge_id)
 LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
-JOIN badge as b ON (b.id = ub.badge_id)
-JOIN user AS u ON (u.id = ub.user_id)
+LEFT JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 
@@ -202,6 +202,7 @@ GROUP BY ub.id
 --get badge by id
 SELECT
 badge.id as badge_id, badge.default_language_code,
+bbc.badge_content_id,
 bc.language_code,
 bc.name, bc.description,
 bc.image_file,
@@ -218,7 +219,7 @@ crc.image_file AS creator_image,
 crc.description AS creator_description,
 cc.markdown_text AS criteria_content,
 cc.url AS criteria_url,
-COUNT(bec.endorsement_content_id) AS endorsement_count
+COUNT(DISTINCT bec.endorsement_content_id) AS endorsement_count
 FROM badge AS badge
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id)
@@ -245,6 +246,12 @@ INNER JOIN badge_endorsement_content be ON e.id = be.endorsement_content_id
 INNER JOIN issuer_content i ON e.issuer_content_id = i.id
 WHERE be.badge_id = :id
 ORDER BY e.issued_on
+
+--name: select-alignment-content
+SELECT name, url, description
+FROM badge_content_alignment
+WHERE badge_content_id = :badge_content_id
+ORDER BY name
 
 --name: select-issuer
 SELECT * FROM issuer_content WHERE id = :id

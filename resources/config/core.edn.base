@@ -15,10 +15,10 @@
  :asset-version nil
 
  ;; ui translations available to users
- :languages [:en :es :fi :fr :pl]
+ :languages [:en :es :fi :fr :pl :pt :ar]
 
  ;; List of enabled features. Plugins can have their own config files
- :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail]
+ :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail :oembed :rtl]
 
  ;; Private site. Badges cannot be shared or imported/exported. New account registration is restricted.
  :private false

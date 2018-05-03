@@ -1,6 +1,7 @@
 (ns salava.core.helper
   #?(:clj (:require [clojure.java.io :as io]
-                    [clojure.pprint :refer [pprint]])))
+                    [clojure.pprint :refer [pprint]]
+                    )))
 
 #?(:clj (defmacro io-resource [file]
           (slurp (io/resource file))))
@@ -21,4 +22,3 @@
 (defn string->number [str]
   #?(:clj (let [n (read-string str)]
             (if (number? n) n nil))))
-

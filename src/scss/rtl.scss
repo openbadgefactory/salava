@@ -231,6 +231,9 @@ html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
 }
 
 /*BADGE*/
+html[dir="rtl"] #export-pdf {
+  padding-right: 20px !important;
+}
 html[dir="rtl"] #badge-info
 
   #pull-right.badge-image{

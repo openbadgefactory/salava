@@ -17,6 +17,7 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
 
+
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/badge" true)

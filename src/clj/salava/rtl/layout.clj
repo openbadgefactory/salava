@@ -1,7 +1,7 @@
 (ns salava.rtl.layout
 (:require [salava.core.helper :refer [dump]]))
 
-(defn set-page-direction [ctx]
-  (let [user-lang (get-in ctx [:user :language])
-        rtl?  (contains? (set (get-in ctx [:config :core :plugins])) :rtl)]
-    (if (and (= user-lang "ar") rtl?) {:dir "rtl"} {})))
+(defn html-attributes [ctx]
+  (let [user-lang (keyword (get-in ctx [:user :language] "en"))
+        dir (if (some #(= % user-lang) (get-in ctx [:config :rtl :rtl-languages])) "rtl" "ltr")]
+    {:dir dir}))

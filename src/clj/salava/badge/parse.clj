@@ -263,6 +263,14 @@
                                    (get-endorsement (dec depth))))
                      (assoc-in e [:issuer :endorsement] [])))))))))
 
+(defn- get-alignment [badge]
+  (map (fn [a]
+         {:name (:targetName a)
+          :url  (:targetUrl a)
+          :description (:targetDescription a)})
+       (get badge :alignment [])))
+
+
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
                  (let [language (get badge (keyword "@language") "")
@@ -279,7 +287,7 @@
                                 :name (:name badge)
                                 :image_file (:image badge)
                                 :description (:description badge)
-                                :alignment (get badge :alignment [])
+                                :alignment (get-alignment badge)
                                 :tags (get badge :tags [])}]
                     :criteria [{:id ""
                                 :language_code language

@@ -251,4 +251,5 @@
                                                        (dissoc :id)
                                                        (assoc :user_badge_id user-badge-id
                                                               :ctime now
-                                                              :mtime now)))))))))
+                                                              :mtime now))))))
+      user-badge-id)))

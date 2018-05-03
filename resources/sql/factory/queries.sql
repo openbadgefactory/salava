@@ -23,3 +23,5 @@ SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evide
        LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
        WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
 
+-- name: select-badge-by-assertion
+SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url
