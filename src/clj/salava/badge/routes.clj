@@ -12,6 +12,7 @@
             [salava.core.layout :as layout]
             [salava.core.access :as access]
             [salava.badge.pdf :as pdf]
+            [salava.core.helper :refer [dump]]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -145,15 +146,13 @@
                    (ok (b/congratulate! ctx badgeid (:id current-user))))
 
 
-             (GET "/export-to-pdf/:badges_to_export/:lang" []
-                   :path-params[badges_to_export :- s/Str
-                                lang :- s/Str]
+             (GET "/export-to-pdf" [badges lang-option]
                    :summary "Export badges to PDF"
                    :auth-rules access/authenticated
                    :current-user current-user
-                  (let [badge-ids (read-string badges_to_export)
-                        h (if (> (count badge-ids) 1) (str "attachment; filename=\"badge-collection_"lang".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang ".pdf\""))]
-                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang))
+                   (let [badge-ids (map #(Integer/parseInt %)  (vals badges))
+                        h (if-not (empty? (rest badge-ids)) (str "attachment; filename=\"badge-collection_"lang-option".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang-option ".pdf\""))]
+                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
                          ok
                          (header "Content-Disposition" h)
                          (header "Content-Type" "application/pdf")
