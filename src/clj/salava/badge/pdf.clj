@@ -8,11 +8,7 @@
             [clj-pdf.core :as pdf]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.string :refer [ends-with?]]
-            [clojure.java.io :as io]
-;;             [tikkba.dom :refer [svg-doc]]
-;;           	 [analemma.svg :refer [svg rect]]
-;;           	 [analemma.xml :as xml]
-            [tikkba.transcoder :as transcoder]))
+            [clojure.java.io :as io]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -132,7 +128,7 @@
                                                            [:spacer]
                                                            [:phrase {:size 12 :style :bold} (t :badge/IssuerEndorsedBy)]
                                                             [:spacer 0]
-                                                            (reduce into []
+                                                            (into [:paragraph {:indent 0} ]
                                                               (for [e issuer-endorsement]
                                                                [:paragraph {:indent 0}
                                                                 #_[:chunk.chunk "Endorser: " ] (:issuer_name e) "\n"

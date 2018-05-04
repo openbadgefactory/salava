@@ -111,10 +111,13 @@
                                                                  [:paragraph [:chunk [:image {:align :center :width 80 :height 80} (str data-dir "/" (:image_file %))]] [:spacer 2]"\n" ]
                                                                    "")
                                                                    #_[:spacer 2]]
-                                                                 [:paragraph {:align :center}
-                                                                   (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))]
-                                                                    [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (:qr_code (first badge))]])]
-                                                                 [:phrase.generic "scan to go to badge"]
+
+
+                                                                 (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))]
+                                                                   [:paragraph {:align :center}
+                                                                     [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (:qr_code (first badge))]]
+                                                                     [:spacer 0]
+                                                                     [:chunk.generic "scan to go to badge"]])
                                                                  ]
 
                                                                 [:cell
@@ -134,6 +137,7 @@
                                                                           content (first (:content (first badge)))]
                                                                    (markdown->clj-pdf {:paragraph {:keep-together? false} :spacer {:allow-extra-line-breaks? false} :wrap {:global-wrapper :paragraph}}(:criteria_content content))
                                                                       )]]]]
+
                                                                  [[:cell {:colspan 2} [:line {:dotted true}]]]])
 
                                                             (when (= "html" (:type %))
