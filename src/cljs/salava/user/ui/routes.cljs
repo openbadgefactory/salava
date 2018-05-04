@@ -13,8 +13,7 @@
             [salava.user.ui.email-addresses :as email-addresses]
             [salava.user.ui.edit-profile :as edit-profile]
             [salava.user.ui.cancel :as cancel]
-            [salava.user.ui.modal :as usermodal]
-            [salava.user.ui.data :as data]))
+            [salava.user.ui.modal :as usermodal]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -35,8 +34,7 @@
                                       ["/edit/password" edit-password/handler]
                                       ["/edit/email-addresses" email-addresses/handler]
                                       ["/edit/profile" edit-profile/handler]
-                                      ["/cancel" cancel/handler]
-                                      ["/data" data/handler]]})
+                                      ["/cancel" cancel/handler]]})
 
 
 (defn ^:export navi [context]
@@ -46,6 +44,5 @@
    (str (base-path context) "/user/edit")                                  {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
    (str (base-path context) "/user/edit/password")                         {:weight 42 :title (t :user/Passwordsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Passwordsettings)}
    (str (base-path context) "/user/edit/email-addresses")                  {:weight 43 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}
-   (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}
-   (str (base-path context) "/user/data")                                  {:weight 50 :title "My data" :site-navi true :breadcrumb (t :user/User " / " "My data")}})
+   (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}})
 
