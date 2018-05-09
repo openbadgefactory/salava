@@ -59,13 +59,15 @@
                 :on-click #(check-password password-atom (:page-id @state) state)}
        (t :core/Submit)]]]))
 
+
 (defn export-page-to-pdf [state]
   (let [id (:page-id @state)
         header (:pdf-header @state)
         page-name (get-in @state [:page :name])]
-  (ajax/GET
-    (path-for (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))
-     {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
+
+    (ajax/GET
+      (path-for (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))
+       {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
 
 (defn export-to-pdf-modal [state]
    [:div {:id "badge-settings"}

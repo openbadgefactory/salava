@@ -6,7 +6,9 @@
             [salava.badge.main :refer [user-badges-to-export fetch-badge badge-url]]
             [salava.core.util :as u :refer [get-db plugin-fun get-plugins md->html str->qr-base64]]
             [clj-pdf.core :as pdf]
-            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]))
+            [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
+            [clojure.string :refer [ends-with?]]
+            [clojure.java.io :as io]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -22,6 +24,7 @@
                            (assoc :qr_code (str->qr-base64 (badge-url ctx (:id %1)))
                                   :endorsements (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
                                   :content %2)) badge-with-content temp)]
+    #_(dump badges)
     badges))
 
 (defn generatePDF [ctx user-id input lang]
@@ -44,9 +47,12 @@
 
           pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
           badge-template (pdf/template
-                           (let [ template #(cons [:paragraph]  [[:paragraph
-                                                   [:image {:width 100 :height 100 :align :center} (str data-dir (:image_file %))]]
-                                                   [:spacer 0]
+                           (let [template #(cons [:paragraph]  [ (if (ends-with? (:image_file %) "png")
+                                                                   [:image {:width 100 :height 100 :align :center} (str data-dir "/" (:image_file %))]
+                                                                   [:image {:width 100 :height 100 :align :center :base64 true} $qr_code ]
+
+                                                                   #_[:cell {:align :center :border true}[:svg #_{:scale 0.5 :translate [200 0]}
+                                                                                                        (io/file (str data-dir "/" (:image_file %)))]])
 
                                                    [:heading.heading-name (:name %)]
                                                    [:paragraph {:indent 20 :align :center}#_[:line] [:spacer]]
@@ -122,7 +128,7 @@
                                                            [:spacer]
                                                            [:phrase {:size 12 :style :bold} (t :badge/IssuerEndorsedBy)]
                                                             [:spacer 0]
-                                                            (reduce into []
+                                                            (into [:paragraph {:indent 0} ]
                                                               (for [e issuer-endorsement]
                                                                [:paragraph {:indent 0}
                                                                 #_[:chunk.chunk "Endorser: " ] (:issuer_name e) "\n"
@@ -142,7 +148,6 @@
 
                              (reduce into [[:chapter ]] content)))]
 ;;TODO Test alignments
-
  (fn [output-stream]
    (pdf/pdf (into [pdf-settings] (badge-template badges)) output-stream)))
 )

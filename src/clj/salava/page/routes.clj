@@ -9,6 +9,7 @@
             [salava.core.access :as access]
             [ring.util.io :as io]
             [salava.page.pdf :as pdf]
+            [salava.core.helper :refer [dump]]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -83,6 +84,7 @@
                       ok
                       (header  "Content-Disposition" (str "attachment; filename=\""page-name".pdf\""))
                       (header "Content-Type" "application/pdf")))
+
 
              (POST "/password/:pageid" []
                    :return schemas/ViewPage

@@ -101,12 +101,18 @@
 
 (defn export-to-pdf [state]
   (let [badges-to-export (:badges-selected @state)
-        lang-option (:pdf-option @state)]
+        lang-option (:pdf-option @state)
+        badge-url (if (empty? (rest badges-to-export))
+                      (str "/obpv1/badge/export-to-pdf?badges[0]=" (first badges-to-export) "&lang-option="lang-option)
+                      (str (clojure.string/join (cons (str "/obpv1/badge/export-to-pdf?badges[0]=" (first badges-to-export))
+                           (map #(str "&badges["(.indexOf badges-to-export %)"]=" %) (rest badges-to-export)))) "&lang-option="lang-option))]
 
     (ajax/GET
-      (path-for (str "/obpv1/badge/export-to-pdf/" badges-to-export "/" lang-option) true)
-      {:handler (js-navigate-to (str "/obpv1/badge/export-to-pdf/"badges-to-export "/" lang-option))}
+      (path-for (str "/obpv1/badge/export-to-pdf")) ;badges-to-export "/" lang-option) true)
+      {:params {:badges badges-to-export :lang-option lang-option }
+       :handler (js-navigate-to badge-url)}
       )))
+
 
 (defn export-to-pdf-modal [state]
    [:div {:id "badge-settings"}
