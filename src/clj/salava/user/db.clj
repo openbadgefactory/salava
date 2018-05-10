@@ -345,9 +345,10 @@
         [tr-cn (get-datasource ctx)]
         (remove-user-files ctx {:connection tr-cn} user-id)
         (remove-user-badges {:connection tr-cn} user-id)
-        (update-user-badge-messages-set-removed! {:user_id user-id} {:connection tr-cn}) ;set badge messages as removed
         (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
         (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
+        (update-user-badge-messages-set-removed! {:user_id user-id} {:connection tr-cn}) ;set badge messages as removed
+        (delete-user-badge-message-views! {:user_id user-id} {:connection tr-cn}) ;remove badge message views
         (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
         (delete-user-profile! {:user_id user-id} {:connection tr-cn})
 

@@ -128,6 +128,9 @@ DELETE FROM badge_view WHERE user_id = :user_id
 --name: update-user-badge-messages-set-removed!
 UPDATE badge_message SET message = 'removed by owner', mtime = UNIX_TIMESTAMP() WHERE user_id= :user_id
 
+--name: delete-user-badge-message-views!
+DELETE FROM badge_message_view WHERE user_id= :user_id
+
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
