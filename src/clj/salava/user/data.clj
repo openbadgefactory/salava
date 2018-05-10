@@ -29,9 +29,9 @@
         connections (so/get-connections-badge ctx current-user-id)
         pending-badges (b/user-badges-pending ctx user-id)
         user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
-        user-followers (user-followers-fn ctx user-id)
+        user-followers (if-not (empty? user-followers-fn) (user-followers-fn ctx user-id) "")
         user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-        user-following (user-following-fn ctx user-id)
+        user-following (if-not (empty? user-followers-fn) (user-following-fn ctx user-id) "")
         ]
 
     (assoc all-user-info
