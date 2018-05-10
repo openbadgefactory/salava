@@ -2,6 +2,7 @@
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.util.response :refer [redirect]]
+            [ring.util.io :as io]
             [salava.core.layout :as layout]
             [schema.core :as s]
             [salava.core.util :refer [get-base-path]]
@@ -11,6 +12,7 @@
             [salava.registerlink.db :refer [right-token?  in-email-whitelist?]]
             [salava.core.helper :refer [dump private?]]
             [salava.core.access :as access]
+            [salava.user.data :as md]
             salava.core.restructure))
 
 (defn route-def [ctx]
