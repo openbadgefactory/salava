@@ -349,6 +349,9 @@
         (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
         (update-user-badge-messages-set-removed! {:user_id user-id} {:connection tr-cn}) ;set badge messages as removed
         (delete-user-badge-message-views! {:user_id user-id} {:connection tr-cn}) ;remove badge message views
+        (delete-user-pending-badges! {:user_id user-id} {:connection tr-cn}) ;delete pending badges
+        (delete-user-badge! {:user_id user-id} {:connection tr-cn}) ;remove user badge completely
+        (delete-user-pending-badges! {:user_id user-id} {:connection tr-cn}) ;delete pending badges
         (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
         (delete-user-profile! {:user_id user-id} {:connection tr-cn})
 

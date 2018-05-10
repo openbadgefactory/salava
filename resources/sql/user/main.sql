@@ -131,6 +131,14 @@ UPDATE badge_message SET message = 'removed by owner', mtime = UNIX_TIMESTAMP() 
 --name: delete-user-badge-message-views!
 DELETE FROM badge_message_view WHERE user_id= :user_id
 
+--name: delete-user-badge!
+DELETE FROM user_badge WHERE user_id= :user_id
+
+--name: delete-user-pending-badges!
+DELETE pfb FROM pending_factory_badge AS pfb
+LEFT JOIN user_email AS ue ON pfb.email=ue.email
+WHERE ue.user_id = user_id
+
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
