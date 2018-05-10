@@ -47,5 +47,5 @@
    (str (base-path context) "/user/edit/password")                         {:weight 42 :title (t :user/Passwordsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Passwordsettings)}
    (str (base-path context) "/user/edit/email-addresses")                  {:weight 43 :title (t :user/Emailaddresses) :site-navi true :breadcrumb (t :user/User " / " :user/Emailaddresses)}
    (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}
-   (str (base-path context) "/user/data/" (get-in context [:user :id]))     {:weight 50 :title (t :user/MyData) :site-navi true :breadcrumb (t :user/User " / " :user/MyData)}})
+   (str (base-path context) "/user/data/" (get-in context [:user :id]))     {:weight 50 :title (t :user/Mydata) :site-navi true :breadcrumb (t :user/User " / " :user/Mydata)}})
 
