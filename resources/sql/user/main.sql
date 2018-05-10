@@ -30,7 +30,7 @@ SELECT id, first_name, last_name, country, language, profile_visibility, profile
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated, IF(pass IS NULL, 0,1) AS has_password FROM user WHERE id = :id
 
 --name: select-user-password
-SELECT pass FROM user WHERE id = :id 
+SELECT pass FROM user WHERE id = :id
 
 --name: select-user-profile-fields
 -- get all user's profile fields
@@ -125,6 +125,9 @@ UPDATE badge SET visibility = 'private', deleted = 1 WHERE user_id = :user_id
 --name: delete-user-badge-views!
 DELETE FROM badge_view WHERE user_id = :user_id
 
+--name: update-user-badge-messages-set-removed!
+UPDATE badge_message SET message = 'removed by owner', mtime = UNIX_TIMESTAMP() WHERE user_id= :user_id
+
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
@@ -141,7 +144,7 @@ DELETE FROM user_email WHERE user_id = :user_id
 DELETE FROM user WHERE id = :id
 
 --name: update-user-set-deleted!
-UPDATE user SET first_name = :first_name, last_name = :last_name, mtime = UNIX_TIMESTAMP(), email_notifications = 0, deleted = 1, role = 'deleted', profile_picture = NULL, profile_visibility = 'internal', about = NULL  WHERE id = :id 
+UPDATE user SET first_name = :first_name, last_name = :last_name, mtime = UNIX_TIMESTAMP(), email_notifications = 0, deleted = 1, role = 'deleted', profile_picture = NULL, profile_visibility = 'internal', about = NULL  WHERE id = :id
 
 --name: update-user-email-set-deleted!
 UPDATE user_email SET email = :deletedemail, backpack_id = NULL WHERE user_id = :user_id AND email = :email
@@ -160,4 +163,4 @@ SELECT u.first_name, u.last_name, ue.email, language, role FROM user AS u
 select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role from social_event_owners AS seo
        JOIN user_email AS ue ON ue.user_id = seo.owner
        JOIN user AS u ON u.id = seo.owner
-       WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1; 
+       WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1;

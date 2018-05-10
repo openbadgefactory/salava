@@ -96,7 +96,7 @@
      [:h1.uppercase-header "My DATA"]
      [:div
       [:p "Below is a summary of your personal data. For a more extensive data archive,
-       click export below. A pdf document containing your data will downloaded to your computer "]]
+       click export below. A pdf document containing your data will be downloaded to your computer "]]
 
      [:div.panel {:id "my-data"}
       [m/modal-window]

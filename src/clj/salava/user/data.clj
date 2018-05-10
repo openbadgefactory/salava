@@ -44,8 +44,7 @@
       :pending_badges pending-badges
       :user_followers user-followers
       :user_following user-following
-      )
-    ))
+      )))
 
 (defn strip-html-tags [s]
   (->> s

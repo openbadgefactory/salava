@@ -76,7 +76,7 @@
         (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
         (u/publish ctx :new-user {:user-id user-id})
         (m/send-verification ctx site-url (email-verification-link site-url base-path activation_code) (str first-name " " last-name) email language)
-        
+
         {:status "success" :message ""}))))
 
 (defn set-password-and-activate
@@ -133,7 +133,7 @@
          (if (and pass (not (check-password ctx current_password pass)))
             (throw+ "user/Wrongpassword"))))
       (update-password! {:id user-id :pass (hash-password new_password)} (get-db ctx))
-      
+
       {:status "success" :message "core/Thechangeshavebeensaved" })
    (catch Object _
       {:status "error" :message _})))
@@ -257,7 +257,7 @@
         recent-pages  (g/public-pages-by-user ctx user-id visibility)]
     {:user    user
      :profile user-profile
-     :badges  recent-badges 
+     :badges  recent-badges
      :pages   recent-pages
      :owner?  (= user-id current-user-id)}))
 
@@ -345,18 +345,19 @@
         [tr-cn (get-datasource ctx)]
         (remove-user-files ctx {:connection tr-cn} user-id)
         (remove-user-badges {:connection tr-cn} user-id)
+        (update-user-badge-messages-set-removed! {:user_id user-id} {:connection tr-cn}) ;set badge messages as removed
         (delete-user-badge-views! {:user_id user-id} {:connection tr-cn})
         (delete-user-badge-congratulations! {:user_id user-id} {:connection tr-cn})
         (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
         (delete-user-profile! {:user_id user-id} {:connection tr-cn})
-        
+
         (if activated
           (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn} ) emails))
           (delete-email-addresses! {:user_id user-id} {:connection tr-cn}))
-        
+
         (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
           (o/remove-oauth-user-all-services ctx user-id))
-        
+
         (if activated
           (delete-user! {:id user-id} {:connection tr-cn})
           (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id } {:connection tr-cn})))
