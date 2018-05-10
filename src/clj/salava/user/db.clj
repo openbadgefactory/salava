@@ -357,16 +357,23 @@
          #_(update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
          (delete-user-profile! {:user_id user-id} {:connection tr-cn})
 
-         (if activated
+         #_(if activated
            (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn} ) emails))
            (delete-email-addresses! {:user_id user-id} {:connection tr-cn}))
+
+         (delete-email-addresses! {:user_id user-id} {:connection tr-cn});delete user email-addresses anyway
 
          (if (some #(= % :oauth) (get-in ctx [:config :core :plugins]))
            (o/remove-oauth-user-all-services ctx user-id))
 
-         (if activated
+         #_(if activated
            (delete-user! {:id user-id} {:connection tr-cn})
-           (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id } {:connection tr-cn})))
+           (update-user-set-deleted! {:first_name "deleted" :last_name "deleted" :id user-id } {:connection tr-cn}))
+
+         (delete-user! {:id user-id} {:connection tr-cn});delete user anyway
+         )
+
+
        {:status "success"})
      (catch Object _
        {:status "error"}))))
