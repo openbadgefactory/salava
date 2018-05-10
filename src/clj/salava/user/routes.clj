@@ -35,6 +35,7 @@
              (layout/main ctx "/cancel")
              (layout/main ctx "/remote/facebook")
              (layout/main ctx "/remote/linkedin")
+             (layout/main-meta ctx "/data/:id" :user)
 
              (GET "/verify_email/:verification_key" []
                   :path-params [verification_key :- s/Str]
@@ -70,10 +71,10 @@
              (POST "/register" []
                    ;:return
                    #_{:status  (s/maybe  (s/enum "success" "error"))
-                    :message (s/maybe s/Str)
-                    :id      (s/maybe s/Int)
-                    :role    (s/maybe s/Str)
-                    :private (s/maybe s/Bool)}
+                      :message (s/maybe s/Str)
+                      :id      (s/maybe s/Int)
+                      :role    (s/maybe s/Str)
+                      :private (s/maybe s/Bool)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
                    (let [{:keys [email first_name last_name country language password password_verify]} form-content
@@ -83,7 +84,7 @@
                        ;return error status from save
                        (ok save)
                        (if (not (private? ctx))
-                                        ;(ok save)
+                         ;(ok save)
                          (let [login-status (u/login-user ctx email password)]
                            (if (= "success" (:status login-status))
                              (u/set-session ctx (ok login-status) (:id login-status))
@@ -123,14 +124,14 @@
                   )
 
              (POST "/edit/password" []
-                  :return {:status (s/enum "success" "error")
+                   :return {:status (s/enum "success" "error")
                             :message (s/maybe s/Str)}
-                  :body [user-data schemas/EditUserPassword]
-                  :summary "Get user information for editing"
-                  :auth-rules access/signed
-                  :current-user current-user
-                  (ok (u/edit-user-password ctx user-data (:id current-user)))
-                  )
+                   :body [user-data schemas/EditUserPassword]
+                   :summary "Get user information for editing"
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (ok (u/edit-user-password ctx user-data (:id current-user)))
+                   )
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")
@@ -195,6 +196,22 @@
                             (and (= visibility "internal") current-user))
                       (ok profile)
                       (unauthorized))))
+
+             (GET "/data/:userid" []
+                  :summary "Get everything on user"
+                  :path-params [userid :- s/Int]
+                  :current-user current-user
+                  (ok (md/all-user-data ctx userid (:id current-user))))
+
+             (GET "/export-to-pdf/:userid" []
+                  :summary "export user data to pdf"
+                  :path-params [userid :- s/Int]
+                  :current-user current-user
+                  (-> (io/piped-input-stream (md/export-data-to-pdf ctx userid (:id current-user)))
+                      ok
+                      (header  "Content-Disposition" (str "attachment; filename=\" data.pdf\""))
+                      (header "Content-Type" "application/pdf")
+                      ))
 
              (GET "/edit/profile" []
                   ;:return
