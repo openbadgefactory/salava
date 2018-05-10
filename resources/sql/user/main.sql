@@ -175,3 +175,16 @@ select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role fr
        JOIN user_email AS ue ON ue.user_id = seo.owner
        JOIN user AS u ON u.id = seo.owner
        WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1;
+
+--name: delete-all-user-events!
+DELETE FROM social_event WHERE subject = :subject
+
+--name: delete-user-social-events!
+DELETE FROM social_event_owners WHERE owner = :owner;
+
+--name: delete-social-connections-user-following!
+DELETE FROM social_connections_user WHERE owner_id = :owner_id
+
+--name: delete-social-connections-badge!
+DELETE FROM social_connections_badge WHERE user_id = :user_id
+
