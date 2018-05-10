@@ -188,3 +188,13 @@ DELETE FROM social_connections_user WHERE owner_id = :owner_id
 --name: delete-social-connections-badge!
 DELETE FROM social_connections_badge WHERE user_id = :user_id
 
+--name: delete-user-pages-all!
+DELETE p,pbb,pbf,pbh,pbhtml,pbt,pt FROM page AS p
+  LEFT JOIN page_block_badge AS pbb ON p.id=pbb.page_id
+  LEFT JOIN page_block_files AS pbf ON p.id=pbf.page_id
+  LEFT JOIN page_block_heading AS pbh ON p.id=pbh.page_id
+  LEFT JOIN page_block_html AS pbhtml ON p.id=pbhtml.page_id
+  LEFT JOIN page_block_tag AS pbt ON p.id=pbt.page_id
+  LEFT JOIN page_tag AS pt ON p.id=pt.page_id
+  WHERE p.user_id = :user_id
+

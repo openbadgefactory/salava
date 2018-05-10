@@ -329,8 +329,6 @@
     (doseq [user-badge-id user-badge-ids]
       (b/delete-badge-with-db! db user-badge-id))))
 
-
-
 (defn delete-user
   "Delete user and all user data"
   ([ctx user-id plain-password]
@@ -355,7 +353,8 @@
          (delete-user-social-events! {:owner user-id} {:connection tr-cn} );remove users social events
          (delete-all-user-events! {:subject user-id} {:connection tr-cn}) ;remove all user events
          (delete-social-connections-badge! {:user_id user-id} {:connection tr-cn} );remove social-connections-badge
-         (update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
+         (delete-user-pages-all! {:user_id user-id} {:connection tr-cn});remove user pages with blocks
+         #_(update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
          (delete-user-profile! {:user_id user-id} {:connection tr-cn})
 
          (if activated
