@@ -56,7 +56,9 @@
                    :body [login-content schemas/LoginUser]
                    :summary "User logs in"
                    (let [{:keys [email password]} login-content
-                         login-status (u/login-user ctx email password)]
+                         accepted-terms? (u/accepted-terms? ctx email)
+                         login-status (-> (u/login-user ctx email password)
+                                          (assoc :terms (:status accepted-terms?)))]
                      (if (= "success" (:status login-status))
                        (u/set-session ctx (ok login-status) (:id login-status))
                        (ok login-status))))
@@ -79,8 +81,10 @@
                       :private (s/maybe s/Bool)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
-                   (let [{:keys [email first_name last_name country language password password_verify]} form-content
-                         save (u/register-user ctx email first_name last_name country language password password_verify)]
+                   (let [{:keys [email first_name last_name country language password password_verify accept_terms]} form-content
+                         save (u/register-user ctx email first_name last_name country language password password_verify)
+                         user-id (u/get-user-by-email ctx email)
+                         update-accept-term (u/insert-user-terms ctx (:id user-id) accept_terms)]
 
                      (if (= "error" (:status save))
                        ;return error status from save
@@ -88,14 +92,14 @@
                        (if (not (private? ctx))
                          ;(ok save)
                          (let [login-status (u/login-user ctx email password)]
-                           (if (= "success" (:status login-status))
+                           (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (= "accepted" (:input update-accept-term)))
                              (u/set-session ctx (ok login-status) (:id login-status))
                              (ok login-status)))
                          (cond
                            (not (right-token? ctx (:token form-content)))        (forbidden)
                            (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
-                           :else                                                 (let [login-status (u/login-user ctx email password)]
-                                                                                   (if (= "success" (:status login-status))
+                           :else                                                 (let [ login-status  (u/login-user ctx email password)]
+                                                                                   (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (= "accepted" (:input update-accept-term)))
                                                                                      (u/set-session ctx (ok login-status) (:id login-status))
                                                                                      (ok login-status))))))))
 
@@ -198,6 +202,14 @@
                             (and (= visibility "internal") current-user))
                       (ok profile)
                       (unauthorized))))
+
+             (POST "/accept_terms" []
+                   :return {:status (s/enum "success" "error") :input s/Str}
+                   :summary "has user accepted GDPR terms and conditions"
+                   :body-params [user_id :- s/Int
+                                 accept_terms :- (s/enum "declined" "accepted")]
+                   :auth-rules access/signed
+                   (ok (u/insert-user-terms ctx user_id accept_terms)))
 
              (GET "/data/:userid" []
                   :summary "Get everything on user"

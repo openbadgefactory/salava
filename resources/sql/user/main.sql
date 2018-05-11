@@ -198,3 +198,10 @@ DELETE p,pbb,pbf,pbh,pbhtml,pbt,pt FROM page AS p
   LEFT JOIN page_tag AS pt ON p.id=pt.page_id
   WHERE p.user_id = :user_id
 
+--name: select-user-terms
+SELECT ut.status FROM user_terms AS ut
+  JOIN user_email AS ue ON ue.user_id = ut.user_id
+  WHERE ue.email = :email
+
+--name: insert-user-terms<!
+INSERT INTO user_terms (user_id, status, ctime) VALUES (:user_id, :status, UNIX_TIMESTAMP());
