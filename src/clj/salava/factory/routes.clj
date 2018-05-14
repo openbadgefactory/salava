@@ -27,6 +27,14 @@
     (context "/obpv1/factory" []
              :tags ["factory"]
 
+             (HEAD "/receive" []
+                  :no-doc true
+                  :summary "Capability check for GET /receive"
+                  :query-params [e :- String
+                                 k :- String
+                                 t :- String]
+                  (ok ""))
+
              (GET "/receive" []
                   :no-doc true
                   :summary "Receive new badges from OBF"

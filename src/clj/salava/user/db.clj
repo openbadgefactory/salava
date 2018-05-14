@@ -59,7 +59,6 @@
 
 
 
-
 (defn register-user
   "Create new user"
   [ctx email first-name last-name country language password password-verify]
@@ -75,8 +74,6 @@
             user-id             (:generated_key new-user)]
         (insert-user-email! {:user_id user-id :email email :primary_address 1 :verification_key activation_code} (get-db ctx))
         (u/publish ctx :new-user {:user-id user-id})
-        (m/send-verification ctx site-url (email-verification-link site-url base-path activation_code) (str first-name " " last-name) email language)
-        
         {:status "success" :message ""}))))
 
 (defn set-password-and-activate
@@ -372,10 +369,28 @@
        :image       (:profile_picture user)})))
 
 
+(defn- send-email-verification-maybe
+  "If user has one email address and it is unverified, send email link."
+  [ctx user-id]
+  (let [emails (select-user-email-addresses {:user_id user-id} (get-db ctx))]
+    (when (and (= 1 (count emails)) (not (-> emails first :verified)))
+      (send-email-verified-link ctx (-> emails first :email) user-id))))
+
+(defn- save-pending-badge-and-email [ctx user-id pending-badge-id]
+  (when pending-badge-id
+    (when-let [user-badge (select-pending-badge {:id pending-badge-id} (u/get-db-1 ctx))]
+      (update-pending-badge! {:user_id user-id :id pending-badge-id} (u/get-db ctx))
+      (put-pending-badge-email! {:user_id user-id :email (:email user-badge)} (u/get-db ctx))
+      (update-user-activate! {:id user-id} (get-db ctx)))))
+
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)]
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated}))
-  )
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated})))
+
+(defn finalize-login [ctx ok-res user-id pending-badge-id]
+  (save-pending-badge-and-email ctx user-id pending-badge-id)
+  (send-email-verification-maybe ctx user-id)
+  (set-session ctx ok-res user-id))
 
 ;; --- Email sender --- ;;
 

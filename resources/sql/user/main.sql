@@ -161,3 +161,14 @@ select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role fr
        JOIN user_email AS ue ON ue.user_id = seo.owner
        JOIN user AS u ON u.id = seo.owner
        WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1; 
+
+--name: select-pending-badge
+SELECT * FROM user_badge WHERE id = :id AND user_id = 0;
+
+--name: update-pending-badge!
+UPDATE user_badge SET user_id = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id AND user_id = 0;
+
+--name: put-pending-badge-email!
+INSERT INTO user_email (user_id, email, verified, verification_key, primary_address, backpack_id, ctime, mtime)
+VALUES (:user_id, :email, 1, NULL, 1, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+ON DUPLICATE KEY UPDATE verified=1, verification_key=NULL, mtime=UNIX_TIMESTAMP();

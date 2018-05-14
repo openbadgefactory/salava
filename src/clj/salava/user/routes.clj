@@ -48,14 +48,14 @@
 
     (context "/obpv1/user" []
              :tags ["user"]
-             (POST "/login" []
+             (POST "/login" req
                    ;:return ""
                    :body [login-content schemas/LoginUser]
                    :summary "User logs in"
                    (let [{:keys [email password]} login-content
                          login-status (u/login-user ctx email password)]
                      (if (= "success" (:status login-status))
-                       (u/set-session ctx (ok login-status) (:id login-status))
+                       (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]))
                        (ok login-status))))
 
              (POST "/logout" []
@@ -67,7 +67,7 @@
                     (forbidden)
                     (ok {:languages (get-in ctx [:config :core :languages])})))
 
-             (POST "/register" []
+             (POST "/register" req
                    ;:return
                    #_{:status  (s/maybe  (s/enum "success" "error"))
                     :message (s/maybe s/Str)
@@ -86,7 +86,7 @@
                                         ;(ok save)
                          (let [login-status (u/login-user ctx email password)]
                            (if (= "success" (:status login-status))
-                             (u/set-session ctx (ok login-status) (:id login-status))
+                             (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]))
                              (ok login-status)))
                          (cond
                            (not (right-token? ctx (:token form-content)))        (forbidden)

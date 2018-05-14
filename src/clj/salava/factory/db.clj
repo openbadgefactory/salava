@@ -16,19 +16,19 @@
 (defn get-uids-by-emails [ctx emails]
   (let [email-chunks (partition-all 100 emails)
         result (map #(select-uids-emails-by-emails {:emails %} (u/get-db ctx)) email-chunks)]
-    (reduce #(assoc %1 (:email %2) (:user_id %2)) {} (flatten result))))
+    (reduce (fn [coll v] (assoc coll (:email v) (:user_id v))) {} (flatten result))))
 
-(defn backpack-emails-by-uids [ctx uids]
+(defn primary-emails-by-uids [ctx uids]
   (let [uid-chunks (partition-all 100 uids)
-        result (map #(reverse (select-backback-emails-by-uids {:user_ids %} (u/get-db ctx))) uid-chunks)]
-    (reduce #(assoc %1 (:user_id %2) (:email %2)) {} (flatten result))))
+        result (map #(select-primary-emails-by-uids {:user_ids %} (u/get-db ctx)) uid-chunks)]
+    (reduce (fn [coll v] (assoc coll (:user_id v) (:email v))) {} (flatten result))))
 
 (defn get-user-emails
   ""
   [ctx emails]
   (let [emails-uids (get-uids-by-emails ctx emails)
-        backpack-uids-emails (backpack-emails-by-uids ctx (vals emails-uids))]
-    (reduce #(assoc %1 %2 (->> %2 (get emails-uids) (get backpack-uids-emails))) {} emails)))
+        primary-uids-emails (primary-emails-by-uids ctx (vals emails-uids))]
+    (reduce ( fn [coll v] (assoc coll v (->> v (get emails-uids) (get primary-uids-emails)))) {} emails)))
 
 (defn save-assertions-for-emails
   ""
