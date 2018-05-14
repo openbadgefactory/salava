@@ -50,8 +50,8 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                              (reset! search-atom (.-target.value %))
-                              (search-timer state))}]]]))
+                               (reset! search-atom (.-target.value %))
+                               (search-timer state))}]]]))
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
@@ -63,8 +63,8 @@
                 :name      "country"
                 :value     @country-atom
                 :on-change #(do
-                             (reset! country-atom (.-target.value %))
-                             (fetch-users state))}
+                              (reset! country-atom (.-target.value %))
+                              (fetch-users state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
@@ -83,8 +83,8 @@
                 :type "radio"
                 :checked (= @filter-atom 0)
                 :on-change #(do
-                             (reset! filter-atom 0)
-                             (fetch-users state))}]
+                              (reset! filter-atom 0)
+                              (fetch-users state))}]
        (t :core/All)]
       [:label.radio-inline {:for "radio-name"}
        [:input {:id "radio-name"
@@ -92,8 +92,8 @@
                 :type "radio"
                 :checked (= @filter-atom 1)
                 :on-change #(do
-                             (reset! filter-atom 1)
-                             (fetch-users state))}]
+                              (reset! filter-atom 1)
+                              (fetch-users state))}]
        (t :admin/Deleted)]
       ]]))
 
@@ -118,7 +118,7 @@
   [:div {:key (hash email) :class (if (pos? primary) "primary-address"  "") }  email])
 
 (defn userlist-table-element [element-data state]
-  (let [{:keys [id first_name last_name ctime profile_picture common_badge_count email deleted]} element-data
+  (let [{:keys [id first_name last_name ctime profile_picture common_badge_count email deleted terms]} element-data
         current-user (session/get-in [:user :id])
         email-list (reverse (sort-by :primary (email-parser email)))]
     [:tr {:key id}
@@ -131,11 +131,15 @@
                           (.preventDefault %)) }  first_name " " last_name])]
      [:td
       (doall
-       (for [i email-list]
-         (email-item i)))]
+        (for [i email-list]
+          (email-item i)))]
+     [:td
+      [:div
+       terms]
+      ]
      [:td
       (admintool-admin-page id "user" state fetch-users)
-      
+
       ]
      ]))
 
@@ -146,11 +150,12 @@
       [:tr
        [:th (t :admin/Name)]
        [:th (t :badge/Email)]
+       [:th (t :user/Terms)]
        [:th ""]]]
      [:tbody
       (doall
-       (for [element-data users]
-         (userlist-table-element element-data state)))]]))
+        (for [element-data users]
+          (userlist-table-element element-data state)))]]))
 
 (defn content [state]
   [:div
@@ -181,7 +186,8 @@
                               :last_name ""
                               :first_name ""
                               :id ""
-                              :deleted false}]
+                              :deleted false
+                              :terms nil}]
                      :countries []
                      :country-selected "all"
                      :name ""
