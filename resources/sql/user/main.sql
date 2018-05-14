@@ -30,7 +30,7 @@ SELECT id, first_name, last_name, country, language, profile_visibility, profile
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, last_login, ctime, deleted, activated, IF(pass IS NULL, 0,1) AS has_password FROM user WHERE id = :id
 
 --name: select-user-password
-SELECT pass FROM user WHERE id = :id 
+SELECT pass FROM user WHERE id = :id
 
 --name: select-user-profile-fields
 -- get all user's profile fields
@@ -125,6 +125,20 @@ UPDATE badge SET visibility = 'private', deleted = 1 WHERE user_id = :user_id
 --name: delete-user-badge-views!
 DELETE FROM badge_view WHERE user_id = :user_id
 
+--name: update-user-badge-messages-set-removed!
+UPDATE badge_message SET message = 'removed by owner', mtime = UNIX_TIMESTAMP() WHERE user_id= :user_id
+
+--name: delete-user-badge-message-views!
+DELETE FROM badge_message_view WHERE user_id= :user_id
+
+--name: delete-user-badge!
+DELETE FROM user_badge WHERE user_id= :user_id
+
+--name: delete-user-pending-badges!
+DELETE pfb FROM pending_factory_badge AS pfb
+LEFT JOIN user_email AS ue ON pfb.email=ue.email
+WHERE ue.user_id = user_id
+
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
 
@@ -141,7 +155,7 @@ DELETE FROM user_email WHERE user_id = :user_id
 DELETE FROM user WHERE id = :id
 
 --name: update-user-set-deleted!
-UPDATE user SET first_name = :first_name, last_name = :last_name, mtime = UNIX_TIMESTAMP(), email_notifications = 0, deleted = 1, role = 'deleted', profile_picture = NULL, profile_visibility = 'internal', about = NULL  WHERE id = :id 
+UPDATE user SET first_name = :first_name, last_name = :last_name, mtime = UNIX_TIMESTAMP(), email_notifications = 0, deleted = 1, role = 'deleted', profile_picture = NULL, profile_visibility = 'internal', about = NULL  WHERE id = :id
 
 --name: update-user-email-set-deleted!
 UPDATE user_email SET email = :deletedemail, backpack_id = NULL WHERE user_id = :user_id AND email = :email
@@ -160,7 +174,41 @@ SELECT u.first_name, u.last_name, ue.email, language, role FROM user AS u
 select distinct u.id, u.first_name, u.last_name, ue.email, u.language, u.role from social_event_owners AS seo
        JOIN user_email AS ue ON ue.user_id = seo.owner
        JOIN user AS u ON u.id = seo.owner
-       WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1; 
+       WHERE u.email_notifications = 1 AND ue.primary_address = 1 AND u.deleted= 0 AND u.activated = 1;
+
+--name: delete-all-user-events!
+DELETE FROM social_event WHERE subject = :subject
+
+--name: delete-user-social-events!
+DELETE FROM social_event_owners WHERE owner = :owner;
+
+--name: delete-social-connections-user-following!
+DELETE FROM social_connections_user WHERE owner_id = :owner_id
+
+--name: delete-social-connections-badge!
+DELETE FROM social_connections_badge WHERE user_id = :user_id
+
+--name: delete-user-pages-all!
+DELETE p,pbb,pbf,pbh,pbhtml,pbt,pt FROM page AS p
+  LEFT JOIN page_block_badge AS pbb ON p.id=pbb.page_id
+  LEFT JOIN page_block_files AS pbf ON p.id=pbf.page_id
+  LEFT JOIN page_block_heading AS pbh ON p.id=pbh.page_id
+  LEFT JOIN page_block_html AS pbhtml ON p.id=pbhtml.page_id
+  LEFT JOIN page_block_tag AS pbt ON p.id=pbt.page_id
+  LEFT JOIN page_tag AS pt ON p.id=pt.page_id
+  WHERE p.user_id = :user_id
+
+--name: select-user-terms
+SELECT ut.status FROM user_terms AS ut
+  JOIN user_email AS ue ON ue.user_id = ut.user_id
+  WHERE ue.email = :email
+
+--name: insert-user-terms<!
+INSERT INTO user_terms (user_id, status, ctime) VALUES (:user_id, :status, UNIX_TIMESTAMP());
+
+--name: select-user-terms-with-userid
+SELECT ut.status FROM user_terms AS ut WHERE ut.user_id=:user_id
+
 
 --name: select-pending-badge
 SELECT * FROM user_badge WHERE id = :id AND user_id = 0;
@@ -172,3 +220,4 @@ UPDATE user_badge SET user_id = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :i
 INSERT INTO user_email (user_id, email, verified, verification_key, primary_address, backpack_id, ctime, mtime)
 VALUES (:user_id, :email, 1, NULL, 1, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE verified=1, verification_key=NULL, mtime=UNIX_TIMESTAMP();
+

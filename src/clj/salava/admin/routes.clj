@@ -4,7 +4,7 @@
             [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
             [schema.core :as s]
-            [salava.core.util :refer [get-base-path]]
+            [salava.core.util :refer [get-base-path plugin-fun get-plugins]]
             [salava.admin.db :as a]
             [salava.core.helper :refer [dump]]
             [salava.core.access :as access]
@@ -24,13 +24,13 @@
              :tags ["admin"]
 
              (GET "/stats" []
-                   :return schemas/Stats
-                   :summary "Get statistics"
-                   :auth-rules access/admin
-                   :current-user current-user
-                   (do
-                     (ok (a/get-stats ctx))))
-             
+                  :return schemas/Stats
+                  :summary "Get statistics"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (do
+                    (ok (a/get-stats ctx))))
+
              (POST "/private_badge/:id" []
                    :return (s/enum "success" "error")
                    :path-params [id :- s/Int]
@@ -46,7 +46,7 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/private-badges! ctx id)))
-             
+
              (POST "/private_page/:id" []
                    :return (s/enum "success" "error")
                    :path-params [id :- s/Int]
@@ -54,7 +54,7 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/private-page! ctx id)))
-             
+
              (POST "/private_user/:id" []
                    :return (s/enum "success" "error")
                    :path-params [id :- s/Int]
@@ -104,9 +104,9 @@
                   :summary "Get badges name, image and info"
                   :auth-rules access/admin
                   :current-user current-user
-                  
+
                   (ok (a/get-public-badge-content-modal ctx id (:id current-user))))
-             
+
              (GET "/page/:id" []
                   :return schemas/Page
                   :path-params [id :- s/Int]
@@ -186,7 +186,7 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/delete-no-verified-adress ctx user_id email)))
-             
+
              (POST "/undelete_user/:id" []
                    :return (s/enum "success" "error")
                    :summary "Undelete user"
@@ -205,20 +205,20 @@
                      (ok (a/ticket ctx description report_type item_id item_url item_name item_type reporter_id item_content_id) )))
 
              (GET "/tickets" []
-                   :return [schemas/Ticket]
-                   :summary "Get all tickets with open status"
-                   :auth-rules access/admin
-                   :current-user current-user
-                   (do
-                     (ok (a/get-tickets ctx))))
+                  :return [schemas/Ticket]
+                  :summary "Get all tickets with open status"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (do
+                    (ok (a/get-tickets ctx))))
 
              (GET "/closed_tickets" []
-                   :return [schemas/Closed_ticket]
-                   :summary "Get all tickets with closed status"
-                   :auth-rules access/admin
-                   :current-user current-user
-                   (do
-                     (ok (a/get-closed-tickets ctx))))
+                  :return [schemas/Closed_ticket]
+                  :summary "Get all tickets with closed status"
+                  :auth-rules access/admin
+                  :current-user current-user
+                  (do
+                    (ok (a/get-closed-tickets ctx))))
 
              (POST "/close_ticket/:id" []
                    :return (s/enum "success" "error")
@@ -228,7 +228,7 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/close-ticket! ctx id new-status)))
-             
+
              (POST "/send_activation_message/:id" []
                    :return (s/enum "success" "error")
                    :summary "Send activation message to user"
@@ -263,7 +263,7 @@
                    :auth-rules access/admin
                    :current-user current-user
                    (ok (a/update-user-to-admin ctx id)))
-             
+
              (POST "/downgrade_admin_to_user/:id" []
                    ;:return (s/enum "success" "error")
                    :summary "Update admin to user"
@@ -272,12 +272,12 @@
                    :current-user current-user
                    (ok (a/update-admin-to-user ctx id) ))
 
-             
+
              (POST "/profiles" []
                    ;:return
                    #_{:users     [schemas/UserProfiles]
-                    :countries [schemas/Countries]
-                    }
+                      :countries [schemas/Countries]
+                      }
                    :body [search-params {:name     (s/maybe s/Str)
                                          :country  (s/maybe s/Str)
                                          :order_by (s/enum "name" "ctime" "common_badge_count")
@@ -286,9 +286,12 @@
                    :summary "Get public user profiles"
                    :auth-rules access/admin
                    :current-user current-user
-                   
+
                    (let [users     (a/all-profiles ctx search-params (:id current-user))
-                         countries (a/profile-countries ctx (:id current-user))]
-                     (ok {:users     (vec users)
+                         countries (a/profile-countries ctx (:id current-user))
+                         accepted-terms-fn (first (plugin-fun (get-plugins ctx) "db" "get-accepted-terms-by-id"))
+                         users-with-terms (map #(-> %
+                                                    (assoc :terms (:status (accepted-terms-fn ctx (:id %))))) users)]
+                     (ok {:users     (vec users-with-terms)
                           :countries countries
                           }))))))
