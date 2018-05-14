@@ -191,9 +191,9 @@ b.issuer_verified,
 ube.url AS evidence_url,
 u.id AS owner, u.first_name, u.last_name
 FROM user_badge AS ub
+INNER JOIN badge as b ON (b.id = ub.badge_id)
 LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
-JOIN badge as b ON (b.id = ub.badge_id)
-JOIN user AS u ON (u.id = ub.user_id)
+LEFT JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 

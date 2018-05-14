@@ -1,8 +1,8 @@
 --name: select-uids-emails-by-emails
 SELECT user_id, email FROM user_email WHERE verified = 1 AND email IN (:emails);
 
---name: select-backback-emails-by-uids
-SELECT user_id, email FROM user_email WHERE user_id IN (:user_ids) ORDER BY user_id, backpack_id IS NULL, primary_address DESC, ctime;
+--name: select-primary-emails-by-uids
+SELECT user_id, email FROM user_email WHERE user_id IN (:user_ids) AND primary_address = 1;
 
 --name: insert-pending-badge-for-email!
 INSERT INTO pending_factory_badge (assertion_url, email, ctime) VALUES (:assertion_url, :email, UNIX_TIMESTAMP())
@@ -23,3 +23,5 @@ SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evide
        LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
        WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
 
+-- name: select-badge-by-assertion
+SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0

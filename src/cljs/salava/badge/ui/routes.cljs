@@ -8,6 +8,7 @@
             [salava.badge.ui.importer :as imp]
             [salava.badge.ui.exporter :as exp]
             [salava.badge.ui.upload :as up]
+            [salava.badge.ui.receive :as rec]
             [salava.core.helper :refer [dump]]
             [salava.badge.ui.stats :as stats]
             [reagent.session :as session]
@@ -28,6 +29,7 @@
                                        ["/import" imp/handler]
                                        ["/upload" up/handler]
                                        ["/export" exp/handler]
+                                       [["/receive/" :badge-id] rec/handler]
                                        ["/stats" stats/handler]]})
 
 (defn badge-navi [context]

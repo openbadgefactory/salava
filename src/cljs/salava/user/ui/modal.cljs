@@ -71,7 +71,7 @@
         [:div.media-content
          [:div.page-owner
           [:a {:href "#"} first_name " " last_name]]
-         [:div.page-create-date
+         [:div.page-create-date.no-flip
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
@@ -83,12 +83,12 @@
                :alt (str first_name " " last_name)}]]]]]))
 
 (defn badge-grid [badges badge-small-view]
-  (into [:div {:class "row" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
           (badge-grid-element element-data))))
 
 (defn page-grid [pages profile_picture page-small-view]
-  (into [:div {:class "row" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
           [page-grid-element element-data profile_picture])))
 
@@ -111,11 +111,11 @@
        [:div.col-xs-12[:div.pull-right
          (connect-user user-id)]]
         )
-     
+
      [:div {:id "profile"}
       [:div.col-xs-12
        [:h1.uppercase-header fullname]
-       [:div.row
+       [:div.row.flip
         [:div {:class "col-md-3 col-sm-3 col-xs-12"}
          [:div.profile-picture-wrapper
           [:img.profile-picture {:src (profile-picture profile_picture)
@@ -176,7 +176,7 @@
      (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [params]
-  
+
   (let [user-id (:user-id params)
         state (atom {:user-id (:user-id params)
                      :permission "initial"
@@ -184,14 +184,14 @@
                      :pages-small-view true})
         user (session/get :user)]
     (init-data user-id state)
-    
+
     (fn []
       (cond
         (= "initial" (:permission @state)) [:div ""]
-        (and user (= "error" (:permission @state)))(err/error-content) 
-        (= "error" (:permission @state)) (err/error-content) 
-        (= (:id user) (js/parseInt user-id)) (content state) 
-        (and (= "success" (:permission @state)) user)(content state) 
+        (and user (= "error" (:permission @state)))(err/error-content)
+        (= "error" (:permission @state)) (err/error-content)
+        (= (:id user) (js/parseInt user-id)) (content state)
+        (and (= "success" (:permission @state)) user)(content state)
         :else (content state)))))
 
 

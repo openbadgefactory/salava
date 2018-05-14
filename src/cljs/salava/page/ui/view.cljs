@@ -4,13 +4,14 @@
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [navigate-to path-for private? js-navigate-to]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [reagent-modals.modals :as m]
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.core.helper :refer [dump]]
             ))
 
 (defn check-password [password-atom page-id state]
@@ -58,6 +59,51 @@
                 :on-click #(check-password password-atom (:page-id @state) state)}
        (t :core/Submit)]]]))
 
+
+(defn export-page-to-pdf [state]
+  (let [id (:page-id @state)
+        header (:pdf-header @state)
+        page-name (get-in @state [:page :name])]
+
+    (ajax/GET
+      (path-for (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))
+       {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
+
+(defn export-to-pdf-modal [state]
+   [:div {:id "badge-settings"}
+     [:div.modal-body
+      [:div.row
+       [:div.col-md-12
+        [:button {:type         "button"
+                  :class        "close"
+                  :data-dismiss "modal"
+                  :aria-label   "OK"
+                }
+         [:span {:aria-hidden  "true"
+               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+      [:div
+       [:form {:class "form-horizontal"}
+              [:div.form-group
+             [:fieldset {:id "export-pdf" :class "col-md-12 checkbox"}
+              [:div.col-md-12 [:label
+               [:input {:type     "checkbox"
+                        :on-change (fn [e]
+                                     (if (.. e -target -checked)
+                                         (swap! state assoc :pdf-header "true")(swap! state assoc :pdf-header "false")))}]
+               (t :page/EnableHeader)]]]]]]]
+    [:div.modal-footer
+      [:button {:type         "button"
+              :class        "btn btn-primary"
+              :data-dismiss "modal"}
+     (t :core/Close)]
+      [:button {:type         "button"
+              :class        "btn btn-primary"
+              :on-click  #(export-page-to-pdf state)
+              :data-dismiss "modal"
+              }
+     (t :badge/Export)]]])
+
+
 (defn page-content [page state]
   (let [show-link-or-embed-atom (cursor state [:show-link-or-embed-code])
         visibility-atom (cursor state [:page :visibility])]
@@ -72,7 +118,12 @@
           (t :page/Edit)]
          [:button {:class "btn btn-primary print-btn"
                    :on-click #(.print js/window)}
-          (t :core/Print)]]
+          (t :core/Print)]
+         [:button {:class "btn btn-primary"
+                   :on-click #(do (.preventDefault %)
+                                    (swap! state assoc :pdf-header "false")
+                                     (m/modal![export-to-pdf-modal state] {:size :lg}))}
+          (t :badge/Exporttopdf)]]
         (if-not (private?)
           [:div {:class (str "checkbox " @visibility-atom)}
            [:label
@@ -84,7 +135,7 @@
             (if (= @visibility-atom "public")
               (t :page/Public)
               (t :core/Publishandshare))]])
-        [:div {:class (str "share-wrapper " @visibility-atom)} [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
+        [:div {:class (str "share-wrapper " @visibility-atom) } [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
        (admintool (:id page) "page"))
      [ph/view-page page]
      (if (:owner? page) "" (reporttool1 (:id page)  (:name page) "page"))
@@ -119,7 +170,8 @@
                      :ask-password false
                      :password ""
                      :password-error false
-                     :show-link-or-embed-code nil})
+                     :show-link-or-embed-code nil
+                     :pdf-header "false"})
         user (session/get :user)]
     (init-data state id)
     (fn []

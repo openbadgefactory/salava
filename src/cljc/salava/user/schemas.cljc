@@ -27,7 +27,7 @@
                    :last_name  (s/constrained s/Str #(and (>= (count %) 1)
                                                           (<= (count %) 255)))
                    :country    (apply s/enum (keys all-countries))
-                   :language   (s/enum "fi" "en" "fr" "es" "pl" "pt")
+                   :language   (s/enum "fi" "en" "fr" "es" "pl" "pt" "ar")
                    :password   (s/constrained s/Str #(and (>= (count %) 6)
                                                           (<= (count %) 50)))
                    :password_verify (s/constrained s/Str #(and (>= (count %) 6)
@@ -36,7 +36,8 @@
                    :profile_picture (s/maybe s/Str)
                    :about (s/maybe s/Str)})
 
-(s/defschema RegisterUser (merge {:token (s/maybe s/Str)}
+(s/defschema RegisterUser (merge {:token (s/maybe s/Str)
+                                  :accept_terms (s/enum "accepted" "declined")}
                            (dissoc User :profile_visibility :profile_picture :about)))
 
 (s/defschema LoginUser (select-keys User [:email :password]))

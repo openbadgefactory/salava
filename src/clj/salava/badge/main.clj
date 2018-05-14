@@ -1,5 +1,6 @@
 (ns salava.badge.main
-  (:require [yesql.core :refer [defqueries]]
+  (:require [clojure.pprint :refer [pprint]]
+            [yesql.core :refer [defqueries]]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
@@ -14,7 +15,8 @@
             [clojure.tools.logging :as log]
             [salava.core.util :as u]
             [salava.core.http :as http]
-            [salava.badge.assertion :refer [fetch-json-data]]))
+            [salava.badge.assertion :refer [fetch-json-data]]
+            [salava.core.i18n :refer [t]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -84,6 +86,7 @@
                       (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
           tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
           badges-with-tags (map-badges-tags badges tags)]
+
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
 
 (defn user-badges-to-export
@@ -145,7 +148,7 @@
 
 
 (defn fetch-badge [ctx badge-id]
-  (let [my-badge (select-multi-language-user-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx)))
+  (let [my-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
         content (map (fn [content]
                        (-> content
                            (update :criteria_content u/md->html)
