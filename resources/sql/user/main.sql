@@ -205,3 +205,6 @@ SELECT ut.status FROM user_terms AS ut
 
 --name: insert-user-terms<!
 INSERT INTO user_terms (user_id, status, ctime) VALUES (:user_id, :status, UNIX_TIMESTAMP());
+
+--name: select-user-terms-with-userid
+SELECT ut.status FROM user_terms AS ut WHERE ut.user_id=:user_id

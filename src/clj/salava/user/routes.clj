@@ -205,7 +205,7 @@
 
              (POST "/accept_terms" []
                    :return {:status (s/enum "success" "error") :input s/Str}
-                   :summary "has user accepted GDPR terms and conditions"
+                   :summary "save info that user has accepted GDPR terms and conditions"
                    :body-params [user_id :- s/Int
                                  accept_terms :- (s/enum "declined" "accepted")]
                    :auth-rules access/signed
