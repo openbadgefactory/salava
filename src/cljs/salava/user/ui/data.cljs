@@ -162,8 +162,7 @@
                       [:div.col-xs-12 [:b (str (t :user/Email)": ")] (:email e)]
                       [:div.col-xs-12 [:b (str (t :user/verified)": ")] (str (:verified e))]
                       (if (true? (:primary_address e)) [:div.col-xs-12 [:b (str (t :user/Loginaddress)": ")] (str (:primary_address e))])
-                      (if-not (empty? (:backpack_id e)) [:div.col-xs-12 [:b (str (t :user/BackpackID) ": ") ](str (:backpack_id e))])
-                      ]
+                      (if (:backpack_id e) [:div.col-xs-12 [:b (str (t :user/BackpackID) ": ") ](str (:backpack_id e))])]
             )
           [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")] (str email_notifications)]
           [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (str private)]
