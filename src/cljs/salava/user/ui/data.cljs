@@ -92,13 +92,15 @@
         fullname (str first_name " " last_name)
         site-url (session/get :site-url)
         ]
+    (dump user_followers)
+    (dump user_following)
     [:div {:id "cancel-account"}
      [:h1.uppercase-header (t :user/Mydata)]
      [:div
       [:p (str (t :user/Deleteinstruction)  (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (t :user/Removeaccount)]]
       ]
 
-     [:div.panel {:id "my-data"}
+     [:div.panel {:id "profile"}
       [m/modal-window]
       [:div.panel-body
        [:div {:id "page-buttons-share"}
@@ -115,9 +117,10 @@
           (t :badge/Export)]]]
 
        [:div.row
-        (when profile_picture [:div {:class "col-md-3 col-sm-3 col-xs-12"}
-                               [:div.profile-picture-wrapper
-                                [:img.profile-picture {:src (profile-picture profile_picture)
+        (when profile_picture [:div {:class "col-md-3 col-sm-3 col-xs-12 "}
+                               [:div {:class "profile-picture-wrapper"}
+                                [:img {:src (profile-picture profile_picture)
+                                                       :style {:max-width "150px"}
                                                        :alt fullname}]]])
         [:div {:class "col-md-9 col-sm-9 col-xs-12"}
          [:div.row
@@ -169,7 +172,7 @@
           [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")] (str email_notifications)]
           [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (str private)]
           [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (str activated?)]
-          [:div.col-xs-12 [:b (str (t :user/Profilevisibility) ": ")] profile_visibility]]
+          [:div.col-xs-12 [:b (str (t :user/Profilevisibility) ": ")] profile_visibility]]]]
 
          [:div {:style {:margin-bottom "20px"}}
           [:h2 {:class "uppercase-header"} (str (t :badge/Badges) ": ")(count user_badges)]
@@ -265,7 +268,7 @@
                               status (:status f)]]
                     ^{:key f}[:div
                               [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )]]
-                              [:div.col-xs-12 [:b (str (t :user/Status) ": ")] (:status f)]
+                              [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status f)]
                               ]
                     )
 ;;                 )
@@ -368,7 +371,7 @@
 
         ]]
 
-      ]]))
+     ))
 
 (defn init-data [user-id state]
   (ajax/GET
