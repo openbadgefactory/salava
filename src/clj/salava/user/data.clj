@@ -30,9 +30,10 @@
         message (select-message-by-badge-id-and-user-id {:badge_id (:object event) :user_id user-id :ctime (:ctime event)} (util/get-db ctx))
         page-info (p/page-with-blocks ctx (:object event))
         ]
+;;     (dump user-info)
     (cond
       (and (= (:verb event) "follow") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id (:id badge-id)}
-      (and (= (:verb event) "follow") (= (:type event) "user"))  {:object_name (str (:first_name user-info) " " (:last_name user-info))}
+      (and (= (:verb event) "follow") (= (:type event) "user")) {:object_name (str (:first_name user-info) " " (:last_name user-info))}
       (and (= (:verb event) "congratulate") (= (:type event) "badge")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
       (and (= (:verb event) "message") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id badge-id :message (first message)}
       (and (= (:verb event) "publish") (= (:type event) "badge")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
@@ -57,9 +58,9 @@
         connections (so/get-connections-badge ctx current-user-id)
         pending-badges (b/user-badges-pending ctx user-id)
         user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
-        user-followers (if (fn? user-followers-fn) (user-followers-fn ctx user-id) "")
+        user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) "")
         user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-        user-following (if(fn? user-followers-fn) (user-following-fn ctx user-id) "")
+        user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) "")
         ]
 
     (assoc all-user-info

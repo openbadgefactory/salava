@@ -238,34 +238,38 @@
           (if (or (not-empty user_following) (not-empty user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
-             (when-not (empty? user_followers)
+             (if (not-empty user_followers)
                [:div
                 [:h3 (str (t :social/Followerusers) ": ")]
-                (doall
+;;                 (doall
                   (for [follower user_followers
                         :let [id (:owner_id follower)
                               fname (:first_name follower)
                               lname (:last_name follower)
                               status (:status follower)]]
                     ^{:key follower}[:div
-                                     [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})} (str fname " " lname )]]
-                                     [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] status]
+                                     [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) )]]
+                                     [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status follower)]
                                      ])
-                  [:br])])
+                  [:br]
+;;                 )
+                ])
              (when-not (empty? user_following)
                [:div
                 [:h3 (str (t :social/Followedusers) ": ")]
-                (doall
+;;                 (doall
                   (for [f user_following
                         :let [fid (:user_id f)
                               fname (:first_name f)
                               lname (:last_name f)
                               status (:status f)]]
                     ^{:key f}[:div
-                              [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id fid})} (str fname " " lname )]]
-                              [:div.col-xs-12 [:b (str (t :user/Status) ": ")] status]
+                              [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )]]
+                              [:div.col-xs-12 [:b (str (t :user/Status) ": ")] (:status f)]
                               ]
-                    ))])])
+                    )
+;;                 )
+                ])])
 
           (if (not-empty events)
             [:div
@@ -300,7 +304,7 @@
                                           "congratulatebadge" (or (get-in e [:info :object_name]) "-")
                                           "followbadge" (or (get-in e [:info :object_name]) "-")
                                           "followuser" (or (get-in e [:info :object_name]) "-")
-                                          "ticketadmin" (get-in e [:info :name])
+                                          "ticketadmin" (get-in e [:info :object_name])
                                           nil)]]
                              [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]
                    ))]]
