@@ -548,6 +548,11 @@ SELECT badge_id FROM user_badge WHERE old_id = :old_id
 --name: select-badge-id-by-user-badge-id
 SELECT badge_id FROM user_badge WHERE id = :user_badge_id
 
+--name: select-user-badge-id-by-badge-id-and-user-id
+--FIX
+SELECT ub.id FROM social_event AS se
+LEFT JOIN user_badge AS ub ON ub.user_id = se.subject AND se.object = ub.badge_id
+WHERE se.id=:id
 
 -- name: insert-badge-content!
 INSERT IGNORE INTO badge_content (id, name, description, image_file, language_code)
@@ -629,3 +634,4 @@ INSERT INTO user_badge (
     :issued_on, :expires_on, :status, 'private',
     0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );
+
