@@ -160,6 +160,7 @@
           [:div.col-xs-12 [:b (t :user/Language)": "] language]
           [:div.col-xs-12 [:b (t :user/Country)": "] country]
           [:div.col-xs-12 [:b (t :user/Emailaddresses)": "] (count email)]
+
           (doall
             (for [e email]
               ^{:key e}[:div
@@ -169,6 +170,7 @@
                         (if-not (empty? (:backpack_id e)) [:div.col-xs-12 [:b (str (t :user/BackpackID) ": ") ](str (:backpack_id e))])
                         ]
               ))
+
           [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")] (str email_notifications)]
           [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (str private)]
           [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (str activated?)]

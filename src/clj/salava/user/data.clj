@@ -58,10 +58,9 @@
         connections (so/get-connections-badge ctx current-user-id)
         pending-badges (b/user-badges-pending ctx user-id)
         user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
-        user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) "")
+        user-followers (if (fn? user-followers-fn) (user-followers-fn ctx user-id) "")
         user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-        user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) "")
-        ]
+        user-following (if (fn? user-followers-fn) (user-following-fn ctx user-id) "") ]
 
     (assoc all-user-info
       :emails email-addresses
