@@ -223,7 +223,7 @@
                   :current-user current-user
                   (-> (io/piped-input-stream (md/export-data-to-pdf ctx userid (:id current-user)))
                       ok
-                      (header  "Content-Disposition" (str "attachment; filename=\" data.pdf\""))
+                      (header  "Content-Disposition" (str "attachment; filename=\" Copy-of-Mydata.pdf\""))
                       (header "Content-Type" "application/pdf")
                       ))
 

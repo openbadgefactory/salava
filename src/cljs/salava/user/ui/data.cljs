@@ -92,13 +92,15 @@
         fullname (str first_name " " last_name)
         site-url (session/get :site-url)
         ]
+    (dump user_followers)
+    (dump user_following)
     [:div {:id "cancel-account"}
      [:h1.uppercase-header (t :user/Mydata)]
      [:div
       [:p (str (t :user/Deleteinstruction)  (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (t :user/Removeaccount)]]
       ]
 
-     [:div.panel {:id "my-data"}
+     [:div.panel {:id "profile"}
       [m/modal-window]
       [:div.panel-body
        [:div {:id "page-buttons-share"}
@@ -115,9 +117,10 @@
           (t :badge/Export)]]]
 
        [:div.row
-        (when profile_picture [:div {:class "col-md-3 col-sm-3 col-xs-12"}
-                               [:div.profile-picture-wrapper
-                                [:img.profile-picture {:src (profile-picture profile_picture)
+        (when profile_picture [:div {:class "col-md-3 col-sm-3 col-xs-12 "}
+                               [:div {:class "profile-picture-wrapper"}
+                                [:img {:src (profile-picture profile_picture)
+                                                       :style {:max-width "150px"}
                                                        :alt fullname}]]])
         [:div {:class "col-md-9 col-sm-9 col-xs-12"}
          [:div.row
@@ -157,64 +160,72 @@
           [:div.col-xs-12 [:b (t :user/Language)": "] language]
           [:div.col-xs-12 [:b (t :user/Country)": "] country]
           [:div.col-xs-12 [:b (t :user/Emailaddresses)": "] (count email)]
-          (for [e email]
-            ^{:key e}[:div
-                      [:div.col-xs-12 [:b (str (t :user/Email)": ")] (:email e)]
-                      [:div.col-xs-12 [:b (str (t :user/verified)": ")] (str (:verified e))]
-                      (if (true? (:primary_address e)) [:div.col-xs-12 [:b (str (t :user/Loginaddress)": ")] (str (:primary_address e))])
-                      (if (:backpack_id e) [:div.col-xs-12 [:b (str (t :user/BackpackID) ": ") ](str (:backpack_id e))])]
-            )
+
+          (doall
+            (for [e email]
+              ^{:key e}[:div
+                        [:div.col-xs-12 [:b (str (t :user/Email)": ")] (:email e)]
+                        [:div.col-xs-12 [:b (str (t :user/verified)": ")] (str (:verified e))]
+                        (if (true? (:primary_address e)) [:div.col-xs-12 [:b (str (t :user/Loginaddress)": ")] (str (:primary_address e))])
+                        (if (:backpack_id e) [:div.col-xs-12 [:b (str (t :user/BackpackID) ": ") ](str (:backpack_id e))])
+                        ]
+              ))
+
           [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")] (str email_notifications)]
           [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (str private)]
           [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (str activated?)]
-          [:div.col-xs-12 [:b (str (t :user/Profilevisibility) ": ")] profile_visibility]]
+          [:div.col-xs-12 [:b (str (t :user/Profilevisibility) ": ")] profile_visibility]]]]
 
          [:div {:style {:margin-bottom "20px"}}
           [:h2 {:class "uppercase-header"} (str (t :badge/Badges) ": ")(count user_badges)]
           (if (not-empty user_badges)
-            (for [b user_badges]
-              ^{:key b}[:div.col-xs-12 [:a {:href "#"
-                                            :on-click #(do
-                                                         (.preventDefault %)
-                                                         (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})
-                                                         )} (:name b)]]
-              )
-            )]
+            (doall
+              (for [b user_badges]
+                ^{:key b}[:div.col-xs-12 [:a {:href "#"
+                                              :on-click #(do
+                                                           (.preventDefault %)
+                                                           (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})
+                                                           )} (:name b)]]
+                )
+              ))]
          [:div
           (if-not (empty? pending_badges)
             [:div
              [:h3  "Pending Badges: "]
-             (for [p pending_badges]
-               ^{:key p}[:div
-                         [:div.col-xs-12 [:b (str (t :badge/BadgeID) ": ")] (str (:badge_id p))]
-                         [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
-                         [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
-                         [:div.col-xs-12 [:b (str (t :badge/Imagefile) ": ")] (str site-url "/" (:image_file p))]
-                         [:div.col-xs-12 [:b (str (t :badge/Assertionurl) ": ")] (:assertion_url p)]
-                         [:div.col-xs-12 [:b (str (t :badge/Badgevisibility) ": ")] (str (:visibility p))]
-                         [:div.col-xs-12 [:b (str (t :badge/Issuedon) ": ")] (date-from-unix-time (* 1000 (:issued_on p)))]
-                         (when (:expires_on p) [:div.col-xs-12 [:b (str (t :badge/Expireson) ": ")] (date-from-unix-time (* 1000 (:expires_on p)))])
-                         ]
-               )
-             ])]
+             (doall
+               (for [p pending_badges]
+                 ^{:key p}[:div
+                           [:div.col-xs-12 [:b (str (t :badge/BadgeID) ": ")] (str (:badge_id p))]
+                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
+                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
+                           [:div.col-xs-12 [:b (str (t :badge/Imagefile) ": ")] (str site-url "/" (:image_file p))]
+                           [:div.col-xs-12 [:b (str (t :badge/Assertionurl) ": ")] (:assertion_url p)]
+                           [:div.col-xs-12 [:b (str (t :badge/Badgevisibility) ": ")] (str (:visibility p))]
+                           [:div.col-xs-12 [:b (str (t :badge/Issuedon) ": ")] (date-from-unix-time (* 1000 (:issued_on p)))]
+                           (when (:expires_on p) [:div.col-xs-12 [:b (str (t :badge/Expireson) ": ")] (date-from-unix-time (* 1000 (:expires_on p)))])
+                           ]
+                 )
+               )])]
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
           [:h2 {:class "uppercase-header"} (str (t :page/Pages) ": ") (count user_pages)]
           (if (not-empty user_pages)
-            (for [p user_pages]
-              ^{:key p}[:div.col-xs-12 [:a {:href "#"
-                                            :on-click #(do
-                                                         (.preventDefault %)
-                                                         (mo/open-modal [:page :view] {:page-id (:id p)})
-                                                         )} (:name p)]]
-              )
-            )]
+            (doall
+              (for [p user_pages]
+                ^{:key p}[:div.col-xs-12 [:a {:href "#"
+                                              :on-click #(do
+                                                           (.preventDefault %)
+                                                           (mo/open-modal [:page :view] {:page-id (:id p)})
+                                                           )} (:name p)]]
+                )
+              ))]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
           [:h2 {:class "uppercase-header"} (str (t :file/Files) ": ") (count user_files)]
           (if (not-empty user_files)
-            (for [f user_files]
-              ^{:key f}[:div.col-xs-12 [:a {:href  (str "/" (:path f)) :target "_blank"}
-                                        (:name f)]]))]
+            (doall
+              (for [f user_files]
+                ^{:key f}[:div.col-xs-12 [:a {:href  (str "/" (:path f)) :target "_blank"}
+                                          (:name f)]])))]
 
 
          [:div {:class "col-md-12"}
@@ -222,79 +233,121 @@
           (if (not-empty connections)
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Badgeconnections) ": ") (count connections)]
-             (for [c connections]
-               ^{:key c}[:div {:style {:margin-top "20px"}}
-                         ;;            [:div.col-xs-12 [:b "ID: "] (:id c)]
-                         [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name c)]
-                         [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :page/Description) ": ")] (:description c)]
-                         ])])
+             (doall
+               (for [c connections]
+                 ^{:key c}[:div {:style {:margin-top "20px"}}
+                           ;;            [:div.col-xs-12 [:b "ID: "] (:id c)]
+                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name c)]
+                           [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :page/Description) ": ")] (:description c)]
+                           ]))])
           (if (or (not-empty user_following) (not-empty user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
-             (when-not (empty? user_followers)
+             (if (not-empty user_followers)
                [:div
                 [:h3 (str (t :social/Followerusers) ": ")]
-                (for [follower user_followers
-                      :let [id (:owner_id follower)
-                            fname (:first_name follower)
-                            lname (:last_name follower)
-                            status (:status follower)]]
-                  ^{:key follower}[:div
-                                   [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})} (str fname " " lname )]]
-                                   [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] status]
-                                   ])
-                [:br]])
+;;                 (doall
+                  (for [follower user_followers
+                        :let [id (:owner_id follower)
+                              fname (:first_name follower)
+                              lname (:last_name follower)
+                              status (:status follower)]]
+                    ^{:key follower}[:div
+                                     [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) )]]
+                                     [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status follower)]
+                                     ])
+                  [:br]
+;;                 )
+                ])
              (when-not (empty? user_following)
                [:div
                 [:h3 (str (t :social/Followedusers) ": ")]
-                (for [f user_following
-                      :let [fid (:user_id f)
-                            fname (:first_name f)
-                            lname (:last_name f)
-                            status (:status f)]]
-                  ^{:key f}[:div
-                            [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id fid})} (str fname " " lname )]]
-                            [:div.col-xs-12 [:b (str (t :user/Status) ": ")] status]
-                            ]
-                  )])])
+;;                 (doall
+                  (for [f user_following
+                        :let [fid (:user_id f)
+                              fname (:first_name f)
+                              lname (:last_name f)
+                              status (:status f)]]
+                    ^{:key f}[:div
+                              [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )]]
+                              [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status f)]
+                              ]
+                    )
+;;                 )
+                ])])
 
           (if (not-empty events)
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Activityhistory) ": ") (count events)]
-             (for [e (reverse events)]
-               ^{:key e}[:div {:style {:margin-top "20px"}}
-                         ;;            (if ())
-;;                          [:div.col-xs-12 [:b "Event id: "] (:id e)]
-                         [:div.col-xs-12 [:b (str (t :social/Action) ": ")] (:verb e)]
-                         [:div.col-xs-12 [:b (str (t :social/Object) ": ")] (or (:type e) (:report_type e))]
-                         #_(case (:verb e)
-                             "message" [:div.col-xs-12 [:b "Message: "] (get-in e [:message :message])]
-                             "follow"  (if (= "badge" (:type e))
-                                         [:div.col-xs-12 [:b "Name: "] (:name e) ]
-                                         [:div.col-xs-12 [:b "Name: "] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:object e)})} (str (:o_first_name e) " " (:o_last_name e))]]
-                                         )
-                             "badge" [:div.col-xs-12 [:b "Name: "] (:name e)]
-                             "ticket" [:div
-                                       [:div.col-xs-12 [:b "Reported by: "] (:item_name e)]
-                                       ]
-                             "publish" [:div
-                                        [:div.col-xs-12 [:b "Name: " (:name e)] ]
-                                        [:div.col-xs-12 [:b "Image file: "] (str (:image_file e))]
-                                        ])
+             [:table.table
+              [:thead
+               [:tr
+                [:th (t :social/Action)]
+                [:th (t :social/Object)]
+                [:th (t :badge/Name)]
+                [:th (t :social/Created)]
+                #_(when (> (:last_checked e) (:ctime e))
+                    [:th (t :social/Lastchecked)])]]
+              [:tbody
+               (doall
+                 (for [e (reverse events)]
+                   ^{:key e}[:tr
+                             [:td [:div (:verb e)]]
+                             [:td [:div (or (:type e) (:report_type e))]]
+                             [:td [:div (case (str (:verb e)(:type e))
+                                          "publishpage"  (or (get-in e [:info :object_name]) "-") #_[:a {:href (path-for (str "/page/view/" (get-in e [:info :page_id])))} (get-in e [:info :object_name])]
+                                          "unpublishpage" (or (get-in e [:info :object_name]) "-") #_[:a {:href (path-for (str "/page/view/" (get-in e [:info :page_id])))} (get-in e [:info :object_name])]
+                                          "publishbadge" (or (get-in e [:info :object_name]) "-") #_[:a {:href (path-for (str "/badge/info/" (get-in e [:info :badge_id])))} (get-in e [:info :object_name])]
+                                          "unpublishbadge" (or (get-in e [:info :object_name]) "-") #_[:a {:href (path-for (str "/badge/info/" (get-in e [:info :id])))} (get-in e [:info :object_name])]
+                                          "messagebadge" [:div
+                                                           (or (get-in e [:info :object_name]) "-")
+                                                          #_[:a {:href (path-for (str "/badge/info/" (get-in e [:info :badge_id])))}(or (get-in e [:info :object_name]) "badge-removed!")]"\n"
+                                                          [:br]
+                                                          [:p [:i (or (get-in e [:info :message :message]) "comment-removed")]]
+;;                                                           [:p (get-in e [:info :name]) ]
+                                                          #_[:p (get-in e [:info :message])]]
+                                          "congratulatebadge" (or (get-in e [:info :object_name]) "-")
+                                          "followbadge" (or (get-in e [:info :object_name]) "-")
+                                          "followuser" (or (get-in e [:info :object_name]) "-")
+                                          "ticketadmin" (get-in e [:info :object_name])
+                                          nil)]]
+                             [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]
+                   ))]]
+
+             #_(for [e (reverse events)]
+                 [:div {:style {:margin-top "20px"}}
+                  ;;            (if ())
+                  ;;                          [:div.col-xs-12 [:b "Event id: "] (:id e)]
+                  [:div.col-xs-12 [:b (str (t :social/Action) ": ")] (:verb e)]
+                  [:div.col-xs-12 [:b (str (t :social/Object) ": ")] (or (:type e) (:report_type e))]
+                  #_(case (:verb e)
+                      "message" [:div.col-xs-12 [:b "Message: "] (get-in e [:message :message])]
+                      "follow"  (if (= "badge" (:type e))
+                                  [:div.col-xs-12 [:b "Name: "] (:name e) ]
+                                  [:div.col-xs-12 [:b "Name: "] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:object e)})} (str (:o_first_name e) " " (:o_last_name e))]]
+                                  )
+                      "badge" [:div.col-xs-12 [:b "Name: "] (:name e)]
+                      "ticket" [:div
+                                [:div.col-xs-12 [:b "Reported by: "] (:item_name e)]
+                                ]
+                      "publish" [:div
+                                 [:div.col-xs-12 [:b "Name: " (:name e)] ]
+                                 [:div.col-xs-12 [:b "Image file: "] (str (:image_file e))]
+                                 ])
 
 
-                         #_(if (= (:type e) "user") [:div.col-xs-12 [:b "Name: "] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:object e)})} (str (:o_first_name e) " " (:o_last_name e))]] [:div.col-xs-12 [:b "Name: "] (:name e)])
-                         #_(if (= (:verb e) "message")
-                             [:div.col-xs-12 [:b "Message: "] (get-in e [:message :message])]
-                             ;;              [:div.col-xs-12 [:b "Message: "] (get-in e [:message :message])]
-                             )
-                         (when (> (:last_checked e) (:ctime e))
-                           [:div.col-xs-12 [:b (str (t :social/Lastchecked) ": ")] (date-from-unix-time (* 1000 (:last_checked e)))])
+                  #_(if (= (:type e) "user") [:div.col-xs-12 [:b "Name: "] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:object e)})} (str (:o_first_name e) " " (:o_last_name e))]] [:div.col-xs-12 [:b "Name: "] (:name e)])
+                  #_(if (= (:verb e) "message")
+                      [:div.col-xs-12 [:b "Message: "] (get-in e [:message :message])]
+                      ;;              [:div.col-xs-12 [:b "Message: "] (get-in e [:message :message])]
+                      )
+                  (when (> (:last_checked e) (:ctime e))
+                    [:div.col-xs-12 [:b (str (t :social/Lastchecked) ": ")] (date-from-unix-time (* 1000 (:last_checked e)))])
 
-                         [:div.col-xs-12  {:style {:margin-bottom "20px"}}[:b (str (t :social/Created) ": ")] (date-from-unix-time (* 1000 (:ctime e)))]
+                  [:div.col-xs-12  {:style {:margin-bottom "20px"}}[:b (str (t :social/Created) ": ")] (date-from-unix-time (* 1000 (:ctime e)))]
 
-                         ]
-               )])
+                  ]
+                 )])
 
           ]]
 
@@ -320,7 +373,7 @@
 
         ]]
 
-      ]]))
+     ))
 
 (defn init-data [user-id state]
   (ajax/GET
