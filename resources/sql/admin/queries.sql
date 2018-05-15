@@ -54,7 +54,7 @@ SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t
        JOIN user AS u ON (u.id = t.reporter_id)
        WHERE status = 'closed'
        ORDER BY t.mtime DESC
-       
+
 --name: update-ticket-status!
 UPDATE report_ticket SET status  = :status, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
@@ -146,7 +146,7 @@ SELECT  se.subject, se.verb, se.object, se.ctime, seo.event_id, seo.last_checked
      WHERE seo.owner = :user_id AND se.verb = 'ticket' AND se.type = 'admin' AND re.status = 'open'
      ORDER BY se.ctime DESC
      LIMIT 1000;
-     
+
 --name: select-user
 -- get user by id
 SELECT id, first_name, last_name, country, language, profile_visibility, profile_picture, role, about, email_notifications, activated FROM user WHERE id = :id AND deleted = 0

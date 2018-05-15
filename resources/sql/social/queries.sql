@@ -142,3 +142,6 @@ UPDATE social_event_owners SET last_checked = UNIX_TIMESTAMP() WHERE event_id IN
 
 --name: get-all-user-event
 SELECT id, subject, verb, object, type, ctime, mtime FROM social_event WHERE subject = :subject
+
+--name: select-message-by-badge-id-and-user-id
+SELECT message FROM badge_message WHERE badge_id=:badge_id AND user_id=:user_id AND ctime=:ctime;
