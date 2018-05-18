@@ -14,7 +14,9 @@
             [salava.user.ui.edit-profile :as edit-profile]
             [salava.user.ui.cancel :as cancel]
             [salava.user.ui.modal :as usermodal]
-            [salava.user.ui.data :as data]))
+            [salava.user.ui.data :as data]
+            [salava.user.ui.terms :as terms]
+            [salava.user.ui.delete-user :as delete-user]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -36,6 +38,8 @@
                                       ["/edit/email-addresses" email-addresses/handler]
                                       ["/edit/profile" edit-profile/handler]
                                       ["/cancel" cancel/handler]
+                                      [["/terms/" [#"\d+" :user-id]] terms/handler]
+                                      ["/delete-user" delete-user/handler]
                                       [["/data/" [#"\d+" :user-id]] data/handler]]})
 
 
