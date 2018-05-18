@@ -4,7 +4,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for hyperlink private? not-activated? plugin-fun]]
+            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for hyperlink private? not-activated? plugin-fun]]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
@@ -21,11 +21,11 @@
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
-     (path-for "/obpv1/user/profile/set_visibility")
-     {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
-      :handler (fn [new-value]
-                 (reset! visibility-atom new-value)
-                 )}))
+    (path-for "/obpv1/user/profile/set_visibility")
+    {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
+     :handler (fn [new-value]
+                (reset! visibility-atom new-value)
+                )}))
 
 (defn profile-visibility-input [visibility-atom]
   [:div.col-xs-12
@@ -40,29 +40,29 @@
 (defn badge-grid-element [element-data]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url]} element-data]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:a{:href "#"
-              :on-click #(do
-                           (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
-                           (.preventDefault %)) } 
-            [:img {:src (str "/" image_file)
+    [:div {:class "media grid-container"}
+     [:div.media-content
+      (if image_file
+        [:div.media-left
+         [:a{:href "#"
+             :on-click #(do
+                          (mo/open-modal [:badge :info] {:badge-id id})
+                          ;(b/open-modal id false init-data state)
+                          (.preventDefault %)) }
+          [:img {:src (str "/" image_file)
                  :alt name}]]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:href "#"
-                           :on-click #(do
-                                        (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
-                                        (.preventDefault %)) } 
-          name]]
-        [:div.media-issuer
-         [:p issuer_content_name]]]]]
-              ;]
-              ))
+      [:div.media-body
+       [:div.media-heading
+        [:a.heading-link {:href "#"
+                          :on-click #(do
+                                       (mo/open-modal [:badge :info] {:badge-id id})
+                                       ;(b/open-modal id false init-data state)
+                                       (.preventDefault %)) }
+         name]]
+       [:div.media-issuer
+        [:p issuer_content_name]]]]]
+    ;]
+    ))
 
 (defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
@@ -111,29 +111,29 @@
         link-or-embed-atom (cursor state [:user :show-link-or-embed-code])
         {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)]
-    
+
     [:div.panel {:id "profile"}
      [m/modal-window]
      [:div.panel-body
       (if owner?
         [:div.row
-         (if-not (or (not-activated?) (private?))  
+         (if-not (or (not-activated?) (private?))
            (profile-visibility-input visibility-atom))
          [:div.col-xs-12
           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
          [:div.col-xs-12
           (if-not (not-activated?)
             [:a {:href (path-for "/user/edit/profile")} (t :user/Editprofile)])]]
-        [:div 
+        [:div
          (connect-user user-id)
          (admintool user-id "user")])
       [:h1.uppercase-header fullname]
-      
+
       [:div.row
        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
-        [:img.profile-picture {:src (profile-picture profile_picture)
-                               :alt fullname}]]]
+         [:img.profile-picture {:src (profile-picture profile_picture)
+                                :alt fullname}]]]
        [:div {:class "col-md-9 col-sm-9 col-xs-12"}
         (if (not-empty about)
           [:div {:class "row about"}
@@ -189,16 +189,16 @@
                          :item-type "" ;badge/user/page/badges
                          :reporter-id ""
                          :status "false"}]
-    
+
     (ajax/GET
-     (path-for (str "/obpv1/user/profile/" user-id) true)
-     {:handler (fn [data]
-                 (reset! state (assoc data :user-id user-id
-                                      :show-link-or-embed-code nil
-                                      :permission "success"
-                                      :badge-small-view false
-                                      :reporttool reporttool-init)))}
-     (fn [] (swap! state assoc :permission "error")))))
+      (path-for (str "/obpv1/user/profile/" user-id) true)
+      {:handler (fn [data]
+                  (reset! state (assoc data :user-id user-id
+                                  :show-link-or-embed-code nil
+                                  :permission "success"
+                                  :badge-small-view false
+                                  :reporttool reporttool-init)))}
+      (fn [] (swap! state assoc :permission "error")))))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
@@ -208,9 +208,11 @@
                      :pages-small-view true})
         user (session/get :user)]
     (init-data user-id state)
-    
+
     (fn []
       (cond
+        (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
+
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
         (and user (= "error" (:permission @state)))(layout/default-no-sidebar site-navi (err/error-content))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))

@@ -6,7 +6,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [accepted-terms? js-navigate-to path-for private?]]
             [salava.file.ui.my :as file]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]))
@@ -93,8 +93,8 @@
      [:div.add-field-after
       [:button {:class    "btn btn-success"
                 :on-click #(do
-                            (.preventDefault %)
-                            (f/add-field profile-fields-atom empty-field index))}
+                             (.preventDefault %)
+                             (f/add-field profile-fields-atom empty-field index))}
        (t :user/Addfield)]]
      [:div.field
       [:div.field-move
@@ -128,8 +128,8 @@
    [:div.add-field-after
     [:button {:class    "btn btn-success"
               :on-click #(do
-                          (.preventDefault %)
-                          (f/add-field profile-fields-atom empty-field))}
+                           (.preventDefault %)
+                           (f/add-field profile-fields-atom empty-field))}
      (t :user/Addfield)]]])
 
 
@@ -162,7 +162,7 @@
                             :checked   (= "public" @visibility-atom)
                             :on-change #(reset! visibility-atom (.-target.value %))}                               ]
             (t :core/Public)]]])
-       
+
        [profile-picture-gallery pictures-atom profile-picture-atom]
        [:div.form-group
         [:label.col-xs-12 (t :user/Aboutme)]
@@ -178,8 +178,8 @@
          [:button {:id "save-profile-button"
                    :class "btn btn-primary"
                    :on-click #(do
-                               (.preventDefault %)
-                               (save-profile state))}
+                                (.preventDefault %)
+                                (save-profile state))}
           (t :core/Save)]]]]]]))
 
 (defn init-data [state]
@@ -192,4 +192,6 @@
   (let [state (atom {:profile-fields []})]
     (init-data state)
     (fn []
+      (if (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
+
       (layout/default site-navi (content state)))))

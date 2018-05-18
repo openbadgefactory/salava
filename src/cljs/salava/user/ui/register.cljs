@@ -28,7 +28,7 @@
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country language password password-verify]} @state
         token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))
-        accept-terms (:accept-terms @state)]
+        accept-terms "accepted"]
     (ajax/POST
       (path-for "/obpv1/user/register/")
       {:params  {:email email
@@ -56,8 +56,7 @@
         languages (:languages @state)
         validation-message (cursor state [:error-message])
         password-atom (cursor state [:password])
-        password-verify-atom (cursor state [:password-verify])
-        f (fn [] (send-registration state))]
+        password-verify-atom (cursor state [:password-verify])]
 
     (cond
       (not (input/email-valid? @email-atom)) (reset! validation-message (t :user/Invalidemail))
@@ -67,7 +66,7 @@
       (not (input/last-name-valid? @last-name-atom)) (reset! validation-message (t :user/LastNameInvalidinput))
       (not (input/country-valid? @country-atom)) (reset! validation-message (t :user/InvalidCountryInput))
       (not (input/language-valid? @language-atom)) (reset! validation-message (t :user/InvalidLanguageInput))
-      :else (m/modal![terms-and-conditions-modal state f "Createnewaccount"] {:size :lg}))))
+      :else (send-registration state))))
 
 
 (defn registration-form
@@ -181,6 +180,7 @@
 
 (defn registeration-content [state]
   [:div
+   (session/put! :seen-terms true)
    (oauth-registration-form)
    (if (some #(= % "oauth") (session/get-in [:plugins :all]))
      [:div {:class "or"} (t :user/or)])

@@ -5,7 +5,7 @@
             [clojure.set :refer [intersection]]
             [ajax.core :as ajax]
             [salava.file.icons :refer [file-icon]]
-            [salava.core.ui.helper :refer [unique-values navigate-to path-for not-activated?]]
+            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? unique-values navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -216,4 +216,5 @@
                      :max-size ""})]
     (init-data state)
     (fn []
+      (if (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

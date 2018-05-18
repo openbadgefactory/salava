@@ -106,7 +106,7 @@
        [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
        [:link {:rel "shortcut icon" :href (:icon favicon) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicon)}]
-       
+
        [:script {:type "text/javascript"} (context-js ctx)]]
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
@@ -120,6 +120,7 @@
 
 (defn main-response [ctx current-user flash-message meta-tags]
   (let [user (if current-user (-> (u/user-information ctx (:id current-user))
+                                  (assoc :terms (:status (u/get-accepted-terms-by-id ctx (:id current-user))))
                                   (assoc  :real-id (:real-id current-user))))] ;;real-id is for admin login as user
     (-> (main-view (assoc ctx :user user :flash-message flash-message) meta-tags)
         (ok)

@@ -11,6 +11,8 @@
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.helper :refer [dump]]
+            [salava.core.ui.terms :refer [default-terms default-terms-fr]]
+            ;;             [salava.user.ui.terms :as t]
 
             [salava.user.schemas :as schemas]
             [salava.core.i18n :refer [t translate-text]]))
@@ -44,40 +46,55 @@
       {:params {:accept_terms accept-terms :user_id user-id}
        :handler (fn [data]
                   (when (and (= "success" (:status data)) (= "accepted" (:input data)))
-                    (js-navigate-to (follow-up-url))))})))
+                    (do
+                      (session/put! :user-has-accepted-terms true)
+                    (js-navigate-to (follow-up-url)))))})))
 
 (defn terms-and-conditions-modal [state f name]
   (let [bname (keyword (str "user/" name))]
-  [:div {:style {:text-align "center"}}
-   [:div.modal-body
-    [:div.row
-     [:div.col-md-12
-      [:button {:type  "button"
-                :class  "close pull-left"
-                :data-dismiss "modal"
-                :aria-label   "OK"
-                }
-       [:span {:aria-hidden  "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+
     [:div
-     [:form {:class "form-horizontal"}
-      [:div.form-group
-       [:div.col-md-12
-        (t :user/Termsandconditions)]
-       [:fieldset {:class "col-md-12 checkbox"}
-        [:div.col-md-12 [:label
-                         [:input {:type     "checkbox"
-                                  :on-change (fn [e]
-                                               (if (.. e -target -checked)
-                                                 (swap! state assoc :accept-terms "accepted")(swap! state assoc :accept-terms "declined")
-                                                 ))}]
-                         (t :user/Doyouaccept)]]]]]]]
-   [:div.modal-footer {:style {:text-align "center"}}
-    [:button {:type         "button"
-              :class        "btn btn-primary"
-              :disabled     (if-not (= (:accept-terms @state) "accepted") "disabled")
-              :on-click #(f)}
-     (t bname)]]]))
+     [:div
+      [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
+       [:ul
+        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (default-terms))} "EN"]]
+        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (default-terms-fr)) } "FR"]]]
+       ]
+      ]
+     [:div #_{:style {:text-align "center"}}
+      [:div.modal-body
+       [:div.row
+        [:div.col-md-12
+         [:button {:type  "button"
+                   :class  "close pull-left"
+                   :data-dismiss "modal"
+                   :aria-label   "OK"
+                   }
+          [:span {:aria-hidden  "true"
+                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+       [:div
+        ;;      [:form {:class "form-horizontal"}
+        ;;       [:div.form-group
+        [:div
+         (:modal-content @state)
+         #_(default-terms)]
+        [:fieldset {:class "col-md-12 checkbox"}
+         [:div.col-md-12 {:style {:text-align "center"}} [:label
+                                                          [:input {:type     "checkbox"
+                                                                   :on-change (fn [e]
+                                                                                (if (.. e -target -checked)
+                                                                                  (swap! state assoc :accept-terms "accepted")(swap! state assoc :accept-terms "declined")
+                                                                                  ))}]
+                                                          (t :user/Doyouaccept)]]]
+        ;;        ]
+        ;;      ]
+        ]]
+      [:div.modal-footer {:style {:text-align "center"}}
+       [:button {:type         "button"
+                 :class        "btn btn-primary"
+                 :disabled     (if-not (= (:accept-terms @state) "accepted") "disabled")
+                 :on-click #(f)}
+        (t bname)]]]]))
 
 (defn login [state]
   (let [{:keys [email password]} @state
@@ -89,7 +106,7 @@
        :handler (fn [data]
                   (cond
                     (and (= (:status data) "success") (= (:terms data) "accepted")) (js-navigate-to (follow-up-url))
-                    (and (= (:status data) "success") (nil? (:terms data))) (do (swap! state assoc :user-id (:id data)) (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
+                    (and (= (:status data) "success") (nil? (:terms data))) (do (swap! state assoc :user-id (:id data))  (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
                     (and (= (:status data) "success") (= (:terms data) "declined")) (do (swap! state assoc :user-id (:id data)) (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
                     :else (swap! state assoc :error-message (:message data))
                     ))})))
@@ -97,7 +114,8 @@
 (defn content [state]
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
-        error-message-atom (cursor state [:error-message])]
+        error-message-atom (cursor state [:error-message])
+        f (fn [] (js-navigate-to (path-for "/user/register")))]
     [:div {:id "login-page"}
      [m/modal-window]
      [:div {:id "narrow-panel"
@@ -122,7 +140,7 @@
          [:div.management-links
           (if-not (private?)
             [:div {:class "col-sm-6 left-column"}
-             [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
+             [:a {:href "#" :on-click #(m/modal![terms-and-conditions-modal state f "Createnewaccount"] {:size :lg}) #_(path-for "/user/register")} (t :user/Createnewaccount)]])
           [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
          [:div {:class "row oauth-buttons"}
@@ -144,7 +162,8 @@
         state (atom {:email         ""
                      :password      ""
                      :error-message (if (not-empty flash-message) flash-message)
-                     :accept-terms "declined"})
+                     :accept-terms "declined"
+                     :modal-content (default-terms)})
         lang (:lang params)]
     (if (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))

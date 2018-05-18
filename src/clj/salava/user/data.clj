@@ -28,12 +28,11 @@
         user-info (u/user-information ctx (:object event))
         user-badge-info (b/fetch-badge ctx (:object event))
         message (select-message-by-badge-id-and-user-id {:badge_id (:object event) :user_id user-id :ctime (:ctime event)} (util/get-db ctx))
-        page-info (p/page-with-blocks ctx (:object event))
-        ]
-;;     (dump user-info)
+        page-info (p/page-with-blocks ctx (:object event))]
+
     (cond
       (and (= (:verb event) "follow") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id (:id badge-id)}
-      (and (= (:verb event) "follow") (= (:type event) "user")) {:object_name (str (:first_name user-info) " " (:last_name user-info))}
+      (and (= (:verb event) "follow") (= (:type event) "user")) {:object_name (str (:first_name user-info) " " (:last_name user-info)) :id (:object event)}
       (and (= (:verb event) "congratulate") (= (:type event) "badge")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
       (and (= (:verb event) "message") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id badge-id :message (first message)}
       (and (= (:verb event) "publish") (= (:type event) "badge")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
@@ -41,10 +40,7 @@
       (and (= (:verb event) "publish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info) }
       (and (= (:verb event) "unpublish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info) }
       :else nil
-
-      )
-    )
-  )
+      )))
 
 (defn all-user-data [ctx user-id current-user-id]
   (let [all-user-info (u/user-information-and-profile ctx user-id current-user-id)
@@ -58,9 +54,9 @@
         connections (so/get-connections-badge ctx current-user-id)
         pending-badges (b/user-badges-pending ctx user-id)
         user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
-        user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) "")
+        user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
         user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-        user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) "") ]
+        user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil) ]
 
     (assoc all-user-info
       :emails email-addresses
@@ -109,6 +105,7 @@
                         (let [template (cons [:paragraph]
                                              [[:heading.heading-name
                                                (str (:first_name $user) " " (:last_name $user))]
+                                              (dump $events)
                                               [:spacer 2]
                                               [:paragraph.generic
                                                [:chunk.chunk (str (t :user/UserID)": ")] [:chunk (str (:id $user))]"\n"
@@ -212,7 +209,7 @@
                                                                                                                (when-not (blank? (:rating more-badge-info))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Badgerating) ": ") ] [:chunk (str (:rating more-badge-info) "  ")]])
-                                                                                                              (when-not (blank? (:evidence_url more-badge-info))
+                                                                                                               (when-not (blank? (:evidence_url more-badge-info))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Evidenceurl) ": ")] [:chunk (str (:evidence_url more-badge-info) " ")]]"\n"
                                                                                                                  )
@@ -261,7 +258,7 @@
                                                                                                      (conj [[:line {:dotted true}]])))
                                                                        ))])
 
-                                             (when (not-empty $pending_badges)
+                                              (when (not-empty $pending_badges)
                                                 [:paragraph.generic
                                                  [:heading.heading-name "Pending Badges"]
                                                  (into [:paragraph] (for [pb $pending_badges]
@@ -401,7 +398,15 @@
                                                 (into [:table.generic {:header [(t :social/Action) (t :social/Object) (t :social/Objecttype) (t :social/Created)]}]
                                                       (for [e (reverse $events)]
                                                         [[:cell (:verb e)]
-                                                         [:cell  (:object e)]
+                                                         [:cell  [:phrase
+                                                                  [:anchor {:target
+                                                                            (case (:type e)
+                                                                              "user" (str site-url "/user/profile/" (get-in e [:info :id]))
+                                                                              "badge" (str site-url "/badge/info/" (get-in e [:info :badge_id]))
+                                                                              "page" (str site-url "/page/view/" (get-in e [:info :page_id]))
+                                                                              "admin" "#") }[:chunk (or (get-in e [:info :object_name]) "-")]]"\n"
+                                                                  (if (contains? (:info e) :message)
+                                                                    [:chunk {:style :italic} (get-in e [:info :message :message])])]]
                                                          [:cell (:type e)]
                                                          [:cell (date-from-unix-time (long (* 1000 (:ctime e))) "date")]
                                                          ])))

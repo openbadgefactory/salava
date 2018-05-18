@@ -5,6 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
+            [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
 (defn unlink-linkedin [active-atom]
@@ -18,6 +19,7 @@
   (let [error-message-atom (cursor state [:error-message])
         active-atom (cursor state [:active])
         link-fn (if (= (:service @state) "facebook") facebook-link linkedin-link)]
+    (dump (:terms @state))
     [:div {:id "login-page"}
      [:div {:class "panel"}
       [:div {:class "panel-body"}
@@ -45,10 +47,12 @@
 
 (defn handler [site-navi params]
   (let [flash-message (t (keyword (session/get! :flash-message)))
+        terms (session/get! :terms)
         service (:service params)
         state (atom {:initializing  true
                      :active        false
                      :no-password?  false
+                     :terms terms
                      :service service
                      :error-message (if (not-empty flash-message) flash-message)})]
     (init-data state service)

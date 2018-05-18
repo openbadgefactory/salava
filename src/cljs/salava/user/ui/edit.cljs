@@ -3,7 +3,7 @@
             [reagent.session :as session]
             [clojure.string :refer [blank?]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for plugin-fun]]
+            [salava.core.ui.helper :refer [accepted-terms? input-valid? js-navigate-to path-for plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.common :refer [deep-merge]]
@@ -44,12 +44,12 @@
         last-name-atom (cursor state [:user :last_name])
         country-atom (cursor state [:user :country])
         message (:message @state)
-        
+
         email-notifications-atom (cursor state [:user :email_notifications])]
     [:div {:class "panel" :id "edit-user"}
      (if message
        [:div {:class (str "alert " (:class message))}
-       (translate-text (:content message)) ])
+        (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
        [:div.form-group
@@ -97,12 +97,12 @@
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
                                           (input/country-valid? @country-atom)
-                                          
+
                                           )
                                "disabled")
                    :on-click #(do
-                               (.preventDefault %)
-                               (save-user-info state))}
+                                (.preventDefault %)
+                                (save-user-info state))}
           (t :core/Save)]]]]]]))
 
 (def initial-state
@@ -127,4 +127,6 @@
                      :email-notifications false})]
     (init-data state)
     (fn []
+      (if (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
+
       (layout/default site-navi (content state)))))
