@@ -111,7 +111,7 @@
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
         error-message-atom (cursor state [:error-message])
-        f (fn [] (js-navigate-to (path-for "/user/register")))]
+        f (fn [] (js-navigate-to "/user/register"))]
     [:div {:id "login-page"}
      [m/modal-window]
      [:div {:id "narrow-panel"
