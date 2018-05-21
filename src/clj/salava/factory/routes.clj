@@ -47,6 +47,13 @@
                         (assoc-in [:session :pending] {:user-badge-id user-badge-id}))
                     (not-found "404 Not Found")))
 
+             (DELETE "/receive/:id" req
+                     :no-doc true
+                     :summary "Receive new badges from OBF"
+                     :path-params [id :- s/Int]
+                     (when (= id (get-in req [:session :pending :user-badge-id]))
+                       (ok (f/reject-badge! ctx id))))
+
              (POST "/backpack_email_list" []
                    :header-params [authorization :- s/Str]
                    :body-params [emails :- [s/Str]]
