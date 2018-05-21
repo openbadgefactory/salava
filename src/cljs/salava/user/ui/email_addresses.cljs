@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [create-class atom cursor]]
             [reagent-modals.modals :as modal]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? path-for str-cat]]
+            [salava.core.ui.helper :refer [accepted-terms? js-navigate-to input-valid? path-for str-cat]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
             [salava.user.schemas :as schemas]
@@ -51,9 +51,9 @@
     {:params  {:email email}
      :handler (fn [data]
                 #_(if (= status "success")
-                  (let [email-removed (filter #(not= (:email %) email) (:emails @state))]
-                    (swap! state assoc :emails email-removed :message {:class "alert-success" :content (str (t :user/Emailaddress) " " email " " (t :user/deleted))}))
-                  (swap! state assoc :message {:class "alert-danger" :content (t :user/Errordeletingemailaddress)}))
+                    (let [email-removed (filter #(not= (:email %) email) (:emails @state))]
+                      (swap! state assoc :emails email-removed :message {:class "alert-success" :content (str (t :user/Emailaddress) " " email " " (t :user/deleted))}))
+                    (swap! state assoc :message {:class "alert-danger" :content (t :user/Errordeletingemailaddress)}))
                 (modal/close-modal!))}))
 
 
@@ -118,7 +118,7 @@
            [:tr
             [:td email]
             [:td.text-center (if verified [:i {:class "fa fa-check"}])]
-            [:td (if (and primary_address verified) 
+            [:td (if (and primary_address verified)
                    (t :user/Loginaddress)
                    (email-options email verified primary_address state))]]))])
 
@@ -127,14 +127,14 @@
    [:thead
     [:tr
      [:th (t :user/Email) ]
-     
+
      [:th (t :user/Actions)]]]
    (into [:tbody]
          (for [address (sort-by :ctime (:emails @state))
                :let [{:keys [email verified primary_address]} address]]
            [:tr
             [:td [:div email (if verified [:i {:class "fa fa-check" }])]]
-            [:td (if (and primary_address verified) 
+            [:td (if (and primary_address verified)
                    (t :user/Loginaddress)
                    (email-options email verified primary_address state))]]))])
 
@@ -158,8 +158,8 @@
        [:button {:class    "btn btn-primary"
                  :disabled (not (input/email-valid? @new-address-atom))
                  :on-click #(do
-                             (.preventDefault %)
-                             (add-email-address state))}
+                              (.preventDefault %)
+                              (add-email-address state))}
         (t :core/Add)]]]]))
 
 
@@ -180,4 +180,5 @@
                      :message nil})]
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

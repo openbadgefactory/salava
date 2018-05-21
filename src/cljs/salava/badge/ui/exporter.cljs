@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [unique-values path-for not-activated?]]
+            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? unique-values path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
@@ -113,6 +113,7 @@
 (defn content [state]
   [:div {:id "export-badges"}
    [:h1.uppercase-header (t :badge/Exportordownload)]
+;;    (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
    (if (not-activated?)
      (not-activated-banner)
      (if (:initializing @state)
@@ -158,7 +159,8 @@
                      :initializing true})]
     (init-data state)
     (fn []
-      (cond 
+      (cond
+        (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
         (= "success" (:permission @state)) (layout/default site-navi (content state))
         :else (layout/default site-navi (err/error-content)))

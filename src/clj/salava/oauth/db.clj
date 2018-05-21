@@ -28,7 +28,7 @@
 
 (defn access-token [method url opts]
   (let [response (oauth-request method url opts)
-        access-token (:access_token response)]  
+        access-token (:access_token response)]
     (when-not access-token
       ;TODO: (log "OAuth request failed" _)
       (throw+ "oauth/Cannotconnecttoservice"))
@@ -51,6 +51,15 @@
   (insert-oauth-user! {:user_id user-id :oauth_user_id oauth-user-id :service service} (get-db ctx))
   user-id)
 
+(defn insert-user-terms [ctx user-id status]
+  (try+
+    (do
+      (insert-user-terms<! {:user_id user-id :status status} (get-db ctx))
+      {:status "success" :input status})
+    (catch Object _
+      {:status "error" :input status})
+    ))
+
 (defn create-local-user [ctx oauth-user service]
   (try+
     (let [picture-url (:picture_url oauth-user)
@@ -61,7 +70,9 @@
                        (assoc :profile_picture profile-picture :email_notifications email_notifications))
           new-user-id (:generated_key (insert-user<! new-user (get-db ctx)))
           _ (insert-user-email! {:email (:email oauth-user) :user_id new-user-id} (get-db ctx))
-          _ (add-oauth-user ctx new-user-id (:oauth_user_id oauth-user) service)]
+          _ (add-oauth-user ctx new-user-id (:oauth_user_id oauth-user) service)
+          _ (insert-user-terms ctx new-user-id "accepted")
+          ]
       new-user-id)
     (catch Object _
       ;TODO: (log "Could not create user via OAuth" _)

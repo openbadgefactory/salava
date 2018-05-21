@@ -15,7 +15,7 @@
             ;[salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated?]]))
+            [salava.core.ui.helper :as h :refer [accepted-terms? js-navigate-to unique-values navigate-to path-for plugin-fun not-activated?]]))
 
 
 (defn init-data [state]
@@ -56,7 +56,7 @@
      (path-for (str "/obpv1/badge/set_status/" id))
      {:response-format :json
       :keywords? true
-      :params {:status new-status} 
+      :params {:status new-status}
       :handler (fn []
                  (init-data state)
                  )
@@ -64,6 +64,7 @@
                        )}))
 
 (defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
+  (dump obf_url)
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
@@ -113,7 +114,7 @@
                                (ajax/POST
                                 (path-for (str "/obpv1/social/hide_event/" event_id))
                                 {:response-format :json
-                                 :keywords?       true          
+                                 :keywords?       true
                                  :handler         (fn [data]
                                                     (do
                                                       (init-data state)))
@@ -156,7 +157,7 @@
       [:a {:href "#"
            :on-click #(do
                         (mo/open-modal [:badge :info] {:badge-id object})
-                        
+
                         (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
@@ -180,7 +181,7 @@
       [:a {:href "#"
            :on-click #(do
                         (mo/open-modal [:page :view] {:page-id object})
-                        
+
                         (.preventDefault %) )}
        [:img {:src (profile-picture profile_picture) } ]]]
      [:div.media-body
@@ -206,7 +207,7 @@
            :on-click #(do
                         (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
                                                                                               o_id
-                                                                                              s_id)})                        
+                                                                                              s_id)})
                         ;(b/open-modal object false init-data state)
                         (.preventDefault %) )}
        [:img {:src (profile-picture (if (= owner s_id)
@@ -225,7 +226,7 @@
                                                  (str (t :social/Youstartedfollowing) " " o_first_name " " o_last_name)
                                                  (str  s_first_name " " s_last_name " " (t :social/Followsyou)  ))]]
        [:div.media-body
-        (if (= owner s_id)(t :social/Youstartedfollowingtext) 
+        (if (= owner s_id)(t :social/Youstartedfollowingtext)
            (t :social/Followsyoutext) )
        ]]
       ]]))
@@ -249,7 +250,7 @@
                         (mo/open-modal [:gallery :badges] {:badge-id object
                                                            :show-messages true
                                                            :reload-fn reload-fn})
-                        (.preventDefault %) )} 
+                        (.preventDefault %) )}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
@@ -311,13 +312,13 @@
       ]]]))
 
 (defn profile-picture-tip []
-  {:header (t :social/Profilepictureheader)  
+  {:header (t :social/Profilepictureheader)
    :body  (str (t :social/Profilepicturebody) ".")
    :button (t :social/Profiletipbutton)
    :link "/user/edit/profile"} )
 
 (defn profile-description-tip []
-  {:header (t :social/Profiledescriptiontipheader)  
+  {:header (t :social/Profiledescriptiontipheader)
    :body  (str (t :social/Profiledescriptionbody) ".")
    :button (t :social/Profiletipbutton)
    :link "/user/edit/profile"} )
@@ -335,7 +336,7 @@
 (defn report-ticket-tip [events]
   (let [count (count events)]
     {:header (t :social/Emailadmintickets)
-     :body  (str (t :social/Openissues) ": " count) 
+     :body  (str (t :social/Openissues) ": " count)
      :button (t :social/Clickhere)
      :link   "/admin/tickets"}))
 
@@ -354,7 +355,7 @@
              [:li (t :social/Notactivatedbody3)]
              [:li (t :social/Notactivatedbody4)]
              [:li (t :social/Notactivatedbody5)]
-             [:li (t :social/Notactivatedbody6)]]] 
+             [:li (t :social/Notactivatedbody6)]]]
    :button (t :social/Readmore)
    :link   "/user/edit/email-addresses"})
 
@@ -367,7 +368,7 @@
        :else [:div])
    (into [:div ]
          (for [email (:not-verified-emails tips)]
-           (tip-event (not-verified-email (:email email)) state) 
+           (tip-event (not-verified-email (:email email)) state)
            ))])
 
 (defn empty-stream []
@@ -394,7 +395,6 @@
         admin-events (or (:admin-events @state) nil)
         reload-fn (fn [] (init-data state))]
     [:div {:class "my-badges pages"}
-     
      [m/modal-window]
      [pending-connections reload-fn]
      [badges-pending state]
@@ -427,8 +427,5 @@
 
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi [content state]))))
-
-
-
-

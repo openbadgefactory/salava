@@ -6,7 +6,7 @@
             [clojure.set :as set :refer [intersection]]
             [clojure.string :refer [upper-case]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated?]]
+            [salava.core.ui.helper :as h :refer [js-navigate-to accepted-terms? unique-values navigate-to path-for  not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -67,7 +67,7 @@
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
-                
+
                 (swap! state assoc :badge-settings data (assoc data :new-tag ""))
                 (m/modal! [s/settings-modal data state init-data]
                           {:size :lg}))}))
@@ -185,10 +185,12 @@
      [:div
       [badge-grid-form state]
       (cond
+        ;(= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (not-activated?) (not-activated-banner)
+
         (empty? (:badges @state)) [no-badges-text]
         :else [badge-grid state])
-      
+
       ]
      )])
 
@@ -204,4 +206,5 @@
                      :initializing true})]
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

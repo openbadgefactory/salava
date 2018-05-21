@@ -7,7 +7,8 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.core.ui.terms :refer [default-terms default-terms-fr]]))
 
 (defn navi-parent [path]
   (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
@@ -18,7 +19,7 @@
   (let [map-fn (fn [[tr nv]]
                  (assoc nv :target tr :active (or (= (current-path) tr) (and (= "top" type) (= (first (re-seq #"\w+" (route-path (str tr)))) (first (re-seq #"\w+" (current-route-path))))))))
         navi-list (sort-by :weight (map map-fn (select-keys navi key-list)))]
-    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) ))))) 
+    (if (and (not= "sub-subnavi" type) (not= "top" type) (= 1 (+  (count (re-seq #"\w+" (current-route-path) )))))
       (assoc-in (vec navi-list) [0 :active] true)
       navi-list)
     ))
@@ -48,7 +49,7 @@
   (ajax/POST
     (path-for "/obpv1/admin/return_to_admin")
     {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
- 
+
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
         :key target}
@@ -66,7 +67,7 @@
 (defn logo []
 [:a {:class "logo pull-left"
      :title (session/get :site-name)
-     :aria-label "to index" 
+     :aria-label "to index"
      :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
      :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
@@ -128,7 +129,7 @@
     [:div {:class "navbar-header"}
      [:a {:class "logo pull-left"
           :href  (if  (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-          :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url)) "") 
+          :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url)) "")
           :title (session/get :site-name)}
       [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"}]
       [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]]]]])
@@ -164,6 +165,18 @@
     (if footer
       (footer)
       (base-footer))))
+
+(defn terms-and-conditions []
+  (let [terms (first (plugin-fun (session/get :plugins) "block" "terms"))]
+    (if terms
+      (terms)
+      (default-terms))))
+
+(defn terms-and-conditions-fr []
+  (let [terms-fr (first (plugin-fun (session/get :plugins) "block" "terms-fr"))]
+    (if terms-fr
+      (terms-fr)
+      (default-terms-fr))))
 
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi) "subnavi")]

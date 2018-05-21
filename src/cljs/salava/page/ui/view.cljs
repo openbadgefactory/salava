@@ -4,7 +4,7 @@
             [ajax.core :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [accepted-terms? js-navigate-to navigate-to path-for private?]]
             [salava.page.ui.helper :as ph]
             [salava.core.ui.share :as s]
             [reagent-modals.modals :as m]
@@ -126,6 +126,7 @@
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
+        (and user (= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         (and user (= (get-in @state [:page :user_id]) (:id user))) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))

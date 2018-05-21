@@ -1,8 +1,9 @@
 (ns salava.badge.ui.stats
   (:require [reagent.core :refer [atom cursor]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [reagent-modals.modals :as m]
@@ -120,4 +121,5 @@
   (let [state (atom {})]
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

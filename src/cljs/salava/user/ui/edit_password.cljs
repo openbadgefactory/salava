@@ -3,7 +3,7 @@
             [reagent.session :as session]
             [clojure.string :refer [blank?]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for plugin-fun]]
+            [salava.core.ui.helper :refer [accepted-terms? input-valid? js-navigate-to path-for plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.common :refer [deep-merge]]
@@ -28,7 +28,7 @@
       {:params {:current_password current-password
                 :new_password new-password
                 :new_password_verify new-password-verify}
-       
+
        :handler (fn [data]
                   (if (= (:status data) "success")
                     (do
@@ -41,15 +41,15 @@
 
 (defn new-password-valid? [has-password? current-password new-password new-password-verify]
   (or
-   (and (empty? new-password)
-        (empty? new-password-verify)
-        (empty? current-password))
-   (and (not-empty new-password)
-        (not-empty new-password-verify)
-        (input/password-valid? new-password)
-        (input/password-valid? new-password-verify)
-        (= new-password new-password-verify)
-        (or (not has-password?) (not-empty current-password)))))
+    (and (empty? new-password)
+         (empty? new-password-verify)
+         (empty? current-password))
+    (and (not-empty new-password)
+         (not-empty new-password-verify)
+         (input/password-valid? new-password)
+         (input/password-valid? new-password-verify)
+         (= new-password new-password-verify)
+         (or (not has-password?) (not-empty current-password)))))
 
 
 
@@ -62,10 +62,10 @@
     [:div {:class "panel" :id "edit-user"}
      (if message
        [:div {:class (str "alert " (:class message))}
-       (translate-text (:content message)) ])
+        (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       
+
        (if current-password?
          [:div.form-group
           [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
@@ -97,8 +97,8 @@
                    :disabled (if-not (new-password-valid? current-password? @current-password-atom @new-password-atom @new-password-verify-atom)
                                "disabled")
                    :on-click #(do
-                               (.preventDefault %)
-                               (save-user-info state))}
+                                (.preventDefault %)
+                                (save-user-info state))}
           (t :core/Save)]]]]]]))
 
 (def initial-state
@@ -122,4 +122,5 @@
                      :message             nil} )]
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

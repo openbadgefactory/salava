@@ -1,8 +1,9 @@
 (ns salava.page.ui.my
   (:require [reagent.core :refer [atom]]
             [clojure.set :refer [intersection]]
+            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for not-activated?]]
+            [salava.core.ui.helper :as h :refer [accepted-terms? js-navigate-to unique-values navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -117,9 +118,9 @@
             [:div {:id "add-element-link"}
              (t :page/Addpage)]]]]]]
        (doall
-        (for [element-data pages]
-          (if (page-visible? element-data state)
-            (page-grid-element element-data state))))])))
+         (for [element-data pages]
+           (if (page-visible? element-data state)
+             (page-grid-element element-data state))))])))
 
 (defn content [state]
   [:div {:class "my-badges pages"}
@@ -140,4 +141,6 @@
                      :tags-selected []})]
     (init-data state)
     (fn []
+     (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
+
       (layout/default site-navi (content state)))))
