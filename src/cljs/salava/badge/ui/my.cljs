@@ -185,7 +185,7 @@
      [:div
       [badge-grid-form state]
       (cond
-        (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
+        ;(= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (not-activated?) (not-activated-banner)
 
         (empty? (:badges @state)) [no-badges-text]
@@ -206,4 +206,5 @@
                      :initializing true})]
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

@@ -398,8 +398,6 @@
      [m/modal-window]
      [pending-connections reload-fn]
      [badges-pending state]
-     (if (= "false" (accepted-terms?))
-        (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
      (if (not-activated?)
        (not-activated-banner))
      (if admin-events
@@ -429,4 +427,5 @@
 
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi [content state]))))

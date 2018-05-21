@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private?]]
+            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for private?]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -283,6 +283,7 @@
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
+        (and user (= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))

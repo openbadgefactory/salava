@@ -3,11 +3,12 @@
     [salava.core.i18n :refer [t]]
     [reagent.core :refer [atom cursor]]
     [reagent.session :as session]
+    [clojure.string :as string]
     [salava.core.ui.layout :as layout]
     [salava.core.ui.ajax-utils :as ajax]
     [salava.core.helper :refer [dump]]
-    [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]
-    #_[salava.core.ui.terms :refer [default-terms default-terms-fr]]))
+    [salava.user.ui.login :refer [follow-up-url]]
+    [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]))
 
 (defn toggle-accept-terms [state]
   (let [ user-id (:user-id @state)
@@ -17,7 +18,7 @@
       {:params {:accept_terms accept-terms :user_id user-id}
        :handler (fn [data]
                   (when (and (= "success" (:status data)) (= "accepted" (:input data)))
-                    (js-navigate-to "social/stream"#_(follow-up-url))))})))
+                    (js-navigate-to (follow-up-url))))})))
 
 (defn accept-terms-form [state]
   [:div {:style {:text-align "center"}}
@@ -37,24 +38,16 @@
               }
      (t :user/Login)]]])
 
-(defn get-user-id [url]
-  (if-let [match (re-find #"id=([\w-]+)" url) ]
-    (second match))
-  )
-
 (defn content [state]
   [:div
    [:div
-    [:div {:id "lang-buttons"}
+    [:div {:id "lang-buttons" :style (if (or (string/blank? (layout/terms-and-conditions-fr)) (string/blank? (layout/terms-and-conditions))) {:display "none"})}
      [:ul
-      [:li [:a {:href "#" :on-click #(swap! state assoc :content (layout/terms-and-conditions) #_(default-terms))} "EN"]]
-      [:li [:a {:href "#" :on-click #(swap! state assoc :content (layout/terms-and-conditions-fr)) } "FR"]]]
-     ]
-    ]
+      [:li [:a {:href "#" :on-click #(swap! state assoc :content (layout/terms-and-conditions))} "EN"]]
+      [:li [:a {:href "#" :on-click #(swap! state assoc :content (layout/terms-and-conditions-fr)) } "FR"]]]]]
    [:div.panel
     (:content @state)
-    (accept-terms-form state)]]
-  )
+    (accept-terms-form state)]])
 
 
 (defn handler [site-navi params]

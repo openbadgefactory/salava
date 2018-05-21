@@ -7,7 +7,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [path-for unique-values]]
+            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for unique-values]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.helper :refer [message-form email-select status-handler]]
@@ -21,7 +21,7 @@
         [:p sorted-text " " [:a {:href "#" :on-click #(do
                                                         (reset! show-atom false)
                                                         (.preventDefault %))} (t :admin/Showmore)]]
-        [:div text " " [:a {:href "#" :on-click #(do                                  
+        [:div text " " [:a {:href "#" :on-click #(do
                                                    (reset! show-atom true)
                                                    (.preventDefault %))} (t :admin/Showless)] ]))
     ))
@@ -33,11 +33,11 @@
         status (cursor state [:status])
         email-atom (cursor state [:selected-email])
         ]
-    
+
   [:div {:class "row"}
    [:div {:class "col-xs-12"}
       [:div.form-group
-        [:label 
+        [:label
          (str (t :user/Email) ":")]
         (email-select (:emails info) email-atom) ]
       (message-form mail)
@@ -53,7 +53,7 @@
                                  :keywords?       true
                                  :params        {:subject (:subject @mail)
                                                  :message (:message @mail)
-                                                 :email  @email-atom}  
+                                                 :email  @email-atom}
                                  :handler         (fn [data]
                                                     (reset! status data)
                                                     (reset! mail {:subject ""
@@ -118,7 +118,7 @@
      (path-for (str "/obpv1/admin/user/" user-id))
      {:handler (fn [data]
                  (do
-                   (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]                      
+                   (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]
                      (swap! state assoc :name (:name data)
                             :image_file (:image_file data)
                             :user (:item_owner data)
@@ -142,7 +142,7 @@
         [:a {:href item_url :target "_blank"}
          (str (t (keyword (str "admin/" item_type))) " - " item_name)]]]
       [:div.media-descriprtion
-       [:div {:class "col-xs-12"  :id (if open? "" "closed")} 
+       [:div {:class "col-xs-12"  :id (if open? "" "closed")}
         [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description) ]
         [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/user/profile/" reporter_id))}(str first_name " " last_name)]]]
        [:button {:class    "btn btn-primary"
@@ -246,4 +246,5 @@
                      :types-all true})]
     (init-data state)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

@@ -68,9 +68,6 @@
              (POST "/logout" []
                    (assoc-in (ok) [:session :identity] nil))
 
-             (GET "/terms/:id" []
-                  (ok))
-
              (GET "/register" []
                   :summary "Get languages"
                   (if (private? ctx)

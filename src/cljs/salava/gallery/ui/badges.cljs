@@ -358,8 +358,8 @@
                                 :ajax-message           nil})]
     (init-data state init-values)
     (fn []
-      (if (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
-
       (if (session/get :user)
-        (layout/default site-navi [content state badge_id])
+        (do
+          (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
+          (layout/default site-navi [content state badge_id]))
         (layout/landing-page site-navi [content state badge_id])))))

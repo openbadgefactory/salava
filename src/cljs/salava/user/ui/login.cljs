@@ -65,7 +65,8 @@
                    }
           [:span {:aria-hidden  "true"
                   :dangerouslySetInnerHTML {:__html "&times;"}}]]]
-        [:div
+
+        [:div {:style (if (or (string/blank? (layout/terms-and-conditions-fr)) (string/blank? (layout/terms-and-conditions))) {:display "none"})}
          [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
           [:ul
            [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions))} "EN"]]

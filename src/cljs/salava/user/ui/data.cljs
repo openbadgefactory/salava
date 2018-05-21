@@ -12,8 +12,7 @@
             [reagent.core :refer [atom cursor]]
             [salava.user.ui.profile :as profile]
             [salava.core.ui.modal :as mo]
-            [salava.core.i18n :refer [t translate-text]]
-            [salava.user.ui.cancel :as c]))
+            [salava.core.i18n :refer [t translate-text]]))
 
 (defn export-data-to-pdf [state]
   (let [user-id (:user-id @state)]
@@ -28,7 +27,7 @@
                                                 email_notifications :email_notifications
                                                 profile_visibility :profile_visibility} :user email :emails
 
-        profile :profile user-id :user-id} @state
+         profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)
         site-url (session/get :site-url)]
 
@@ -139,17 +138,17 @@
           [:div
            [:h3 [:a {:href (path-for "/social/stream")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
            (doall
-               (for [p pending_badges]
-                 ^{:key p}[:div
-                           #_[:div.col-xs-12 [:b (str (t :badge/BadgeID) ": ")] (str (:badge_id p))]
-                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
-                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Imagefile) ": ")] (str site-url "/" (:image_file p))]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Assertionurl) ": ")] (:assertion_url p)]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Badgevisibility) ": ")] (str (:visibility p))]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Issuedon) ": ")] (date-from-unix-time (* 1000 (:issued_on p)))]
-                           #_(when (:expires_on p) [:div.col-xs-12 [:b (str (t :badge/Expireson) ": ")] (date-from-unix-time (* 1000 (:expires_on p)))])
-                           ]))])]
+             (for [p pending_badges]
+               ^{:key p}[:div
+                         #_[:div.col-xs-12 [:b (str (t :badge/BadgeID) ": ")] (str (:badge_id p))]
+                         [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
+                         [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
+                         #_[:div.col-xs-12 [:b (str (t :badge/Imagefile) ": ")] (str site-url "/" (:image_file p))]
+                         #_[:div.col-xs-12 [:b (str (t :badge/Assertionurl) ": ")] (:assertion_url p)]
+                         #_[:div.col-xs-12 [:b (str (t :badge/Badgevisibility) ": ")] (str (:visibility p))]
+                         #_[:div.col-xs-12 [:b (str (t :badge/Issuedon) ": ")] (date-from-unix-time (* 1000 (:issued_on p)))]
+                         #_(when (:expires_on p) [:div.col-xs-12 [:b (str (t :badge/Expireson) ": ")] (date-from-unix-time (* 1000 (:expires_on p)))])
+                         ]))])]
 
        [:div {:class "col-md-12 col-sm-9 col-xs-12"}
         [:h2 {:class "uppercase-header"} [:a {:href (path-for "/page")} (str (t :page/Mypages) ": ") (count user_pages)]]
@@ -209,7 +208,7 @@
                           status (:status f)]]
                 ^{:key f}[:div
                           [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:p [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) ", ")] [:b (str (t :user/Status) ": ")] (:status f)]]
-                         #_ [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status f)]
+                          #_ [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status f)]
                           ])]
              )])
 
@@ -264,5 +263,5 @@
     (init-data user-id state)
 
     (fn []
-      (if (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

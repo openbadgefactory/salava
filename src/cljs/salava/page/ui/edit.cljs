@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [accepted-terms? js-navigate-to navigate-to path-for]]
             [salava.core.ui.field :as f]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -352,5 +352,6 @@
                      :tags []})]
     (init-data state id)
     (fn []
+      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))
 

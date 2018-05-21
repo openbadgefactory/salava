@@ -160,7 +160,7 @@
     (init-data state)
     (fn []
       (cond
-        (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
+        (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
         (= "success" (:permission @state)) (layout/default site-navi (content state))
         :else (layout/default site-navi (err/error-content)))

@@ -141,6 +141,6 @@
                      :tags-selected []})]
     (init-data state)
     (fn []
-      (if (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
+     (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
 
       (layout/default site-navi (content state)))))

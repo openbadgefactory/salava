@@ -211,8 +211,7 @@
 
     (fn []
       (cond
-        (= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
-
+        (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
         (and user (= "error" (:permission @state)))(layout/default-no-sidebar site-navi (err/error-content))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
