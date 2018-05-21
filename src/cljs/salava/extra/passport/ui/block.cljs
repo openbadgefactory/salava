@@ -6,10 +6,10 @@
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
-    "Copyright © 2015-2017 Discendum Oy | "
+     "Copyright © 2015-2017 Discendum Oy | "
      [:a {:class "bottom-link" :href "/terms" }
       "Terms of Use"]
-    " | "
+     " | "
      [:a {:class "bottom-link" :href "/privacy"}
       "Privacy Policy"]
      " | "
@@ -17,6 +17,7 @@
       "contact@openbadgefactory.com"]]
     [:p.text-muted
      "Open Badge Factory ® and Open Badge Passport ® are registered trademarks"]]])
+
 
 (defn ^:export terms-fr []
   [:div {:style {:padding "30px"}}
@@ -87,7 +88,6 @@
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
          [:p "Numéro de téléphone: 020 718 1850"]
          [:p [:a {:href "mailto:dataprotection@openbadgefactory.com"} "dataprotection@openbadgefactory.com"]]]]
-
        [:li  [:h3 "Nom du registre"]
         [:div
          [:p "REGISTRE DES CLIENTS ET DE PROSPECTION DU SERVICE OPEN BADGE PASSPORT" ]]]
@@ -155,6 +155,7 @@
       ]
      ]
     ]])
+
 
 (defn ^:export terms []
   [:div {:style {:padding "30px"}}
