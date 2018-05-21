@@ -3,9 +3,8 @@
             [reagent.session :as session]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? base-path navigate-to path-for]]
+            [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
-            [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
 (defn unlink-linkedin [active-atom]
@@ -54,5 +53,4 @@
                      :error-message (if (not-empty flash-message) flash-message)})]
     (init-data state service)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

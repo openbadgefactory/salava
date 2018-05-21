@@ -7,7 +7,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for unique-values]]
+            [salava.core.ui.helper :refer [path-for unique-values]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.helper :refer [message-form email-select status-handler]]
@@ -34,7 +34,7 @@
         email-atom (cursor state [:selected-email])
         ]
 
-  [:div {:class "row"}
+  [:div {:class "row flip"}
    [:div {:class "col-xs-12"}
       [:div.form-group
         [:label
@@ -135,7 +135,7 @@
     [:div {:class (str "media " report_type) :id "ticket-container"}
      [:div.media-body
       [:div {:class (str "title-bar title-bar-" report_type ) :id (if open? "" "closed")}
-       [:div {:class "pull-right"}  (if open? (date-from-unix-time (* 1000 ctime) "minutes") (str (t :admin/Closed) ": " (date-from-unix-time (* 1000 mtime) "minutes")))]
+       [:div {:id "ticket" :class "pull-right"}  (if open? (date-from-unix-time (* 1000 ctime) "minutes") (str (t :admin/Closed) ": " (date-from-unix-time (* 1000 mtime) "minutes")))]
        [:h3 {:class "media-heading"}
         [:u (t (keyword (str "admin/" report_type)))]]
        [:h4 {:class "media-heading"}
@@ -179,7 +179,7 @@
     true false))
 
 (defn grid-buttons-with-translates [title buttons key all-key state]
-  [:div.form-group
+  [:div.form-group.flip
    [:label {:class "control-label col-sm-2"} title]
    [:div.col-sm-10
     (let [all-checked? (= ((keyword all-key) @state) true)
@@ -211,7 +211,7 @@
 
 (defn grid-show-closed-tickets [state]
   (let [show-closed?  (cursor state [:show-closed?])]
-    [:div.form-group
+    [:div {:id "archived" :class "form-group flip"}
      [:label {:class "control-label col-sm-2 col-xs-3"}
       (str (t :admin/Archived) ": ")]
      [:div.col-sm-10.col-xs-9
@@ -246,5 +246,4 @@
                      :types-all true})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

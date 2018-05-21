@@ -9,18 +9,18 @@
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.user.ui.helper :as u]
             [salava.core.ui.modal :as mo]
             [salava.admin.ui.admintool :refer [admintool-gallery-page]]
-            ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
+           ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             ))
 
 (defn open-modal [page-id]
   (ajax/GET
-    (path-for (str "/obpv1/page/view/" page-id))
-    {:handler (fn [data]
-                (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
+     (path-for (str "/obpv1/page/view/" page-id))
+     {:handler (fn [data]
+                 (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -59,7 +59,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -68,12 +68,12 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                               (reset! search-atom (.-target.value %))
-                               (search-timer state))}]]]))
+                              (reset! search-atom (.-target.value %))
+                              (search-timer state))}]]]))
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -81,8 +81,8 @@
                 :name      "country"
                 :value     @country-atom
                 :on-change #(do
-                              (reset! country-atom (.-target.value %))
-                              (fetch-pages state))}
+                             (reset! country-atom (.-target.value %))
+                             (fetch-pages state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
@@ -115,7 +115,7 @@
         [:div.media-content
          [:div.page-owner
           [:a {:href (path-for (str "/user/profile/" user_id))} first_name " " last_name]]
-         [:div.page-create-date
+         [:div.page-create-date.no-flip
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
@@ -130,9 +130,9 @@
   (let [pages (:pages @state)
         order (keyword (:order @state))
         pages (if (= order :mtime)
-                (sort-by order > pages)
-                (sort-by order pages))]
-    (into [:div {:class "row"
+                 (sort-by order > pages)
+                 (sort-by order pages))]
+    (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data pages]
             (page-gallery-grid-element element-data state)))))
@@ -163,7 +163,5 @@
     (init-data state user-id)
     (fn []
       (if (session/get :user)
-        (do
-          (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
-          (layout/default site-navi (content state)))
+        (layout/default site-navi (content state))
         (layout/landing-page site-navi (content state))))))

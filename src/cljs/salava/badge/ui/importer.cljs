@@ -1,10 +1,9 @@
 (ns salava.badge.ui.importer
   (:require [reagent.core :refer [atom]]
-            [reagent.session :as session]
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? navigate-to path-for not-activated?]]
+            [salava.core.ui.helper :refer [navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.error :as err]
@@ -206,8 +205,7 @@
                      :ok-badges []})]
     (init-data state)
     (fn []
-      (cond
-        (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
+      (cond 
         (= "initial" (:permission @state)) (layout/default site-navi [:div ])
         (= "success" (:permission @state))(layout/default site-navi (content state))
         :else(layout/default site-navi (err/error-content))))))

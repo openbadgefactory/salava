@@ -1,9 +1,8 @@
 (ns salava.page.ui.my
   (:require [reagent.core :refer [atom]]
             [clojure.set :refer [intersection]]
-            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [accepted-terms? js-navigate-to unique-values navigate-to path-for not-activated?]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -44,6 +43,7 @@
      [:div {:class "media grid-container"}
       [:div.media-content
        [:div.media-body
+        [:div.flip-modal
         [:div.media-heading
          [:a.heading-link {:href (path-for (str "/page/view/" id))}
           name]]
@@ -53,16 +53,16 @@
            "password" [:i {:class "fa fa-lock" :title (t :page/Passwordprotected)}]
            "internal" [:i {:class "fa fa-group" :title (t :page/Forregistered)}]
            "public" [:i {:class "fa fa-globe" :title (t :page/Public)}]
-           nil)]
+           nil)]]
         [:div.media-description
-         [:div.page-create-date
+         [:div.page-create-date.no-flip
           (date-from-unix-time (* 1000 mtime) "minutes")]
          (into [:div.page-badges]
                (for [badge badges]
                  [:img {:title (:name badge)
                         :alt (:name badge)
                         :src (str "/" (:image_file badge))}]))]]]
-      [:div {:class "media-bottom"}
+      [:div {:class "media-bottom flip-modal"}
        [:a {:class "bottom-link"
             :title (t :page/Edit)
             :href  (path-for (str "/page/edit/" id))}
@@ -102,7 +102,7 @@
                 (sort-by (comp clojure.string/upper-case order) pages))]
     (if (not-activated?)
       (not-activated-banner)
-      [:div {:class "row"
+      [:div {:class "row wrap-grid"
              :id    "grid"}
        [:div {:class "col-xs-12 col-sm-6 col-md-4"
               :id    "add-element"
@@ -118,9 +118,9 @@
             [:div {:id "add-element-link"}
              (t :page/Addpage)]]]]]]
        (doall
-         (for [element-data pages]
-           (if (page-visible? element-data state)
-             (page-grid-element element-data state))))])))
+        (for [element-data pages]
+          (if (page-visible? element-data state)
+            (page-grid-element element-data state))))])))
 
 (defn content [state]
   [:div {:class "my-badges pages"}
@@ -141,6 +141,4 @@
                      :tags-selected []})]
     (init-data state)
     (fn []
-     (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
-
       (layout/default site-navi (content state)))))

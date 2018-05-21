@@ -5,7 +5,7 @@
             [clojure.set :refer [intersection]]
             [ajax.core :as ajax]
             [salava.file.icons :refer [file-icon]]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? unique-values navigate-to path-for not-activated?]]
+            [salava.core.ui.helper :refer [unique-values navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -168,7 +168,7 @@
         max-sizetext (if (not-empty max-size)
                        (str "(" (t :file/Maxfilesize) ": "  max-size ")")
                        "")]
-    [:div {:class "row"
+    [:div {:class "row flip"
            :id    "grid"}
      [:div {:class "col-xs-12 col-sm-6 col-md-4"
             :id "add-element"
@@ -216,5 +216,4 @@
                      :max-size ""})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

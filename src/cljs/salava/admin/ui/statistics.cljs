@@ -6,7 +6,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [accepted-terms? js-navigate-to path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]))
 
@@ -28,7 +28,7 @@
        [:div [:label (t :admin/Totalpages)]  pages]
        ]]]))
 (defn init-data [state]
-  (ajax/GET
+  (ajax/GET 
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
                (reset! state data))}))
@@ -42,5 +42,4 @@
                      :pages nil})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

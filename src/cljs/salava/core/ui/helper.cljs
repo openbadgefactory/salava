@@ -85,8 +85,5 @@
 (defn not-activated? []
   (not (session/get-in [:user :activated] false)))
 
-(defn accepted-terms? []
-  (session/get-in [:user :terms] "false"))
-
 
 

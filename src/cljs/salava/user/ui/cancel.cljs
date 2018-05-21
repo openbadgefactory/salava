@@ -1,17 +1,13 @@
 (ns salava.user.ui.cancel
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
-            [reagent.session :as session]
-            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for accepted-terms?]]
+            [salava.core.ui.helper :refer [input-valid? js-navigate-to path-for]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
-            [salava.user.schemas :as schemas]
-            [reagent-modals.modals :as m]))
+            [salava.user.schemas :as schemas]))
 
 (defn password-valid? [password]
   (input-valid? (:password schemas/User) password))
-
-
 
 (defn cancel-account [state]
   (ajax/POST
@@ -20,49 +16,7 @@
      :handler (fn [data]
                 (if (= (:status data) "error")
                   (swap! state assoc :error-message (t :user/Erroroccuredduringaccountcancellation))
-                  (js-navigate-to "/user/delete-user")))}))
-
-(defn cancel-account-modal [state]
-  [:div
-       [:div.modal-body
-        [:div.row
-         [:div.col-md-12
-          [:button {:type  "button"
-                    :class  "close"
-                    :data-dismiss "modal"
-                    :aria-label   "OK"
-                    }
-           [:span {:aria-hidden  "true"
-                   :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-        [:div
-         [:p "All your data will be erased and you will be automatically logged out of the system!"]
-         [:p [:b "Once you remove your account your data cannot be restored!"]]
-         [:form {:class "form-horizontal"}
-          [:div.form-group
-           [:fieldset {:id "export-pdf" :class "col-md-12 checkbox"}
-            [:div.col-md-12 [:label
-                             [:input {:type     "checkbox"
-                                      :on-change (fn [e]
-                                                   (if (.. e -target -checked)
-                                                     (swap! state assoc :confirm-delete "true")(swap! state assoc :confirm-delete "false")
-                                                     ))}]
-                             "Are you sure you want to remove account?"]]]]]]]
-       [:div.modal-footer
-        [:button {:type         "button"
-                  :class        "btn btn-primary"
-                  :data-dismiss "modal"}
-         (t :core/Close)]
-        [:button {:type         "button"
-                  :class        "btn btn-warning"
-                  :disabled (if-not (= "true" (:confirm-delete @state))
-                              "disabled")
-                  :on-click   #(do
-                                 (if (= "true" (:confirm-delete @state))
-                                   (cancel-account state)))
-                  :data-dismiss "modal"
-                  }
-         "Delete"]]]
-  )
+                  (js-navigate-to "/user/login")))}))
 
 (defn cancel-form [state]
   (let [password-atom (cursor state [:password])]
@@ -70,7 +24,7 @@
      (if (:error-message @state)
        [:div {:class "alert alert-warning" :role "alert"}
         (translate-text (:error-message @state))])
-     [:div.form-group
+     [:div.form-group.flip
       [:label {:class "col-xs-3"
                :for "input-password"}
        (t :user/Password)
@@ -88,8 +42,7 @@
      [:button {:class    "btn btn-warning"
                :disabled (if-not (password-valid? @password-atom)
                            "disabled")
-               :on-click #(m/modal![cancel-account-modal state] {:size :lg})
-               #_(cancel-account state)}
+               :on-click #(cancel-account state)}
       (t :user/Cancelaccount)]]))
 
 (defn content [state]
@@ -97,7 +50,6 @@
    [:h1.uppercase-header (t :user/Cancelaccount)]
    (if (:has-password? @state)
      [:div
-      [m/modal-window]
       [:div {:id "cancel-info"}
        [:p (t :user/Cancelaccountinstructions1)]
        [:p (t :user/Cancelaccountinstructions2) ":"]
@@ -131,9 +83,7 @@
 (defn handler [site-navi]
   (let [state (atom {:password ""
                      :error-message nil
-                     :has-password? nil
-                     :confirm-delete "false"})]
+                     :has-password? nil})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

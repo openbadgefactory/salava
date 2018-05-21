@@ -7,7 +7,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [clojure.walk :refer [keywordize-keys]]
             [salava.core.helper :refer [dump]]
@@ -115,14 +115,14 @@
         autocomplete-items (cursor state [:autocomplete-items])]
 
     (fn []
-      [:div.form-group
+      [:div.form-group.flip
        [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
        [:div.col-sm-10
         [multiple-autocomplete
          {:value     @value
           :cb        (fn [item]  (do
-                                   (swap! value conj (:key item))
-                                   (taghandler state @value)))
+                                    (swap! value conj (:key item))
+                                    (taghandler state @value)))
           :remove-cb (fn [x] (do
                                (swap! value disj x)
                                (taghandler state @value)))
@@ -135,17 +135,17 @@
 
 (defn init-data [state init-params]
   (ajax/GET
-    (path-for "/obpv1/gallery/badges")
-    {:params  init-params
-     :handler (fn [data]
-                (let [{:keys [badges countries user-country tags badge_count]} data]
-                  (value-helper state tags)
-                  (swap! state assoc
-                         :page_count (inc (:page_count @state))
-                         :badges badges
-                         :badge_count badge_count
-                         :countries countries
-                         :country-selected user-country)))}))
+   (path-for "/obpv1/gallery/badges")
+   {:params  init-params
+    :handler (fn [data]
+               (let [{:keys [badges countries user-country tags badge_count]} data]
+                 (value-helper state tags)
+                 (swap! state assoc
+                        :page_count (inc (:page_count @state))
+                        :badges badges
+                        :badge_count badge_count
+                        :countries countries
+                        :country-selected user-country)))}))
 
 
 (defn search-timer [state]
@@ -158,7 +158,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -167,13 +167,13 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                               (reset! search-atom (.-target.value %))
-                               (search-timer state))}]]]))
+                              (reset! search-atom (.-target.value %))
+                              (search-timer state))}]]]))
 
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -217,14 +217,14 @@
                         :value        @text}
                        input-opts)]
         (let [items-matched (filter #(and
-                                       (not-empty @text)
-                                       (re-find (re-pattern (.toLowerCase (str @text))) (.toLowerCase (str (val %))))) items)]
+                                      (not-empty @text)
+                                      (re-find (re-pattern (.toLowerCase (str @text))) (.toLowerCase (str (val %))))) items)]
           (if (not-empty items-matched)
             (into [:div#autocomplete-items]
                   (for [[item-key item-value] items-matched]
                     [:div.autocomplete-item {:on-click #(do (reset! text "")
-                                                          ;(pick-fn {:key item-key :value item-value})
-                                                          )}
+                                                            ;(pick-fn {:key item-key :value item-value})
+                                                            )}
                      item-value]))))]))))
 
 
@@ -253,38 +253,38 @@
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [image_file name description issuer_content_name issuer_content_url recipients badge_id]} element-data]
-    [:div {:class "media grid-container"}
-     [:div.media-content
-      (if image_file
-        [:div.media-left
-         [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
-              :title name}[:img {:src (str "/" image_file)
-                                 :alt name}]]])
-      [:div.media-body
-       [:div.media-heading
-        [:a.heading-link {:on-click #(do
-                                       (.preventDefault %)
-                                       (mo/open-modal [:gallery :badges] {:badge-id badge_id})
-                                       ) :title name}
-         name]]
-       [:div.media-issuer
-        [:a {:href "#" :on-click #(do
-                                    (.preventDefault %)
-                                    (swap! state  assoc :issuer-name issuer_content_name
-                                           :advanced-search        true)
-                                    (fetch-badges state)
+     [:div {:class "media grid-container"}
+      [:div.media-content
+       (if image_file
+         [:div.media-left
+          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
+                :title name}[:img {:src (str "/" image_file)
+                 :alt name}]]])
+       [:div.media-body
+        [:div.media-heading
+         [:a.heading-link {:on-click #(do
+                                        (.preventDefault %)
+                                        (mo/open-modal [:gallery :badges] {:badge-id badge_id})
+                                        ) :title name}
+          name]]
+        [:div.media-issuer
+         [:a {:href "#" :on-click #(do
+                                     (.preventDefault %)
+                                     (swap! state  assoc :issuer-name issuer_content_name
+                                             :advanced-search        true)
+                                     (fetch-badges state)
 
-                                    )} issuer_content_name]]
-       (if recipients
-         [:div.media-recipients
-          recipients " " (if (= recipients 1)
-                           (t :gallery/recipient)
-                           (t :gallery/recipients))])
-       [:div.media-description description]]]
-     [:div.media-bottom
-      [:div {:class "pull-left"}
-       ]
-      (admin-gallery-badge badge_id "badges" state fetch-badges)]]))
+                                     )} issuer_content_name]]
+        (if recipients
+          [:div.media-recipients
+           recipients " " (if (= recipients 1)
+                            (t :gallery/recipient)
+                            (t :gallery/recipients))])
+        [:div.media-description description]]]
+      [:div.media-bottom
+       [:div {:class "pull-left"}
+        ]
+       (admin-gallery-badge badge_id "badges" state fetch-badges)]]))
 
 (defn load-more [state]
   (if (pos? (:badge_count @state))
@@ -301,7 +301,7 @@
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
-    [:div (into [:div {:class "row"
+    [:div (into [:div {:class "row wrap-grid"
                        :id    "grid"}]
                 (for [element-data badges]
                   (badge-grid-element element-data state)))
@@ -310,16 +310,16 @@
 
 
 (defn content [state badge_id]
-  (create-class {:reagent-render (fn []
-                                   [:div {:id "badge-gallery"}
-                                    [m/modal-window]
-                                    [gallery-grid-form state]
-                                    (if (:ajax-message @state)
-                                      [:div.ajax-message
-                                       [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                                       [:span (:ajax-message @state)]]
-                                      [gallery-grid state]
-                                      )])
+(create-class {:reagent-render (fn []
+                                 [:div {:id "badge-gallery"}
+                                  [m/modal-window]
+                                  [gallery-grid-form state]
+                                  (if (:ajax-message @state)
+                                    [:div.ajax-message
+                                     [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                     [:span (:ajax-message @state)]]
+                                    [gallery-grid state]
+                                    )])
                  :component-did-mount (fn []
                                         (if badge_id
                                           (mo/open-modal [:gallery :badges] {:badge-id badge_id})))}))
@@ -359,7 +359,5 @@
     (init-data state init-values)
     (fn []
       (if (session/get :user)
-        (do
-          (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
-          (layout/default site-navi [content state badge_id]))
+        (layout/default site-navi [content state badge_id])
         (layout/landing-page site-navi [content state badge_id])))))

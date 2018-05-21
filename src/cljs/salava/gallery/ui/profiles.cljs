@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [clojure.string :refer [trim]]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -37,7 +37,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -51,7 +51,7 @@
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -80,7 +80,7 @@
 
 (defn order-buttons [state]
   (let [order-atom (cursor state [:order_by])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
      [:div.col-sm-10
       [:label.radio-inline {:for "radio-date"}
@@ -144,7 +144,7 @@
 
 (defn profile-gallery-grid [state]
   (let [users (:users @state)]
-    (into [:div {:class "row"
+    (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data users]
             (profile-gallery-grid-element element-data)))))
@@ -184,5 +184,4 @@
                      :common-badges? true})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

@@ -7,7 +7,7 @@
             [salava.core.helper :refer [dump]]
             [reagent-modals.modals :as m]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :as h :refer [accepted-terms? js-navigate-to unique-values navigate-to path-for plugin-fun]]))
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun]]))
 
 (defn init-data [state]
   (ajax/GET
@@ -20,7 +20,7 @@
   [:a {:href "#" :on-click #(ajax/POST
                                 (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
                                 {:response-format :json
-                                 :keywords?       true
+                                 :keywords?       true          
                                  :handler         (fn [data]
                                                     (do
                                                       (init-data state)))
@@ -68,9 +68,9 @@
     [:div
      [m/modal-window]
      [:div {:id "badge-stats"}
-
+      
       (badge-connections badges state)
-
+      
       ]
      (user-connections)
      ]))
@@ -80,7 +80,6 @@
 (defn handler [site-navi]
   (let [state (atom {:badges []})]
     (init-data state)
-
+    
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

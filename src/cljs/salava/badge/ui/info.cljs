@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for private?]]
+            [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -124,7 +124,7 @@
         show-recipient-name-atom                                                 (cursor state [:show_recipient_name])
         revoked                                                                  (pos? revoked)
         selected-language                                                        (cursor state [:content-language])
-        {:keys [name description tags criteria_content image_file
+        {:keys [name description tags alignment criteria_content image_file
                 issuer_content_id issuer_content_name issuer_content_url issuer_contact
                 issuer_image issuer_description criteria_url
                 creator_content_id creator_name creator_url creator_email
@@ -171,8 +171,8 @@
            (admintool id "badge")))
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-         [:div {:class "row row_reverse"}
-          [:div {:class "col-md-3 badge-image"}
+         [:div {:class "row flip"}
+          [:div {:id "pull-right" :class "col-md-3 badge-image"}
            [:div.row
             [:div.col-xs-12
              [:img {:src (str "/" image_file)}]]]
@@ -234,6 +234,8 @@
                [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
+
+
              (if assertion
                [:div {:id "assertion-link"}
                 [:label (t :badge/Metadata)": "]
@@ -241,21 +243,35 @@
                           :on-click #(do (.preventDefault %)
                                          (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
                  (t :badge/Openassertion) "..."]])
+
              (if (pos? @show-recipient-name-atom)
                (if (and user-logged-in? (not owner?))
                  [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                  [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
-             [:div.description description]
-             [:h2.uppercase-header (t :badge/Criteria)]
-             [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]]]
+             [:div.description description]]]
+
+           (when-not (empty? alignment)
+             [:div.row
+              [:div.col-md-12
+               [:h2.uppercase-header (t :badge/Alignments)]
+               (doall
+                 (map (fn [{:keys [name url description]}]
+                        [:p {:key url}
+                         [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                      alignment))]])
+
            [:div {:class "row criteria-html"}
             [:div.col-md-12
-             {:dangerouslySetInnerHTML {:__html criteria_content}}]]
+             [:h2.uppercase-header (t :badge/Criteria)]
+             [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
+             [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
+
            (if (and (pos? show_evidence) evidence_url)
              [:div.row
               [:div.col-md-12
                [:h2.uppercase-header (t :badge/Evidence)]
                [:div [:a.link {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
+
            (if (and owner? (not-empty congratulations))
              [:div.row
               [:div.col-md-12 {:id "badge-congratulations"}
@@ -283,7 +299,6 @@
       (cond
         (= "initial" (:permission @state)) [:div]
         (and user (= "error" (:permission @state))) (layout/default-no-sidebar site-navi (err/error-content))
-        (and user (= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))

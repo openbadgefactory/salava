@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [accepted-terms? js-navigate-to navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.core.ui.field :as f]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -81,7 +81,7 @@
   (let [badge-id (get-in @block-atom [:badge :id] 0)
         image (get-in @block-atom [:badge :image_file])
         format (:format @block-atom)]
-    [:div.form-group
+    [:div.form-group.flip
      [:div.col-xs-8
       [:div.badge-select
        [:select {:class "form-control"
@@ -110,7 +110,7 @@
         sort-by (get-in @block-atom [:sort] "name")
         tagged-badges (->> @badges
                            (filter #(some (fn [t] (= t tag)) (:tags %))))]
-    [:div.form-group
+    [:div.form-group.flip
      [:div.col-xs-8
       [:div.badge-select
        [:select {:class "form-control"
@@ -145,7 +145,7 @@
    (into
      [:div.edit-block-files]
      (for [file (:files @block-atom)]
-       [:div.row
+       [:div.row.flip
         [:div.col-xs-7
          [:i {:class (str "page-file-icon fa " (file-icon (:mime_type file)))}]
          [:a {:href (str "/" (:path file))
@@ -155,7 +155,7 @@
          [:span {:class "remove-file-icon"
                  :on-click #(remove-file (cursor block-atom [:files]) file)}
           [:i {:class "fa fa-close"}]]]]))
-   [:div.form-group
+   [:div.form-group.flip
     [:div.col-xs-8
      [:div.file-select
       [:select {:class "form-control"
@@ -164,7 +164,7 @@
        [:option {:value ""} "- " (t :page/choosefile) " -"]
        (for [file @files]
          [:option {:value (:id file) :key (:id file)} (:name file)])]]]]
-   [:div.form-group
+   [:div.form-group.flip
     [:div.col-xs-12
      [:button {:class "btn btn-primary upload"
                :on-change #(.preventDefault %)}
@@ -177,7 +177,7 @@
 
 (defn edit-block-text [block-atom]
   (let [content (:content @block-atom)]
-    [:div.form-group
+    [:div.form-group.flip
      [:div.col-md-12
       [:input {:class     "form-control"
               :type      "text"
@@ -262,7 +262,7 @@
           [:div.move-down {:on-click #(f/move-field :down blocks index)}
            [:i {:class "fa fa-chevron-down"}]])]]
       [:div.field-content
-       [:div.form-group
+       [:div.form-group.flip
         [:div.col-xs-8
          [block-type block-atom]]
         [:div {:class "col-xs-4 field-remove"
@@ -291,7 +291,7 @@
      (t :page/Addblock)]]])
 
 (defn page-description [description]
-  [:div.form-group
+  [:div.form-group.flip
    [:label {:class "col-md-2"
             :for "page-description"}
     (t :page/Description)]
@@ -302,7 +302,7 @@
                 :on-change #(reset! description (.-target.value %))}]]])
 
 (defn page-title [name]
-  [:div.form-group
+  [:div.form-group.flip
    [:label {:class "col-md-2"
             :for "page-name"}
      (t :page/Title)]
@@ -352,6 +352,5 @@
                      :tags []})]
     (init-data state id)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))
 

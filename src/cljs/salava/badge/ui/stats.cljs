@@ -1,9 +1,8 @@
 (ns salava.badge.ui.stats
   (:require [reagent.core :refer [atom cursor]]
-            [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [js-navigate-to accepted-terms? path-for]]
+            [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [reagent-modals.modals :as m]
@@ -22,14 +21,16 @@
        [:div.panel-body
         [:div {:class "row header"}
          [:div.col-md-12
+           [:div.flip-table
            [:div.col-md-6]
-           [:div.col-md-2 (t :badge/Loggedinusers)]
+                      [:div.col-md-2 (t :badge/Loggedinusers)]
            [:div.col-md-2 (t :badge/Anonymoususers)]
-           [:div.col-md-2 (t :badge/Latestview)]]]
-         (into [:div {:class "row body"}]
+           [:div.col-md-2 (t :badge/Latestview)]]]]
+         (into [:div {:class "row body "}]
                (for [badge-views views
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:div.col-md-12
+                  [:div.flip-table
                   [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
                   [:div.col-md-5 [:a {:href "#"
                                  :on-click #(do
@@ -38,7 +39,7 @@
                                               (.preventDefault %)) }  name]]
                   [:div.col-md-2 [:label (t :badge/Loggedinusers)] reg_count]
                   [:div.col-md-2 [:label (t :badge/Anonymoususers)]anon_count]
-                  [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]))])]))
+                  [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
 
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations
@@ -121,5 +122,4 @@
   (let [state (atom {})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

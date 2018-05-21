@@ -15,7 +15,7 @@
             ;[salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
-            [salava.core.ui.helper :as h :refer [accepted-terms? js-navigate-to unique-values navigate-to path-for plugin-fun not-activated?]]))
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated?]]))
 
 
 (defn init-data [state]
@@ -395,6 +395,7 @@
         admin-events (or (:admin-events @state) nil)
         reload-fn (fn [] (init-data state))]
     [:div {:class "my-badges pages"}
+
      [m/modal-window]
      [pending-connections reload-fn]
      [badges-pending state]
@@ -427,5 +428,8 @@
 
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi [content state]))))
+
+
+
+

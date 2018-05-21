@@ -6,7 +6,7 @@
             [clojure.set :as set :refer [intersection]]
             [clojure.string :refer [upper-case]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :as h :refer [js-navigate-to accepted-terms? unique-values navigate-to path-for  not-activated?]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
@@ -16,6 +16,7 @@
             ;[salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :as i18n :refer [t]]))
+
 
 (defn init-data [state]
   (ajax/GET
@@ -163,7 +164,7 @@
                                     reverse
                                     flatten)
                  badges)]
-    (into [:div {:class "row"
+    (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data badges]
             (if (badge-visible? element-data state)
@@ -185,9 +186,7 @@
      [:div
       [badge-grid-form state]
       (cond
-        ;(= "false" (accepted-terms?)) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id]))))
         (not-activated?) (not-activated-banner)
-
         (empty? (:badges @state)) [no-badges-text]
         :else [badge-grid state])
 
@@ -206,5 +205,4 @@
                      :initializing true})]
     (init-data state)
     (fn []
-      (if (and (not (clojure.string/blank? (session/get-in [:user :id])))(= "false" (accepted-terms?))) (js-navigate-to (path-for (str "/user/terms/" (session/get-in [:user :id])))))
       (layout/default site-navi (content state)))))

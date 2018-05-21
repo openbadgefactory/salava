@@ -7,8 +7,7 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
-            [salava.core.i18n :refer [t]]
-            [salava.core.ui.terms :refer [default-terms default-terms-fr]]))
+            [salava.core.i18n :refer [t]]))
 
 (defn navi-parent [path]
   (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
@@ -142,9 +141,10 @@
        (logo)]
       [:div {:id "main-header"
               :class "navbar-header pull-right"}
-        [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
-         (t :user/Login)]
-       (if (not-empty items)
+       (when-not (:no-login site-navi)
+         [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
+          (t :user/Login)])
+       (when (not-empty items)
          [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]
@@ -165,18 +165,6 @@
     (if footer
       (footer)
       (base-footer))))
-
-(defn terms-and-conditions []
-  (let [terms (first (plugin-fun (session/get :plugins) "block" "terms"))]
-    (if terms
-      (terms)
-      (default-terms))))
-
-(defn terms-and-conditions-fr []
-  (let [terms-fr (first (plugin-fun (session/get :plugins) "block" "terms-fr"))]
-    (if terms-fr
-      (terms-fr)
-      (default-terms-fr))))
 
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi) "subnavi")]
@@ -207,7 +195,7 @@
       [:div {:class "container"}
        [:h2 heading]]])
    [:div {:class "container main-container"}
-    [:div {:class "row"}
+    [:div {:class "row flip"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
      [:div {:class "col-md-9"} content]]]
   ])
@@ -225,7 +213,7 @@
     [:div {:class "container"}
      (breadcrumb site-navi)]]
    [:div {:class "container main-container"}
-    [:div {:class "row"}
+    [:div {:class "row flip"}
      [:div {:class "col-md-2 col-sm-3"} (sidebar site-navi)]
      [:div {:class "col-md-10 col-sm-9" :id "content"} content]]]
    (footer site-navi)])
