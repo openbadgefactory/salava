@@ -25,3 +25,6 @@ SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evide
 
 -- name: select-badge-by-assertion
 SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0
+
+--name: delete-pending-user-badge!
+DELETE FROM user_badge WHERE id = :id AND user_id = 0 AND status = 'pending';

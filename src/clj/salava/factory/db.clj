@@ -110,3 +110,7 @@
     (catch Exception ex
       (log/error "receive-badge: failed to fetch pending badge")
       (log/error (.toString ex)))))
+
+(defn reject-badge! [ctx user-badge-id]
+  (delete-pending-user-badge! {:id user-badge-id} (u/get-db ctx))
+  {:success true})

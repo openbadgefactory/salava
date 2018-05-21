@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private?]]
+            [salava.core.ui.helper :refer [path-for private? js-navigate-to]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -26,15 +26,48 @@
             ))
 
 
+(defn reject-badge [user-badge-id]
+  (ajax/DELETE
+    (path-for (str "/obpv1/factory/receive/" user-badge-id))
+    {:handler (fn [data]
+                (when (:success data)
+                  (js-navigate-to "/user/login")))}))
+
+(defn reject-badge-modal [user-badge-id]
+  [:div
+   [:div.modal-header
+    [:button {:type "button"
+              :class "close"
+              :data-dismiss "modal"
+              :aria-label "OK"}
+     [:span {:aria-hidden "true"
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]]
+   [:div.modal-body
+    [:div {:class (str "alert alert-warning")}
+     (t :badge/RejectConfirm)]]
+   [:div.modal-footer
+    [:button {:type "button"
+              :class "btn btn-primary"
+              :data-dismiss "modal"}
+     (t :core/Cancel)]
+    [:button {:type "button"
+              :class "btn btn-warning"
+              :on-click #(reject-badge user-badge-id)}
+     (t :core/Delete)]]])
+
+
+
 (defn init-data [state id]
   (ajax/GET
     (path-for (str "/obpv1/badge/pending/" id))
     {:handler (fn [data]
-                (reset! state (assoc data :id id
-                                     :initializing false
-                                     :content-language (init-content-language (:content data))
-                                     :permission "success")))}
-    (fn [] (swap! state assoc :permission "error"))))
+                (if (empty? (:content data))
+                  (swap! state assoc :result "error")
+                  (reset! state (assoc data :id id
+                                       :initializing false
+                                       :content-language (init-content-language (:content data))
+                                       :result "success"))))}
+    (fn [] (swap! state assoc :result "error"))))
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
@@ -53,6 +86,8 @@
                 issuer_image issuer_description criteria_url
                 creator_content_id creator_name creator_url creator_email
                 creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
+
+    (session/assoc-in! [:user :pending :email] email)
 
     [:div {:id "badge-info"}
       [:div.panel
@@ -75,7 +110,7 @@
            [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
           [:hr]
           [:p
-           [:a {:href "#"} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]
+           [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]
           ]]]]
      [:div
       [m/modal-window]
@@ -138,13 +173,13 @@
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
-        state (atom {:initializing true
-                     :permission "initial"})
-        user (session/get :user)]
+        state (atom {:initializing true :result "initial"})
+        user (session/get :user)
+        site-navi (assoc site-navi :navi-items [] :no-login true)]
     (init-data state id)
     (fn []
       (cond
-        (= "initial" (:permission @state)) [:div]
-        (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
+        (= "initial" (:result @state)) [:div]
+        (= "error" (:result @state)) (layout/landing-page site-navi (err/error-not-found))
         :else (layout/landing-page site-navi (content state))))))
 
