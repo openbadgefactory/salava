@@ -63,7 +63,7 @@
                  :order          (trim order)
                  :issuer-name    (trim issuer-name)
                  :page_count     @page-count-atom}
-       :handler (fn [data]                  
+       :handler (fn [data]
                   (value-helper state (get-in data [:tags]))
                   (swap! state assoc :badges (:badges data)
                          :page_count (inc (:page_count @state))
@@ -86,7 +86,7 @@
                  :order          (trim order)
                  :issuer-name    (trim issuer-name)
                  :page_count     page_count}
-       :handler (fn [data]                  
+       :handler (fn [data]
                   (value-helper state (get-in data [:tags]))
                   (swap! state assoc
                          :badges (into (:badges @state) (:badges data))
@@ -113,9 +113,9 @@
   (let [tags  (cursor state [:tags])
         value (cursor state [:value])
         autocomplete-items (cursor state [:autocomplete-items])]
-    
+
     (fn []
-      [:div.form-group
+      [:div.form-group.flip
        [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
        [:div.col-sm-10
         [multiple-autocomplete
@@ -158,7 +158,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -173,7 +173,7 @@
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group
+    [:div.form-group.flip
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"
@@ -235,7 +235,7 @@
            :class "form-horizontal"}
      (if (not (:user-id @state))
        [:div
-        
+
         [country-selector state]
         [:div
          [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
@@ -273,7 +273,7 @@
                                      (swap! state  assoc :issuer-name issuer_content_name
                                              :advanced-search        true)
                                      (fetch-badges state)
-                                     
+
                                      )} issuer_content_name]]
         (if recipients
           [:div.media-recipients
@@ -290,7 +290,7 @@
   (if (pos? (:badge_count @state))
     [:div {:class "media message-item"}
      [:div {:class "media-body"}
-      [:span [:a {:href     "#" 
+      [:span [:a {:href     "#"
                   :id    "loadmore"
                   :on-click #(do
                                (get-more-badges state)
@@ -301,7 +301,7 @@
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
-    [:div (into [:div {:class "row"
+    [:div (into [:div {:class "row wrap-grid"
                        :id    "grid"}]
                 (for [element-data badges]
                   (badge-grid-element element-data state)))

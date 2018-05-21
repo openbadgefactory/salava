@@ -6,6 +6,9 @@
             [salava.core.ui.helper :refer [path-for]])
   )
 
+(defn error-not-found []
+  [:div
+   [:h4 "404 Not Found"]])
 
 (defn error-content []
   [:div

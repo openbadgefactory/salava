@@ -24,7 +24,7 @@
      (if (:error-message @state)
        [:div {:class "alert alert-warning" :role "alert"}
         (translate-text (:error-message @state))])
-     [:div.form-group
+     [:div.form-group.flip
       [:label {:class "col-xs-3"
                :for "input-password"}
        (t :user/Password)

@@ -22,7 +22,7 @@ SELECT bm.id, bm.badge_id, bm.message, bm.ctime, bm.user_id, u.first_name, u.las
 --name: select-badge-messages-count
 --get badge's messages
 SELECT ctime, user_id FROM badge_message WHERE badge_id = :badge_id AND deleted=0
-       
+
 --name: update-badge-message-deleted!
 UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :message_id
 
@@ -46,7 +46,7 @@ INSERT IGNORE INTO social_connections_badge (user_id, badge_id, ctime)
 DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_id = :badge_id
 
 --name: delete-connect-badge-by-badge-id!
-DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_id =  (SELECT badge_id from user_badge where badge_id = :badge_id AND user_id = :user_id) 
+DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_id =  (SELECT badge_id from user_badge where badge_id = :badge_id AND user_id = :user_id)
 
 --name: select-connection-badge
 SELECT badge_id FROM social_connections_badge WHERE user_id = :user_id AND badge_id = :badge_id
@@ -67,7 +67,7 @@ SELECT DISTINCT badge.id, bc.name, bc.image_file, bc.description FROM social_con
 INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, :verb, :object, :type, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: insert-event-owners!
-INSERT INTO social_event_owners (owner, event_id) VALUES (:owner, :event_id) 
+INSERT INTO social_event_owners (owner, event_id) VALUES (:owner, :event_id)
 
 
 --name: select-users-from-connections-badge
@@ -140,4 +140,8 @@ SELECT email FROM user_email WHERE user_id = :user_id AND verified= 0;
 --name: update-last-checked-user-event-owner!
 UPDATE social_event_owners SET last_checked = UNIX_TIMESTAMP() WHERE event_id IN (:event_ids) AND owner = :user_id
 
+--name: get-all-user-event
+SELECT id, subject, verb, object, type, ctime, mtime FROM social_event WHERE subject = :subject
 
+--name: select-message-by-badge-id-and-user-id
+SELECT message FROM badge_message WHERE badge_id=:badge_id AND user_id=:user_id AND ctime=:ctime;

@@ -1,6 +1,8 @@
 (ns salava.badge.routes
-  (:require [compojure.api.sweet :refer :all]
+  (:require [clojure.pprint :refer [pprint]]
+            [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
+            [ring.util.io :as io]
             [ring.swagger.upload :as upload]
             [schema.core :as s]
             [salava.badge.schemas :as schemas] ;cljc
@@ -9,6 +11,8 @@
             [salava.factory.db :as f]
             [salava.core.layout :as layout]
             [salava.core.access :as access]
+            [salava.badge.pdf :as pdf]
+            [salava.core.helper :refer [dump]]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -22,6 +26,7 @@
              (layout/main ctx "/import")
              (layout/main ctx "/export")
              (layout/main ctx "/upload")
+             (layout/main ctx "/receive/:id")
              (layout/main ctx "/stats"))
 
     (context "/obpv1/badge" []
@@ -58,6 +63,15 @@
                         (unauthorized)
                         (not-found)))))
 
+             (GET "/pending/:badgeid" req
+                  :path-params [badgeid :- Long]
+                  :summary "Get pending badge content"
+                  (if (= badgeid (get-in req [:session :pending :user-badge-id]))
+                    (ok (->> badgeid
+                             (b/fetch-badge ctx)
+                             (b/badge-issued-and-verified-by-obf ctx)))
+                      (not-found)))
+
              (GET "/issuer/:issuerid" []
                   :return schemas/IssuerContent
                   :path-params [issuerid :- String]
@@ -81,7 +95,7 @@
                         badge-owner-id (:owner badge)
                         visibility (:visibility badge)
                         owner? (= user-id badge-owner-id)]
-                    (if (= visibility "public") 
+                    (if (= visibility "public")
                       (do
                         (if badge
                           (b/badge-viewed ctx badgeid user-id))
@@ -130,6 +144,19 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/congratulate! ctx badgeid (:id current-user))))
+
+
+             (GET "/export-to-pdf" [badges lang-option]
+                   :summary "Export badges to PDF"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (let [badge-ids (map #(Integer/parseInt %)  (vals badges))
+                        h (if-not (empty? (rest badge-ids)) (str "attachment; filename=\"badge-collection_"lang-option".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang-option ".pdf\""))]
+                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
+                         ok
+                         (header "Content-Disposition" h)
+                         (header "Content-Type" "application/pdf")
+                         )))
 
              (GET "/export" []
                   :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
@@ -191,7 +218,7 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
-                   
+
              (POST "/save_raiting/:badgeid" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [badgeid :- Long]
