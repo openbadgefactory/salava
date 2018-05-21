@@ -38,6 +38,8 @@
              (layout/main ctx "/remote/facebook")
              (layout/main ctx "/remote/linkedin")
              (layout/main-meta ctx "/data/:id" :user)
+             (layout/main ctx "/delete-user")
+             (layout/main-meta ctx "/terms/:id" :user)
 
              (GET "/verify_email/:verification_key" []
                   :path-params [verification_key :- s/Str]
