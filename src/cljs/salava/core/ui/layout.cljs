@@ -8,7 +8,7 @@
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.terms :refer [default-terms]]))
+            [salava.core.ui.terms :refer [default-terms default-terms-fr]]))
 
 (defn navi-parent [path]
   (let [path (s/replace-first (str path) (re-pattern (base-path)) "")
@@ -171,6 +171,12 @@
     (if terms
       (terms)
       (default-terms))))
+
+(defn terms-and-conditions-fr []
+  (let [terms-fr (first (plugin-fun (session/get :plugins) "block" "terms-fr"))]
+    (if terms-fr
+      (terms-fr)
+      (default-terms-fr))))
 
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi) "subnavi")]

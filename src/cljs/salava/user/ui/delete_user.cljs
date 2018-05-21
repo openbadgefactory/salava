@@ -6,7 +6,7 @@
 
 (defn content [state]
   [:div
-   "You have decided to delete your account! Bye!"
+   (t :user/Userdeletemsg)
    ]
   )
 (defn handler [site-navi]

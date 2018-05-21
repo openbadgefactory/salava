@@ -11,7 +11,7 @@
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.terms :refer [default-terms default-terms-fr]]
+            #_[salava.core.ui.terms :refer [default-terms default-terms-fr]]
             ;;             [salava.user.ui.terms :as t]
 
             [salava.user.schemas :as schemas]
@@ -48,20 +48,13 @@
                   (when (and (= "success" (:status data)) (= "accepted" (:input data)))
                     (do
                       (session/put! :user-has-accepted-terms true)
-                    (js-navigate-to (follow-up-url)))))})))
+                      (js-navigate-to (follow-up-url)))))})))
 
 (defn terms-and-conditions-modal [state f name]
   (let [bname (keyword (str "user/" name))]
 
     [:div
      [:div
-      [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
-       [:ul
-        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (default-terms))} "EN"]]
-        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (default-terms-fr)) } "FR"]]]
-       ]
-      ]
-     [:div #_{:style {:text-align "center"}}
       [:div.modal-body
        [:div.row
         [:div.col-md-12
@@ -71,13 +64,17 @@
                    :aria-label   "OK"
                    }
           [:span {:aria-hidden  "true"
-                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-       [:div
-        ;;      [:form {:class "form-horizontal"}
-        ;;       [:div.form-group
+                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]
         [:div
-         (:modal-content @state)
-         #_(default-terms)]
+         [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
+          [:ul
+           [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions))} "EN"]]
+           [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions-fr)) } "FR"]]]
+          ]
+         ]]
+       [:div
+        [:div
+         (:modal-content @state)]
         [:fieldset {:class "col-md-12 checkbox"}
          [:div.col-md-12 {:style {:text-align "center"}} [:label
                                                           [:input {:type     "checkbox"
@@ -86,8 +83,6 @@
                                                                                   (swap! state assoc :accept-terms "accepted")(swap! state assoc :accept-terms "declined")
                                                                                   ))}]
                                                           (t :user/Doyouaccept)]]]
-        ;;        ]
-        ;;      ]
         ]]
       [:div.modal-footer {:style {:text-align "center"}}
        [:button {:type         "button"
@@ -163,7 +158,7 @@
                      :password      ""
                      :error-message (if (not-empty flash-message) flash-message)
                      :accept-terms "declined"
-                     :modal-content (default-terms)})
+                     :modal-content (layout/terms-and-conditions)})
         lang (:lang params)]
     (if (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang))

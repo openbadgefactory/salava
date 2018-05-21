@@ -44,18 +44,20 @@
                   :current-user current-user
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
-                    (if (= status "success")
-                      (if (not= (:status accepted-terms?) "accepted")
+                    (if-not (= (:status accepted-terms?) "accepted")
+                      (if current-user
+                        (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"(:id current-user))) (:id current-user))
                         (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"user-id)) user-id)
+                        )
+                      (if (= status "success")
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
                           (u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id))
                         ;(assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private private} )
 
-                        )
-                      (if current-user
-                        (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
-                        (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
+                        (if current-user
+                          (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
+                          (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message))))))
 
              (GET "/facebook/deauthorize" []
                   :query-params [code :- s/Str]
@@ -77,8 +79,8 @@
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
                     (if (not= (:status accepted-terms?) "accepted")
                       (if current-user
-                        #_(redirect (str (get-base-path ctx) "/user/terms/"(:id current-user)))
-                        #_(redirect (str (get-base-path ctx) "/user/terms/"user-id))
+                        ;(redirect (str (get-base-path ctx) "/user/terms/"(:id current-user)))
+                        ;(redirect (str (get-base-path ctx) "/user/terms/"user-id))
                         (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"(:id current-user))) (:id current-user))
                         (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"user-id)) user-id))
                       (if (= status "success")

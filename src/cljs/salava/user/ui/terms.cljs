@@ -7,7 +7,7 @@
     [salava.core.ui.ajax-utils :as ajax]
     [salava.core.helper :refer [dump]]
     [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]
-    [salava.core.ui.terms :refer [default-terms default-terms-fr]]))
+    #_[salava.core.ui.terms :refer [default-terms default-terms-fr]]))
 
 (defn toggle-accept-terms [state]
   (let [ user-id (:user-id @state)
@@ -16,7 +16,6 @@
       (path-for (str "/obpv1/user/accept_terms"))
       {:params {:accept_terms accept-terms :user_id user-id}
        :handler (fn [data]
-                  ;;                   (dump data)
                   (when (and (= "success" (:status data)) (= "accepted" (:input data)))
                     (js-navigate-to "social/stream"#_(follow-up-url))))})))
 
@@ -36,7 +35,7 @@
               :disabled     (if-not (= (:accept-terms @state) "accepted") "disabled")
               :on-click #(toggle-accept-terms state)
               }
-     (t :user/Accept)]]])
+     (t :user/Login)]]])
 
 (defn get-user-id [url]
   (if-let [match (re-find #"id=([\w-]+)" url) ]
@@ -48,32 +47,19 @@
    [:div
     [:div {:id "lang-buttons"}
      [:ul
-      [:li [:a {:href "#" :on-click #(swap! state assoc :content (default-terms))} "EN"]]
-      [:li [:a {:href "#" :on-click #(swap! state assoc :content (default-terms-fr)) } "FR"]]]
+      [:li [:a {:href "#" :on-click #(swap! state assoc :content (layout/terms-and-conditions) #_(default-terms))} "EN"]]
+      [:li [:a {:href "#" :on-click #(swap! state assoc :content (layout/terms-and-conditions-fr)) } "FR"]]]
      ]
     ]
-   (dump @state)
    [:div.panel
     (:content @state)
     (accept-terms-form state)]]
   )
 
-#_(defn init-data [state]
-    (let  [info (session/get :login-info)
-           user-id (js/parseInt (get-user-id js/window.location.search))]
-      (swap! state assoc :user-id user-id)
-      #_(ajax/GET
-          (path-for "/obpv1/user/terms" true)
-          {:handler (fn [data]
-                      (swap! state assoc :languages languages :permission "success"))}
-          (fn [] (swap! state assoc :permission "error")))
-      ))
 
 (defn handler [site-navi params]
   (let [state (atom {:accept-terms "declined"
                      :user-id (js/parseInt (:user-id params))
-                     :content (default-terms)})]
-    ;;             (init-data state)
-    ;;     (dump params)
+                     :content (layout/terms-and-conditions)})]
     (fn []
       (layout/landing-page site-navi (content state)))))
