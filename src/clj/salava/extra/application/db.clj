@@ -163,6 +163,7 @@
                                 :description (:description client)
                                 :url (:url client)
                                 :email (:email client)
+                                :endorsement []
                                 :image_file (if-not (string/blank? (:image client))
                                               (u/file-from-url ctx (:image client)))
                                 :revocation_list_url (:revocationList client)})
