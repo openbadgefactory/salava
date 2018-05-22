@@ -72,7 +72,7 @@
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} "Déclaration de protection des données"]
      [:div
-      [:ol
+      [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Responsable du traitement"]
         [:div
          [:p "Discendum Oy" ]
@@ -219,7 +219,7 @@
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} " Privacy Notice"]
      [:div
-      [:ol
+      [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Controller"]
         [:div
          [:p "Discendum Oy" ]

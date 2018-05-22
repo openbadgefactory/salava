@@ -12,7 +12,7 @@
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]
-            [salava.user.ui.login :refer [terms-and-conditions-modal]]))
+            [salava.user.ui.login :as login]))
 
 
 (defn follow-up-url []
@@ -178,9 +178,41 @@
    [:div.col-sm-6.right-column (linkedin-link nil "register")]])
 
 
+(defn terms-content [state]
+  [:div.panel
+   [:div
+    [:div.row
+     [:div {:style (if (or (string/blank? (layout/terms-and-conditions-fr)) (string/blank? (layout/terms-and-conditions))) {:display "none"})}
+      [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
+       [:ul
+        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content-lang "en")} "EN"]]
+        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content-lang "fr")} "FR"]]]]]]
+    [:div
+     (if (= "fr" (:modal-content-lang @state))
+       [:div
+        (layout/terms-and-conditions-fr)]
+       [:div
+        (layout/terms-and-conditions)])
+
+     [:fieldset {:class "col-md-12 checkbox"}
+      [:div.col-md-12 {:style {:text-align "center"}} [:label
+                                                       [:input {:type     "checkbox"
+                                                                :on-change (fn [e]
+                                                                             (if (.. e -target -checked)
+                                                                               (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
+                                                                               ))}]
+                                                       (t :user/Doyouaccept)]]]]]
+   [:div
+    {:style {:text-align "center"}}
+    [:button {:type      "button"
+              :class     "btn btn-primary"
+              :disabled  (if-not (= (:accept-terms @state) "accepted") "disabled")
+              :on-click #(swap! state assoc :show-terms false)}
+     (t :user/Createnewaccount)]]])
+
 (defn registeration-content [state]
+  (session/put! :seen-terms true)
   [:div
-   (session/put! :seen-terms true)
    (oauth-registration-form)
    (if (some #(= % "oauth") (session/get-in [:plugins :all]))
      [:div {:class "or"} (t :user/or)])
@@ -188,15 +220,17 @@
 
 (defn content [state]
   [:div {:id "registration-page"}
-   [m/modal-window]
-   [:div {:id "narrow-panel"
-          :class "panel"}
-    [:div.panel-body
-     (if (:registration-sent @state)
-       [:div {:class "alert alert-success"
-              :role "alert"}
-        (t :user/Welcomemessagesent) "."]
-       (registeration-content state))]]])
+   (if (:show-terms @state)
+     (terms-content state)
+     [:div {:id "narrow-panel"
+            :class "panel"}
+      [:div.panel-body
+       (if (:registration-sent @state)
+         [:div {:class "alert alert-success"
+                :role "alert"}
+          (t :user/Welcomemessagesent) "."]
+         (registeration-content state)
+         )]])])
 
 
 (defn init-data [state]
@@ -219,7 +253,8 @@
                      :registration-sent nil
                      :password ""
                      :password-verify ""
-                     :accept-terms nil})
+                     :accept-terms nil
+                     :show-terms true})
         lang (:lang params)]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)

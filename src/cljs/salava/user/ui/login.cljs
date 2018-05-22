@@ -46,7 +46,6 @@
 (defn toggle-accept-terms [state]
   (let [ user-id (:user-id @state)
          accept-terms (:accept-terms @state)]
-    (dump @state)
     (ajax/POST
       (path-for (str "/obpv1/user/accept_terms"))
       {:params {:accept_terms accept-terms :user_id user-id}
@@ -87,7 +86,7 @@
                                                           [:input {:type     "checkbox"
                                                                    :on-change (fn [e]
                                                                                 (if (.. e -target -checked)
-                                                                                  (swap! state assoc :accept-terms "accepted")(swap! state assoc :accept-terms "declined")
+                                                                                  (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
                                                                                   ))}]
                                                           (t :user/Doyouaccept)]]]
         ]]
@@ -143,7 +142,7 @@
          [:div.management-links
           (if-not (private?)
             [:div {:class "col-sm-6 left-column"}
-             [:a {:href "#" :on-click #(m/modal![terms-and-conditions-modal state f "Createnewaccount"] {:size :lg}) #_(path-for "/user/register")} (t :user/Createnewaccount)]])
+             [:a {:href "#" :on-click #(js-navigate-to "/user/register")} (t :user/Createnewaccount)]])
           [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
          [:div {:class "row oauth-buttons"}
