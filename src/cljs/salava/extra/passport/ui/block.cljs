@@ -19,7 +19,7 @@
      "Open Badge Factory ® and Open Badge Passport ® are registered trademarks"]]])
 
 
-(defn ^:export terms-fr []
+(defn ^:export terms_fr []
   [:div {:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} (clojure.string/upper-case "Conditions d’utilisation")]]

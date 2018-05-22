@@ -174,7 +174,7 @@
       (default-terms))))
 
 (defn terms-and-conditions-fr []
-  (let [terms-fr (first (plugin-fun (session/get :plugins) "block" "terms-fr"))]
+  (let [terms-fr (first (plugin-fun (session/get :plugins) "block" "terms_fr"))]
     (if terms-fr
       (terms-fr)
       (default-terms-fr))))
