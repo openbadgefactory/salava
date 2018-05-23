@@ -122,7 +122,7 @@
                                                [:chunk.chunk (str (t :user/Emailnotifications ul) ": ")][:chunk (str (:email_notifications $user) "  ")]
                                                [:chunk.chunk (str (t :user/Profilevisibility ul) ": ")][:chunk (:profile_visibility $user)]"\n"
                                                [:chunk.chunk (str (t :user/Aboutme ul) ":")]"\n"
-                                               [:paragraph (:about $user)]]
+                                               [:paragraph (or (:about $user) "-")]]
                                               [:spacer 2]
                                               [:paragraph.generic
                                                (if (> (count $emails) 1)
@@ -141,7 +141,9 @@
                                                            [:chunk.chunk (str (t :user/Loginaddress ul)": ")] [:chunk (str (:primary_address e))] "\n"]
                                                           )
                                                         (when-not (blank? (:backpack_id e))
-                                                          [:chunk.chunk (str (t :user/BackpackID ul) ": ") (:backpack_id e)])
+                                                          [:phrase
+                                                           [:chunk.chunk (str (t :user/BackpackID ul) ": ")][:chunk (str (:backpack_id e))]]
+                                                          )
 
                                                         ]))]
 
@@ -221,17 +223,24 @@
                                                                                                                           [:paragraph
                                                                                                                            [:chunk.chunk (str (t :badge/Name ul) ": ")] [:chunk (:name a)]"\n"
                                                                                                                            [:chunk.chunk (str (t :page/Description ul) ": ")] [:chunk (:description a)]"\n"
-                                                                                                                           [:chunk.chunk (str (t :badge/Url ul) ": ")] [:chunk.link (:url a)]]))
+                                                                                                                           [:chunk.chunk (str (t :badge/URL ul) ": ")] [:chunk.link (:url a)]]))
                                                                                                                   ])
 
                                                                                                                [:chunk.chunk (str (t :badge/Viewed ul) ": ")] [:chunk (str (:view_count more-badge-info) " " (t :badge/times ul)" ")]", "
                                                                                                                [:chunk.chunk (str (t :badge/Recipientcount ul) ": ")][:chunk (str (:recipient_count more-badge-info) " ")]", "
                                                                                                                [:chunk.chunk (str (t :badge/Congratulated ul) "?: ")][:chunk (str congratulated?  #_(:congratulated? more-badge-info ) " ")]"\n"
                                                                                                                ;;TEST congratulated!
-                                                                                                               (when (= true  congratulated?
-                                                                                                                        [:paragraph
-                                                                                                                         (into [:paragraph] (for [c (:congratulations more-badge-info)]
-                                                                                                                                              [:chunk (str c)]))]))
+                                                                                                               (when-not (empty? (:congratulations more-badge-info))
+                                                                                                                 [:paragraph
+                                                                                                                  [:chunk.chunk (str (t :badge/Congratulations ul) ": ")]"\n"
+                                                                                                                  [:paragraph
+                                                                                                                   (into [:paragraph] (for [c (:congratulations more-badge-info)]
+                                                                                                                                        [:phrase
+                                                                                                                                         [:chunk (str c)] "\n"]))]
+                                                                                                                  #_(when (= true  congratulated?
+                                                                                                                             [:paragraph
+                                                                                                                              (into [:paragraph] (for [c (:congratulations more-badge-info)]
+                                                                                                                                                   [:chunk (str c)]))]))])
                                                                                                                [:chunk.chunk (str (capitalize (t :badge/endorsements ul)) ": ")][:chunk (str (:endorsement_count %))]"\n"
                                                                                                                (when (not-empty endorsements)
                                                                                                                  (into [:paragraph {:indent 0}]
