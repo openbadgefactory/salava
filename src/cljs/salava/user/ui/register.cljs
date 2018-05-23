@@ -238,7 +238,9 @@
     (path-for "/obpv1/user/register" true)
     {:handler (fn [data]
                 (let [{:keys [languages]} data]
-                  (swap! state assoc :languages languages :permission "success")))}
+                  (swap! state assoc :languages languages
+                                     :permission "success"
+                                     :email     (session/get-in! [:user :pending :email] ""))))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]

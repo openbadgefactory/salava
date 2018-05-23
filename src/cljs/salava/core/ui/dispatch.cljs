@@ -30,6 +30,7 @@
 (session/put! :plugins (get-in ctx [:plugins :all]))
 (session/put! :private (:private ctx))
 (session/put! :footer (:footer ctx))
+(session/put! :factory-url (:factory-url ctx))
 ;;;
 
 

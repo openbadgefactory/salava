@@ -96,17 +96,25 @@
      :issued_by_factory issued
      :verified_by_factory (and issued (verified-by-factory ctx badge))}))
 
+(defn receive-banner [banner]
+  (cond
+    (string/blank? banner) ""
+    (> (count banner) 100) ""
+    (re-find #"[^0-9a-z\.]" banner) ""
+    :else banner))
 
-(defn receive-badge [ctx e k t]
+(defn receive-badge-json [ctx e k t]
+  (let [receive-url (str (get-in ctx [:config :factory :url]) "/c/receive/check.json"
+                         "?t=" t "&k=" k "&e=" (u/url-encode e))]
+    (http/json-get receive-url)))
+
+(defn receive-badge [ctx {:keys [email assertion_url]}]
   (try
-    (let [receive-url (str (get-in ctx [:config :factory :url]) "/c/receive/check.json"
-                           "?t=" t "&k=" k "&e=" (u/url-encode e))
-          {:keys [email assertion_url]} (http/json-get receive-url)]
-      (if (and email assertion_url)
-        (if-let [id (select-badge-by-assertion {:email email :url assertion_url} (u/get-db-1 ctx))]
-          (:id id)
-          (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url)))
-        (log/error "receive-badge: failed to fetch pending badge")))
+    (if (and email assertion_url)
+      (if-let [id (select-badge-by-assertion {:email email :url assertion_url} (u/get-db-1 ctx))]
+        (:id id)
+        (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url)))
+      (log/error "receive-badge: failed to fetch pending badge"))
     (catch Exception ex
       (log/error "receive-badge: failed to fetch pending badge")
       (log/error (.toString ex)))))
