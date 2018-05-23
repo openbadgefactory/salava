@@ -358,23 +358,23 @@
                                                  (when-not (empty? $user_followers)
                                                    (into [:paragraph
                                                           [:phrase.chunk (str (t :social/Followerusers ul) ": ")] [:spacer 0]] (for [follower $user_followers
-                                                                                                                                  :let [follower-id (:owner_id follower)
-                                                                                                                                        fname (:first_name follower)
-                                                                                                                                        lname (:last_name follower)
-                                                                                                                                        status (:status follower)]]
-                                                                                                                              [:paragraph
-                                                                                                                               [:anchor {:target (str site-url "/" "user/profile/" follower-id)} [:chunk.link (str fname " " lname ",  ")]]
-                                                                                                                               [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk status]])))
+                                                                                                                                     :let [follower-id (:owner_id follower)
+                                                                                                                                           fname (:first_name follower)
+                                                                                                                                           lname (:last_name follower)
+                                                                                                                                           status (:status follower)]]
+                                                                                                                                 [:paragraph
+                                                                                                                                  [:anchor {:target (str site-url "/" "user/profile/" follower-id)} [:chunk.link (str fname " " lname ",  ")]]
+                                                                                                                                  [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk status]])))
                                                  (when-not (empty? $user_following)
                                                    (into [:paragraph
                                                           [:phrase.chunk (str (t :social/Followedusers ul) ": ")][:spacer 0]] (for [f $user_following
-                                                                                                                                 :let [followee-id (:user_id f)
-                                                                                                                                       fname (:first_name f)
-                                                                                                                                       lname (:last_name f)
-                                                                                                                                       status (:status f)]]
-                                                                                                                             [:paragraph
-                                                                                                                              [:anchor {:target (str site-url "/" "user/profile/" followee-id)} [:chunk.link (str fname " " lname ", ")]]
-                                                                                                                              [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk status]])))
+                                                                                                                                    :let [followee-id (:user_id f)
+                                                                                                                                          fname (:first_name f)
+                                                                                                                                          lname (:last_name f)
+                                                                                                                                          status (:status f)]]
+                                                                                                                                [:paragraph
+                                                                                                                                 [:anchor {:target (str site-url "/" "user/profile/" followee-id)} [:chunk.link (str fname " " lname ", ")]]
+                                                                                                                                 [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk status]])))
                                                  ])
 
                                               (when-not (empty? $connections)
@@ -400,12 +400,7 @@
                                                       (for [e (reverse $events)]
                                                         [[:cell (:verb e)]
                                                          [:cell  [:phrase
-                                                                  [:anchor {:target
-                                                                            (case (:type e)
-                                                                              "user" (str site-url "/user/profile/" (get-in e [:info :id]))
-                                                                              "badge" (str site-url "/badge/info/" (get-in e [:info :badge_id]))
-                                                                              "page" (str site-url "/page/view/" (get-in e [:info :page_id]))
-                                                                              "admin" "#") }[:chunk (or (get-in e [:info :object_name]) "-")]]"\n"
+                                                                  [:chunk (or (get-in e [:info :object_name]) "-")]"\n"
                                                                   (if (contains? (:info e) :message)
                                                                     [:chunk {:style :italic} (get-in e [:info :message :message])])]]
                                                          [:cell (:type e)]
