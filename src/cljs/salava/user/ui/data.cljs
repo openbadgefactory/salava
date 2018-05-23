@@ -46,7 +46,7 @@
 
          [:button {:class "btn btn-primary"
                    :on-click #(export-data-to-pdf state)}
-          (t :badge/Export)]]]
+          (t :user/Exportdata)]]]
 
        [:div.row
         (when profile_picture [:div {:class "col-md-3 col-sm-3 col-xs-12 "}
