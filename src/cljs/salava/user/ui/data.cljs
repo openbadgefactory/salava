@@ -34,7 +34,7 @@
     [:div {:id "cancel-account"}
      [:h1.uppercase-header (t :user/Mydata)]
      [:div
-      [:p (str (t :user/Deleteinstruction)  (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (t :user/Removeaccount)]]
+      [:p (str (t :user/Deleteinstruction) " " (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (str (t :user/Removeaccount) ".")]]
       ]
 
      [:div.panel {:id "profile"}
