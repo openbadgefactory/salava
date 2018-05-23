@@ -38,12 +38,14 @@
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
 
-             (GET "/facebook" []
+             (GET "/facebook" req
                   :query-params [{code :- s/Str nil}
                                  {error :- s/Str nil}]
                   :current-user current-user
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
+                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                    (dump req)
                     (if-not (= (:status accepted-terms?) "accepted")
                       (if current-user
                         (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"(:id current-user))) (:id current-user))
@@ -68,14 +70,14 @@
                       (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
                       (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message))))
 
-             (GET "/linkedin" []
+             (GET "/linkedin" req
                   :query-params [{code :- s/Str nil}
                                  {state :- s/Str nil}
                                  {error :- s/Str nil}]
                   :current-user current-user
-
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
                         {:keys [status user-id message]} r
+                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
                     (if (not= (:status accepted-terms?) "accepted")
                       (if current-user
