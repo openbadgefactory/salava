@@ -72,7 +72,7 @@
                   :summary "Get languages"
                   (if (private? ctx)
                     (forbidden)
-                    (ok {:languages (get-in ctx [:config :core :languages])})))
+                    (assoc-in (ok {:languages (get-in ctx [:config :core :languages])}) [:session :seen-terms] true)))
 
              (POST "/register" req
                    ;:return
