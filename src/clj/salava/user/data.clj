@@ -417,7 +417,7 @@
                                                  [:spacer 0]
                                                  (when-not (empty? $user_followers)
                                                    (into [:paragraph
-                                                          [:phrase.chunk (str (t :social/Followerusers ul) ": ")] [:spacer 0]] (for [follower $user_followers
+                                                          [:phrase.chunk (str (t :social/Followersusers ul) ": ")] [:spacer 0]] (for [follower $user_followers
                                                                                                                                      :let [follower-id (:owner_id follower)
                                                                                                                                            fname (:first_name follower)
                                                                                                                                            lname (:last_name follower)
