@@ -203,10 +203,10 @@
                                                                                                                (when-not (blank? (:status b))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :user/Status ul) ": ")][:chunk  (str (:status b) "  ")]])
-                                                                                                               (when-not (blank? (:verified_by_obf b))
+                                                                                                               (when-not (blank? (str (:verified_by_obf b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Verifiedbyobf ul) ": ")][:chunk (str (:verified_by_obf b) "  ")]])
-                                                                                                               (when-not (blank? (:issued_by_obf b))
+                                                                                                               (when-not (blank? (str (:issued_by_obf b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Issuedbyobf ul) ": ")][:chunk (str (:issued_by_obf b))]"\n"])
                                                                                                                (when (not-empty (:tags b))
