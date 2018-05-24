@@ -1,1 +1,4 @@
-{:css ["/css/extra/hpass.css"]}
+{:css ["/css/extra/hpass.css"]
+:font ["/css/extra/fonts/GTAmerica/GT-America-Standard-Bold.eot"]
+:logo ["/img/extra/hpass/logo.png"]
+ }

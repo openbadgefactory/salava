@@ -1,1 +1,2 @@
-{:css ["/css/extra/kirkwood.css"]}
+{:css ["/css/extra/kirkwood.css"]
+:logo ["/img/extra/kirkwood/logo.png"]}
