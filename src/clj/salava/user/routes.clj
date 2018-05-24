@@ -62,7 +62,7 @@
                          login-status (-> (u/login-user ctx email password)
                                           (assoc :terms (:status accepted-terms?)))]
                      (if (= "success" (:status login-status))
-                       (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]))
+                       (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) false)
                        (ok login-status))))
 
              (POST "/logout" []
@@ -95,7 +95,7 @@
                          ;(ok save)
                          (let [login-status (u/login-user ctx email password)]
                            (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (= "accepted" (:input update-accept-term)))
-                             (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]))
+                             (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
                              (ok login-status)))
                          (cond
                            (not (right-token? ctx (:token form-content)))        (forbidden)
