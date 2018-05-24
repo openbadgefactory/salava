@@ -1,1 +1,2 @@
-{:css ["/css/extra/passport.css"]}
+{:css ["/css/extra/passport.css"]
+ :logo ["/img/extra/passport/logo.png"]}
