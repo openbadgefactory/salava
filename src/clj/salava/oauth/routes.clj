@@ -45,21 +45,21 @@
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
-                    (dump req)
-                    (if-not (= (:status accepted-terms?) "accepted")
-                      (if current-user
-                        (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"(:id current-user))) (:id current-user))
-                        (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"user-id)) user-id)
-                        )
-                      (if (= status "success")
+
+                    (if (= status "success")
+
+                      (if-not (= (:status accepted-terms?) "accepted")
+                        (if current-user
+                          (redirect (str (get-base-path ctx) "/user/terms" (:id current-user)))
+                          (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/" user-id)) user-id))
+
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                          (u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id))
-                        ;(assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private private} )
+                          (u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)))
 
                         (if current-user
                           (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
-                          (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message))))))
+                          (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
              (GET "/facebook/deauthorize" []
                   :query-params [code :- s/Str]
@@ -77,31 +77,25 @@
                   :current-user current-user
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
                         {:keys [status user-id message]} r
-                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
+                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
-                    (if (not= (:status accepted-terms?) "accepted")
-                      (if current-user
-                        ;(redirect (str (get-base-path ctx) "/user/terms/"(:id current-user)))
-                        ;(redirect (str (get-base-path ctx) "/user/terms/"user-id))
-                        (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"(:id current-user))) (:id current-user))
-                        (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"user-id)) user-id))
-                      (if (= status "success")
+
+                    (if (= status "success")
+
+                      (if (not= (:status accepted-terms?) "accepted")
+
+                        (if current-user
+                          (redirect (str (get-base-path ctx) "/user/terms" (:id current-user)))
+                          (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/" user-id)) user-id))
+
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                          (u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id))
-                        (if current-user
-                          (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
-                          (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))
-                      )
-                    #_(if (= status "success")
-                        (if (not= (:status accepted-terms?) "accepted")
-                          (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/"user-id)) user-id)
-                          (if current-user
-                            (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                            (u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)))
-                        (if current-user
-                          (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
-                          (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
+                          (u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)))
+
+                      (if current-user
+                        (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)
+                        (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
+
 
              (GET "/linkedin/deauthorize" []
                   :return {:status (s/enum "success" "error")
