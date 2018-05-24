@@ -206,7 +206,7 @@
                                                                                                                (when-not (blank? (str (:verified_by_obf b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Verifiedbyobf ul) ": ")][:chunk (str (:verified_by_obf b) "  ")]])
-                                                                                                               (when-not (blank? (str (:issued_by_obf b)))
+                                                                                                               (when-not (blank? (:issued_by_obf b))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Issuedbyobf ul) ": ")][:chunk (str (:issued_by_obf b))]"\n"])
                                                                                                                (when (not-empty (:tags b))
@@ -268,11 +268,7 @@
                                                                                                                   [:paragraph
                                                                                                                    (into [:paragraph] (for [c (:congratulations more-badge-info)]
                                                                                                                                         [:phrase
-                                                                                                                                         [:chunk (str c)] "\n"]))]
-                                                                                                                  #_(when (= true  congratulated?
-                                                                                                                             [:paragraph
-                                                                                                                              (into [:paragraph] (for [c (:congratulations more-badge-info)]
-                                                                                                                                                   [:chunk (str c)]))]))])
+                                                                                                                                         [:chunk (str c)] "\n"]))]])
                                                                                                                (when-not (blank? (str (:endorsement_count %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (capitalize (t :badge/endorsements ul)) ": ")][:chunk (str (:endorsement_count %))]"\n"])
@@ -418,13 +414,13 @@
                                                  (when-not (empty? $user_followers)
                                                    (into [:paragraph
                                                           [:phrase.chunk (str (t :social/Followersusers ul) ": ")] [:spacer 0]] (for [follower $user_followers
-                                                                                                                                     :let [follower-id (:owner_id follower)
-                                                                                                                                           fname (:first_name follower)
-                                                                                                                                           lname (:last_name follower)
-                                                                                                                                           status (:status follower)]]
-                                                                                                                                 [:paragraph
-                                                                                                                                  [:anchor {:target (str site-url "/" "user/profile/" follower-id)} [:chunk.link (str fname " " lname ",  ")]]
-                                                                                                                                  [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk status]])))
+                                                                                                                                      :let [follower-id (:owner_id follower)
+                                                                                                                                            fname (:first_name follower)
+                                                                                                                                            lname (:last_name follower)
+                                                                                                                                            status (:status follower)]]
+                                                                                                                                  [:paragraph
+                                                                                                                                   [:anchor {:target (str site-url "/" "user/profile/" follower-id)} [:chunk.link (str fname " " lname ",  ")]]
+                                                                                                                                   [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk status]])))
                                                  (when-not (empty? $user_following)
                                                    (into [:paragraph
                                                           [:phrase.chunk (str (t :social/Followedusers ul) ": ")][:spacer 0]] (for [f $user_following
