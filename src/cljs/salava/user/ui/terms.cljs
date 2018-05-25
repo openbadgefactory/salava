@@ -31,7 +31,7 @@
     [:button {:type         "button"
               :class        "btn btn-primary"
               :disabled     (if-not (= (:accept-terms @state) "accepted") "disabled")
-              :on-click #(toggle-accept-terms state)
+              :on-click #(toggle-accept-terms)
               }
      (t :user/Login)]]])
 
