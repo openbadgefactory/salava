@@ -38,7 +38,7 @@
                                       ["/edit/email-addresses" email-addresses/handler]
                                       ["/edit/profile" edit-profile/handler]
                                       ["/cancel" cancel/handler]
-                                      [["/terms/" [#"\d+" :user-id]] terms/handler]
+                                      ["/terms" terms/handler]
                                       ["/delete-user" delete-user/handler]
                                       [["/data/" [#"\d+" :user-id]] data/handler]]})
 
