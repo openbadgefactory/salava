@@ -221,7 +221,8 @@
                                           "badge" (t (keyword (str "social/Emailbadge")))
                                            "user" (lower-case (t (keyword (str "social/User"))))
                                            "ticket" (t (keyword (str "social/ticket")))
-                                          "admin" (lower-case (t (keyword (str "admin/Admin")))))]]
+                                          "admin" (lower-case (t (keyword (str "admin/Admin"))))
+                                          nil)]]
                              [:td [:div (case (str (:verb e)(:type e))
                                           "publishpage"  (or (get-in e [:info :object_name]) "-")
                                           "unpublishpage" (or (get-in e [:info :object_name]) "-")
