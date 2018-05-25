@@ -50,12 +50,14 @@
 
                       (if-not (= (:status accepted-terms?) "accepted")
                         (if current-user
-                          (redirect (str (get-base-path ctx) "/user/terms" (:id current-user)))
-                          (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/" user-id)) user-id))
+                          (redirect (str (get-base-path ctx) "/user/terms/"))
+                          ;(u/set-session ctx (found (str (get-base-path ctx) "/user/terms/")) user-id)
+                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/user/terms/")) user-id (get-in req [:session :pending :user-badge-id]) false))
 
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                          (u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)))
+                          ;(u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)
+                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
                         (if current-user
                           (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
@@ -85,12 +87,14 @@
                       (if (not= (:status accepted-terms?) "accepted")
 
                         (if current-user
-                          (redirect (str (get-base-path ctx) "/user/terms" (:id current-user)))
-                          (u/set-session ctx (found (str (get-base-path ctx) "/user/terms/" user-id)) user-id))
+                          (redirect (str (get-base-path ctx) "/user/terms/" (:id current-user)))
+                          ;(u/set-session ctx (found (str (get-base-path ctx) "/user/terms/" user-id)) user-id)
+                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/user/terms/")) user-id (get-in req [:session :pending :user-badge-id]) false))
 
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
-                          (u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)))
+                          ;(u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)
+                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)

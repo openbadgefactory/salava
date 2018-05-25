@@ -39,7 +39,7 @@
              (layout/main ctx "/remote/linkedin")
              (layout/main-meta ctx "/data/:id" :user)
              (layout/main ctx "/delete-user")
-             (layout/main-meta ctx "/terms/:id" :user)
+             (layout/main ctx "/terms")
 
              (GET "/verify_email/:verification_key" []
                   :path-params [verification_key :- s/Str]
@@ -208,10 +208,9 @@
              (POST "/accept_terms" []
                    :return {:status (s/enum "success" "error") :input s/Str}
                    :summary "save info that user has accepted GDPR terms and conditions"
-                   :body-params [user_id :- s/Int
-                                 accept_terms :- (s/enum "declined" "accepted")]
                    :auth-rules access/signed
-                   (ok (u/insert-user-terms ctx user_id accept_terms)))
+                   :current-user current-user
+                   (ok (u/insert-user-terms ctx (:id current-user) "accepted")))
 
              (GET "/data/:userid" []
                   :summary "Get everything on user"
