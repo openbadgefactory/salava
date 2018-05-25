@@ -12,7 +12,8 @@
             [reagent.core :refer [atom cursor]]
             [salava.user.ui.profile :as profile]
             [salava.core.ui.modal :as mo]
-            [salava.core.i18n :refer [t translate-text]]))
+            [salava.core.i18n :refer [t translate-text]]
+            [clojure.string :refer [capitalize lower-case upper-case]]))
 
 (defn export-data-to-pdf [state]
   (let [user-id (:user-id @state)]
@@ -61,9 +62,9 @@
           [:div {:class "col-md-9 col-sm-9 col-xs-12"}
            [:div.row
             [:div.col-xs-12 [:b (t :user/UserID)": "] id]
-            [:div.col-xs-12 [:b (str (t :user/Role) ": ")] role]
-            [:div.col-xs-12 [:b (str (t :user/Firstname)": ")] first_name]
-            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Lastname)": ")] last_name]
+            [:div.col-xs-12 [:b (str (t :user/Role) ": ")] (if (= "user" role) (t :social/User) (t :admin/Admin))]
+            [:div.col-xs-12 [:b (str (t :user/Firstname)": ")] (capitalize first_name)]
+            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Lastname)": ")] (capitalize last_name)]
             (if (not-empty about)
               [:div
                [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
@@ -93,21 +94,12 @@
                                  (= "blog" field) (hyperlink value)
                                  :else (t value))]]))]]])
 
-            [:div.col-xs-12 [:b (t :user/Language)": "] language]
+            [:div.col-xs-12 [:b (t :user/Language)": "] (upper-case language)]
             [:div.col-xs-12 [:b (t :user/Country)": "] country]
-            #_[:div.col-xs-12 [:b (t :user/Emailaddresses)": "] (count email)]
-            #_(doall
-                (for [e email]
-                  ^{:key e}[:div
-                            [:div.col-xs-12 [:b (str (t :user/Email)": ")] (:email e)]
-                            [:div.col-xs-12 [:b (str (t :user/verified)": ")] (str (:verified e))]
-                            (if (true? (:primary_address e)) [:div.col-xs-12 [:b (str (t :user/Loginaddress)": ")] (str (:primary_address e))])
-                            (if (:backpack_id e) [:div.col-xs-12 [:b (str (t :user/BackpackID) ": ") ](str (:backpack_id e))])
-                            ]))
-            [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")] (str email_notifications)]
-            [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (str private)]
-            [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (str activated?)]
-            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] profile_visibility]]]]
+            [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No)) #_(str email_notifications)]
+            [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))]
+            [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))]
+            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))]]]]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
           [:h2 {:class "uppercase-header"} [:a {:href (path-for "/user/edit/email-addresses")} (str (if (empty? (rest email)) (t :user/Email) (t :user/Emailaddresses)))]]
@@ -123,8 +115,8 @@
               (for [e email]
                 ^{:key e}[:tr
                           [:td (:email e)]
-                          [:td (str (:verified e))]
-                          [:td (str (:primary_address e))]
+                          [:td (if (true? (:verified e)) (t :core/Yes) (t :core/No) )]
+                          [:td (if (true? (:primary_address e)) (t :core/Yes) (t :core/No))]
                           [:td (or (:backpack_id e) "-")]]))]]]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12" :style {:margin-bottom "20px"}}
@@ -144,14 +136,8 @@
              (doall
                (for [p pending_badges]
                  ^{:key p}[:div
-                           #_[:div.col-xs-12 [:b (str (t :badge/BadgeID) ": ")] (str (:badge_id p))]
                            [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
                            [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Imagefile) ": ")] (str site-url "/" (:image_file p))]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Assertionurl) ": ")] (:assertion_url p)]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Badgevisibility) ": ")] (str (:visibility p))]
-                           #_[:div.col-xs-12 [:b (str (t :badge/Issuedon) ": ")] (date-from-unix-time (* 1000 (:issued_on p)))]
-                           #_(when (:expires_on p) [:div.col-xs-12 [:b (str (t :badge/Expireson) ": ")] (date-from-unix-time (* 1000 (:expires_on p)))])
                            ]))])]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
@@ -197,8 +183,8 @@
                             lname (:last_name follower)
                             status (:status follower)]]
                   ^{:key follower}[:div
-                                   [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:p [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) ", ")] [:b (str (t :user/Status) ": ")] (:status follower)]]
-                                   #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status follower)]
+                                   [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:p [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) ", ")] [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]]
+                                   #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]
                                    ])
                 [:br]])
 
@@ -211,8 +197,7 @@
                             lname (:last_name f)
                             status (:status f)]]
                   ^{:key f}[:div
-                            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:p [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) ", ")] [:b (str (t :user/Status) ": ")] (:status f)]]
-                            #_ [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (:status f)]
+                            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:p [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) ", ")] [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status f))))]]
                             ])]
                )])
 
@@ -230,8 +215,13 @@
                (doall
                  (for [e (reverse events)]
                    ^{:key e}[:tr
-                             [:td [:div (:verb e)]]
-                             [:td [:div (or (:type e) (:report_type e))]]
+                             [:td [:div (t (keyword (str "social/"(:verb e))))]]
+                             [:td [:div (case (or (:type e) (:report_type e))
+                                          "page" (t (keyword (str "social/Emailpage")))
+                                          "badge" (t (keyword (str "social/Emailbadge")))
+                                           "user" (lower-case (t (keyword (str "social/User"))))
+                                           "ticket" (t (keyword (str "social/ticket")))
+                                          "admin" (lower-case (t (keyword (str "admin/Admin")))))]]
                              [:td [:div (case (str (:verb e)(:type e))
                                           "publishpage"  (or (get-in e [:info :object_name]) "-")
                                           "unpublishpage" (or (get-in e [:info :object_name]) "-")
