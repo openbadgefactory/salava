@@ -119,7 +119,7 @@
                                                                    (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))]
                                                                     (when-not (empty? badge)
                                                                       [:phrase {:align :center}
-                                                                       [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (or (:qr_code (first badge)) "")]]
+                                                                       [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (or (:qr_code (first badge)) "")]]"\n"
 ;;                                                                        [:spacer 0]
                                                                        [:chunk.generic (t :badge/Scantobadge ul)]]))]
                                                                   ]
