@@ -250,13 +250,14 @@
                                                                                                                  )
                                                                                                                (when (not-empty (:alignment %))
                                                                                                                  [:paragraph
-                                                                                                                  [:chunk.chunk (str (t :badge/Alignments ul) ": ")]"\n"
+                                                                                                                  [:chunk.chunk (str (t :badge/Alignments ul) ": " (count (:alignment %)))]"\n"
                                                                                                                   (into [:paragraph ]
                                                                                                                         (for [a (:alignment %)]
                                                                                                                           [:paragraph
-                                                                                                                           [:chunk.chunk (str (t :badge/Name ul) ": ")] [:chunk (or (:name a) "-")]"\n"
-                                                                                                                           [:chunk.chunk (str (t :page/Description ul) ": ")] [:chunk (or (:description a) "-")]"\n"
-                                                                                                                           [:chunk.chunk (str (t :badge/URL ul) ": ")] [:chunk.link (or (:url a) "")]]))
+                                                                                                                           [:chunk (or (:name a) "-")]"\n"
+                                                                                                                           [:chunk (or (:description a) "-")]"\n"
+                                                                                                                           [:chunk.link (or (:url a) "")]
+                                                                                                                           [:spacer 0]]))
                                                                                                                   ])
 
                                                                                                                (when-not (blank? (str (:view_count more-badge-info)))
@@ -268,7 +269,6 @@
                                                                                                                (when-not (blank? (str congratulated?))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Congratulated ul) "?: ")][:chunk (str (if (true? congratulated?) (t :core/Yes ul) (t :core/No ul))" ")]"\n"])
-                                                                                                               ;;TEST congratulated!
                                                                                                                (when-not (empty? (:congratulations more-badge-info))
                                                                                                                  [:paragraph
                                                                                                                   [:chunk.chunk (str (t :badge/Congratulations ul) ": ")]"\n"
