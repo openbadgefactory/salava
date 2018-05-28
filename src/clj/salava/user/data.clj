@@ -225,7 +225,7 @@
                                                                                                                   [:chunk.chunk (str (t :badge/Expireson ul) ": ")][:chunk (date-from-unix-time (long (* 1000 (:expires_on b))) "date")]"\n"])
                                                                                                                (when-not (blank? (str (:expires_on b)))
                                                                                                                  [:phrase
-                                                                                                                  [:chunk.chunk (str (t :badge/Issuerverified ul) ": ")] (if (== 0 (:issuer_verified b) ) [:chunk (t :core/No ul)] [:chunk (t :core/Yes ul) " "])])
+                                                                                                                  [:chunk.chunk (str (t :badge/Issuerverified ul) ": ")] (if (== 0 (:issuer_verified b) ) [:chunk (str (t :core/No ul) " ")] [:chunk (str (t :core/Yes ul) " ")])])
                                                                                                                (when-not (blank? (str (:revoked b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Revoked ul) ": ")] [:chunk (str (if (true? (:revoked b)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
@@ -348,7 +348,7 @@
                                                                        [:paragraph
                                                                         [:chunk.chunk (str (t :page/PageID ul) ": ")][:chunk (str (:id p))]"\n"
                                                                         [:chunk.chunk (str (t :badge/Name ul) ": ")][:chunk (str (or (:name p) "-"))]"\n"
-                                                                        [:chunk.chunk (str (t :page/Owner ul) "?: ")][:chunk (if (= true page-owner?) (t :core/Yes ul) (t :core/No ul)) #_(str (or page-owner? "-"))] "\n"
+                                                                        [:chunk.chunk (str (t :page/Owner ul) "?: ")][:chunk (if (= true page-owner?) (t :core/Yes ul) (t :core/No ul))] "\n"
                                                                         (when-not (blank? (:password p))
                                                                           [:phrase
                                                                            [:chunk.chunk (str (t :page/Pagepassword ul) ": ")][:chunk (str (:password p))]"\n"])
