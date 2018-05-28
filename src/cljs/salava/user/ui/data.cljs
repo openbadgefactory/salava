@@ -227,7 +227,7 @@
                                           "unpublishpage" (or (get-in e [:info :object_name]) "-")
                                           "publishbadge" (or (get-in e [:info :object_name]) "-")
                                           "unpublishbadge" (or (get-in e [:info :object_name]) "-")
-                                          "messagebadge" [:div
+                                          "messagebadge" [:div {:style {:max-width "550px"}}
                                                           (or (get-in e [:info :object_name]) "-")"\n"
                                                           [:br]
                                                           [:p [:i (or (get-in e [:info :message :message]) "comment-removed")]]]
