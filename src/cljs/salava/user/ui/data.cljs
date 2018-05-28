@@ -229,7 +229,7 @@
                                           "unpublishbadge" (or (get-in e [:info :object_name]) "-")
                                           "messagebadge" [:div {:style {:max-width "550px"}}
                                                           (or (get-in e [:info :object_name]) "-")"\n"
-                                                          [:br]
+                                                          [:br][:br]
                                                           [:p [:i (or (get-in e [:info :message :message]) "comment-removed")]]]
                                           "congratulatebadge" (or (get-in e [:info :object_name]) "-")
                                           "followbadge" (or (get-in e [:info :object_name]) "-")
