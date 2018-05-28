@@ -216,13 +216,12 @@
                  (for [e (reverse events)]
                    ^{:key e}[:tr
                              [:td [:div (t (keyword (str "social/"(:verb e))))]]
-                             [:td [:div (case (or (:type e) (:report_type e))
-                                          "page" (t (keyword (str "social/Emailpage")))
-                                          "badge" (t (keyword (str "social/Emailbadge")))
-                                           "user" (lower-case (t (keyword (str "social/User"))))
-                                           "ticket" (t (keyword (str "social/ticket")))
-                                          "admin" (lower-case (t (keyword (str "admin/Admin"))))
-                                          nil)]]
+                             [:td [:div (case (:type e)
+                                          "page" (t :social/Emailpage)
+                                          "badge" (t :social/Emailbadge)
+                                           "user" (lower-case (t :social/User))
+                                          "admin" (lower-case (t :admin/Admin))
+                                          "-")]]
                              [:td [:div (case (str (:verb e)(:type e))
                                           "publishpage"  (or (get-in e [:info :object_name]) "-")
                                           "unpublishpage" (or (get-in e [:info :object_name]) "-")
@@ -235,8 +234,8 @@
                                           "congratulatebadge" (or (get-in e [:info :object_name]) "-")
                                           "followbadge" (or (get-in e [:info :object_name]) "-")
                                           "followuser" (or (get-in e [:info :object_name]) "-")
-                                          "ticketadmin" (get-in e [:info :object_name])
-                                          nil)]]
+                                          "ticketadmin" (or (get-in e [:info :object_name]) "-")
+                                          "-")]]
                              [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]
                    ))]]])
           ]]])]))
