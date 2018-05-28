@@ -153,7 +153,6 @@
                                content (if (= lang "all") (map template $content) (map template (filter #(= (:default_language_code %) (:language_code %)) $content)))]
 
                            (reduce into [[:chapter ]] content)))]
-    ;;TODO Test alignments
     (fn [output-stream]
       (pdf/pdf (into [pdf-settings] (badge-template badges)) output-stream)))
   )
