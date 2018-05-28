@@ -135,7 +135,8 @@
           (email-item i)))]
      [:td
       [:div
-       terms]
+       (if terms
+         (t (keyword (str "social/"terms))) nil)]
       ]
      [:td
       (admintool-admin-page id "user" state fetch-users)
