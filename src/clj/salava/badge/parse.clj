@@ -6,6 +6,7 @@
             [clojure.data.json :as json]
             [clojure.pprint :refer [pprint]]
             [clojure.xml :as xml]
+            [clj-http.client :as clj-http]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
             [salava.core.http :as http]
@@ -531,25 +532,25 @@
   ([user assertion initial]
    (verify-assertion (:assertion_url initial) assertion)
    (let [now (u/now)]
-     (-> initial
-         (assoc :id nil
-                :user_id (:id user)
-                :email   (recipient (:emails user) assertion)
-                :status "pending"
-                :visibility "private"
-                :show_recipient_name 0
-                :rating nil
-                :ctime now
-                :mtime now
-                :deleted 0
-                :revoked 0
-                :issuer_verified 0
-                :show_evidence 0
-                :last_checked nil
-                :old_id nil)
-         (badge-content assertion)
-         valid-badge
-         ))))
+     (clj-http/with-connection-pool {:timeout 10 :threads 4 :insecure? false :default-per-route 10}
+       (-> initial
+           (assoc :id nil
+                  :user_id (:id user)
+                  :email   (recipient (:emails user) assertion)
+                  :status "pending"
+                  :visibility "private"
+                  :show_recipient_name 0
+                  :rating nil
+                  :ctime now
+                  :mtime now
+                  :deleted 0
+                  :revoked 0
+                  :issuer_verified 0
+                  :show_evidence 0
+                  :last_checked nil
+                  :old_id nil)
+           (badge-content assertion)
+           valid-badge)))))
 
 ;;;
 
