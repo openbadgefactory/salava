@@ -122,8 +122,10 @@
                                                [:chunk.chunk (str (t :user/Activated ul) ": ")][:chunk (str (if (true? (:activated $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
                                                [:chunk.chunk (str (t :user/Emailnotifications ul) ": ")][:chunk (str (if (true? (:email_notifications $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
                                                [:chunk.chunk (str (t :user/Profilevisibility ul) ": ")][:chunk (t (keyword (str "core/"(capitalize (:profile_visibility $user)))) ul)]"\n"
-                                               [:chunk.chunk (str (t :user/Aboutme ul) ":")]"\n"
-                                               [:paragraph (or (:about $user) "-")]]
+                                               (when-not (blank? (:about $user))
+                                                 [:paragraph
+                                                  [:chunk.chunk (str (t :user/Aboutme ul) ":")]"\n"
+                                                  [:paragraph (or (:about $user) "-")]])]
                                               [:spacer 2]
                                               [:paragraph.generic
                                                (if (> (count $emails) 1)
@@ -207,7 +209,7 @@
                                                                                                                   [:chunk.chunk (str (t :badge/Criteria ul) ": ")][:paragraph (strip-html-tags (:criteria_content %))]"\n"])
                                                                                                                (when-not (blank? (:status b))
                                                                                                                  [:phrase
-                                                                                                                  [:chunk.chunk (str (t :user/Status ul) ": ")][:chunk  (str (:status b) "  ")]])
+                                                                                                                  [:chunk.chunk (str (t :user/Status ul) ": ")][:chunk  (capitalize (str (t (keyword (str "social/"(:status b))) ul) "  "))]])
                                                                                                                (when-not (blank? (str (:verified_by_obf b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Verifiedbyobf ul) ": ")][:chunk (str (if (true? (:verified_by_obf b)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
@@ -231,7 +233,7 @@
                                                                                                                   [:chunk.chunk (str (t :badge/Revoked ul) ": ")] [:chunk (str (if (true? (:revoked b)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
                                                                                                                (when-not (blank? (:visibility b) )
                                                                                                                  [:phrase
-                                                                                                                  [:chunk.chunk (str (t :badge/Badgevisibility ul) ": ")] [:chunk (t (keyword (str "core/" (capitalize (:visibility b)))))]"\n"])
+                                                                                                                  [:chunk.chunk (str (t :badge/Badgevisibility ul) ": ")] [:chunk (t (keyword (str "core/" (capitalize (:visibility b)))) ul)]"\n"])
 
                                                                                                                (when-not (blank? (:obf_url b))
                                                                                                                  [:phrase
@@ -387,7 +389,7 @@
                                                                                       (when (= "html" (:type pb))
                                                                                         [:phrase
                                                                                          [:spacer 0]
-                                                                                         [:phrase.chunk (str (t :page/html ul) ": ")]
+                                                                                         [:phrase.chunk (str (t :page/Html ul) ": ")]
                                                                                          [:spacer 0]
                                                                                          (or (:content pb) "-")])
                                                                                       (when (= "file" (:type pb))
