@@ -466,13 +466,12 @@
                                                                   [:chunk (or (get-in e [:info :object_name]) "-")]"\n"
                                                                   (if (contains? (:info e) :message)
                                                                     [:chunk {:style :italic}(or (get-in e [:info :message :message]) "-")])]]
-                                                         [:cell #_(or (case (:type e)
-                                                                      "page" (t (keyword (str "social/Emailpage" (:type e))) ul)
-                                                                      "badge" (t (keyword (str "social/Emailbadge" (:type e))) ul)
-                                                                      "user" (lower-case (t (keyword (str "social/User" (:type e)))) ul)
-                                                                      "ticket" (t (keyword (str "social/ticket" (:type e))) ul)
-                                                                      "admin" (lower-case (t (keyword (str "admin/Admin" (:type e)))) ul)
-                                                                      "-") "-")]
+                                                         [:cell (cond
+                                                                  (= "page" (:type e)) (t :social/Emailpage ul)
+                                                                  (= "badge" (:type e)) (t :social/Emailbadge ul)
+                                                                  (= "user" (:type e)) (lower-case (t :social/User ul))
+                                                                  (= "admin" (:type e)) (lower-case (t :admin/Admin ul))
+                                                                  :else "-")]
                                                          [:cell (date-from-unix-time (long (* 1000 (:ctime e))) "date")]
                                                          ])))
                                               ])]
