@@ -122,10 +122,17 @@
                                                   [:chunk.chunk (str (t :user/Profilepicture ul)": ")] [:chunk (str site-url "/" (:profile_picture $user))]"\n"]
                                                  )
                                                (when-not (blank? (:language $user))
-                                                 [:chunk.chunk (str (t :user/Language ul)": ")][:chunk (str (upper-case (:language $user)) "  ")])
-                                               [:chunk.chunk (str (t :user/Country ul)": ")][:chunk (str (:country $user))]"\n"
-                                               [:chunk.chunk (str (t :user/Activated ul) ": ")][:chunk (str (if (true? (:activated $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
-                                               [:chunk.chunk (str (t :user/Emailnotifications ul) ": ")][:chunk (str (if (true? (:email_notifications $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
+                                                 [:phrase
+                                                 [:chunk.chunk (str (t :user/Language ul)": ")][:chunk (str (upper-case (:language $user)) "  ")]])
+                                               (when-not (blank? (:country $user))
+                                                 [:phrase
+                                               [:chunk.chunk (str (t :user/Country ul)": ")][:chunk (str (:country $user))]"\n"])
+                                                 (when-not (blank? (str (:activated $user)))
+                                                   [:phrase
+                                               [:chunk.chunk (str (t :user/Activated ul) ": ")][:chunk (str (if (true? (:activated $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
+                                               (when-not (blank? (str (:email_notifications $user)))
+                                                 [:phrase
+                                               [:chunk.chunk (str (t :user/Emailnotifications ul) ": ")][:chunk (str (if (true? (:email_notifications $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
                                                (when-not (blank? (:profile_visibility $user))
                                                  [:phrase
                                                   [:chunk.chunk (str (t :user/Profilevisibility ul) ": ")][:chunk (t (keyword (str "core/"(capitalize (:profile_visibility $user)))) ul)]"\n"])
