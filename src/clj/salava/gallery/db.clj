@@ -71,14 +71,14 @@
     (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
 
 (defn badge-count [search page_count]
-  (let [limit 20
+  (let [limit 1
         badges-left (- (count search) (* limit (+ page_count 1)))]
     (if (pos? badges-left)
       badges-left
       0)))
 
 (defn select-badges [ctx badge_ids order page_count]
-  (let [limit 20
+  (let [limit 1
         offset (* limit page_count)]
     (if (not-empty badge_ids)
       (case order
@@ -132,8 +132,9 @@
 (defn get-gallery-badges
   "Get badge-ids"
   [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
-  (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)]
-    {:badges (select-badges ctx badge-ids order page_count)
+  (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)
+        badges (remove #(some nil? (vals %)) (select-badges ctx badge-ids order page_count))]
+    {:badges badges #_(select-badges ctx badge-ids order page_count)
      :tags (select-tags ctx badge-ids)
      :badge_count (badge-count badge-ids page_count) }))
 
