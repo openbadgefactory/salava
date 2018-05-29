@@ -13,7 +13,7 @@
             [salava.user.ui.profile :as profile]
             [salava.core.ui.modal :as mo]
             [salava.core.i18n :refer [t translate-text]]
-            [clojure.string :refer [capitalize lower-case upper-case]]))
+            [clojure.string :refer [capitalize lower-case upper-case blank?]]))
 
 (defn export-data-to-pdf [state]
   (let [user-id (:user-id @state)]
@@ -63,8 +63,10 @@
            [:div.row
             [:div.col-xs-12 [:b (t :user/UserID)": "] id]
             [:div.col-xs-12 [:b (str (t :user/Role) ": ")] (if (= "user" role) (t :social/User) (t :admin/Admin))]
-            [:div.col-xs-12 [:b (str (t :user/Firstname)": ")] (capitalize first_name)]
-            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Lastname)": ")] (capitalize last_name)]
+            (when-not (blank? first_name)
+              [:div.col-xs-12 [:b (str (t :user/Firstname)": ")] (capitalize first_name)])
+            (when-not (blank? last_name)
+              [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Lastname)": ")] (capitalize last_name)])
             (if (not-empty about)
               [:div
                [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
@@ -94,12 +96,13 @@
                                  (= "blog" field) (hyperlink value)
                                  :else (t value))]]))]]])
 
-            [:div.col-xs-12 [:b (t :user/Language)": "] (upper-case language)]
+            (when-not (blank? language) [:div.col-xs-12 [:b (t :user/Language)": "] (upper-case language)])
             [:div.col-xs-12 [:b (t :user/Country)": "] country]
             [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No)) #_(str email_notifications)]
             [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))]
             [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))]
-            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))]]]]
+            (when-not (blank? profile_visibility)
+              [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))])]]]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
           [:h2 {:class "uppercase-header"} [:a {:href (path-for "/user/edit/email-addresses")} (str (if (empty? (rest email)) (t :user/Email) (t :user/Emailaddresses)))]]
@@ -219,7 +222,7 @@
                              [:td [:div (case (:type e)
                                           "page" (t :social/Emailpage)
                                           "badge" (t :social/Emailbadge)
-                                           "user" (lower-case (t :social/User))
+                                          "user" (lower-case (t :social/User))
                                           "admin" (lower-case (t :admin/Admin))
                                           "-")]]
                              [:td [:div (case (str (:verb e)(:type e))
