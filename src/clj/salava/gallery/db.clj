@@ -35,7 +35,7 @@
 (defn badge-ids-where-params
   "Create map from search params
   Example:
-  {' and u.country = ? ', 'fi'}" 
+  {' and u.country = ? ', 'fi'}"
   [country name issuer-name recipient-name]
   (let [where-params {}]
     (-> where-params
@@ -71,14 +71,14 @@
     (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
 
 (defn badge-count [search page_count]
-  (let [limit 48
+  (let [limit 20
         badges-left (- (count search) (* limit (+ page_count 1)))]
     (if (pos? badges-left)
       badges-left
       0)))
 
 (defn select-badges [ctx badge_ids order page_count]
-  (let [limit 48
+  (let [limit 20
         offset (* limit page_count)]
     (if (not-empty badge_ids)
       (case order
@@ -151,15 +151,15 @@
         ids (tags-id-parser badge_content_ids)
         where  (apply str (keys where-params))
         params (vec (vals where-params))
-        query (str "SELECT DISTINCT bct.badge_content_id from badge_content_tag AS bct 
+        query (str "SELECT DISTINCT bct.badge_content_id from badge_content_tag AS bct
          JOIN badge_content AS bc ON (bct.badge_content_id = bc.id)
          INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
          INNER JOIN user as u on b.user_id =  u.id
          WHERE bct.badge_content_id IN
-	(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())) 
+	(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
          "
                    where
-                   ) 
+                   )
         search (if (not-empty ids)
                  ids
                  (time (jdbc/with-db-connection
