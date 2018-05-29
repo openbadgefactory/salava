@@ -33,92 +33,95 @@
 
 
 .logo-image-url{
-    width: 155px;
-    height: 87px;
-    background-image: url("/img/extra/hpass/logo.png");
+  width: 155px;
+  height: 87px;
+  background-image: url("/img/extra/hpass/logo.png");
 
 }
 
 .logo-image-icon-url {
-    width: 155px;
-    height: 87px;
-    background-image: url("/img/extra/hpass/logo.png");
+  width: 155px;
+  height: 87px;
+  background-image: url("/img/extra/hpass/logo.png");
 }
 
 .system-image-url {
-    width: 90px;
-    height: 90px;
-    background-image: url("/img/extra/hpass/logo_icon.png");
+  width: 90px;
+  height: 90px;
+  background-image: url("/img/extra/hpass/logo_icon.png");
 }
 
 .issuedbyobf-image-url{
-    width: 195px;
-    height: 50px;
-    background-image: url("/img/extra/hpass/issuedbyobf.png");
+  width: 195px;
+  height: 50px;
+  background-image: url("/img/extra/hpass/issuedbyobf.png");
 }
 
 .verifiedissuedbyobf-image-url {
-    width: 220px;
-    height: 44px;
-    background-image: url("/img/extra/hpass/verifiedissuedbyobf.png");
+  width: 220px;
+  height: 44px;
+  background-image: url("/img/extra/hpass/verifiedissuedbyobf.png");
 }
 
 
 body.anon{
   background-size: cover;
-  overflow:hidden;
+  overflow-x: hidden;
   min-height:100%;
-  background: url("/img/extra/hpass/background.jpg") no-repeat;
+  background-image: url("/img/extra/hpass/background.jpg");
 
 
   @media (max-width: 425px){
     background:none;
     overflow:scroll;
     overflow-x:hidden;
+    .login_top h1{
+      font-size: 30px;
     }
+  }
 
 
-    @media (max-width: 550px){
-      .container.main-container {
-        padding-right:unset;
-        padding-left:unset;
-        margin-right:unset;
-        margin-left:unset;
-        .green-banner{
+  @media (max-width: 550px){
+    .container.main-container {
+      padding-right:unset;
+      padding-left:unset;
+      margin-right:unset;
+      margin-left:unset;
+      .green-banner{
         margin-bottom:10px;
-        }
       }
     }
+  }
 
   #login-page {
     padding-bottom: 2px;
     .login-links {
-        margin-top: 20px;
+      margin-top: 20px;
     }
     form {
-	text-align: center;
-	padding-top:15px;
+      text-align: center;
+      padding-top:15px;
     }
     .form-group{
-	margin-right: auto;
-	margin-left: auto;
-	max-width: 300px;
+      margin-right: auto;
+      margin-left: auto;
+      max-width: 300px;
     }
-}
+  }
 
   a{
-      text-decoration: underline;
-      font-weight:bold;
-      color: $text-color;
+    text-decoration: underline;
+    font-weight:bold;
+    color: $text-color;
 
   }
 
   img{
-       height: auto;
-       width: 100%;
+    height: auto;
+    width: 100%;
   }
 
-    .container.main-container{
+  .container.main-container{
     width:100vw;
     margin-left: 0px;
     padding-left:0px;
@@ -132,70 +135,72 @@ body.anon{
   }
 
   footer.footer {
+    margin-top:20px;
+    background-color: #FFF;
 
     .footer-container {
-    .text-muted{
-      color:#000000;
+      .text-muted{
+        color:#000000;
+      }
+      border-top:none;
+      font-size: 14px;
     }
-    border-top:none;
-    font-size: 14px;
-    }
-}
+  }
 
   #reset-password .panel-body form .btn-primary{
-  color: $text-color;
+    color: $text-color;
   }
 
 }
 
 a#login-button, #login-page .btn-primary, .btn-primary:active:focus, .btn-primary:focus {
-    background-color: $titlebar-color;
-    border-color: $titlebar-color;
-    color: #000000;
-    font-weight:bold;
-    box-shadow:none;
-    &:hover {
-        background-color: $login-button-active;
-        border-color: $login-button-active;
-    }
+  background-color: $titlebar-color;
+  border-color: $titlebar-color;
+  color: #000000;
+  font-weight:bold;
+  box-shadow:none;
+  &:hover {
+    background-color: $login-button-active;
+    border-color: $login-button-active;
+  }
 }
 
 .btn-warning {
-    background-color: $menu-active;
-    border-color: $menu-active;
-    &:hover {
-        background-color: lighten($menu-active, 5%);
-    }
+  background-color: $menu-active;
+  border-color: $menu-active;
+  &:hover {
+    background-color: lighten($menu-active, 5%);
+  }
 }
 
 //NAVBAR FIXED TOP
- .navbar-fixed-top {
-     margin-right: 80px;
- }
+.navbar-fixed-top {
+  margin-right: 80px;
+}
 
 ul.side-links {
-    li a {
-        font-size: 14px;
-        color:#000000;
-        text-decoration:none;
+  li a {
+    font-size: 14px;
+    color:#000000;
+    text-decoration:none;
+  }
+  li.active a, li a:hover {
+    color: $titlebar-color;
+  }
+  @media (max-width: 767px){
+    li.active a {
+      background-color: $titlebar-color;
+      color: #FFF;
     }
-    li.active a, li a:hover {
-        color: $titlebar-color;
-    }
-    @media (max-width: 767px){
-        li.active a {
-            background-color: $titlebar-color;
-            color: #FFF;
-        }
-    }
+  }
 }
 
 ul.navbar-nav li a{
   text-decoration:none;
 }
 .media.message-item .media-body a {
-    color:$text-color;
-    font-weight: bold;
+  color:$text-color;
+  font-weight: bold;
 }
 .message-item.media h3.media-heading a{
   text-decoration:underline;
@@ -205,27 +210,27 @@ ul.navbar-nav li a{
 
 
 #grid-filter .btn, #buttons .col-xs-8 .btn {
-    background:$button-color;
-    border-color:$button-color;
-    line-height: 19px;
-    box-shadow:none;
-    color:#000000;
-    font-weight: bold;
-    &.btn-active {
+  background:$button-color;
+  border-color:$button-color;
+  line-height: 19px;
+  box-shadow:none;
+  color:#000000;
+  font-weight: bold;
+  &.btn-active {
 
-    }
+  }
 }
 
 body {
 
-      font-family: "GT America", "Arial", sans-serif;
-      background-color: $background-color;
-      color: $text-color;
+  font-family: "GT America", "Arial", sans-serif;
+  background-color: $background-color;
+  color: $text-color;
 
-    a{
-      color:$text-color;
-      text-decoration:underline;
-    }
+  a{
+    color:$text-color;
+    text-decoration:underline;
+  }
 
   #badge-info a{
 
@@ -243,8 +248,8 @@ body {
       &:hover{
         color: $titlebar-color;
       }
+    }
   }
-}
 
   #page-view .checkbox{
     color:$text-color;
@@ -258,29 +263,29 @@ body {
   }
 
   .endorsement-link{
-  &:before{
-    color:$text-color !important;
+    &:before{
+      color:$text-color !important;
     }
   }
 
-.pages #grid #add-element #add-element-link, .pages #grid #add-element .add-element-link, #page-gallery #grid #add-element #add-element-link, #page-gallery #grid #add-element .add-element-link, #user-pages #grid #add-element #add-element-link, #user-pages #grid #add-element .add-element-link, #profile-gallery #grid #add-element #add-element-link, #profile-gallery #grid #add-element .add-element-link, #my-files #grid #add-element #add-element-link, #my-files #grid #add-element .add-element-link {
-  color:$text-color;
-  &:hover {
-              color: $link-color;
-            }
+  .pages #grid #add-element #add-element-link, .pages #grid #add-element .add-element-link, #page-gallery #grid #add-element #add-element-link, #page-gallery #grid #add-element .add-element-link, #user-pages #grid #add-element #add-element-link, #user-pages #grid #add-element .add-element-link, #profile-gallery #grid #add-element #add-element-link, #profile-gallery #grid #add-element .add-element-link, #my-files #grid #add-element #add-element-link, #my-files #grid #add-element .add-element-link {
+    color:$text-color;
+    &:hover {
+      color: $link-color;
     }
-    .pages #grid {
-     #add-element {
-        #add-element-icon{
-          color:$icon-color;
-        }
+  }
+  .pages #grid {
+    #add-element {
+      #add-element-icon{
+        color:$icon-color;
+      }
     }
 
     .media-bottom a.bottom-link{
       color:$icon-color;
       &:hover {
-              color: $text-color;
-            }
+        color: $text-color;
+      }
     }
     .media-content {
       .page-create-date {
@@ -290,14 +295,14 @@ body {
   }
 
   #my-files #grid #add-element .add-element-link {
-      color: $link-color;
+    color: $link-color;
   }
 
 
   .pages #grid .media-content .media-body .media-heading a.heading-link {
-      color: $link-color;
-      font-weight: bold;
-      text-decoration: underline;
+    color: $link-color;
+    font-weight: bold;
+    text-decoration: underline;
   }
 
   .pages #grid .media-content .media-body .visibility-icon {
@@ -319,58 +324,58 @@ body {
 }
 
 @media (min-width: 768px){
-    .navbar-right {
-        margin-top:20px;
-        float:left !important;
-        #secondary-menu-links {
-            border:none;
-            float: right;
-        }
+  .navbar-right {
+    margin-top:20px;
+    float:left !important;
+    #secondary-menu-links {
+      border:none;
+      float: right;
     }
+  }
 }
 ul.navbar-nav {
-    margin-top:40px;
-    margin-right:10px;
-    li a {
-        text-transform: none;
-        font-weight: 300;
-        font-size: 21px !important;
-        color:black;
-    }
-    li.active a {
-      border-bottom: 4px solid $titlebar-color;
-    }
-    @media (max-width: 1120px){
-        margin-top:20px;
-    }
-    @media (max-width: 768px){
-        text-align: left;
-    }
+  margin-top:40px;
+  margin-right:10px;
+  li a {
+    text-transform: none;
+    font-weight: 300;
+    font-size: 21px !important;
+    color:black;
+  }
+  li.active a {
+    border-bottom: 4px solid $titlebar-color;
+  }
+  @media (max-width: 1120px){
+    margin-top:20px;
+  }
+  @media (max-width: 768px){
+    text-align: left;
+  }
 }
 .navbar-collapse{
-   width:100%;
+  width:100%;
 }
 header#navbar {
-    background-image:none;
-    min-height: 110px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4) !important;
+  background-image:none;
+  min-height: 110px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.4) !important;
 }
 .navbar-header {
-    padding-top:0px;
-    padding-bottom: 5px;
-    float:left !important;
-    @media (max-width: 767px){
-        float:none;
-        .logo.pull-left {
-            float:left !important;
-        }
+  padding-top:0px;
+  padding-bottom: 5px;
+  float:left !important;
+  @media (max-width: 767px){
+    float:none;
+    .logo.pull-left {
+      float:left !important;
     }
+  }
 }
 #main-header{
-    visibility:hidden;
-    float:right !important;
-    margin-top:37px;
-    width: auto
+  visibility:hidden;
+  float:right !important;
+  margin-top:37px;
+  width: auto
 }
 
 #main-header-right {
@@ -379,19 +384,19 @@ header#navbar {
 
 .title-row{
   background-color: $titlebar-color;
-    h1 {
+  h1 {
     font-size: 24px;
     font-weight: 600;
     color: #222;
     padding-bottom:8px;
-    }
+  }
 }
 #badge-gallery #grid .grid-container .media-content .media-body .media-heading a, #my-badges #grid .grid-container .media-content .media-body .media-heading a, #export-badges #grid .grid-container .media-content .media-body .media-heading a, .import-badges #grid .grid-container .media-content .media-body .media-heading a, #user-badges #grid .grid-container .media-content .media-body .media-heading a {
-    font-weight: 400 !important;
-    text-decoration:underline;
-    &:hover{
-      color:$text-color;
-    }
+  font-weight: 400 !important;
+  text-decoration:underline;
+  &:hover{
+    color:$text-color;
+  }
 }
 
 #badge-gallery #grid .grid-container .media-bottom .checkbox, #my-badges #grid .grid-container .media-bottom .checkbox, #export-badges #grid .grid-container .media-bottom .checkbox, .import-badges #grid .grid-container .media-bottom .checkbox, #user-badges #grid .grid-container .media-bottom .checkbox {
@@ -407,7 +412,7 @@ header#navbar {
 }
 
 .pages #grid .media-content .media-body .media-heading, #page-gallery #grid .media-content .media-body .media-heading, #user-pages #grid .media-content .media-body .media-heading, #profile-gallery #grid .media-content .media-body .media-heading, #my-files #grid .media-content .media-body .media-heading{
-    line-height: 1.2em;
+  line-height: 1.2em;
 }
 .pages #grid .media-content .media-body .media-heading a.heading-link, #page-gallery #grid .media-content .media-body .media-heading a.heading-link, #user-pages #grid .media-content .media-body .media-heading a.heading-link, #profile-gallery #grid .media-content .media-body .media-heading a.heading-link, #my-files #grid .media-content .media-body .media-heading a.heading-link
 {
@@ -418,9 +423,9 @@ header#navbar {
   }
 }
 button.navbar-toggle {
-    position:absolute;
-    right:0px;
-    margin-top:45px;
+  position:absolute;
+  right:0px;
+  margin-top:45px;
 }
 
 /*Login Page*/
@@ -440,19 +445,19 @@ button.navbar-toggle {
 
 .login_top{
   max-width:568px;
-/*   margin: auto; */
+  /*   margin: auto; */
   margin: 0px auto 0 auto;
-/*   margin-top: 100px; */
+  /*   margin-top: 100px; */
   padding: 5px;
   background-color: #FFF;
   text-align: center;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    border: 1px solid #cccccc;
-    border-bottom:none;
-    border-bottom-left-radius:0;
-    border-bottom-right-radius:0;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  border: 1px solid #cccccc;
+  border-bottom:none;
+  border-bottom-left-radius:0;
+  border-bottom-right-radius:0;
 
   hr{
     margin-top:0px;
@@ -478,7 +483,7 @@ button.navbar-toggle {
   text-align: center;
 
   p {
-   color: $text-color !important;
+    color: $text-color !important;
   }
   .footer {
     background-color: $titlebar-color;
@@ -488,27 +493,27 @@ button.navbar-toggle {
 
 
 .btn-primary {
-    background-color: $button-color !important;
+  background-color: $button-color !important;
+  border-color: $button-hover;
+  color:$text-color;
+  font-weight:bold;
+  box-shadow:none;
+  &:hover {
+    background-color: $button-hover;
     border-color: $button-hover;
-    color:$text-color;
-    font-weight:bold;
-    box-shadow:none;
-    &:hover {
-        background-color: $button-hover;
-        border-color: $button-hover;
-    }
+  }
 }
 
- .btn-success {
+.btn-success {
   background-color: $text-color !important;
   border-color:$text-color !important;
   font-weight:bold;
   color:$background-color !important;
-   &:hover, &:focus, &:active:hover  {
-        background-color: $link-hover !important;
-        border-color: $link-hover !important;
-/*         box-shadow: 0px 2px $box-shadow; */
-    }
+  &:hover, &:focus, &:active:hover  {
+    background-color: $link-hover !important;
+    border-color: $link-hover !important;
+    /*         box-shadow: 0px 2px $box-shadow; */
+  }
 }
 
 .btn-warning {
@@ -518,7 +523,7 @@ button.navbar-toggle {
 }
 
 ul#secondary-menu-links li a i.fa {
-   color:$titlebar-color;
+  color:$titlebar-color;
 }
 
 #my-badges #grid .grid-container .media-content .icons i {
