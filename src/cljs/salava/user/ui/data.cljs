@@ -97,10 +97,14 @@
                                  :else (t value))]]))]]])
 
             (when-not (blank? language) [:div.col-xs-12 [:b (t :user/Language)": "] (upper-case language)])
-            [:div.col-xs-12 [:b (t :user/Country)": "] country]
-            [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No)) #_(str email_notifications)]
-            [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))]
-            [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))]
+            (when-not (blank? country)
+              [:div.col-xs-12 [:b (t :user/Country)": "] country])
+            (when-not (blank? (str email_notifications))
+              [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No))])
+            (when-not (blank? (str private))
+              [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))])
+            (when-not (blank? (str activated?))
+              [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))])
             (when-not (blank? profile_visibility)
               [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))])]]]
 
@@ -139,8 +143,8 @@
              (doall
                (for [p pending_badges]
                  ^{:key p}[:div
-                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
-                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
+                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (or (:name p) "-")]
+                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (or (:description p) "-")]
                            ]))])]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
