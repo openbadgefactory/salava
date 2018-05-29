@@ -109,25 +109,28 @@
                    (do
                      (ok (so/get-connections-badge ctx (:id current-user)))))
 
-             (GET "/events" []
-                   :summary "Returns users events"
+             (GET "/pending_badges" []
+                   :summary "Check and return user's pending badges"
                    :auth-rules access/signed
                    :current-user current-user
-                   (do
-                     (f/save-pending-assertions ctx (:id current-user))
-                     (ok (let [pending-badges (b/user-badges-pending ctx (:id current-user))
-                               events (so/get-all-events-add-viewed ctx (:id current-user))
-                               tips (so/get-user-tips ctx (:id current-user))
-                               accepted-terms? (u/get-accepted-terms-by-id ctx (:id current-user))
-                               ;admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
-                               events {:tips tips
-                                       :pending-badges pending-badges
-                                       :events events
-                                       :terms-accepted (:status accepted-terms?)}
-                               ;events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)
-                               ]
+                   (f/save-pending-assertions ctx (:id current-user))
+                   (ok {:pending-badges (b/user-badges-pending ctx (:id current-user))}))
 
-                           events))))
+             (GET "/events" []
+                  :summary "Returns users events"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (let [events (so/get-all-events-add-viewed ctx (:id current-user))
+                            tips (so/get-user-tips ctx (:id current-user))
+                            accepted-terms? (u/get-accepted-terms-by-id ctx (:id current-user))
+                            ;admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
+                            events {:tips tips
+                                    :events events
+                                    :terms-accepted (:status accepted-terms?)}
+                            ;events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)
+                            ]
+
+                        events)))
 
              (GET "/connected/:badge_id" []
                   :return s/Bool

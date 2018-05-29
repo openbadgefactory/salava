@@ -23,9 +23,12 @@
     (path-for "/obpv1/social/events" true)
     {:handler (fn [data]
                 (swap! state assoc :events (:events data)
-                       :initial false
-                       :pending-badges (:pending-badges data)
-                       :tips (:tips data)))}))
+                                   :initial false
+                                   :tips (:tips data)))})
+  (ajax/GET
+    (path-for "/obpv1/social/pending_badges" true)
+    {:handler (fn [data]
+                (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
 
 (defn pending-connections [reload-fn]
   (let [connections (first (plugin-fun (session/get :plugins) "block" "pendingconnections"))]
@@ -55,7 +58,6 @@
       :error-handler (fn [{:keys [status status-text]}])}))
 
 (defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
-  (dump obf_url)
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
@@ -92,9 +94,14 @@
         (t :badge/Declinebadge)]]]]]])
 
 (defn badges-pending [state]
-  (into [:div {:id "pending-badges"}]
-        (for [badge (:pending-badges @state)]
-          (badge-pending badge state))))
+  (if (:spinner @state)
+    [:div.ajax-message
+     [:i {:class "fa fa-cog fa-spin fa-2x "}]
+     [:span (str (t :core/Loading) "...")]
+     [:hr]]
+    (into [:div {:id "pending-badges"}]
+          (for [badge (:pending-badges @state)]
+            (badge-pending badge state)))))
 
 
 (defn hide-event [event_id state]
@@ -410,7 +417,9 @@
 
 (defn handler [site-navi]
   (let [state (atom {:initial true
+                     :spinner true
                      :events []
+                     :pending-badges []
                      :tips {:profile-picture-tip false
                             :welcome-tip false
                             :not-verified-emails []}})]
