@@ -111,17 +111,24 @@
                                               [:paragraph.generic
                                                [:chunk.chunk (str (t :user/UserID ul)": ")] [:chunk (str (:id $user))]"\n"
                                                [:chunk.chunk (str (t :user/Role ul) ": ")] [:chunk (if (= "user" (:role $user)) (t :social/User ul) (t :admin/Admin ul))]"\n"
-                                               [:chunk.chunk (str (t :user/Firstname ul)": ")] [:chunk (capitalize (:first_name $user))]"\n"
-                                               [:chunk.chunk (str (t :user/Lastname ul)": ")][:chunk (capitalize (:last_name $user))]"\n"
+                                               (when-not (blank? (:first_name $user))
+                                                 [:phrase
+                                                  [:chunk.chunk (str (t :user/Firstname ul)": ")] [:chunk (capitalize (:first_name $user))]"\n"])
+                                               (when-not (blank? (:last_name $user))
+                                                 [:phrase
+                                                  [:chunk.chunk (str (t :user/Lastname ul)": ")][:chunk (capitalize (:last_name $user))]"\n"])
                                                (if-not (blank? (:profile_picture $user))
                                                  [:paragraph
                                                   [:chunk.chunk (str (t :user/Profilepicture ul)": ")] [:chunk (str site-url "/" (:profile_picture $user))]"\n"]
                                                  )
-                                               [:chunk.chunk (str (t :user/Language ul)": ")][:chunk (str (upper-case (:language $user)) "  ")]
+                                               (when-not (blank? (:language $user))
+                                                 [:chunk.chunk (str (t :user/Language ul)": ")][:chunk (str (upper-case (:language $user)) "  ")])
                                                [:chunk.chunk (str (t :user/Country ul)": ")][:chunk (str (:country $user))]"\n"
                                                [:chunk.chunk (str (t :user/Activated ul) ": ")][:chunk (str (if (true? (:activated $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
                                                [:chunk.chunk (str (t :user/Emailnotifications ul) ": ")][:chunk (str (if (true? (:email_notifications $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
-                                               [:chunk.chunk (str (t :user/Profilevisibility ul) ": ")][:chunk (t (keyword (str "core/"(capitalize (:profile_visibility $user)))) ul)]"\n"
+                                               (when-not (blank? (:profile_visibility $user))
+                                                 [:phrase
+                                                  [:chunk.chunk (str (t :user/Profilevisibility ul) ": ")][:chunk (t (keyword (str "core/"(capitalize (:profile_visibility $user)))) ul)]"\n"])
                                                (when-not (blank? (:about $user))
                                                  [:paragraph
                                                   [:chunk.chunk (str (t :user/Aboutme ul) ":")]"\n"
