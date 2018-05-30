@@ -9,6 +9,8 @@
             [salava.social.db :as so]
             [clojure.set :refer [subset?]]
             [clojure.string :as string]
+            [schema.core :as schema]
+            [salava.gallery.schemas :as g]
             [salava.badge.main :as b]))
 
 (defqueries "sql/gallery/queries.sql")
@@ -59,16 +61,16 @@
 
 (def join-issuer
   (str
-   "JOIN badge_issuer_content AS bic ON (bic.badge_id = b.id) "
-   "JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = b.default_language_code "
-   ))
+    "JOIN badge_issuer_content AS bic ON (bic.badge_id = b.id) "
+    "JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = b.default_language_code "
+    ))
 
 (defn select-tags [ctx badge_ids]
   (if (not-empty badge_ids)
     (select-gallery-tags {:badge_ids badge_ids} (get-db ctx))))
 
 (defn str-ids [ids]
-    (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
+  (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
 
 (defn badge-count [search page_count]
   (let [limit 20
@@ -106,35 +108,45 @@
                     (str-ids ids)
                     "(SELECT DISTINCT id FROM badge WHERE published = 1 AND recipient_count > 0)")
         query (str
-               "SELECT b.id FROM badge as b "
-               "JOIN badge_badge_content AS bbc ON (bbc.badge_id = b.id) "
-               "JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = b.default_language_code "
-               (if (or (not (string/blank? issuer-name))
-                       (not (string/blank? badge-name))
-                       (not (string/blank? country))
-                       (not (string/blank? recipient-name)))
-                 join-badge) ;import badge table to SQL query
-               (if (or (not (string/blank? country))
-                       (not (string/blank? recipient-name)))
-                 join-user) ;import user table to SQL query
-               (if (not (string/blank? issuer-name))
-                 join-issuer)
-               " WHERE b.id IN "
-               in-params
-               " "
-               where
-               "GROUP BY b.id")
+                "SELECT b.id FROM badge as b "
+                "JOIN badge_badge_content AS bbc ON (bbc.badge_id = b.id) "
+                "JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = b.default_language_code "
+                (if (or (not (string/blank? issuer-name))
+                        (not (string/blank? badge-name))
+                        (not (string/blank? country))
+                        (not (string/blank? recipient-name)))
+                  join-badge) ;import badge table to SQL query
+                (if (or (not (string/blank? country))
+                        (not (string/blank? recipient-name)))
+                  join-user) ;import user table to SQL query
+                (if (not (string/blank? issuer-name))
+                  join-issuer)
+                " WHERE b.id IN "
+                in-params
+                " "
+                where
+                "GROUP BY b.id")
         search (if (and (not-empty ids) (string/blank? issuer-name) (string/blank? badge-name) (string/blank? country))
                  ids
                  (db-connect ctx query params))]
     search))
 
+(defn badge-checker [badges]
+  (map (fn [b]
+         (let [badge (update b :recipients long)]
+           (if (nil? (schema/check g/GalleryBadges badge))
+             badge
+             (do
+               (println (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges badge) :badge_id (:badge_id badge))))
+               nil)
+             ))) badges))
+
 (defn get-gallery-badges
   "Get badge-ids"
   [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
   (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)
-        badges (remove #(some nil? (vals %)) (select-badges ctx badge-ids order page_count))]
-    {:badges badges #_(select-badges ctx badge-ids order page_count)
+        badges (remove nil? (badge-checker (select-badges ctx badge-ids order page_count)))]
+    {:badges badges
      :tags (select-tags ctx badge-ids)
      :badge_count (badge-count (if-not (= (count badge-ids) (count badges)) badge-ids badges) page_count) }))
 
@@ -153,12 +165,12 @@
         where  (apply str (keys where-params))
         params (vec (vals where-params))
         query (str "SELECT DISTINCT bct.badge_content_id from badge_content_tag AS bct
-         JOIN badge_content AS bc ON (bct.badge_content_id = bc.id)
-         INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
-         INNER JOIN user as u on b.user_id =  u.id
-         WHERE bct.badge_content_id IN
-	(SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
-         "
+                   JOIN badge_content AS bc ON (bct.badge_content_id = bc.id)
+                   INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
+                   INNER JOIN user as u on b.user_id =  u.id
+                   WHERE bct.badge_content_id IN
+                   (SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
+                   "
                    where
                    )
         search (if (not-empty ids)
@@ -232,7 +244,7 @@
                                  (update :criteria_content md->html)
                                  (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
                                  (dissoc :badge_content_id)))
-                        (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
+                           (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
         {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
 
         rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
@@ -276,8 +288,8 @@
 (defn public-pages-by-user
   "Return all public pages owned by user"
   [ctx user-id visibility]
-   (let [pages (select-users-public-pages {:user_id user-id :visibility visibility} (get-db ctx))]
-     (p/page-badges ctx pages)))
+  (let [pages (select-users-public-pages {:user_id user-id :visibility visibility} (get-db ctx))]
+    (p/page-badges ctx pages)))
 
 (defn public-pages
   "Return public pages visible in gallery. Pages can be searched with page owner's name and/or country"
@@ -291,13 +303,13 @@
                          [(str where " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?") (conj params (str "%" owner "%"))]
                          [where params])
         query (str "SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
-                    JOIN user AS u ON p.user_id = u.id
-                    LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
-                    WHERE (visibility = 'public' OR visibility = 'internal') AND p.deleted = 0"
+                   JOIN user AS u ON p.user_id = u.id
+                   LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
+                   WHERE (visibility = 'public' OR visibility = 'internal') AND p.deleted = 0"
                    where
                    " GROUP BY p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture
-                    ORDER BY p.mtime DESC
-                    LIMIT 75")
+                   ORDER BY p.mtime DESC
+                   LIMIT 75")
         pages (jdbc/with-db-connection
                 [conn (:connection (get-db ctx))]
                 (jdbc/query conn (into [query] params)))]
@@ -320,8 +332,8 @@
                          [(str where " AND CONCAT(first_name,' ',last_name) LIKE ?") (conj params (str "%" name "%"))]
                          [where params])
         query (str "SELECT id, first_name, last_name, country, profile_picture, ctime
-                    FROM user
-                    WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1"
+                   FROM user
+                   WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1"
                    where
                    order)
         profiles (jdbc/with-db-connection
@@ -333,8 +345,8 @@
                                 (reduce #(assoc %1 (:user_id %2) (:c %2)) {})))
         profiles-with-badges (map #(assoc % :common_badge_count (get common-badge-counts (:id %) 0)) profiles)
         visible-profiles (filter #(if common_badges
-                                   (pos? (:common_badge_count %))
-                                   identity) profiles-with-badges)]
+                                    (pos? (:common_badge_count %))
+                                    identity) profiles-with-badges)]
     (if (= order_by "common_badge_count")
       (->> visible-profiles
            (sort-by :common_badge_count >)
