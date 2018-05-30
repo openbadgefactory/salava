@@ -137,7 +137,7 @@
          (if (nil? (schema/check g/GalleryBadges b))
            b
            (do
-             (log/debug (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
+             (log/error (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
              nil)
            )) badges))
 
