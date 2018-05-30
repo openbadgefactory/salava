@@ -71,14 +71,14 @@
     (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
 
 (defn badge-count [search page_count]
-  (let [limit 1
+  (let [limit 20
         badges-left (- (count search) (* limit (+ page_count 1)))]
     (if (pos? badges-left)
       badges-left
       0)))
 
 (defn select-badges [ctx badge_ids order page_count]
-  (let [limit 1
+  (let [limit 20
         offset (* limit page_count)]
     (if (not-empty badge_ids)
       (case order
@@ -136,7 +136,7 @@
         badges (remove #(some nil? (vals %)) (select-badges ctx badge-ids order page_count))]
     {:badges badges #_(select-badges ctx badge-ids order page_count)
      :tags (select-tags ctx badge-ids)
-     :badge_count (badge-count badge-ids page_count) }))
+     :badge_count (badge-count (if-not (= (count badge-ids) (count badges)) badge-ids badges) page_count) }))
 
 
 
