@@ -11,7 +11,8 @@
             [clojure.string :as string]
             [schema.core :as schema]
             [salava.gallery.schemas :as g]
-            [salava.badge.main :as b]))
+            [salava.badge.main :as b]
+            [clojure.tools.logging :as log]))
 
 (defqueries "sql/gallery/queries.sql")
 
@@ -133,13 +134,12 @@
 
 (defn badge-checker [badges]
   (map (fn [b]
-         (let [badge (update b :recipients long)]
-           (if (nil? (schema/check g/GalleryBadges badge))
-             badge
-             (do
-               (println (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges badge) :badge_id (:badge_id badge))))
-               nil)
-             ))) badges))
+         (if (nil? (schema/check g/GalleryBadges b))
+           b
+           (do
+             (log/debug (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
+             nil)
+           )) badges))
 
 (defn get-gallery-badges
   "Get badge-ids"
