@@ -498,7 +498,7 @@ SELECT COUNT(id) as count FROM user_badge WHERE user_id = :user_id AND deleted =
 --get user's badge view stats
 SELECT ub.id,
 bc.name, bc.image_file,
-SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS anon_count, MAX(bv.ctime) AS latest_view
+CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS UNSIGNED) AS reg_count, CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS UNSIGNED) AS anon_count, MAX(bv.ctime) AS latest_view
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_view AS bv ON ub.id = bv.user_badge_id
