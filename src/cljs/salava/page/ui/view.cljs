@@ -101,7 +101,7 @@
               :on-click  #(export-page-to-pdf state)
               :data-dismiss "modal"
               }
-     (t :badge/Export)]]])
+     (t :badge/Exporttopdf)]]])
 
 
 (defn page-content [page state]
