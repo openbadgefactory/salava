@@ -21,6 +21,12 @@
   (if-let [match (re-find #"verification_key=([\w-]+)" url) ]
     (second match)))
 
+
+
+(defn plugin-blocks [fn-name]
+  (let [blocks (plugin-fun (session/get :plugins) "block" fn-name)]
+    [:div (doall (map #(%) blocks))]))
+
 (defn follow-up-url []
 
   (let [
@@ -34,13 +40,12 @@
     (cond
       (not (empty? verification-key))  (str "/user/verify_email/" verification-key)
       (and (not (empty? manual-referrer)) (string/starts-with? manual-referrer "/")) manual-referrer
-      (and (not (empty? path)) (not= "/user/login" path) (not= path (path-for "/user/login"))) path
+      ;(and (not (empty? path)) (not= "/user/login" path) (not= path (path-for "/user/login"))) path
       :else "/social/stream")))
 
 (defn toggle-accept-terms [state]
   (let [ user-id (:user-id @state)
          accept-terms (:accept-terms @state)]
-    (dump @state)
     (ajax/POST
       (path-for (str "/obpv1/user/accept_terms"))
       {:params {:accept_terms accept-terms :user_id user-id}
@@ -81,7 +86,7 @@
                                                           [:input {:type     "checkbox"
                                                                    :on-change (fn [e]
                                                                                 (if (.. e -target -checked)
-                                                                                  (swap! state assoc :accept-terms "accepted")(swap! state assoc :accept-terms "declined")
+                                                                                  (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
                                                                                   ))}]
                                                           (t :user/Doyouaccept)]]]
         ]]
@@ -113,6 +118,7 @@
         error-message-atom (cursor state [:error-message])
         f (fn [] (js-navigate-to "/user/register"))]
     [:div {:id "login-page"}
+     (plugin-blocks "login_top")
      [m/modal-window]
      [:div {:id "narrow-panel"
             :class "panel"}
@@ -136,22 +142,23 @@
          [:div.management-links
           (if-not (private?)
             [:div {:class "col-sm-6 left-column"}
-             [:a {:href "#" :on-click #(m/modal![terms-and-conditions-modal state f "Createnewaccount"] {:size :lg}) #_(path-for "/user/register")} (t :user/Createnewaccount)]])
+             [:a {:href "#" :on-click #(js-navigate-to "/user/register")} (t :user/Createnewaccount)]])
           [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
          [:div {:class "row oauth-buttons"}
           [:div {:class "col-sm-6 left-column"} (facebook-link false nil)]
           [:div.col-sm-6.right-column (linkedin-link nil nil)]]]
         #_[:div {:class "row login-links"}
-           [:div.management-links
-            (if-not (private?)
-              [:div {:class "col-xs-6"}
-               [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
-            [:div {:class (if (private?) "col-xs-12" "col-sm-6")}
-             [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
-           [:div {:class "row oauth-buttons"}
-            [:div {:class "col-xs-6"} (facebook-link false nil)]
-            [:div.col-sm-6 (linkedin-link nil nil)]]]]]]]))
+         [:div.management-links
+          (if-not (private?)
+            [:div {:class "col-xs-6"}
+             [:a {:href (path-for "/user/register")} (t :user/Createnewaccount)]])
+          [:div {:class (if (private?) "col-xs-12" "col-sm-6")}
+           [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
+         [:div {:class "row oauth-buttons"}
+          [:div {:class "col-xs-6"} (facebook-link false nil)]
+          [:div.col-sm-6 (linkedin-link nil nil)]]]]]]
+     (plugin-blocks "login_bottom")]))
 
 (defn handler [site-navi params]
   (let [flash-message (t (keyword (session/get! :flash-message)))

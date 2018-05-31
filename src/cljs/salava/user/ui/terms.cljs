@@ -10,15 +10,12 @@
     [salava.user.ui.login :refer [follow-up-url]]
     [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]))
 
-(defn toggle-accept-terms [state]
-  (let [ user-id (:user-id @state)
-         accept-terms (:accept-terms @state)]
-    (ajax/POST
-      (path-for (str "/obpv1/user/accept_terms"))
-      {:params {:accept_terms accept-terms :user_id user-id}
-       :handler (fn [data]
-                  (when (and (= "success" (:status data)) (= "accepted" (:input data)))
-                    (js-navigate-to (follow-up-url))))})))
+(defn toggle-accept-terms []
+  (ajax/POST
+    (path-for (str "/obpv1/user/accept_terms"))
+    {:handler (fn [data]
+                (when (= "success" (:status data))
+                  (js-navigate-to (follow-up-url))))}))
 
 (defn accept-terms-form [state]
   [:div {:style {:text-align "center"}}
@@ -34,7 +31,7 @@
     [:button {:type         "button"
               :class        "btn btn-primary"
               :disabled     (if-not (= (:accept-terms @state) "accepted") "disabled")
-              :on-click #(toggle-accept-terms state)
+              :on-click #(toggle-accept-terms)
               }
      (t :user/Login)]]])
 

@@ -136,8 +136,8 @@ DELETE FROM user_badge WHERE user_id= :user_id
 
 --name: delete-user-pending-badges!
 DELETE pfb FROM pending_factory_badge AS pfb
-LEFT JOIN user_email AS ue ON pfb.email=ue.email
-WHERE ue.user_id = user_id
+INNER JOIN user_email AS ue ON pfb.email = ue.email
+WHERE ue.user_id = :user_id AND ue.verified = 1;
 
 --name: delete-user-badge-congratulations!
 DELETE FROM badge_congratulation WHERE user_id = :user_id
@@ -218,6 +218,6 @@ UPDATE user_badge SET user_id = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :i
 
 --name: put-pending-badge-email!
 INSERT INTO user_email (user_id, email, verified, verification_key, primary_address, backpack_id, ctime, mtime)
-VALUES (:user_id, :email, 1, NULL, 1, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+VALUES (:user_id, :email, 1, NULL, :primary, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE verified=1, verification_key=NULL, mtime=UNIX_TIMESTAMP();
 

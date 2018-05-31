@@ -71,7 +71,7 @@
           new-user-id (:generated_key (insert-user<! new-user (get-db ctx)))
           _ (insert-user-email! {:email (:email oauth-user) :user_id new-user-id} (get-db ctx))
           _ (add-oauth-user ctx new-user-id (:oauth_user_id oauth-user) service)
-          _ (insert-user-terms ctx new-user-id "accepted")
+          ;_ (insert-user-terms ctx new-user-id "accepted")
           ]
       new-user-id)
     (catch Object _

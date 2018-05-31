@@ -69,6 +69,7 @@
                    :languages       (map name (get-in ctx [:config :core :languages]))
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
+                   :factory-url     (get-in ctx [:config :factory :url])
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
