@@ -1,6 +1,7 @@
 (ns salava.user.ui.register
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
+            [reagent-modals.modals :as m]
             [clojure.string :as string]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
@@ -10,7 +11,8 @@
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link ]]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.ui.error :as err]
-            [salava.user.ui.input :as input]))
+            [salava.user.ui.input :as input]
+            [salava.user.ui.login :as login]))
 
 
 (defn follow-up-url []
@@ -18,28 +20,30 @@
         site-url (str (session/get :site-url) (base-path))
         path (if (and referrer site-url) (string/replace referrer site-url ""))]
     #_(if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
-      "/social/stream"
-      path)
+        "/social/stream"
+        path)
     "/social/stream"
     ))
 
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country language password password-verify]} @state
-        token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))]
+        token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))
+        accept-terms "accepted"]
     (ajax/POST
-     (path-for "/obpv1/user/register/")
-     {:params  {:email email
-                :first_name first-name
-                :last_name last-name
-                :country country
-                :token token
-                :language language
-                :password password
-                :password_verify password-verify}
-      :handler (fn [data]
-                 (if (= (:status data) "error")
-                   (swap! state assoc :error-message (:message data))
-                   (js-navigate-to (follow-up-url))))})))
+      (path-for "/obpv1/user/register/")
+      {:params  {:email email
+                 :first_name first-name
+                 :last_name last-name
+                 :country country
+                 :token token
+                 :language language
+                 :password password
+                 :password_verify password-verify
+                 :accept_terms accept-terms}
+       :handler (fn [data]
+                  (if (= (:status data) "error")
+                    (swap! state assoc :error-message (:message data))
+                    (js-navigate-to (follow-up-url))))})))
 
 (defn verify-registration-data
   "Verifies registration form data"
@@ -54,16 +58,15 @@
         password-atom (cursor state [:password])
         password-verify-atom (cursor state [:password-verify])]
 
-
-        (cond
-          (not (input/email-valid? @email-atom)) (reset! validation-message (t :user/Invalidemail))
-          (not (input/password-valid? @password-atom)) (reset! validation-message (t :user/Invalidpassword))
-          (not (input/password-valid? @password-verify-atom)) (reset! validation-message (t :user/Invalidpassword))
-          (not (input/first-name-valid? @first-name-atom)) (reset! validation-message (t :user/FirstNameInvalidinput))
-          (not (input/last-name-valid? @last-name-atom)) (reset! validation-message (t :user/LastNameInvalidinput))
-          (not (input/country-valid? @country-atom)) (reset! validation-message (t :user/InvalidCountryInput))
-          (not (input/language-valid? @language-atom)) (reset! validation-message (t :user/InvalidLanguageInput))))
-          :else (send-registration state))
+    (cond
+      (not (input/email-valid? @email-atom)) (reset! validation-message (t :user/Invalidemail))
+      (not (input/password-valid? @password-atom)) (reset! validation-message (t :user/Invalidpassword))
+      (not (input/password-valid? @password-verify-atom)) (reset! validation-message (t :user/Invalidpassword))
+      (not (input/first-name-valid? @first-name-atom)) (reset! validation-message (t :user/FirstNameInvalidinput))
+      (not (input/last-name-valid? @last-name-atom)) (reset! validation-message (t :user/LastNameInvalidinput))
+      (not (input/country-valid? @country-atom)) (reset! validation-message (t :user/InvalidCountryInput))
+      (not (input/language-valid? @language-atom)) (reset! validation-message (t :user/InvalidLanguageInput))
+      :else (send-registration state))))
 
 
 (defn registration-form
@@ -95,21 +98,21 @@
 
           [input/text-field {:name "email" :atom email-atom}])]]
       #_[:div.col-xs-12
-       (t :user/Emailinfotext)]]
+         (t :user/Emailinfotext)]]
 
-      [:div.form-group
+     [:div.form-group
       [:label {:class "col-sm-4"
                :for "input-password"}
        (t :user/Password)
        [:span.form-required " *"]]
-       [:div.col-sm-8
-        [:div {:class (str "form-bar " (if (and (input/password-valid? @password-atom) (=@password-atom @password-verify-atom))  "form-bar-success" ""))}
-         [:input {:class     "form-control"
-                  :id        "input-password"
-                  :type      "password"
-                  :name      "password"
-                  :on-change #(reset! password-atom (.-target.value %))
-                  :value     @password-atom}]]]]
+      [:div.col-sm-8
+       [:div {:class (str "form-bar " (if (and (input/password-valid? @password-atom) (=@password-atom @password-verify-atom))  "form-bar-success" ""))}
+        [:input {:class     "form-control"
+                 :id        "input-password"
+                 :type      "password"
+                 :name      "password"
+                 :on-change #(reset! password-atom (.-target.value %))
+                 :value     @password-atom}]]]]
      [:div.form-group
       [:label {:class "col-sm-4"
                :for "input-password-verify"}
@@ -161,7 +164,7 @@
 
      [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2"
                :on-click #(do
-                           (.preventDefault %)
+                            (.preventDefault %)
                             (swap! state assoc :error-message "")
                             (verify-registration-data state)
 
@@ -175,23 +178,59 @@
    [:div.col-sm-6.right-column (linkedin-link nil "register")]])
 
 
+(defn terms-content [state]
+  [:div.panel
+   [:div
+    [:div.row
+     [:div {:style (if (or (string/blank? (layout/terms-and-conditions-fr)) (string/blank? (layout/terms-and-conditions))) {:display "none"})}
+      [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
+       [:ul
+        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content-lang "en")} "EN"]]
+        [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content-lang "fr")} "FR"]]]]]]
+    [:div
+     (if (= "fr" (:modal-content-lang @state))
+       [:div
+        (layout/terms-and-conditions-fr)]
+       [:div
+        (layout/terms-and-conditions)])
+
+     [:fieldset {:class "col-md-12 checkbox"}
+      [:div.col-md-12 {:style {:text-align "center"}} [:label
+                                                       [:input {:type     "checkbox"
+                                                                :on-change (fn [e]
+                                                                             (if (.. e -target -checked)
+                                                                               (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
+                                                                               ))}]
+                                                       (t :user/Doyouaccept)]]]]]
+   [:div
+    {:style {:text-align "center"}}
+    [:button {:type      "button"
+              :class     "btn btn-primary"
+              :disabled  (if-not (= (:accept-terms @state) "accepted") "disabled")
+              :on-click #(swap! state assoc :show-terms false)}
+     (t :user/Createnewaccount)]]])
+
 (defn registeration-content [state]
+  (session/put! :seen-terms true)
   [:div
    (oauth-registration-form)
    (if (some #(= % "oauth") (session/get-in [:plugins :all]))
-       [:div {:class "or"} (t :user/or)])
+     [:div {:class "or"} (t :user/or)])
    (registration-form state)])
 
 (defn content [state]
   [:div {:id "registration-page"}
-   [:div {:id "narrow-panel"
-          :class "panel"}
-    [:div.panel-body
-     (if (:registration-sent @state)
-       [:div {:class "alert alert-success"
-              :role "alert"}
-        (t :user/Welcomemessagesent) "."]
-       (registeration-content state))]]])
+   (if (:show-terms @state)
+     (terms-content state)
+     [:div {:id "narrow-panel"
+            :class "panel"}
+      [:div.panel-body
+       (if (:registration-sent @state)
+         [:div {:class "alert alert-success"
+                :role "alert"}
+          (t :user/Welcomemessagesent) "."]
+         (registeration-content state)
+         )]])])
 
 
 (defn init-data [state]
@@ -199,7 +238,9 @@
     (path-for "/obpv1/user/register" true)
     {:handler (fn [data]
                 (let [{:keys [languages]} data]
-                  (swap! state assoc :languages languages :permission "success")))}
+                  (swap! state assoc :languages languages
+                                     :permission "success"
+                                     :email     (session/get-in! [:user :pending :email] ""))))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
@@ -213,7 +254,9 @@
                      :error-message nil
                      :registration-sent nil
                      :password ""
-                     :password-verify ""})
+                     :password-verify ""
+                     :accept-terms nil
+                     :show-terms true})
         lang (:lang params)]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)

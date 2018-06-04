@@ -27,17 +27,33 @@
     (context "/obpv1/factory" []
              :tags ["factory"]
 
+             (HEAD "/receive" []
+                  :no-doc true
+                  :summary "Capability check for GET /receive"
+                  :query-params [e :- String
+                                 k :- String
+                                 t :- String]
+                  (ok ""))
+
              (GET "/receive" []
                   :no-doc true
                   :summary "Receive new badges from OBF"
                   :query-params [e :- String
                                  k :- String
                                  t :- String]
-                  (if-let [user-badge-id (f/receive-badge ctx e k t)]
-                    (-> (str (u/get-base-path ctx) (str "/badge/receive/" user-badge-id))
-                        redirect
-                        (assoc-in [:session :pending] {:user-badge-id user-badge-id}))
-                    (not-found "404 Not Found")))
+                  (let [badge-info (f/receive-badge-json ctx e k t)]
+                    (if-let [user-badge-id (f/receive-badge ctx badge-info)]
+                      (-> (str (u/get-base-path ctx) (str "/badge/receive/" user-badge-id "?banner=" (f/receive-banner (:banner badge-info))))
+                          redirect
+                          (assoc-in [:session :pending] {:user-badge-id user-badge-id}))
+                      (not-found "404 Not Found"))))
+
+             (DELETE "/receive/:id" req
+                     :no-doc true
+                     :summary "Receive new badges from OBF"
+                     :path-params [id :- s/Int]
+                     (when (= id (get-in req [:session :pending :user-badge-id]))
+                       (ok (f/reject-badge! ctx id))))
 
              (POST "/backpack_email_list" []
                    :header-params [authorization :- s/Str]

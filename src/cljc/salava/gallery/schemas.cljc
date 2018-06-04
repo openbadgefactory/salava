@@ -22,14 +22,16 @@
                                                   (some #(= (first c) %) (keys all-countries))
                                                   (some #(= (second c) %) (vals all-countries))))))
 
+(s/defschema GalleryBadges {:badge_id            s/Str
+                            :ctime               s/Int
+                            :image_file          s/Str
+                            :issuer_content_name s/Str
+                            :name                s/Str
+                            :recipients          s/Int})
+
 
 (s/defschema Badgesgallery {:badge_count s/Int
-                            :badges       [{:badge_id            s/Str
-                                            :ctime               s/Int
-                                            :image_file          s/Str
-                                            :issuer_content_name s/Str
-                                            :name                s/Str
-                                            :recipients          s/Int}]
+                            :badges       [GalleryBadges]
                             :countries    [Countries]
                             :tags         [{:badge_id_count s/Int
                                             :badge_ids      s/Str

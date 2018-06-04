@@ -69,6 +69,7 @@
                    :languages       (map name (get-in ctx [:config :core :languages]))
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
+                   :factory-url     (get-in ctx [:config :factory :url])
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
@@ -129,6 +130,7 @@
 
 (defn main-response [ctx current-user flash-message meta-tags]
   (let [user (if current-user (-> (u/user-information ctx (:id current-user))
+                                  (assoc :terms (:status (u/get-accepted-terms-by-id ctx (:id current-user))))
                                   (assoc  :real-id (:real-id current-user))))] ;;real-id is for admin login as user
     (-> (main-view (assoc ctx :user user :flash-message flash-message) meta-tags)
         (ok)

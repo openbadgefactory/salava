@@ -36,8 +36,8 @@
   "Creates event owners for event"
   [ctx data]
   (try
-    (let [owners (get-all-owners ctx data)  
-          query (vec (map #(assoc % :event_id (:event-id data)) owners))]     
+    (let [owners (get-all-owners ctx data)
+          query (vec (map #(assoc % :event_id (:event-id data)) owners))]
      (jdbc/insert-multi! (:connection (get-db ctx)) :social_event_owners query))
    (catch Exception ex
       (log/error "insert-event-owners!: failed to save event owners")
@@ -218,10 +218,10 @@
 (defn delete-connection-badge! [ctx user_id  badge_id]
   (try+
    (delete-connect-badge! {:user_id user_id :badge_id badge_id} (get-db ctx))
-   
+
    {:status "success" :connected? (is-connected? ctx user_id badge_id)}
    (catch Object _
-     
+
      {:status "error" :connected? (is-connected? ctx user_id badge_id)}
      )))
 
@@ -239,4 +239,7 @@
      :welcome-tip welcome-tip
      :not-verified-emails (get-users-not-verified-emails ctx user_id)}
     ))
+
+(defn get-all-user-events [ctx user_id]
+  (get-all-user-event {:subject user_id} (get-db ctx)))
 

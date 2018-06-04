@@ -498,7 +498,7 @@ SELECT COUNT(id) as count FROM user_badge WHERE user_id = :user_id AND deleted =
 --get user's badge view stats
 SELECT ub.id,
 bc.name, bc.image_file,
-SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS reg_count, SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS anon_count, MAX(bv.ctime) AS latest_view
+CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS UNSIGNED) AS reg_count, CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS UNSIGNED) AS anon_count, MAX(bv.ctime) AS latest_view
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_view AS bv ON ub.id = bv.user_badge_id
@@ -555,6 +555,11 @@ SELECT badge_id FROM user_badge WHERE old_id = :old_id
 --name: select-badge-id-by-user-badge-id
 SELECT badge_id FROM user_badge WHERE id = :user_badge_id
 
+--name: select-user-badge-id-by-badge-id-and-user-id
+--FIX
+SELECT ub.id FROM social_event AS se
+LEFT JOIN user_badge AS ub ON ub.user_id = se.subject AND se.object = ub.badge_id
+WHERE se.id=:id
 
 -- name: insert-badge-content!
 INSERT IGNORE INTO badge_content (id, name, description, image_file, language_code)
@@ -636,3 +641,8 @@ INSERT INTO user_badge (
     :issued_on, :expires_on, :status, 'private',
     0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );
+
+--name: select-user-badge-id-from-badge-connection
+SELECT ub.id FROM user_badge AS ub
+JOIN social_connections_badge AS scb ON ub.user_id = scb.user_id
+WHERE scb.badge_id = :badge_id AND scb.ctime = :ctime

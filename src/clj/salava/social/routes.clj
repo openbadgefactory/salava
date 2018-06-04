@@ -5,6 +5,7 @@
             [schema.core :as s]
             [salava.core.access :as access]
             [salava.social.db :as so]
+            [salava.user.db :as u]
             [salava.factory.db :as f]
             [salava.badge.main :as b]
             salava.core.restructure))
@@ -25,8 +26,8 @@
                   ;:return
                   #_{:messages      [{:id              s/Int
                                     :user_id         s/Int
-                                    :badge_id        s/Str 
-                                    :message         s/Str 
+                                    :badge_id        s/Str
+                                    :message         s/Str
                                     :ctime           s/Int
                                     :first_name      s/Str
                                     :last_name       s/Str
@@ -90,7 +91,7 @@
                    :current-user current-user
                    (ok (so/hide-user-event! ctx (:id current-user) event_id))
                    )
-             
+
              (POST "/create_connection_badge/:badge_id" []
                    :return {:status (s/enum "success" "error") :connected? s/Bool}
                    :summary "Delete message"
@@ -108,24 +109,29 @@
                    (do
                      (ok (so/get-connections-badge ctx (:id current-user)))))
 
-             (GET "/events" []
-                   :summary "Returns users events"
+             (GET "/pending_badges" []
+                   :summary "Check and return user's pending badges"
                    :auth-rules access/signed
                    :current-user current-user
-                   (do
-                     (f/save-pending-assertions ctx (:id current-user))
-                     (ok (let [pending-badges (b/user-badges-pending ctx (:id current-user))
-                               events (so/get-all-events-add-viewed ctx (:id current-user))
-                               tips (so/get-user-tips ctx (:id current-user))
-                               ;admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
-                               events {:tips tips
-                                       :pending-badges pending-badges
-                                       :events events}
-                               ;events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)
-                               ]
+                   (f/save-pending-assertions ctx (:id current-user))
+                   (ok {:pending-badges (b/user-badges-pending ctx (:id current-user))}))
 
-                           events))))
-             
+             (GET "/events" []
+                  :summary "Returns users events"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (let [events (so/get-all-events-add-viewed ctx (:id current-user))
+                            tips (so/get-user-tips ctx (:id current-user))
+                            accepted-terms? (u/get-accepted-terms-by-id ctx (:id current-user))
+                            ;admin-events (if (= "admin" (:role current-user)) (so/get-user-admin-events-sorted ctx (:id current-user)) [])
+                            events {:tips tips
+                                    :events events
+                                    :terms-accepted (:status accepted-terms?)}
+                            ;events (if (and (not (empty? admin-events)) (= "admin" (:role current-user))) (merge events {:admin-events admin-events}) events)
+                            ]
+
+                        events)))
+
              (GET "/connected/:badge_id" []
                   :return s/Bool
                    :summary "Returns Bool if user has connected with asked badge-id"
@@ -135,6 +141,6 @@
                    (do
                      (ok (so/is-connected? ctx (:id current-user) badge_id)
                       )))
-             
+
              )))
 

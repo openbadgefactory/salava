@@ -32,3 +32,6 @@ UPDATE user SET last_login = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: select-oauth-user-service
 SELECT service from oauth_user where user_id = :user_id
+
+--name: insert-user-terms<!
+INSERT INTO user_terms (user_id, status, ctime) VALUES (:user_id, :status, UNIX_TIMESTAMP());
