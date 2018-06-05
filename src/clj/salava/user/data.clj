@@ -195,28 +195,28 @@
                                                                                  template #(cons [:paragraph][[:paragraph
                                                                                                                [:chunk.chunk (str (t :badge/BadgeID ul) ": ")][:chunk (str (or (:badge_id b ) "-"))]"\n"
                                                                                                                [:chunk.chunk (str (t :badge/Name ul) ": ") ][:chunk (or (:name %) "-")]"\n"
-                                                                                                               (when-not (blank? (:description %))
+                                                                                                               (when-not (blank? (str (:description %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description %))]"\n"])
-                                                                                                               (when-not (blank? (:image_file %))
+                                                                                                               (when-not (blank? (str (:image_file %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:chunk (str site-url "/"(:image_file %))]"\n"])
-                                                                                                               (when-not (blank? (:issuer_content_name %))
+                                                                                                               (when-not (blank? (str (:issuer_content_name %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Issuedby ul) ": ")] [:chunk (str (:issuer_content_name %)"  ")]])
-                                                                                                               (when-not (blank? (:issuer_content_url %))
+                                                                                                               (when-not (blank? (str (:issuer_content_url %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Issuerurl ul) ": ")][:chunk (str (:issuer_content_url %))]"\n"])
-                                                                                                               (when-not (blank? (:issuer_contact %))
+                                                                                                               (when-not (blank? (str (:issuer_contact %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Issuercontact ul) ": ")] [:chunk (str (:issuer_contact %))]"\n"])
-                                                                                                               (when-not (blank? (:creator_name %))
+                                                                                                               (when-not (blank? (str (:creator_name %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Createdby ul) ": ")][:chunk (str (:creator_name %))]"\n"])
-                                                                                                               (when-not (blank? (:creator_url %))
+                                                                                                               (when-not (blank? (str (:creator_url %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Creatorurl ul) ": ")][:chunk (str (:creator_url %))]"\n"])
-                                                                                                               (when-not (blank? (:creator_email %))
+                                                                                                               (when-not (blank? (str (:creator_email %)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Creatorcontact ul) ": ")][:chunk (str (:creator_email %))]"\n"])
                                                                                                                (when-not (blank? (str (:criteria_url %)))
@@ -225,13 +225,13 @@
                                                                                                                (when-not (blank? (str (:criteria_content %)))
                                                                                                                  [:paragraph
                                                                                                                   [:chunk.chunk (str (t :badge/Criteria ul) ": ")][:paragraph (strip-html-tags (:criteria_content %))]"\n"])
-                                                                                                               (when-not (blank? (:status b))
+                                                                                                               (when-not (blank? (str (:status b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :user/Status ul) ": ")][:chunk  (capitalize (str (t (keyword (str "social/"(:status b))) ul) "  "))]])
                                                                                                                (when-not (blank? (str (:verified_by_obf b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Verifiedbyobf ul) ": ")][:chunk (str (if (true? (:verified_by_obf b)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
-                                                                                                               (when-not (blank? (:issued_by_obf b))
+                                                                                                               (when-not (blank? (str (:issued_by_obf b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Issuedbyobf ul) ": ")][:chunk (str (if (true? (:issued_by_obf b)) (t :core/Yes ul) (t :core/No ul)))]"\n"])
                                                                                                                (when (not-empty (:tags b))
@@ -249,14 +249,14 @@
                                                                                                                (when-not (blank? (str (:revoked b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Revoked ul) ": ")] [:chunk (str (if (true? (:revoked b)) (t :core/Yes ul) (t :core/No ul)) "  ")]])
-                                                                                                               (when-not (blank? (:visibility b) )
+                                                                                                               (when-not (blank? (str (:visibility b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Badgevisibility ul) ": ")] [:chunk (t (keyword (str "core/" (capitalize (:visibility b)))) ul)]"\n"])
 
-                                                                                                               (when-not (blank? (:obf_url b))
+                                                                                                               (when-not (blank? (str (:obf_url b)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/OBFurl ul) ": ")] [:chunk (:obf_url b)]"\n"])
-                                                                                                               (when-not (blank? (:assertion_url more-badge-info))
+                                                                                                               (when-not (blank? (str (:assertion_url more-badge-info)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Assertionurl ul) ": ")] [:chunk.link (str (:assertion_url more-badge-info))]"\n"])
                                                                                                                (when-not (blank? (str (:assertion_json more-badge-info)))
@@ -266,7 +266,7 @@
                                                                                                                (when-not (blank? (str (:rating more-badge-info)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Badgerating ul) ": ") ] [:chunk (str (:rating more-badge-info) "  ")]])
-                                                                                                               (when-not (blank? (:evidence_url more-badge-info))
+                                                                                                               (when-not (blank? (str (:evidence_url more-badge-info)))
                                                                                                                  [:phrase
                                                                                                                   [:chunk.chunk (str (t :badge/Evidenceurl ul) ": ")] [:chunk (str (:evidence_url more-badge-info) " ")]]"\n"
                                                                                                                  )
