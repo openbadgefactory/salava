@@ -43,33 +43,70 @@
       :else nil
       )))
 
-(defn all-user-data [ctx user-id current-user-id]
-  (let [all-user-info (u/user-information-and-profile ctx user-id current-user-id)
-        email-addresses (u/email-addresses ctx current-user-id)
-        user-badges (b/user-badges-all ctx current-user-id)
-        user-pages (p/user-pages-all ctx current-user-id)
-        user-files (f/user-files-all ctx  current-user-id)
-        all-events (so/get-all-user-events ctx user-id)
-        events-with-info (map #(-> %
-                                   (assoc :info (events-helper ctx % user-id))) all-events)
-        connections (so/get-connections-badge ctx current-user-id)
-        pending-badges (b/user-badges-pending ctx user-id)
-        user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
-        user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
-        user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-        user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil) ]
+(defn all-user-data
+  ([ctx user-id current-user-id]
+   (let [all-user-info (u/user-information-and-profile ctx user-id current-user-id)
+         email-addresses (u/email-addresses ctx current-user-id)
+         user-badges (b/user-badges-all ctx current-user-id)
+         user-pages (p/user-pages-all ctx current-user-id)
+         user-files (f/user-files-all ctx  current-user-id)
+         all-events (so/get-all-user-events ctx user-id)
+         events-with-info (map #(-> %
+                                    (assoc :info (events-helper ctx % user-id))) all-events)
+         connections (so/get-connections-badge ctx current-user-id)
+         pending-badges (b/user-badges-pending ctx user-id)
+         user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
+         user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
+         user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
+         user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil) ]
 
-    (assoc all-user-info
-      :emails email-addresses
-      :user_badges user-badges
-      :user_pages user-pages
-      :user_files (:files user-files)
-      :events events-with-info
-      :connections connections
-      :pending_badges pending-badges
-      :user_followers user-followers
-      :user_following user-following
-      )))
+     (assoc all-user-info
+       :emails email-addresses
+       :user_badges user-badges
+       :user_pages user-pages
+       :user_files (:files user-files)
+       :events events-with-info
+       :connections connections
+       :pending_badges pending-badges
+       :user_followers user-followers
+       :user_following user-following)))
+
+   ([ctx user-id current-user-id _]
+    (let [all-user-info (u/user-information-and-profile ctx user-id current-user-id)
+          email-addresses (u/email-addresses ctx current-user-id)
+          user-badges (map (fn [b]
+                             {:id (:id b)
+                              :badge_id (:badge_id b)
+                              :name (:name b)})(b/user-badges-all ctx current-user-id))
+          pending-badges (map (fn [pb]
+                                {:name (:name pb)
+                                 :description (:description pb)}) (b/user-badges-pending ctx user-id))
+          user-pages (map (fn [p]
+                            {:id (:id p)
+                             :name (:name p)})(p/user-pages-all ctx current-user-id))
+          user-files (map (fn [f]
+                            {:name (:name f)
+                             :path (:path f)}) (:files (f/user-files-all ctx  current-user-id)))
+          events (map #(-> %
+                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
+          connections (count (so/get-connections-badge ctx current-user-id))
+          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
+          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
+          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
+          user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil)
+          ]
+
+      (assoc all-user-info
+        :emails email-addresses
+        :user_badges user-badges
+        :user_pages user-pages
+        :user_files user-files
+        :events events
+        :connections connections
+        :pending_badges pending-badges
+        :user_followers user-followers
+        :user_following user-following
+        ))))
 
 (defn strip-html-tags [s]
   (->> s
@@ -310,7 +347,7 @@
                                                                                                                           (when-not (blank? (str (:issued_on e)))
                                                                                                                             [:phrase [:chunk (date-from-unix-time (long (* 1000 (:issued_on e))))] "\n"])
                                                                                                                           (when-not (blank? (str (:content e)))
-                                                                                                                          (markdown->clj-pdf (:content e)))])
+                                                                                                                            (markdown->clj-pdf (:content e)))])
                                                                                                                        ))
                                                                                                                (when-not (blank? (str (:all-messages message-count)))
                                                                                                                  [:phrase

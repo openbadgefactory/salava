@@ -169,15 +169,9 @@
 
          [:div {:class "col-md-12"}
           [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity) ]
-          (if (not-empty connections)
+            (if (> connections 0)
             [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ") (count connections)]]
-             #_(doall
-                 (for [c connections]
-                   ^{:key c}[:div {:style {:margin-top "20px"}}
-                             [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name c)]
-                             [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :page/Description) ": ")] (:description c)]
-                             ]))])
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ") connections]]])
           (if (or (not-empty user_following) (not-empty user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]

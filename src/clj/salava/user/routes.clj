@@ -216,7 +216,7 @@
                   :summary "Get everything on user"
                   :path-params [userid :- s/Int]
                   :current-user current-user
-                  (ok (md/all-user-data ctx userid (:id current-user))))
+                  (ok (md/all-user-data ctx userid (:id current-user) "true")))
 
              (GET "/export-to-pdf/:userid" []
                   :summary "export user data to pdf"
