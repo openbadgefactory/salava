@@ -155,6 +155,7 @@ body.anon{
 a#login-button, #login-page .btn-primary, .btn-primary:active:focus, .btn-primary:focus {
   background-color: $titlebar-color;
   border-color: $titlebar-color;
+  text-transform: uppercase;
   color: #000000;
   font-weight:bold;
   box-shadow:none;
