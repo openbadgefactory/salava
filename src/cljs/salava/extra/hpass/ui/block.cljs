@@ -41,4 +41,4 @@
     [:p {:style {:text-align "center"}} "Read our privacy policy from "  [:a {:href "https://hpass.org/privacy-policy/"} [:b "here"]]]]])
 
 (defn ^:export accept-terms-string []
-  (t :user/Doyouacceptprivacypolicy))
+  "I have read and i agree to the privacy policy")
