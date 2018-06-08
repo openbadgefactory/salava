@@ -88,7 +88,7 @@
                                                                                 (if (.. e -target -checked)
                                                                                   (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
                                                                                   ))}]
-                                                          (t :user/Doyouaccept)]]]
+                                                          (layout/accept-terms-str)]]]
         ]]
       [:div.modal-footer {:style {:text-align "center"}}
        [:button {:type         "button"

@@ -259,3 +259,9 @@
 (defn embed-page [content]
   [:div
    content])
+
+(defn accept-terms-str []
+  (let [string (first (plugin-fun (session/get :plugins) "block" "accept_terms_string"))]
+    (if string
+      (string)
+      (t :user/Doyouaccept))))

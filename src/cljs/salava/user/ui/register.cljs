@@ -201,7 +201,7 @@
                                                                              (if (.. e -target -checked)
                                                                                (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
                                                                                ))}]
-                                                       (t :user/Doyouaccept)]]]]]
+                                                       (layout/accept-terms-str)]]]]]
    [:div
     {:style {:text-align "center"}}
     [:button {:type      "button"

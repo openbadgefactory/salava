@@ -35,15 +35,10 @@
 
     ]]])
 
-#_(defn ^:export footer []
-  [:footer.footer
-   [:div.footer-container
-    [:p.text-muted
-    "Copyright © 2015-2017 Discendum Oy | "
-     [:a {:class "bottom-link" :href "/terms" }
-      "Terms of Use"]
-     " | "
-     [:a {:class "bottom-link" :href "mailto:kaya@humanitarian.academy?Subject=Contact%20request" }
-      "Contact: kaya@humanitarian.academy"]]
-    [:p.text-muted
-     "Open Badge Factory ® and Open Badge Passport ® are registered trademarks"]]])
+(defn ^:export terms []
+  [:div {:style {:padding "10px"}}
+   [:div
+    [:p {:style {:text-align "center"}} "Read our privacy policy from "  [:a {:href "https://hpass.org/privacy-policy/"} [:b "here"]]]]])
+
+(defn ^:export accept-terms-string []
+  (t :user/Doyouacceptprivacypolicy))
