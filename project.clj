@@ -107,17 +107,18 @@
                        :resource-paths ["target/generated"]}
              :uberjar {:resource-paths ["target/adv"]
                        :main           salava.core.main
-                       :aot            [salava.core.main]}}
+                       :omit-source    true
+                       :aot            :all}}
 
 
   :scss  {:builds
           {:dev {:source-dir "src/scss"
                  :dest-dir   "target/generated/public/css"
-                 :executable "sassc"
+                 :executable "sass"
                  :args       ["--line-numbers" "-I" "src/scss" "-t" "nested"]}
            :adv {:source-dir "src/scss"
                  :dest-dir   "target/adv/public/css"
-                 :executable "sassc"
+                 :executable "sass"
                  :args       ["-I" "src/scss/" "-t" "compressed"]}}}
 
 
@@ -146,11 +147,10 @@
                                             :elide-asserts true
                                             :pretty-print  false}}}}
 
-  :uberjar-name      "salava.jar"
   :auto-clean        false
-  :min-lein-version  "2.6.1"
+  :min-lein-version  "2.7.1"
 
-  :pedantic? :warn
+  :pedantic? :abort
 
   :aliases {"develop" ["do" "clean" ["pdo" ["figwheel"] ["scss" ":dev" "boring"]]]
             "css" ["do" ["pdo" ["scss" ":dev" "boring"]]]
