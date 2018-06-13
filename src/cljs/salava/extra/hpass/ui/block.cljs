@@ -184,7 +184,7 @@
       [:p "London"]
       [:p "EC1M 4AR."]
       ]
-     [:p "or email at compliance@humanitarian.academy"]
+     [:p "or email at" [:a {:href "mailto:compliance@humanitarian.academy"} " compliance@humanitarian.academy"]]
      ]
     [:p "The Academy is responsible for all Personal Information under its control and has designated a privacy officer who is accountable to Management for the Academy’s compliance with this Privacy Policy."]
     [:div
