@@ -170,7 +170,6 @@
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
              (if (not-empty user_followers)
                [:div
-                (dump user_followers)
                 [:h3 (str (t :social/Followersusers) ": ")]
                 (for [follower user_followers
                       :let [id (:owner_id follower)
