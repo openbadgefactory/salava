@@ -222,3 +222,18 @@
 (defn event [ctx subject verb object type]
   ;TODO VALIDATE DATA
   (publish ctx :event {:subject subject :verb verb :object object :type type}))
+
+(defn replace-nils [data]
+  (clojure.walk/postwalk
+    (fn [d]
+      (if (map? d)
+        (let [m (into {}
+                      (map
+                        (fn [k v]
+                          (if (string/blank? (str v)) {k "-"}{k v})) (keys d) (vals d)))]
+          (when (seq m)
+            m))
+        d))
+    data))
+
+
