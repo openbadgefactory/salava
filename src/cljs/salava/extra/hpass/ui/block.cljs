@@ -2,8 +2,7 @@
   (:require [salava.core.i18n :refer [t]]))
 
 (defn ^:export login_top []
-  [:div.login-top-container
-   [:div.green-banner]
+  [:div.login-top-container {:key "login_top"}
    [:div.login_top
     [:h1
      "Welcome to myHPass"]
@@ -11,7 +10,7 @@
   )
 
 (defn ^:export login_bottom []
-  [:div.login-bottom
+  [:div.login-bottom {:key "login_buttom"}
    [:br]
    [:p [:b "Get Recognised. Build your professional profile. Advance your career."][:br]
     "myHPass is a free platform for you as a humanitarian or volunteer. Store your digital badges and share your skills, learning and experience. "]

@@ -70,6 +70,9 @@ body.anon{
   min-height:100%;
   background-image: url("/img/extra/hpass/background.jpg");
 
+  header#navbar {
+    border-bottom: 20px solid $titlebar-color;
+  }
 
   @media (max-width: 425px){
     background:none;
@@ -79,18 +82,15 @@ body.anon{
     }
   }
 
-
   @media (max-width: 550px){
     .container.main-container {
       padding-right:unset;
       padding-left:unset;
       margin-right:unset;
       margin-left:unset;
-      .green-banner{
-        margin-bottom:10px;
-      }
     }
   }
+
 
   #login-page {
     padding-bottom: 2px;
@@ -115,16 +115,6 @@ body.anon{
 
   }
 
-  img{
-    height: auto;
-    width: 100%;
-  }
-
-  .container.main-container{
-    width:100vw;
-    margin-left: 0px;
-    padding-left:0px;
-  }
   #narrow-panel{
     max-width:568px;
     border-top: none;
@@ -433,21 +423,10 @@ button.navbar-toggle {
   min-width:100%
 }
 
-.green-banner {
-  margin:0;
-  margin-top:-15px;
-  margin-bottom: 50px;
-  padding:0;
-  background-color: $titlebar-color;
-  width: 100vw;
-  height: 16px;
-}
-
 .login_top{
+
   max-width:568px;
-  /*   margin: auto; */
-  margin: 0px auto 0 auto;
-  /*   margin-top: 100px; */
+  margin: 25px auto 0 auto;
   padding: 5px;
   background-color: #FFF;
   text-align: center;
