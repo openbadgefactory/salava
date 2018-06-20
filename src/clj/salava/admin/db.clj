@@ -209,9 +209,9 @@
 
 
 (defn get-oauth-user-services [ctx user_id]
-  (let [fun (first (plugin-fun (get-plugins ctx) "block" "user-information"))]
-    (fun ctx user_id))
-  )
+  (if-let [fun (first (plugin-fun (get-plugins ctx) "block" "user-information"))]
+    (fun ctx user_id)
+    []))
 
 (defn get-user [ctx user_id]
   (let [user (u/user-information-with-registered-and-last-login ctx user_id)
