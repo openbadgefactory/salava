@@ -74,6 +74,8 @@
                                                 :email :assertion_url :tags
                                                 :issuer_content_name ;:issuer_url
                                                 :issuer_content_url]))
+(s/defschema UserBackpackEmail {:email s/Str
+                                :backpack_id (s/maybe s/Int)})
 
 (s/defschema BadgeToImport {:status  (s/enum "ok" "invalid")
                             :message (s/maybe s/Str)
