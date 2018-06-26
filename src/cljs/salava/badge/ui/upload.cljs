@@ -77,6 +77,21 @@
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
+(defn assertion-upload-info []
+  [:div
+   [:p (t :badge/Uploadbadgesviaassertioninfo1)]
+   [:ol
+    [:li {:dangerouslySetInnerHTML
+          {:__html (t :badge/Uploadbadgesviaassertioninfo2)}}]
+    [:li {:dangerouslySetInnerHTML
+          {:__html (t :badge/Uploadbadgesviaassertioninfo3)}}]]
+   [:p
+    (t :badge/Uploadbagesfromresult1) " "
+    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
+    (t :badge/Uploadbagesfromresult2) "  "
+    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    " " (t :badge/Uploadbagesfromresult3) "."]])
+
 (defn badge-file-upload-content [state]
   (let [status  (:status @state)]
     [:div
@@ -98,7 +113,7 @@
         status  (:status @state)]
     [:div
      [:h1.uppercase-header (t :badge/Uploadbadgesviaassertion)]
-     [:p (t :badge/Uploadbadgesviaassertioninfo1) " " (t :badge/Uploadbadgesviaassertioninfo2)]
+     [assertion-upload-info]
      (cond
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
