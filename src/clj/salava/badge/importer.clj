@@ -6,7 +6,8 @@
             [salava.badge.parse :as p]
             [salava.core.util :as u]
             [salava.core.http :as http]
-            [salava.user.db :as user]))
+            [salava.user.db :as user]
+            [salava.core.helper :refer [dump]]))
 
 (defonce import-cache (atom {}))
 
@@ -34,8 +35,8 @@
 
 (defn- remote-ids [user base-url]
   (->> (:emails user)
-      (map #(get-remote-id % base-url))
-      (filter pos?)))
+       (map #(get-remote-id % base-url))
+       (filter pos?)))
 
 (defn- assertion [user {:keys [hostedUrl imageUrl]}]
   (try
@@ -77,7 +78,7 @@
         error (:error (meta badge))
         content (first (get-in badge [:badge :content])) ;TODO check default language
         issuer (first (get-in badge [:badge :issuer]))  ;TODO check default language
-        ] 
+        ]
     {:status              (if (or expired? exists? error) "invalid" "ok")
      :message             (cond
                             exists?  "badge/Alreadyowned"
@@ -86,10 +87,10 @@
                             :else    "badge/Savethisbadge")
      :error               error
      :name                (:name content)
-     :description         (:description content) 
-     :image_file          (:image_file content) 
-     :issuer_content_name (:name issuer) 
-     :issuer_content_url  (:url issuer) 
+     :description         (:description content)
+     :image_file          (:image_file content)
+     :issuer_content_name (:name issuer)
+     :issuer_content_url  (:url issuer)
      :previous-id         previous-id
      :import-key          (:checksum (meta badge))}))
 
@@ -113,7 +114,7 @@
       (log/error "badges-to-import: failed to fetch badges")
       (log/error (.toString ex))
       #_(doseq [line (.getStackTrace ex)]
-        (log/error (str line)))
+          (log/error (str line)))
       {:badges []
        :status "error"
        :error ex})))
@@ -147,3 +148,17 @@
       (log/error "upload-badge: upload failed")
       (log/error (.toString ex))
       {:status "error" :message "badge/Errorwhileuploading" :reason (.getMessage ex)})))
+
+(defn upload-badge-via-assertion [ctx assertion user]
+  (let [user-id (:id user)]
+    (log/info "assertion-badge-upload: got new upload from user id " user-id)
+    (try
+      (db/save-user-badge! ctx
+                           (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                               (p/str->badge assertion)
+                               (assoc :status "accepted")))
+      {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
+      (catch Throwable ex
+        (log/error "assertion-badge-upload: upload failed")
+        (log/error (.toString ex))
+        {:status "error" :message "badge/Errorwhileuploading" :reason (.getMessage ex)}))))

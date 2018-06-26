@@ -199,6 +199,17 @@
                      (forbidden)
                      (ok (i/upload-badge ctx file (:id current-user)))))
 
+             (POST "/badge_via_assertion" []
+                   :return schemas/Upload
+                   :body-params [assertion :- s/Str]
+                   :summary "Upload badge via assertion url"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (if (:private current-user)
+                     (forbidden)
+                     (ok (i/upload-badge-via-assertion ctx assertion current-user)))
+                   )
+
              (GET "/settings/:user-badge-id" []
                   ;return schemas/UserBadgeContent
                   :path-params [user-badge-id :- Long]
