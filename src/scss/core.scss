@@ -108,6 +108,18 @@ button {
     }
 }
 
+.btn-info {
+    background-color: #5bc0de;
+    border-color: #46b8da;
+    box-shadow: 0px 2px $box-shadow;
+    &:hover, &:focus, &:active:hover  {
+        background-color: darken(#5bc0de, 5%);
+        border-color: #46b8da;
+        box-shadow: 0px 2px $box-shadow;
+    }
+}
+
+
 .buttons .btn {
     font-weight: bold;
     border-radius: 2px;
@@ -137,7 +149,7 @@ a#login-button {
         background-color:$grid-link-hover;
     }
 }
-.settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary {
+.settings-btn.btn.btn-primary, .print-btn.btn.btn-primary, .edit-btn.btn.btn-primary, .view-btn.btn-primary, .admin-btn.btn-primary, .verify-btn.btn-info {
     padding:4px 12px;
     line-height: 22px;
     &:before {
@@ -164,6 +176,9 @@ a#login-button {
 }
 .admin-btn.btn.btn-primary:before{
     content: '\f0ad';
+}
+.verify-btn.btn.btn-info:before{
+    content: '\f058';
 }
 /* FORM */
 .form-control {
@@ -459,7 +474,7 @@ ul.side-dropdown-links {
 .main-container {
     margin-top: 15px;
     margin-bottom: 30px;
-    
+
 }
 
 #content {
@@ -486,7 +501,7 @@ ul.side-dropdown-links {
     label {
         text-align: left;
     }
-    
+
 }
 #grid.row {
     margin:0px;
@@ -660,7 +675,7 @@ body.anon {
             }
         }
     }
-   
+
     .navbar-toggle {
         //display: none;
     }
@@ -697,15 +712,15 @@ body.anon {
 /*logos*/
 
 .logo-image-icon {
-    background-size:     cover;                     
+    background-size:     cover;
     background-repeat:   no-repeat;
-    background-position: center center; 
+    background-position: center center;
 }
 
 .logo-image {
-    background-size:     cover;                     
+    background-size:     cover;
     background-repeat:   no-repeat;
-    background-position: center center;  
+    background-position: center center;
 }
 .logo-image-url{
     width: 200px;
@@ -787,7 +802,7 @@ body.anon {
 
     }
     .margin-bottom{
-	
+
 	margin-bottom:15px
     }
     .image-view {
@@ -802,7 +817,7 @@ body.anon {
     .chosen{
         font-weight:700 !important;
     }
-    
+
 }
 .inline{
     display:inline;
