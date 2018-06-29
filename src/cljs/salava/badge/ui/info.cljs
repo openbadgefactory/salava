@@ -115,56 +115,6 @@
                         (mo/open-modal [:badge :creator] creator-id))} name]]])
 
 
-(defn verify-badge [state]
-  (let [{:keys [remote_url owner? revoked verified_by_obf issued_by_obf issued_on expires_on assertion obf_url issuer_verified]} @state
-        revoked? (pos? revoked)
-        expired? (bh/badge-expired? expires_on)
-        temp [owner? revoked verified_by_obf issued_by_obf issued_on expires_on assertion]
-        style (atom "")]
-
-    (js/setTimeout (fn [] (swap! state assoc :verifying false)) 3000) ;delay displaying results
-
-    [:div {:id "badge-settings"}
-     [:div.modal-body
-      [:div.row
-       [:div.col-md-12
-        [:button {:type         "button"
-                  :class        "close"
-                  :data-dismiss "modal"
-                  :aria-label   "OK"
-                  }
-         [:span {:aria-hidden             "true"
-                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-
-      (if (= true (:verifying @state))
-        [:div.ajax-message
-         [:i {:class "fa fa-cog fa-spin fa-2x "}]
-         [:span (str (t :core/Loading) "...")]]
-        [:div
-         [:p [:b (str (t :badge/Revoked)"?")] " - " (if revoked? (t :core/Yes) (t :core/No)) ]
-         [:p [:b (str (t :badge/Expired)"?")]" - " (if expired? (t :core/Yes) (t :core/No))]
-         [:p [:b (t :badge/Verifiedbyobf)] " - "(if verified_by_obf (t :core/Yes) (t :core/No))]
-         [:p [:b (t :badge/Issuedbyobf)] " - "(if issued_by_obf (t :core/Yes) (t :core/No))]
-         (if (number? expires_on)
-           [:p [:b (t :badge/Expireson)] " - " (date-from-unix-time (* 1000 expires_on))] "")
-         [:br]
-         [:div {:class @style }
-          (cond
-            revoked? (do (reset! style "revoked") [:p {:class @style } (str (t :badge/Badge) (t :badge/Revoked))])
-            expired? (do (reset! style "expired")[:p {:class @style } (t :badge/Badgeisexpired)])
-            :else (do (reset! style "success") [:p {:class @style } "badge is valid"]))]
-         [:p [:i "last checked on " (date-from-unix-time (* 1000 (unix-time)))]]
-         ])]
-     [:div.modal-footer
-      [:button {:type         "button"
-                :class        "btn btn-primary"
-                :data-dismiss "modal"}
-       (t :core/Close)]]]
-
-    )
-  )
-
-
 (defn content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issued_on expires_on
                 revoked first_name last_name user-logged-in? congratulated? congratulations
@@ -204,11 +154,10 @@
                      :on-click #(.print js/window)}
             (t :core/Print)]
            #_[:button {:class    (str "btn btn-info verify-btn")
-                     :on-click #(do
-                                  (.preventDefault %)
-                                  (swap! state assoc :verifying true)
-                                  (m/modal! [verify-badge state] {:size :md}) (verify-badge state))}
-            "Verify"]]
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (swap! state assoc :verifying true)
+                                    (m/modal! [verify-badge state] {:size :md}))} "Verify"]]
           [:div.share-wrapper
            [s/share-buttons-badge
             (str (session/get :site-url) (path-for (str "/badge/info/" id)))
@@ -225,12 +174,7 @@
              :dateto   expires_on}]]]
          (if (and (not expired?) (not revoked))
            (admintool id "badge")))
-       #_[:div {:style {:margin-left "60px" }} [:button {:class    (str "btn btn-info verify-btn")
-                                                       :on-click #(do
-                                                                    (.preventDefault %)
-                                                                    (swap! state assoc :verifying true)
-                                                                    (m/modal! [verify-badge state] {:size :md}) (verify-badge state))}
-                                              "Verify"]]
+
        (if (or verified_by_obf issued_by_obf)
          (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
        [:div {:class "row flip"}
@@ -238,12 +182,6 @@
          [:div.row
           [:div.col-xs-12
            [:img {:src (str "/" image_file)}]]]
-         [:button {:class    (str "btn btn-info verify-btn")
-                   :on-click #(do
-                                (.preventDefault %)
-                                (swap! state assoc :verifying true)
-                                (m/modal! [verify-badge state] {:size :md}) (verify-badge state))}
-          "Verify"]
          (if (and qr_code (= visibility "public"))
            [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
          (if owner?
@@ -310,13 +248,10 @@
               [:a.link {:href     "#"
                         :on-click #(do (.preventDefault %)
                                      (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
-               (t :badge/Openassertion) "..."]
-                       [:button {:class    (str " btn btn-info verify-btn")
-                   :on-click #(do
-                                (.preventDefault %)
-                                (swap! state assoc :verifying true)
-                                (m/modal! [verify-badge state] {:size :md}) (verify-badge state))}
-          "Verify"]])
+               (t :badge/Openassertion) "..."]])
+
+           ;verify-badge-link
+           (bm/verify-badge-link id)
 
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
@@ -366,8 +301,7 @@
   (let [id (:badge-id params)
         state (atom {:initializing true
                      :permission "initial"
-                     :verifying true
-                     :styling ""})
+                     })
         user (session/get :user)]
     (init-data state id)
     (fn []
