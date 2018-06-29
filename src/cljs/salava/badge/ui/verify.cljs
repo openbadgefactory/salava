@@ -15,7 +15,7 @@
     {:handler (fn [data] (reset! state (assoc data
                                          :verifying true
                                          :display "none"
-                                         :style "")))}))
+                                         :style "success")))}))
 
 (defn verify-badge [badge-id]
   (let [state (atom {})]
@@ -38,7 +38,7 @@
             (cond
               revoked? (do (swap! state assoc :style "revoked") (str (t :badge/Badge) (t :badge/Revoked)))
               expired? (do (swap! state assoc :style "expired") (t :badge/Badgeisexpired))
-              :else (do (dump (:style @state))(swap! state assoc :style "success")  (t :badge/Validbadge)))]
+              :else (do (swap! state assoc :style "success")  (t :badge/Validbadge)))]
            [:br]
            [:p [:i "last checked on " (date-from-unix-time (* 1000 (unix-time)))]]
            [:a.link {:href     "#"
