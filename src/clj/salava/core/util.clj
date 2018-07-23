@@ -129,13 +129,20 @@
       (catch Object _
         (throw+ (str "Error copying file: " _))))))
 
+(defn extension-from-content [url]
+  (let [content (http/http-get url {:as :byte-array :max-redirects 5})
+        t (:body (client/get url))
+        extension (-> content mime-type-of extension-for-name)]
+  (if (and (= ".txt" extension) (re-find #"<svg" t)) ".svg" extension)))
+
 
 (defn save-file-from-http-url
   [ctx url]
-  (let [content   (http/http-get url {:as :byte-array})
-        extension (-> content mime-type-of extension-for-name)
+  (let [content (http/http-get url {:as :byte-array :max-redirects 5})
+        extension (extension-from-content url)
         path (public-path-from-content content extension)]
     (save-file-data ctx content path)))
+
 
 
 (defn save-file-from-data-url
