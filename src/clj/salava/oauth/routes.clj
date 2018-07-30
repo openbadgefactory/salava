@@ -43,7 +43,6 @@
                                  {error :- s/Str nil}]
                   :current-user current-user
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
-                        gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
                     (if (= status "success")
