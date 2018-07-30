@@ -58,8 +58,7 @@
                    :body [login-content schemas/LoginUser]
                    :summary "User logs in"
                    (let [{:keys [email password]} login-content
-                         gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
-                         accepted-terms? (if gdpr-disabled? false (:status (u/accepted-terms? ctx email)))
+                         accepted-terms? (u/accepted-terms? ctx email)
                          login-status (-> (u/login-user ctx email password)
                                           (assoc :terms accepted-terms?))]
                      (if (= "success" (:status login-status))
@@ -87,8 +86,7 @@
                    (let [{:keys [email first_name last_name country language password password_verify accept_terms]} form-content
                          save (u/register-user ctx email first_name last_name country language password password_verify)
                          user-id (u/get-user-by-email ctx email)
-                         gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
-                         update-accept-term (if gdpr-disabled? {:status "success" :input "disabled"} (u/insert-user-terms ctx (:id user-id) accept_terms))]
+                         update-accept-term (u/insert-user-terms ctx (:id user-id) accept_terms)]
 
                      (if (= "error" (:status save))
                        ;return error status from save
