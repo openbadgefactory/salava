@@ -5,7 +5,7 @@
             [ring.util.io :as io]
             [salava.core.layout :as layout]
             [schema.core :as s]
-            [salava.core.util :refer [get-base-path]]
+            [salava.core.util :refer [get-base-path get-plugins]]
             [salava.user.schemas :as schemas]
             [salava.user.db :as u]
             [salava.mail.email-notifications :as en]
@@ -58,9 +58,10 @@
                    :body [login-content schemas/LoginUser]
                    :summary "User logs in"
                    (let [{:keys [email password]} login-content
-                         accepted-terms? (u/accepted-terms? ctx email)
+                         gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                         accepted-terms? (if gdpr-disabled? false (:status (u/accepted-terms? ctx email)))
                          login-status (-> (u/login-user ctx email password)
-                                          (assoc :terms (:status accepted-terms?)))]
+                                          (assoc :terms accepted-terms?))]
                      (if (= "success" (:status login-status))
                        (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) false)
                        (ok login-status))))
@@ -72,7 +73,7 @@
                   :summary "Get languages"
                   (if (private? ctx)
                     (forbidden)
-                    (assoc-in (ok {:languages (get-in ctx [:config :core :languages])}) [:session :seen-terms] true)))
+                  (assoc-in (ok {:languages (get-in ctx [:config :core :languages])}) [:session :seen-terms] true)))
 
              (POST "/register" req
                    ;:return
@@ -86,7 +87,8 @@
                    (let [{:keys [email first_name last_name country language password password_verify accept_terms]} form-content
                          save (u/register-user ctx email first_name last_name country language password password_verify)
                          user-id (u/get-user-by-email ctx email)
-                         update-accept-term (u/insert-user-terms ctx (:id user-id) accept_terms)]
+                         gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                         update-accept-term (if gdpr-disabled? {:status "success" :input "disabled"} (u/insert-user-terms ctx (:id user-id) accept_terms))]
 
                      (if (= "error" (:status save))
                        ;return error status from save
@@ -94,14 +96,14 @@
                        (if (not (private? ctx))
                          ;(ok save)
                          (let [login-status (u/login-user ctx email password)]
-                           (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (= "accepted" (:input update-accept-term)))
+                           (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
                              (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
                              (ok login-status)))
                          (cond
                            (not (right-token? ctx (:token form-content)))        (forbidden)
                            (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
                            :else                                                 (let [ login-status  (u/login-user ctx email password)]
-                                                                                   (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (= "accepted" (:input update-accept-term)))
+                                                                                   (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
                                                                                      (u/set-session ctx (ok login-status) (:id login-status))
                                                                                      (ok login-status))))))))
 
