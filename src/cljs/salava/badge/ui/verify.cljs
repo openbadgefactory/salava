@@ -10,12 +10,27 @@
             ))
 
 (defn init-badge-info [state badge-id]
-  (ajax/GET
+  #_(ajax/GET
     (path-for (str "/obpv1/badge/info/" badge-id))
     {:handler (fn [data] (reset! state (assoc data
                                          :verifying true
                                          :display "none"
-                                         :style "success")))}))
+                                         :style "success")))})
+  (ajax/GET
+    (path-for (str "/obpv1/badge/verify/" badge-id))
+        {:handler (fn [data]
+                    (dump data)
+                    (reset! state (assoc data
+                                         :verifying true
+                                         :display "none"
+                                         :style "success")))}
+    ))
+(defn verify [state]
+  (let [assertion (:assertion-url @state)]
+    (dump assertion)
+  #_(ajax/POST
+    (path-for (str "/obpv1/badge/verify"))
+    {:params {:assertion-url assertion}})))
 
 (defn verify-badge [badge-id]
   (let [state (atom {})]

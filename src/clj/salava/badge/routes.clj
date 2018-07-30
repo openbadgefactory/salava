@@ -13,6 +13,7 @@
             [salava.core.access :as access]
             [salava.badge.pdf :as pdf]
             [salava.core.helper :refer [dump]]
+            [salava.badge.verify :as v]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -62,6 +63,13 @@
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
+
+             (GET "/verify/:badgeid" []
+                  :path-params [badgeid :- Long]
+                  :summary "verify badge"
+                  :current-user current-user
+                  (ok (v/verify-badge ctx badgeid (:id current-user)))
+                  )
 
              (GET "/pending/:badgeid" req
                   :path-params [badgeid :- Long]
