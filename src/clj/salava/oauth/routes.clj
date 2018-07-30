@@ -4,7 +4,7 @@
             [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
             [schema.core :as s]
-            [salava.core.util :refer [get-base-path]]
+            [salava.core.util :refer [get-base-path get-plugins]]
             [salava.oauth.db :as d]
             [salava.oauth.facebook :as f]
             [salava.oauth.facebook :as g]
@@ -43,12 +43,13 @@
                                  {error :- s/Str nil}]
                   :current-user current-user
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
-                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
+                        gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                        _ (if (and (= true (get-in req [:session :seen-terms])) (not gdpr-disabled?)) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
 
                     (if (= status "success")
 
-                      (if-not (= (:status accepted-terms?) "accepted")
+                      (if (and (not= (:status accepted-terms?) "accepted") (not gdpr-disabled?))
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/terms/"))
                           ;(u/set-session ctx (found (str (get-base-path ctx) "/user/terms/")) user-id)
@@ -59,9 +60,9 @@
                           ;(u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)
                           (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
-                        (if current-user
-                          (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
-                          (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
+                      (if current-user
+                        (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
+                        (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
              (GET "/facebook/deauthorize" []
                   :query-params [code :- s/Str]
@@ -79,12 +80,13 @@
                   :current-user current-user
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
                         {:keys [status user-id message]} r
-                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
+                        gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                        _ (if (and (= true (get-in req [:session :seen-terms])) (not gdpr-disabled?)) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
 
                     (if (= status "success")
 
-                      (if (not= (:status accepted-terms?) "accepted")
+                      (if (and (not= (:status accepted-terms?) "accepted") (not gdpr-disabled?))
 
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/terms/" (:id current-user)))
