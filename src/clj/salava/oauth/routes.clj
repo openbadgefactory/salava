@@ -44,12 +44,11 @@
                   :current-user current-user
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
                         gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
-                        _ (if (and (= true (get-in req [:session :seen-terms])) (not gdpr-disabled?)) (d/insert-user-terms ctx user-id "accepted"))
+                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
-
                     (if (= status "success")
 
-                      (if (and (not= (:status accepted-terms?) "accepted") (not gdpr-disabled?))
+                      (if (and (not= accepted-terms? "accepted") (not= false accepted-terms?))
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/terms/"))
                           ;(u/set-session ctx (found (str (get-base-path ctx) "/user/terms/")) user-id)
@@ -80,13 +79,12 @@
                   :current-user current-user
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
                         {:keys [status user-id message]} r
-                        gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
-                        _ (if (and (= true (get-in req [:session :seen-terms])) (not gdpr-disabled?)) (d/insert-user-terms ctx user-id "accepted"))
+                        _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
 
                     (if (= status "success")
 
-                      (if (and (not= (:status accepted-terms?) "accepted") (not gdpr-disabled?))
+                      (if (and (not= accepted-terms? "accepted") (not= false accepted-terms?))
 
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/terms/" (:id current-user)))

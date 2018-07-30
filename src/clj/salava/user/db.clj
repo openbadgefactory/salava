@@ -104,11 +104,13 @@
 
 (defn accepted-terms? [ctx email]
   (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
-        accepted-terms (select-user-terms {:email email} (into {:result-set-fn first} (get-db ctx)))]
-    (if gdpr-disabled? false (:status accepted-terms))))
+        user-accepted-terms? (select-user-terms {:email email} (into {:result-set-fn first} (get-db ctx)))]
+    (if gdpr-disabled? false (:status user-accepted-terms?))))
 
 (defn get-accepted-terms-by-id [ctx user-id]
-  (select-user-terms-with-userid {:user_id user-id} (into {:result-set-fn first} (get-db ctx))))
+  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+        user-accepted-terms? (select-user-terms-with-userid {:user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
+    (if gdpr-disabled? false (:status user-accepted-terms?))))
 
 (defn insert-user-terms [ctx user-id status]
   (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))]
