@@ -64,11 +64,10 @@
                         (unauthorized)
                         (not-found)))))
 
-             (GET "/verify/:badgeid" []
-                  :path-params [badgeid :- Long]
+             (GET "/verify" [assertion_url]
                   :summary "verify badge"
                   :current-user current-user
-                  (ok (v/verify-badge ctx badgeid (:id current-user)))
+                  (ok (v/verify-badge ctx assertion_url (:id current-user)))
                   )
 
              (GET "/pending/:badgeid" req
