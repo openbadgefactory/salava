@@ -67,13 +67,11 @@
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
-(defn verify-badge-link [badge-id]
+(defn verify-badge-link [assertion]
   [:div {:id "verify-link"}
    [:a.link {:href "#"
              :on-click #(do (.preventDefault %)
-                          ;;                           (swap! state assoc :verifying true)
-                          (mo/open-modal [:badge :verify] badge-id)
-                          #_(m/modal! [verify-badge-modal badge-id] {:size :lg}))}
+                          (mo/open-modal [:badge :verify] assertion))}
     (str (t :badge/Verifybadge) "...")]])
 
 
@@ -136,7 +134,7 @@
                [:a {:href     "#"
                     :on-click #(mo/set-new-view [:badge :metadata] (dissoc assertion :evidence))}
                 (t :badge/Openassertion) "..."]])
-            (verify-badge-link id)
+            (verify-badge-link assertion)
             (if (pos? @show-recipient-name-atom)
               (if (and user-logged-in? (not owner?))
                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]

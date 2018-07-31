@@ -251,7 +251,7 @@
                (t :badge/Openassertion) "..."]])
 
            ;verify-badge-link
-           (bm/verify-badge-link id)
+           (bm/verify-badge-link assertion)
 
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
