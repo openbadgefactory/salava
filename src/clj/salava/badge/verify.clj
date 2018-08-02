@@ -57,12 +57,15 @@
   (let [badge (b/fetch-badge ctx id)
         asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
         result {}]
+
     (if (url? asr)
       (let [asr-response (assertion asr)]
         (case (:status asr-response)
-          410 (assoc result
-                :assertion-status 410
-                :revoked? true)
+          410 (do
+                (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
+                (assoc result
+                    :assertion-status 410
+                    :revoked? true))
           500 (assoc result :assertion-status 500
                 :asr asr
                 :badge-status "Broken assertion url, badge can't be verified")

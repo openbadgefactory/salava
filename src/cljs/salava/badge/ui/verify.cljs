@@ -37,7 +37,8 @@
           [:div {:style {:padding-top "20px"}}
            (case assertion-status
              410  [:div {:class "revoked"}
-                   (str (t :badge/Badge) (t :badge/Revoked))
+                   (str (t :badge/Badge) " " (t :badge/Revoked))
+
                    ]
              500 [:div
                   [:div {:class "expired"}
