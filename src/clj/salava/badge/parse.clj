@@ -301,7 +301,7 @@
                                 :url (:url issuer)
                                 :email (:email issuer)
                                 :image_file (:image issuer)
-                                :revocation_list_url nil
+                                :revocation_list_url (:revocationList issuer)
                                 :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
                                (let [data (http/json-get creator-url)]
@@ -432,7 +432,7 @@
                              :email (:email issuer)
                              :image_file nil
                              :endorsement []
-                             :revocation_list_url nil}]
+                             :revocation_list_url (:revocationList issuer)}]
                    :creator creator
                    :endorsement []
                    :published 0
