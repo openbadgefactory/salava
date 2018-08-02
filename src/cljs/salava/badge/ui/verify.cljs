@@ -6,32 +6,30 @@
             [salava.core.helper :refer [dump]]
             [salava.badge.ui.helper :as bh]
             [salava.badge.ui.assertion :as a]
+            [clojure.string :refer [blank?]]
             [salava.core.time :refer [date-from-unix-time unix-time unix-time]]
             ))
 
-(defn init-badge-info [assertion state]
+(defn init-badge-info [badgeid state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/verify"))
-    { :params {:assertion_url (:id assertion)}
-      :handler (fn [data]
-                 (reset! state (assoc data
-                                 ;:verifying false
-                                 :display "none"
-                                 :style "success")))}))
+    (path-for (str "/obpv1/badge/verify/" badgeid))
+    {:handler (fn [data]
+                (reset! state (assoc data
+                                :verifying false
+                                :display "none"
+                                :style "success")))}))
 (defn code-helper [v]
   (case v
     200 "ok"
-    800 "empty"
+    800 "not provided"
     v
     ))
 
-(defn verify-badge [assertion]
+(defn verify-badge [badgeid]
   (let [state (atom {:verifying true})]
-    (init-badge-info assertion state)
+    (init-badge-info badgeid state)
     (fn []
-      (let [{:keys [assertion-status badge-image-status revoked? expired? assertion badge-issuer-status badge-criteria-status]} @state
-            ]
-        (js/setTimeout (fn [] (swap! state assoc :verifying false)) 2000)
+      (let [{:keys [assertion-status badge-image-status revoked? expired? assertion badge-issuer-status badge-criteria-status asr revocation_reason]} @state]
         (if (= true (:verifying @state))
           [:div.ajax-message {:style {:padding-top "20px"}}
            [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -41,31 +39,32 @@
              410  [:div {:class "revoked"}
                    (str (t :badge/Badge) (t :badge/Revoked))
                    ]
-             500 [:div {:class "expired"}
-                  (:badge-status @state)
-                  ]
+             500 [:div
+                  [:div {:class "expired"}
+                   (:badge-status @state)]
+                  [:br]
+                  [:p [:i asr]]
+                  [:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
              [:div
               #_(if (and verified_by_obf issued_by_obf) [:p (t :badge/Issuedandverifiedbyobf)])
-              [:p [:b "Assertion url"]" - " (code-helper assertion-status)]
-              [:p [:b "Badge Image url"]" - " (code-helper badge-image-status)]
-              [:p [:b "Badge Criteria url"]" - " (code-helper badge-criteria-status)]
-              [:p [:b "Badge Issuer url"]" - " (code-helper badge-issuer-status)]
-              [:p [:b (str (t :badge/Revoked))] " - " (if revoked? (t :core/Yes) (t :core/No)) ]
-              [:p [:b (str (t :badge/Expired))]" - " (if expired? (t :core/Yes) (t :core/No))]
+              (cond
+                revoked? [:div [:p {:class "revoked"} (str (t :badge/Badge) " " (t :badge/Revoked))] [:p revocation_reason]]
+                expired? [:div {:class "expired"} [:p (t :badge/Badgeisexpired)]]
+                :else [:div
+                       [:p [:b "Assertion url"]" - " (code-helper assertion-status)]
+                       [:p [:b "Badge Image url"]" - " (code-helper badge-image-status)]
+                       [:p [:b "Badge Criteria url"]" - " (code-helper badge-criteria-status)]
+                       [:p [:b "Badge Issuer url"]" - " (code-helper badge-issuer-status)]
+                       [:p [:b (str (t :badge/Revoked))] " - " (if revoked? (t :core/Yes) (t :core/No)) ]
+                       [:p {:class "success"} (t :badge/Validbadge)]])
 
-
-
-              [:div {:class (:style @state)}
-               (cond
-                 revoked? (do (swap! state assoc :style "revoked") (str (t :badge/Badge) (t :badge/Revoked)))
-                 expired? (do (swap! state assoc :style "expired") (t :badge/Badgeisexpired))
-                 :else (do (swap! state assoc :style "success")  (t :badge/Validbadge)))]
-              [:br]
               [:p [:i "last checked on " (date-from-unix-time (* 1000 (unix-time)))]]
-              [:a.link {:href     "#"
-                        :on-click #(do (.preventDefault %)
-                                     (if (= (:display @state) "none") (swap! state assoc :display "block") (swap! state assoc :display "none"))
-                                     )} (if (= (:display @state) "none") (str (t :badge/Openassertion) "...") (str (t :badge/Hideassertion) "..."))]
+              [:div
+               [:a.link {:href     "#"
+                         :on-click #(do (.preventDefault %)
+                                      (if (= (:display @state) "none") (swap! state assoc :display "block") (swap! state assoc :display "none"))
+                                      )} (if (= (:display @state) "none") (str (t :badge/Openassertion) "...") (str (t :badge/Hideassertion) "..."))]
+               [:a {:style {:float "right"} :href (str "https://badgecheck.io/?url="asr) :target "_blank" :rel "nofollow noopener"} "use external validator"]]
               [:div {:style {:display (:display @state) :padding-top "30px"}}
                [a/assertion-content (dissoc assertion :evidence)]
                ]])])))))
