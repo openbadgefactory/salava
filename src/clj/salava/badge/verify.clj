@@ -14,7 +14,7 @@
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
 
 (defn fetch-json-data [url]
-  (log/info "fetch-badge-data: GET" url)
+  (log/info "fetch-json-data: GET" url)
   (http/http-get url {:as :json :accept :json :throw-entire-message? false}))
 
 (defn fetch-image [url]
@@ -52,10 +52,10 @@
 (defn revoked? [badge-id revocation-list]
   (filter #(if (map? %) (= badge-id (:id %)) (= badge-id %)) revocation-list))
 
-(defn verify-badge [ctx badge_id user-id]
+(defn verify-badge [ctx id]
   (log/info "Badge verification initiated:")
-  (let [badge (b/get-badge ctx badge_id user-id)
-        asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id badge_id} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
+  (let [badge (b/fetch-badge ctx id)
+        asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
         result {}]
     (if (url? asr)
       (let [asr-response (assertion asr)]

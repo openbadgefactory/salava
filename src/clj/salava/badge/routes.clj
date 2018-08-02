@@ -68,7 +68,7 @@
                   :path-params [badgeid :- Long]
                   :summary "verify badge"
                   :current-user current-user
-                  (ok (v/verify-badge ctx badgeid (:id current-user))))
+                (ok (v/verify-badge ctx badgeid)))
 
              (GET "/pending/:badgeid" req
                   :path-params [badgeid :- Long]
