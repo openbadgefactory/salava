@@ -25,26 +25,37 @@
     v
     ))
 
+(defn bottom-links [state]
+  [:div
+   [:div
+    [:a.link {:href     "#"
+              :on-click #(do (.preventDefault %)
+                           (if (= (:display @state) "none") (swap! state assoc :display "block") (swap! state assoc :display "none"))
+                           )} (if (= (:display @state) "none") (str (t :badge/Openassertion) "...") (str (t :badge/Hideassertion) "..."))]
+    [:a {:style {:float "right"} :href (str "https://badgecheck.io/?url="(:asr @state)) :target "_blank" :rel "nofollow noopener"} "use external validator"]]
+   [:div {:style {:display (:display @state) :padding-top "30px"}}
+    [a/assertion-content (dissoc (:assertion @state) :evidence)]]])
+
 (defn verify-badge [badgeid]
   (let [state (atom {:verifying true})]
     (init-badge-info badgeid state)
     (fn []
-      (let [{:keys [assertion-status badge-image-status revoked? expired? assertion badge-issuer-status badge-criteria-status asr revocation_reason]} @state]
+      (let [{:keys [assertion-status badge-image-status revoked? expired? assertion badge-issuer-status badge-criteria-status asr revocation_reason message]} @state]
         (if (= true (:verifying @state))
           [:div.ajax-message {:style {:padding-top "20px"}}
            [:i {:class "fa fa-cog fa-spin fa-2x "}]
            [:span (str (t :core/Loading) "...")]]
           [:div {:style {:padding-top "20px"}}
            (case assertion-status
-             410  [:div {:class "revoked"}
-                   (str (t :badge/Badge) " " (t :badge/Revoked))
-
+             410  [:div
+                   [:div {:class "revoked"}(str (t :badge/Badge) " " (t :badge/Revoked))]
+                   [:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
                    ]
              500 [:div
                   [:div {:class "expired"}
                    (:badge-status @state)]
                   [:br]
-                  [:p [:i asr]]
+                  [:p [:i message]]
                   [:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
              [:div
               #_(if (and verified_by_obf issued_by_obf) [:p (t :badge/Issuedandverifiedbyobf)])
@@ -60,14 +71,6 @@
                        [:p {:class "success"} (t :badge/Validbadge)]])
 
               [:p [:i "last checked on " (date-from-unix-time (* 1000 (unix-time)))]]
-              [:div
-               [:a.link {:href     "#"
-                         :on-click #(do (.preventDefault %)
-                                      (if (= (:display @state) "none") (swap! state assoc :display "block") (swap! state assoc :display "none"))
-                                      )} (if (= (:display @state) "none") (str (t :badge/Openassertion) "...") (str (t :badge/Hideassertion) "..."))]
-               [:a {:style {:float "right"} :href (str "https://badgecheck.io/?url="asr) :target "_blank" :rel "nofollow noopener"} "use external validator"]]
-              [:div {:style {:display (:display @state) :padding-top "30px"}}
-               [a/assertion-content (dissoc assertion :evidence)]
-               ]])])))))
+              [bottom-links state]])])))))
 
 

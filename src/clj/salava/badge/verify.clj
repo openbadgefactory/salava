@@ -1,7 +1,7 @@
 (ns salava.badge.verify
   (:require [salava.badge.main :as b]
             [salava.core.http :as http]
-            [salava.core.time :refer [iso8601-to-unix-time unix-time]]
+            [salava.core.time :refer [iso8601-to-unix-time unix-time date-from-unix-time]]
             [clojure.tools.logging :as log]
             [salava.core.util :refer [get-db]]
             [yesql.core :refer [defqueries]]
@@ -9,6 +9,7 @@
             [clojure.data.json :as json]))
 
 (defqueries "sql/badge/main.sql")
+
 
 (defn url? [s]
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
@@ -39,7 +40,7 @@
     (http/http-req  {:url assertion-url :as :json :method :get  :accept :json :throw-exceptions false })
     (catch Exception e
       (log/error "failed to get assertion url " assertion-url " Message: "(.getMessage e) )
-      {:status 500})))
+      {:status 500 :message (.getMessage e)})))
 
 (defn- assertion-jws [b signature]
   (log/info "fetching assertion from signature")
@@ -52,6 +53,12 @@
 (defn revoked? [badge-id revocation-list]
   (filter #(if (map? %) (= badge-id (:id %)) (= badge-id %)) revocation-list))
 
+(defn expired? [t]
+  (if (nil? t) nil (if (string? t) (< (iso8601-to-unix-time t) (unix-time)) (< t (unix-time)))))
+
+(defn process-time [t]
+  (if (nil? t) nil (if (string? t)(date-from-unix-time (long (* 1000 (iso8601-to-unix-time t))) "date")(date-from-unix-time (long (* 1000 t)) "date"))))
+
 (defn verify-badge [ctx id]
   (log/info "Badge verification initiated:")
   (let [badge (b/fetch-badge ctx id)
@@ -63,12 +70,13 @@
         (case (:status asr-response)
           410 (do
                 (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
-                (assoc result
-                    :assertion-status 410
-                    :revoked? true))
+                (assoc result :assertion-status 410
+                              :asr asr
+                              :revoked? true))
           500 (assoc result :assertion-status 500
-                :asr asr
-                :badge-status "Broken assertion url, badge can't be verified")
+                            :asr asr
+                            :badge-status "Broken assertion url, badge can't be verified"
+                            :message (:message asr-response))
           200 (let [asr-data (:body asr-response)
                     badge-data (fetch-json-data (:badge asr-data))
                     badge-image (if (map? (:image badge-data)) (fetch-image (get-in badge-data [:image :id])) (fetch-image (:image badge-data)))
@@ -78,37 +86,47 @@
                     badge-issuer (if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
                                    (fetch-url (get-in badge-data [:issuer :id]))
                                    (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
-                    revoked? (or (= (:status asr-response) 410) (:revoked asr-data))
-                    expired? (and (:expires asr-data) (< (iso8601-to-unix-time (:expires asr-data)) (unix-time)))]
+                    issuedOn {:issuedOn (process-time (:issuedOn asr-data))}
+                    expires (if-let [exp (process-time (:expires asr-data))]{:expires exp} nil)
 
+                    revoked? (or (= (:status asr-response) 410) (:revoked asr-data))
+                    expired? (expired? (:expires asr-data)) #_(and (:expires asr-data) (< (iso8601-to-unix-time (:expires asr-data)) (unix-time)))]
                 (assoc result :assertion-status 200
-                  :assertion asr-data
-                  :asr asr
-                  :badge-image-status (:status badge-image)
-                  :badge-criteria-status (:status badge-criteria)
-                  :badge-issuer-status (:status badge-issuer)
-                  :revoked? revoked?
-                  :expired? expired?
-                  ))))
-      (let [jws-response (assertion-jws badge asr)
-            badge-id (or (:id (json/read-str (:assertion_json jws-response) :key-fn keyword)) (:uid (json/read-str (:assertion_json jws-response) :key-fn keyword)))
-            revocation-list-url (:revocation_list_url (first (get-in jws-response [:badge :issuer])))
-            revocation-list (if revocation-list-url (:revokedAssertions (fetch-json-data revocation-list-url)))
-            revoked (revoked? badge-id revocation-list)
-            revocation-reason (:revocationReason (first revoked))]
+                              :assertion (merge asr-data issuedOn expires)
+                              :asr asr
+                              :badge-image-status (:status badge-image)
+                              :badge-criteria-status (:status badge-criteria)
+                              :badge-issuer-status (:status badge-issuer)
+                              :revoked? revoked?
+                              :expired? expired?))))
+
+      (let [jws-response (assertion-jws badge asr)]
         (if (= 500 (:status jws-response))
           (assoc result :assertion-status 500
-            :asr asr
-            :badge-status (:message jws-response))
-          (assoc result :assertion-status 200
-            :assertion (json/read-str (:assertion_json jws-response) :key-fn keyword )
-            :asr asr
-            :badge-image-status 200
-            :badge-criteria-status 200
-            :badge-issuer-status 200
-            :revoked? (not (empty? revoked))
-            :revocation_reason revocation-reason
-            :expired? (if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time)))
+                        :asr asr
+                        :badge-status "Broken jws signature, badge can't be verified"
+                        :message (:message jws-response))
+          (let [badge-id (or (:id (json/read-str (:assertion_json jws-response) :key-fn keyword))(:uid (json/read-str (:assertion_json jws-response) :key-fn keyword)))
+                revocation-list-url (:revocation_list_url (first (get-in jws-response [:badge :issuer])))
+                revocation-list (if revocation-list-url (:revokedAssertions (fetch-json-data revocation-list-url)))
+                revoked (revoked? badge-id revocation-list)
+                revocation-reason (:revocationReason (first revoked))
+                assertion (json/read-str (:assertion_json jws-response) :key-fn keyword )
+                issuedOn {:issuedOn (process-time (:issuedOn assertion))}
+                expires (if-let [exp (process-time (:expires assertion))]{:expires exp} nil)]
+
+            (if (not (empty? revoked))(update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx)))
+
+            (assoc result :assertion-status 200
+                          :assertion (merge assertion issuedOn expires)
+                          :asr asr
+                          :badge-image-status 200
+                          :badge-criteria-status 200
+                          :badge-issuer-status 200
+                          :revoked? (not (empty? revoked))
+                          :revocation_reason revocation-reason
+                          :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time)))
+              )
             )
           )
         )
