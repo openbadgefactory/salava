@@ -211,7 +211,10 @@ SELECT ut.status FROM user_terms AS ut WHERE ut.user_id=:user_id
 
 
 --name: select-pending-badge
-SELECT * FROM user_badge WHERE id = :id AND user_id = 0;
+SELECT ub.* FROM user_badge ub
+LEFT JOIN user_email ue ON ub.email = ue.email
+WHERE ub.id = :id AND ub.user_id = 0
+    AND (ue.user_id IS NULL OR ue.user_id = :user_id);
 
 --name: update-pending-badge!
 UPDATE user_badge SET user_id = :user_id, mtime = UNIX_TIMESTAMP() WHERE id = :id AND user_id = 0;
