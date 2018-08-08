@@ -244,7 +244,8 @@
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:permission "initial"
+  (let [ gdpr-disabled? (session/get :gdpr-disabled?)
+         state (atom {:permission "initial"
                      :email ""
                      :first-name ""
                      :last-name ""
@@ -256,7 +257,7 @@
                      :password ""
                      :password-verify ""
                      :accept-terms nil
-                     :show-terms true})
+                     :show-terms (if gdpr-disabled? false true)})
         lang (:lang params)]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)

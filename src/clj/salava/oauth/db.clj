@@ -6,7 +6,7 @@
             [clj-http.client :as http]
             [slingshot.slingshot :refer :all]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path save-file-from-http-url]]))
+            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path save-file-from-http-url get-plugins]]))
 
 (defqueries "sql/oauth/queries.sql")
 
@@ -52,13 +52,15 @@
   user-id)
 
 (defn insert-user-terms [ctx user-id status]
-  (try+
-    (do
-      (insert-user-terms<! {:user_id user-id :status status} (get-db ctx))
-      {:status "success" :input status})
-    (catch Object _
-      {:status "error" :input status})
-    ))
+  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))]
+    (when-not gdpr-disabled?
+      (try+
+        (do
+          (insert-user-terms<! {:user_id user-id :status status} (get-db ctx))
+          {:status "success" :input status})
+        (catch Object _
+          {:status "error" :input status})
+        ))))
 
 (defn create-local-user [ctx oauth-user service]
   (try+

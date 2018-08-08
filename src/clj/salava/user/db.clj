@@ -103,19 +103,26 @@
   (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx))))
 
 (defn accepted-terms? [ctx email]
-  (select-user-terms {:email email} (into {:result-set-fn first} (get-db ctx))))
+  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+        user-accepted-terms? (select-user-terms {:email email} (into {:result-set-fn first} (get-db ctx)))]
+    (if gdpr-disabled? false (:status user-accepted-terms?))))
 
 (defn get-accepted-terms-by-id [ctx user-id]
-  (select-user-terms-with-userid {:user_id user-id} (into {:result-set-fn first} (get-db ctx))))
+  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+        user-accepted-terms? (select-user-terms-with-userid {:user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
+    (if gdpr-disabled? false (:status user-accepted-terms?))))
 
 (defn insert-user-terms [ctx user-id status]
-  (try+
-    (do
-      (insert-user-terms<! {:user_id user-id :status status} (get-db ctx))
-      {:status "success" :input status})
-    (catch Object _
-      {:status "error" :input status})
-    ))
+  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))]
+    (if gdpr-disabled?
+      {:status "success" :input "disabled"}
+      (try+
+        (do
+          (insert-user-terms<! {:user_id user-id :status status} (get-db ctx))
+          {:status "success" :input status})
+        (catch Object _
+          {:status "error" :input status})
+        ))))
 
 (defn login-user
   "Check if user exists and password matches. User account must be activated."
