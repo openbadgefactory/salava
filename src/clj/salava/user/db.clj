@@ -409,7 +409,7 @@
 
 (defn- save-pending-badge-and-email [ctx user-id pending-badge-id new-account]
   (when pending-badge-id
-    (when-let [user-badge (select-pending-badge {:id pending-badge-id} (u/get-db-1 ctx))]
+    (when-let [user-badge (select-pending-badge {:id pending-badge-id :user_id user-id} (u/get-db-1 ctx))]
       (update-pending-badge! {:user_id user-id :id pending-badge-id} (u/get-db ctx))
       (put-pending-badge-email! {:user_id user-id :email (:email user-badge) :primary (if new-account 1 0)} (u/get-db ctx))
       (update-user-activate! {:id user-id} (get-db ctx)))))
