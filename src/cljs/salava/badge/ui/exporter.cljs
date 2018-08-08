@@ -13,7 +13,7 @@
             [salava.core.i18n :refer [t]]))
 
 (defn email-options [state]
-  (map #(hash-map :value % :title %) (:emails @state)))
+  (map #(hash-map :value % :title %) (map #(:email %) (:emails @state))))
 
 (defn visibility-options []
   [{:value "all" :title (t :badge/All)}
@@ -49,46 +49,47 @@
         (not= (.indexOf (.toLowerCase (:name element)) (.toLowerCase (:search @state))) -1))))
 
 (defn grid-element [element-data state]
-  (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data]
+  (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data
+        obf_url (session/get :factory-url)]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container" :key id}
-      [:div.media-content
-        [:div.visibility-icon
-           (case visibility
-             "private" [:i {:class "fa fa-lock"}]
-             "internal" [:i {:class "fa fa-group"}]
-             "public" [:i {:class "fa fa-globe"}]
-             nil)]
-       (if image_file
-         [:div.media-left
-          [:a {:href (path-for (str "/badge/info/" id))}[:img {:src (str "/" image_file)
-                 :alt name}]]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.badge-link {:href (path-for (str "/badge/info/" id))}
-          name]]
-      [:div.media-issuer
-         [:a {:href issuer_content_url
-              :target "_blank"
-              :title issuer_content_name} issuer_content_name]]]]
-      [:div {:class "media-bottom"}
-       [:div.row
-        [:div.col-xs-9
-         (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
-           [:div.checkbox
-            [:label {:for (str "checkbox-" id)}
-             [:input {:type "checkbox"
-                      :id (str "checkbox-" id)
-                      :on-change (fn []
-                                   (if checked?
-                                     (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
-                                     (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
-                      :checked checked?}]
+    [:div {:class "media grid-container" :key id}
+     [:div.media-content
+      [:div.visibility-icon
+       (case visibility
+         "private" [:i {:class "fa fa-lock"}]
+         "internal" [:i {:class "fa fa-group"}]
+         "public" [:i {:class "fa fa-globe"}]
+         nil)]
+      (if image_file
+        [:div.media-left
+         [:a {:href (path-for (str "/badge/info/" id))}[:img {:src (str "/" image_file)
+                                                              :alt name}]]])
+      [:div.media-body
+       [:div.media-heading
+        [:a.badge-link {:href (path-for (str "/badge/info/" id))}
+         name]]
+       [:div.media-issuer
+        [:a {:href issuer_content_url
+             :target "_blank"
+             :title issuer_content_name} issuer_content_name]]]]
+     [:div {:class "media-bottom"}
+      [:div.row
+       [:div.col-xs-9
+        (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
+          [:div.checkbox
+           [:label {:for (str "checkbox-" id)}
+            [:input {:type "checkbox"
+                     :id (str "checkbox-" id)
+                     :on-change (fn []
+                                  (if checked?
+                                    (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
+                                    (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
+                     :checked checked?}]
 
-             (t :badge/Exporttobackpack)]])]
-        [:div {:class "col-xs-3 text-right"}
-         [:a {:href (str "https://backpack.openbadges.org/baker?assertion=" (js/encodeURIComponent assertion_url)) :class "badge-download"}
-          [:i {:class "fa fa-download"}]]]]]]))
+            (t :badge/Exporttobackpack)]])]
+       [:div {:class "col-xs-3 text-right"}
+        [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
+         [:i {:class "fa fa-download"}]]]]]]))
 
 (defn badge-grid [state]
   [:div {:class "row wrap-grid"
@@ -181,10 +182,11 @@
            [:button {:class    "btn btn-primary"
                      :on-click #(select-all state)}
             (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
-           [:button {:class    "btn btn-primary"
-                     :on-click #(export-badges state)
-                     :disabled (= 0 (count (:badges-selected @state)))}
-            (t :badge/Exportselected)]
+           (if (not (nil? (:backpack_id (first (filter #(= (:email %) (:email-selected @state)) (:emails @state))))))
+             [:button {:class    "btn btn-primary"
+                       :on-click #(export-badges state)
+                       :disabled (= 0 (count (:badges-selected @state)))}
+              (t :badge/Exportselected)])
            [:button {:class "btn btn-primary"
                      :on-click #(do (.preventDefault %)
                                      (swap! state assoc :pdf-option "default")
@@ -199,8 +201,8 @@
   (ajax/GET
     (path-for "/obpv1/badge/export" true)
     {:handler (fn [{:keys [badges emails]} data]
-                (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) emails) badges)]
-                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (first emails) :initializing false :permission "success")))}
+                (let [exportable-badges (filter #(some (fn [e] (= e (:email %))) (map :email emails)) badges)]
+                  (swap! state assoc :badges exportable-badges :emails emails :email-selected (:email (first emails)) :initializing false :permission "success")))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi]
