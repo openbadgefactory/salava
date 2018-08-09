@@ -25,7 +25,7 @@
              (layout/main-meta ctx "/info/:id/pic/embed" :badge)
              (layout/main ctx "/import")
              (layout/main ctx "/export")
-             (layout/main ctx "/upload")
+             #_(layout/main ctx "/upload")
              (layout/main ctx "/receive/:id")
              (layout/main ctx "/stats"))
 
