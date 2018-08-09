@@ -152,12 +152,8 @@
             (t :badge/Settings)]
            [:button {:class    "btn btn-primary print-btn"
                      :on-click #(.print js/window)}
-            (t :core/Print)]
-           #_[:button {:class    (str "btn btn-info verify-btn")
-                       :on-click #(do
-                                    (.preventDefault %)
-                                    (swap! state assoc :verifying true)
-                                    (m/modal! [verify-badge state] {:size :md}))} "Verify"]]
+            (t :core/Print)]]
+
           [:div.share-wrapper
            [s/share-buttons-badge
             (str (session/get :site-url) (path-for (str "/badge/info/" id)))
@@ -242,7 +238,7 @@
              [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
 
-           (if assertion
+           #_(if assertion
              [:div {:id "assertion-link"}
               [:label (t :badge/Metadata)": "]
               [:a.link {:href     "#"
@@ -250,13 +246,14 @@
                                      (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
                (t :badge/Openassertion) "..."]])
 
-           ;verify-badge-link
-           (bm/verify-badge-link id)
-
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
                [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
+
+           ;verify-badge-link
+           (bm/verify-badge-link id)
+
            [:div.description description]]]
 
          (when-not (empty? alignment)

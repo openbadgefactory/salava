@@ -67,11 +67,11 @@
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
-(defn verify-badge-link [assertion]
+(defn verify-badge-link [id]
   [:div {:id "verify-link"}
    [:a.link {:href "#"
              :on-click #(do (.preventDefault %)
-                          (mo/open-modal [:badge :verify] assertion))}
+                          (mo/open-modal [:badge :verify] id))}
     (str (t :badge/Verifybadge) "...")]])
 
 
@@ -128,18 +128,19 @@
               [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
             (if (and expires_on (not expired?))
               [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
-            (if assertion
+            #_(if assertion
               [:div {:id "assertion-link"}
                [:label (t :badge/Metadata)": "]
                [:a {:href     "#"
                     :on-click #(mo/set-new-view [:badge :metadata] (dissoc assertion :evidence))}
                 (t :badge/Openassertion) "..."]])
-            (verify-badge-link assertion)
+
             (if (pos? @show-recipient-name-atom)
               (if (and user-logged-in? (not owner?))
                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
               )
+            (verify-badge-link id)
             [:div.description description]]]
 
           (when-not (empty? alignment)
