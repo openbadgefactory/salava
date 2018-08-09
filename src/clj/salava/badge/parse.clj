@@ -351,14 +351,15 @@
                                                   :ctime now
                                                   :mtime now}]
                    ;; list of evidences
-                   (coll? (:evidence assertion)) (mapv #({:id nil
+                   (coll? (:evidence assertion)) (mapv (fn [e]
+                                                         {:id nil
                                                             :user_badge_id nil
-                                                            :url (:id %)
-                                                            :narrative (:narrative %)
-                                                            :name (:name %)
-                                                            :description (:description %)
-                                                            :genre (:genre %)
-                                                            :audience (:audience %)
+                                                            :url (:id e)
+                                                            :narrative (:narrative e)
+                                                            :name (:name e)
+                                                            :description (:description e)
+                                                            :genre (:genre e)
+                                                            :audience (:audience e)
                                                             :ctime now
                                                             :mtime now}) (:evidence assertion))
                    :else [])
