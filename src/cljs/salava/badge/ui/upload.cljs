@@ -99,12 +99,13 @@
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
-       :else                [:form {:id "form"}
+       :else                ;[:form {:id "form"}
+                             [:span {:class "btn btn-primary btn-file"}
                              [:input {:type       "file"
-                                      :aria-label "Choose file"
+                                      ;:aria-label "Choose file"
                                       :name       "file"
                                       :on-change  #(send-file state)
-                                      :accept     "image/png, image/svg+xml"}]])
+                                      :accept     "image/png, image/svg+xml"}] (t :badge/Browse)])
      [:br]]))
 
 (defn assertion-url-upload-content [state]
