@@ -189,6 +189,7 @@ button {
     font-size: 18px;
     line-height: 100px;
     font-weight: 600;
+    text-transform: uppercase;
   }
 }
 /* BADGE STATS */
@@ -318,9 +319,10 @@ button {
         font-size: 20px;
     }
     .success {
-    color:$green;
+    color:#3D9970;
     font-weight: bold;
     font-size: 20px;
+    text-transform: uppercase;
   }
     .revoked {
         text-transform: uppercase;
@@ -894,4 +896,25 @@ button {
     h1 {
       margin-left: 10px;
     }
+}
+
+.fa-check-circle{
+  color: #3D9970;
+  padding-right: 10px;
+    //#3c763d;
+}
+
+.validation-result{
+  font-weight: bold;
+  font-size:12px;
+  text-transform: uppercase;
+  margin-left: 15px;
+}
+
+.validation-header{
+  color: $grid-link;
+  text-transform:uppercase;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 10px;
 }
