@@ -1,5 +1,5 @@
 (ns salava.badge.ui.importer
-  (:require [reagent.core :refer [atom]]
+  (:require [reagent.core :refer [atom cursor]]
             [reagent-modals.modals :as m]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
@@ -7,7 +7,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.helper :refer [dump]]
             [salava.core.ui.error :as err]
-            [salava.core.i18n :refer [t translate-text]]))
+            [salava.core.i18n :refer [t translate-text]]
+            [salava.badge.ui.upload :as upload]))
 
 
 (defn import-modal [{:keys [status message saved-count error-count]}]
@@ -154,12 +155,10 @@
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
     " " (t :badge/Importbadgesresults3) "."]])
 
-(defn content [state]
+(defn mozilla-importer-block [state]
   [:div {:class "import-badges"}
-   [m/modal-window]
    [:h1.uppercase-header (t :badge/Importfrom)]
    [import-info]
-   (not-activated-banner)
    [:div.import-button
     (if (:ajax-message @state)
       [:div.ajax-message
@@ -189,6 +188,24 @@
    [badge-grid state]])
 
 
+(defn content [state]
+  (let [display-atom (cursor state [:display])]
+    [:div {:class "import-badges"}
+     [m/modal-window]
+     (if  (not-activated?)
+       (not-activated-banner)
+       [:div
+        [upload/badge-file-upload-content state]
+        [:br]
+        [:a {:style {:cursor "default"}
+              :on-click #(do (.preventDefault %)
+                          (if (identical? @display-atom "block") (reset! display-atom "none") (reset! display-atom "block")))}  (if (identical? @display-atom "none") (t :badge/Showmoreoptions) (t :badge/Hideoptions))]
+        [:div {:style {:display @display-atom}}
+         [upload/assertion-url-upload-content state]
+         [mozilla-importer-block state]
+         ]])]))
+
+
 (defn init-data [state]
   (ajax/GET (path-for "/obpv1/user/public-access")
             {:handler (fn [data]
@@ -202,10 +219,11 @@
                      :error nil
                      :ajax-message nil
                      :all-selected false
-                     :ok-badges []})]
+                     :ok-badges []
+                     :display "none"})]
     (init-data state)
     (fn []
-      (cond 
+      (cond
         (= "initial" (:permission @state)) (layout/default site-navi [:div ])
         (= "success" (:permission @state))(layout/default site-navi (content state))
         :else(layout/default site-navi (err/error-content))))))
