@@ -65,10 +65,10 @@
   [:div
    [:p
     (t :badge/Uploadbadgesfrominfo1) ":"]
-   [:ol
+   [:ul
     [:li {:dangerouslySetInnerHTML
-          {:__html (t :badge/Uploadbadgesfrominfo2)}}]
-    [:li {:dangerouslySetInnerHTML
+          {:__html (str (t :badge/Uploadbadgesfrominfo2) " " (t :badge/Uploadbadgesfrominfo3))}}]
+    #_[:li {:dangerouslySetInnerHTML
           {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
@@ -79,12 +79,10 @@
 
 (defn assertion-upload-info []
   [:div
-   [:p (t :badge/Uploadbadgesviaassertioninfo1)]
-   [:ol
+   [:p (t :badge/Importbadgesviaassertioninfo1)]
+   [:ul
     [:li {:dangerouslySetInnerHTML
-          {:__html (t :badge/Uploadbadgesviaassertioninfo2)}}]
-    [:li {:dangerouslySetInnerHTML
-          {:__html (t :badge/Uploadbadgesviaassertioninfo3)}}]]
+          {:__html (str (t :badge/Importbadgesviaassertioninfo2) " " (t :badge/Importbadgesviaassertioninfo3))}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
@@ -95,7 +93,7 @@
 (defn badge-file-upload-content [state]
   (let [status  (:status @state)]
     [:div
-     [:h1.uppercase-header (t :badge/Uploadbadgesfrom)]
+     [:h1.uppercase-header (t :badge/Importbadges)]
      [upload-info]
      (cond
        (= "loading" status) [:div.ajax-message
@@ -106,13 +104,14 @@
                                       :aria-label "Choose file"
                                       :name       "file"
                                       :on-change  #(send-file state)
-                                      :accept     "image/png, image/svg+xml"}]])]))
+                                      :accept     "image/png, image/svg+xml"}]])
+     [:br]]))
 
 (defn assertion-url-upload-content [state]
   (let [assertion-url (cursor state [:assertion-url])
         status  (:status @state)]
     [:div
-     [:h1.uppercase-header (t :badge/Uploadbadgesviaassertion)]
+     [:h1.uppercase-header (t :badge/Importbadgesviaassertion)]
      [assertion-upload-info]
      (cond
        (= "loading" status) [:div.ajax-message
@@ -125,9 +124,10 @@
                                         :on-click #(do
                                                      (swap! state assoc :status "loading")
                                                      (send-assertion state))
-                                        } (t :file/Upload)]]])]))
+                                        } (t :badge/ImportBadge)]]])
+     [:br]]))
 
-(defn content [state]
+#_(defn content [state]
   (let [status  (:status @state)
         assertion-url (cursor state [:input-assertion-url])
         selection-atom (cursor state [:input-upload-method])]
@@ -153,7 +153,7 @@
           (assertion-url-upload-content state)
           (badge-file-upload-content state))]
 
-       #_[:div
+       [:div
           [upload-info]
           (cond
             (= "loading" status) [:div.ajax-message
@@ -166,13 +166,13 @@
                                            :on-change  #(send-file state)
                                            :accept     "image/png, image/svg+xml"}]])])]))
 
-(defn init-data [state]
+#_(defn init-data [state]
   (ajax/GET (path-for "/obpv1/user/public-access")
             {:handler (fn [data]
                         (swap! state assoc :permission "success"))}
             (fn [] (swap! state assoc :permission "error"))))
 
-(defn handler [site-navi]
+#_(defn handler [site-navi]
   (let [state (atom {:status "form"
                      :permission "initial"})]
     (init-data state)
