@@ -75,7 +75,6 @@
                               :revoked? true))
           500 (assoc result :assertion-status 500
                             :asr asr
-                            :badge-status "Broken assertion url, badge can't be verified"
                             :message (:message asr-response))
           200 (let [asr-data (:body asr-response)
                     badge-data (fetch-json-data (:badge asr-data))
@@ -104,7 +103,6 @@
         (if (= 500 (:status jws-response))
           (assoc result :assertion-status 500
                         :asr asr
-                        :badge-status "Broken jws signature, badge can't be verified"
                         :message (:message jws-response))
           (let [badge-id (or (:id (json/read-str (:assertion_json jws-response) :key-fn keyword))(:uid (json/read-str (:assertion_json jws-response) :key-fn keyword)))
                 revocation-list-url (:revocation_list_url (first (get-in jws-response [:badge :issuer])))
@@ -115,7 +113,8 @@
                 issuedOn {:issuedOn (process-time (:issuedOn assertion))}
                 expires (if-let [exp (process-time (:expires assertion))]{:expires exp} nil)]
 
-            (if (not (empty? revoked))(update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx)))
+            (if (not (empty? revoked))(do (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
+                                          (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))))
 
             (assoc result :assertion-status 200
                           :assertion (merge assertion issuedOn expires)
