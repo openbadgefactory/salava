@@ -13,6 +13,7 @@
             [salava.core.access :as access]
             [salava.badge.pdf :as pdf]
             [salava.core.helper :refer [dump]]
+            [salava.user.db :as u]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -159,14 +160,14 @@
                          )))
 
              (GET "/export" []
-                  :return {:emails [s/Str] :badges [schemas/BadgesToExport]}
+                  :return {:emails [schemas/UserBackpackEmail] :badges [schemas/BadgesToExport]}
                   :summary "Get the badges of a specified user for export"
                   :auth-rules access/signed
                   :current-user current-user
-                  (let [emails (i/user-backpack-emails ctx (:id current-user))]
+                  (let [emails (i/user-emails-for-badge-export ctx (:id current-user)) #_(i/user-backpack-emails ctx (:id current-user))]
                     (if (:private current-user)
-                    (forbidden)
-                    (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))}))
+                      (forbidden)
+                      (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))}))
                     ))
 
              (GET "/import" []

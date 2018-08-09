@@ -77,7 +77,7 @@
         error (:error (meta badge))
         content (first (get-in badge [:badge :content])) ;TODO check default language
         issuer (first (get-in badge [:badge :issuer]))  ;TODO check default language
-        ] 
+        ]
     {:status              (if (or expired? exists? error) "invalid" "ok")
      :message             (cond
                             exists?  "badge/Alreadyowned"
@@ -86,10 +86,10 @@
                             :else    "badge/Savethisbadge")
      :error               error
      :name                (:name content)
-     :description         (:description content) 
-     :image_file          (:image_file content) 
-     :issuer_content_name (:name issuer) 
-     :issuer_content_url  (:url issuer) 
+     :description         (:description content)
+     :image_file          (:image_file content)
+     :issuer_content_name (:name issuer)
+     :issuer_content_url  (:url issuer)
      :previous-id         previous-id
      :import-key          (:checksum (meta badge))}))
 
@@ -99,6 +99,13 @@
   (let [base-url "https://backpack.openbadges.org/displayer"] ;TODO support other sources
     (->> (user/verified-email-addresses ctx user-id)
          (filter #(pos? (get-remote-id % base-url))))))
+
+(defn user-emails-for-badge-export [ctx user-id]
+  (let [emails (user/email-addresses ctx user-id)]
+    (map (fn [e]
+           {:email (clojure.string/lower-case (:email e))
+            :backpack_id (:backpack_id e)})
+         emails)))
 
 (defn badges-to-import [ctx user-id]
   (try

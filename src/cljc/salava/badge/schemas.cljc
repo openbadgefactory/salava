@@ -154,6 +154,9 @@
                               :url s/Str
                               :markdown_text (s/maybe s/Str)})
 
+(s/defschema UserBackpackEmail {:email s/Str
+                                :backpack_id (s/maybe s/Int)})
+
 
 
 

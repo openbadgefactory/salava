@@ -25,7 +25,7 @@
                          (assoc :qr_code (str->qr-base64 (badge-url ctx (:id %1)))
                            :endorsements (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
                            :content %2)) badge-with-content temp)]
-    #_(dump badges)
+    (dump badges)
 
     badges))
 
@@ -50,7 +50,7 @@
 
         pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
         badge-template (pdf/template
-                         (let [template #(cons [:paragraph]  [ (if (ends-with? (:image_file %) "png")
+                         (let [template #(cons [:paragraph]  [ (if (and (not (blank? (:image_file %)))(ends-with? (:image_file %) "png"))
                                                                  [:image {:width 100 :height 100 :align :center} (str data-dir "/" (:image_file %))]
                                                                  [:image {:width 100 :height 100 :align :center :base64 true} $qr_code ])
 
