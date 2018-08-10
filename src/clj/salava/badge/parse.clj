@@ -281,12 +281,13 @@
                                        (get-in badge [:criteria :narrative]
                                                (http/alternate-get "text/x-markdown" criteria-url))
                                        (http/alternate-get "text/x-markdown" (:criteria badge)))
-                       creator-url (get-in badge [:extensions:OriginalCreator :url])]
+                       creator-url (get-in badge [:extensions:OriginalCreator :url])
+                       image (if (map? (:image badge)) (get-in badge [:image :id]) (:image badge))]
 
                    {:content  [{:id ""
                                 :language_code language
                                 :name (:name badge)
-                                :image_file (:image badge)
+                                :image_file image
                                 :description (:description badge)
                                 :alignment (get-alignment badge)
                                 :tags (get badge :tags [])}]
@@ -351,14 +352,15 @@
                                                   :ctime now
                                                   :mtime now}]
                    ;; list of evidences
-                   (coll? (:evidence assertion)) (mapv #({:id nil
+                   (coll? (:evidence assertion)) (mapv (fn [e]
+                                                         {:id nil
                                                             :user_badge_id nil
-                                                            :url (:id %)
-                                                            :narrative (:narrative %)
-                                                            :name (:name %)
-                                                            :description (:description %)
-                                                            :genre (:genre %)
-                                                            :audience (:audience %)
+                                                            :url (:id e)
+                                                            :narrative (:narrative e)
+                                                            :name (:name e)
+                                                            :description (:description e)
+                                                            :genre (:genre e)
+                                                            :audience (:audience e)
                                                             :ctime now
                                                             :mtime now}) (:evidence assertion))
                    :else [])
