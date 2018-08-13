@@ -10,6 +10,7 @@
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
             [salava.core.http :as http]
+            [salava.core.helper :refer [dump]]
             [schema.core :as s])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
@@ -281,12 +282,13 @@
                                        (get-in badge [:criteria :narrative]
                                                (http/alternate-get "text/x-markdown" criteria-url))
                                        (http/alternate-get "text/x-markdown" (:criteria badge)))
-                       creator-url (get-in badge [:extensions:OriginalCreator :url])]
+                       creator-url (get-in badge [:extensions:OriginalCreator :url])
+                       image (if (map? (:image badge)) (get-in badge [:image :id]) (:image badge))]
 
                    {:content  [{:id ""
                                 :language_code language
                                 :name (:name badge)
-                                :image_file (:image badge)
+                                :image_file image #_(:image badge)
                                 :description (:description badge)
                                 :alignment (get-alignment badge)
                                 :tags (get badge :tags [])}]
@@ -351,16 +353,17 @@
                                                   :ctime now
                                                   :mtime now}]
                    ;; list of evidences
-                   (coll? (:evidence assertion)) (mapv #({:id nil
-                                                            :user_badge_id nil
-                                                            :url (:id %)
-                                                            :narrative (:narrative %)
-                                                            :name (:name %)
-                                                            :description (:description %)
-                                                            :genre (:genre %)
-                                                            :audience (:audience %)
-                                                            :ctime now
-                                                            :mtime now}) (:evidence assertion))
+                   (coll? (:evidence assertion)) (mapv (fn [e]
+                                                         {:id nil
+                                                          :user_badge_id nil
+                                                          :url (:id e)
+                                                          :narrative (:narrative e)
+                                                          :name (:name e)
+                                                          :description (:description e)
+                                                          :genre (:genre e)
+                                                          :audience (:audience e)
+                                                          :ctime now
+                                                          :mtime now}) (:evidence assertion))
                    :else [])
 
         badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
@@ -512,7 +515,7 @@
 (defmethod verify-assertion :v2.0 [url asr]
   (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
     (when (and (not (nil? url)) (or (= kind "hosted") (= kind "HostedBadge")))
-      (if (not= (:id asr) url)
+      (if (and (not (string/starts-with? url (:id asr))) (not= (domain url) (domain (:id asr))))
         (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
       (if (map? (:badge asr))
         (if (not= (domain (get-in asr [:badge :id])) (domain (:id asr)))
