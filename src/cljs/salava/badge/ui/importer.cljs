@@ -157,7 +157,7 @@
 
 (defn mozilla-importer-block [state]
   [:div {:class "import-badges"}
-   [:h1.uppercase-header (t :badge/Importfrom)]
+   [:h2.uppercase-header (t :badge/Importfrom)]
    [import-info]
    [:div.import-button
     (if (:ajax-message @state)
@@ -195,6 +195,7 @@
      (if  (not-activated?)
        (not-activated-banner)
        [:div
+        [:h1.uppercase-header (t :badge/ImportBadge)]
         [upload/badge-file-upload-content state]
         [:br]
         [:a {:style {:cursor "default"}
