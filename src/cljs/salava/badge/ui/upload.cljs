@@ -79,10 +79,10 @@
 
 (defn assertion-upload-info []
   [:div
-   [:p (t :badge/Importbadgesviaassertioninfo1)]
+   [:p (t :badge/Importbadgeswithassertioninfo1)]
    [:ul
     [:li {:dangerouslySetInnerHTML
-          {:__html (str (t :badge/Importbadgesviaassertioninfo2) " " (t :badge/Importbadgesviaassertioninfo3))}}]]
+          {:__html (str (t :badge/Importbadgeswithassertioninfo2) " " (t :badge/Importbadgeswithassertioninfo3))}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
@@ -93,7 +93,7 @@
 (defn badge-file-upload-content [state]
   (let [status  (:status @state)]
     [:div
-     [:h1.uppercase-header (t :badge/Importbadges)]
+     [:h2.uppercase-header (t :badge/Uploadbadgefrom)]
      [upload-info]
      (cond
        (= "loading" status) [:div.ajax-message
@@ -112,7 +112,7 @@
   (let [assertion-url (cursor state [:assertion-url])
         status  (:status @state)]
     [:div
-     [:h1.uppercase-header (t :badge/Importbadgesviaassertion)]
+     [:h2.uppercase-header (t :badge/Importbadgeswithassertion)]
      [assertion-upload-info]
      (cond
        (= "loading" status) [:div.ajax-message
