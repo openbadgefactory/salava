@@ -54,23 +54,21 @@
             (t :user/Exportdata)]]]
 
          [:div.row
-          (when profile_picture [:div {:class "col-md-3 col-sm-3 col-xs-12 "}
-                                 [:div {:class "profile-picture-wrapper"}
-                                  [:img {:src (profile-picture profile_picture)
-                                         :style {:max-width "150px"}
-                                         :alt fullname}]]])
+          (when-not (= "-" profile_picture)  [:div {:class "col-md-3 col-sm-3 col-xs-12 "}
+                                              [:div {:class "profile-picture-wrapper"}
+                                               [:img {:src (profile-picture profile_picture)
+                                                      :style {:max-width "150px"}
+                                                      :alt fullname}]]])
           [:div {:class "col-md-9 col-sm-9 col-xs-12"}
            [:div.row
             [:div.col-xs-12 [:b (t :user/UserID)": "] id]
             [:div.col-xs-12 [:b (str (t :user/Role) ": ")] (if (= "user" role) (t :social/User) (t :admin/Admin))]
-            (when-not (blank? first_name)
-              [:div.col-xs-12 [:b (str (t :user/Firstname)": ")] (capitalize first_name)])
-            (when-not (blank? last_name)
-              [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Lastname)": ")] (capitalize last_name)])
-            (if (not-empty about)
-              [:div
-               [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
-               [:div.col-xs-12 {:style {:margin-bottom "20px"}} about]])
+            [:div.col-xs-12 [:b (str (t :user/Firstname)": ")] (capitalize first_name)]
+            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Lastname)": ")] (capitalize last_name)]
+
+            [:div
+             [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
+             [:div.col-xs-12 {:style {:margin-bottom "20px"}} about]]
             (if (not-empty profile)
               [:div {:style {:margin-top "20px"}}
                [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
@@ -96,17 +94,12 @@
                                  (= "blog" field) (hyperlink value)
                                  :else (t value))]]))]]])
 
-            (when-not (blank? language) [:div.col-xs-12 [:b (t :user/Language)": "] (upper-case language)])
-            (when-not (blank? country)
-              [:div.col-xs-12 [:b (t :user/Country)": "] country])
-            (when-not (blank? (str email_notifications))
-              [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No))])
-            (when-not (blank? (str private))
-              [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))])
-            (when-not (blank? (str activated?))
-              [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))])
-            (when-not (blank? profile_visibility)
-              [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))])]]]
+            [:div.col-xs-12 [:b (t :user/Language)": "] (upper-case language)]
+            [:div.col-xs-12 [:b (t :user/Country)": "] country]
+            [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No))]
+            [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))]
+            [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))]
+            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))]]]]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
           [:h2 {:class "uppercase-header"} [:a {:href (path-for "/user/edit/email-addresses")} (str (if (empty? (rest email)) (t :user/Email) (t :user/Emailaddresses)))]]
@@ -124,7 +117,7 @@
                           [:td (:email e)]
                           [:td (if (true? (:verified e)) (t :core/Yes) (t :core/No) )]
                           [:td (if (true? (:primary_address e)) (t :core/Yes) (t :core/No))]
-                          [:td (or (:backpack_id e) "-")]]))]]]
+                          [:td (:backpack_id e) ]]))]]]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12" :style {:margin-bottom "20px"}}
           [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")}(str (t :badge/Mybadges) ": ")(count user_badges)]]
@@ -143,8 +136,8 @@
              (doall
                (for [p pending_badges]
                  ^{:key p}[:div
-                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (or (:name p) "-")]
-                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (or (:description p) "-")]
+                           [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
+                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
                            ]))])]
 
          [:div {:class "col-md-12 col-sm-9 col-xs-12"}
@@ -169,15 +162,9 @@
 
          [:div {:class "col-md-12"}
           [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity) ]
-          (if (not-empty connections)
+          (if (> connections 0)
             [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ") (count connections)]]
-             #_(doall
-                 (for [c connections]
-                   ^{:key c}[:div {:style {:margin-top "20px"}}
-                             [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name c)]
-                             [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :page/Description) ": ")] (:description c)]
-                             ]))])
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ") connections]]])
           (if (or (not-empty user_following) (not-empty user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
@@ -191,7 +178,6 @@
                             status (:status follower)]]
                   ^{:key follower}[:div
                                    [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:p [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) ", ")] [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]]
-                                   #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]
                                    ])
                 [:br]])
 
@@ -230,18 +216,18 @@
                                           "admin" (lower-case (t :admin/Admin))
                                           "-")]]
                              [:td [:div (case (str (:verb e)(:type e))
-                                          "publishpage"  (or (get-in e [:info :object_name]) "-")
-                                          "unpublishpage" (or (get-in e [:info :object_name]) "-")
-                                          "publishbadge" (or (get-in e [:info :object_name]) "-")
-                                          "unpublishbadge" (or (get-in e [:info :object_name]) "-")
+                                          "publishpage"  (get-in e [:info :object_name])
+                                          "unpublishpage" (get-in e [:info :object_name])
+                                          "publishbadge" (get-in e [:info :object_name])
+                                          "unpublishbadge" (get-in e [:info :object_name])
                                           "messagebadge" [:div {:style {:max-width "550px"}}
-                                                          (or (get-in e [:info :object_name]) "-")"\n"
+                                                          (get-in e [:info :object_name])"\n"
                                                           [:br][:br]
                                                           [:p [:i (or (get-in e [:info :message :message]) "comment-removed")]]]
-                                          "congratulatebadge" (or (get-in e [:info :object_name]) "-")
-                                          "followbadge" (or (get-in e [:info :object_name]) "-")
-                                          "followuser" (or (get-in e [:info :object_name]) "-")
-                                          "ticketadmin" (or (get-in e [:info :object_name]) "-")
+                                          "congratulatebadge" (get-in e [:info :object_name])
+                                          "followbadge" (get-in e [:info :object_name])
+                                          "followuser"  (get-in e [:info :object_name])
+                                          "ticketadmin" (get-in e [:info :object_name])
                                           "-")]]
                              [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]
                    ))]]])
