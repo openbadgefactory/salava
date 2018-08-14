@@ -140,8 +140,9 @@
                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
               )
-            (verify-badge-link id)
-            [:div.description description]]]
+
+            [:div.description description]
+            (verify/verify-badge-link id)]]
 
           (when-not (empty? alignment)
             [:div.row

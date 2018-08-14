@@ -23,7 +23,8 @@
             [salava.core.ui.error :as err]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            [salava.admin.ui.reporttool :refer [reporttool1]]))
+            [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.badge.ui.verify :as v]))
 
 
 
@@ -239,22 +240,23 @@
 
 
            #_(if assertion
-             [:div {:id "assertion-link"}
-              [:label (t :badge/Metadata)": "]
-              [:a.link {:href     "#"
-                        :on-click #(do (.preventDefault %)
-                                     (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
-               (t :badge/Openassertion) "..."]])
+               [:div {:id "assertion-link"}
+                [:label (t :badge/Metadata)": "]
+                [:a.link {:href     "#"
+                          :on-click #(do (.preventDefault %)
+                                       (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
+                 (t :badge/Openassertion) "..."]])
 
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
                [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
 
-           ;verify-badge-link
-           (bm/verify-badge-link id)
+           [:div.description description]
 
-           [:div.description description]]]
+           ;verify-badge-link
+           #_(bm/verify-badge-link id)
+           (v/verify-badge-link id)]]
 
          (when-not (empty? alignment)
            [:div.row

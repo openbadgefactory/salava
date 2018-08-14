@@ -941,27 +941,36 @@ button {
     .fa-check-circle{
     color: #3D9970;
     padding-right: 10px;
+    padding-bottom: 10px;
   }
 
   .validation-result{
     font-weight: bold;
     font-size:12px;
     text-transform: uppercase;
-    padding:5px;
+    padding-bottom:5px;
+    padding-right: 10px;
   }
 
   .validation-header{
     color: $grid-link;
     text-transform:uppercase;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: bold;
-    margin-left: 10px;
+   // margin-left: 10px;
     margin-right:10px;
     margin-bottom:20px;
-    border-bottom: 3px solid #ccc
+    border-bottom: 1px solid #ccc
   }
 
-  table{
-  margin-left:10px;
+
+  hr{
+    border-color: #ccc;
+    width: 50%;
+  }
+  #assertion-info {
+    th {
+      border-bottom: 1px solid #ccc;
+    }
   }
 }
