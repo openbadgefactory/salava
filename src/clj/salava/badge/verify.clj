@@ -68,8 +68,11 @@
     (if (url? asr)
       (let [asr-response (assertion asr)]
         (case (:status asr-response)
+          404 (assoc result :assertion-status 404
+                            :asr asr)
           410 (do
                 (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
+                (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))
                 (assoc result :assertion-status 410
                               :asr asr
                               :revoked? true))
