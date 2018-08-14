@@ -119,19 +119,16 @@
                           [:tr
                            [:td.validation-result  (t :badge/Retrievefromassertionurl)]
                            [:td [:i {:class "fa fa-check-circle fa-lg"}]]]
-                          (if (= 200 badge-image-status)
+                          (if (= 200 (or badge-image-status badge-criteria-status badge-issuer-status))
                             [:tr
                              [:td.validation-result  (t :badge/Retrievefromimageurl)]
-                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])
-                          (if (= 200 badge-criteria-status)
+                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]]
                             [:tr
                              [:td.validation-result  (t :badge/Retrievefromcriteriaurl)]
-                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])
-                          (if (= 200 badge-issuer-status)
+                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]]
                             [:tr
                              [:td.validation-result  (t :badge/Retrievefromissuerurl)]
                              [:td [:i {:class "fa fa-check-circle fa-lg"}]]])]
-
                          [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
                          [bottom-links state]])])])))))
 
