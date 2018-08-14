@@ -44,7 +44,7 @@
    (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}}
   )
 
-(defn badge-manage [context]
+#_(defn badge-manage [context]
   {"/badge/dropdowntitle" {:weight 22
                            :title (t :badge/Manage)
                            :site-navi true
@@ -66,11 +66,16 @@
                                                                               :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Export)}}}})
 
+(defn badge-manage [context]
+  {(str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Import)}
+   (str (base-path context) "/badge/export") {:weight 23 :title (t :badge/Export) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Export)}
+    })
+
 
 (defn ^:export navi [context]
   (if (private?)
     (badge-navi context)
-    (assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
+    (merge (badge-navi context) (badge-manage context))
+    #_(assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
 
   )
-
