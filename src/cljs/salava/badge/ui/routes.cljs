@@ -7,7 +7,7 @@
             [salava.badge.ui.embed-pic :as embed-pic]
             [salava.badge.ui.importer :as imp]
             [salava.badge.ui.exporter :as exp]
-            [salava.badge.ui.upload :as up]
+            #_[salava.badge.ui.upload :as up]
             [salava.badge.ui.receive :as rec]
             [salava.core.helper :refer [dump]]
             [salava.badge.ui.stats :as stats]
@@ -27,7 +27,7 @@
                                        [["/info/" :badge-id "/embed"] embed/handler]
                                        [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
                                        ["/import" imp/handler]
-                                       ["/upload" up/handler]
+                                       #_["/upload" up/handler]
                                        ["/export" exp/handler]
                                        [["/receive/" :badge-id] rec/handler]
                                        ["/stats" stats/handler]]})
@@ -35,8 +35,8 @@
 (defn badge-navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
-    
-  
+
+
    (str (base-path context) "/badge/stats") {:weight 21
                                              :title (t :badge/Stats)
                                              :site-navi true
@@ -44,7 +44,7 @@
    (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}}
   )
 
-(defn badge-manage [context]
+#_(defn badge-manage [context]
   {"/badge/dropdowntitle" {:weight 22
                            :title (t :badge/Manage)
                            :site-navi true
@@ -55,22 +55,27 @@
                                                                               :site-navi true
                                                                               :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Import)}
-                                   (str (base-path context) "/badge/upload") {:weight 2
+                                   #_(str (base-path context) "/badge/upload") #_{:weight 2
                                                                               :title (t :badge/Upload)
                                                                               :site-navi true
                                                                               :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Upload)}
                                    (str (base-path context) "/badge/export") {:weight 3
                                                                               :title (t :badge/Export)
-                                                                              :site-navi true                                                                              
+                                                                              :site-navi true
                                                                               :dropdown-item true
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Export)}}}})
+
+(defn badge-manage [context]
+  {(str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Import)}
+   (str (base-path context) "/badge/export") {:weight 23 :title (t :badge/Export) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Export)}
+    })
 
 
 (defn ^:export navi [context]
   (if (private?)
     (badge-navi context)
-    (assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
-  
-  )
+    (merge (badge-navi context) (badge-manage context))
+    #_(assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
 
+  )

@@ -646,3 +646,6 @@ INSERT INTO user_badge (
 SELECT ub.id FROM user_badge AS ub
 JOIN social_connections_badge AS scb ON ub.user_id = scb.user_id
 WHERE scb.badge_id = :badge_id AND scb.ctime = :ctime
+
+--name: get-assertion-jws
+SELECT assertion_jws FROM user_badge AS ub WHERE ub.id = :id;

@@ -14,6 +14,7 @@
             [salava.badge.pdf :as pdf]
             [salava.core.helper :refer [dump]]
             [salava.user.db :as u]
+            [salava.badge.verify :as v]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -26,7 +27,7 @@
              (layout/main-meta ctx "/info/:id/pic/embed" :badge)
              (layout/main ctx "/import")
              (layout/main ctx "/export")
-             (layout/main ctx "/upload")
+             #_(layout/main ctx "/upload")
              (layout/main ctx "/receive/:id")
              (layout/main ctx "/stats"))
 
@@ -63,6 +64,12 @@
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
+
+             (GET "/verify/:badgeid" []
+                  :path-params [badgeid :- Long]
+                  :summary "verify badge"
+                  :current-user current-user
+                (ok (v/verify-badge ctx badgeid)))
 
              (GET "/pending/:badgeid" req
                   :path-params [badgeid :- Long]
@@ -199,6 +206,17 @@
                    (if (:private current-user)
                      (forbidden)
                      (ok (i/upload-badge ctx file (:id current-user)))))
+
+             (POST "/import_badge_with_assertion" []
+                   :return schemas/Upload
+                   :body-params [assertion :- s/Str]
+                   :summary "Import badge with assertion url"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (if (:private current-user)
+                     (forbidden)
+                     (ok (i/upload-badge-via-assertion ctx assertion current-user)))
+                   )
 
              (GET "/settings/:user-badge-id" []
                   ;return schemas/UserBadgeContent
