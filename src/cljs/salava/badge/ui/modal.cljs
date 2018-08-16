@@ -67,7 +67,7 @@
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
-(defn verify-badge-link [id]
+#_(defn verify-badge-link [id]
   [:div {:id "verify-link"}
    [:a.link {:href "#"
              :on-click #(do (.preventDefault %)

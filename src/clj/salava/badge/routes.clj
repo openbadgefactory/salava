@@ -206,10 +206,10 @@
                      (forbidden)
                      (ok (i/upload-badge ctx file (:id current-user)))))
 
-             (POST "/badge_via_assertion" []
+             (POST "/import_badge_with_assertion" []
                    :return schemas/Upload
                    :body-params [assertion :- s/Str]
-                   :summary "Upload badge via assertion url"
+                   :summary "Import badge with assertion url"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (if (:private current-user)

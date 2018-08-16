@@ -49,10 +49,10 @@
                     (m/modal! (upload-modal data)
                               (if (= (:status data) "success")
                                 {:hide #(navigate-to "/badge")}))))})))
-(defn send-assertion [state]
+(defn import-badge [state]
   (let [assertion-url (:assertion-url @state)]
     (ajax/POST
-      (path-for "/obpv1/badge/badge_via_assertion")
+      (path-for "/obpv1/badge/import_badge_with_assertion")
       {:params {:assertion (s/trim assertion-url)}
        :handler (fn [data]
                   (do
@@ -124,7 +124,7 @@
                               [:button {:class "btn btn-primary"
                                         :on-click #(do
                                                      (swap! state assoc :status "loading")
-                                                     (send-assertion state))
+                                                     (import-badge state))
                                         } (t :badge/ImportBadge)]]])
      [:br]]))
 

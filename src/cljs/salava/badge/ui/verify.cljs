@@ -83,8 +83,8 @@
                       [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
                       [bottom-links state]])])])])))
 
-(defn verify-badge [badgeid]
-  #_(let [state (atom {:verifying true})]
+#_(defn verify-badge [badgeid]
+  (let [state (atom {:verifying true})]
       (init-badge-info badgeid state)
       (verify-badge-content state)
       (fn []
