@@ -52,24 +52,24 @@
        (translate-text (:content message)) ])
      [:div {:class "panel-body"}
       [:form.form-horizontal
-       [:div.form-group.flip
+       [:div.form-group
         [:label {:for "languages"
                  :class "col-md-3"}
          (t :user/Language)]
         [:div.col-md-9
          [input/radio-button-selector (:languages @state) language-atom]]]
 
-       [:div.form-group.flip
+       [:div.form-group
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "first-name" :atom first-name-atom}]]]
 
-       [:div.form-group.flip
+       [:div.form-group
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last-name" :atom last-name-atom}]]]
 
-       [:div.form-group.flip
+       [:div.form-group
         [:label {:for "input-country"
                  :class "col-md-3"}
          (t :user/Country)]

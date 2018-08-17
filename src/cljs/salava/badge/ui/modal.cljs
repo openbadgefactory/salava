@@ -211,4 +211,5 @@
            :endorsement endr/badge-endorsement-content
            :issuer issuer/content
            :creator issuer/creator-content
-           :verify verify/verify-badge}})
+           ;:verify verify/verify-badge
+           }})

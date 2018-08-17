@@ -59,7 +59,7 @@
 (defn text-field [key label placeholder state]
   (let [search-atom (cursor state [key])
         field-id (str key "-field")]
-    [:div.form-group.flip
+    [:div.form-group
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
@@ -73,7 +73,7 @@
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
-    [:div.form-group.flip
+    [:div.form-group
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
      [:div.col-sm-10
       [:select {:class     "form-control"

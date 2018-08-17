@@ -118,7 +118,7 @@
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
-       :else                [:div.form-group.flip
+       :else                [:div {:id "assertion-textfield" :class "form-group"}
                              [:div {:style {:margin-top "15px"}}
                               [input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
                               [:button {:class "btn btn-primary"

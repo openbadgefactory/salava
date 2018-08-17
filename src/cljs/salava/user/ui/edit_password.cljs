@@ -67,7 +67,7 @@
       [:form.form-horizontal
 
        (if current-password?
-         [:div.form-group.flip
+         [:div.form-group
           [:label {:for "input-current-password" :class "col-md-3"} (t :user/Currentpassword)]
           [:div {:class "col-md-9"}
            [:input {:class       "form-control"
@@ -79,7 +79,7 @@
                     :on-focus    #(.removeAttribute (.-target %) "readonly")
                     :on-change   #(reset! current-password-atom (.-target.value %))
                     :value       @current-password-atom}]]])
-       [:div.form-group
+       [:div {:id "new-password" :class "form-group"}
         [:div.col-md-12 (t :user/Tochangecurrentpassword)]
         [:br]
         [:div.flip
@@ -87,7 +87,7 @@
         [:div {:class "col-md-9"}
          [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]]
 
-       [:div.form-group.flip
+       [:div.form-group
         [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]]
