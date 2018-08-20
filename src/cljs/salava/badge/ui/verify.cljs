@@ -40,7 +40,8 @@
          [:div.ajax-message {:style {:padding-top "20px"}}
           [:i {:class "fa fa-cog fa-spin fa-2x "}]
           [:span (str (t :core/Loading) "...")]]
-         [:div {:style {:padding-top "20px"}}
+         [:div.panel {:style {:padding-top "20px"}}
+          [:div.panel-body
 
           (case assertion-status
             404  [:div
@@ -81,7 +82,7 @@
                            [:td [:i {:class "fa fa-check-circle fa-lg"}]]])]]
 
                       [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
-                      [bottom-links state]])])])])))
+                      [bottom-links state]])])]])])))
 
 #_(defn verify-badge [badgeid]
   (let [state (atom {:verifying true})]
