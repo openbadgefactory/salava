@@ -68,11 +68,12 @@
              (POST "/logout" []
                    (assoc-in (ok) [:session :identity] nil))
 
-             (GET "/register" []
-                  :summary "Get languages"
+             (GET "/register" req
+                  :summary "Get config data for register form"
                   (if (private? ctx)
                     (forbidden)
-                    (assoc-in (ok {:languages (get-in ctx [:config :core :languages])}) [:session :seen-terms] true)))
+                    (-> (ok {:languages (get-in ctx [:config :core :languages])})
+                        (assoc :session (assoc (get req :session {}) :seen-terms true)))))
 
              (POST "/register" req
                    ;:return
