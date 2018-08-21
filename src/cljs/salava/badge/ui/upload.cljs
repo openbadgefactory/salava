@@ -67,7 +67,7 @@
     (t :badge/Uploadbadgesfrominfo1) ":"]
    [:ul
     [:li {:dangerouslySetInnerHTML
-          {:__html (str (t :badge/Uploadbadgesfrominfo2) " " (t :badge/Uploadbadgesfrominfo3))}}]
+          {:__html (str (t :badge/Uploadbadgesfrominfo2) ". " (t :badge/Uploadbadgesfrominfo3))}}]
     #_[:li {:dangerouslySetInnerHTML
           {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
    [:p
@@ -99,10 +99,8 @@
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
-       :else                ;[:form {:id "form"}
-                             [:span {:class "btn btn-primary btn-file"}
+       :else                [:span {:class "btn btn-primary btn-file"}
                              [:input {:type       "file"
-                                      ;:aria-label "Choose file"
                                       :name       "file"
                                       :on-change  #(send-file state)
                                       :accept     "image/png, image/svg+xml"}] (t :badge/Browse)])
@@ -115,7 +113,7 @@
      [:h2.uppercase-header (t :badge/Importbadgeswithassertion)]
      [assertion-upload-info]
      (cond
-       (= "loading" status) [:div.ajax-message
+       (= "importing" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
        :else                [:div {:id "assertion-textfield" :class "form-group"}
@@ -123,62 +121,9 @@
                               [input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
                               [:button {:class "btn btn-primary"
                                         :on-click #(do
-                                                     (swap! state assoc :status "loading")
+                                                     (swap! state assoc :status "importing")
                                                      (import-badge state))
                                         } (t :badge/ImportBadge)]]])
      [:br]]))
 
-#_(defn content [state]
-  (let [status  (:status @state)
-        assertion-url (cursor state [:input-assertion-url])
-        selection-atom (cursor state [:input-upload-method])]
 
-    [:div {:class "badge-upload"}
-     [m/modal-window]
-
-     (if  (not-activated?)
-       (not-activated-banner)
-       [:div
-        [:select {:id        "input-upload-method"
-                  :class     "form-control"
-                  :value     (or @selection-atom "")
-                  :on-change #(reset! selection-atom (.-target.value %))}
-         [:option {:value "file"
-                   :key   "file"}
-          (t :badge/Imagefile)]
-         [:option {:value "assertion"
-                   :key   "assertion"}
-          (t :badge/Assertionurl)]]
-
-        (if (= @selection-atom "assertion")
-          (assertion-url-upload-content state)
-          (badge-file-upload-content state))]
-
-       [:div
-          [upload-info]
-          (cond
-            (= "loading" status) [:div.ajax-message
-                                  [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                                  [:span (str (t :core/Loading) "...")]]
-            :else                [:form {:id "form"}
-                                  [:input {:type       "file"
-                                           :aria-label "Choose file"
-                                           :name       "file"
-                                           :on-change  #(send-file state)
-                                           :accept     "image/png, image/svg+xml"}]])])]))
-
-#_(defn init-data [state]
-  (ajax/GET (path-for "/obpv1/user/public-access")
-            {:handler (fn [data]
-                        (swap! state assoc :permission "success"))}
-            (fn [] (swap! state assoc :permission "error"))))
-
-#_(defn handler [site-navi]
-  (let [state (atom {:status "form"
-                     :permission "initial"})]
-    (init-data state)
-    (fn []
-      (cond
-        (= "initial" (:permission @state)) (layout/default site-navi [:div])
-        (= "success" (:permission @state)) (layout/default site-navi (content state))
-        :else (layout/default site-navi (err/error-content))))))
