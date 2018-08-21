@@ -25,7 +25,7 @@
             [salava.badge.ui.issuer :as issuer]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
-            [salava.badge.ui.verify :as verify])
+            [salava.badge.ui.verify :refer [check-badge]])
   )
 
 
@@ -142,7 +142,9 @@
               )
 
             [:div.description description]
-            (verify/verify-badge-link id)]]
+
+            ;check-badge
+            (check-badge id)]]
 
           (when-not (empty? alignment)
             [:div.row

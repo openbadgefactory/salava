@@ -24,7 +24,7 @@
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
-            [salava.badge.ui.verify :as v]))
+            [salava.badge.ui.verify :refer [check-badge]]))
 
 
 
@@ -254,9 +254,8 @@
 
            [:div.description description]
 
-           ;verify-badge-link
-           #_(bm/verify-badge-link id)
-           (v/verify-badge-link id)]]
+           ;check-badge-link
+           (check-badge id)]]
 
          (when-not (empty? alignment)
            [:div.row
