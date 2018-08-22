@@ -10,6 +10,7 @@
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
             [salava.core.http :as http]
+            [salava.core.helper :refer [dump]]
             [schema.core :as s])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
@@ -302,7 +303,7 @@
                                 :url (:url issuer)
                                 :email (:email issuer)
                                 :image_file (:image issuer)
-                                :revocation_list_url nil
+                                :revocation_list_url (:revocationList issuer)
                                 :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
                                (let [data (http/json-get creator-url)]
@@ -434,7 +435,7 @@
                              :email (:email issuer)
                              :image_file nil
                              :endorsement []
-                             :revocation_list_url nil}]
+                             :revocation_list_url (:revocationList issuer)}]
                    :creator creator
                    :endorsement []
                    :published 0
@@ -514,7 +515,7 @@
 (defmethod verify-assertion :v2.0 [url asr]
   (let [kind (get-in asr [:verify :type] (get-in asr [:verification :type]))]
     (when (and (not (nil? url)) (or (= kind "hosted") (= kind "HostedBadge")))
-      (if (not= (:id asr) url)
+      (if (and (not (string/starts-with? url (:id asr))) (not= (domain url) (domain (:id asr))))
         (throw (IllegalArgumentException. "invalid assertion, verify url mismatch")))
       (if (map? (:badge asr))
         (if (not= (domain (get-in asr [:badge :id])) (domain (:id asr)))

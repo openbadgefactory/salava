@@ -179,7 +179,7 @@
     true false))
 
 (defn grid-buttons-with-translates [title buttons key all-key state]
-  [:div.form-group.flip
+  [:div.form-group
    [:label {:class "control-label col-sm-2"} title]
    [:div.col-sm-10
     (let [all-checked? (= ((keyword all-key) @state) true)
@@ -211,7 +211,7 @@
 
 (defn grid-show-closed-tickets [state]
   (let [show-closed?  (cursor state [:show-closed?])]
-    [:div {:id "archived" :class "form-group flip"}
+    [:div {:id "archived" :class "form-group"}
      [:label {:class "control-label col-sm-2 col-xs-3"}
       (str (t :admin/Archived) ": ")]
      [:div.col-sm-10.col-xs-9
