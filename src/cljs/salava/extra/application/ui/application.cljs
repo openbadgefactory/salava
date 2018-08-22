@@ -30,7 +30,7 @@
     text))
 
 (defn fetch-badge-adverts [state]
-  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]    
+  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
     (ajax/GET
      (path-for (str "/obpv1/application/"))
      {:params  {:country  (trim country-selected)
@@ -92,7 +92,7 @@
   (swap! state assoc :value #{}
          :tags ())
   (ajax/GET
-   (path-for "/obpv1/application/autocomplete")     
+   (path-for "/obpv1/application/autocomplete")
    {:params {:country  (trim country)}
     :handler (fn [data]
                (let [{:keys [tags names]} data]
@@ -106,7 +106,7 @@
   (if tags
     (s/split tags #",")))
 
-(defn modal-content [data state] 
+(defn modal-content [data state]
   (let [{:keys [image_file name info issuer_content_name tags  issuer_content_name issuer_content_url issuer_contact issuer_image description criteria_url]} data
         tags (tag-parser tags)
         country (:country-selected @state)]
@@ -120,7 +120,7 @@
           [:h1.uppercase-header name]
           [:div.badge-stats
            (bh/issuer-label-image-link issuer_content_name issuer_content_url "" issuer_contact issuer_image)
-           [:div 
+           [:div
             description]
            (if-not (blank? criteria_url)
              [:div {:class "badge-info"}
@@ -135,7 +135,7 @@
                    (for [tag tags]
                      [:a {:href         "#"
                           :id           "tag"
-                          :on-click     #(do                                           
+                          :on-click     #(do
                                            (swap! state assoc :advanced-search true)
                                            (set-to-autocomplete state tag))
                           :data-dismiss "modal"}
@@ -143,7 +143,7 @@
 
 
 (defn badge-content-modal-render [data state]
-  
+
   (let [data-atom (atom data) ]
     (fn []
       [:div {:id "badge-content"}
@@ -151,7 +151,7 @@
         [:div.row
          [:div.col-md-12
           [:div {:class "text-right"}
-           
+
            [:button {:type         "button"
                      :class        "close"
                      :data-dismiss "modal"
@@ -345,9 +345,9 @@
 (defn gallery-grid [state]
   (let [badges (:applications @state)
         tags (:tags @state)]
-    [:div 
+    [:div
      [:h3 (str-cat tags)]
-     (into [:div {:class "row"
+     (into [:div {:class "row wrap-grid"
                   :id    "grid"}]
            (for [element-data badges]
              (badge-grid-element element-data state)))]))
