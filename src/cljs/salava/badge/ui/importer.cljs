@@ -200,7 +200,7 @@
         [:br]
         [:a {:style {:cursor "default"}
               :on-click #(do (.preventDefault %)
-                          (if (identical? @display-atom "block") (reset! display-atom "none") (reset! display-atom "block")))}  (if (identical? @display-atom "none") (t :badge/Showmoreoptions) (t :badge/Hideoptions))]
+                          (if (identical? @display-atom "block") (reset! display-atom "none") (reset! display-atom "block")))}  (if (identical? @display-atom "none") (t :badge/Showmoreoptions) (str (t :admin/Showless) "..."))]
         [:div {:style {:display @display-atom}}
          [upload/assertion-url-upload-content state]
          [mozilla-importer-block state]
