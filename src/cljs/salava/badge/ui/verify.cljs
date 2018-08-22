@@ -79,19 +79,19 @@
                        [:table
                         [:tbody
                          [:tr
-                          [:td.validation-result  (t :badge/Retrievefromassertionurl)]
+                          [:td.validation-result  (t :badge/Gotfromassertionurl)]
                           [:td [:i {:class "fa fa-check-circle fa-lg"}]]]
                          (if (= 200 badge-image-status)
                            [:tr
-                            [:td.validation-result  (t :badge/Retrievefromimageurl)]
+                            [:td.validation-result  (t :badge/Gotfromimageurl)]
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])
                          (if (= 200 badge-criteria-status)
                            [:tr
-                            [:td.validation-result  (t :badge/Retrievefromcriteriaurl)]
+                            [:td.validation-result  (t :badge/Gotfromcriteriaurl)]
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])
                          (if (= 200 badge-issuer-status)
                            [:tr
-                            [:td.validation-result  (t :badge/Retrievefromissuerurl)]
+                            [:td.validation-result  (t :badge/Gotfromissuerurl)]
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])]]
 
                        [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
