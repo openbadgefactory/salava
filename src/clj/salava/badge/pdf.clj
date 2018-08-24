@@ -9,7 +9,7 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.string :refer [ends-with? blank?]]
             [salava.user.db :as ud]
-            [clojure.java.io :as io]))
+            [ring.util.io :as io]))
 
 (defqueries "sql/badge/main.sql")
 
