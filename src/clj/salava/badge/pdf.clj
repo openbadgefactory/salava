@@ -9,7 +9,8 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.string :refer [ends-with? blank?]]
             [salava.user.db :as ud]
-            [ring.util.io :as io]))
+            [ring.util.io :as io]
+            [clojure.tools.logging :as log]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -46,11 +47,9 @@
 (defn process-markdown [content markdown]
   (if (== 1 (count markdown))
     markdown
-    (let [markdown-to-clj (markdown->clj-pdf {:image {:x 10 :y 10} :spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)
-          p (slurp (io/piped-input-stream (fn [out] (pdf/pdf [{} markdown-to-clj] out))))]
-      (if (blank? p)
-        [:paragraph (str content " can't be displayed")]
-        markdown-to-clj))))
+      (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf [{} (markdown->clj-pdf {:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)] out)))))]
+        ""
+        (markdown->clj-pdf {:image {:x 10 :y 10} :spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown))))
 
 (defn generatePDF [ctx user-id input lang]
   (let [data-dir (get-in ctx [:config :core :data-dir])
