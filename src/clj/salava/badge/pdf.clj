@@ -13,6 +13,15 @@
 
 (defqueries "sql/badge/main.sql")
 
+(defn replace-nils [data]
+  (clojure.walk/postwalk
+    (fn [d]
+      (if (map? d)
+        (let [m (into {} (map (fn [k v] (if (blank? (str v)) {k "-"}{k v})) (keys d) (vals d)))]
+          (when (seq m) m))
+        d))
+    data))
+
 (defn pdf-generator-helper [ctx user-id input]
   (let [badges-for-export (user-badges-to-export ctx user-id)
         filtered-badges (filter (fn [b] (some #(= % (:id b)) input)) badges-for-export)
@@ -25,9 +34,7 @@
                          (assoc :qr_code (str->qr-base64 (badge-url ctx (:id %1)))
                            :endorsements (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
                            :content %2)) badge-with-content temp)]
-    (dump badges)
-
-    badges))
+    (replace-nils badges)))
 
 (defn generatePDF [ctx user-id input lang]
   (let [data-dir (get-in ctx [:config :core :data-dir])
