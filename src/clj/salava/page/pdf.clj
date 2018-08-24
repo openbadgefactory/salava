@@ -11,6 +11,7 @@
             [clojure.zip :as zip]
             [salava.user.db :as ud]
             [net.cgrand.enlive-html :as enlive]
+            [salava.badge.pdf :refer [process-markdown replace-nils]]
             ))
 
 (defqueries "sql/page/main.sql")
@@ -68,15 +69,14 @@
        ;;     (apply str)
        ))
 
-
 (defn generate-pdf [ctx page-id user-id header?]
   (let [ badge-info-fn (first (plugin-fun (get-plugins ctx) "pdf" "pdf-generator-helper"))
-         page (conj () (page-with-blocks ctx page-id))
+         page (replace-nils (conj () (page-with-blocks ctx page-id)))
          data-dir (get-in ctx [:config :core :data-dir])
          site-url (get-in ctx [:config :core :site-url])
          plugins (get-plugins ctx)
          user-data (ud/user-information ctx user-id)
-         ul (:language user-data)
+         ul (if (blank? (:language user-data)) "en" (:language user-data))
          font-path  (first (mapcat #(get-in ctx [:config % :font] []) plugins))
          header-path (first (mapcat #(get-in ctx [:config % :logo] []) plugins))
          font  {:ttf-name (str site-url font-path)}
@@ -99,18 +99,20 @@
                                                                (case (:size %)
                                                                  "h1" [:paragraph.generic {:align :left }
                                                                        [:spacer 0]
-                                                                       [:heading (or (:content %) "")]
+                                                                       [:heading  (:content %)]
                                                                        [:line {:dotted true}]
                                                                        ]
                                                                  "h2" [:paragraph.generic {:align :left}
                                                                        [:spacer 1]
-                                                                       [:heading {:style {:size 12 :align :center}}  (or (:content %) "")]
+                                                                       [:heading {:style {:size 12 :align :center}}  (:content %)]
                                                                        [:line {:dotted true}]] ))
 
                                                              (when (= "badge" (:type %))
                                                                [:table {:widths [1 3] :border false :keep-together? false }
+
                                                                 [[:cell {:align :center}
-                                                                  (when-not (blank? (:image_file %))
+                                                                  (if (= "-" (:image_file %))
+                                                                    ""
                                                                     [:paragraph {:align :center :keep-together true}
                                                                      (if (ends-with? (:image_file %) "png")
                                                                        [:paragraph [:chunk [:image {:align :center :width 80 :height 80} (str data-dir "/" (:image_file %))]] [:spacer 1]"\n" ]
@@ -119,33 +121,30 @@
                                                                    (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))]
                                                                     (when-not (empty? badge)
                                                                       [:phrase {:align :center}
-                                                                       [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (or (:qr_code (first badge)) "")]]"\n"
+                                                                       [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (:qr_code (first badge))]]"\n"
 ;;                                                                        [:spacer 0]
-                                                                       [:chunk.generic (t :badge/Scantobadge ul)]]))]
-                                                                  ]
+                                                                       [:chunk.generic (t :badge/Scantobadge ul)]]))]]
 
                                                                  [:cell
-                                                                  [:heading.generic (or (:name %) "-")]
+                                                                  [:heading.generic  (:name %)]
                                                                   [:spacer 0]
                                                                   [:paragraph.generic
-                                                                   [:chunk.bold (str (t :badge/Issuedby ul) ": ")] [:chunk (or (:issuer_content_name %) "-")] "\n"
-                                                                   [:chunk.bold (str (t :badge/Issuedon ul)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
+                                                                   [:chunk.bold (str (t :badge/Issuedby ul) ": ")] [:chunk (:issuer_content_name %)] "\n"
+                                                                   [:chunk.bold (str (t :badge/Issuedon ul)": ")] [:chunk (if (number? (:issued_on %)) (date-from-unix-time (long (* 1000 (:issued_on %))) "date") (:issued_on %))]
                                                                    [:spacer 0]
-                                                                   (or (:description %) "-") "\n"
+                                                                   (:description %)"\n"
                                                                    [:spacer 0]
                                                                    [:paragraph {:keep-together true}
                                                                     [:phrase.bold (str (t :badge/Criteria ul)": ")] [:spacer 0]
-                                                                    [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (or (:criteria_url %) "-")]
+                                                                    [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
                                                                     [:spacer 0]
-                                                                    (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))
-                                                                          content (first (:content (first badge)))]
-                                                                      (when-not (blank? (:criteria_content content))
-                                                                        (markdown->clj-pdf {:paragraph {:keep-together? false} :spacer {:allow-extra-line-breaks? false} :wrap {:global-wrapper :paragraph}} (:criteria_content content))
-                                                                        ))]]]]
+                                                                    (let [content (some->> (badge-info-fn ctx user-id (conj () (:badge_id %))) first :content first) ]
+                                                                      (when-not (empty? content)
+                                                                        (process-markdown "Criteria" (:criteria_content content))))]]]]
 
                                                                 [[:cell {:colspan 2} [:line {:dotted true}]]]])
 
-                                                             (when (and (= "html" (:type %)) (not (blank? (:content %))))
+                                                             (when (and (= "html" (:type %)) (not (= "-" (:content %))))
                                                                [:paragraph.generic {:keep-together false :align :left}
                                                                 [:chunk.bold {:size 11 :style :bold} (str (t :page/html ul) ": ")]"\n"
                                                                 [:spacer 1]
@@ -171,23 +170,21 @@
                                                                  (into [:table {:border false :widths [1 3] :keep-together? false}]
                                                                        (conj  (into [[[:cell {:colspan 2}]]] (for [badge (:badges %)
                                                                                                                    :let [b (badge-info-fn ctx user-id (conj () (:id badge)))
-                                                                                                                         content (first (:content (first b)))]]
+                                                                                                                         content (-> b first :content first)]]
                                                                                                                (when-not (empty? b)
-                                                                                                                 (conj [[:cell {:align :left} (if (ends-with? (:image_file badge) "png") [:image {:align :center :width 75 :height 75}(str data-dir "/" (:image_file badge))] [:image {:align :center :width 75 :height 75 :base64 true} (:qr_code (first b))])]]
+                                                                                                                 (conj [[:cell {:align :left} (if (and (not (= "-" (:image_file badge))) (ends-with? (:image_file badge) "png")) [:image {:align :center :width 75 :height 75}(str data-dir "/" (:image_file badge))] [:image {:align :center :width 75 :height 75 :base64 true} (:qr_code (first b))])]]
                                                                                                                        [:cell
                                                                                                                         [:paragraph.generic
                                                                                                                          [:heading (:name badge)]
-                                                                                                                         [:chunk.bold (str (t :badge/Issuedby ul) ": ")] [:chunk (or (:issuer_content_name content) "-")] "\n"
-                                                                                                                         (when-not (blank? (str (:issued_on badge)))
+                                                                                                                         [:chunk.bold (str (t :badge/Issuedby ul) ": ")] [:chunk (:issuer_content_name content)] "\n"
                                                                                                                            [:phrase
-                                                                                                                            [:chunk.bold (str (t :badge/Issuedon ul)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on badge))) "date")] "\n"])
-                                                                                                                         (or (:description badge) "-") "\n"
+                                                                                                                            [:chunk.bold (str (t :badge/Issuedon ul)": ")] [:chunk (if (number? (:issued_on badge)) (date-from-unix-time (long (* 1000 (:issued_on badge))) "date") (:issued_on badge))] "\n"]
+                                                                                                                         (:description badge)"\n"
                                                                                                                          [:spacer 0]
                                                                                                                          [:paragraph {:keep-together true}
                                                                                                                           [:phrase.bold (str (t :badge/Criteria ul)": ")] "\n"
-                                                                                                                          [:anchor {:target (:criteria_url badge) :style{:family :times-roman :color [66 100 162]}} (or (:criteria_url badge) "-")] "\n"
-                                                                                                                          (when-not (blank? (:criteria_content content))
-                                                                                                                            (markdown->clj-pdf {:spacer {:extra-starting-value 0 :allow-extra-line-breaks? false} :paragraph {:keep-together? true} :wrap {:global-wrapper :paragraph}} (or (:criteria_content content) "-")))
+                                                                                                                          [:anchor {:target (:criteria_url badge) :style{:family :times-roman :color [66 100 162]}} (:criteria_url badge)] "\n"
+                                                                                                                          (process-markdown "Criteria" (:criteria_content content))
                                                                                                                           ]
                                                                                                                          ][:spacer 0]]))))
                                                                               [[:cell {:colspan 2}[:line {:dotted true}]]]))
@@ -197,14 +194,13 @@
                                                                     [:table {:align :center :width-percent 100 :border false :num-cols 5}
                                                                      (into [[:cell {:colspan 5}]] (for [badge (:badges %)
                                                                                                         :let [b (badge-info-fn ctx user-id (conj () (:id badge)))
-                                                                                                              content (first (:content (first b)))]]
+                                                                                                              content (-> b first :content first)]]
                                                                                                     (when-not (empty? b)
                                                                                                       [:cell {:padding-right 10}[:anchor {:target (str site-url "/badge/info/" (:id badge))}
                                                                                                                                  (if (ends-with? (:image_file badge) "png") [:chunk [:image {:align :center :width 60 :height 60}(str data-dir "/" (:image_file badge))]] [:chunk [:image {:align :center :width 60 :height 60 :base64 true} (:qr_code (first b))]])
                                                                                                                                  ]])))]]]
                                                                   [[:cell [:line {:dotted true}]]]]))
-                                                             [:spacer 3]
-                                                             ])
+                                                             [:spacer 3]])
 
                                content (-> (mapv template $blocks)
                                            (conj   [[:pdf-table {:align :right :width-percent 100 :cell-border false}
@@ -224,7 +220,6 @@
                            ))
          ]
     ;; TODO FIX HTML
-
     (fn [out]
       (pdf/pdf (into [pdf-settings [:spacer 4]]
                      (page-template page)) out))))
