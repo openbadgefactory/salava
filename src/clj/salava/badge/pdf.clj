@@ -36,6 +36,22 @@
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
 
+(defn process-pdf-page [stylesheet template badge]
+  (let [p (slurp (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out))))]
+    (if (blank? p)
+      (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph "Error while processing, Page can't be displayed"]] out)))
+      (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out))))))
+
+
+(defn process-markdown [content markdown]
+  (if (== 1 (count markdown))
+    markdown
+    (let [markdown-to-clj (markdown->clj-pdf {:image {:x 10 :y 10} :spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)
+          p (slurp (io/piped-input-stream (fn [out] (pdf/pdf [{} markdown-to-clj] out))))]
+      (if (blank? p)
+        [:paragraph (str content " can't be displayed")]
+        markdown-to-clj))))
+
 (defn generatePDF [ctx user-id input lang]
   (let [data-dir (get-in ctx [:config :core :data-dir])
         site-url (get-in ctx [:config :core :site-url])
@@ -153,5 +169,6 @@
 
                            (reduce into [] content)))]
     (fn [output-stream]
-      (pdf/pdf (into [pdf-settings] (badge-template badges)) output-stream)))
-  )
+      (apply pdf/collate output-stream
+             (for [b badges]
+               (process-pdf-page pdf-settings badge-template (list b)))))))
