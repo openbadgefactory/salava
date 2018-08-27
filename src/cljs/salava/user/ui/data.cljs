@@ -185,9 +185,9 @@
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
           [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity) ]
-          (if (not-empty connections)
+          (if (> connections 0)
             [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ") (count connections)]]])
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ")  connections]]])
           (if (or (not-empty user_following) (not-empty user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
