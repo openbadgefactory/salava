@@ -11,7 +11,7 @@
             [clojure.zip :as zip]
             [salava.user.db :as ud]
             [net.cgrand.enlive-html :as enlive]
-            [salava.badge.pdf :refer [process-markdown replace-nils]]
+            [salava.badge.pdf :refer [process-markdown replace-nils pdf-generator-helper]]
             ))
 
 (defqueries "sql/page/main.sql")
@@ -70,34 +70,33 @@
        ))
 
 (defn generate-pdf [ctx page-id user-id header?]
-  (let [ badge-info-fn (first (plugin-fun (get-plugins ctx) "pdf" "pdf-generator-helper"))
-         page (replace-nils (conj () (page-with-blocks ctx page-id)))
-         data-dir (get-in ctx [:config :core :data-dir])
-         site-url (get-in ctx [:config :core :site-url])
-         plugins (get-plugins ctx)
-         user-data (ud/user-information ctx user-id)
-         ul (if (blank? (:language user-data)) "en" (:language user-data))
-         font-path  (first (mapcat #(get-in ctx [:config % :font] []) plugins))
-         header-path (first (mapcat #(get-in ctx [:config % :logo] []) plugins))
-         font  {:ttf-name (str site-url font-path)}
-         stylesheet  {:generic {:family :times-roman
-                                :color [127 113 121]}
+  (let [page (replace-nils (conj () (page-with-blocks ctx page-id)))
+        data-dir (get-in ctx [:config :core :data-dir])
+        site-url (get-in ctx [:config :core :site-url])
+        plugins (get-plugins ctx)
+        user-data (ud/user-information ctx user-id)
+        ul (if (blank? (:language user-data)) "en" (:language user-data))
+        font-path  (first (mapcat #(get-in ctx [:config % :font] []) plugins))
+        header-path (first (mapcat #(get-in ctx [:config % :logo] []) plugins))
+        font  {:ttf-name (str site-url font-path)}
+        stylesheet  {:generic {:family :times-roman
+                               :color [127 113 121]}
                       :link {:family :times-roman
                              :color [66 100 162]}
-                      :bold {:style :bold}}
-         header      (if (= "true" header?)
-                       {:table
-                        [:pdf-table {:border false}
-                         [100]
-                         [[:pdf-cell {:padding 5}[:image {:width 200 :height 48} (str site-url (if-not (blank? header-path) header-path "/img/logo.png"))] [:line] [:spacer 2]]
-                          ]]} nil)
+                     :bold {:style :bold}}
+        header      (if (= "true" header?)
+                      {:table
+                       [:pdf-table {:border false}
+                        [100]
+                        [[:pdf-cell {:padding 5}[:image {:width 200 :height 48} (str site-url (if-not (blank? header-path) header-path "/img/logo.png"))] [:line] [:spacer 2]]
+                         ]]} nil)
 
-         pdf-settings  (if (empty? font-path) {:header header :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :header header :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
-         page-template (pdf/template
-                         (let [template #(cons [:paragraph][
-                                                             (when (= "heading"  (:type %))
-                                                               (case (:size %)
-                                                                 "h1" [:paragraph.generic {:align :left }
+        pdf-settings  (if (empty? font-path) {:header header :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :header header :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
+        page-template (pdf/template
+                        (let [template #(cons [:paragraph][
+                                                            (when (= "heading"  (:type %))
+                                                              (case (:size %)
+                                                                "h1" [:paragraph.generic {:align :left }
                                                                        [:spacer 0]
                                                                        [:heading  (:content %)]
                                                                        [:line {:dotted true}]
@@ -118,7 +117,7 @@
                                                                        [:paragraph [:chunk [:image {:align :center :width 80 :height 80} (str data-dir "/" (:image_file %))]] [:spacer 1]"\n" ]
                                                                        "")])
                                                                   [:paragraph
-                                                                   (let [badge (badge-info-fn ctx user-id (conj () (:badge_id %)))]
+                                                                   (let [badge (pdf-generator-helper ctx user-id (list (:badge_id %)))]
                                                                     (when-not (empty? badge)
                                                                       [:phrase {:align :center}
                                                                        [:chunk [:image {:align :center :width 75 :height 75  :base64 true} (:qr_code (first badge))]]"\n"
@@ -138,9 +137,9 @@
                                                                     [:phrase.bold (str (t :badge/Criteria ul)": ")] [:spacer 0]
                                                                     [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
                                                                     [:spacer 0]
-                                                                    (let [content (some->> (badge-info-fn ctx user-id (conj () (:badge_id %))) first :content first) ]
+                                                                    (let [content (some->> (pdf-generator-helper ctx user-id (list (:badge_id %))) first :content first) ]
                                                                       (when-not (empty? content)
-                                                                        (process-markdown "Criteria" (:criteria_content content))))]]]]
+                                                                        (process-markdown (:criteria_content content))))]]]]
 
                                                                 [[:cell {:colspan 2} [:line {:dotted true}]]]])
 
@@ -169,7 +168,7 @@
                                                                (if (= "long" (:format %))
                                                                  (into [:table {:border false :widths [1 3] :keep-together? false}]
                                                                        (conj  (into [[[:cell {:colspan 2}]]] (for [badge (:badges %)
-                                                                                                                   :let [b (badge-info-fn ctx user-id (conj () (:id badge)))
+                                                                                                                   :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
                                                                                                                          content (-> b first :content first)]]
                                                                                                                (when-not (empty? b)
                                                                                                                  (conj [[:cell {:align :left} (if (and (not (= "-" (:image_file badge))) (ends-with? (:image_file badge) "png")) [:image {:align :center :width 75 :height 75}(str data-dir "/" (:image_file badge))] [:image {:align :center :width 75 :height 75 :base64 true} (:qr_code (first b))])]]
@@ -184,7 +183,7 @@
                                                                                                                          [:paragraph {:keep-together true}
                                                                                                                           [:phrase.bold (str (t :badge/Criteria ul)": ")] "\n"
                                                                                                                           [:anchor {:target (:criteria_url badge) :style{:family :times-roman :color [66 100 162]}} (:criteria_url badge)] "\n"
-                                                                                                                          (process-markdown "Criteria" (:criteria_content content))
+                                                                                                                          (process-markdown (:criteria_content content))
                                                                                                                           ]
                                                                                                                          ][:spacer 0]]))))
                                                                               [[:cell {:colspan 2}[:line {:dotted true}]]]))
@@ -193,7 +192,7 @@
                                                                   [[:cell
                                                                     [:table {:align :center :width-percent 100 :border false :num-cols 5}
                                                                      (into [[:cell {:colspan 5}]] (for [badge (:badges %)
-                                                                                                        :let [b (badge-info-fn ctx user-id (conj () (:id badge)))
+                                                                                                        :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
                                                                                                               content (-> b first :content first)]]
                                                                                                     (when-not (empty? b)
                                                                                                       [:cell {:padding-right 10}[:anchor {:target (str site-url "/badge/info/" (:id badge))}
