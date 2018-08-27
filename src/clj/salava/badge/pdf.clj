@@ -38,13 +38,11 @@
     (replace-nils badges)))
 
 (defn process-pdf-page [stylesheet template badge]
-  (let [p (slurp (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out))))]
-    (if (blank? p)
-      (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph "Error while processing, Page can't be displayed"]] out)))
-      (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out))))))
+  (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))]
+    (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph "Error while processing, Page can't be displayed"]] out)))
+    (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))
 
-
-(defn process-markdown [content markdown]
+(defn process-markdown [markdown]
   (if (== 1 (count markdown))
     markdown
       (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf [{} (markdown->clj-pdf {:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)] out)))))]
@@ -71,7 +69,7 @@
                     :chunk {:size 11
                             :style :bold}}
 
-        pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
+        pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers true :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
         badge-template (pdf/template
                          (let [template #(cons [:paragraph]  [ (if (and (not (= "-" (:image_file %)))(ends-with? (:image_file %) "png"))
                                                                  [:image {:width 100 :height 100 :align :center} (str data-dir "/" (:image_file %))]
@@ -109,7 +107,7 @@
                                                                 [:paragraph
                                                                  [:chunk.chunk (str (t :badge/Criteria ul)": ")] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]
                                                                 [:spacer 0]
-                                                                (process-markdown "Criteria" (:criteria_content %))]
+                                                                (process-markdown (:criteria_content %))]
 
                                                                (when-not (empty? $endorsements)
                                                                  [:paragraph.generic
@@ -121,7 +119,7 @@
                                                                                                      (:issuer_name e) "\n"
                                                                                                      [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (or (:issuer_url e) "-")] "\n"
                                                                                                      [:chunk (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
-                                                                                                     (process-markdown "Endorsements" (:content e))]))])
+                                                                                                     (process-markdown (:content e))]))])
 
                                                                [:line {:dotted true}]
                                                                [:spacer 0]
@@ -156,7 +154,7 @@
                                                                              (:issuer_name e) "\n"
                                                                              [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (:issuer_url e)] "\n"
                                                                              [:chunk.link (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
-                                                                             (process-markdown "Issuer endorsements" (:content e))]))]))
+                                                                             (process-markdown (:content e))]))]))
 
                                                                [:pdf-table {:align :right :width-percent 100 :cell-border false}
                                                                 nil
