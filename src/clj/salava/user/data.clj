@@ -89,7 +89,8 @@
   (let [data-dir (get-in ctx [:config :core :data-dir])
         site-url (get-in ctx [:config :core :site-url])
         user-data (conj () (all-user-data ctx user-id current-user-id))
-        ul (get-in (first user-data) [:user :language])
+        ul (let [lang (get-in (first user-data) [:user :language])]
+             (if (= "-" lang) "en" lang))
         font-path  (first (mapcat #(get-in ctx [:config % :font] []) (util/get-plugins ctx)))
         font  {:ttf-name (str site-url font-path)}
         stylesheet {:heading-name {:color [127 113 121]
