@@ -159,7 +159,7 @@
                                                                [:pdf-table {:align :right :width-percent 100 :cell-border false}
                                                                 nil
                                                                 [[:pdf-cell [:paragraph {:align :right} [:chunk [:image  {:width 85 :height 85 :base64 true} $qr_code]]"\n"
-                                                                             [:phrase [:chunk.link {:style :italic} (str site-url "/badge/info/" $id)]]]]]]
+                                                                             [:phrase [:chunk.link {:style :italic} (str site-url "/app/badge/info/" $id)]]]]]]
                                                                [:pagebreak]])
 
                                content (if (= lang "all") (map template $content) (map template (filter #(= (:default_language_code %) (:language_code %)) $content)))]

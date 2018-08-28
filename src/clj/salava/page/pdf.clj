@@ -195,7 +195,7 @@
                                                                                                         :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
                                                                                                               content (-> b first :content first)]]
                                                                                                     (when-not (empty? b)
-                                                                                                      [:cell {:padding-right 10}[:anchor {:target (str site-url "/badge/info/" (:id badge))}
+                                                                                                      [:cell {:padding-right 10}[:anchor {:target (str site-url "/app/badge/info/" (:id badge))}
                                                                                                                                  (if (ends-with? (:image_file badge) "png") [:chunk [:image {:align :center :width 60 :height 60}(str data-dir "/" (:image_file badge))]] [:chunk [:image {:align :center :width 60 :height 60 :base64 true} (:qr_code (first b))]])
                                                                                                                                  ]])))]]]
                                                                   [[:cell [:line {:dotted true}]]]]))
@@ -205,7 +205,7 @@
                                            (conj   [[:pdf-table {:align :right :width-percent 100 :cell-border false}
                                                      nil
                                                      [[:pdf-cell [:paragraph [:chunk [:image {:width 85 :height 85 :base64 true} $qr_code]]"\n"
-                                                                  [:phrase [:chunk.link {:style :italic} (str site-url "/page/view/" $id)]]]
+                                                                  [:phrase [:chunk.link {:style :italic} (str site-url "/app/page/view/" $id)]]]
                                                        ]]]]))
                                ]
                            (reduce into [[:paragraph.generic {:align :center}
