@@ -2,6 +2,9 @@
   (:require [reagent.core :refer [atom]]
             [salava.core.i18n :refer [t]]))
 
+(defn badge-export? [state]
+  (and (contains? state :email-selected)(contains? state :badges-selected) (contains? state :badges-all)))
+
 (defn grid-buttons [title buttons key all-key state]
   [:div.form-group
    [:legend {:class "control-label col-sm-2"} title]
@@ -13,7 +16,10 @@
                  :id "btn-all"
                  :on-click (fn []
                              (swap! state assoc (keyword key) [])
-                             (swap! state assoc (keyword all-key) true))}
+                             (swap! state assoc (keyword all-key) true)
+                             (if badge-export? (swap! state assoc :badges-all false
+                                                                  :badges-selected []))
+)}
         (t :core/All)]
        (doall
          (for [button buttons]
@@ -23,6 +29,8 @@
                        :key      value
                        :on-click (fn []
                                    (swap! state assoc (keyword all-key) false)
+                                   (if badge-export? (swap! state assoc :badges-all false
+                                                                        :badges-selected []))
                                    (if checked?
                                      (do
                                        (if (= (count buttons-checked) 1)
@@ -44,7 +52,8 @@
              :placeholder (:content (meta placeholder) placeholder)
              :value       ((keyword key) @state)
              :on-change   (fn [x]
-                            (swap! state assoc key (-> x .-target .-value)))}]]])
+                            (swap! state assoc key (-> x .-target .-value))
+                            (if badge-export? (swap! state assoc :badges-all false :badges-selected [])))}]]])
 
 (defn grid-select [title id key options state]
   [:div.form-group
@@ -54,7 +63,13 @@
               :id id
               :name key
               :on-change (fn [x]
-                           (swap! state assoc key (-> x .-target .-value)))}
+                           (swap! state assoc key (-> x .-target .-value))
+                           (if badge-export? (swap! state assoc :badges-all false
+                                                    :badges-selected []
+                                                    :tags-selected []
+                                                    :tags-all true
+                                                    :search ""
+                                                    :order "mtime")))}
      (for [option options]
        [:option {:value (:value option)
                  :key (:value option)} (:title option)])]]])
