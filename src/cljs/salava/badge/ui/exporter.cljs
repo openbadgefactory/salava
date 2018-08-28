@@ -27,6 +27,25 @@
    {:value "internal"  :title (t :badge/Shared)}
    {:value "private" :title (t :badge/Private)}])
 
+(defn reset-visibility [state]
+    (swap! state assoc :visibility "all"))
+
+(defn hard-reset [state]
+  (swap! state assoc :badges-all false
+         :badges-selected []
+         :tags-selected []
+         ;:visibility "all"
+         :tags-all true
+         :search ""
+         :order "mtime"
+         )
+  (reset-visibility state))
+
+(defn soft-reset [state]
+  (swap! state assoc :badges-all false :badges-selected []))
+
+
+
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :badge/bydate)}
    {:value "name" :id "radio-name" :label (t :badge/byname)}])
@@ -34,10 +53,10 @@
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-select        (t :badge/Email ":") "select-email" :email-selected (email-options state) state]
-   [g/grid-search-field  (t :badge/Search ":") "badgesearch" (t :badge/Searchbyname) :search state]
-   [g/grid-select        (t :badge/Show ":") "select-visibility" :visibility (visibility-options) state]
-   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (:current-view-badges @state)) :tags-selected :tags-all state]
+   [g/grid-select        (t :badge/Email ":") "select-email" :email-selected (email-options state) state hard-reset]
+   [g/grid-search-field  (t :badge/Search ":") "badgesearch" (t :badge/Searchbyname) :search state soft-reset]
+   [g/grid-select        (t :badge/Show ":") "select-visibility" :visibility (visibility-options) state soft-reset]
+   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (:current-view-badges @state)) :tags-selected :tags-all state soft-reset]
    [g/grid-radio-buttons (t :badge/Order ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
