@@ -1,5 +1,5 @@
 (ns salava.badge.ui.exporter
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [atom]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [clojure.set :refer [intersection]]
@@ -106,8 +106,7 @@
 
 (defn badge-grid [state]
   (let [badges (badges-for-grid state)
-        order (:order @state)
-        current (map #(badge-visible? % state) badges)]
+        order (:order @state)]
     [:div {:class "row wrap-grid"
            :id "grid"}
      (doall (for [element-data (sort-by (keyword order) badges)]
