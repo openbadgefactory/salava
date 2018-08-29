@@ -17,9 +17,7 @@
     (conj (mapv #(hash-map :value % :title %) emails)  {:value "all" :title (t :badge/All)})))
 
 (defn badges-for-grid [state]
-  (let [badges (if (= "all" (:email-selected @state))(:badges @state) (filter #(= (:email-selected @state) (:email %)) (:badges @state)))]
-    (swap! state assoc :current-view-badges badges)
-    badges))
+  (if (= "all" (:email-selected @state))(:badges @state) (filter #(= (:email-selected @state) (:email %)) (:badges @state))))
 
 (defn visibility-options []
   [{:value "all" :title (t :badge/All)}
@@ -46,7 +44,7 @@
    [g/grid-select        (t :badge/Email ":") "select-email" :email-selected (email-options state) state hard-reset]
    [g/grid-search-field  (t :badge/Search ":") "badgesearch" (t :badge/Searchbyname) :search state soft-reset]
    [g/grid-select        (t :badge/Show ":") "select-visibility" :visibility (visibility-options) state soft-reset]
-   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (:current-view-badges @state)) :tags-selected :tags-all state soft-reset]
+   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (badges-for-grid state)) :tags-selected :tags-all state soft-reset]
    [g/grid-radio-buttons (t :badge/Order ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
@@ -108,12 +106,13 @@
 
 (defn badge-grid [state]
   (let [badges (badges-for-grid state)
-        order (:order @state)]
+        order (:order @state)
+        current (map #(badge-visible? % state) badges)]
     [:div {:class "row wrap-grid"
            :id "grid"}
-     (doall(for [element-data (sort-by (keyword order) badges)]
-             (if (badge-visible? element-data state)
-               (grid-element element-data state))))]))
+     (doall (for [element-data (sort-by (keyword order) badges)]
+              (if (badge-visible? element-data state)
+                (grid-element element-data state))))]))
 
 (defn export-to-pdf [state]
   (let [badges-to-export (:badges-selected @state)
@@ -174,13 +173,25 @@
 (defn select-all [state]
   (if (:badges-all @state)
     (swap! state assoc :badges-selected [] :badges-all false)
-    (swap! state assoc :badges-selected (map :id (:current-view-badges @state) #_(:badges @state)) :badges-all true)))
+    (swap! state assoc :badges-selected (map :id (filter #(badge-visible? % state)(badges-for-grid state))) :badges-all true)))
 
-(defn select-all-button [state]
-  (fn []
+(defn badge-export-buttons [state]
+  [:div
+   [:button {:class    "btn btn-primary"
+             :on-click #(select-all state)}
+    (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
+   (if (not (nil? (:backpack_id (first (filter #(= (:email %) (:email-selected @state)) (:emails @state))))))
      [:button {:class    "btn btn-primary"
-               :on-click #(select-all state)}
-      (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]))
+               :on-click #(export-badges state)
+               :disabled (= 0 (count (:badges-selected @state)))}
+      (t :badge/Exportselected)])
+   [:button {:class "btn btn-primary"
+             :on-click #(do (.preventDefault %)
+                          (swap! state assoc :pdf-option "default")
+                          (m/modal![export-to-pdf-modal state] {:size :lg}))
+             :disabled (= 0 (count (:badges-selected @state)))}
+    (t :badge/Exporttopdf)]])
+
 
 (defn content [state]
   [:div {:id "export-badges"}
@@ -200,18 +211,7 @@
              (empty? (:badges @state)) (t :badge/Nobadgestoexport))]
           [:div
            [badge-grid-form state]
-           [select-all-button state]
-           (if (not (nil? (:backpack_id (first (filter #(= (:email %) (:email-selected @state)) (:emails @state))))))
-             [:button {:class    "btn btn-primary"
-                       :on-click #(export-badges state)
-                       :disabled (= 0 (count (:badges-selected @state)))}
-              (t :badge/Exportselected)])
-           [:button {:class "btn btn-primary"
-                     :on-click #(do (.preventDefault %)
-                                     (swap! state assoc :pdf-option "default")
-                                         (m/modal![export-to-pdf-modal state] {:size :lg}))
-                     :disabled (= 0 (count (:badges-selected @state)))}
-            (t :badge/Exporttopdf)]
+           [badge-export-buttons state]
            [badge-grid state]])]))])
 
 (defn init-data [state]
@@ -233,7 +233,6 @@
                      :tags-selected []
                      :badges-all false
                      :badges-selected []
-                     :current-view-badges []
                      :pdf-option "default"
                      :user-id (:id (session/get :user))
                      :initializing true})]
