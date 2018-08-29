@@ -27,19 +27,9 @@
    {:value "internal"  :title (t :badge/Shared)}
    {:value "private" :title (t :badge/Private)}])
 
-(defn reset-visibility [state]
-    (swap! state assoc :visibility "all"))
-
 (defn hard-reset [state]
-  (swap! state assoc :badges-all false
-         :badges-selected []
-         :tags-selected []
-         ;:visibility "all"
-         :tags-all true
-         :search ""
-         :order "mtime"
-         )
-  (reset-visibility state))
+  (swap! state assoc :badges-all false :badges-selected [] :tags-selected [] :tags-all true :search "" :order "mtime" :visibility "all")
+  (-> js/document (.getElementById "select-visibility") (.-selectedIndex) (set! 0)))
 
 (defn soft-reset [state]
   (swap! state assoc :badges-all false :badges-selected []))
@@ -190,9 +180,7 @@
   (fn []
      [:button {:class    "btn btn-primary"
                :on-click #(select-all state)}
-      (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
-    )
-  )
+      (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]))
 
 (defn content [state]
   [:div {:id "export-badges"}
