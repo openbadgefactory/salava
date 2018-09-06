@@ -129,7 +129,7 @@
 
 
 (defn export-to-pdf-modal [state]
-   [:div {:id "badge-export-modal"}
+   [:div {:id "export-modal"}
      [:div.modal-body
       [:div.row
        [:div.col-md-12
