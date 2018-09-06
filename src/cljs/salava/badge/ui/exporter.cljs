@@ -129,7 +129,7 @@
 
 
 (defn export-to-pdf-modal [state]
-   [:div {:id "badge-settings"}
+   [:div {:id "badge-export-modal"}
      [:div.modal-body
       [:div.row
        [:div.col-md-12
@@ -158,8 +158,7 @@
       [:button {:type         "button"
               :class        "btn btn-primary"
               :on-click  #(export-to-pdf state)
-              :data-dismiss "modal"
-              }
+              :data-dismiss "modal"}
      (t :badge/Export)]]])
 
 (defn export-badges [state]
