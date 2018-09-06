@@ -39,7 +39,7 @@
 
 (defn process-pdf-page [stylesheet template badge ul]
   (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))]
-    (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph (t :badge/Errorpage ul) #_"Error while processing, Page can't be displayed"]] out)))
+    (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph (t :core/Errorpage ul) #_"Error while processing, Page can't be displayed"]] out)))
     (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))
 
 (defn process-markdown [markdown]
