@@ -60,17 +60,18 @@
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
          user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil) ]
 
-     (assoc (clojure.walk/postwalk replace-nils (assoc all-user-info
-                                                  :emails email-addresses
-                                                  :user_badges user-badges
-                                                  :user_pages user-pages
-                                                  :user_files (:files user-files)
-                                                  ;:events events
-                                                  :connections connections
-                                                  :pending_badges pending-badges
-                                                  :user_followers user-followers
-                                                  :user_following user-following
-                                                  )) :events events)))
+     (assoc (replace-nils (assoc all-user-info
+                            :emails email-addresses
+                            :user_badges user-badges
+                            :user_pages user-pages
+                            :user_files (:files user-files)
+                            ;:events events
+                            :connections connections
+                            :pending_badges pending-badges
+                            :user_followers user-followers
+                            :user_following user-following
+                            )) :events events)))
+
   ([ctx user-id current-user-id _]
    (let [all-user-info (u/user-information-and-profile ctx user-id current-user-id)
          email-addresses (u/email-addresses ctx current-user-id)
@@ -94,17 +95,17 @@
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) ())
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
          user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) ())]
-     (clojure.walk/postwalk replace-nils (assoc all-user-info
-                                               :emails email-addresses
-                                               :user_badges user-badges
-                                               :user_pages user-pages
-                                               :user_files user-files
-                                               :events events
-                                               :connections connections
-                                               :pending_badges pending-badges
-                                               :user_followers user-followers
-                                               :user_following user-following
-                                           )))))
+     (replace-nils (assoc all-user-info
+                          :emails email-addresses
+                          :user_badges user-badges
+                          :user_pages user-pages
+                          :user_files user-files
+                          :events events
+                          :connections connections
+                          :pending_badges pending-badges
+                          :user_followers user-followers
+                          :user_following user-following
+                     )))))
 
 (defn strip-html-tags [s]
   (->> s
@@ -289,7 +290,7 @@
                                                                                        [:spacer 0]])))
 
                                                                             [:chunk.chunk (str (t :social/Lastmodified ul) ": ")][:chunk (if (number? (:mtime b))(str (date-from-unix-time (long (* 1000 (:mtime b))) "date")"  ") (str (:mtime b) " "))]
-                                                                            [:chunk.chunk (str (t :badge/URL ul) ": ")] [:chunk.link {:style :italic} (str site-url "/badge/info/" (:id b))]
+                                                                            [:chunk.chunk (str (t :badge/URL ul) ": ")] [:chunk.link {:style :italic} (str site-url "/app/badge/info/" (:id b))]
                                                                             [:spacer 1]]])]
                                         ]
                                     (reduce into [:paragraph] (-> (mapv template content)
@@ -357,7 +358,7 @@
                                                    (when (= "badge" (:type pb))
                                                      [:phrase
                                                       [:phrase.chunk (str (t :badge/Badge ul) ": ")]
-                                                      [:anchor {:target (str site-url "/badge/info/" (:badge_id pb))} [:chunk.link (str (:name pb))]]"\n"
+                                                      [:anchor {:target (str site-url "/app/badge/info/" (:badge_id pb))} [:chunk.link (str (:name pb))]]"\n"
                                                       ]
                                                      )
                                                    (when (= "html" (:type pb))
@@ -382,7 +383,7 @@
                                                       [:spacer 0]
                                                       (into [:phrase ] (for [b (:badges pb)]
                                                                          [:phrase
-                                                                          [:anchor {:target (str site-url "/badge/info/" (:id b))} [:chunk.link (str (:name b))]]"\n"]))])]
+                                                                          [:anchor {:target (str site-url "/app/badge/info/" (:id b))} [:chunk.link (str (:name b))]]"\n"]))])]
                                                   )))[:line {:dotted true}] [:spacer 0]]))])])
         user-connections-template (pdf/template
                                     [:paragraph.generic
@@ -398,7 +399,7 @@
                                                                                                                                    lname (:last_name follower)
                                                                                                                                    status (:status follower)]]
                                                                                                                          [:paragraph
-                                                                                                                          [:anchor {:target (str site-url "/" "user/profile/" follower-id)} [:chunk.link (str fname " " lname ",  ")]]
+                                                                                                                          [:anchor {:target (str site-url "/app/user/profile/" follower-id)} [:chunk.link (str fname " " lname ",  ")]]
                                                                                                                           [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk (str (t (keyword (str "social/"status)) ul))]])))
                                         (when-not (empty? $user_following)
                                           (into [:paragraph
@@ -408,7 +409,7 @@
                                                                                                                                  lname (:last_name f)
                                                                                                                                  status (:status f)]]
                                                                                                                        [:paragraph
-                                                                                                                        [:anchor {:target (str site-url "/" "user/profile/" followee-id)} [:chunk.link (str fname " " lname ", ")]]
+                                                                                                                        [:anchor {:target (str site-url "/app/user/profile/" followee-id)} [:chunk.link (str fname " " lname ", ")]]
                                                                                                                         [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk (str (t (keyword (str "social/"status)) ul))]])))
                                         ])])
 

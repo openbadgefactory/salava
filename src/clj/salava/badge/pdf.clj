@@ -37,9 +37,9 @@
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
 
-(defn process-pdf-page [stylesheet template badge]
+(defn process-pdf-page [stylesheet template badge ul]
   (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))]
-    (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph "Error while processing, Page can't be displayed"]] out)))
+    (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph (t :badge/Errorpage ul) #_"Error while processing, Page can't be displayed"]] out)))
     (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))
 
 (defn process-markdown [markdown]
@@ -168,4 +168,4 @@
     (fn [output-stream]
       (apply pdf/collate output-stream
              (for [b badges]
-               (process-pdf-page pdf-settings badge-template (list b)))))))
+               (process-pdf-page pdf-settings badge-template (list b) ul))))))
