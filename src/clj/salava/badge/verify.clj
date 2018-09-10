@@ -64,7 +64,6 @@
   (let [badge (b/fetch-badge ctx id)
         asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
         result {}]
-
     (if (url? asr)
       (let [asr-response (assertion asr)]
         (case (:status asr-response)
@@ -100,7 +99,13 @@
                               :badge-criteria-status (:status badge-criteria)
                               :badge-issuer-status (:status badge-issuer)
                               :revoked? revoked?
-                              :expired? expired?))))
+                              :expired? expired?))
+
+          (assoc result :assertion-status 500
+                        :asr asr
+                        :message (:reason-phrase asr-response))
+          )
+        )
 
       (let [jws-response (assertion-jws badge asr)]
         (if (= 500 (:status jws-response))
