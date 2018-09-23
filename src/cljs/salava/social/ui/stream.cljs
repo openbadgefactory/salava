@@ -92,6 +92,14 @@
                               (.preventDefault %))}
         (t :badge/Declinebadge)]]]]]])
 
+(defn badge-alert [state]
+  (if (:badge-alert @state)
+    [:div {:class "alert alert-success"}
+     (case (:badge-alert @state)
+       "accepted"  [:div (str (t :badge/Youhaveaccepted) " " (:badge-name @state)". ") (t :badge/Youcanfind)]
+       "declined" (t :badge/Badgedeclined)
+       "")]))
+
 (defn badge-pending [badge state]
   [:div.row {:key (:id badge)}
    [:div.col-md-12
@@ -413,6 +421,7 @@
     [:div {:class "my-badges pages"}
 
      [m/modal-window]
+     [badge-alert state]
      [pending-connections reload-fn]
      [badges-pending state]
      (if (not-activated?)
@@ -442,7 +451,8 @@
                      :pending-badges []
                      :tips {:profile-picture-tip false
                             :welcome-tip false
-                            :not-verified-emails []}})]
+                            :not-verified-emails []}
+                     :badge-alert nil})]
 
     (init-data state)
     (fn []
