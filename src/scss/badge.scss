@@ -1049,3 +1049,12 @@ button {
   padding: 5px;
   margin-bottom:10px;
 }
+
+.back-arrow {
+  &:before {
+    content: '\f0a8';
+    font-family: FontAwesome;
+    font-size: 30px;
+    line-height: 24px;
+  }
+}
