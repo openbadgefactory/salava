@@ -373,75 +373,81 @@ button {
     }
 }
 #badge-info, #badge-content {
-    .badge-info label{
-        color: $text-color;
-        min-width: 100px;
+  .badge-info label{
+    color: $text-color;
+    min-width: 100px;
+  }
+  .checkbox {
+    margin-right: 15px;
+    margin-bottom:0px;
+    i {
+      font-size: 20px;
+      margin-right: 8px;
     }
-    .checkbox {
-        margin-right: 15px;
-        margin-bottom:0px;
-        i {
-            font-size: 20px;
-            margin-right: 8px;
-        }
-        &.public i:before {
-            content:'\f0ac';
-        }
-        &.internal i:before {
-            content:'\f0c0';
-        }
-        &.private i:before {
-            content:'\f023';
-        }
+    &.public i:before {
+      content:'\f0ac';
     }
-    .publishshare {
-        opacity: 0;
-        position: absolute;
+    &.internal i:before {
+      content:'\f0c0';
     }
-    .fa-share-alt {
-        font-size: 20px;
-        margin-right: 5px;
-        color: $orange-color;
-        &:hover {
-            color:$orange-hover;
-        }
+    &.private i:before {
+      content:'\f023';
     }
-    #badge-share-inputs {
-        padding-bottom: 20px;
-        .linkinput, .form-horizontal{
-            margin-left: -150px;
-            margin-right: -220px;
-        }
-        @media (max-width:992px){
-            .pull-right.text-right {
-                float:none !important;
-            }
-            .linkinput, .form-horizontal{
-                margin:0px;
-            }
-        }
+  }
+  .publishshare {
+    opacity: 0;
+    position: absolute;
+  }
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt {
+    font-size: 20px;
+    margin-right: 10px;
+    color: $link-color;
+  }
+
+  .fa-trash{
+    font-size: 20px;
+    margin-right: 10px;
+    color: $dark-red;
+  }
+  #badge-share-inputs {
+    padding-bottom: 20px;
+    .linkinput, .form-horizontal{
+      margin-left: -150px;
+      margin-right: -220px;
     }
-    .expiresin {
-        i {
-            font-size: 18px;
-            color: $icon-color;
-            margin-right: 5px;
-        }
+    @media (max-width:992px){
+      .pull-right.text-right {
+        float:none !important;
+      }
+      .linkinput, .form-horizontal{
+        margin:0px;
+      }
     }
-    .rating {
-       padding-top:10px;
+  }
+  .expiresin {
+    i {
+      font-size: 18px;
+      color: $icon-color;
+      margin-right: 5px;
     }
-    .share-wrapper {
-        margin-right: 340px;
-        margin-left:150px;
-        @media (max-width:992px){
-            margin:0px;
-            width: 100%;
-        }
+  }
+  .rating {
+    padding-top:10px;
+  }
+  .share-wrapper {
+    margin-right: 340px;
+    margin-left:150px;
+    @media (max-width:992px){
+      margin:0px;
+      width: 100%;
     }
-    .issuer-data .issuer-links{
-        margin-left: 0px;
-    }
+  }
+  .issuer-data .issuer-links{
+    margin-left: 0px;
+  }
+  .view-tab {
+    padding-bottom: 20px;
+  }
 }
 #share #share-buttons {
     i {
@@ -867,19 +873,13 @@ button {
 
 
 .endorsement-link{
-  padding-left:5px;
+  padding-left:10px;
 
-    &:before{
-        content: "\f2b5";
-        font-family: "FontAwesome";
-      color:$orange-hover !important;
-        font-size: 22px;
-        text-align: center;
-        margin-right: 5px;
-        padding-right: 3px;
-        vertical-align: bottom;
-        font-weight: normal;
-    }
+  i {
+    color: $link-color;
+    font-size: 16px;
+    margin-right: 10px;
+  }
 }
 
 .endorsementhr{
@@ -1006,8 +1006,46 @@ button {
   }
 }
 
-#export-modal {
+#export-modal, #delete-modal {
   .modal-footer .btn {
       margin-bottom: 5px;
   }
+}
+.badge-modal-navi{
+  margin-bottom: 10px;
+  .nav-icon {
+    padding-left:5px;
+  }
+  .delete-button {
+    color: $dark-red;
+  }
+
+  .fa-download {
+    color: $link-color;
+  }
+}
+
+.badge-info-container{
+  margin-left: 25px;
+  div {
+    width: 150px;
+    margin: 0 auto 0 auto;
+  }
+  span i {
+    text-align: center;
+    color: $link-color;
+    font-size: 16px;
+    margin-right: 10px;
+  }
+
+  .badge-message-link-info{
+    .fa {
+      font-size: 20px;
+    }
+  }
+}
+
+.preview-badge{
+  padding: 5px;
+  margin-bottom:10px;
 }
