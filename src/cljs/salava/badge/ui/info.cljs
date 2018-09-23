@@ -40,7 +40,7 @@
     (fn [] (swap! state assoc :permission "error")))
   )
 
-(defn toggle-visibility [state]
+#_(defn toggle-visibility [state]
   (let [id (:id @state)
         new-value (if (= (:visibility @state) "private") "public" "private")]
     (ajax/POST
@@ -48,14 +48,14 @@
       {:params {:visibility new-value}
        :handler (fn [] (swap! state assoc :visibility new-value))})))
 
-(defn toggle-recipient-name [id show-recipient-name-atom]
+#_(defn toggle-recipient-name [id show-recipient-name-atom]
   (let [new-value (not (pos? @show-recipient-name-atom))]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
       {:params {:show_recipient_name new-value}
        :handler (fn [] (reset! show-recipient-name-atom new-value))})))
 
-(defn toggle-evidence [state]
+#_(defn toggle-evidence [state]
   (let [id (:id @state)
         new-value (not (:show_evidence @state))]
     (ajax/POST
@@ -63,7 +63,7 @@
       {:params {:show_evidence new-value}
        :handler (fn [] (swap! state assoc :show_evidence new-value))})))
 
-(defn show-settings-dialog [badge-id state init-data]
+#_(defn show-settings-dialog [badge-id state init-data]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
@@ -78,7 +78,7 @@
      :handler (fn []
                 (init-data state id))}))
 
-(defn congratulate [state]
+#_(defn congratulate [state]
   (ajax/POST
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
@@ -135,7 +135,7 @@
      [m/modal-window]
      [:div.panel
       [:div.panel-body
-       (if (and owner? (not expired?) (not revoked))
+       #_(if (and owner? (not expired?) (not revoked))
          [:div {:class "row" :id "badge-share-inputs"}
           (if-not (private?)
             [:div.pull-left
@@ -181,7 +181,7 @@
            [:img {:src (str "/" image_file)}]]]
          (if (and qr_code (= visibility "public"))
            [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
-         (if owner?
+         #_(if owner?
            [:div.row {:id "badge-rating"}
             [:div.col-xs-12
              [:div.rating
@@ -196,14 +196,14 @@
                 (= view_count 1) (t :badge/Viewedonce)
                 (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
                 :else            (t :badge/Badgeisnotviewedyet))]]])
-         (if (> recipient_count 1)
+         #_(if (> recipient_count 1)
            [:div.row {:id "badge-views"}
             [:div.col-xs-12
              [:a.link {:href     "#"
                        :on-click #(do
                                     (mo/open-modal [:gallery :badges] {:badge-id badge_id})
                                     (.preventDefault %))} (t :badge/Otherrecipients)]]])
-         [:div.row
+         #_[:div.row
           [:div.col-xs-12 {:id "badge-congratulated"}
            (if (and user-logged-in? (not owner?))
              (if congratulated?
@@ -224,12 +224,14 @@
         [:div {:class "col-md-9 badge-info"}
          [:div.row
           [:div {:class "col-md-12"}
-           (content-language-selector selected-language (:content @state))
+           #_(content-language-selector selected-language (:content @state))
            (if revoked
              [:div.revoked (t :badge/Revoked)])
            (if expired?
              [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
            [:h1.uppercase-header name]
+           (if (< 1 (count (:content @state)))
+             [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
            (bm/issuer-modal-link issuer_content_id issuer_content_name)
            (bm/creator-modal-link creator_content_id creator_name)
 
