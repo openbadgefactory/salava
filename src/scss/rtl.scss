@@ -1211,3 +1211,39 @@ html[dir="rtl"] #my-data{
     }
   }
 }
+
+html[dir="rtl"] .preview-badge {
+  .close {
+    float:left;
+  }
+}
+
+html[dir="rtl"] .modal-header {
+  .close {
+    float:left;
+  }
+  .pull-left {
+    float:right !important;
+  }
+
+  .back-arrow {
+    &:before {
+      content: '\f0a9'
+    }
+  }
+
+}
+
+html[dir="rtl"] .endorsement-link, .badge-message-link-info, .view-count, .congratulated{
+  .fa {
+      margin-left: 10px;
+  }
+}
+
+html[dir="rtl"] .badge-info-container {
+  margin-left:unset;
+}
+
+html[dir="rtl"] #my-badges #grid .grid-container .media-content .visibility-icon, #export-badges #grid .grid-container .media-content .visibility-icon {
+      text-align:right;
+}
