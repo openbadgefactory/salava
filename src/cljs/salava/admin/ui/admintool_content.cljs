@@ -476,7 +476,7 @@
         mail (cursor state [:mail])
         no-verified-emails (some #(not (:verified %)) (:emails info))]
     [:div {:class "admin-modal"}
-     [:div.row
+     [:div.row.flip
       [:div {:class "col-sm-3 badge-image modal-left"}
        [:img {:src (profile-picture image_file)} ]
        (if (:deleted info)
