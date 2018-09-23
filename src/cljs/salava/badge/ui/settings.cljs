@@ -11,14 +11,12 @@
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
 
-(defn delete-badge [id state init-data badgeinfo?]
+(defn delete-badge [state]
   (ajax/DELETE
-    (path-for (str "/obpv1/badge/" id))
-    {:handler
-    (if badgeinfo?
-        (navigate-to "/badge")
-      (fn []
-        (init-data state)))}))
+    (path-for (str "/obpv1/badge/" (:id @state)))
+    {:handler  (fn []
+                 (my/init-data state)
+                 (navigate-to "/badge"))}))
 
 (defn save-settings [state init-data]
   (let [{:keys [id visibility tags rating evidence_url]} (:badge-settings @state)]
