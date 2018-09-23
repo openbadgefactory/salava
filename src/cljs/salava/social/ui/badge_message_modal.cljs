@@ -21,7 +21,6 @@
                        (str (:new-messages message_count) " " (t :social/Newmessages ))
                        "")
         all-messages (str all-messages new-messages)]
-    (dump (str "test: "image_file))
     (fn []
       [:div {:id "badge-contents"}
        [:div.row
