@@ -238,7 +238,7 @@
            (if (and issued_on (> issued_on 0))
              [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
            (if (and expires_on (not expired?))
-             [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
+             [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
 
 
            #_(if assertion

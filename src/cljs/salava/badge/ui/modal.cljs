@@ -174,7 +174,7 @@
         (if (and issued_on (> issued_on 0))
           [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
         (if (and expires_on (not expired?))
-          [:div [:label (t :badge/Expiresin) ": "]  (str (num-days-left expires_on) " " (t :badge/days))#_(date-from-unix-time (* 1000 expires_on))])
+          [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
 
         (if (pos? @show-recipient-name-atom)
           (if (and user-logged-in? (not owner?))
