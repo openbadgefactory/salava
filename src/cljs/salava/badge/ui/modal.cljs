@@ -278,5 +278,6 @@
            :endorsement endr/badge-endorsement-content
            :issuer issuer/content
            :creator issuer/creator-content
-           ;:verify verify/verify-badge
+           :linkedin1 s/linkedin-modal1
+           :linkedin2 s/content-modal-render
            }})
