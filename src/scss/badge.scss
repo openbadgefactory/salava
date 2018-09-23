@@ -534,6 +534,12 @@ button {
         min-width: 200px;
         float: left;
         margin-right: 20px;
+      a {
+        color: $text-color;
+        &:hover, &:active, &:focus {
+          text-decoration: none;
+        }
+      }
     .media-content {
         text-align: center;
         height: auto;
@@ -568,11 +574,7 @@ button {
 		overflow: hidden;
                 a {
                     cursor: pointer;
-                    font-size: 16px;
                     color: $badge-title;
-                    &:hover {
-                    color:$badge-title-hover;
-                    }
                 }
             }
             .media-issuer {
@@ -730,9 +732,7 @@ button {
 #my-badges #grid .grid-container .media-content .visibility-icon i {
     color: $text-color;
     cursor: pointer;
-    &:hover {
-        color:$icon-color;
-    }
+
 }
 /* IMPORT BADGES */
 .import-badges #grid.row .grid-container{
