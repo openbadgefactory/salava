@@ -13,8 +13,9 @@
     &:before{
         content: "\f0e6";
         font-family: "FontAwesome";
-        font-size: 26px;
+        font-size: 20px;
         text-align: center;
+        color: $link-color;
         margin-right: 10px;
         vertical-align: top;
         font-weight: normal;
