@@ -10,12 +10,11 @@
             [salava.core.helper :refer [dump]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.gallery.ui.badges :as b]
-            [salava.badge.ui.helper :as bh]
             ;[salava.extra.application.ui.helper :refer [application-plugin?]]
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for plugin-fun not-activated?]]))
+            [salava.badge.ui.pending :refer [pending-badge-content]]
+            [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]))
 
 
 (defn init-data [state]
@@ -57,7 +56,7 @@
                  (init-data state) )
       :error-handler (fn [{:keys [status status-text]}])}))
 
-(defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
+#_(defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
   [:div.row {:key id}
    [:div.col-md-12
     [:div.badge-container-pending
@@ -91,6 +90,26 @@
                  :on-click #(do
                               (update-status id "declined" state)
                               (.preventDefault %))}
+        (t :badge/Declinebadge)]]]]]])
+
+(defn badge-pending [badge state]
+  [:div.row {:key (:id badge)}
+   [:div.col-md-12
+    [:div.badge-container-pending
+     [pending-badge-content badge]
+     [:div {:class "row button-row"}
+      [:div.col-md-12
+       [:button {:class "btn btn-primary"
+                 :on-click #(do
+                              (update-status (:id badge) "accepted" state)
+                              (.preventDefault %)
+                              (swap! state assoc :badge-alert "accepted" :badge-name (:name badge)))}
+        (t :badge/Acceptbadge)]
+       [:button {:class "btn btn-warning"
+                 :on-click #(do
+                              (update-status (:id badge) "declined" state)
+                              (.preventDefault %)
+                              (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
         (t :badge/Declinebadge)]]]]]])
 
 (defn badges-pending [state]
