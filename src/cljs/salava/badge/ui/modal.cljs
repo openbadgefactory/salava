@@ -20,7 +20,44 @@
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]))
 
+(declare show-settings-dialog)
+(declare badge-content)
 
+(defn init-badge-connection [state badge-id]
+  (ajax/GET
+   (path-for (str "/obpv1/social/connected/" badge-id))
+   {:handler (fn [data]
+               (swap! state assoc :receive-notifications data)
+                )}))
+
+(defn init-data [state id tab-no]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/info/" id))
+    {:handler (fn [data]
+               (do (reset! state (assoc data :id id
+                                :show-link-or-embed-code nil
+                                :initializing false
+                                :content-language (init-content-language (:content data))
+                                :tab-no tab-no
+                                :permission "success"))
+                 (init-badge-connection state (:badge_id data))
+                 (cond
+                   (== 2 (:tab-no @state))(show-settings-dialog id state init-data "settings")
+                   (== 3 (:tab-no @state))(show-settings-dialog id state init-data "share")
+                   )))}
+    (fn [] (swap! state assoc :permission "error"))))
+
+(defn show-settings-dialog [badge-id state init-data context]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings data (assoc data :new-tag ""))
+                (if (= context "settings")
+                  (swap! state assoc :tab [se/settings-tab-content data state init-data true]
+                                     :tab-no 2)
+                  (swap! state assoc :tab [se/share-tab-content data state init-data]
+                                     :tab-no 3)
+                  ))}))
 
 (defn congratulate [state]
   (ajax/POST
@@ -29,16 +66,15 @@
 
 (defn badge-endorsement-modal-link [badge-id endorsement-count]
   (when (pos? endorsement-count)
-    [:div.row
-     [:div.col.xs-12
-      [:hr.endorsementhr]
-      [:a.endorsementlink {:class "endorsement-link"
-                           :href "#"
+    [:div.endorsement-link
+      [:span [:i {:class "fa fa-handshake-o"}]]
+      [:a;.endorsementlink {:class "endorsement-link"
+                           {:href "#"
                            :on-click #(do (.preventDefault %)
                                         (mo/open-modal [:badge :endorsement] badge-id))}
        (if (== endorsement-count 1)
          (str  endorsement-count " " (t :badge/endorsement))
-         (str  endorsement-count " " (t :badge/endorsements)))]]]))
+         (str  endorsement-count " " (t :badge/endorsements)))]]))
 
 (defn issuer-modal-link [issuer-id name]
   [:div {:class "issuer-data clearfix"}
@@ -58,6 +94,62 @@
       #_[:a {:href "#"
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
+
+(defn num-days-left [timestamp]
+  (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
+
+(defn save-raiting [id state init-data raiting]
+  (ajax/POST
+    (path-for (str "/obpv1/badge/save_raiting/" id))
+    {:params   {:rating  (if (pos? raiting) raiting nil)}
+     :handler (fn []
+                (init-data state id))}))
+
+
+(defn follow-verified-bar [{:keys [verified_by_obf issued_by_obf badge_id obf_url]} context show-messages]
+  (let [visibility (if show-messages "hidden" "visible")]
+  (if (= context "gallery")
+    [:div.row.flip
+     (if (or verified_by_obf issued_by_obf)
+       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
+       [:div.col-md-3])
+     [:div.col.md-9.text-right {:style {:padding-right "10px" :margin-right "auto" :visibility visibility}}
+      [follow-badge badge_id]]]
+    [:div.row.flip {:style {:padding "10px"}}
+     [:div.col-md-3]
+     [:div.col.md-9.pull-right {:style {:padding-right "10px" :margin-bottom "10px" :margin-right "auto"}}
+      [follow-badge badge_id]]])))
+
+
+(defn below-image-block [state endorsement_count]
+  (let [{:keys [view_count owner? badge_id message_count user-logged-in? congratulated?]} @state]
+    [:div.badge-info-container
+     ;view count
+     (when (and owner? (pos? view_count))
+       [:div.row {:id "badge-rating"}
+        [:div.view-count
+         [:i {:class "fa fa-eye"}]
+         (cond
+           (= view_count 1) (t :badge/Viewedonce)
+           (> view_count 1) (str view_count " " (t :badge/Views) ) #_(str (t :badge/Viewed) " " view_count " " (t :badge/times)))]])
+     ;congratulate
+     [:div.row
+      [:div {:id "badge-congratulated"}
+       (if (and user-logged-in? (not owner?))
+         (if congratulated?
+           [:div.congratulated
+            [:span [:i {:class "fa fa-heart"}]]
+            (str " " (t :badge/Congratulated))]
+           [:button {:class    "btn btn-primary"
+                     :on-click #(congratulate state)}
+            [:i {:class "fa fa-heart"}]
+            (str " " (t :badge/Congratulate) "!")]))]]
+     ;messages
+     [:div.row
+      (if (session/get :user)
+        [badge-message-link message_count  badge_id])]
+     ;endorsements
+     [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]]))
 
 (defn badge-content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements]} @state
@@ -150,24 +242,15 @@
      (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
        [:div.col-md-3])
-     (if owner? [modal-navi state])
-     ]
-    ))
+     (if owner? [modal-navi state])]))
 
 
-(defn init-data [state id]
-  (ajax/GET
-    (path-for (str "/obpv1/badge/info/" id))
-    {:handler (fn [data]
-                (reset! state (assoc data :id id
-                                :show-link-or-embed-code nil
-                                :initializing false
-                                :content-language (init-content-language (:content data))
-                                :permission "success")))}
-    (fn [] (swap! state assoc :permission "error"))))
-
-
-
+(defn content [state]
+  (let [{:keys [owner? tab]} @state]
+    [:div
+     (when-not owner? [follow-verified-bar @state nil nil])
+     [modal-top-bar state]
+     (if tab tab [badge-content state])]))
 
 
 (defn handler [params]
@@ -176,7 +259,7 @@
         state (atom {:initializing true
                      :permission "initial"})
         user (session/get :user)]
-    (init-data state id)
+    (init-data state id nil)
 
     (fn []
       (cond
