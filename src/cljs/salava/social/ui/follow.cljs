@@ -17,7 +17,7 @@
             :on-click #(ajax/POST
                         (path-for (str "/obpv1/social/create_connection_badge/" badge-id))
                         {:response-format :json
-                         :keywords?       true          
+                         :keywords?       true
                          :handler         (fn [data]
                                             (do
                                               (reset! followed? (:connected? data))))
@@ -30,7 +30,7 @@
   (ajax/POST
    (path-for (str "/obpv1/social/delete_connection_badge/" badge-id))
    {:response-format :json
-    :keywords?       true          
+    :keywords?       true
     :handler         (fn [data]
                        (do
                          (reset! followed? (:connected? data))))
@@ -39,9 +39,9 @@
 
 
 (defn unfollow-button-badge [badge-id followed?]
-  [:button {:class    "btn btn-primary unfollow "
+ [:div [:i (str (t :social/Youfollowbadge)" ")] [:button {:class "btn btn-primary follow"
             :on-click #(unfollow-ajax-post badge-id)}
-    (str " " (t :social/Unfollow)) ])
+    (str " " (t :social/Unfollow)) ]])
 
 
 

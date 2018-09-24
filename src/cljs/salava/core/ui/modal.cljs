@@ -17,27 +17,25 @@
 (defn set-new-view [route params]
   (reset! views (conj @views [((get-in (modal-navi) route) params)])))
 
-(defn modal-content [] 
+(defn modal-content []
   [:div {:id "badge-content"}
+   [:div.modal-header
+    [:button {:type         "button"
+              :class        "close"
+              :data-dismiss "modal"
+              :aria-label   "OK"}
+     [:span {:aria-hidden             "true"
+             :dangerouslySetInnerHTML {:__html "&times;"}}]]
+    (if (< 1 (count @views))
+      [:div {:class "pull-left"}
+       [:button {:type  "button"
+                 :class "close"
+                 :aria-label "OK"
+                 :on-click #(do
+                              (reset! views (pop @views))
+                              (.preventDefault %))}
+        [:span {:class "back-arrow" :aria-hidden "true"}]]])]
    [:div.modal-body
-    [:div
-     [:div.col-md-12
-      (if (< 1 (count @views))
-        [:div {:class "pull-left"}
-         [:button {:type  "button"
-                   :class "close"
-                   :aria-label "OK"
-                   :on-click #(do
-                                (reset! views (pop @views))
-                                (.preventDefault %))}
-          [:i {:class "fa fa-arrow-circle-left fa-lg" :aria-hidden "true"}]]])
-      [:div {:class "text-right"}
-       [:button {:type         "button"
-                 :class        "close"
-                 :data-dismiss "modal"
-                 :aria-label   "OK"}
-        [:span {:aria-hidden             "true"
-                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
     [:div (last @views)]]
    [:div.modal-footer ]])
 

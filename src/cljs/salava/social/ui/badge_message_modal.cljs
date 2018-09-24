@@ -21,7 +21,6 @@
                        (str (:new-messages message_count) " " (t :social/Newmessages ))
                        "")
         all-messages (str all-messages new-messages)]
-    (dump (str "test: "image_file))
     (fn []
       [:div {:id "badge-contents"}
        [:div.row
@@ -79,24 +78,26 @@
 (defn badge-message-link [message-count badge-id]
   (if (social-plugin?)
     (let [message-count (atom {:new-messages 0
-                          :all-messages 0})]
+                               :all-messages 0})]
       (get-messages badge-id message-count)
       (fn []
-        [:a {:href "#"
-             :class "badge-message-link"
-             :on-click #(do
-                          (mo/open-modal [:gallery :badges] {:badge-id badge-id
-                                                             :show-messages true
-                                                             :reload-fn nil})
-                          ;(open-modal badge-id)
-                          (.preventDefault %) )}
-         (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
-                                                   (t :social/Comment)
-                                                   (t :social/Comments)))
-         [:br]
-         (if (pos? (:new-messages @message-count))
-           (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
-           "")]))))
+        [:div.badge-message-link-info
+         [:span [:i {:class "fa fa-comments-o"}]]
+         [:a {:href "#"
+              ;:class "badge-message-link"
+              :on-click #(do
+                           (mo/open-modal [:gallery :badges] {:badge-id badge-id
+                                                              :show-messages true
+                                                              :reload-fn nil})
+                           ;(open-modal badge-id)
+                           (.preventDefault %) )}
+          (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
+                                                    (t :social/Comment)
+                                                    (t :social/Comments)))
+          [:br]
+          (if (pos? (:new-messages @message-count))
+            (str " (" (:new-messages @message-count) " " (if (= 1 (:new-messages @message-count)) (t :social/New) (t :social/News)) ") ")
+            "")]]))))
 
 
 (defn gallery-modal-message-info-link [show-messages badge-id]

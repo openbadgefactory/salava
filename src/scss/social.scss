@@ -13,8 +13,9 @@
     &:before{
         content: "\f0e6";
         font-family: "FontAwesome";
-        font-size: 26px;
+        font-size: 20px;
         text-align: center;
+        color: $link-color;
         margin-right: 10px;
         vertical-align: top;
         font-weight: normal;
@@ -218,7 +219,7 @@
 	    position: absolute;
 	    top:-3px;
 	    right:0px;
-	    
+
 	    opacity: 0.8;
 	    &:hover {
 		opacity: 1;
@@ -282,7 +283,7 @@
 		button.close{
 			top:3px;
 		}
-		
+
 	}
 }
 
@@ -371,7 +372,7 @@
 		float: left;
 	}
 }
-.btn-primary.unfollow{
+/*.btn-primary.unfollow{
 	background-color: lighten(#756A70, 10%);
 	border-color: #756A70;
 	&:before {
@@ -380,7 +381,7 @@
 	&:hover {
 		background-color:#756A70;
 	}
-}
+}*/
 
 
 
