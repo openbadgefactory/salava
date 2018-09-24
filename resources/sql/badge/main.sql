@@ -639,7 +639,7 @@ INSERT INTO user_badge (
     :badge_id, :user_id, :email,
     :assertion_url, :assertion_jws, :assertion_json,
     :issued_on, :expires_on, :status, 'private',
-    0, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
+    1, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 0, 0
 );
 
 --name: select-user-badge-id-from-badge-connection

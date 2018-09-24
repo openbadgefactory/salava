@@ -141,7 +141,6 @@
 
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   (let [class-name (if verified-by-obf? "verifiedissuedbyobf-image-url" "issuedbyobf-image-url")]
-    [:div.row
-     [:div.col-xs-12
-      [:a {:class class-name :href obf-url :target "_blank" :style {:display "block"}}]]]))
+     [:div.col-md-3
+      [:a {:class class-name :href obf-url :target "_blank" :style {:display "block"}}]]))
 

@@ -14,7 +14,7 @@
 
 
 #_(defn content-language-selector [content-language-atom contents]
-  
+
   (if (< 1 (count contents))
     (let []
 
@@ -33,8 +33,13 @@
 (defn content-language-selector [content-language-atom contents]
   (if (< 1 (count contents))
     (into [:div.badge-language-selector]
-            (for [content contents]
-              [:a {:href "#" :class (if (= @content-language-atom (:language_code content)) "chosen" "") :on-click #(reset! content-language-atom (:language_code content))} (str  (or (capitalize (get lang-lookup (:language_code content))) (:language_code content)))]))
+            (map (fn [content]
+                   [:a.seperator {:href "#"
+                        :class (if (= @content-language-atom (:language_code content)) "chosen" "")
+                        :on-click #(reset! content-language-atom (:language_code content))
+                        }
+                    (str  (or (capitalize (get lang-lookup (:language_code content))) (:language_code content)))])
+                 contents))
       [:div.badge-language-selector]))
 
 

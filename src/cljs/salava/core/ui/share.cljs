@@ -5,9 +5,9 @@
             [salava.core.ui.helper :refer [private? base-url]]
             [markdown.core :refer [md->html]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
-            [reagent-modals.modals :as m :refer [close-modal!]]
             [salava.core.i18n :refer [t]]
-            ))
+            [salava.core.ui.modal :as mo]))
+
 (def video-link-fi "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/l-9H0nJMPWA\" frameborder=\"0\"></iframe>")
 (def video-link-en "<iframe width=\"250\" height=\"250\" src=\"https://www.youtube.com/embed/YJJ8lZshqbY\" frameborder=\"0\"></iframe>")
 
@@ -123,101 +123,56 @@
 
 
 
-(defn content-modal-render [url title {:keys [name authory licence url datefrom dateto] :as certification}]
-  [:div.badge-settings
-   [:div.modal-body
-    [:div.row
-     [:div.col-md-12
-      [:button {:type         "button"
-                :class        "close"
-                :data-dismiss "modal"
-                :aria-label   "OK"}
-       [:span {:aria-hidden             "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-    [:div.col-xs-12.certification
-                         [:div.row
-                          [:div.guide-text.margin-bottom
-                           [:h3 (t :core/Sharelinkedinaddcredit) ]
-                           [:p (str (t :core/Sharelinkedincopytip) ".")]
-                           [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
-                                  (add-to-profile-image)]
-                            [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
-                         [:div.row
-                          [:div.col-md-6.copy-boxes
-                           [:form {:class "form-horizontal"}
-                            [input-button (t :core/Certificationname)  "name" name]
-                            [input-button (t :core/Certificationauthority) "authory" authory]
-                            [input-button (t :core/Licensenumber) "licence" licence]
-                            [input-date datefrom dateto]
-                            [input-button (t :core/Certificationurl) "url" url]]]
-                          (tutorial-video)
-                          ]]]
-   [:div.modal-footer
-    #_[:button {:type         "button"
-              :class        "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :core/Close)]]])
-
-(defn linkedin-modal [url title certification]
-  (create-class {:reagent-render         (fn [url title public?] (content-modal-render url title certification))
-                 :component-will-unmount (fn []
-                                           (close-modal!))}))
+(defn content-modal-render [{:keys [url title certification]}]
+  (let [{:keys [name authory licence url datefrom dateto]} certification]
+    (fn []
+      [:div.badge-settings
+       [:div.modal-body
+        [:div.col-xs-12.certification
+         [:div.row.flip
+          [:div.guide-text.margin-bottom
+           [:h3 (t :core/Sharelinkedinaddcredit) ]
+           [:p (str (t :core/Sharelinkedincopytip) ".")]
+           [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
+                  (add-to-profile-image)]
+            [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
+         [:div.row.flip
+          [:div.col-md-6.copy-boxes
+           [:form {:class "form-horizontal"}
+            [input-button (t :core/Certificationname)  "name" name]
+            [input-button (t :core/Certificationauthority) "authory" authory]
+            [input-button (t :core/Licensenumber) "licence" licence]
+            [input-date datefrom dateto]
+            [input-button (t :core/Certificationurl) "url" url]]]
+          (tutorial-video)
+          ]]]])))
 
 
-
-
-
-
-(defn linkedin-modal1 [url title certification]
+(defn linkedin-modal1 [{:keys [url title certification] }]
   (let [site-name (session/get-in [:share :site-name])
         hashtag (session/get-in [:share :hashtag])]
-    [:div.badge-settings
-     [:div.modal-body
-      [:div.row
-       [:div.col-md-12
-        [:button {:type         "button"
-                  :class        "close"
-                  :data-dismiss "modal"
-                  :aria-label   "OK"}
-         [:span {:aria-hidden             "true"
-                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
-      [:div.certification
-       [:div.guide-text
-        [:h3  (t :core/Shareonlinkedin)]
-        [:div (str (t :core/Sharelinkedintip) "! "
-                   (t :core/Sharelinkedinprofile) ":") ]]
-       [:div
-        [:a {:class    "btn btn-oauth btn-linkedin text-center"
-             :href     "#"
-             :on-click (fn []
-                         (do
-
-                           #_(-> (js* "$('#reagent-modal .modal-dialog')")
-                               (.addClass "modal-lg" )
-                               (.removeClass "modal-sm"))
-                           (js/setTimeout #(open-linkedin-popup) 700)
-                           #_(close-modal!)
-                           (m/modal! [linkedin-modal url title certification] {:size :lg})
-                           )
-                         )}
-         [:i {:class "fa fa-linkedin"}]
-         (t :core/Addtoprofile)]]
-       [:div (str (t :core/Sharelinkedinupdate) ":") ]
-       [:div
-        [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
-         [:i {:class "fa fa-linkedin"}]
-         (t :badge/Share)]
-        ]]]
-     [:div.modal-footer
-      #_[:button {:type         "button"
-                  :class        "btn btn-primary"
-                  :data-dismiss "modal"}
-         (t :core/Close)]]]))
-
-
-
-
-
+    (fn []
+      [:div.badge-settings
+       [:div.modal-body
+        [:div.certification
+         [:div.guide-text
+          [:h3  (t :core/Shareonlinkedin)]
+          [:div (str (t :core/Sharelinkedintip) "! "
+                     (t :core/Sharelinkedinprofile) ":") ]]
+         [:div
+          [:a {:class    "btn btn-oauth btn-linkedin text-center"
+               :href     "#"
+               :on-click #(do
+                            (js/setTimeout (open-linkedin-popup) 700)
+                            (mo/open-modal [:badge :linkedin2] {:url url :title title :certification certification}))}
+           [:i {:class "fa fa-linkedin"}]
+           (t :core/Addtoprofile)]]
+         [:div (str (t :core/Sharelinkedinupdate) ":") ]
+         [:div
+          [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
+           [:i {:class "fa fa-linkedin"}]
+           (t :badge/Share)]
+          ]]]])))
 
 
 
@@ -244,23 +199,10 @@
                          (js/encodeURIComponent (str site-name ": " title))
                          "&url=" (js/encodeURIComponent url) "&hashtags=" hashtag)
             :target "_blank"}
-        [:i {:class "fa fa-twitter-square"}]]
-       ]
-                                        ;[:div.share-button
-                                        ;[:iframe {:id "tweet-button"
-                                        ;         :allowTransparency true
-                                        ;        :frameBorder 0
-                                        ;       :scrolling "no"
-                                        ;      :style {:width "55px"
-                                        ;             :height "20px"}
-                                        ;    :src (str "https://platform.twitter.com/widgets/tweet_button.html?size=medium&count=none&text="
-                                        ;             (js/encodeURIComponent (str "Open Badge Passport: " title))
-                                        ;            "&url=" (js/encodeURIComponent url) "&hashtags=OpenBadgePassport")}]]
-                                        ;[:div.share-button
-                                        ; [:script {:type "IN/Share" :data-url url}]]
+        [:i {:class "fa fa-twitter-square"}]]]
       [:div.share-button
        (if is-badge?
-         [:a {:href "#" :on-click #(m/modal! [linkedin-modal1 url title certification] {:size :sm} )}
+         [:a {:href "#" :on-click #(mo/open-modal [:badge :linkedin1] {:url url :title title :certification certification})}
           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]
          #_[:a {:href (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
                 :target "_blank"}

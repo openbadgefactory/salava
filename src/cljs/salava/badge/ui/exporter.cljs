@@ -10,16 +10,30 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 (defn email-options [state]
-  (map #(hash-map :value % :title %) (map #(:email %) (:emails @state))))
+  (let [emails (map #(:email %) (:emails @state))]
+    (conj (mapv #(hash-map :value % :title %) emails)  {:value "all" :title (t :badge/All)})))
+
+(defn badges-for-grid [state]
+  (if (= "all" (:email-selected @state))(:badges @state) (filter #(= (:email-selected @state) (:email %)) (:badges @state))))
 
 (defn visibility-options []
   [{:value "all" :title (t :badge/All)}
    {:value "public"  :title (t :badge/Public)}
    {:value "internal"  :title (t :badge/Shared)}
    {:value "private" :title (t :badge/Private)}])
+
+(defn hard-reset [state]
+  (swap! state assoc :badges-all false :badges-selected [] :tags-selected [] :tags-all true :search "" :order "mtime" :visibility "all")
+  (-> js/document (.getElementById "select-visibility") (.-selectedIndex) (set! 0)))
+
+(defn soft-reset [state]
+  (swap! state assoc :badges-all false :badges-selected []))
+
+
 
 (defn order-radio-values []
   [{:value "mtime" :id "radio-date" :label (t :badge/bydate)}
@@ -28,15 +42,15 @@
 (defn badge-grid-form [state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
-   [g/grid-select        (t :badge/Email ":") "select-email" :email-selected (email-options state) state]
-   [g/grid-search-field  (t :badge/Search ":") "badgesearch" (t :badge/Searchbyname) :search state]
-   [g/grid-select        (t :badge/Show ":") "select-visibility" :visibility (visibility-options) state]
-   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (:badges @state)) :tags-selected :tags-all state]
+   [g/grid-select        (t :badge/Email ":") "select-email" :email-selected (email-options state) state hard-reset]
+   [g/grid-search-field  (t :badge/Search ":") "badgesearch" (t :badge/Searchbyname) :search state soft-reset]
+   [g/grid-select        (t :badge/Show ":") "select-visibility" :visibility (visibility-options) state soft-reset]
+   [g/grid-buttons       (t :badge/Tags ":") (unique-values :tags (badges-for-grid state)) :tags-selected :tags-all state soft-reset]
    [g/grid-radio-buttons (t :badge/Order ":") "order" (order-radio-values) :order state]])
 
 (defn badge-visible? [element state]
   (and
-    (= (:email-selected @state) (:email element))
+    #_(= (:email-selected @state) (:email element))
     (or (= (:visibility @state) "all")
         (= (:visibility @state) (:visibility element)))
     (or (> (count
@@ -48,7 +62,7 @@
     (or (empty? (:search @state))
         (not= (.indexOf (.toLowerCase (:name element)) (.toLowerCase (:search @state))) -1))))
 
-(defn grid-element [element-data state]
+#_(defn grid-element [element-data state]
   (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data
         obf_url (session/get :factory-url)]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
@@ -91,14 +105,16 @@
         [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
          [:i {:class "fa fa-download"}]]]]]]))
 
+;;TODO change view
 (defn badge-grid [state]
-  [:div {:class "row wrap-grid"
-         :id "grid"}
-   (doall (let [badges (:badges @state)
-                order (:order @state)]
-            (for [element-data (sort-by (keyword order) badges)]
+  (let [badges (badges-for-grid state)
+        order (:order @state)]
+    [:div {:class "row wrap-grid"
+           :id "grid"}
+     (doall (for [element-data (sort-by (keyword order) badges)]
               (if (badge-visible? element-data state)
-                (grid-element element-data state)))))])
+                (badge-grid-element element-data state "export" nil)
+                #_(grid-element element-data state))))]))
 
 (defn export-to-pdf [state]
   (let [badges-to-export (:badges-selected @state)
@@ -109,14 +125,14 @@
                            (map #(str "&badges["(.indexOf badges-to-export %)"]=" %) (rest badges-to-export)))) "&lang-option="lang-option))]
 
     (ajax/GET
-      (path-for (str "/obpv1/badge/export-to-pdf")) ;badges-to-export "/" lang-option) true)
+      (path-for (str "/obpv1/badge/export-to-pdf"))
       {:params {:badges badges-to-export :lang-option lang-option }
        :handler (js-navigate-to badge-url)}
       )))
 
 
 (defn export-to-pdf-modal [state]
-   [:div {:id "badge-settings"}
+   [:div {:id "export-modal"}
      [:div.modal-body
       [:div.row
        [:div.col-md-12
@@ -145,8 +161,7 @@
       [:button {:type         "button"
               :class        "btn btn-primary"
               :on-click  #(export-to-pdf state)
-              :data-dismiss "modal"
-              }
+              :data-dismiss "modal"}
      (t :badge/Export)]]])
 
 (defn export-badges [state]
@@ -159,7 +174,25 @@
 (defn select-all [state]
   (if (:badges-all @state)
     (swap! state assoc :badges-selected [] :badges-all false)
-    (swap! state assoc :badges-selected (map :id (:badges @state)) :badges-all true)))
+    (swap! state assoc :badges-selected (map :id (filter #(badge-visible? % state)(badges-for-grid state))) :badges-all true)))
+
+(defn badge-export-buttons [state]
+  [:div
+   [:button {:class    "btn btn-primary"
+             :on-click #(select-all state)}
+    (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
+   (if (not (nil? (:backpack_id (first (filter #(= (:email %) (:email-selected @state)) (:emails @state))))))
+     [:button {:class    "btn btn-primary"
+               :on-click #(export-badges state)
+               :disabled (= 0 (count (:badges-selected @state)))}
+      (t :badge/Exportselected)])
+   [:button {:class "btn btn-primary"
+             :on-click #(do (.preventDefault %)
+                          (swap! state assoc :pdf-option "default")
+                          (m/modal![export-to-pdf-modal state] {:size :lg}))
+             :disabled (= 0 (count (:badges-selected @state)))}
+    (t :badge/Exporttopdf)]])
+
 
 (defn content [state]
   [:div {:id "export-badges"}
@@ -179,22 +212,7 @@
              (empty? (:badges @state)) (t :badge/Nobadgestoexport))]
           [:div
            [badge-grid-form state]
-           [:button {:class    "btn btn-primary"
-                     :on-click #(select-all state)}
-            (if (:badges-all @state) (t :badge/Clearall) (t :badge/Selectall))]
-           (if (not (nil? (:backpack_id (first (filter #(= (:email %) (:email-selected @state)) (:emails @state))))))
-             [:button {:class    "btn btn-primary"
-                       :on-click #(export-badges state)
-                       :disabled (= 0 (count (:badges-selected @state)))}
-              (t :badge/Exportselected)])
-           [:button {:class "btn btn-primary"
-                     :on-click #(do (.preventDefault %)
-                                     (swap! state assoc :pdf-option "default")
-                                         (m/modal![export-to-pdf-modal state] {:size :lg}))
-
-;;                      #(export-to-pdf state)
-                     :disabled (= 0 (count (:badges-selected @state)))}
-            (t :badge/Exporttopdf)]
+           [badge-export-buttons state]
            [badge-grid state]])]))])
 
 (defn init-data [state]

@@ -60,7 +60,7 @@
                    [:div {:class "alert alert-danger"} (t :badge/Badgecheckfailed)]
                    [:p [:i "404 not found"]]]
              410  [:div
-                   [:div {:class "alert alert-danger"} (str (t :badge/Badge) " " (t :badge/Revoked))]
+                   [:div {:class "alert alert-danger"} (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))]
                    #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
              500 [:div
                   [:div {:class "alert alert-danger"}
@@ -70,7 +70,7 @@
                   #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
              [:div
               (cond
-                revoked? [:div [:div {:class "alert alert-danger"} (str (t :badge/Badge) " " (t :badge/Revoked))] [:p revocation_reason]]
+                revoked? [:div [:div {:class "alert alert-danger"}  (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))] [:p revocation_reason]]
                 expired? [:div [:div {:class "alert alert-danger"} (t :badge/Badgeisexpired)] [bottom-links state]]
                 :else [:div
                        #_[:p.validation-header (t :badge/Badgevaliditycheck)]
