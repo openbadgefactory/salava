@@ -10,7 +10,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.grid :as g]
             [salava.core.ui.error :as err]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 (defn email-options [state]
   (let [emails (map #(:email %) (:emails @state))]
@@ -61,7 +62,7 @@
     (or (empty? (:search @state))
         (not= (.indexOf (.toLowerCase (:name element)) (.toLowerCase (:search @state))) -1))))
 
-(defn grid-element [element-data state]
+#_(defn grid-element [element-data state]
   (let [{:keys [id image_file name description visibility assertion_url issuer_content_name issuer_content_url]} element-data
         obf_url (session/get :factory-url)]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
@@ -104,6 +105,7 @@
         [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
          [:i {:class "fa fa-download"}]]]]]]))
 
+;;TODO change view
 (defn badge-grid [state]
   (let [badges (badges-for-grid state)
         order (:order @state)]
@@ -111,7 +113,8 @@
            :id "grid"}
      (doall (for [element-data (sort-by (keyword order) badges)]
               (if (badge-visible? element-data state)
-                (grid-element element-data state))))]))
+                (badge-grid-element element-data state "export" nil)
+                #_(grid-element element-data state))))]))
 
 (defn export-to-pdf [state]
   (let [badges-to-export (:badges-selected @state)
