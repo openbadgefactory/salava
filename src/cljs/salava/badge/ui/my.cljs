@@ -10,7 +10,6 @@
     [salava.core.ui.notactivated :refer [not-activated-banner]]
     [salava.core.ui.layout :as layout]
     [salava.core.ui.grid :as g]
-    [salava.badge.ui.settings :as s]
     [salava.badge.ui.helper :as bh]
     [salava.core.helper :refer [dump]]
     ;[salava.extra.application.ui.helper :refer [application-plugin?]]
