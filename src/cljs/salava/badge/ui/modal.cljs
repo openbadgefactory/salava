@@ -20,15 +20,12 @@
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]))
 
-(declare show-settings-dialog)
-(declare badge-content)
 
 (defn init-badge-connection [state badge-id]
   (ajax/GET
    (path-for (str "/obpv1/social/connected/" badge-id))
    {:handler (fn [data]
-               (swap! state assoc :receive-notifications data)
-                )}))
+               (swap! state assoc :receive-notifications data))}))
 
 (defn init-data [state id tab-no]
   (ajax/GET
@@ -40,11 +37,7 @@
                                 :content-language (init-content-language (:content data))
                                 :tab-no tab-no
                                 :permission "success"))
-                 (init-badge-connection state (:badge_id data))
-                 (cond
-                   (== 2 (:tab-no @state))(show-settings-dialog id state init-data "settings")
-                   (== 3 (:tab-no @state))(show-settings-dialog id state init-data "share")
-                   )))}
+                 (init-badge-connection state (:badge_id data))))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn show-settings-dialog [badge-id state init-data context]
@@ -53,11 +46,10 @@
     {:handler (fn [data]
                 (swap! state assoc :badge-settings data (assoc data :new-tag ""))
                 (if (= context "settings")
-                  (swap! state assoc :tab [se/settings-tab-content data state init-data true]
+                  (swap! state assoc :tab [se/settings-tab-content data state init-data]
                                      :tab-no 2)
                   (swap! state assoc :tab [se/share-tab-content data state init-data]
-                                     :tab-no 3)
-                  ))}))
+                                     :tab-no 3)))}))
 
 (defn congratulate [state]
   (ajax/POST
@@ -67,14 +59,13 @@
 (defn badge-endorsement-modal-link [badge-id endorsement-count]
   (when (pos? endorsement-count)
     [:div.endorsement-link
-      [:span [:i {:class "fa fa-handshake-o"}]]
-      [:a;.endorsementlink {:class "endorsement-link"
-                           {:href "#"
-                           :on-click #(do (.preventDefault %)
-                                        (mo/open-modal [:badge :endorsement] badge-id))}
-       (if (== endorsement-count 1)
-         (str  endorsement-count " " (t :badge/endorsement))
-         (str  endorsement-count " " (t :badge/endorsements)))]]))
+     [:span [:i {:class "fa fa-handshake-o"}]]
+     [:a {:href "#"
+          :on-click #(do (.preventDefault %)
+                       (mo/open-modal [:badge :endorsement] badge-id))}
+      (if (== endorsement-count 1)
+        (str  endorsement-count " " (t :badge/endorsement))
+        (str  endorsement-count " " (t :badge/endorsements)))]]))
 
 (defn issuer-modal-link [issuer-id name]
   [:div {:class "issuer-data clearfix"}
