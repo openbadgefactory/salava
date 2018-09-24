@@ -140,7 +140,7 @@
            [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
            [:div.col-xs-12 about]])
         (if (not-empty profile)
-          [:div.row.flip
+          [:div.row
            [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
            [:div.col-xs-12
             [:table.table

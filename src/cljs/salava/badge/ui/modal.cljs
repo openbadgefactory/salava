@@ -24,7 +24,8 @@
             [salava.badge.ui.endorsement :as endr]
             [salava.badge.ui.issuer :as issuer]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            [salava.admin.ui.reporttool :refer [reporttool1]])
+            [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.badge.ui.verify :refer [check-badge]])
   )
 
 
@@ -42,7 +43,7 @@
       [:a.endorsementlink {:class "endorsement-link"
                            :href "#"
                            :on-click #(do (.preventDefault %)
-                                          (mo/open-modal [:badge :endorsement] badge-id))}
+                                        (mo/open-modal [:badge :endorsement] badge-id))}
        (if (== endorsement-count 1)
          (str  endorsement-count " " (t :badge/endorsement))
          (str  endorsement-count " " (t :badge/endorsements)))]]]))
@@ -53,7 +54,7 @@
    [:div {:class "issuer-links pull-label-left inline"}
     [:a {:href "#"
          :on-click #(do (.preventDefault %)
-                        (mo/open-modal [:badge :issuer] issuer-id))} name]]])
+                      (mo/open-modal [:badge :issuer] issuer-id))} name]]])
 
 ;;;TODO use modal
 (defn creator-modal-link [creator-id name]
@@ -63,8 +64,16 @@
      [:div {:class "issuer-links pull-label-left inline"}
       name
       #_[:a {:href "#"
-           :on-click #(do (.preventDefault %)
+             :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
+
+#_(defn verify-badge-link [id]
+  [:div {:id "verify-link"}
+   [:a.link {:href "#"
+             :on-click #(do (.preventDefault %)
+                          (mo/open-modal [:badge :verify] id))}
+    (str (t :badge/Verifybadge) "...")]])
+
 
 
 (defn content [state]
@@ -74,12 +83,11 @@
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
-    (dump endorsement_count)
-    [:div
 
+    [:div
      [:div.col-xs-12
       [:div.pull-right
-      [follow-badge badge_id]]]
+       [follow-badge badge_id]]]
      [:div {:id "badge-info"}
       [:div.panel
        [:div.panel-body
@@ -120,18 +128,23 @@
               [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
             (if (and expires_on (not expired?))
               [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
-            (if assertion
+            #_(if assertion
               [:div {:id "assertion-link"}
                [:label (t :badge/Metadata)": "]
                [:a {:href     "#"
                     :on-click #(mo/set-new-view [:badge :metadata] (dissoc assertion :evidence))}
                 (t :badge/Openassertion) "..."]])
+
             (if (pos? @show-recipient-name-atom)
               (if (and user-logged-in? (not owner?))
                 [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                 [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
               )
-            [:div.description description]]]
+
+            [:div.description description]
+
+            ;check-badge
+            (check-badge id)]]
 
           (when-not (empty? alignment)
             [:div.row
@@ -165,10 +178,10 @@
     (path-for (str "/obpv1/badge/info/" id))
     {:handler (fn [data]
                 (reset! state (assoc data :id id
-                                     :show-link-or-embed-code nil
-                                     :initializing false
-                                     :content-language (init-content-language (:content data))
-                                     :permission "success")))}
+                                :show-link-or-embed-code nil
+                                :initializing false
+                                :content-language (init-content-language (:content data))
+                                :permission "success")))}
     (fn [] (swap! state assoc :permission "error"))))
 
 
@@ -199,4 +212,6 @@
            :metadata a/assertion-content
            :endorsement endr/badge-endorsement-content
            :issuer issuer/content
-           :creator issuer/creator-content}})
+           :creator issuer/creator-content
+           ;:verify verify/verify-badge
+           }})

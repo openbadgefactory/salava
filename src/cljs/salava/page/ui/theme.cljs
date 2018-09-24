@@ -60,17 +60,17 @@
      [ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url))]
      [:div {:class "panel page-panel" :id "theme-panel"}
       [:form.form-horizontal
-       [:div.form-group.flip
+       [:div.form-group
         [:label.col-xs-4 {:for "select-theme"}
          (str (t :page/Selecttheme) ":")]
         [:div.col-xs-8
          [theme-selection (cursor state [:page :theme]) themes]]]
-       [:div.form-group.flip
+       [:div.form-group
         [:label.col-xs-4 {:for "select-padding"}
          (str (t :page/Selectpadding) ":")]
         [:div.col-xs-8
          [padding-selection (cursor state [:page :padding])]]]
-       [:div.form-group.flip
+       [:div.form-group
         [:label.col-xs-4 {:for "select-border"}
          (str (t :page/Selectborder) ":")]
         [:div.col-xs-8

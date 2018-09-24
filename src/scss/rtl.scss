@@ -1138,7 +1138,7 @@ html[dir="rtl"] #edit-user {
         display:flex;
         @media (max-width:768px){
             margin-right:unset;
-            display:inline-block;
+            //display:inline-block;
     }
   }
 
@@ -1157,4 +1157,57 @@ html[dir="rtl"] li.user-link-inline {
     }
     padding-right: unset;
     padding-left: 10px;
+}
+
+html[dir="rtl"] .form-group {
+  display:flex;
+  display:-webkit-flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+
+  @media (max-width:767px){
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  }
+}
+
+html[dir="rtl"] #new-password, #about-me, #assertion-textfield {
+  display:block;
+}
+
+html[dir="rtl"] .autocomplete__control {
+      background: #FFF url(/img/down_arrow.png) no-repeat top left;
+}
+
+html[dir="rtl"] #my-data{
+  #profile-data {
+    .col-xs-12{
+      display:flex;
+      display:-webkit-flex;
+      -webkit-flex-direction: row;
+      flex-direction: row;
+    }
+    b{
+      margin-left:5px;
+    }
+  }
+  #email-table{
+    th{
+      text-align: start;}
+  }
+
+  .th-align {
+    th{
+      text-align: start;
+    }
+  }
+  .row {
+    margin-left:0px;
+  }
+  #inline {
+    display: inline-flex;
+    a, b {
+      margin-left: 5px;
+    }
+  }
 }

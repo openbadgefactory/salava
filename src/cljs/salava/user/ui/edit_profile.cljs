@@ -162,9 +162,9 @@
                             :checked   (= "public" @visibility-atom)
                             :on-change #(reset! visibility-atom (.-target.value %))}                               ]
             (t :core/Public)]]])
-       
+
        [profile-picture-gallery pictures-atom profile-picture-atom]
-       [:div.form-group
+       [:div {:id "about-me" :class "form-group"}
         [:label.col-xs-12 (t :user/Aboutme)]
         [:div.col-xs-12
          [:textarea {:class "form-control" :rows 5 :cols 60 :value @about-me-atom :on-change #(reset! about-me-atom (.-target.value %))}]]]
