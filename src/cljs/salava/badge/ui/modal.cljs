@@ -203,21 +203,25 @@
     ))
 
 (defn modal-navi [state]
-  (let [selected-language (cursor state [:content-language])
-        data (content-setter @selected-language (:content @state))]
+  (let [expired? (bh/badge-expired? (:expires_on @state))
+        revoked (pos? (:revoked @state))
+        selected-language (cursor state [:content-language])
+        data (content-setter @selected-language (:content @state))
+        disabled (or revoked expired?)
+        disable-link (if disabled "btn disabled")]
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
-      [:li.nav-item{:class (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
+      [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
        [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [badge-content state] :tab-no 1 )}
         [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)  ]]]
       [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
-       [:a.nav-link {:href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}
+       [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}
         [:div  [:i.nav-icon {:class "fa fa-cogs fa-lg"}] (t :page/Settings)  ]]]
       [:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
-       [:a.nav-link {:href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
+       [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
         [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)  ]]]
       [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
-       [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
+       [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
                                                                                                        :obf_url (:obf_url @state)) state] :tab-no 4)}
         [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)  ]]]
       [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
