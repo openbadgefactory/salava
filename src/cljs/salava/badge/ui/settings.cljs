@@ -32,18 +32,20 @@
       {:params {:badges (list (:id @state)) :lang-option lang-option }
        :handler (js-navigate-to badge-url)})))
 
-(defn save-raiting [id state init-data raiting]
-  (ajax/POST
-    (path-for (str "/obpv1/badge/save_raiting/" id))
-    {:params   {:rating  (if (pos? raiting) raiting nil)}
-     :handler (fn []
-                (init-data state id (:tab-no @state)))}))
-
 (defn update-settings [badge-id state]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
                 (swap! state assoc :badge-settings data (assoc data :new-tag "")))}))
+
+
+(defn save-raiting [id state init-data raiting]
+  (ajax/POST
+    (path-for (str "/obpv1/badge/save_raiting/" id))
+    {:params   {:rating  (if (pos? raiting) raiting nil)}
+     :handler (fn []
+                (update-settings id state)
+                #_(init-data state id (:tab-no @state)))}))
 
 
 (defn save-settings [state init-data context]
