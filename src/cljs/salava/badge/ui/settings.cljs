@@ -13,6 +13,7 @@
             [salava.core.ui.rate-it :as r]
             [salava.badge.ui.my :as my]))
 
+
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
 
@@ -38,7 +39,14 @@
      :handler (fn []
                 (init-data state id (:tab-no @state)))}))
 
-(defn save-settings [state init-data]
+(defn update-settings [badge-id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings data (assoc data :new-tag "")))}))
+
+
+(defn save-settings [state init-data context]
   (let [{:keys [id visibility tags rating evidence_url]} (:badge-settings @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/save_settings/" id))
@@ -47,7 +55,10 @@
                  :rating       (if (pos? rating) rating nil)
                  :evidence-url evidence_url}
        :handler (fn []
-                  (init-data state id (if (= 3 (:tab-no @state))(:tab-no @state) nil)))})))
+                  (if (= "share" context)
+                    (update-settings id state)
+                    (init-data state id nil)))})))
+
 
 (defn toggle-recipient-name [id show-recipient-name-atom]
   (let [new-value (not @show-recipient-name-atom)]
@@ -89,7 +100,7 @@
                        :type            "radio"
                        :on-change       #(do
                                            (set-visibility "public" state)
-                                           (save-settings state init-data))
+                                           (save-settings state init-data "share"))
                        :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
          [:i {:class "fa fa-globe" }]
          [:label {:for "visibility-public"}
@@ -100,7 +111,7 @@
                      :type            "radio"
                      :on-change       #(do
                                          (set-visibility "internal" state)
-                                         (save-settings state init-data))
+                                         (save-settings state init-data "share"))
                      :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
        [:i {:class "fa fa-group" }]
        [:label {:for "visibility-internal"}
@@ -111,7 +122,7 @@
                      :type            "radio"
                      :on-change       #(do
                                          (set-visibility "private" state)
-                                         (save-settings state init-data))
+                                         (save-settings state init-data "share"))
                      :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
        [:i {:class "fa fa-lock" }]
        [:label {:for "visibility-private"}
@@ -136,22 +147,22 @@
                :on-click     #(delete-badge state)}
       (t :badge/Delete)]]]])
 
-(defn share-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked visibility issuer_content_name]} state init-data]
+(defn share-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked issuer_content_name]} state init-data]
   (let [expired? (bh/badge-expired? expires_on)
-        revoked (pos? revoked)]
+        revoked (pos? revoked)
+        visibility (cursor state [:badge-settings :visibility])]
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
       [:img {:src (str "/" image_file) :alt name}]]
      [:div {:class "col-md-9 settings-content"}
       (if (and (not expired?) (not revoked))
         [visibility-form state init-data])
-      (if (= "public" visibility)
         [:div
          [:hr]
          [s/share-buttons-badge
           (str (session/get :site-url) (path-for (str "/badge/info/" id)))
           name
-          (= "public" visibility)
+          (= "public" @visibility)
           true
           (cursor state [:show-link-or-embed])
           image_file
@@ -160,9 +171,10 @@
            :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
            :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
            :datefrom issued_on
-           :dateto   expires_on}]])]]))
+           :dateto   expires_on}]]
+      ]]))
 
-(defn settings-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} state init-data badgeinfo?]
+(defn settings-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} state init-data]
   (let [expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         notifications-atom (cursor state [:receive-notifications])
@@ -237,7 +249,7 @@
                                             [:div.modal-footer
                                              [:button {:type         "button"
                                                        :class        "btn btn-primary"
-                                                       :on-click     #(save-settings state init-data)}
+                                                       :on-click     #(save-settings state init-data nil)}
                                               (t :badge/Save)]]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
