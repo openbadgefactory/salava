@@ -145,17 +145,22 @@
 (defn badge-content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements]} @state
         expired? (bh/badge-expired? expires_on)
+        revoked (pos? revoked)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
-      [:img {:src (str "/" image_file)}]]
+       [:img {:src (str "/" image_file)}]]
       [below-image-block state endorsement_count]]
      [:div {:class "col-md-9 badge-info view-tab"}
       [:div.row
        [:div {:class "col-md-12"}
+        (if revoked
+          [:div.revoked (t :badge/Revoked)])
+        (if expired?
+          [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
         (if (< 1 (count (:content @state)))
           [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
