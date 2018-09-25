@@ -1251,5 +1251,9 @@ html[dir="rtl"] .badge-info-container {
 }
 
 html[dir="rtl"] #my-badges #grid .grid-container .media-content .visibility-icon, #export-badges #grid .grid-container .media-content .visibility-icon {
-      text-align:right;
+      text-align:unset;
+}
+
+html[dir="rtl"] .lefticon {
+  float: left;
 }
