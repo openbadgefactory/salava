@@ -70,7 +70,7 @@
        {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
 
 (defn export-to-pdf-modal [state]
-   [:div {:id "badge-settings"}
+   [:div {:id "export-modal"}
      [:div.modal-body
       [:div.row
        [:div.col-md-12

@@ -33,17 +33,12 @@
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
-    [:div
-     [:div.col-xs-12
-      [:div.pull-right
-       [follow-badge badge_id]]]
+    [:div#gallery-modal
+     [bm/follow-verified-bar badge "gallery" @show-messages]
      [:div {:id "badge-contents"}
-      [:div {:class "pull-right text-right"}]
-      (if (or verified_by_obf issued_by_obf)
-        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-      [:div.row
+      [:div.row.flip
        [:div {:class "col-md-3 badge-image modal-left"}
-        [:img {:src (str "/" image_file)}]
+        [:div.badge-image [:img {:src (str "/" image_file)}]]
         (when (> average_rating 0)
           [:div.rating
            [r/rate-it average_rating]
@@ -53,10 +48,9 @@
         [:div
          [gallery-modal-message-info-link show-messages badge_id]]
 
-        (bm/badge-endorsement-modal-link badge_id endorsement_count)]
+        (when-not @show-messages (bm/badge-endorsement-modal-link badge_id endorsement_count))]
 
        [:div {:class "col-md-9 badge-info"}
-        (content-language-selector selected-language content)
         (if @show-messages
           [:div.rowmessage
            [:h1.uppercase-header (str name " - " (t :social/Messages))]
@@ -65,23 +59,23 @@
           [:div.rowcontent
            [:h1.uppercase-header name]
            [:div
-            #_(bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image issuer-endorsements)
-            #_(bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
+            (if (< 1 (count content))
+              [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language content)])
             (bm/issuer-modal-link issuer_content_id issuer_content_name)
             (bm/creator-modal-link creator_content_id creator_name)
             [:div.row
              [:div {:class "col-md-12 description"}
               description]]
 
-           (when-not (empty? alignment)
-             [:div.row
-              [:div.col-md-12
-               [:h2.uppercase-header (t :badge/Alignments)]
-               (doall
-                 (map (fn [{:keys [name url description]}]
-                        [:p {:key url}
-                         [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
-                      alignment))]])
+            (when-not (empty? alignment)
+              [:div.row
+               [:div.col-md-12
+                [:h2.uppercase-header (t :badge/Alignments)]
+                (doall
+                  (map (fn [{:keys [name url description]}]
+                         [:p {:key url}
+                          [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                       alignment))]])
 
             [:div.row
              [:div {:class "col-md-12 badge-info"}
@@ -121,13 +115,13 @@
 
 (defn init-data [badge-id state]
   (ajax/GET
-     (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
-     {:handler (fn [data]
-                 (reset! state (assoc data
-                                      :permission "success"
-                                      :reload-fn (:reload-fn @state)
-                                      :content-language (init-content-language  (get-in data [:badge :content])))))}
-     (fn [] (swap! state assoc :permission "error")))
+    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
+    {:handler (fn [data]
+                (reset! state (assoc data
+                                :permission "success"
+                                :reload-fn (:reload-fn @state)
+                                :content-language (init-content-language  (get-in data [:badge :content])))))}
+    (fn [] (swap! state assoc :permission "error")))
   )
 
 (defn handler [params]

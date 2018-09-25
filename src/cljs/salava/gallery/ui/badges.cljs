@@ -14,7 +14,8 @@
             [cemerick.url :as url]
             [clojure.string :as s]
             [komponentit.autocomplete :refer [multiple-autocomplete]]
-            [salava.admin.ui.admintool :refer [admin-gallery-badge]]))
+            [salava.admin.ui.admintool :refer [admin-gallery-badge]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 
 
@@ -251,40 +252,7 @@
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badges]]))
 
-(defn badge-grid-element [element-data state]
-  (let [{:keys [image_file name description issuer_content_name issuer_content_url recipients badge_id]} element-data]
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
-                :title name}[:img {:src (str "/" image_file)
-                 :alt name}]]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:on-click #(do
-                                        (.preventDefault %)
-                                        (mo/open-modal [:gallery :badges] {:badge-id badge_id})
-                                        ) :title name}
-          name]]
-        [:div.media-issuer
-         [:a {:href "#" :on-click #(do
-                                     (.preventDefault %)
-                                     (swap! state  assoc :issuer-name issuer_content_name
-                                             :advanced-search        true)
-                                     (fetch-badges state)
 
-                                     )} issuer_content_name]]
-        (if recipients
-          [:div.media-recipients
-           recipients " " (if (= recipients 1)
-                            (t :gallery/recipient)
-                            (t :gallery/recipients))])
-        [:div.media-description description]]]
-      [:div.media-bottom
-       [:div {:class "pull-left"}
-        ]
-       (admin-gallery-badge badge_id "badges" state fetch-badges)]]))
 
 (defn load-more [state]
   (if (pos? (:badge_count @state))
@@ -304,7 +272,7 @@
     [:div (into [:div {:class "row wrap-grid"
                        :id    "grid"}]
                 (for [element-data badges]
-                  (badge-grid-element element-data state)))
+                  (badge-grid-element element-data state "gallery" fetch-badges)))
      (load-more state)]))
 
 
