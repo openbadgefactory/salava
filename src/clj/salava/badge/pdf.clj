@@ -66,9 +66,7 @@
       (catch Exception e
         (log/error (str "Markdown Error in Badge id:  "id " in " context))
         false)
-      (finally (.delete file))
-      )
-    ))
+      (finally (.delete file)))))
 
 (defn process-markdown [markdown id context]
   (if (== 1 (count markdown))
@@ -198,8 +196,11 @@
                            (reduce into [] content)))
         files (into [] (for [b badges] (process-pdf-page pdf-settings badge-template (list b) ul)))]
     (fn [output-stream]
-      (do
+      (try
         (apply pdf/collate output-stream
                (map #(-> %
-                         (.getAbsolutePath)) files)))
-      (doseq [f files] (.delete f)))))
+                         (.getAbsolutePath)) files))
+        (catch Exception e
+          (log/error "PDF not generated")
+          )
+        (finally (doseq [f files] (.delete f)))))))
