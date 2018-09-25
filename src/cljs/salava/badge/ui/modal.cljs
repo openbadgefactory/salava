@@ -210,12 +210,10 @@
     ))
 
 (defn modal-navi [state]
-  (let [expired? (bh/badge-expired? (:expires_on @state))
-        revoked (pos? (:revoked @state))
+  (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
         selected-language (cursor state [:content-language])
         data (content-setter @selected-language (:content @state))
-        disabled (or revoked expired?)
-        disable-link (if disabled "btn disabled")]
+        disable-link (if invalid? "btn disabled")]
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
