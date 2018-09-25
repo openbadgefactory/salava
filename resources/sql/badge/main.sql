@@ -270,6 +270,10 @@ INNER JOIN issuer_content i ON e.issuer_content_id = i.id
 WHERE ie.issuer_content_id = :id
 ORDER BY e.issued_on
 
+
+--name: select-creator
+SELECT * FROM creator_content WHERE id = :id
+
 -- FIXME
 --name: get-endorsement-info
 SELECT badge_id,
