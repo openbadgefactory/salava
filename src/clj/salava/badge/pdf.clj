@@ -37,17 +37,47 @@
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
 
-(defn process-pdf-page [stylesheet template badge ul]
+#_(defn process-pdf-page [stylesheet template badge ul]
   (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))]
     (io/piped-input-stream (fn [out] (pdf/pdf [{} [:paragraph (t :core/Errorpage ul) #_"Error while processing, Page can't be displayed"]] out)))
     (io/piped-input-stream (fn [out] (pdf/pdf (into [stylesheet] (template badge)) out)))))
 
-(defn process-markdown [markdown]
+(defn process-pdf-page [stylesheet template badge ul]
+  (let [file (java.io.File/createTempFile "temp" ".pdf")
+        pdf (pdf/pdf (into [stylesheet] (template badge)) (.getAbsolutePath file))]
+    (if (blank? (slurp file))
+      (pdf/pdf [{} [:paragraph (t :core/Errorpage ul)]] (.getAbsolutePath file))
+      file)))
+
+
+#_(defn process-markdown [markdown]
   (if (== 1 (count markdown))
     markdown
       (if-let [p (blank? (slurp (io/piped-input-stream (fn [out] (pdf/pdf [{} (markdown->clj-pdf {:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)] out)))))]
-        ""
+        ;""
         (markdown->clj-pdf {:image {:x 10 :y 10} :spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown))))
+
+
+(defn process-markdown-helper [markdown id context]
+  (let [file (java.io.File/createTempFile "markdown" ".pdf")]
+    (try
+      (pdf/pdf [{} (markdown->clj-pdf {:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
+      true
+      (catch Exception e
+        (log/error (str "Markdown Error in Badge id:  "id " in " context))
+        false)
+      (finally (.delete file))
+      )
+    ))
+
+(defn process-markdown [markdown id context]
+  (if (== 1 (count markdown))
+    markdown
+    (if-let [p (process-markdown-helper markdown id context)]
+      (markdown->clj-pdf {:image {:x 10 :y 10} :spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)
+      ""
+      )))
+
 
 (defn generatePDF [ctx user-id input lang]
   (let [data-dir (get-in ctx [:config :core :data-dir])
@@ -107,7 +137,7 @@
                                                                 [:paragraph
                                                                  [:chunk.chunk (str (t :badge/Criteria ul)": ")] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]
                                                                 [:spacer 0]
-                                                                (process-markdown (:criteria_content %))]
+                                                                (process-markdown (:criteria_content %) $id "Criteria")]
 
                                                                (when-not (empty? $endorsements)
                                                                  [:paragraph.generic
@@ -119,7 +149,7 @@
                                                                                                      (:issuer_name e) "\n"
                                                                                                      [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (or (:issuer_url e) "-")] "\n"
                                                                                                      [:chunk (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
-                                                                                                     (process-markdown (:content e))]))])
+                                                                                                     (process-markdown (:content e) $id "Endorsements")]))])
 
                                                                [:line {:dotted true}]
                                                                [:spacer 0]
@@ -155,7 +185,7 @@
                                                                              (:issuer_name e) "\n"
                                                                              [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (:issuer_url e)] "\n"
                                                                              [:chunk.link (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
-                                                                             (process-markdown (:content e))]))]))
+                                                                             (process-markdown (:content e) $id "Issuer Endorsements")]))]))
 
                                                                [:pdf-table {:align :right :width-percent 100 :cell-border false}
                                                                 nil
@@ -165,8 +195,11 @@
 
                                content (if (= lang "all") (map template $content) (map template (filter #(= (:default_language_code %) (:language_code %)) $content)))]
 
-                           (reduce into [] content)))]
+                           (reduce into [] content)))
+        files (into [] (for [b badges] (process-pdf-page pdf-settings badge-template (list b) ul)))]
     (fn [output-stream]
-      (apply pdf/collate output-stream
-             (for [b badges]
-               (process-pdf-page pdf-settings badge-template (list b) ul))))))
+      (do
+        (apply pdf/collate output-stream
+               (map #(-> %
+                         (.getAbsolutePath)) files)))
+      (doseq [f files] (.delete f)))))
