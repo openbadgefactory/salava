@@ -113,7 +113,8 @@
 
 
 (defn below-image-block [state endorsement_count]
-  (let [{:keys [view_count owner? badge_id message_count user-logged-in? congratulated?]} @state]
+  (let [{:keys [view_count owner? badge_id message_count user-logged-in? congratulated? expires_on revoked]} @state
+        invalid? (or (bh/badge-expired? expires_on) (pos? revoked))]
     [:div.badge-info-container
      ;view count
      (when (and owner? (pos? view_count))
@@ -136,9 +137,10 @@
             [:i {:class "fa fa-heart"}]
             (str " " (t :badge/Congratulate) "!")]))]]
      ;messages
-     [:div.row
-      (if (session/get :user)
-        [badge-message-link message_count  badge_id])]
+     (when-not invalid?
+       [:div.row
+        (if (session/get :user)
+          [badge-message-link message_count  badge_id])])
      ;endorsements
      [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]]))
 
@@ -160,7 +162,7 @@
         (if revoked
           [:div.revoked (t :badge/Revoked)])
         (if expired?
-          [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
+          [:div.expired [:label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
         (if (< 1 (count (:content @state)))
           [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
