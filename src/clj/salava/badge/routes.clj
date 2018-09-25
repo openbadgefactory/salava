@@ -87,6 +87,13 @@
                   :current-user current-user
                   (ok (b/get-issuer-endorsements ctx issuerid)))
 
+             (GET "/creator/:creatorid" []
+                  :return schemas/CreatorContent
+                  :path-params [creatorid :- String]
+                  :summary "Get creator details"
+                  :current-user current-user
+                  (ok (b/get-creator ctx creatorid)))
+
              (GET "/endorsement/:badgeid" []
                   :return [schemas/Endorsement]
                   :path-params [badgeid :- String]

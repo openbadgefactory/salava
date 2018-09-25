@@ -220,6 +220,10 @@
                                                  :endorsement []}})
                                      (select-issuer-endorsements {:id issuer-id} (u/get-db ctx))))))
 
+(defn get-creator [ctx creator-id]
+  (let [creator (some-> (select-creator {:id creator-id} (u/get-db-1 ctx))(update :description u/md->html))]
+    (assoc creator :endorsement nil)))
+
 
 (defn- check-email [recipient email]
   (let [{hashed :hashed identity :identity salt :salt} recipient
