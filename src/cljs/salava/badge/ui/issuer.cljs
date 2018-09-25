@@ -12,6 +12,13 @@
     (path-for (str "/obpv1/badge/issuer/" issuer-id))
     {:handler (fn [data] (reset! state data))}))
 
+(defn init-creator-content [state creator-id]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/creator/" creator-id))
+    {:handler (fn [data]
+                (prn data)
+                (reset! state data))}))
+
 (defn- issuer-image [path]
   (when (not-empty path)
     [:img.profile-picture
@@ -57,6 +64,38 @@
 
 ;;TODO
 (defn creator-content [creator-id]
-  [:div ""]
+  (let [state (atom {})]
+    (init-creator-content state creator-id)
+    (fn []
+      (let [{:keys [name description email url image_file]} @state]
+        [:div.row {:id "badge-contents"}
+         [:div.col-xs-12
+          [:h2.uppercase-header
+           (issuer-image image_file)
+           " "
+           name]
 
-  )
+          [:div.row.flip
+           [:div {:class "col-md-9 col-sm-9 col-xs-12"}
+            (if (not-empty url)
+              [:div {:class "row"}
+               [:div.col-xs-12
+                [:a {:target "_blank" :rel "noopener noreferrer" :href url} url]]])
+
+            (if (not-empty email)
+              [:div {:class "row"}
+               [:div.col-xs-12 {:style {:margin-bottom "20px"}}
+                [:span [:a {:href (str "mailto:" email)} email]]]])
+
+            (if (not-empty description)
+              [:div {:class "row about"}
+               [:div.col-xs-12 {:dangerouslySetInnerHTML {:__html description}}]])]]
+
+          (when-not (empty? (:endorsement @state))
+            [:div.row
+             [:div.col-xs-12
+              [:hr]
+              [:h4 {:style {:margin-bottom "20px"}} (t :badge/IssuerEndorsedBy)]
+              (into [:div]
+                    (for [endorsement (:endorsement @state)]
+                      (endr/endorsement-row endorsement)))]])]]))))

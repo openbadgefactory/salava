@@ -75,14 +75,13 @@
          :on-click #(do (.preventDefault %)
                       (mo/open-modal [:badge :issuer] issuer-id))} name]]])
 
-;;;TODO use modal
+;;;TODO creator endorsements
 (defn creator-modal-link [creator-id name]
   (when (and creator-id name)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left (t :badge/Createdby) ":"]
      [:div {:class "issuer-links pull-label-left inline"}
-      name
-      #_[:a {:href "#"
+      [:a {:href "#"
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
@@ -150,7 +149,7 @@
         revoked (pos? revoked)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
-        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
+        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)]
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
