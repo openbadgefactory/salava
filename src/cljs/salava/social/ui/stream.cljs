@@ -96,7 +96,7 @@
   (if (:badge-alert @state)
     [:div {:class "alert alert-success"}
      (case (:badge-alert @state)
-       "accepted"  [:div (str (t :badge/Youhaveaccepted) " " (:badge-name @state)". ") (t :badge/Youcanfind)]
+       "accepted"  [:div (str (t :badge/Youhaveaccepted) " \"" (:badge-name @state) "\". ") (t :badge/Youcanfind)]
        "declined" (t :badge/Badgedeclined)
        "")]))
 

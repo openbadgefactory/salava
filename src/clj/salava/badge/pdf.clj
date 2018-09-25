@@ -135,12 +135,13 @@
                                                                 [:chunk.chunk (str (t :badge/IssuerContact ul)": ")] (:issuer_contact %)]
 
                                                                (when-not (= "-" (and (:creator_description %) (:creator_url %) (:creator_email %) ))
-                                                                 [:paragraph
-                                                                  [:paragraph.generic
-                                                                   [:chunk.chunk (str (t :badge/CreatorDescription ul)": ")] (:creator_description %)]
-                                                                  [:paragraph.generic
-                                                                   [:chunk.chunk (str (t :badge/CreatorWebsite ul)": ")] [:anchor {:target (:creator_url %) :style{:family :times-roman :color [66 100 162]}} (:creator_url %)] "\n"]
-                                                                  [:paragraph.generic
+                                                                 [:paragraph.generic
+                                                                  [:spacer 0]
+                                                                  [:paragraph
+                                                                   [:chunk.chunk (str (t :badge/CreatorDescription ul)": ")] (:creator_description %) "\n"]
+                                                                  [:paragraph
+                                                                   [:chunk.chunk (str (t :badge/CreatorWebsite ul)": ")] [:anchor {:target (:creator_url %) :style{:family :times-roman :color [66 100 162]}} (:creator_url %)]]
+                                                                  [:paragraph
                                                                    [:chunk.chunk (str (t :badge/CreatorContact ul)": ")] (:creator_email %)]])
                                                                (let [issuer-endorsement (replace-nils (select-issuer-endorsements {:id (:issuer_content_id %)} (u/get-db ctx)))]
                                                                  (when-not (empty? issuer-endorsement)
