@@ -63,7 +63,8 @@
                                              [:div.lefticon [:i {:class "fa fa-history"}] (t :badge/Expired)]
                                              [:a.righticon {:class "righticon expired" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
                                                                                                                   {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]])
-                                 (if image_file
+                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
+                                  (if image_file
                                    [:div.media-left
                                     [:img.badge-img {:src (str "/" image_file)
                                                      :alt name}]])
@@ -72,7 +73,7 @@
                                    [:p.heading-link name]]
                                   [:div.media-issuer
                                    [:p issuer_content_name]]]
-                                 ]
+                                 ]]
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
                                   [:div.icons
