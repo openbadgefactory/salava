@@ -1065,3 +1065,11 @@ button {
     line-height: 24px;
   }
 }
+#info-page-block .badge-message-link-info {
+  i {
+    color: $link-color;
+    font-size: 20px;
+    margin-right: 10px;
+  }
+}
+
