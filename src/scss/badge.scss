@@ -320,6 +320,10 @@ button {
         color: $dark-red;
         font-weight: bold;
         font-size: 20px;
+        padding-top:15px;
+        label {
+          padding-right: 5px;
+      }
     }
     .success {
     color:#3D9970;
