@@ -482,7 +482,7 @@
             :evidence_url (:evidence assertion)}
 ;;;
 
-(defmulti recipient (fn [_ asr] (:recipient asr)))
+(defmulti recipient (fn [_ asr] (class (:recipient asr))))
 
 (defmethod recipient String [emails asr]
   (recipient emails (assoc asr :recipient {:salt (:salt asr)
