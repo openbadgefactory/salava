@@ -79,7 +79,7 @@
                             :asr asr
                             :message (:message asr-response))
           200 (let [asr-data (:body asr-response)
-                    badge-data (fetch-json-data (:badge asr-data))
+                    badge-data (if (url? (:badge asr-data)) (fetch-json-data (:badge asr-data)) (:badge asr-data))
                     badge-image (if (map? (:image badge-data)) (fetch-image (get-in badge-data [:image :id])) (fetch-image (:image badge-data)))
                     badge-criteria (if (and (map? (:criteria badge-data))(contains? (:criteria badge-data) :id))
                                      (fetch-url (get-in badge-data [:criteria :id]))
