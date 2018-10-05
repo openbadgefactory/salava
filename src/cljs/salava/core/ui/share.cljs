@@ -184,7 +184,10 @@
                        ])
      :should-component-update (fn [] false)}))
 
-
+(defn wordpress-embed [badge_name image_file url issuer]
+  (let [site-url (session/get :site-url)]
+    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><a href="url"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src="(str site-url"/"image_file)" /></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">"badge_name"</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">"issuer"</div></div></div></a></div>"
+         )))
 
 
 (defn share-buttons-element [url title public? is-badge? link-or-embed-atom image-file certification]
@@ -225,10 +228,21 @@
               :target "_blank"
               }
           [:i {:class "fa fa-pinterest-square"}]])]
+
+      ;;Wordpress embed
+      (if is-badge?
+        [:div.share-button
+         [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "wordpress" @link-or-embed-atom) nil "wordpress")))}
+          [:i {:class "fa fa-wordpress"}]]])
+
       [:div.share-link
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]
       [:div.share-link
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
+     (if (and public? (= "wordpress" @link-or-embed-atom))
+       [:div.copy-boxes
+        [input-button nil "url" (wordpress-embed (:name certification) image-file url (:authory certification))]
+        ])
      (if (and public? (= "link" @link-or-embed-atom))
        [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value url}]])
      (if (and public? (= "embed" @link-or-embed-atom))
