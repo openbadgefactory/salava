@@ -14,7 +14,8 @@
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :refer [pending-badge-content]]
-            [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]))
+            [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
+            [salava.badge.ui.modal :as bm]))
 
 
 (defn init-data [state]
@@ -171,6 +172,31 @@
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
        (t :social/Youstartedfollowbadge)]]
+      ]]))
+
+
+(defn badge-advert-event [event state]
+  (let [modal (first (plugin-fun (session/get :plugins) "application" "open_modal"))
+         {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name]} event]
+    [:div#advert-event {:class "media message-item tips" :style {:margin-bottom "10px" :padding-top "5px"}}
+     (hide-event event_id state)
+     [:div.media-left
+      [:a {:href "#"
+           :on-click ""}]
+      [:img {:style {:padding "4px"} :src (str "/" image_file)} ]]
+     [:div.media-body
+      [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
+      [:i {:class "fa fa-bell"}]
+      [:div [:h3 {:class "media-heading" :style {:padding-bottom "5px"}}
+             "New Badge Available!"]
+       [:div.media-body
+        (bm/issuer-modal-link issuer_content_id issuer_content_name)
+        [:a {:href "#"
+             :on-click #(do
+                          (.preventDefault %)
+                          (prn modal)
+                          (modal subject state)
+                          )} [:div.get-badge-link [:i {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
       ]]))
 
 (defn publish-event-badge [event state]
@@ -439,6 +465,7 @@
                (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
                (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
                (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
+               (and (= "advert" (:type event)) (= "advertise" (:verb event))) (badge-advert-event event state)
                (= "message" (:verb event)) [message-event event state]
                :else "")))]))
 

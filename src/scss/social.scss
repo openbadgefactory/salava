@@ -429,3 +429,30 @@
         }
     }
 }
+
+/*BADGE ADVERTS*/
+#advert-event {
+  border: 1px solid #f2f2f2;
+  background-color: #ffffff;
+  border-radius: 4px;
+  padding:5px;
+  i.fa{
+    font-size:24px;
+    width:auto;
+    text-align: center;
+    margin-right: 5px;
+
+  }
+  @media (max-width: 480px) {
+    .get-badge-link {
+      display: inline-block;
+      i.fa {
+        padding-left: 0px;
+        display: inline;
+      }
+
+    }
+  }
+
+}
+
