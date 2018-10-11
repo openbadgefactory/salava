@@ -188,13 +188,13 @@
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:i {:class "fa fa-bell"}]
       [:div [:h3 {:class "media-heading" :style {:padding-bottom "5px"}}
-             "New Badge Available!"]
+             (t :social/Badgeadvertisement)]
        [:div.media-body
+        [:div name]
         (bm/issuer-modal-link issuer_content_id issuer_content_name)
         [:a {:href "#"
              :on-click #(do
                           (.preventDefault %)
-                          (prn modal)
                           (modal subject state)
                           )} [:div.get-badge-link [:i {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
       ]]))
