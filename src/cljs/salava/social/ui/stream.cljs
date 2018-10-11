@@ -190,7 +190,7 @@
       [:div [:h3 {:class "media-heading" :style {:padding-bottom "5px"}}
              (t :social/Badgeadvertisement)]
        [:div.media-body
-        [:div name]
+        [:div.name name]
         (bm/issuer-modal-link issuer_content_id issuer_content_name)
         [:a {:href "#"
              :on-click #(do
