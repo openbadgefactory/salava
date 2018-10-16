@@ -28,7 +28,7 @@
                                        [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
                                        ["/import" imp/handler]
                                        #_["/upload" up/handler]
-                                       ["/export" exp/handler]
+                                       #_["/export" exp/handler]
                                        [["/receive/" :badge-id] rec/handler]
                                        #_["/stats" stats/handler]]})
 
@@ -68,7 +68,7 @@
 
 (defn badge-manage [context]
   {(str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Import)}
-   (str (base-path context) "/badge/export") {:weight 23 :title (t :badge/Export) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Export)}
+   ;(str (base-path context) "/badge/export") {:weight 23 :title (t :badge/Export) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Export)}
     })
 
 

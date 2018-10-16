@@ -26,7 +26,7 @@
              (layout/main-meta ctx "/info/:id/embed" :badge)
              (layout/main-meta ctx "/info/:id/pic/embed" :badge)
              (layout/main ctx "/import")
-             (layout/main ctx "/export")
+             #_(layout/main ctx "/export")
              (layout/main ctx "/receive/:id"))
 
     (context "/obpv1/badge" []
