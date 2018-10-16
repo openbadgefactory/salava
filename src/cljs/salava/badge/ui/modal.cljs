@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -212,7 +212,8 @@
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
         selected-language (cursor state [:content-language])
         data (content-setter @selected-language (:content @state))
-        disable-link (if invalid? "btn disabled")]
+        disable-link (if invalid? "btn disabled")
+        disable-export (if (or (private?) invalid?) "btn disabled")]
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
@@ -225,7 +226,7 @@
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
         [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)  ]]]
       [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
-       [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
+       [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
                                                                                                        :obf_url (:obf_url @state)) state] :tab-no 4)}
         [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)  ]]]
       [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
