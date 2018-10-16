@@ -77,16 +77,26 @@
                                     reverse
                                     flatten)
                  badges)]
-    (into [:div {:class "row wrap-grid"
-                 :id    "grid"}]
-          (for [element-data badges]
-            (if (badge-visible? element-data state)
-              (badge-grid-element element-data state "basic" init-data))))))
+    (into [:div#grid {:class "row wrap-grid"}
+           [:div#import-badge {:key   "new-badge"}
+            [:a.add-element-link {:href  "#" :on-click #(navigate-to "badge/import")}
+             [:div {:class "media grid-container"}
+              [:div.media-content
+               [:div.media-body
+                [:div {:id "add-element-icon"}
+                 [:i {:class "fa fa-plus"}]]
+                [:div {:id "add-element-link"}
+                 (t :badge/Import)]]]]]]]
+          (doall
+            (for [element-data badges]
+              (if (badge-visible? element-data state)
+                (badge-grid-element element-data state "basic" init-data)))))))
 
 
 (defn no-badges-text []
   [:div
    #_(if (application-plugin?)  [:div (t :badge/Youhavenobadgesyet) (str ". ") (t :social/Getyourfirstbadge) [:a {:href (path-for "/gallery/application") } (str " ") (t :badge/Gohere)] (str ".")] [:div (t :badge/Youhavenobadgesyet) (str ".")]) ] )
+
 
 
 (defn content [state]

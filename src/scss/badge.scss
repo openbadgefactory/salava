@@ -747,6 +747,27 @@ button {
     cursor: pointer;
 
 }
+
+//import new badge
+#my-badges #grid #import-badge {
+  text-align: center;
+  position: relative;
+
+  #add-element-icon {
+    margin-top: 50px;
+    font-size: 70px;
+    color: $icon-color;
+  }
+  #add-element-link, .add-element-link {
+    color: $orange-color;
+    text-decoration: none;
+    text-transform: uppercase;
+    &:hover {
+      color: $orange-hover;
+    }
+  }
+}
+
 /* IMPORT BADGES */
 .import-badges #grid.row .grid-container{
     height:280px;
