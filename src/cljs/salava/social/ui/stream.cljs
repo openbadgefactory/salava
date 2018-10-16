@@ -177,27 +177,37 @@
 
 (defn badge-advert-event [event state]
   (let [modal (first (plugin-fun (session/get :plugins) "application" "open_modal"))
-         {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name]} event]
-    [:div#advert-event {:class "media message-item tips" :style {:margin-bottom "10px" :padding-top "5px"}}
+        {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event]
+    [:div#advert-event {:class "media message-item"}
      (hide-event event_id state)
      [:div.media-left
       [:a {:href "#"
-           :on-click ""}]
-      [:img {:style {:padding "4px"} :src (str "/" image_file)} ]]
+           :on-click #(do
+                        (.preventDefault %)
+                        (modal subject state))}
+       [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
-      [:i {:class "fa fa-bell"}]
-      [:div [:h3 {:class "media-heading" :style {:padding-bottom "5px"}}
-             (t :social/Badgeadvertisement)]
+      [:h3 {:class "media-heading"}
+       [:a {:href "#"
+            :on-click #(do
+                         (.preventDefault %)
+                         (modal subject state))} name]]
+      [:div.media {:key issuer_content_id}
+       (if issuer_image
+         [:span.pull-left [:img {:class "message-profile-img" :src (profile-picture issuer_image)}]])
        [:div.media-body
-        [:div.name name]
-        (bm/issuer-modal-link issuer_content_id issuer_content_name)
-        [:a {:href "#"
-             :on-click #(do
-                          (.preventDefault %)
-                          (modal subject state)
-                          )} [:div.get-badge-link [:i {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
-      ]]))
+        [:h4.media-heading
+         [:a {:href "#"
+              :on-click #(do
+                           (.preventDefault %)
+                           (mo/open-modal [:badge :issuer] issuer_content_id))} issuer_content_name]
+         (str " "(t :social/Badgeadvertisement))]]]
+      [:a {:href "#"
+           :on-click #(do
+                        (.preventDefault %)
+                        (modal subject state)
+                        )} (t :social/Readmore)]]]))
 
 (defn publish-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event]

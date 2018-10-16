@@ -436,27 +436,14 @@
   background-color: #ffffff;
   border-radius: 4px;
   padding:5px;
-  i.fa{
-    font-size:24px;
-    width:auto;
-    text-align: center;
-    margin-right: 5px;
 
-  }
-  .name {
-    padding-bottom: 5px;
-    font-size: 20px;
-  }
-  @media (max-width: 480px) {
-    .get-badge-link {
-      display: inline-block;
-      i.fa {
-        padding-left: 0px;
-        display: inline;
-      }
-
+  .message-item.media, h3.media-heading {
+    &:before{
+      content:"\f0a1";
+      font-size: 26px;
     }
   }
 
 }
+
 
