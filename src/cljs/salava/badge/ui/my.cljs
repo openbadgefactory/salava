@@ -6,7 +6,7 @@
     [clojure.set :as set :refer [intersection]]
     [clojure.string :refer [upper-case]]
     [salava.core.ui.ajax-utils :as ajax]
-    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated?]]
+    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private?]]
     [salava.core.ui.notactivated :refer [not-activated-banner]]
     [salava.core.ui.layout :as layout]
     [salava.core.ui.grid :as g]
@@ -78,7 +78,8 @@
                                     flatten)
                  badges)]
     (into [:div#grid {:class "row wrap-grid"}
-           [:div#import-badge {:key   "new-badge"}
+           (when-not (private?)
+             [:div#import-badge {:key   "new-badge"}
             [:a.add-element-link {:href  "#" :on-click #(navigate-to "badge/import")}
              [:div {:class "media grid-container"}
               [:div.media-content
@@ -86,7 +87,7 @@
                 [:div {:id "add-element-icon"}
                  [:i {:class "fa fa-plus"}]]
                 [:div {:id "add-element-link"}
-                 (t :badge/Import)]]]]]]]
+                 (t :badge/Import)]]]]]])]
           (doall
             (for [element-data badges]
               (if (badge-visible? element-data state)
