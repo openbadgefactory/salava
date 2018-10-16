@@ -35,14 +35,7 @@
 (defn badge-navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
-
-
-   #_(str (base-path context) "/badge/stats") #_{:weight 21
-                                             :title (t :badge/Stats)
-                                             :site-navi true
-                                             :breadcrumb (t :badge/Badges" / " :badge/Stats)}
-   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}}
-  )
+   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}})
 
 #_(defn badge-manage [context]
   {"/badge/dropdowntitle" {:weight 22
@@ -67,15 +60,11 @@
                                                                               :breadcrumb (t :badge/Badges " / " :badge/Manage " / " :badge/Export)}}}})
 
 (defn badge-manage [context]
-  {(str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Import)}
-   ;(str (base-path context) "/badge/export") {:weight 23 :title (t :badge/Export) :site-navi true :breadcrumb (t :badge/Badges " / " :badge/Export)}
+  {(str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi false :breadcrumb (t :badge/Badges " / " :badge/Import)}
     })
 
 
 (defn ^:export navi [context]
   (if (private?)
     (badge-navi context)
-    (merge (badge-navi context) (badge-manage context))
-    #_(assoc (badge-navi context) (first (keys (badge-manage context))) (first (vals (badge-manage context)))))
-
-  )
+    (merge (badge-navi context) (badge-manage context))))
