@@ -30,14 +30,14 @@
                                        #_["/upload" up/handler]
                                        ["/export" exp/handler]
                                        [["/receive/" :badge-id] rec/handler]
-                                       ["/stats" stats/handler]]})
+                                       #_["/stats" stats/handler]]})
 
 (defn badge-navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
 
 
-   (str (base-path context) "/badge/stats") {:weight 21
+   #_(str (base-path context) "/badge/stats") #_{:weight 21
                                              :title (t :badge/Stats)
                                              :site-navi true
                                              :breadcrumb (t :badge/Badges" / " :badge/Stats)}

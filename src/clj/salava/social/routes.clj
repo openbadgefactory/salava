@@ -18,7 +18,8 @@
     (context "/social" []
              (layout/main ctx "/")
              (layout/main ctx "/connections")
-             (layout/main ctx "/stream"))
+             (layout/main ctx "/stream")
+             (layout/main ctx "/stats"))
 
     (context "/obpv1/social" []
              :tags ["social"]
