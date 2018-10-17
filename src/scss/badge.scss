@@ -773,11 +773,11 @@ button {
     color: $icon-color;
   }
   #add-element-link, .add-element-link {
-    color: $orange-color;
+    color: $grid-link;
     text-decoration: none;
     text-transform: uppercase;
     &:hover {
-      color: $orange-hover;
+      color: $grid-link;
     }
   }
 }
