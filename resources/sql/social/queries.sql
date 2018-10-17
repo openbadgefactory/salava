@@ -145,3 +145,8 @@ SELECT id, subject, verb, object, type, ctime, mtime FROM social_event WHERE sub
 
 --name: select-message-by-badge-id-and-user-id
 SELECT message FROM badge_message WHERE badge_id=:badge_id AND user_id=:user_id AND ctime=:ctime;
+
+--name: insert-connection-issuer<!
+--add issuer to favourites
+INSERT IGNORE INTO social_connections_issuer (user_id, issuer_content_id, ctime)
+                   VALUES (:user_id, :issuer_content_id, UNIX_TIMESTAMP())

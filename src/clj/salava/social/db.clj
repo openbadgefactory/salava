@@ -77,6 +77,16 @@
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_id)}
      )))
+
+(defn create-connection-issuer! [ctx user_id issuer_content_id]
+  (try+
+    (insert-connection-issuer<! {:user_id user_id :issuer_content_id issuer_content_id} (get-db ctx))
+    {:status "success"}
+    (catch Object _
+    {:status "false"})))
+
+(defn delete-connection-issuer! [ctx user_id issuer_content_id])
+
 ;; STREAM ;;
 
 

@@ -143,5 +143,14 @@
                      (ok (so/is-connected? ctx (:id current-user) badge_id)
                       )))
 
+             (POST "/create_connection_issuer/:issuer_content_id" []
+                   :return {:status (s/enum "success" "error")}
+                   :summary "add issuer to favorites"
+                   :path-params [issuer_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (prn issuer_content_id)
+                   (ok (so/create-connection-issuer! ctx (:id current-user) issuer_content_id)))
+
              )))
 
