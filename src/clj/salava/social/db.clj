@@ -262,3 +262,6 @@
 (defn get-all-user-events [ctx user_id]
   (get-all-user-event {:subject user_id} (get-db ctx)))
 
+(defn get-user-issuer-connections [ctx user_id]
+  (select-user-connections-issuer {:user_id user_id} (get-db ctx))
+  )

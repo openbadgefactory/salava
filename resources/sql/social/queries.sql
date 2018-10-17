@@ -156,3 +156,11 @@ SELECT issuer_content_id FROM social_connections_issuer WHERE user_id = :user_id
 
 --name: delete-connection-issuer!
 DELETE FROM social_connections_issuer WHERE user_id = :user_id AND issuer_content_id = :issuer_content_id
+
+-- name: select-user-connections-issuer
+-- get users issuer connections
+SELECT DISTINCT ic.id, ic.name, ic.image_file FROM social_connections_issuer AS sci
+      JOIN issuer_content AS ic ON (ic.id = sci.issuer_content_id)
+      WHERE sci.user_id = :user_id
+      GROUP BY ic.id, ic.name, ic.image_file
+      ORDER BY ic.name ASC

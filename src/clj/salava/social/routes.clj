@@ -167,5 +167,11 @@
                    :current-user current-user
                    (ok (so/delete-issuer-connection! ctx (:id current-user) issuer_content_id)))
 
+             (GET "/connections_issuer" []
+                  :summary "Return all user issuer connection"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (so/get-user-issuer-connections ctx (:id current-user))))
+
              )))
 
