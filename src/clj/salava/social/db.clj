@@ -85,7 +85,16 @@
     (catch Object _
     {:status "false"})))
 
-(defn delete-connection-issuer! [ctx user_id issuer_content_id])
+(defn delete-issuer-connection! [ctx user_id issuer_content_id]
+  (try+
+    (delete-connection-issuer! {:user_id user_id :issuer_content_id issuer_content_id} (get-db ctx))
+    {:status "success"}
+    (catch Object _
+      {:status "error"})))
+
+(defn issuer-connected? [ctx user_id issuer_content_id]
+  (let [id (select-connection-issuer {:user_id user_id :issuer_content_id issuer_content_id} (into {:result-set-fn first :row-fn :issuer_content_id} (get-db ctx)))]
+    (= issuer_content_id id)))
 
 ;; STREAM ;;
 

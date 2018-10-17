@@ -149,8 +149,23 @@
                    :path-params [issuer_content_id :- s/Str]
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (prn issuer_content_id)
                    (ok (so/create-connection-issuer! ctx (:id current-user) issuer_content_id)))
+
+             (GET "/issuer_connected/:issuer_content_id" []
+                  :return s/Bool
+                  :summary "check issuer connection status"
+                  :path-params [issuer_content_id :- s/Str]
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (so/issuer-connected? ctx (:id current-user) issuer_content_id)))
+
+             (POST "/delete_connection_issuer/:issuer_content_id" []
+                   :return {:status (s/enum "success" "error")}
+                   :summary "remove issuer from favourites"
+                   :path-params [issuer_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/delete-issuer-connection! ctx (:id current-user) issuer_content_id)))
 
              )))
 

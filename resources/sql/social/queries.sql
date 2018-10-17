@@ -150,3 +150,9 @@ SELECT message FROM badge_message WHERE badge_id=:badge_id AND user_id=:user_id 
 --add issuer to favourites
 INSERT IGNORE INTO social_connections_issuer (user_id, issuer_content_id, ctime)
                    VALUES (:user_id, :issuer_content_id, UNIX_TIMESTAMP())
+
+--name: select-connection-issuer
+SELECT issuer_content_id FROM social_connections_issuer WHERE user_id = :user_id AND issuer_content_id = :issuer_content_id
+
+--name: delete-connection-issuer!
+DELETE FROM social_connections_issuer WHERE user_id = :user_id AND issuer_content_id = :issuer_content_id
