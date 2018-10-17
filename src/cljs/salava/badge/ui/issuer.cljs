@@ -36,11 +36,13 @@
                 (init-issuer-connection issuer-id state))}))
 
 
-(defn remove-issuer-from-favourites [issuer-id state]
+(defn remove-issuer-from-favourites [issuer-id state init-fn]
   (ajax/POST
     (path-for (str "/obpv1/social/delete_connection_issuer/" issuer-id))
     {:handler (fn []
-                (init-issuer-connection issuer-id state))}))
+                (if init-fn
+                  init-fn
+                  (init-issuer-connection issuer-id state)))}))
 
 (defn- issuer-image [path]
   (when (not-empty path)
@@ -60,8 +62,8 @@
            ;TODO users not logged in don't see this
            [:div.pull-right
             (if-not @connected?
-              [:a {:href "#" :on-click #(add-issuer-to-favourites issuer-id state)} [:i {:class "fa fa-bookmark-o"}] " add to favourites"]
-              [:a {:href "#" :on-click #(remove-issuer-from-favourites issuer-id state)} [:i {:class "fa fa-bookmark"}] " remove from favourites"]
+              [:a {:href "#" :on-click #(add-issuer-to-favourites issuer-id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :badge/Addtofavourites))]
+              [:a {:href "#" :on-click #(remove-issuer-from-favourites issuer-id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :badge/Removefromfavourites))]
               )]
            ]
           [:h2.uppercase-header
