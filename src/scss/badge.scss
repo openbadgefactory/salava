@@ -306,6 +306,20 @@ button {
 
         }
     }
+  .issuer-panel {
+    img {
+      padding-right: 10px;
+    }
+    td.name {
+      width: 65% !important;
+    }
+
+    td.action {
+      width: 35% !important;
+      text-align: end;
+    }
+  }
+
 }
 /* BADGE INFO */
 #badge-info {
