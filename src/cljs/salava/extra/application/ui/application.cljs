@@ -271,14 +271,31 @@
           :control-class   "form-control"}]]])))
 
 
-(defn issuer-badges [issuer-name state]
+;TODO Refactor
+(defn reset-issuer-applications [state]
+  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
+    (ajax/GET
+      (path-for (str "/obpv1/application/"))
+      {:params {:country (trim country-selected)
+                :name (subs-hashtag name)
+                :tags (map #(subs-hashtag %) tags)
+                :issuer ""
+                :order (trim order)
+                :followed show-followed-only}
+       :handler (fn [data]
+                  (swap! state assoc :all-issuer-applications (:applications data) ))})))
+
+;TODO Refactor
+(defn issuer-applications [issuer-name state]
   (swap! state assoc :issuer-name issuer-name)
   (fetch-badge-adverts state))
 
+;TODO Refactor
+(defn issuer-applications-count [issuer-name state]
+  (reset-issuer-applications state)
+  (count (filter #(= issuer-name (:issuer_content_name %)) (:all-issuer-applications @state))))
 
-;TODO FIX to run on the background and calculate badge count for each issuer
-(defn issuer-badge-count [issuer-name state]
-  (count (filter #(= issuer-name (:issuer_content_name %)) (:applications @state))))
+
 
 (defn- issuer-image [path]
   (when (not-empty path)
@@ -314,7 +331,7 @@
            [:div.pull-right  [:a {:href "#"}[:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]]
           ]]]])))
 
-
+;TODO Fix login, make issuer-list-more dynamic
 (defn issuer-content [state]
   (let [applications (cursor state [:all-applications])
         issuer-name (cursor state [:issuer-content :name])]
@@ -326,11 +343,11 @@
            [:a {:style {:cursor "pointer" :text-align "center"} :data-dismiss "modal" :on-click #(do
                                                                                                    (swap! state assoc :show-issuer-info false
                                                                                                           :issuer-content {:name (t :core/All) #_(t :badge/Issuers)})
-                                                                                                   (issuer-badges "" state))} (t :core/All)]]
+                                                                                                   (issuer-applications "" state))} (t :core/All)]]
           (doall
             (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
                   :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
-                        badges-count #_(issuer-badges-behind-scenes issuer_content_name state) (issuer-badge-count issuer_content_name state)
+                        badges-count (issuer-applications-count issuer_content_name state)
                         ;testing
                         banner (if (even? (count issuer_content_name)) true false)]]
               [:a { :key issuer_content_id
@@ -340,7 +357,7 @@
                                  (.preventDefault %)
                                  (swap! state assoc :show-issuer-info true
                                         :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
-                                 (issuer-badges issuer_content_name state)
+                                 (issuer-applications issuer_content_name state)
 
                                  )}
                [:div {:style {:padding "5px"}} (if issuer_image
@@ -493,7 +510,7 @@
                (let [{:keys [applications countries user-country]} data]
                  (swap! state assoc :applications applications
                         :countries countries
-                        :all-applications applications
+                        :all-applications applications ;; use original applications list to build issuer list
                         )))}))
 
 
