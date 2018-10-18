@@ -19,7 +19,8 @@
             [salava.extra.application.schemas :as schemas]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [medley.core :refer [distinct-by]]))
+            [medley.core :refer [distinct-by]]
+            [salava.extra.application.ui.issuer :as i]))
 
 
 (defn hashtag? [text]
@@ -34,15 +35,15 @@
 (defn fetch-badge-adverts [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
     (ajax/GET
-     (path-for (str "/obpv1/application/"))
-     {:params  {:country  (trim country-selected)
-                :name     (subs-hashtag name)
-                :tags     (map #(subs-hashtag %) tags)
-                :issuer   (trim issuer-name)
-                :order    (trim order)
-                :followed show-followed-only}
-      :handler (fn [data]
-                 (swap! state assoc :applications (:applications data)))})))
+      (path-for (str "/obpv1/application/"))
+      {:params  {:country  (trim country-selected)
+                 :name     (subs-hashtag name)
+                 :tags     (map #(subs-hashtag %) tags)
+                 :issuer   (trim issuer-name)
+                 :order    (trim order)
+                 :followed show-followed-only}
+       :handler (fn [data]
+                  (swap! state assoc :applications (:applications data)))})))
 
 (defn add-to-followed
   "set advert to connections"
@@ -61,13 +62,13 @@
    (remove-from-followed badge-advert-id nil state))
   ([badge-advert-id data-atom state]
    (ajax/DELETE
-    (path-for (str "/obpv1/application/delete_connection_badge_application/" badge-advert-id))
-    {:handler (fn [data]
-                (if (= "success")
-                  (do ;set current data-atom to followed false
-                    (if data-atom
-                      (swap! data-atom assoc :followed 0))
-                    (fetch-badge-adverts state))))})))
+     (path-for (str "/obpv1/application/delete_connection_badge_application/" badge-advert-id))
+     {:handler (fn [data]
+                 (if (= "success")
+                   (do ;set current data-atom to followed false
+                     (if data-atom
+                       (swap! data-atom assoc :followed 0))
+                     (fetch-badge-adverts state))))})))
 
 
 (defn taghandler
@@ -94,13 +95,13 @@
   (swap! state assoc :value #{}
          :tags ())
   (ajax/GET
-   (path-for "/obpv1/application/autocomplete")
-   {:params {:country  (trim country)}
-    :handler (fn [data]
-               (let [{:keys [tags names]} data]
-                 (swap! state assoc
-                        :tags  #{} ;todo: katso jos on toisessakin olemassa
-                        :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
+    (path-for "/obpv1/application/autocomplete")
+    {:params {:country  (trim country)}
+     :handler (fn [data]
+                (let [{:keys [tags names]} data]
+                  (swap! state assoc
+                         :tags  #{} ;todo: katso jos on toisessakin olemassa
+                         :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
 
 
 
@@ -169,7 +170,7 @@
            [:div
             [:div.pull-left
              [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
-                                        ;[:a  " >> Apply now"]
+             ;[:a  " >> Apply now"]
              ]
             (if-not (not-activated?)
               (if (pos? (:followed @data-atom))
@@ -181,17 +182,15 @@
 (defn badge-content-modal [data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render data state))
                  :component-will-unmount (fn [] (do (close-modal!)
-                                                    ;(if (and init-data state) (init-data state))
-                                                    ))}))
+                                                  ;(if (and init-data state) (init-data state))
+                                                  ))}))
 
 (defn open-modal [id state]
   (ajax/GET
-      (path-for (str "/obpv1/application/public_badge_advert_content/" id))
-      {:handler (fn [data]
-                  (do
-                    (m/modal! [badge-content-modal data state] {:size :lg})))}))
-
-
+    (path-for (str "/obpv1/application/public_badge_advert_content/" id))
+    {:handler (fn [data]
+                (do
+                  (m/modal! [badge-content-modal data state] {:size :lg})))}))
 
 
 (defn search-timer [state]
@@ -213,8 +212,8 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                              (reset! search-atom (.-target.value %))
-                              (search-timer state))}]]]))
+                               (reset! search-atom (.-target.value %))
+                               (search-timer state))}]]]))
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
@@ -246,9 +245,6 @@
              (range n))))
 
 
-
-
-
 (defn autocomplete [state]
   (let [tags  (cursor state [:tags])
         value (cursor state [:value])
@@ -270,135 +266,6 @@
           :no-results-text (t :extra-application/Notfound)
           :control-class   "form-control"}]]])))
 
-
-;TODO Refactor
-(defn reset-issuer-applications [state]
-  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
-    (ajax/GET
-      (path-for (str "/obpv1/application/"))
-      {:params {:country (trim country-selected)
-                :name (subs-hashtag name)
-                :tags (map #(subs-hashtag %) tags)
-                :issuer ""
-                :order (trim order)
-                :followed show-followed-only}
-       :handler (fn [data]
-                  (swap! state assoc :all-issuer-applications (:applications data) ))})))
-
-;TODO Refactor
-(defn issuer-applications [issuer-name state]
-  (swap! state assoc :issuer-name issuer-name)
-  (fetch-badge-adverts state))
-
-;TODO Refactor
-(defn issuer-applications-count [issuer-name state]
-  (reset-issuer-applications state)
-  (count (filter #(= issuer-name (:issuer_content_name %)) (:all-issuer-applications @state))))
-
-
-
-(defn- issuer-image [path]
-  (when (not-empty path)
-    [:img.profile-picture
-     {:src (if (re-find #"^file/" path) (str "/" path) path)
-      :style {:width "50px" :padding-right "10px"}}]))
-
-
-(defn issuer-info-grid [state]
-  (let [show-issuer-info-atom (cursor state [:show-issuer-info])
-        issuer-content (cursor state [:issuer-content])
-        {:keys [id name image url banner]} @issuer-content]
-    ;https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png
-    (if @show-issuer-info-atom
-      [:div.row {:id "advert-event " #_:style  #_{:max-width "640px"}}
-       ;[:div.col-xs-12 [:div {:style {:background "https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png"}}]]
-       [:div.col-xs-12
-        (if banner
-          [:img.img-responsive
-           {:src "https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png" #_"https://openbadgefactory.com/c/download/c3eb37b1114f38b3183eca5add6a9682d77e3cdff16467539dc9877be0bd6b2d.png"}])
-        [:div
-         [:div.col-xs-12 {:style {:background-color "#fff":max-width "640px"}}
-          [:div.col-xs-12
-           (when-not banner
-             [:h2.uppercase-header.pull-left
-              (issuer-image image)
-              " "
-              name])]
-          [:div.col-xs-12 {:style {:padding "4px"}}
-           [:div.pull-left [:a {:href "#" :on-click #(do
-                                                       (.preventDefault %)
-                                                       (mo/open-modal [:badge :issuer] id))} (t :admin/Showmore)]]
-           [:div.pull-right  [:a {:href "#"}[:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]]
-          ]]]])))
-
-;TODO Fix login, make issuer-list-more dynamic
-(defn issuer-content [state]
-  (let [applications (cursor state [:all-applications])
-        issuer-name (cursor state [:issuer-content :name])]
-    (fn []
-      [:div
-       (into
-         [:div
-          [:div {:style {:text-align "center"} }
-           [:a {:style {:cursor "pointer" :text-align "center"} :data-dismiss "modal" :on-click #(do
-                                                                                                   (swap! state assoc :show-issuer-info false
-                                                                                                          :issuer-content {:name (t :core/All) #_(t :badge/Issuers)})
-                                                                                                   (issuer-applications "" state))} (t :core/All)]]
-          (doall
-            (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
-                  :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
-                        badges-count (issuer-applications-count issuer_content_name state)
-                        ;testing
-                        banner (if (even? (count issuer_content_name)) true false)]]
-              [:a { :key issuer_content_id
-                    :style {:cursor "pointer"}
-                    :data-dismiss "modal"
-                    :on-click #(do
-                                 (.preventDefault %)
-                                 (swap! state assoc :show-issuer-info true
-                                        :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
-                                 (issuer-applications issuer_content_name state)
-
-                                 )}
-               [:div {:style {:padding "5px"}} (if issuer_image
-                                                 [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
-                (str issuer_content_name "  ("  badges-count ")")]]))])])))
-
-
-
-(defn issuer-modal [state]
-  (fn []
-    [:div {:id "badge-content"}
-     [:div.modal-body
-      [:div.row
-       [:div.col-md-12
-        [:div {:class "text-right"}
-
-         [:button {:type         "button"
-                   :class        "close"
-                   :data-dismiss "modal"
-                   :aria-label   "OK"}
-          [:span {:aria-hidden             "true"
-                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
-      [issuer-content state]]
-     [:div.modal-footer]]))
-
-
-(defn open-issuer-modal [state]
-  (create-class {:reagent-render (fn [] (issuer-modal state))
-                 :component-will-unmount (fn [] (do (close-modal!)))}))
-
-
-(defn select-issuer [state]
-  (let [applications (cursor state [:all-applications])
-        issuer-name (cursor state [:issuer-content :name])]
-    [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "select-issuer"} (str (t :gallery/Searchbyissuer) ":")]
-     [:div.col-sm-10
-      [:button.issuer-button {:class (str "btn form-control btn-active")
-                              :id "btn-all"
-                              :on-click #(do
-                                           (m/modal! [open-issuer-modal state] {:size :md}))} (str @issuer-name)]]]))
 
 (defn follow-grid-item [show-followed-only-atom state]
   [:div {:class "form-group wishlist-buttons"}
@@ -428,23 +295,14 @@
      (if (not (:user-id @state))
        [:div
         [country-selector state]
-        #_[:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
-              :href "#"}
-          (if @show-advanced-search
-            (t :gallery/Hideadvancedsearch)
-            (t :gallery/Showadvancedsearch))]
-        ;(if  @show-advanced-search
-          [:div
-           [autocomplete state]
-           [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-           ;[text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]
-           [select-issuer state]
-           ]
-        ;)
-        ])
+        [:div
+         [autocomplete state]
+         [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
+         [i/select-issuer state]]])
+
      [follow-grid-item show-followed-only-atom state]
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
-     [issuer-info-grid state]]))
+     [i/issuer-info-grid state]]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data
@@ -454,10 +312,10 @@
        [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
      [:div.media-content
       (if image_file
-         [:div.media-left
-          [:a {:href "#" :on-click #(open-modal id state) :title name}
-           [:img {:src (str "/" image_file)
-                  :alt name}]]])
+        [:div.media-left
+         [:a {:href "#" :on-click #(open-modal id state) :title name}
+          [:img {:src (str "/" image_file)
+                 :alt name}]]])
       [:div.media-body
        [:div {:class "media-heading"}
         [:a {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
@@ -469,7 +327,7 @@
          [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
      [:div.media-bottom
       ;(admin-gallery-badge badge-id "badges" state init-data)
-       ]]))
+      ]]))
 
 (defn str-cat [a-seq]
   (if (empty? a-seq)
@@ -504,14 +362,14 @@
 
 (defn init-data [state init-params]
   (ajax/GET
-   (path-for "/obpv1/application/")
-   {:params  init-params
-    :handler (fn [data]
-               (let [{:keys [applications countries user-country]} data]
-                 (swap! state assoc :applications applications
-                        :countries countries
-                        :all-applications applications ;; use original applications list to build issuer list
-                        )))}))
+    (path-for "/obpv1/application/")
+    {:params  init-params
+     :handler (fn [data]
+                (let [{:keys [applications countries user-country]} data]
+                  (swap! state assoc :applications applications
+                         :countries countries
+                         :all-applications applications ;; use original applications list to build issuer list
+                         )))}))
 
 
 (defn init-values
