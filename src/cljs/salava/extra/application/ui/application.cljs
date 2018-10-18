@@ -17,7 +17,9 @@
             [schema.core :as sc]
             [cemerick.url :as url]
             [salava.extra.application.schemas :as schemas]
-            [salava.core.i18n :as i18n :refer [t]]))
+            [salava.core.i18n :as i18n :refer [t]]
+            [salava.core.ui.modal :as mo]
+            [medley.core :refer [distinct-by]]))
 
 
 (defn hashtag? [text]
@@ -269,6 +271,118 @@
           :control-class   "form-control"}]]])))
 
 
+(defn issuer-badges [issuer-name state]
+  (swap! state assoc :issuer-name issuer-name)
+  (fetch-badge-adverts state))
+
+
+;TODO FIX to run on the background and calculate badge count for each issuer
+(defn issuer-badge-count [issuer-name state]
+  (count (filter #(= issuer-name (:issuer_content_name %)) (:applications @state))))
+
+(defn- issuer-image [path]
+  (when (not-empty path)
+    [:img.profile-picture
+     {:src (if (re-find #"^file/" path) (str "/" path) path)
+      :style {:width "50px" :padding-right "10px"}}]))
+
+
+(defn issuer-info-grid [state]
+  (let [show-issuer-info-atom (cursor state [:show-issuer-info])
+        issuer-content (cursor state [:issuer-content])
+        {:keys [id name image url banner]} @issuer-content]
+    ;https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png
+    (if @show-issuer-info-atom
+      [:div.row {:id "advert-event " #_:style  #_{:max-width "640px"}}
+       ;[:div.col-xs-12 [:div {:style {:background "https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png"}}]]
+       [:div.col-xs-12
+        (if banner
+          [:img.img-responsive
+           {:src "https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png" #_"https://openbadgefactory.com/c/download/c3eb37b1114f38b3183eca5add6a9682d77e3cdff16467539dc9877be0bd6b2d.png"}])
+        [:div
+         [:div.col-xs-12 {:style {:background-color "#fff":max-width "640px"}}
+          [:div.col-xs-12
+           (when-not banner
+             [:h2.uppercase-header.pull-left
+              (issuer-image image)
+              " "
+              name])]
+          [:div.col-xs-12 {:style {:padding "4px"}}
+           [:div.pull-left [:a {:href "#" :on-click #(do
+                                                       (.preventDefault %)
+                                                       (mo/open-modal [:badge :issuer] id))} (t :admin/Showmore)]]
+           [:div.pull-right  [:a {:href "#"}[:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]]
+          ]]]])))
+
+
+(defn issuer-content [state]
+  (let [applications (cursor state [:all-applications])
+        issuer-name (cursor state [:issuer-content :name])]
+    (fn []
+      [:div
+       (into
+         [:div
+          [:div {:style {:text-align "center"} }
+           [:a {:style {:cursor "pointer" :text-align "center"} :data-dismiss "modal" :on-click #(do
+                                                                                                   (swap! state assoc :show-issuer-info false
+                                                                                                          :issuer-content {:name (t :core/All) #_(t :badge/Issuers)})
+                                                                                                   (issuer-badges "" state))} (t :core/All)]]
+          (doall
+            (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
+                  :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
+                        badges-count #_(issuer-badges-behind-scenes issuer_content_name state) (issuer-badge-count issuer_content_name state)
+                        ;testing
+                        banner (if (even? (count issuer_content_name)) true false)]]
+              [:a { :key issuer_content_id
+                    :style {:cursor "pointer"}
+                    :data-dismiss "modal"
+                    :on-click #(do
+                                 (.preventDefault %)
+                                 (swap! state assoc :show-issuer-info true
+                                        :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
+                                 (issuer-badges issuer_content_name state)
+
+                                 )}
+               [:div {:style {:padding "5px"}} (if issuer_image
+                                                 [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
+                (str issuer_content_name "  ("  badges-count ")")]]))])])))
+
+
+
+(defn issuer-modal [state]
+  (fn []
+    [:div {:id "badge-content"}
+     [:div.modal-body
+      [:div.row
+       [:div.col-md-12
+        [:div {:class "text-right"}
+
+         [:button {:type         "button"
+                   :class        "close"
+                   :data-dismiss "modal"
+                   :aria-label   "OK"}
+          [:span {:aria-hidden             "true"
+                  :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
+      [issuer-content state]]
+     [:div.modal-footer]]))
+
+
+(defn open-issuer-modal [state]
+  (create-class {:reagent-render (fn [] (issuer-modal state))
+                 :component-will-unmount (fn [] (do (close-modal!)))}))
+
+
+(defn select-issuer [state]
+  (let [applications (cursor state [:all-applications])
+        issuer-name (cursor state [:issuer-content :name])]
+    [:div.form-group
+     [:label {:class "control-label col-sm-2" :for "select-issuer"} (str (t :gallery/Searchbyissuer) ":")]
+     [:div.col-sm-10
+      [:button.issuer-button {:class (str "btn form-control btn-active")
+                              :id "btn-all"
+                              :on-click #(do
+                                           (m/modal! [open-issuer-modal state] {:size :md}))} (str @issuer-name)]]]))
+
 (defn follow-grid-item [show-followed-only-atom state]
   [:div {:class "form-group wishlist-buttons"}
    [:label {:for   "input-email-notifications"
@@ -297,18 +411,21 @@
      (if (not (:user-id @state))
        [:div
         [country-selector state]
-        [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
+        #_[:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
               :href "#"}
           (if @show-advanced-search
             (t :gallery/Hideadvancedsearch)
             (t :gallery/Showadvancedsearch))]
-        (if  @show-advanced-search
+        ;(if  @show-advanced-search
           [:div
            [autocomplete state]
            [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-           [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
+           [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]]
+        ;)
+        ])
      [follow-grid-item show-followed-only-atom state]
-     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]]))
+     [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
+     [issuer-info-grid state]]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data
@@ -382,7 +499,7 @@
   (let [{:keys [country issuer-name order id name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
         query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
     (-> query-params
-        (assoc :country (if id "all" (or country "all"))))))
+        (assoc :country (if id "all" (or country (session/get-in [:user :country] "all")))))))
 
 
 (defn handler [site-navi params]
@@ -391,19 +508,21 @@
         badge_content_id (:badge_content_id params)
         state            (atom {:init-id            (:id init-values)
                                 :show-followed-only false
+                                :show-issuer-info false
                                 :tags               ()
                                 :value              #{}
                                 :user-id            user-id
                                 :badges             []
                                 :countries          []
-                                :country-selected   (or (:country init-values) (session/get-in [:user :country] "all"))
+                                :country-selected   (:country init-values) #_(or (:country init-values) (session/get-in [:user :country] "all"))
                                 :advanced-search    false
                                 :name               (or (:name init-values) "")
                                 :issuer-name        (or (:issuer-name init-values) "")
                                 :order              (or (:order init-values) "mtime")
                                 :timer              nil
                                 :autocomplete-items              #{}
-                                :ajax-message       nil})]
+                                :ajax-message       nil
+                                :issuer-content {:name (t :core/All)}})]
     (init-data state init-values)
     (autocomplete-search state (:country init-values))
     (fn []

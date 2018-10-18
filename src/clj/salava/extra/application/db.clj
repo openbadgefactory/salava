@@ -46,7 +46,7 @@
 
 (defn badge-adverts-where-params [country name issuer-name id]
   (let [where-params {}]
-    
+
     (-> where-params
         ;(conj (map-collection " and ba.id = ? " id ))
         (conj (map-collection " and ba.country = ? " country (not= country "all")))
@@ -54,26 +54,26 @@
         (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))
         )))
 
- 
+
 
 
 (defn get-badge-adverts [ctx country tags name issuer-name order id user-id show-followed-only]
   (let [where-params (badge-adverts-where-params country name issuer-name id)
         user-id (or user-id "NULL") ;set null if nil
         where   (str (apply str (keys where-params))  (if show-followed-only  " AND scba.user_id IS NOT NULL ")) ;add IS NOT NULL when user want only followed adverts
-        params (cons user-id (vec (vals where-params)))  ;add user-id to params 
+        params (cons user-id (vec (vals where-params)))  ;add user-id to params
         tags (vec (vals tags))
         order (cond
                 (= order "mtime") "ORDER BY ba.mtime DESC"
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
-                :else "ORDER BY ba.mtime DESC") 
-        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
+                :else "ORDER BY ba.mtime DESC")
+        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.image_file AS issuer_image, ic.url AS issuer_content_url,ic.id AS issuer_content_id,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
        JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
        LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
-       LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = ?) 
-       where ba.deleted = 0 AND (not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (not_after = 0 OR not_after > UNIX_TIMESTAMP()) 
+       LEFT JOIN social_connections_badge_advert AS scba ON (scba.badge_advert_id = ba.id and scba.user_id = ?)
+       where ba.deleted = 0 AND (not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (not_after = 0 OR not_after > UNIX_TIMESTAMP())
        "
 
                    where
@@ -122,13 +122,13 @@
   (let [where-params (tags-where-params country)
         where  (apply str (keys where-params))
         params (vec (vals where-params))
-        query (str "SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count 
+        query (str "SELECT bct.tag, GROUP_CONCAT(bct.badge_content_id) AS badge_content_ids, COUNT(bct.badge_content_id) as badge_content_id_count
                     from badge_content_tag AS bct JOIN badge_advert AS ba
-         ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0  AND (ba.not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (ba.not_after = 0 OR not_after > UNIX_TIMESTAMP()) " 
+         ON (bct.badge_content_id = ba.badge_content_id) where ba.deleted = 0  AND (ba.not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (ba.not_after = 0 OR not_after > UNIX_TIMESTAMP()) "
                    where
-                   " GROUP BY bct.tag 
-                    ORDER BY tag 
-                    LIMIT 1000") 
+                   " GROUP BY bct.tag
+                    ORDER BY tag
+                    LIMIT 1000")
         search (jdbc/with-db-connection
                  [conn (:connection (u/get-db ctx))]
                  (jdbc/query conn (into [query] params))) ]
@@ -174,16 +174,39 @@
                                   :url (:criteria_url data)
                                   :markdown_text (u/alt-markdown criteria)})})))
 
+(defn advert-owners "return all users in country where badge is advertised" [ctx country]
+  (let [owners (select-advert-owners {:country country} (u/get-db ctx))]
+    owners))
+
+(defn insert-advert-owners! "Creates event owners for advert" [ctx data]
+  (try
+    (let [owners (advert-owners ctx (:country data))
+          query (vec (map #(assoc % :event_id (:event-id data)) owners))]
+      (jdbc/insert-multi! (:connection (u/get-db ctx)) :social_event_owners query))
+    (catch Exception ex
+      (log/error "insert-event-owners!: failed to save event owners")
+      (log/error (.toString ex)))))
+
+(defn insert-advert-event! [ctx data]
+  (insert-badge-advert-event<! data (u/get-db ctx)))
+
+(defn publish-advert [ctx id data]
+  (u/advert ctx id "advertise" (:remote_id data) "advert" (:country data)))
+
+(def do-publish (memoize publish-advert))
+
 (defn publish-badge [ctx data]
   (try
-    (replace-badge-advert!
-      (merge data (advert-content ctx data))
-      (u/get-db ctx))
-    {:success true}
+    (let [advert_id (:generated_key (replace-badge-advert<!
+                                      (merge data (advert-content ctx data))
+                                      (u/get-db ctx)))]
+      (when advert_id (do-publish ctx advert_id data))
+      {:success true})
     (catch Exception ex
       (log/error "publish-badge: failed to save badge advert")
       (log/error (.toString ex))
       {:success false})))
+
 
 
 (defn unpublish-badge [ctx data]
@@ -208,3 +231,9 @@
     {:status "success" }
     (catch Object _
       {:status "error"})))
+
+(defn get-advert-events [ctx user_id]
+  (let [user-country (user-country ctx user_id)
+        adverts (select-badge-advert-events {:owner_id user_id :country user-country} (u/get-db ctx))]
+    (filter #(false? (:hidden %)) adverts)))
+
