@@ -68,7 +68,7 @@
                                          :alt name}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
-                                              (mo/open-modal [:gallery :badges] {:badge-id id})
+                                              (mo/open-modal [:gallery :badges] {:badge-id id} {:hide (fn [] (init-data state))})
                                               ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } name]]
                    [:td.action (unfollow id state)]
