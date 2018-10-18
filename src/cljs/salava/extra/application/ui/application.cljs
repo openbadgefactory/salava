@@ -493,6 +493,7 @@
                (let [{:keys [applications countries user-country]} data]
                  (swap! state assoc :applications applications
                         :countries countries
+                        :all-applications applications
                         )))}))
 
 
