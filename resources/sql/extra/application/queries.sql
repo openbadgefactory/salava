@@ -20,7 +20,7 @@ UPDATE badge_advert SET
     mtime = UNIX_TIMESTAMP()
 WHERE id = :id
 
--- name: replace-badge-advert!
+-- name: replace-badge-advert<!
 INSERT INTO badge_advert
    (remote_url, remote_id, remote_issuer_id, info, application_url, application_url_label,
     issuer_content_id, badge_content_id, criteria_content_id, criteria_url, kind,
@@ -64,7 +64,7 @@ SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ba.criteria_url, ic.
        WHERE ba.deleted = 0 AND ba.id = :id
 
 -- name: select-badge-advert-countries
-SELECT country FROM badge_advert WHERE deleted=0  AND (not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (not_after = 0 OR not_after > UNIX_TIMESTAMP()) ORDER BY country  
+SELECT country FROM badge_advert WHERE deleted=0  AND (not_before = 0 OR not_before < UNIX_TIMESTAMP()) AND (not_after = 0 OR not_after > UNIX_TIMESTAMP()) ORDER BY country
 
 -- name: select-user-country
 SELECT country FROM user WHERE id = :id
@@ -89,6 +89,6 @@ WHERE remote_url = :remote_url AND remote_id = :remote_id AND remote_issuer_id =
 --add new connect with badge advert
 INSERT IGNORE INTO social_connections_badge_advert (user_id, badge_advert_id, ctime)
                    VALUES (:user_id, :badge_advert_id, UNIX_TIMESTAMP())
-		   
+
 --name: delete-connect-badge-advert!
 DELETE FROM social_connections_badge_advert WHERE user_id = :user_id  AND badge_advert_id = :badge_advert_id
