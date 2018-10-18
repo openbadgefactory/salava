@@ -308,6 +308,16 @@
 
     }
   }
+
+  .issuer-grid {
+    .info-block {
+      background-color: #fff;
+      max-width: 640px;
+      .footer {
+        padding: 4px;
+      }
+    }
+  }
 }
 
 /* metosin autocomplete */
