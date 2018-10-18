@@ -420,7 +420,9 @@
           [:div
            [autocomplete state]
            [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-           [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]]
+           ;[text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]
+           [select-issuer state]
+           ]
         ;)
         ])
      [follow-grid-item show-followed-only-atom state]
