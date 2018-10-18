@@ -31,7 +31,7 @@
     top: 2px;
     margin-top: -2px;
     //margin-right: 3px;
-   
+
 }
 
 .following-icon{
@@ -43,7 +43,7 @@
      &:hover {
          color:$badge-title-hover;
      }
-    
+
 }
 
 .badge-advert-footer{
@@ -130,8 +130,8 @@
 		    line-height: 12px;
 		    cursor: pointer;
 		}
-               
-                
+
+
             }
 	    .btn-advert{
 		border: 2px solid;
@@ -145,7 +145,7 @@
 		    }
 		}
 
-	
+
 	    }
 
         }
@@ -284,6 +284,10 @@
         }
     }
     }
+  .issuer-button {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* metosin autocomplete */
@@ -309,7 +313,7 @@
   border-color: #444 transparent transparent transparent;
   border-style: solid;
   border-width: 5px 5px 0 5px;
-  
+
 }
 .autocomplete__control--open:after {
   border-color: transparent transparent #444 transparent;
