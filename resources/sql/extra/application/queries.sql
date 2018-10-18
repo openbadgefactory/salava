@@ -92,3 +92,19 @@ INSERT IGNORE INTO social_connections_badge_advert (user_id, badge_advert_id, ct
 
 --name: delete-connect-badge-advert!
 DELETE FROM social_connections_badge_advert WHERE user_id = :user_id  AND badge_advert_id = :badge_advert_id
+
+--name: select-badge-advert-events
+SELECT seo.owner, seo.event_id, seo.last_checked, seo.hidden, se.subject, se.verb, se.object, se.ctime, se.type, bc.name, bc.image_file, ic.id AS issuer_content_id, ic.name AS issuer_content_name, ic.image_file AS issuer_image FROM social_event_owners AS seo
+      JOIN social_event AS se on seo.event_id = se.id
+      JOIN badge_advert AS ba ON se.subject = ba.id
+      JOIN badge_content AS bc ON ba.badge_content_id = bc.id
+      JOIN issuer_content AS ic ON ba.issuer_content_id = ic.id
+      WHERE seo.owner = :owner_id AND se.verb = 'advertise' AND se.type = 'advert' AND ba.country = :country
+      ORDER BY se.ctime DESC
+      LIMIT 50
+
+--name: insert-badge-advert-event<!
+INSERT INTO social_event (subject, verb, object, type, ctime, mtime) VALUES (:subject, :verb, :object, :type, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: select-advert-owners
+SELECT id AS owner FROM user WHERE country = :country
