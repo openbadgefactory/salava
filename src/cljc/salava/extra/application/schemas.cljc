@@ -50,13 +50,14 @@
                                            (s/optional-key :issuer_image) (s/maybe s/Str))))
 
 (s/defschema BadgeAdverts {:applications [(-> BadgeAdvert
-                                              (dissoc :issuer_content_id :badge_content_id
+                                              (dissoc :badge_content_id
                                                       :criteria_content_id :ctime :deleted :remote_url :remote_id :remote_issuer_id :application_url
                                                       :application_url_label :criteria_url)
                                               (assoc :followed s/Int
                                                      :image_file s/Str
                                                      :issuer_content_url s/Str
                                                      :issuer_content_name s/Str
+                                                     :issuer_image (s/maybe s/Str)
                                                      :name s/Str
                                                      :tags (s/maybe s/Str)
                                                      :not_after (s/maybe s/Int)
