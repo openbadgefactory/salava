@@ -20,13 +20,14 @@
                   :summary "Get badge adverts"
                   :current-user current-user
                   :auth-rules access/signed
-                  (let [applications (a/get-badge-adverts ctx country tags name issuer order id (:id current-user) (if (= "true" followed) true false))
+                  (ok (a/get-applications ctx country tags name issuer order id (:id current-user) (if (= "true" followed) true false)))
+                  #_(let [applications (a/get-badge-adverts ctx country tags name issuer order id (:id current-user) (if (= "true" followed) true false))
                         countries (a/badge-adverts-countries ctx (:id current-user))
                         current-country (if (empty? country)
                                           (:user-country countries)
                                           country)]
                     (ok (into {:applications applications} countries))))
-             
+
              (GET "/public_badge_advert_content/:id" []
                   :return schemas/BadgeAdvertModal
                   :summary "Get badge advert"
@@ -41,7 +42,7 @@
                   :current-user current-user
                   :auth-rules access/signed
                   (ok (a/get-autocomplete ctx "" country)))
-             
+
              (PUT "/publish_badge/:apikey/:remoteid" []
                   :return {:success s/Bool}
                   :body  [data schemas/BadgeAdvertPublish]
@@ -69,10 +70,10 @@
                   :body  [data schemas/BadgeAdvertUnpublish]
                   (ok (a/unpublish-badge ctx data)))
              )
-    
+
     (context "/obpv1/factory" []
              :tags ["factory"]
-             
+
             (PUT "/publish_badge/:apikey/:remoteid" []
                  :return {:success s/Bool}
                  :body  [data schemas/BadgeAdvertPublish]

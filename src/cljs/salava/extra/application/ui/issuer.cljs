@@ -142,7 +142,7 @@
             (doall
               (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
                     :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
-                          badges-count (issuer-applications-count issuer_content_name state)
+                          applications-count (issuer-applications-count issuer_content_name state)
                           ;testing
                           banner (if (even? (count issuer_content_name)) true false)]]
                 [:a { :key issuer_content_id
@@ -156,7 +156,7 @@
 
                  [:div {:style {:padding "5px"}} (if issuer_image
                                                    [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
-                  (str issuer_content_name "  ("  badges-count ")")]]))])]]
+                  (str issuer_content_name "  ("  applications-count ")")]]))])]]
        [:div.modal-footer]])))
 
 
