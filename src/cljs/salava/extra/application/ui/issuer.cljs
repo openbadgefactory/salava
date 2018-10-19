@@ -18,11 +18,14 @@
     (subs text 1)
     text))
 
-(defn all-connections [state]
+(defn create-favourite-list [favourites all]
+ (sort-by :issuer_content_name (distinct-by :issuer_content_id (filter (fn [app] (some #(= (:id %) (:issuer_content_id app)) favourites)) all))))
+
+(defn get-favourites [state]
   (ajax/GET
     (path-for (str "/obpv1/social/connections_issuer"))
     {:handler (fn [data]
-                (swap! state assoc :all-connections data)
+                (swap! state assoc :favourites (create-favourite-list data (:all-applications @state)))
                 )}))
 
 (defn init-issuer-applications [state]
@@ -36,8 +39,9 @@
                 :order (trim order)
                 :followed show-followed-only}
        :handler (fn [data]
-                  (swap! state assoc :all-issuer-applications (:applications data) )
-                  (all-connections state))})))
+                  (swap! state assoc :all-issuer-applications (:applications data)
+                                     :show-favourite-issuers false)
+                  (get-favourites state))})))
 
 (defn fetch-badge-adverts [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
@@ -85,6 +89,30 @@
      {:src (if (re-find #"^file/" path) (str "/" path) path)
       :style {:width "50px" :padding-right "10px"}}]))
 
+
+
+(defn text-field [key label placeholder state]
+  (let [applications (cursor state [:all-applications])
+        search-atom (cursor state [key])
+        favourites (cursor state [:favourites])
+        show-favourites-atom (cursor state [:show-favourite-issuers])
+        current-application-list (if @show-favourites-atom favourites applications)]
+    [:div.form-group
+     ;[:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
+     [:div.col-sm-10
+      [:input {:class       (str "form-control")
+               :type        "text"
+               :placeholder placeholder
+               :value       @search-atom
+               :on-change   #(do
+                               (reset! search-atom (.-target.value %))
+                               (reset! current-application-list (filter (fn [s]
+                                         (->> s (:issuer_content_name) (re-find (re-pattern (str "(?i)" @search-atom))))) @current-application-list))
+                               (when (blank? @search-atom) (issuer-applications "" state)))
+
+               #_(search-timer state)}]]]))
+
+
 (defn issuer-info-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
         issuer-content (cursor state [:issuer-content])
@@ -113,10 +141,80 @@
               [:a {:href "#" :on-click #(remove-issuer-from-favourites id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :badge/Removefromfavourites))]
               )]]]]])))
 
+(defn issuer-filter-grid [show-favourites-atom state]
+  [:div#grid-filter {:class "form-horizontal" :style {:margin-bottom "10px"}}
+   [:div {:class "form-group wishlist-buttons"}
+       #_[:label {:for   "input-email-notifications"
+            :class "col-md-2"}
+    (str (t :core/Show) ":")]
+    [:div.col-md-10
+    [:div.buttons
+     [:button {:class (str "btn btn-default " (if-not @show-favourites-atom "btn-active"))
+               :id "btn-all"
+               :on-click #(reset! show-favourites-atom (if @show-favourites-atom false true))}
+      (t :core/All)]
+     [:button {:class (str "btn btn-default " (if @show-favourites-atom "btn-active"))
+               :id "btn-all"
+               :on-click #(reset! show-favourites-atom (if @show-favourites-atom false true))}
+      [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]]
+   [:div {:style {:margin-top "5px"}}
+    [text-field :issuer  nil "search issuer" state]]])
+
+(defn favourites-block [favourites state]
+  (if-not (empty? @favourites)
+    [:div
+     (doall
+       (for [app @favourites
+             :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
+                   applications-count (issuer-applications-count issuer_content_name state)
+                   ;testing
+                   banner (if (even? (count issuer_content_name)) true false)]]
+         [:a { :key issuer_content_id
+               :data-dismiss "modal"
+               :on-click #(do
+                            (.preventDefault %)
+                            (init-issuer-connection issuer_content_id state)
+                            (swap! state assoc :show-issuer-info true
+                                   :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
+                            (issuer-applications issuer_content_name state))}
+
+          [:div {:style {:padding "5px"}} (if issuer_image
+                                            [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
+           (str issuer_content_name "  ("  applications-count ")")]]
+
+         ))]
+    [:div]))
+
+(defn issuer-block [applications state]
+  (into
+    [:div
+     [:a {:data-dismiss "modal"
+          :on-click #(do
+                       (swap! state assoc :show-issuer-info false :issuer-content {:name (t :core/All)})
+                       (issuer-applications "" state))} [:div.all (t :core/All)]]]
+    (doall
+      (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
+            :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
+                  applications-count (issuer-applications-count issuer_content_name state)
+                  ;testing
+                  banner (if (even? (count issuer_content_name)) true false)]]
+        ^{:key app}[:a { :data-dismiss "modal"
+              :on-click #(do
+                           (.preventDefault %)
+                           (init-issuer-connection issuer_content_id state)
+                           (swap! state assoc :show-issuer-info true
+                                  :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
+                           (issuer-applications issuer_content_name state))}
+
+         [:div {:style {:padding "5px"}} (if issuer_image
+                                           [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
+          (str issuer_content_name "  ("  applications-count ")")]]))))
+
 (defn issuer-content-modal [state]
   (let [applications (cursor state [:all-applications])
         issuer-name (cursor state [:issuer-content :name])
-        favourites (cursor state [:all-connections])]
+        favourites (cursor state [:favourites])
+        show-favourites-atom (cursor state [:show-favourite-issuers])]
     (fn []
       [:div#badge-content
        [:div.modal-body
@@ -131,32 +229,8 @@
             [:span {:aria-hidden             "true"
                     :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
         [:div.issuer-list
-         (into
-           [:div
-            [:a {:data-dismiss "modal"
-                 :on-click #(do
-                              (swap! state assoc :show-issuer-info false
-                                     :issuer-content {:name (t :core/All) #_(t :badge/Issuers)})
-                              (issuer-applications "" state))}
-             [:div.all (t :core/All)]]
-            (doall
-              (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
-                    :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
-                          applications-count (issuer-applications-count issuer_content_name state)
-                          ;testing
-                          banner (if (even? (count issuer_content_name)) true false)]]
-                [:a { :key issuer_content_id
-                      :data-dismiss "modal"
-                      :on-click #(do
-                                   (.preventDefault %)
-                                   (init-issuer-connection issuer_content_id state)
-                                   (swap! state assoc :show-issuer-info true
-                                          :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
-                                   (issuer-applications issuer_content_name state))}
-
-                 [:div {:style {:padding "5px"}} (if issuer_image
-                                                   [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
-                  (str issuer_content_name "  ("  applications-count ")")]]))])]]
+         [issuer-filter-grid show-favourites-atom state]
+         (if @show-favourites-atom [favourites-block favourites state] [issuer-block applications state])]]
        [:div.modal-footer]])))
 
 
@@ -174,4 +248,4 @@
       [:button.issuer-button {:class (str "btn form-control btn-active")
                               :id "btn-all"
                               :on-click #(do
-                                           (m/modal! [open-issuer-modal state] {:size :md :shown (fn [] (init-issuer-applications state)) }))} (str @issuer-name)]]]))
+                                           (m/modal! [open-issuer-modal state] {:size :md :shown (fn []  (init-issuer-applications state)) }))} (str @issuer-name)]]]))
