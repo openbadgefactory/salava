@@ -18,6 +18,12 @@
     (subs text 1)
     text))
 
+(defn all-connections [state]
+  (ajax/GET
+    (path-for (str "/obpv1/social/connections_issuer"))
+    {:handler (fn [data]
+                (swap! state assoc :all-connections data)
+                )}))
 
 (defn init-issuer-applications [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
@@ -30,7 +36,8 @@
                 :order (trim order)
                 :followed show-followed-only}
        :handler (fn [data]
-                  (swap! state assoc :all-issuer-applications (:applications data) ))})))
+                  (swap! state assoc :all-issuer-applications (:applications data) )
+                  (all-connections state))})))
 
 (defn fetch-badge-adverts [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
@@ -70,7 +77,6 @@
   (fetch-badge-adverts state))
 
 (defn issuer-applications-count [issuer-name state]
-  (init-issuer-applications state)
   (count (filter #(= issuer-name (:issuer_content_name %)) (:all-issuer-applications @state))))
 
 (defn- issuer-image [path]
@@ -109,7 +115,8 @@
 
 (defn issuer-content-modal [state]
   (let [applications (cursor state [:all-applications])
-        issuer-name (cursor state [:issuer-content :name])]
+        issuer-name (cursor state [:issuer-content :name])
+        favourites (cursor state [:all-connections])]
     (fn []
       [:div#badge-content
        [:div.modal-body
@@ -167,4 +174,4 @@
       [:button.issuer-button {:class (str "btn form-control btn-active")
                               :id "btn-all"
                               :on-click #(do
-                                           (m/modal! [open-issuer-modal state] {:size :md}))} (str @issuer-name)]]]))
+                                           (m/modal! [open-issuer-modal state] {:size :md :shown (fn [] (init-issuer-applications state)) }))} (str @issuer-name)]]]))
