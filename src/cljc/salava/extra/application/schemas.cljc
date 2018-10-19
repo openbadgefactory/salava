@@ -28,7 +28,10 @@
 (s/defschema BadgeAdvertPublish (-> BadgeAdvert
                                     (dissoc :id :issuer_content_id :badge_content_id
                                             :criteria_content_id :ctime :mtime :deleted)
-                                    (assoc :badge s/Str :client s/Str)))
+                                    (assoc :badge  s/Str
+                                           :client s/Str
+                                           :remote_issuer_tier   s/Str
+                                           :remote_issuer_banner (s/maybe s/Str))))
 
 (s/defschema BadgeAdvertUnpublish {:remote_url       s/Str
                                    :remote_id        s/Str
