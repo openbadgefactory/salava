@@ -237,8 +237,8 @@
         adverts (select-badge-advert-events {:owner_id user_id :country user-country} (u/get-db ctx))]
     (filter #(false? (:hidden %)) adverts)))
 
-(defn get-applications [ctx country tags name issuer-name order id user-id show-followed-only]
-  (let [applications (get-badge-adverts ctx country tags name issuer order id user-id (if (= "true" followed) true false))
+(defn get-applications [ctx country tags name issuer-name order id user-id followed]
+  (let [applications (get-badge-adverts ctx country tags name issuer-name order id user-id (if (= "true" followed) true false))
         countries (badge-adverts-countries ctx user-id)
         current-country (if (empty? country) (:user-country countries) country)]
     (into {:applications applications} countries)))

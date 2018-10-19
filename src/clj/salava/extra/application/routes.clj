@@ -20,13 +20,7 @@
                   :summary "Get badge adverts"
                   :current-user current-user
                   :auth-rules access/signed
-                  (ok (a/get-applications ctx country tags name issuer order id (:id current-user) (if (= "true" followed) true false)))
-                  #_(let [applications (a/get-badge-adverts ctx country tags name issuer order id (:id current-user) (if (= "true" followed) true false))
-                        countries (a/badge-adverts-countries ctx (:id current-user))
-                        current-country (if (empty? country)
-                                          (:user-country countries)
-                                          country)]
-                    (ok (into {:applications applications} countries))))
+                  (ok (a/get-applications ctx country tags name issuer order id (:id current-user) followed)))
 
              (GET "/public_badge_advert_content/:id" []
                   :return schemas/BadgeAdvertModal
