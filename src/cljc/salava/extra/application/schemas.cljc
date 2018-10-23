@@ -35,7 +35,9 @@
 
 (s/defschema BadgeAdvertUnpublish {:remote_url       s/Str
                                    :remote_id        s/Str
-                                   :remote_issuer_id s/Str})
+                                   :remote_issuer_id s/Str
+                                   :remote_issuer_tier s/Str
+                                   :remote_issuer_banner (s/maybe s/Str)})
 
 
 

@@ -166,7 +166,10 @@
                                 :endorsement []
                                 :image_file (if-not (string/blank? (:image client))
                                               (u/file-from-url ctx (:image client)))
-                                :revocation_list_url (:revocationList client)})
+                                :revocation_list_url (:revocationList client)
+                                :banner (if-not (string/blank? (:remote_issuer_banner data))
+                                          (u/file-from-url ctx (:remote_issuer_banner data)))
+                                :tier (:remote_issuer_tier data)})
        :criteria_content_id
        (b/save-criteria-content! tx
                                  {:id ""
@@ -201,7 +204,7 @@
 (defn publish-badge [ctx data]
   (try
     (let [advert_id (:generated_key (replace-badge-advert<!
-                                      (merge data (advert-content ctx data))
+                                      (merge (dissoc data :remote_issuer_banner :remote_issuer_tier) (advert-content ctx data))
                                       (u/get-db ctx)))]
       (when advert_id (do-publish ctx advert_id data))
       {:success true})
