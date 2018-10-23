@@ -179,7 +179,7 @@
                                   :markdown_text (u/alt-markdown criteria)})})))
 
 (defn advert-owners "return all users in country where badge is advertised" [ctx country]
-  (let [owners (select-advert-owners {:country country} (u/get-db ctx))]
+  (let [owners (if-not (string/blank? country) (select-advert-owners {:country country} (u/get-db ctx)) (select-all-owners {} (u/get-db ctx)))]
     owners))
 
 (defn insert-advert-owners! "Creates event owners for advert" [ctx data]
