@@ -190,8 +190,11 @@
 (defn insert-advert-event! [ctx data]
   (insert-badge-advert-event<! data (u/get-db ctx)))
 
+(defn advert [ctx subject verb object type country]
+  (u/publish ctx :advert {:subject subject :verb verb :object object :type type :country country}))
+
 (defn publish-advert [ctx id data]
-  (u/advert ctx id "advertise" (:remote_id data) "advert" (:country data)))
+  (advert ctx id "advertise" (:remote_id data) "advert" (:country data)))
 
 (def do-publish (memoize publish-advert))
 
@@ -206,7 +209,6 @@
       (log/error "publish-badge: failed to save badge advert")
       (log/error (.toString ex))
       {:success false})))
-
 
 
 (defn unpublish-badge [ctx data]
