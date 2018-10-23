@@ -215,7 +215,7 @@
            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
          )
        ]
-      [:div.share-button
+      #_[:div.share-button
        [google-plus url]]
       [:div.share-button
        [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank"} [:i {:class "fa fa-facebook-square"}]]]
