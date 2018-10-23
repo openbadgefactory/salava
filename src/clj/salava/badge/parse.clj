@@ -36,7 +36,9 @@
                                    :image_file (s/maybe s/Str)
                                    :email (s/maybe s/Str)
                                    :revocation_list_url (s/maybe s/Str)
-                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]}})
+                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]
+                   (s/optional-key :banner) (s/maybe s/Str)
+                   (s/optional-key :tier) (s/maybe (s/enum "free" "basic" "premium" "pro"))}})
 
 (s/defschema IssuerContent {:id s/Str
                             :language_code s/Str
@@ -46,11 +48,13 @@
                             :image_file (s/maybe s/Str)
                             :email (s/maybe s/Str)
                             :revocation_list_url (s/maybe s/Str)
-                            :endorsement [(s/maybe Endorsement)]})
+                            :endorsement [(s/maybe Endorsement)]
+                            :banner (s/maybe s/Str)
+                            :tier (s/maybe (s/enum "free" "basic" "premium" "pro"))})
 
 
 (s/defschema CreatorContent (-> IssuerContent
-                                (dissoc :revocation_list_url)
+                                (dissoc :revocation_list_url :tier :banner)
                                 (assoc  :json_url s/Str)))
 
 (s/defschema CriteriaContent {:id s/Str
@@ -188,7 +192,9 @@
                              :email (:contact issuer)
                              :endorsement []
                              :image_file nil
-                             :revocation_list_url nil}]
+                             :revocation_list_url nil
+                             :tier nil
+                             :banner nil}]
                    :creator nil
                    :endorsement []
                    :published 0
@@ -254,7 +260,9 @@
                                  :url (:url $)
                                  :email (:email $)
                                  :image_file (:image $)
-                                 :revocation_list_url nil})}
+                                 :revocation_list_url nil
+                                 :banner nil
+                                 :tier nil})}
                      nil)))
             (remove nil?)
             (map (fn [e]
@@ -304,7 +312,9 @@
                                 :email (:email issuer)
                                 :image_file (:image issuer)
                                 :revocation_list_url (:revocationList issuer)
-                                :endorsement (get-endorsement issuer)}]
+                                :endorsement (get-endorsement issuer)
+                                :tier nil
+                                :banner nil}]
                     :creator (when creator-url
                                (let [data (http/json-get creator-url)]
                                  [{:id ""
@@ -435,7 +445,9 @@
                              :email (:email issuer)
                              :image_file nil
                              :endorsement []
-                             :revocation_list_url (:revocationList issuer)}]
+                             :revocation_list_url (:revocationList issuer)
+                             :tier nil
+                             :banner nil}]
                    :creator creator
                    :endorsement []
                    :published 0
