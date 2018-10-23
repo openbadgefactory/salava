@@ -585,8 +585,8 @@ INSERT IGNORE INTO criteria_content (id, language_code, url, markdown_text)
        VALUES (:id, :language_code, :url, :markdown_text)
 
 -- name: insert-issuer-content!
-INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code)
-        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code);
+INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code, banner, tier)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code, :banner, :tier);
 
 -- name: insert-creator-content!
 INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url, language_code)
