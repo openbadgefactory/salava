@@ -228,7 +228,7 @@
           [:div.col-xs-12.footer
            [:div.pull-left [:a {:href "#" :on-click #(do
                                                        (.preventDefault %)
-                                                       (mo/open-modal [:badge :issuer] id))} (t :admin/Showmore)]]
+                                                       (mo/open-modal [:badge :issuer] id {:hide (fn [] (init-issuer-connection id state))}))} (t :admin/Showmore)]]
            [:div.pull-right
             (if-not connected
               [:a {:href "#" :on-click #(add-issuer-to-favourites id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :badge/Addtofavourites))]
