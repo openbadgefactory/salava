@@ -352,7 +352,7 @@
       (into [:div.panel {:class "row wrap-grid"
                          :id    "grid"
                          :style {:padding "10px"}}
-             [:h3 [:i.fa.fa-star ] (str (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ) #_" (" badge-count ")")]
+             [:h3 [:i.fa.fa-star ] (str " " (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ))]
              [:hr]]
             (for [element-data badges]
               (badge-grid-element element-data state))))))
