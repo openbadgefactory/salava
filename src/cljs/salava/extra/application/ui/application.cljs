@@ -346,8 +346,8 @@
 (defn pro-badges-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
         badges (shuffle-pro-badges 4 state)
-        ;badge-count (count badges)
-        ]
+        badge-count (count badges)]
+
     (when (and (not (empty? badges)) (not @show-issuer-info-atom))
       (into [:div.panel {:class "row wrap-grid"
                          :id    "grid"
