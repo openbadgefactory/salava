@@ -177,7 +177,8 @@
 
 (defn badge-advert-event [event state]
   (let [modal (first (plugin-fun (session/get :plugins) "application" "open_modal"))
-        {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event]
+        {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event
+        visibility (if issuer_image "visible" "hidden")]
     [:div#advert-event {:class "media message-item"}
      (hide-event event_id state)
      [:div.media-left
@@ -194,8 +195,7 @@
                          (.preventDefault %)
                          (modal subject state))} name]]
       [:div.media {:key issuer_content_id}
-       (if issuer_image
-         [:span.pull-left [:img {:class "message-profile-img" :src (profile-picture issuer_image)}]])
+         [:span.pull-left {:style {:visibility visibility}} [:img {:class "message-profile-img" :src (profile-picture issuer_image)}]]
        [:div.media-body
         [:h4.media-heading
          [:a {:href "#"
