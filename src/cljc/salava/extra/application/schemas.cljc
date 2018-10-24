@@ -63,6 +63,8 @@
                                                      :issuer_content_url s/Str
                                                      :issuer_content_name s/Str
                                                      :issuer_image (s/maybe s/Str)
+                                                     :issuer_tier (s/maybe s/Str)
+                                                     :issuer_banner (s/maybe s/Str)
                                                      :name s/Str
                                                      :tags (s/maybe s/Str)
                                                      :not_after (s/maybe s/Int)
