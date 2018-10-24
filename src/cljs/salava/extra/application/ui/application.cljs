@@ -346,12 +346,13 @@
 (defn pro-badges-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
         badges (shuffle-pro-badges 4 state)
-        badge-count (count badges)]
+        ;badge-count (count badges)
+        ]
     (when (and (not (empty? badges)) (not @show-issuer-info-atom))
       (into [:div.panel {:class "row wrap-grid"
                          :id    "grid"
                          :style {:padding "10px"}}
-             [:h3 [:i.fa.fa-star ] (str (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ) " (" badge-count ")")]
+             [:h3 [:i.fa.fa-star ] (str (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ) #_" (" badge-count ")")]
              [:hr]]
             (for [element-data badges]
               (badge-grid-element element-data state))))))
