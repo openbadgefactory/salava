@@ -103,7 +103,6 @@
         show-favourites-atom (cursor state [:show-favourite-issuers])
         current-list (if @show-favourites-atom (cursor state [:favourites]) (cursor state [:all-applications]))]
     [:div.form-group
-     ;[:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
       [:input {:class       (str "form-control")
                :type        "text"
@@ -111,8 +110,7 @@
                :value       @search-atom
                :on-change   #(do
                                (reset! search-atom (.-target.value %))
-                               (process-search search-atom state)
-                               (when (blank? @search-atom) (swap! state assoc :issuer-search false)))}]]]))
+                               (process-search search-atom state))}]]]))
 
 (defn issuer-block [state]
   (let [search-atom (cursor state [:issuer-search])
@@ -120,16 +118,16 @@
         applications (if @search-atom (cursor state [:search-result])(if @show-favourites-atom (cursor state [:favourites]) (cursor state [:all-applications])))]
     (into [:div] (doall
                    (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
-                         :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id]} app
+                         :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id issuer_tier issuer_banner]} app
                                applications-count (issuer-applications-count issuer_content_name state)
                                ;testing
-                               banner (if (even? (count issuer_content_name)) true false)]]
+                               #_banner #_(if (even? (count issuer_content_name)) true false)]]
                      ^{:key app}[:a { :data-dismiss "modal"
                                       :on-click #(do
                                                    (.preventDefault %)
                                                    (init-issuer-connection issuer_content_id state)
                                                    (swap! state assoc :show-issuer-info true
-                                                          :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :banner banner})
+                                                          :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner})
                                                    (issuer-applications issuer_content_name state))}
 
                                  [:div {:style {:padding "5px"}} (if issuer_image
@@ -140,9 +138,6 @@
 (defn issuer-filter-grid [show-favourites-atom state]
   [:div#grid-filter {:class "form-horizontal" :style {:margin-bottom "10px"}}
    [:div {:class "form-group wishlist-buttons"}
-    #_[:label {:for   "input-email-notifications"
-               :class "col-md-2"}
-       (str (t :core/Show) ":")]
     [:div.col-md-10
      [:div.buttons
       [:button {:class (str "btn btn-default " (if-not @show-favourites-atom "btn-active"))
@@ -156,7 +151,7 @@
                              (swap! state assoc :issuer-search false :issuer ""))}
        [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]]
    [:div {:style {:margin-top "5px"}}
-    [issuer-search :issuer  nil "search issuer" state]]])
+    [issuer-search :issuer  nil (t :extra-application/Searchissuer) state]]])
 
 
 (defn issuer-content-modal [state]
@@ -194,18 +189,18 @@
         show-issuer-info-atom (cursor state [:show-issuer-info])
         display (if @show-issuer-info-atom "inline-block" "none")]
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "select-issuer"} (str "Select issuer" #_(t :gallery/Searchbyissuer) ":")]
+     [:label {:class "control-label col-sm-2" :for "select-issuer"} (str (t :extra-application/Selectissuer) ":")]
      [:div.col-sm-10.buttons
       [:button.btn.btn-default {:style {:display display}
                                 :on-click #(do
-                                             (swap! state assoc :show-issuer-info false :issuer-content {:name (t :core/All)})
-                                             (issuer-applications "" state)) }  "Reset"]
+                                             (swap! state assoc :show-issuer-info false :issuer-content {:name (t :extra-application/Allissuers)})
+                                             (issuer-applications "" state)) }  (t :extra-application/Reset)]
       [:button.issuer-button {:class (str "btn btn-active")
                               :id "btn-all"
                               :on-click #(do
                                            (m/modal! [open-issuer-modal state] {:size :md
                                                                                 :shown (fn []  (init-issuer-applications state))
-                                                                                :hide (fn [] (swap! state assoc                                      :issuer ""
+                                                                                :hide (fn [] (swap! state assoc :issuer ""
                                                                                                     :issuer-search false
                                                                                                     :search-result []
                                                                                                     ))}))} (str @issuer-name)]]]))
@@ -213,19 +208,19 @@
 (defn issuer-info-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
         issuer-content (cursor state [:issuer-content])
-        {:keys [id name image url banner connected]} @issuer-content]
+        {:keys [id name image url banner connected tier]} @issuer-content]
     [:div
      [select-issuer state]
      ;https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png
      (if @show-issuer-info-atom
        [:div.row.issuer-grid
         [:div.col-xs-12
-         (if banner
+         (if-not (blank? banner)
            [:img.img-responsive
-            {:src "https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png" #_"https://openbadgefactory.com/c/download/c3eb37b1114f38b3183eca5add6a9682d77e3cdff16467539dc9877be0bd6b2d.png"}])
+            {:src (str "/" banner) #_"https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png" #_"https://openbadgefactory.com/c/download/c3eb37b1114f38b3183eca5add6a9682d77e3cdff16467539dc9877be0bd6b2d.png"}])
          [:div.col-xs-12.info-block
           [:div.col-xs-12
-           (when-not banner
+           (when (blank? banner)
              [:h2.uppercase-header.pull-left
               (issuer-image image)
               " "

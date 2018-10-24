@@ -296,6 +296,7 @@
     }
     a {
       cursor: pointer;
+      text-decoration: none;
       &:hover {
         div {
           border: 1px solid #d2d2d2;
@@ -317,6 +318,12 @@
         padding: 4px;
       }
     }
+  }
+  .featured {
+    float:left;
+    width: 18px;
+    font-size: 18px;
+    margin-right: -25px
   }
 }
 

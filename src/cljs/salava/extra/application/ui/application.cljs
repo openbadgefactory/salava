@@ -297,19 +297,20 @@
         [country-selector state]
         [:div
          [autocomplete state]
-         [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-         [i/select-issuer state]]])
+         [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]]])
 
      [follow-grid-item show-followed-only-atom state]
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
      [i/issuer-info-grid state]]))
 
 (defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed]} element-data
+  (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed issuer_tier]} element-data
         badge-id (or badge_content_id id)]
     [:div {:class "media grid-container"}
      (if (pos? followed)
        [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
+     (if (= "pro" issuer_tier)
+       [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
      [:div.media-content
       (if image_file
         [:div.media-left
@@ -336,6 +337,25 @@
                       (str str1 " " str2))]
       (reduce str-space a-seq))))
 
+
+(defn shuffle-pro-badges [n state]
+  (let [badges (filter #(= (:issuer_tier %) "pro") (:applications @state))]
+    (take n (shuffle badges))))
+
+
+(defn pro-badges-grid [state]
+  (let [show-issuer-info-atom (cursor state [:show-issuer-info])
+        badges (shuffle-pro-badges 4 state)
+        badge-count (count badges)]
+    (when (and (not (empty? badges)) (not @show-issuer-info-atom))
+      (into [:div.panel {:class "row wrap-grid"
+                         :id    "grid"
+                         :style {:padding "10px"}}
+             [:h3 [:i.fa.fa-star ] (str (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ) " (" badge-count ")")]
+             [:hr]]
+            (for [element-data badges]
+              (badge-grid-element element-data state))))))
+
 (defn gallery-grid [state]
   (let [badges (:applications @state)
         tags (:tags @state)]
@@ -343,7 +363,7 @@
      [:h3 (str-cat tags)]
      (into [:div {:class "row wrap-grid"
                   :id    "grid"}]
-           (for [element-data badges]
+           (for [element-data (sort-by #(= (:issuer_tier "pro")) badges)]
              (badge-grid-element element-data state)))]))
 
 
@@ -353,6 +373,7 @@
                                    [:div {:id "badge-advert"}
                                     [m/modal-window]
                                     [gallery-grid-form state]
+                                    [pro-badges-grid state]
                                     [gallery-grid state]
                                     ;(if (:ajax-message @state) [:div.ajax-message [:i {:class "fa fa-cog fa-spin fa-2x "}] [:span (:ajax-message @state)]][gallery-grid state])
                                     ])
@@ -368,7 +389,7 @@
                 (let [{:keys [applications countries user-country]} data]
                   (swap! state assoc :applications applications
                          :countries countries
-                         :all-applications applications ;; use original applications list to build issuer list
+                         :all-applications applications ;; use initial applications list to build issuer list
                          )))}))
 
 
@@ -400,7 +421,9 @@
                                 :timer              nil
                                 :autocomplete-items              #{}
                                 :ajax-message       nil
-                                :issuer-content {:name (t :core/All)}})]
+                                :issuer-content {:name (t :extra-application/Allissuers)}
+                                :issuer-search false
+                                :search-result []})]
     (init-data state init-values)
     (autocomplete-search state (:country init-values))
     (fn []
