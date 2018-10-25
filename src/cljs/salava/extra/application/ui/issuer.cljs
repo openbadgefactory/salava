@@ -211,13 +211,12 @@
         {:keys [id name image url banner connected tier]} @issuer-content]
     [:div
      [select-issuer state]
-     ;https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png
      (if @show-issuer-info-atom
        [:div.row.issuer-grid
         [:div.col-xs-12
          (if-not (blank? banner)
            [:img.img-responsive
-            {:src (str "/" banner) #_"https://openbadgefactory.com/c/download/9ce0fe80b799923f3a02395aa918d6602bdf03f4eb854a6f35f3ac6221fa1976.png" #_"https://openbadgefactory.com/c/download/c3eb37b1114f38b3183eca5add6a9682d77e3cdff16467539dc9877be0bd6b2d.png"}])
+            {:src (str "/" banner)}])
          [:div.col-xs-12.info-block
           [:div.col-xs-12
            (when (blank? banner)
@@ -231,8 +230,8 @@
                                                        (mo/open-modal [:badge :issuer] id {:hide (fn [] (init-issuer-connection id state))}))} (t :admin/Showmore)]]
            [:div.pull-right
             (if-not connected
-              [:a {:href "#" :on-click #(add-issuer-to-favourites id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :badge/Addtofavourites))]
-              [:a {:href "#" :on-click #(remove-issuer-from-favourites id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :badge/Removefromfavourites))]
+              [:a {:href "#" :on-click #(add-issuer-to-favourites id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]
+              [:a {:href "#" :on-click #(remove-issuer-from-favourites id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]
               )]]]]])]))
 
 
