@@ -10,8 +10,8 @@
     #(layout/default site-navi content)))
 
 (defn ^:export routes [context]
-  {(str (base-path context) "/gallery") [["/application" a/handler]]})
+  {} #_{(str (base-path context) "/gallery") [["/application" a/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/gallery/application")         {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :gallery/Gallery " / " :extra-application/Application)}})
+  {} #_{(str (base-path context) "/gallery/application")         {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :gallery/Gallery " / " :extra-application/Application)}})
 
