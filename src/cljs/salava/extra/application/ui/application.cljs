@@ -303,7 +303,7 @@
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
      [i/issuer-info-grid state]]))
 
-(defn badge-grid-element [element-data state]
+#_(defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed issuer_tier]} element-data
         badge-id (or badge_content_id id)]
     [:div {:class "media grid-container"}
@@ -330,6 +330,39 @@
      [:div.media-bottom
       ;(admin-gallery-badge badge-id "badges" state init-data)
       ]]))
+
+(defn badge-grid-element [element-data state]
+  (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed issuer_tier]} element-data
+        badge-id (or badge_content_id id)]
+    [:div {:class "media grid-container"}
+     (if (pos? followed)
+       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
+     (if (= "pro" issuer_tier)
+       [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
+
+      [:div.media-content
+       [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:app :advert] {:id id  :state state})) }
+       (if image_file
+         [:div.media-left
+          [:img {:src (str "/" image_file)
+                 :alt name}]
+          #_[:a {:href "#" :on-click #(open-modal id state) :title name}
+             [:img {:src (str "/" image_file)
+                    :alt name}]]])
+       [:div.media-body
+        [:div {:class "media-heading"}
+         [:span name]
+         #_[:a {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
+          name]]
+        [:div.media-issuer
+         [:p issuer_content_name]]
+        [:div.media-getthis
+         [:span [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]
+         #_[:a {:class "" :on-click #(do (.preventDefault %) (mo/open-modal [:app :advert] {:id id  :state state}) #_(open-modal id state))}
+            [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
+      [:div.media-bottom
+       ;(admin-gallery-badge badge-id "badges" state init-data)
+       ]]]))
 
 (defn str-cat [a-seq]
   (if (empty? a-seq)

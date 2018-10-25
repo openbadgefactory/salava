@@ -54,6 +54,10 @@
     padding-bottom: 20px;
     border-bottom: 1px dashed #DDDDDD;
 }
+
+.advert-issuer {
+  margin-right:10px;
+}
 /*badge advert grid */
 #badge-advert{
     #grid .grid-container {
@@ -102,7 +106,7 @@
                 line-height: 1.2em;
                 height: 2.4em;
 		overflow: hidden;
-                a {
+                span {
                     cursor: pointer;
                     font-size: 16px;
                     color: $badge-title;
@@ -117,13 +121,15 @@
                 height: 2.8em;
                 overflow-y: hidden;
                 font-size: 12px;
-                    a {
-                        color:$text-color;
-                        font-size: 13px;
-                    }
+                color:$text-color;
+                font-weight:500;
+                    //span {
+                      //  color:$text-color;
+                        //font-size: 13px;
+                    //}
             }
 	    .media-getthis{
-                a{
+                span{
                     color: $title-color;
                     font-size: 12px;
                     font-weight: bold;

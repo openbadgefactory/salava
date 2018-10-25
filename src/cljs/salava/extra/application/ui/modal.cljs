@@ -19,6 +19,14 @@
     {:handler (fn [data]
                 (reset! data-atom data))}))
 
+(defn issuer-modal-link [issuer-id name]
+  [:div {:class "issuer-data clearfix"}
+   [:label {:class "advert-issuer"}  (t :extra-application/Issuer) ":"]
+   [:div {:class "issuer-links pull-label-left inline"}
+    [:a {:href "#"
+         :on-click #(do (.preventDefault %)
+                      (mo/open-modal [:badge :issuer] issuer-id))} name]]])
+
 (defn content [id state]
   (let [data-atom (atom {})]
     (init id data-atom state)
@@ -30,13 +38,22 @@
          [:div {:id "badge-contents"}
           [:div.row
            [:div {:class "col-md-3 badge-image modal-left"}
-            [:img {:src (str "/" image_file)}]]
-           [:div {:class "col-md-9 badge-info"}
+            [:img {:src (str "/" image_file)}]
+            [:div
+             [:div
+              [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
+              ;[:a  " >> Apply now"]
+              ]
+             (if-not (not-activated?)
+               (if (pos? (:followed @data-atom))
+                 [:div [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
+                 [:div [:a {:href "#" :on-click #(app/add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]
+           [:div {:class "col-md-9 "}
             [:div.rowcontent
              [:h1.uppercase-header name]
              [:div.badge-stats
-              #_(bh/issuer-label-image-link issuer_content_name issuer_content_url "" issuer_contact issuer_image)
-              (bm/issuer-modal-link issuer_content_id issuer_content_name)
+              (issuer-modal-link issuer_content_id issuer_content_name)
+
               [:div
                description]
               (if-not (blank? criteria_url)
@@ -62,20 +79,20 @@
            [:div {:class "badge-contents col-xs-12"}
             [:div.col-md-3 [:div]]
             [:div {:class "col-md-9 badge-info"}
-             [:div
-              [:div.pull-left
-               [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
-               ;[:a  " >> Apply now"]
-               ]
-              (if-not (not-activated?)
-                (if (pos? (:followed @data-atom))
-                  [:div.pull-right [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
-                  [:div.pull-right [:a {:href "#" :on-click #(app/add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]]]]]))))
+             #_[:div
+                [:div.pull-left
+                 [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
+                 ;[:a  " >> Apply now"]
+                 ]
+                (if-not (not-activated?)
+                  (if (pos? (:followed @data-atom))
+                    [:div.pull-right [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
+                    [:div.pull-right [:a {:href "#" :on-click #(app/add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]]]]]))))
 
 #_(defn badge-content-modal [id state]
-  (create-class {:reagent-render (fn []
-                                   (content id state))
-                 :component-will-unmount (fn [] (do (close-modal!)))}))
+    (create-class {:reagent-render (fn []
+                                     (content id state))
+                   :component-will-unmount (fn [] (do (close-modal!)))}))
 
 
 (defn handler [params]
