@@ -346,13 +346,20 @@
 
 (defn pro-badges-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
+        show-featured (cursor state [:show-featured])
         badges (shuffle-pro-badges 4 state)
         badge-count (count badges)]
 
-    (when (and (not (empty? badges)) (not @show-issuer-info-atom))
+    (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
       (into [:div.panel {:class "row wrap-grid"
                          :id    "grid"
                          :style {:padding "10px"}}
+             [:button.close {:aria-label "OK"
+                             :on-click #(do
+                                          (.preventDefault %)
+                                          (swap! state assoc :show-featured false))}
+              [:span {:aria-hidden "true"
+                      :dangerouslySetInnerHTML {:__html "&times;"}}]]
              [:h3 [:i.fa.fa-star ] (str " " (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ))]
              [:hr]]
             (for [element-data badges]
@@ -425,7 +432,8 @@
                                 :ajax-message       nil
                                 :issuer-content {:name (t :extra-application/Allissuers)}
                                 :issuer-search false
-                                :search-result []})]
+                                :search-result []
+                                :show-featured true})]
     (init-data state init-values)
     (autocomplete-search state (:country init-values))
     (fn []
