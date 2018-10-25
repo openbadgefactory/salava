@@ -324,7 +324,8 @@
        [:div.media-issuer
         [:p issuer_content_name]]
        [:div.media-getthis
-        [:a {:class "" :on-click #(do (.preventDefault %)(open-modal id state))}
+        ;(mo/open-modal [:badge :issuer] id {:hide (fn [] (init-issuer-connection id state))})
+        [:a {:class "" :on-click #(do (.preventDefault %) (mo/open-modal [:app :advert] {:id id  :state state}) #_(open-modal id state))}
          [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
      [:div.media-bottom
       ;(admin-gallery-badge badge-id "badges" state init-data)

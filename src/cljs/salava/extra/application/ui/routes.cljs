@@ -2,7 +2,8 @@
    (:require [salava.core.ui.layout :as layout]
              [salava.core.i18n :as i18n :refer [t]]
              [salava.core.ui.helper :refer [base-path]]
-             [salava.extra.application.ui.application :as a]))
+             [salava.extra.application.ui.application :as a]
+             [salava.extra.application.ui.modal :as advertmodal]))
 
 (defn placeholder [content]
   (fn [site-navi params]
