@@ -54,8 +54,11 @@
              [:div.badge-stats
               (issuer-modal-link issuer_content_id issuer_content_name)
 
-              [:div
-               description]
+              (if-not (blank? description)
+                [:div {:class "issuer-data clearfix" :style {:margin-bottom "10px"}}
+                 [:label {:class "advert-issuer"}  (t :admin/Description) ":"]
+                 [:div {:class "issuer-links pull-label-left inline"}
+                  description]])
               (if-not (blank? criteria_url)
                 [:div {:class "badge-info"}
                  [:a {:href   criteria_url
