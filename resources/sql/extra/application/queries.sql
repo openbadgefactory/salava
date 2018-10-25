@@ -53,7 +53,7 @@ GROUP BY ba.id
 --name: select-badge-advert
 
 SELECT DISTINCT ba.id, ba.country, bc.name, bc.description, ba.criteria_url, ic.email AS issuer_contact,
-       ic.image_file AS issuer_image, ba.info, bc.image_file, ic.name AS issuer_content_name,
+       ic.image_file AS issuer_image, ba.info, bc.image_file, ic.name AS issuer_content_name,ic.id AS issuer_content_id,
        ic.url AS issuer_content_url,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before,
        ba.not_after, ba.kind, ba.application_url, ba.application_url_label, IF(scba.user_id, true, false) AS followed
        FROM badge_advert AS ba

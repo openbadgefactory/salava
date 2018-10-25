@@ -42,7 +42,7 @@
 
 
 (s/defschema BadgeAdvertModal (-> BadgeAdvert
-                                  (dissoc :issuer_content_id :badge_content_id
+                                  (dissoc  :badge_content_id
                                                        :criteria_content_id :ctime :deleted :remote_url :remote_id :remote_issuer_id)
                                     (assoc :followed s/Int
                                            :image_file (s/maybe s/Str)
