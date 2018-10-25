@@ -72,7 +72,7 @@
                   [:div.pull-right [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
                   [:div.pull-right [:a {:href "#" :on-click #(app/add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]]]]]))))
 
-(defn badge-content-modal [id state]
+#_(defn badge-content-modal [id state]
   (create-class {:reagent-render (fn []
                                    (content id state))
                  :component-will-unmount (fn [] (do (close-modal!)))}))
@@ -81,7 +81,7 @@
 (defn handler [params]
   (let [id (:id params)
         state (:state params)]
-    (fn [] (badge-content-modal id state))))
+    (fn [] (content id state))))
 
 (def ^:export modalroutes
   {:app {:advert handler}}
