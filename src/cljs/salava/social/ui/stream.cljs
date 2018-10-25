@@ -176,7 +176,7 @@
 
 
 (defn badge-advert-event [event state]
-  (let [modal (first (plugin-fun (session/get :plugins) "application" "open_modal"))
+  (let [;modal (first (plugin-fun (session/get :plugins) "application" "open_modal"))
         {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event
         visibility (if issuer_image "visible" "hidden")]
     [:div#advert-event {:class "media message-item"}
@@ -185,7 +185,8 @@
       [:a {:href "#"
            :on-click #(do
                         (.preventDefault %)
-                        (modal subject state))}
+                        (mo/open-modal [:app :advert] {:id subject :state state})
+                        #_(modal subject state))}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
@@ -193,7 +194,8 @@
        [:a {:href "#"
             :on-click #(do
                          (.preventDefault %)
-                         (modal subject state))} name]]
+                         (mo/open-modal [:app :advert] {:id subject :state state})
+                         #_(modal subject state))} name]]
       [:div.media {:key issuer_content_id}
          [:span.pull-left {:style {:visibility visibility}} [:img {:class "message-profile-img" :src (profile-picture issuer_image)}]]
        [:div.media-body
@@ -206,7 +208,8 @@
       [:a {:href "#"
            :on-click #(do
                         (.preventDefault %)
-                        (modal subject state)
+                        ;(modal subject state)
+                        (mo/open-modal [:app :advert] {:id subject :state state})
                         )} (t :social/Readmore)]]]))
 
 (defn publish-event-badge [event state]
