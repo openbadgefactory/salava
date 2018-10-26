@@ -105,11 +105,11 @@
 
 
 
-(defn tag-parser [tags]
+#_(defn tag-parser [tags]
   (if tags
     (s/split tags #",")))
 
-(defn modal-content [data state]
+#_(defn modal-content [data state]
   (let [{:keys [image_file name info issuer_content_name tags  issuer_content_name issuer_content_url issuer_contact issuer_image description criteria_url]} data
         tags (tag-parser tags)
         country (:country-selected @state)]
@@ -145,7 +145,7 @@
                       (str "#" tag )])))]]]]])))
 
 
-(defn badge-content-modal-render [data state]
+#_(defn badge-content-modal-render [data state]
 
   (let [data-atom (atom data) ]
     (fn []
@@ -179,13 +179,13 @@
 
 
 
-(defn badge-content-modal [data state]
+#_(defn badge-content-modal [data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render data state))
                  :component-will-unmount (fn [] (do (close-modal!)
                                                   ;(if (and init-data state) (init-data state))
                                                   ))}))
 
-(defn open-modal [id state]
+#_(defn open-modal [id state]
   (ajax/GET
     (path-for (str "/obpv1/application/public_badge_advert_content/" id))
     {:handler (fn [data]
@@ -372,21 +372,22 @@
       (reduce str-space a-seq))))
 
 
-(defn shuffle-pro-badges [n state]
+(defn shuffle-featured-badges [n state]
   (let [badges (filter #(= (:issuer_tier %) "pro") (:applications @state))]
     (take n (shuffle badges))))
 
 
-(defn pro-badges-grid [state]
+(defn featured-badges-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
         show-featured (cursor state [:show-featured])
-        badges (shuffle-pro-badges 4 state)
+        badges (shuffle-featured-badges 4 state)
         badge-count (count badges)]
 
     (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
       (into [:div.panel {:class "row wrap-grid"
                          :id    "grid"
-                         :style {:padding "10px"}}
+                         :style {:padding "5px"
+                                 :text-align "center"}}
              [:button.close {:aria-label "OK"
                              :on-click #(do
                                           (.preventDefault %)
@@ -415,7 +416,7 @@
                                    [:div {:id "badge-advert"}
                                     [m/modal-window]
                                     [gallery-grid-form state]
-                                    [pro-badges-grid state]
+                                    [featured-badges-grid state]
                                     [gallery-grid state]
                                     ;(if (:ajax-message @state) [:div.ajax-message [:i {:class "fa fa-cog fa-spin fa-2x "}] [:span (:ajax-message @state)]][gallery-grid state])
                                     ])
