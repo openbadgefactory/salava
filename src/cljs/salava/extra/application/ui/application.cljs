@@ -33,7 +33,7 @@
     text))
 
 (defn fetch-badge-adverts [state]
-  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
+  (let [{:keys [user-id country-selected name issuer-name order tags show-followed-only]} @state]
     (ajax/GET
       (path-for (str "/obpv1/application/"))
       {:params  {:country  (trim country-selected)
@@ -43,6 +43,8 @@
                  :order    (trim order)
                  :followed show-followed-only}
        :handler (fn [data]
+                  (if (or (not= order "mtime") (not (empty? tags)) show-followed-only (not (blank? name)))
+                    (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
                   (swap! state assoc :applications (:applications data)))})))
 
 (defn add-to-followed
@@ -103,94 +105,12 @@
                          :tags  #{} ;todo: katso jos on toisessakin olemassa
                          :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
 
-
-
-#_(defn tag-parser [tags]
-  (if tags
-    (s/split tags #",")))
-
-#_(defn modal-content [data state]
-  (let [{:keys [image_file name info issuer_content_name tags  issuer_content_name issuer_content_url issuer_contact issuer_image description criteria_url]} data
-        tags (tag-parser tags)
-        country (:country-selected @state)]
-    (fn []
-      [:div {:id "badge-contents"}
-       [:div.row
-        [:div {:class "col-md-3 badge-image modal-left"}
-         [:img {:src (str "/" image_file)}]]
-        [:div {:class "col-md-9 badge-info"}
-         [:div.rowcontent
-          [:h1.uppercase-header name]
-          [:div.badge-stats
-           (bh/issuer-label-image-link issuer_content_name issuer_content_url "" issuer_contact issuer_image)
-           [:div
-            description]
-           (if-not (blank? criteria_url)
-             [:div {:class "badge-info"}
-              [:a {:href   criteria_url
-                   :target "_blank"} (t :badge/Opencriteriapage)]])]
-          [:div {:class " badge-info"}
-           [:h2.uppercase-header (t :extra-application/Howtogetthisbadge)]
-           [:div {:dangerouslySetInnerHTML {:__html info}}]]
-          [:div
-           (if (not (empty? tags))
-             (into [:div]
-                   (for [tag tags]
-                     [:a {:href         "#"
-                          :id           "tag"
-                          :on-click     #(do
-                                           (swap! state assoc :advanced-search true)
-                                           (set-to-autocomplete state tag))
-                          :data-dismiss "modal"}
-                      (str "#" tag )])))]]]]])))
-
-
-#_(defn badge-content-modal-render [data state]
-
-  (let [data-atom (atom data) ]
-    (fn []
-      [:div {:id "badge-content"}
-       [:div.modal-body
-        [:div.row
-         [:div.col-md-12
-          [:div {:class "text-right"}
-
-           [:button {:type         "button"
-                     :class        "close"
-                     :data-dismiss "modal"
-                     :aria-label   "OK"}
-            [:span {:aria-hidden             "true"
-                    :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
-        [modal-content data state]]
-       [:div.modal-footer
-        [:div {:class "badge-advert-footer"}
-         [:div {:class "badge-contents col-xs-12"}
-          [:div.col-md-3 [:div]]
-          [:div {:class "col-md-9 badge-info"}
-           [:div
-            [:div.pull-left
-             [:a  {:href (:application_url data) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
-             ;[:a  " >> Apply now"]
-             ]
-            (if-not (not-activated?)
-              (if (pos? (:followed @data-atom))
-                [:div.pull-right [:a {:href "#" :on-click #(remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
-                [:div.pull-right [:a {:href "#" :on-click #(add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]]]]])))
-
-
-
-#_(defn badge-content-modal [data state]
-  (create-class {:reagent-render (fn [] (badge-content-modal-render data state))
-                 :component-will-unmount (fn [] (do (close-modal!)
-                                                  ;(if (and init-data state) (init-data state))
-                                                  ))}))
-
-#_(defn open-modal [id state]
+(defn open-modal [id state]
   (ajax/GET
     (path-for (str "/obpv1/application/public_badge_advert_content/" id))
     {:handler (fn [data]
                 (do
-                  (m/modal! [badge-content-modal data state] {:size :lg})))}))
+                  (mo/open-modal [:application :badge] {:id (:init-id @state) :state state :data data})))}))
 
 
 (defn search-timer [state]
@@ -303,34 +223,6 @@
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
      [i/issuer-info-grid state]]))
 
-#_(defn badge-grid-element [element-data state]
-  (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed issuer_tier]} element-data
-        badge-id (or badge_content_id id)]
-    [:div {:class "media grid-container"}
-     (if (pos? followed)
-       [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
-     (if (= "pro" issuer_tier)
-       [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
-     [:div.media-content
-      (if image_file
-        [:div.media-left
-         [:a {:href "#" :on-click #(open-modal id state) :title name}
-          [:img {:src (str "/" image_file)
-                 :alt name}]]])
-      [:div.media-body
-       [:div {:class "media-heading"}
-        [:a {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
-         name]]
-       [:div.media-issuer
-        [:p issuer_content_name]]
-       [:div.media-getthis
-        ;(mo/open-modal [:badge :issuer] id {:hide (fn [] (init-issuer-connection id state))})
-        [:a {:class "" :on-click #(do (.preventDefault %) (mo/open-modal [:app :advert] {:id id  :state state}) #_(open-modal id state))}
-         [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
-     [:div.media-bottom
-      ;(admin-gallery-badge badge-id "badges" state init-data)
-      ]]))
-
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed issuer_tier]} element-data
         badge-id (or badge_content_id id)]
@@ -341,28 +233,19 @@
        [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
 
       [:div.media-content
-       [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:app :advert] {:id id  :state state})) }
+       [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state})) }
        (if image_file
          [:div.media-left
           [:img {:src (str "/" image_file)
-                 :alt name}]
-          #_[:a {:href "#" :on-click #(open-modal id state) :title name}
-             [:img {:src (str "/" image_file)
-                    :alt name}]]])
+                 :alt name}]])
        [:div.media-body
         [:div {:class "media-heading"}
-         [:span name]
-         #_[:a {:on-click #(do (.preventDefault %)(open-modal id state)) :title name}
-          name]]
+         [:span name]]
         [:div.media-issuer
          [:p issuer_content_name]]
         [:div.media-getthis
-         [:span [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]
-         #_[:a {:class "" :on-click #(do (.preventDefault %) (mo/open-modal [:app :advert] {:id id  :state state}) #_(open-modal id state))}
-            [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
-      [:div.media-bottom
-       ;(admin-gallery-badge badge-id "badges" state init-data)
-       ]]]))
+         [:span [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
+      [:div.media-bottom]]]))
 
 (defn str-cat [a-seq]
   (if (empty? a-seq)
@@ -385,16 +268,14 @@
 
     (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
       (into [:div.panel {:class "row wrap-grid"
-                         :id    "grid"
-                         :style {:padding "5px"
-                                 :text-align "center"}}
+                         :id    "grid"}
              [:button.close {:aria-label "OK"
                              :on-click #(do
                                           (.preventDefault %)
                                           (swap! state assoc :show-featured false))}
               [:span {:aria-hidden "true"
                       :dangerouslySetInnerHTML {:__html "&times;"}}]]
-             [:h3 [:i.fa.fa-star ] (str " " (if (> badge-count 1) (t :extra-application/Featuredbadges) (t :extra-application/Featuredbadge) ))]
+             [:h3 (t :extra-application/Featured)]
              [:hr]]
             (for [element-data badges]
               (badge-grid-element element-data state))))))
@@ -410,7 +291,6 @@
              (badge-grid-element element-data state)))]))
 
 
-
 (defn content [state]
   (create-class {:reagent-render (fn []
                                    [:div {:id "badge-advert"}
@@ -421,8 +301,7 @@
                                     ;(if (:ajax-message @state) [:div.ajax-message [:i {:class "fa fa-cog fa-spin fa-2x "}] [:span (:ajax-message @state)]][gallery-grid state])
                                     ])
                  :component-did-mount (fn []
-                                        (if (:init-id @state) (open-modal (:init-id @state) state))
-                                        )}))
+                                        (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
 (defn init-data [state init-params]
   (ajax/GET

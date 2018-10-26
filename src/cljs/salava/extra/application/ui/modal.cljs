@@ -7,7 +7,8 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [salava.extra.application.ui.application :as app]
-            [salava.badge.ui.modal :as bm]))
+            [salava.badge.ui.modal :as bm]
+            [salava.core.helper :refer [dump]]))
 
 (defn tag-parser [tags]
   (if tags
@@ -27,9 +28,9 @@
          :on-click #(do (.preventDefault %)
                       (mo/open-modal [:badge :issuer] issuer-id))} name]]])
 
-(defn content [id state]
-  (let [data-atom (atom {})]
-    (init id data-atom state)
+(defn content [id data state]
+  (let [data-atom (atom data)]
+    (if (empty? data) (init id data-atom state))
     (fn []
       (let [{:keys [image_file name info issuer_content_name tags issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image description criteria_url]} @data-atom
             tags (tag-parser tags)
@@ -92,17 +93,15 @@
                     [:div.pull-right [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
                     [:div.pull-right [:a {:href "#" :on-click #(app/add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]]]]]))))
 
-#_(defn badge-content-modal [id state]
-    (create-class {:reagent-render (fn []
-                                     (content id state))
-                   :component-will-unmount (fn [] (do (close-modal!)))}))
+
 
 
 (defn handler [params]
   (let [id (:id params)
-        state (:state params)]
-    (fn [] (content id state))))
+        state (:state params)
+        data (or (:data params) {})]
+    (fn [] (content id data state))))
 
 (def ^:export modalroutes
-  {:app {:advert handler}}
+  {:application {:badge handler}}
   )
