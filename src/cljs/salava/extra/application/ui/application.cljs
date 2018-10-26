@@ -34,6 +34,8 @@
 
 (defn fetch-badge-adverts [state]
   (let [{:keys [user-id country-selected name issuer-name order tags show-followed-only]} @state]
+    (if (or (not= order "mtime") (not (empty? tags)) show-followed-only (not (blank? name)))
+      (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
     (ajax/GET
       (path-for (str "/obpv1/application/"))
       {:params  {:country  (trim country-selected)
@@ -43,8 +45,6 @@
                  :order    (trim order)
                  :followed show-followed-only}
        :handler (fn [data]
-                  (if (or (not= order "mtime") (not (empty? tags)) show-followed-only (not (blank? name)))
-                    (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
                   (swap! state assoc :applications (:applications data)))})))
 
 (defn add-to-followed
@@ -275,7 +275,7 @@
                                           (swap! state assoc :show-featured false))}
               [:span {:aria-hidden "true"
                       :dangerouslySetInnerHTML {:__html "&times;"}}]]
-             [:h3 (t :extra-application/Featured)]
+             [:h3.panel-heading (t :extra-application/Featured)]
              [:hr]]
             (for [element-data badges]
               (badge-grid-element element-data state))))))

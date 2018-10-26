@@ -37,7 +37,7 @@
             country (:country-selected @state)]
         [:div {:id "badge-content"}
          [:div {:id "badge-contents"}
-          [:div.row
+          [:div.row.flip
            [:div {:class "col-md-3 badge-image modal-left"}
             [:img {:src (str "/" image_file)}]
             [:div
