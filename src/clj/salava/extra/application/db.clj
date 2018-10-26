@@ -207,7 +207,7 @@
     (let [advert_id (:generated_key (replace-badge-advert<!
                                       (merge (dissoc data :remote_issuer_banner :remote_issuer_tier) (advert-content ctx data))
                                       (u/get-db ctx)))]
-      (when advert_id (do-publish ctx advert_id data))
+      (when (and advert_id (= "pro" (:remote_issuer_tier data))) (do-publish ctx advert_id data)) ;;publish events only when issuer is pro
       {:success true})
     (catch Exception ex
       (log/error "publish-badge: failed to save badge advert")
