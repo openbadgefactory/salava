@@ -57,42 +57,6 @@
                  (init-data state) )
       :error-handler (fn [{:keys [status status-text]}])}))
 
-#_(defn badge-pending [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]} state]
-  [:div.row {:key id}
-   [:div.col-md-12
-    [:div.badge-container-pending
-     (if (or verified_by_obf issued_by_obf)
-       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
-     [:div.row
-      [:div.col-md-12
-       [:div.media
-        [:div.pull-left
-         [:img.badge-image {:src (str "/" image_file)}]]
-        [:div.media-body
-         [:h4.media-heading
-          name]
-         [:div
-          [:a {:href issuer_content_url :target "_blank"} issuer_content_name]]
-         [:div (date-from-unix-time (* 1000 issued_on))]
-
-         ;METABADGE
-         [:div (bh/meta-badge meta_badge meta_badge_req)]
-
-         [:div
-          description]]]]]
-     [:div {:class "row button-row"}
-      [:div.col-md-12
-       [:button {:class "btn btn-primary"
-                 :on-click #(do
-                              (update-status id "accepted" state)
-                              (.preventDefault %))}
-        (t :badge/Acceptbadge)]
-       [:button {:class "btn btn-warning"
-                 :on-click #(do
-                              (update-status id "declined" state)
-                              (.preventDefault %))}
-        (t :badge/Declinebadge)]]]]]])
-
 (defn badge-alert [state]
   (if (:badge-alert @state)
     [:div {:class "alert alert-success"}
@@ -176,8 +140,7 @@
 
 
 (defn badge-advert-event [event state]
-  (let [;modal (first (plugin-fun (session/get :plugins) "application" "open_modal"))
-        {:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event
+  (let [{:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event
         visibility (if issuer_image "visible" "hidden")]
     [:div#advert-event {:class "media message-item"}
      (hide-event event_id state)
@@ -185,8 +148,7 @@
       [:a {:href "#"
            :on-click #(do
                         (.preventDefault %)
-                        (mo/open-modal [:app :advert] {:id subject :state state})
-                        #_(modal subject state))}
+                        (mo/open-modal [:application :badge] {:id subject :state state}))}
        [:img {:src (str "/" image_file)} ]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days") ]
@@ -194,8 +156,7 @@
        [:a {:href "#"
             :on-click #(do
                          (.preventDefault %)
-                         (mo/open-modal [:app :advert] {:id subject :state state})
-                         #_(modal subject state))} name]]
+                         (mo/open-modal [:application :badge] {:id subject :state state}))} name]]
       [:div.media {:key issuer_content_id}
          [:span.pull-left {:style {:visibility visibility}} [:img {:class "message-profile-img" :src (profile-picture issuer_image)}]]
        [:div.media-body
@@ -208,9 +169,7 @@
       [:a {:href "#"
            :on-click #(do
                         (.preventDefault %)
-                        ;(modal subject state)
-                        (mo/open-modal [:app :advert] {:id subject :state state})
-                        )} (t :social/Readmore)]]]))
+                        (mo/open-modal [:application :badge] {:id subject :state state}))} (t :social/Readmore)]]]))
 
 (defn publish-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event]
