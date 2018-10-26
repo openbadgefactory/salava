@@ -119,9 +119,7 @@
     (into [:div] (doall
                    (for [app (sort-by :issuer_content_name (distinct-by :issuer_content_name @applications))
                          :let [{:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id issuer_tier issuer_banner]} app
-                               applications-count (issuer-applications-count issuer_content_name state)
-                               ;testing
-                               #_banner #_(if (even? (count issuer_content_name)) true false)]]
+                               applications-count (issuer-applications-count issuer_content_name state)]]
                      ^{:key app}[:a { :data-dismiss "modal"
                                       :on-click #(do
                                                    (.preventDefault %)

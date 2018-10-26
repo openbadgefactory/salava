@@ -303,6 +303,13 @@
                  :component-did-mount (fn []
                                         (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
+(defn init-all-issuers [state init-params]
+  (ajax/GET
+    (path-for "/obpv1/application/")
+    {:params  (assoc init-params :country "all")
+     :handler (fn [data]
+                (swap! state assoc :all-applications (:applications data)))}))
+
 (defn init-data [state init-params]
   (ajax/GET
     (path-for "/obpv1/application/")
@@ -310,9 +317,8 @@
      :handler (fn [data]
                 (let [{:keys [applications countries user-country]} data]
                   (swap! state assoc :applications applications
-                         :countries countries
-                         :all-applications applications ;; use initial applications list to build issuer list
-                         )))}))
+                         :countries countries)
+                  (init-all-issuers state init-params)))}))
 
 
 (defn init-values
