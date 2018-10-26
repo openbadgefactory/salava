@@ -198,7 +198,7 @@
   (u/publish ctx :advert {:subject subject :verb verb :object object :type type :country country :ctime ctime}))
 
 (defn publish-advert [ctx id data]
-  (advert ctx id "advertise" (:remote_id data) "advert" (:country data) (if (= 0 (:not_before data)) (t/unix-time) (:not_before data))))
+  (advert ctx id "advertise" (:remote_id data) "advert" (:country data) (if (or (> (t/unix-time) (:not_before data)) (= 0 (:not_before data))) (t/unix-time) (:not_before data))))
 
 (def do-publish (memoize publish-advert))
 
