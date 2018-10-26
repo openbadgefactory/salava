@@ -43,12 +43,7 @@
             [:div
              [:div
               [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
-              ;[:a  " >> Apply now"]
-              ]
-             (if-not (not-activated?)
-               (if (pos? (:followed @data-atom))
-                 [:div [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
-                 [:div [:a {:href "#" :on-click #(app/add-to-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]]))]]
+              ]]]
            [:div {:class "col-md-9 "}
             [:div.rowcontent
              [:h1.uppercase-header name]
@@ -83,11 +78,7 @@
            [:div {:class "badge-contents col-xs-12"}
             [:div.col-md-3 [:div]]
             [:div {:class "col-md-9 badge-info"}
-             #_[:div
-                [:div.pull-left
-                 [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]
-                 ;[:a  " >> Apply now"]
-                 ]
+             [:div
                 (if-not (not-activated?)
                   (if (pos? (:followed @data-atom))
                     [:div.pull-right [:a {:href "#" :on-click #(app/remove-from-followed (:id @data-atom) data-atom state)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]]
