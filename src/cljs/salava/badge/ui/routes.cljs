@@ -13,7 +13,8 @@
             [salava.badge.ui.stats :as stats]
             [reagent.session :as session]
             [salava.badge.ui.modal :as badgemodal]
-            [salava.core.i18n :as i18n :refer [t]]))
+            [salava.core.i18n :as i18n :refer [t]]
+            [salava.extra.application.ui.application :as app]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -29,7 +30,7 @@
                                          [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
                                          ["/import" imp/handler]
                                          [["/receive/" :badge-id] rec/handler]
-                                         ["/application" app-handler]]}))
+                                         ["/application" app/handler #_app-handler]]}))
 
 (defn ^:export navi [context]
   (let [app-handler (first (plugin-fun (session/get :plugins) "application" "handler"))
@@ -37,7 +38,8 @@
               (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
               (str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi false :breadcrumb (t :badge/Badges " / " :badge/Import)}
               (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}}]
-    (if app-handler
+    ;(if app-handler
       (merge navi {(str (base-path context) "/badge/application") {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :badge/Badges  " / " :extra-application/Application)}})
-      navi)))
+  )
+    );)
 
