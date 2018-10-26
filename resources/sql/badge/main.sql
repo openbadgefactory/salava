@@ -270,6 +270,10 @@ INNER JOIN issuer_content i ON e.issuer_content_id = i.id
 WHERE ie.issuer_content_id = :id
 ORDER BY e.issued_on
 
+
+--name: select-creator
+SELECT * FROM creator_content WHERE id = :id
+
 -- FIXME
 --name: get-endorsement-info
 SELECT badge_id,
@@ -529,15 +533,17 @@ ORDER BY latest_congratulation DESC
 --get user's badge issuer stats
 SELECT ub.id,
 bc.name, bc.image_file,
+ic.id AS issuer_content_id,
 ic.name AS issuer_content_name,
 ic.url AS issuer_content_url
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-JOIN issuer_content AS ic ON (ic.id = ub.badge_id) AND ic.language_code = badge.default_language_code
-WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status = 'accepted'
-ORDER BY ub.id, bc.name, bc.image_file
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+WHERE ub.user_id = 12 AND ub.deleted = 0 AND ub.status = 'accepted'
+ORDER BY ub.id, bc.name, bc.image_file;
 
 --name: update-badge-set-verified!
 --update verification status of the issuer of the badge
@@ -579,8 +585,8 @@ INSERT IGNORE INTO criteria_content (id, language_code, url, markdown_text)
        VALUES (:id, :language_code, :url, :markdown_text)
 
 -- name: insert-issuer-content!
-INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code)
-        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code);
+INSERT IGNORE INTO issuer_content (id, name, url, description, image_file, email, revocation_list_url, language_code, banner, tier)
+        VALUES (:id, :name, :url, :description, :image_file, :email, :revocation_list_url, :language_code, :banner, :tier);
 
 -- name: insert-creator-content!
 INSERT IGNORE INTO creator_content (id, name, url, description, image_file, email, json_url, language_code)

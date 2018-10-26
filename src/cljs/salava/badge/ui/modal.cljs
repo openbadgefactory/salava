@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for private?]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -75,14 +75,13 @@
          :on-click #(do (.preventDefault %)
                       (mo/open-modal [:badge :issuer] issuer-id))} name]]])
 
-;;;TODO use modal
+;;;TODO creator endorsements
 (defn creator-modal-link [creator-id name]
   (when (and creator-id name)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left (t :badge/Createdby) ":"]
      [:div {:class "issuer-links pull-label-left inline"}
-      name
-      #_[:a {:href "#"
+      [:a {:href "#"
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
@@ -150,7 +149,7 @@
         revoked (pos? revoked)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
-        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
+        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)]
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
@@ -213,7 +212,8 @@
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
         selected-language (cursor state [:content-language])
         data (content-setter @selected-language (:content @state))
-        disable-link (if invalid? "btn disabled")]
+        disable-link (if invalid? "btn disabled")
+        disable-export (if (or (private?) invalid?) "btn disabled")]
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
@@ -226,7 +226,7 @@
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
         [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)  ]]]
       [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
-       [:a.nav-link {:class disable-link :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
+       [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
                                                                                                        :obf_url (:obf_url @state)) state] :tab-no 4)}
         [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)  ]]]
       [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}

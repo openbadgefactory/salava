@@ -47,7 +47,13 @@
                                                     #_(if (and init-data state)
                                                         (init-data state))))}))
 
-(defn open-modal [route params]
-  (if (empty? @views)
-    (m/modal! [modal-init [((get-in (modal-navi) route) params)]] {:size :lg})
-    (set-new-view route params)))
+(defn open-modal
+  ([route params]
+   (if (empty? @views)
+     (m/modal! [modal-init [((get-in (modal-navi) route) params)]] {:size :lg})
+     (set-new-view route params)))
+  ([route params opts]
+   (if (empty? @views)
+     (m/modal! [modal-init [((get-in (modal-navi) route) params)]] (merge opts {:size :lg}))
+     (set-new-view route params))
+   ))

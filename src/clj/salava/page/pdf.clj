@@ -139,7 +139,7 @@
                                                                     [:spacer 0]
                                                                     (let [content (some->> (pdf-generator-helper ctx user-id (list (:badge_id %))) first :content first) ]
                                                                       (when-not (empty? content)
-                                                                        (process-markdown (:criteria_content content))))]]]]
+                                                                        (process-markdown (:criteria_content content) (:badge_id %) "Criteria")))]]]]
 
                                                                 [[:cell {:colspan 2} [:line {:dotted true}]]]])
 
@@ -183,7 +183,7 @@
                                                                                                                          [:paragraph {:keep-together true}
                                                                                                                           [:phrase.bold (str (t :badge/Criteria ul)": ")] "\n"
                                                                                                                           [:anchor {:target (:criteria_url badge) :style{:family :times-roman :color [66 100 162]}} (:criteria_url badge)] "\n"
-                                                                                                                          (process-markdown (:criteria_content content))
+                                                                                                                          (process-markdown (:criteria_content content) (:id badge) "Criteria")
                                                                                                                           ]
                                                                                                                          ][:spacer 0]]))))
                                                                               [[:cell {:colspan 2}[:line {:dotted true}]]]))

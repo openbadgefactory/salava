@@ -26,10 +26,9 @@
              (layout/main-meta ctx "/info/:id/embed" :badge)
              (layout/main-meta ctx "/info/:id/pic/embed" :badge)
              (layout/main ctx "/import")
-             (layout/main ctx "/export")
-             #_(layout/main ctx "/upload")
+             #_(layout/main ctx "/export")
              (layout/main ctx "/receive/:id")
-             (layout/main ctx "/stats"))
+             (layout/main ctx "/application"))
 
     (context "/obpv1/badge" []
              :tags  ["badge"]
@@ -86,6 +85,13 @@
                   :summary "Get issuer details"
                   :current-user current-user
                   (ok (b/get-issuer-endorsements ctx issuerid)))
+
+             (GET "/creator/:creatorid" []
+                  :return schemas/CreatorContent
+                  :path-params [creatorid :- String]
+                  :summary "Get creator details"
+                  :current-user current-user
+                  (ok (b/get-creator ctx creatorid)))
 
              (GET "/endorsement/:badgeid" []
                   :return [schemas/Endorsement]

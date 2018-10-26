@@ -306,6 +306,20 @@ button {
 
         }
     }
+  .issuer-panel {
+    img {
+      padding-right: 10px;
+    }
+    td.name {
+      width: 65% !important;
+    }
+
+    td.action {
+      width: 35% !important;
+      text-align: end;
+    }
+  }
+
 }
 /* BADGE INFO */
 #badge-info {
@@ -658,7 +672,7 @@ button {
         }
     }
     #add-element-link {
-        color: $orange-color;
+        color: $grid-link;
         font-weight: bold;
     }
     .media-content.media-expired,  .media-content.media-revoked, &.error .media-content, &.duplicate .media-content {
@@ -747,6 +761,27 @@ button {
     cursor: pointer;
 
 }
+
+//import new badge
+#my-badges #grid #import-badge {
+  text-align: center;
+  position: relative;
+
+  #add-element-icon {
+    margin-top: 50px;
+    font-size: 70px;
+    color: $icon-color;
+  }
+  #add-element-link, .add-element-link {
+    color: $grid-link;
+    text-decoration: none;
+    text-transform: uppercase;
+    &:hover {
+      color: $grid-link;
+    }
+  }
+}
+
 /* IMPORT BADGES */
 .import-badges #grid.row .grid-container{
     height:280px;

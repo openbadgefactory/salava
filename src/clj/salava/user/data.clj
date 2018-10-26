@@ -275,7 +275,7 @@
                                                                                        (:issuer_name e) "\n"
                                                                                        [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (:issuer_url e) ] "\n"
                                                                                        [:chunk (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
-                                                                                       (process-markdown (:content e))])
+                                                                                       (process-markdown (:content e) (:badge_id b ) "Endorsements")])
                                                                                     ))
                                                                             (when (> (:all-messages message-count) 0)
                                                                               [:phrase
