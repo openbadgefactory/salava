@@ -18,6 +18,8 @@
     (subs text 1)
     text))
 
+;;TODO (everytime issuer info changes, a new id is given, hence possible discrepancies in favourites list and issuer list)
+;fix favourites list -> compare issuer based on name and merge if name is same
 (defn create-favourite-list [favourites all]
   (sort-by :issuer_content_name (distinct-by :issuer_content_id (filter (fn [app] (some #(= (:id %) (:issuer_content_id app)) favourites)) all))))
 
@@ -191,8 +193,8 @@
      [:div.col-sm-10.buttons
       [:button.btn.btn-default {:style {:display display}
                                 :on-click #(do
-                                             (swap! state assoc :show-issuer-info false :issuer-content {:name (t :extra-application/Allissuers)})
-                                             (issuer-applications "" state)) }  (t :extra-application/Reset)]
+                                             (swap! state assoc :show-issuer-info false :issuer-content {:name (t :core/All)})
+                                             (issuer-applications "" state)) }  (t :core/All)]
       [:button.issuer-button {:class (str "btn btn-active")
                               :id "btn-all"
                               :on-click #(do
@@ -213,8 +215,13 @@
        [:div.row.issuer-grid
         [:div.col-xs-12
          (if-not (blank? banner)
+           [:div.info-block.col-xs-12
+                        [:h2.uppercase-header.pull-left
+              (issuer-image image)
+              " "
+              name]
            [:img.img-responsive
-            {:src (str "/" banner)}])
+            {:src (str "/" banner)}]])
          [:div.col-xs-12.info-block
           [:div.col-xs-12
            (when (blank? banner)
