@@ -229,7 +229,7 @@
     [:div {:class "media grid-container"}
      (if (pos? followed)
        [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
-     (if (= "pro" issuer_tier)
+     #_(if (= "pro" issuer_tier)
        [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
 
       [:div.media-content
@@ -265,7 +265,6 @@
         show-featured (cursor state [:show-featured])
         badges (shuffle-featured-badges 4 state)
         badge-count (count badges)]
-
     (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
       (into [:div.panel {:class "row wrap-grid"
                          :id    "grid"}
@@ -287,8 +286,9 @@
      [:h3 (str-cat tags)]
      (into [:div {:class "row wrap-grid"
                   :id    "grid"}]
-           (for [element-data (sort-by #(= (:issuer_tier "pro")) badges)]
+           (for [element-data badges]
              (badge-grid-element element-data state)))]))
+
 
 
 (defn content [state]
