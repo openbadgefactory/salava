@@ -281,12 +281,30 @@
 
 (defn gallery-grid [state]
   (let [badges (:applications @state)
-        tags (:tags @state)]
+        tags (:tags @state)
+        show-issuer-info-atom (cursor state [:show-issuer-info])
+        show-featured (cursor state [:show-featured])
+        featured-badges (shuffle-featured-badges 4 state)
+        badge-count (count badges)]
     [:div
+     (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
+       (into [:div.panel {:class "row wrap-grid"
+                          :id    "grid"}
+              [:button.close {:aria-label "OK"
+                              :on-click #(do
+                                           (.preventDefault %)
+                                           (swap! state assoc :show-featured false))}
+               [:span {:aria-hidden "true"
+                       :dangerouslySetInnerHTML {:__html "&times;"}}]]
+              [:h3.panel-heading (t :extra-application/Featured)]
+              [:hr]]
+             (for [element-data featured-badges]
+               (badge-grid-element element-data state))))
+
      [:h3 (str-cat tags)]
      (into [:div {:class "row wrap-grid"
                   :id    "grid"}]
-           (for [element-data badges]
+           (for [element-data (remove (fn [app] (some #(identical? % app) featured-badges)) badges)]
              (badge-grid-element element-data state)))]))
 
 
@@ -296,7 +314,7 @@
                                    [:div {:id "badge-advert"}
                                     [m/modal-window]
                                     [gallery-grid-form state]
-                                    [featured-badges-grid state]
+                                    #_[featured-badges-grid state]
                                     [gallery-grid state]
                                     ;(if (:ajax-message @state) [:div.ajax-message [:i {:class "fa fa-cog fa-spin fa-2x "}] [:span (:ajax-message @state)]][gallery-grid state])
                                     ])
