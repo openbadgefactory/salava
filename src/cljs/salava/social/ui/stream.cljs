@@ -437,7 +437,7 @@
                (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
                (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
                (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
-               (and (= "advert" (:type event)) (= "advertise" (:verb event))) (badge-advert-event event state)
+               (= "advert" (:type event)) (badge-advert-event event state)
                (= "message" (:verb event)) [message-event event state]
                :else "")))]))
 
