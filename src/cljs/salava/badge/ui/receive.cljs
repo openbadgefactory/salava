@@ -127,9 +127,9 @@
       [:div#badge-info
        [m/modal-window]
        [:div.panel
-        [:div.panel-body 
+        [:div.panel-body
          (if (or verified_by_obf issued_by_obf)
-           (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+           [:div.row.flip (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
          [:div {:class "row row_reverse"}
           [:div {:class "col-md-3 badge-image"}
            [:div.row
