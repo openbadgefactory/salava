@@ -205,7 +205,9 @@
 (defn publish-badge [ctx data]
   (try
     (let [advert_id (:generated_key (replace-badge-advert<!
-                                      (merge data (advert-content ctx data))
+                                      (merge (assoc data :remote_issuer_banner
+                                               (if-not (string/blank? (:remote_issuer_banner data))
+                                                 (u/file-from-url ctx (:remote_issuer_banner data)))) (advert-content ctx data))
                                       (u/get-db ctx)))]
       (when (and advert_id (= "pro" (:remote_issuer_tier data))) (do-publish ctx advert_id data)) ;;publish events only when issuer is pro
       {:success true})
