@@ -338,6 +338,9 @@
     .adcontainer {
       display: inline-block;
     }
+  div.adcontainer div:last-child{
+        margin-right: unset !important;
+      }
   }
 }
 
