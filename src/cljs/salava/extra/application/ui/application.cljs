@@ -268,11 +268,11 @@
         featured-badges (shuffle-featured-badges 4 state)
         featured (if (= 1 (count badges)) badges (if (< (count featured-badges) 4) (into featured-badges (take (- 4 (count featured-badges)) (shuffle badges))) featured-badges))
         grid-badges (if (and @show-featured (not @show-issuer-info-atom)) (remove (fn [app] (some #(identical? % app) featured)) badges) badges)]
-
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
-       (into [:div.panel {:class "row wrap-grid"
-                          :id    "grid"}
+       [:div.panel {:class "row wrap-grid"
+                          :id    "grid"
+                          }
               [:button.close {:aria-label "OK"
                               :on-click #(do
                                            (.preventDefault %)
@@ -280,9 +280,10 @@
                [:span {:aria-hidden "true"
                        :dangerouslySetInnerHTML {:__html "&times;"}}]]
               [:h3.panel-heading (t :extra-application/Featured)]
-              [:hr]]
+              [:hr]
+       (into [:div.adcontainer]
              (for [element-data featured]
-               (badge-grid-element element-data state))))
+               (badge-grid-element element-data state)))])
 
 
      [:h3 (str-cat tags)]

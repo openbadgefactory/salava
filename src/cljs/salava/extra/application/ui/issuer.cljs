@@ -79,8 +79,7 @@
                 (init-issuer-connection issuer-id state))}))
 
 (defn issuer-applications [issuer-name state]
-  (swap! state assoc :issuer-name issuer-name
-                     :show-featured false)
+  (swap! state assoc :issuer-name issuer-name)
   (fetch-badge-adverts state))
 
 (defn issuer-applications-count [issuer-name state]
@@ -194,7 +193,7 @@
      [:div.col-sm-10.buttons
       [:button.btn.btn-default {:style {:display display}
                                 :on-click #(do
-                                             (swap! state assoc :show-issuer-info false :issuer-content {:name (t :core/All)} :show-featured true)
+                                             (swap! state assoc :show-featured true :show-issuer-info false :issuer-content {:name (t :core/All)} )
                                              (issuer-applications "" state)) }  (t :core/All)]
       [:button.issuer-button {:class (str "btn btn-active")
                               :id "btn-all"
