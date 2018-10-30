@@ -320,6 +320,7 @@
     .info-block {
       background-color: #fff;
       max-width: 640px;
+      padding-right: 1px;
       .footer {
         padding: 4px;
       }
@@ -331,11 +332,12 @@
     font-size: 18px;
     margin-right: -25px
   }
-
   .panel {
     padding: 5px;
-    //display: table;
     text-align: center;
+    .adcontainer {
+      display: inline-block;
+    }
   }
 }
 

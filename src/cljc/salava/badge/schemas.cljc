@@ -121,9 +121,7 @@
                                    :image_file (s/maybe s/Str)
                                    :email (s/maybe s/Str)
                                    :revocation_list_url (s/maybe s/Str)
-                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]
-                   (s/optional-key :banner) (s/maybe s/Str)
-                   (s/optional-key :tier) (s/maybe (s/enum "free" "basic" "premium" "pro")) }})
+                                   :endorsement [(s/maybe (s/recursive #'Endorsement))]}})
 
 (s/defschema BadgeContent {:id    s/Str
                            :language_code s/Str
@@ -142,8 +140,6 @@
                             :url  s/Str
                             :description (s/maybe s/Str)
                             :image_file (s/maybe s/Str)
-                            :banner (s/maybe s/Str)
-                            :tier (s/maybe (s/enum "free" "basic" "premium" "pro"))
                             :email (s/maybe s/Str)
                             :revocation_list_url (s/maybe s/Str)
                             :endorsement [(s/maybe Endorsement)]})

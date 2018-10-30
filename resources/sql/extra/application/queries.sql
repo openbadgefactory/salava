@@ -22,15 +22,15 @@ WHERE id = :id
 
 -- name: replace-badge-advert<!
 INSERT INTO badge_advert
-   (remote_url, remote_id, remote_issuer_id, info, application_url, application_url_label,
+   (remote_url, remote_id, remote_issuer_id, remote_issuer_tier, remote_issuer_banner, info, application_url, application_url_label,
     issuer_content_id, badge_content_id, criteria_content_id, criteria_url, kind,
     country, not_before, not_after, ctime, mtime)
 VALUES
-   (:remote_url, :remote_id, :remote_issuer_id, :info, :application_url, :application_url_label,
+   (:remote_url, :remote_id, :remote_issuer_id, :remote_issuer_tier, :remote_issuer_banner, :info, :application_url, :application_url_label,
     :issuer_content_id, :badge_content_id, :criteria_content_id, :criteria_url, :kind,
     :country, :not_before, :not_after, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE
-    info = :info, application_url = :application_url, application_url_label = :application_url_label,
+    remote_issuer_tier = :remote_issuer_tier, remote_issuer_banner = :remote_issuer_banner, info = :info, application_url = :application_url, application_url_label = :application_url_label,
     issuer_content_id = :issuer_content_id, badge_content_id = :badge_content_id,
     criteria_content_id = :criteria_content_id, criteria_url = :criteria_url, kind = :kind,
     country = :country, not_before = :not_before, not_after = :not_after,
@@ -99,7 +99,7 @@ SELECT seo.owner, seo.event_id, seo.last_checked, seo.hidden, se.subject, se.ver
       JOIN badge_advert AS ba ON se.subject = ba.id
       JOIN badge_content AS bc ON ba.badge_content_id = bc.id
       JOIN issuer_content AS ic ON ba.issuer_content_id = ic.id
-      WHERE seo.owner = :owner_id AND se.verb = 'advertise' AND se.type = 'advert' AND ba.deleted = 0 AND (ba.not_before = 0 OR ba.not_before < UNIX_TIMESTAMP()) AND (ba.not_after = 0 OR ba.not_after > UNIX_TIMESTAMP())
+      WHERE seo.owner = :owner_id AND se.type = 'advert' AND ba.deleted = 0 AND (ba.not_before = 0 OR ba.not_before < UNIX_TIMESTAMP()) AND (ba.not_after = 0 OR ba.not_after > UNIX_TIMESTAMP())
       ORDER BY se.ctime DESC
       LIMIT 100
 

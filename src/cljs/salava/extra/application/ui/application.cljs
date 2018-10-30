@@ -147,6 +147,7 @@
                 :on-change #(do
                               (reset! country-atom (.-target.value %))
                               (autocomplete-search state @country-atom)
+                              (swap! state assoc :grid-badges true)
                               (fetch-badge-adverts state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
@@ -259,37 +260,19 @@
   (let [badges (filter #(= (:issuer_tier %) "pro") (:applications @state))]
     (take n (shuffle badges))))
 
-
-(defn featured-badges-grid [state]
-  (let [show-issuer-info-atom (cursor state [:show-issuer-info])
-        show-featured (cursor state [:show-featured])
-        badges (shuffle-featured-badges 4 state)
-        badge-count (count badges)]
-    (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
-      (into [:div.panel {:class "row wrap-grid"
-                         :id    "grid"}
-             [:button.close {:aria-label "OK"
-                             :on-click #(do
-                                          (.preventDefault %)
-                                          (swap! state assoc :show-featured false))}
-              [:span {:aria-hidden "true"
-                      :dangerouslySetInnerHTML {:__html "&times;"}}]]
-             [:h3.panel-heading (t :extra-application/Featured)]
-             [:hr]]
-            (for [element-data badges]
-              (badge-grid-element element-data state))))))
-
 (defn gallery-grid [state]
   (let [badges (:applications @state)
         tags (:tags @state)
         show-issuer-info-atom (cursor state [:show-issuer-info])
         show-featured (cursor state [:show-featured])
         featured-badges (shuffle-featured-badges 4 state)
-        badge-count (count badges)]
+        featured (if (= 1 (count badges)) badges (if (< (count featured-badges) 4) (into featured-badges (take (- 4 (count featured-badges)) (shuffle badges))) featured-badges))
+        grid-badges (if (and @show-featured (not @show-issuer-info-atom)) (remove (fn [app] (some #(identical? % app) featured)) badges) badges)]
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
-       (into [:div.panel {:class "row wrap-grid"
-                          :id    "grid"}
+       [:div.panel {:class "row wrap-grid"
+                          :id    "grid"
+                          }
               [:button.close {:aria-label "OK"
                               :on-click #(do
                                            (.preventDefault %)
@@ -297,14 +280,16 @@
                [:span {:aria-hidden "true"
                        :dangerouslySetInnerHTML {:__html "&times;"}}]]
               [:h3.panel-heading (t :extra-application/Featured)]
-              [:hr]]
-             (for [element-data featured-badges]
-               (badge-grid-element element-data state))))
+              [:hr]
+       (into [:div.adcontainer]
+             (for [element-data featured]
+               (badge-grid-element element-data state)))])
+
 
      [:h3 (str-cat tags)]
      (into [:div {:class "row wrap-grid"
                   :id    "grid"}]
-           (for [element-data (remove (fn [app] (some #(identical? % app) featured-badges)) badges)]
+           (for [element-data grid-badges]
              (badge-grid-element element-data state)))]))
 
 
@@ -314,10 +299,7 @@
                                    [:div {:id "badge-advert"}
                                     [m/modal-window]
                                     [gallery-grid-form state]
-                                    #_[featured-badges-grid state]
-                                    [gallery-grid state]
-                                    ;(if (:ajax-message @state) [:div.ajax-message [:i {:class "fa fa-cog fa-spin fa-2x "}] [:span (:ajax-message @state)]][gallery-grid state])
-                                    ])
+                                    [gallery-grid state]])
                  :component-did-mount (fn []
                                         (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
@@ -367,7 +349,7 @@
                                 :timer              nil
                                 :autocomplete-items              #{}
                                 :ajax-message       nil
-                                :issuer-content {:name (t :extra-application/Allissuers)}
+                                :issuer-content {:name (t :core/All)}
                                 :issuer-search false
                                 :search-result []
                                 :show-featured true})]
@@ -376,6 +358,4 @@
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
-        (layout/landing-page site-navi [content state badge_content_id]))
-
-      )))
+        (layout/landing-page site-navi [content state badge_content_id])))))

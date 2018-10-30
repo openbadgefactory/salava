@@ -69,7 +69,7 @@
                 (= order "name") "ORDER BY bc.name"
                 (= order "issuer_content_name") "ORDER BY ic.name"
                 :else "ORDER BY ba.mtime DESC")
-        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ic.tier AS issuer_tier, ic.banner AS issuer_banner, ic.image_file AS issuer_image, ic.url AS issuer_content_url,ic.id AS issuer_content_id,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
+        query (str "SELECT DISTINCT ba.id, ba.country, bc.name, ba.info, bc.image_file, ic.name AS issuer_content_name, ba.remote_issuer_tier AS issuer_tier, ba.remote_issuer_banner AS issuer_banner, ic.image_file AS issuer_image, ic.url AS issuer_content_url,ic.id AS issuer_content_id,GROUP_CONCAT( bct.tag) AS tags, ba.mtime, ba.not_before, ba.not_after, ba.kind, IF(scba.user_id, true, false) AS followed FROM badge_advert AS ba
        JOIN badge_content AS bc ON (bc.id = ba.badge_content_id)
        JOIN issuer_content AS ic ON (ic.id = ba.issuer_content_id)
        LEFT JOIN badge_content_tag AS bct ON (bct.badge_content_id = ba.badge_content_id)
@@ -168,9 +168,9 @@
                                 :image_file (if-not (string/blank? (:image client))
                                               (u/file-from-url ctx (:image client)))
                                 :revocation_list_url (:revocationList client)
-                                :banner (if-not (string/blank? (:remote_issuer_banner data))
+                                #_:banner #_(if-not (string/blank? (:remote_issuer_banner data))
                                           (u/file-from-url ctx (:remote_issuer_banner data)))
-                                :tier (:remote_issuer_tier data)})
+                                #_:tier #_(:remote_issuer_tier data)})
        :criteria_content_id
        (b/save-criteria-content! tx
                                  {:id ""
@@ -198,14 +198,16 @@
   (u/publish ctx :advert {:subject subject :verb verb :object object :type type :country country :ctime ctime}))
 
 (defn publish-advert [ctx id data]
-  (advert ctx id "advertise" (:remote_id data) "advert" (:country data) (if (or (> (t/unix-time) (:not_before data)) (= 0 (:not_before data))) (t/unix-time) (:not_before data))))
+  (advert ctx id "publish" (:remote_id data) "advert" (:country data) (if (or (> (t/unix-time) (:not_before data)) (= 0 (:not_before data))) (t/unix-time) (:not_before data))))
 
 (def do-publish (memoize publish-advert))
 
 (defn publish-badge [ctx data]
   (try
     (let [advert_id (:generated_key (replace-badge-advert<!
-                                      (merge (dissoc data :remote_issuer_banner :remote_issuer_tier) (advert-content ctx data))
+                                      (merge (assoc data :remote_issuer_banner
+                                               (if-not (string/blank? (:remote_issuer_banner data))
+                                                 (u/file-from-url ctx (:remote_issuer_banner data)))) (advert-content ctx data))
                                       (u/get-db ctx)))]
       (when (and advert_id (= "pro" (:remote_issuer_tier data))) (do-publish ctx advert_id data)) ;;publish events only when issuer is pro
       {:success true})

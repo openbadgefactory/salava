@@ -228,6 +228,3 @@
   ;TODO VALIDATE DATA
   (publish ctx :event {:subject subject :verb verb :object object :type type}))
 
-(defn advert [ctx subject verb object type country]
-  (publish ctx :advert {:subject subject :verb verb :object object :type type :country country}))
-
