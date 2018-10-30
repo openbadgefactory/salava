@@ -258,7 +258,7 @@
 
 (defn shuffle-featured-badges [n state]
   (let [badges (filter #(= (:issuer_tier %) "pro") (:applications @state))]
-    (take n (shuffle badges))))
+    (take n (distinct (shuffle badges)))))
 
 (defn gallery-grid [state]
   (let [badges (:applications @state)
@@ -266,8 +266,12 @@
         show-issuer-info-atom (cursor state [:show-issuer-info])
         show-featured (cursor state [:show-featured])
         featured-badges (shuffle-featured-badges 4 state)
-        featured (if (= 1 (count badges)) badges (if (< (count featured-badges) 4) (into featured-badges (take (- 4 (count featured-badges)) (shuffle badges))) featured-badges))
-        grid-badges (if (and @show-featured (not @show-issuer-info-atom)) (remove (fn [app] (some #(identical? % app) featured)) badges) badges)]
+        deficit (- 4 (count featured-badges))
+        unfeatured-badges (remove (fn [app] (some #(identical? % app) featured-badges)) badges)
+        featured (if (= 1 (count badges))
+                   badges
+                   (if (< (count featured-badges) 4) (into featured-badges (take deficit (shuffle (distinct unfeatured-badges)))) featured-badges))
+        grid-badges (if (and @show-featured (not @show-issuer-info-atom)) unfeatured-badges badges)]
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
        [:div.panel {:class "row wrap-grid"
