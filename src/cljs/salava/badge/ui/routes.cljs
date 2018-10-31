@@ -14,7 +14,7 @@
             [reagent.session :as session]
             [salava.badge.ui.modal :as badgemodal]
             [salava.core.i18n :as i18n :refer [t]]
-            [salava.extra.application.ui.application :as app]))
+            #_[salava.extra.application.ui.application :as app]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -30,7 +30,7 @@
                                          [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
                                          ["/import" imp/handler]
                                          [["/receive/" :badge-id] rec/handler]
-                                         ["/application" app/handler #_app-handler]]}))
+                                         ["/application" #_app/handler app-handler]]}))
 
 (defn ^:export navi [context]
   (let [app-handler (first (plugin-fun (session/get :plugins) "application" "handler"))
