@@ -146,7 +146,7 @@
 
 
 (s/defschema CreatorContent (-> IssuerContent
-                                (dissoc :revocation_list_url :tier :banner)
+                                (dissoc :revocation_list_url)
                                 (assoc  :json_url s/Str)))
 
 (s/defschema CriteriaContent {:id s/Str
