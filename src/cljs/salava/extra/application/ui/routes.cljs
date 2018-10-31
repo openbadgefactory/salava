@@ -13,5 +13,5 @@
   {(str (base-path context) "/badge") [["/application" a/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/badge/application") {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :gallery/Gallery " / " :extra-application/Application)}})
+  {(str (base-path context) "/badge/application") {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :badge/Badges " / " :extra-application/Application)}})
 
