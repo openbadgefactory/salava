@@ -18,7 +18,8 @@
     (context "/social" []
              (layout/main ctx "/")
              (layout/main ctx "/connections")
-             (layout/main ctx "/stream"))
+             (layout/main ctx "/stream")
+             (layout/main ctx "/stats"))
 
     (context "/obpv1/social" []
              :tags ["social"]
@@ -141,6 +142,36 @@
                    (do
                      (ok (so/is-connected? ctx (:id current-user) badge_id)
                       )))
+
+             (POST "/create_connection_issuer/:issuer_content_id" []
+                   :return {:status (s/enum "success" "error")}
+                   :summary "add issuer to favorites"
+                   :path-params [issuer_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/create-connection-issuer! ctx (:id current-user) issuer_content_id)))
+
+             (GET "/issuer_connected/:issuer_content_id" []
+                  :return s/Bool
+                  :summary "check issuer connection status"
+                  :path-params [issuer_content_id :- s/Str]
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (so/issuer-connected? ctx (:id current-user) issuer_content_id)))
+
+             (POST "/delete_connection_issuer/:issuer_content_id" []
+                   :return {:status (s/enum "success" "error")}
+                   :summary "remove issuer from favourites"
+                   :path-params [issuer_content_id :- s/Str]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (so/delete-issuer-connection! ctx (:id current-user) issuer_content_id)))
+
+             (GET "/connections_issuer" []
+                  :summary "Return all user issuer connection"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (so/get-user-issuer-connections ctx (:id current-user))))
 
              )))
 

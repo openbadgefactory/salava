@@ -173,7 +173,7 @@
            (admintool id "badge")))
 
        (if (or verified_by_obf issued_by_obf)
-         (bh/issued-by-obf obf_url verified_by_obf issued_by_obf))
+         [:div.row (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
        [:div {:class "row flip"}
         [:div {:id "pull-right" :class "col-md-3 badge-image"}
          [:div.row

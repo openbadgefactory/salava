@@ -227,3 +227,4 @@
 (defn event [ctx subject verb object type]
   ;TODO VALIDATE DATA
   (publish ctx :event {:subject subject :verb verb :object object :type type}))
+

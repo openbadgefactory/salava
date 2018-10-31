@@ -77,6 +77,25 @@
    (catch Object _
      {:status "error" :connected? (is-connected? ctx user_id badge_id)}
      )))
+
+(defn create-connection-issuer! [ctx user_id issuer_content_id]
+  (try+
+    (insert-connection-issuer<! {:user_id user_id :issuer_content_id issuer_content_id} (get-db ctx))
+    {:status "success"}
+    (catch Object _
+    {:status "false"})))
+
+(defn delete-issuer-connection! [ctx user_id issuer_content_id]
+  (try+
+    (delete-connection-issuer! {:user_id user_id :issuer_content_id issuer_content_id} (get-db ctx))
+    {:status "success"}
+    (catch Object _
+      {:status "error"})))
+
+(defn issuer-connected? [ctx user_id issuer_content_id]
+  (let [id (select-connection-issuer {:user_id user_id :issuer_content_id issuer_content_id} (into {:result-set-fn first :row-fn :issuer_content_id} (get-db ctx)))]
+    (= issuer_content_id id)))
+
 ;; STREAM ;;
 
 
@@ -243,3 +262,6 @@
 (defn get-all-user-events [ctx user_id]
   (get-all-user-event {:subject user_id} (get-db ctx)))
 
+(defn get-user-issuer-connections [ctx user_id]
+  (select-user-connections-issuer {:user_id user_id} (get-db ctx))
+  )
