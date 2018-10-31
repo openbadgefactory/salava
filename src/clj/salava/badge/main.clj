@@ -16,7 +16,8 @@
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.metabadge.db :as mb]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -173,6 +174,7 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
+       metabadge (mb/check-metabadge ctx (:assertion_url badge))
 
     ]
     (assoc badge :congratulated? user-congratulation?
