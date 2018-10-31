@@ -271,7 +271,7 @@
         featured (if (= 1 (count badges))
                    badges
                    (if (< (count featured-badges) 4) (into featured-badges (take deficit (shuffle (distinct unfeatured-badges)))) featured-badges))
-        grid-badges (if (and @show-featured (not @show-issuer-info-atom)) unfeatured-badges badges)]
+        grid-badges (if (and @show-featured (not @show-issuer-info-atom)) (remove (fn [app] (some #(identical? % app) featured)) badges) badges)]
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
        [:div.panel {:class "row wrap-grid"
