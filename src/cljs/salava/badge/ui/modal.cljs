@@ -18,7 +18,8 @@
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
-            [salava.core.ui.tag :as tag]))
+            [salava.core.ui.tag :as tag]
+            [salava.metabadge.ui.metabadge :refer [metabadge-block]]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -163,6 +164,7 @@
         (if expired?
           [:div.expired [:label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
+        [metabadge-block (:assertion_url @state)]
         (if (< 1 (count (:content @state)))
           [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
         (issuer-modal-link issuer_content_id issuer_content_name)
