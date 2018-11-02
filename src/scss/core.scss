@@ -831,40 +831,42 @@ body.anon {
 
 #metabadge {
   display: inline-block;
-  margin-top: 15px;
+  margin-top: 5px;
   text-align:center;
+
+  .info {
+    padding: 5px;
+    border: 1px solid #d2d2d2;
+    border-bottom: none;
+    font-weight: bold;
+  }
+
+  i {
+    font-size: 18px;
+    margin-right:10px;
+    vertical-align:middle;
+    color:$text-color;
+  }
   .metabadge {
-    display: table;
     margin-bottom: 10px;
     border: 1px solid #d2d2d2;
     -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
     box-shadow: 0 1px 2px rgba(0,0,0,.05);
     border-radius: 2px;
     padding: 5px;
+    vertical-align: middle;
 
-    .info {
-      margin-bottom: 5px;
-      border-bottom: 1px solid #d2d2d2;
-      padding: 5px;
-      text-align: center;
-      font-weight: bold;
-    }
-    i {
-      font-size: 20px;
-      margin-right:5px;
-      vertical-align:bottom;
-      color:$link-color;
-    }
-    span {
-      margin-right: 5px;
-      vertical-align:bottom;
-    }
     .icons {
-      vertical-align:bottom;
+
+      img:before {
+        content: '';
+        display: none;
+      }
+
       img {
-        max-width: 30px;
+        max-width: 40px;
         margin-right: 5px;
-        vertical-align:bottom;
+        vertical-align:middle;
         &:hover {
           max-width: 70px;
           margin-right: 5px;
@@ -875,8 +877,19 @@ body.anon {
         opacity: 0.2;
       }
       .milestone-badge {
-        max-width: 50px;
+        display: inline-table;
         border-left: 1px dashed #d2d2d2;
+        margin-left: 2px;
+        padding: 2px;
+        padding-left: 10px;
+
+        img {
+          max-width: 70px;
+          padding: 5px;
+          &:hover {
+            max-width: 70px;
+          }
+        }
       }
     }
 
