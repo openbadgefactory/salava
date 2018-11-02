@@ -1,10 +1,14 @@
-(ns salava.metabadge.routes)
+(ns salava.metabadge.routes
+  (:require [compojure.api.sweet :refer :all]
+            [ring.util.http-response :refer :all]
+            [salava.metabadge.db :as mb]
+            salava.core.restructure))
 
-#_(defn route-def [ctx]
-  (context "/obpv1/metabadge" []
-           :tags ["metabadge"]
-           (GET "/metabadge/:badge_id"
-                :path-params [badge_id :- String]
-                :summary "check metabadge")
-           )
-  )
+(defn route-def [ctx]
+  (routes
+    (context "/obpv1/metabadge" []
+             :tags ["metabadge"]
+             (GET "/info" [assertion_url]
+                  :summary "get metabadge info via assertion url"
+                  :current-user current-user
+                  (ok (mb/check-metabadge ctx assertion_url))))))
