@@ -13,55 +13,68 @@
      :handler (fn [data]
                 (reset! state data))}))
 
-(defn milestone-badge-block [milestone_badge metabadge]
-  (let [required-badges (-> metabadge first :required_badges)
-        min-required (-> metabadge first :min_required)
-        {:keys [received name image criteria]} milestone_badge]
-    [:div.metabadge
-     [:div.icons
-      (conj
-      (into [:div]
-            (for [badge required-badges
-                  :let [{:keys [badge-info received]} badge
-                        {:keys [name image]} badge-info]]
-              (if received
-                [:img {:src image :alt name :title name}]
-                [:img.not-received {:src image :alt name :title name} ])))
-        [:div.milestone-badge [:img.img-thumbnail {:src (:image milestone_badge) :title (:name milestone_badge)}]]
-        )]]))
+(defn milestone-badge-block [m]
+  (let [{:keys [received name image criteria]} (:badge m)]
+    [:div
+     [:div.info [:span [:i {:class "fa fa-sitemap"}] "Milestone badge"]]
+     [:div.metabadge
+      [:div.icons
+       (conj
+         (into [:div]
+               (for [badge (:required_badges m)
+                     :let [{:keys [badge-info received]} badge
+                           {:keys [name image]} badge-info]]
+                 (if received
+                   [:img {:src image :alt name :title name}]
+                   [:img.not-received {:src image :alt name :title name} ])))
+         [:div.milestone-badge [:img.img-thumbnail {:src image :title name }]])]]]))
 
-
-(defn required-badge-block [milestone_badge metabadge]
-  (let [required-badges (-> metabadge first :required_badges)
-        min-required (-> metabadge first :min_required)
-        {:keys [received name image criteria]} milestone_badge
+(defn required-badge-block [m]
+  (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
-    [:div.metabadge
-     [:div.icons
-      (conj
-        (into [:div]
-              (for [badge required-badges
-                    :let [{:keys [badge-info received current]} badge
-                          {:keys [name image criteria]} badge-info]]
-                (if received
-                  [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
-                  [:a {:href criteria :target "_blank" :rel "noopener noreferrer" }[:img.not-received {:src image :alt name :title name} ]])))
-        (if (not received)
-          [:div.milestone-badge [:a {:href criteria :target "_blank" :rel "noopener noreferrer" } [:img.milestone-badge {:src (:image milestone_badge) :title (:name milestone_badge) :class milestone-image-class}]]]
-          [:div.milestone-badge [:img {:src (:image milestone_badge) :title (:name milestone_badge) :class milestone-image-class}]]))]]))
+    [:div
+     [:div.info [:span [:i {:class "fa fa-puzzle-piece"}] "Required badge"]]
+     [:div.metabadge
+      [:div.icons
+       (conj
+         (into [:div]
+               (for [badge (:required_badges m)
+                     :let [{:keys [badge-info received current]} badge
+                           {:keys [name image criteria]} badge-info]]
+                 (if received
+                   [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
+                   [:a {:href criteria :target "_blank" :rel "noopener noreferrer" }[:img.not-received {:src image :alt name :title name} ]])))
+         (if (not received)
+           [:div.milestone-badge [:a {:href criteria :target "_blank" :rel "noopener noreferrer" } [:img.milestone-badge {:src image :title name :class milestone-image-class}]]]
+           [:div.milestone-badge [:img {:src image :title name :class milestone-image-class}]]))]]]))
+
 
 (defn metabadge-block [assertion-url]
   (let [state (atom {})]
     (init-metabadge-data assertion-url state)
     (fn []
-      (let [{:keys [metabadge milestone_badge milestone? obf-url]} @state
-            required-badges (-> metabadge first :required_badges)
-            min-required (-> metabadge first :min_required)
-            initial-milestone-info (-> metabadge first :badge)]
-        (prn @state)
+      (let [{:keys [metabadge obf-url]} @state]
         (when-not (empty? metabadge)
-          [:div#metabadge
-           [:div.info (if milestone? [:span [:i {:class "fa fa-sitemap"}] "Milestone badge"] [:span [:i {:class "fa fa-puzzle-piece"}] "Required badge"])]
-           (if milestone?
-             [milestone-badge-block (merge milestone_badge initial-milestone-info) metabadge]
-             [required-badge-block (merge milestone_badge initial-milestone-info) metabadge])])))))
+          (into [:div#metabadge
+                 (for [m metabadge
+                       :let [{:keys [milestone? badge]} m]]
+                   (if milestone? ^{:key m} [milestone-badge-block m] ^{:key m} [required-badge-block m]))]))))))
+
+(defn metabadge-link [assertion-url state]
+  (init-metabadge-data assertion-url state)
+  (fn []
+    (let [metabadge (:metabadge @state)]
+      (when-not (empty? (:metabadge @state))
+        [:div
+         [:a {:href "#"} [:div.info [:span [:i {:class "fa fa-sitemap"}] (if (> (count metabadge) 1) (str (count metabadge) " Metabadges") " Metabadge")]]]
+         ])
+      )))
+
+(defn metabadge [assertion-url]
+  (let [state (atom {:assertion_url assertion-url})]
+    [:div
+     [metabadge-link assertion-url state]
+     ]
+    )
+  )
+
