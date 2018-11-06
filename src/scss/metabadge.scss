@@ -1,0 +1,111 @@
+@import 'variables';
+
+#metabadge {
+  display: inline-block;
+  margin-top: 5px;
+  text-align:center;
+
+  .link-icon {
+    font-size: 20px;
+    color: $link-color;
+    vertical-align: text-bottom;
+  }
+
+  .info {
+    padding: 5px;
+    border: 1px solid #d2d2d2;
+    border-bottom: none;
+    font-weight: bold;
+  }
+
+  i {
+    font-size: 18px;
+    margin-right:10px;
+    vertical-align:middle;
+    color:$text-color;
+  }
+  .metabadge {
+    margin-bottom: 10px;
+    border: 1px solid #d2d2d2;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    border-radius: 2px;
+    padding: 5px;
+    vertical-align: middle;
+
+    .icons {
+      img {
+        max-width: 40px;
+        margin-right: 5px;
+        vertical-align:middle;
+        &:hover {
+          max-width: 70px;
+          margin-right: 5px;
+        }
+
+      }
+      .not-received {
+        opacity: 0.2;
+      }
+      .milestone-badge {
+        display: inline-table;
+        border-left: 1px dashed #d2d2d2;
+        margin-left: 2px;
+        padding: 2px;
+        padding-left: 10px;
+
+        img {
+          max-width: 70px;
+          padding: 5px;
+          &:hover {
+            max-width: 70px;
+          }
+        }
+      }
+    }
+
+  }
+}
+
+#grid {
+  label {
+    margin-right: 5px;
+  }
+  .progress {
+    max-width: 80%;
+    margin: auto;
+    margin-top: 5px;
+  }
+  .icons {
+    img {
+      max-width: 65px;
+      margin-right: 5px;
+      vertical-align:middle;
+      &:hover {
+        max-width: 100px;
+        margin-right: 5px;
+      }
+
+    }
+    .not-received {
+      opacity: 0.2;
+    }
+  }
+
+  i {
+    font-size: 18px;
+    margin-right:10px;
+    vertical-align:middle;
+    color:$text-color;
+  }
+  .panel {
+    display: table;
+    border-color: #ccc;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    font-weight: bold;
+    padding-bottom: 5px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+}
