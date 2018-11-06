@@ -142,7 +142,10 @@
         (if (session/get :user)
           [badge-message-link message_count  badge_id])])
      ;endorsements
-     [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]]))
+     [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]
+     ;metabadges
+     [:div.row [metabadge (:assertion_url @state)]]
+     ]))
 
 (defn badge-content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements]} @state
@@ -165,7 +168,7 @@
           [:div.expired [:label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
         ;[metabadge-block (:assertion_url @state)]
-        [metabadge (:assertion_url @state)]
+        ;[metabadge (:assertion_url @state)]
         (if (< 1 (count (:content @state)))
           [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
         (issuer-modal-link issuer_content_id issuer_content_name)
