@@ -1,4 +1,5 @@
-(ns salava.metabadge.ui.routes)
+(ns salava.metabadge.ui.routes
+  (:require [salava.metabadge.ui.modal :as metabadgemodal]))
 
 (defn ^:export routes [context]
   {})

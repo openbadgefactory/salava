@@ -4,7 +4,8 @@
             [salava.core.ui.helper :refer [path-for]]
             [reagent.session :as session]
             [clojure.string :refer [split]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [salava.core.ui.modal :as mo]))
 
 (defn init-metabadge-data [assertion-url state]
   (ajax/GET
@@ -33,6 +34,7 @@
   (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
     [:div
+     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
      [:div.info [:span [:i {:class "fa fa-puzzle-piece"}] "Required badge"]]
      [:div.metabadge
       [:div.icons
@@ -43,13 +45,15 @@
                            {:keys [name image criteria]} badge-info]]
                  (if received
                    [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
-                   [:a {:href criteria :target "_blank" :rel "noopener noreferrer" }[:img.not-received {:src image :alt name :title name} ]])))
+                   ;[:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
+                    [:img.not-received {:src image :alt name :title name} ];]
+                   )))
          (if (not received)
            [:div.milestone-badge [:a {:href criteria :target "_blank" :rel "noopener noreferrer" } [:img.milestone-badge {:src image :title name :class milestone-image-class}]]]
-           [:div.milestone-badge [:img {:src image :title name :class milestone-image-class}]]))]]]))
+           [:div.milestone-badge [:img {:src image :title name :class milestone-image-class}]]))]]]]))
 
 
-(defn metabadge-block [assertion-url]
+#_(defn metabadge-block [assertion-url]
   (let [state (atom {})]
     (init-metabadge-data assertion-url state)
     (fn []
@@ -60,21 +64,33 @@
                        :let [{:keys [milestone? badge]} m]]
                    (if milestone? ^{:key m} [milestone-badge-block m] ^{:key m} [required-badge-block m]))]))))))
 
+(defn metabadge-block [state]
+  ;(let [state (atom {})]
+    ;(init-metabadge-data assertion-url state)
+    (fn []
+      (let [{:keys [metabadge obf-url]} @state]
+        (when-not (empty? metabadge)
+          (into [:div#metabadge
+                 (for [m metabadge
+                       :let [{:keys [milestone? badge]} m]]
+                   (if milestone? ^{:key m} [milestone-badge-block m] ^{:key m} [required-badge-block m]))])))));)
+
 (defn metabadge-link [assertion-url state]
   (init-metabadge-data assertion-url state)
   (fn []
     (let [metabadge (:metabadge @state)]
       (when-not (empty? (:metabadge @state))
-        [:div
-         [:a {:href "#"} [:div.info [:span [:i {:class "fa fa-sitemap"}] (if (> (count metabadge) 1) (str (count metabadge) " Metabadges") " Metabadge")]]]
-         ])
-      )))
+        [:div#metabadge
+         [:a {:href "#"
+              :on-click #(mo/open-modal [:metabadge :grid] state)}
+         (if (> (count metabadge) 1)
+          [:div [:i.link-icon {:class "fa fa-sitemap"}] (str (count metabadge) " Metabadges")]
+           (if (-> metabadge first :milestone?)
+             [:div [:i.link-icon {:class "fa fa-sitemap"}] "Milestone Badge"]
+              [:div [:i.link-icon {:class "fa fa-puzzle-piece"}] "Required Badge"]))]]))))
 
 (defn metabadge [assertion-url]
   (let [state (atom {:assertion_url assertion-url})]
     [:div
-     [metabadge-link assertion-url state]
-     ]
-    )
-  )
+     [metabadge-link assertion-url state]]))
 
