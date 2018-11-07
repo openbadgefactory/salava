@@ -23,7 +23,7 @@
            amount_received (count (filter :received required_badges))
            completed (str (%completed min_required amount_received))
            is-complete? (completed? min_required amount_received)]
-      [:div#grid {:class "row"}
+      [:div#metabadgegrid {:class "row"}
        [:div.col-md-3.badge-image
         [:img {:src (:image badge)}]
         [:div.progress
@@ -38,11 +38,12 @@
        [:div.col-md-9
         [:div.row
          [:h1.uppercase-header (:name badge)]
-         [:div [:label "Minimum required: "] min_required]
+         [:div.description (:description badge)]
+         [:div {:style {:margin-top "10px"}}[:label "Minimum required: "] min_required]
          [:div [:label "Amount received: "] amount_received]
          [:div [:label (t :badge/Criteria) ": "] [:a {:href (:criteria badge) :target "_blank"} (t :badge/Opencriteriapage) "..."]]
          ;[:div [:label "% completed: "] (str (%completed min_required amount_received) " %" )]
-         [:div.description (:description badge)]
+
          [:div.panel
           [:div.panel-body
            [:div.panel-heading [:span [:i {:class "fa fa-puzzle-piece"}] "Required badges"]]
@@ -60,7 +61,7 @@
 
 (defn multi-block [state]
   (let [current (current-badge (:metabadge @state))]
-    [:div#grid {:class "row"}
+    [:div#metabadgegrid {:class "row"}
      [:div.col-md-3
       [:div.badge-image
        [:img {:src (or (:image current) (-> current :badge-info :image))}]]]

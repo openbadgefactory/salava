@@ -33,7 +33,28 @@
 (defn required-badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
-    [:div
+     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
+    [:div.metabadge
+     [:div.icons
+
+
+        [:div.milestone-badge
+         [:img {:src image :title name :class milestone-image-class}]]
+        [:div.required-badges
+                  (into [:div]
+               (for [badge (:required_badges m)
+                     :let [{:keys [badge-info received current]} badge
+                           {:keys [name image criteria]} badge-info]]
+                 (if received
+                   [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
+                   ;[:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
+                    [:img.not-received {:src image :alt name :title name} ];]
+                   )))]
+        ]
+      ]
+
+     ]
+    #_[:div
      [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
      [:div.info [:span [:i {:class "fa fa-puzzle-piece"}] "Required badge"]]
      [:div.metabadge
