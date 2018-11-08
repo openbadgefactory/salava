@@ -1,7 +1,7 @@
 (ns salava.metabadge.routes
   (:require [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
-            [salava.metabadge.db :as mb]
+            [salava.metabadge.metabadge :as mb]
             salava.core.restructure))
 
 (defn route-def [ctx]
