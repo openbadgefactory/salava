@@ -14,7 +14,7 @@
      :handler (fn [data]
                 (reset! state data))}))
 
-(defn milestone-badge-block [m]
+#_(defn milestone-badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)]
     [:div
      [:div.info [:span [:i {:class "fa fa-sitemap"}] "Milestone badge"]]
@@ -30,88 +30,59 @@
                    [:img.not-received {:src image :alt name :title name} ])))
          [:div.milestone-badge [:img.img-thumbnail {:src image :title name }]])]]]))
 
-(defn required-badge-block [m]
+(defn badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
-     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
-    [:div.metabadge
-     [:div.icons
-
-
-        [:div.milestone-badge
-         [:img {:src image :title name :class milestone-image-class}]]
-        [:div.required-badges
-                  (into [:div]
-               (for [badge (:required_badges m)
-                     :let [{:keys [badge-info received current]} badge
-                           {:keys [name image criteria]} badge-info]]
-                 (if received
-                   [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
-                   ;[:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
-                    [:img.not-received {:src image :alt name :title name} ];]
-                   )))]
-        ]
-      ]
-
-     ]
-    #_[:div
-     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
-     [:div.info [:span [:i {:class "fa fa-puzzle-piece"}] "Required badge"]]
+    [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
      [:div.metabadge
-      [:div.icons
-       (conj
-         (into [:div]
-               (for [badge (:required_badges m)
-                     :let [{:keys [badge-info received current]} badge
-                           {:keys [name image criteria]} badge-info]]
-                 (if received
-                   [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
-                   ;[:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
-                    [:img.not-received {:src image :alt name :title name} ];]
-                   )))
-         (if (not received)
-           [:div.milestone-badge [:a {:href criteria :target "_blank" :rel "noopener noreferrer" } [:img.milestone-badge {:src image :title name :class milestone-image-class}]]]
-           [:div.milestone-badge [:img {:src image :title name :class milestone-image-class}]]))]]]]))
+      [:div.panel
+       [:div.panel-heading name
+        [:div.pull-right (if (:milestone? m) [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
+       [:div.panel-body
+        [:table.table
+         [:tbody
+          [:tr
+           [:td.meta {:rowSpan "2"}
+            [:div [:img {:src image :title name :class milestone-image-class}]]]
+           [:td.icon-container
+            [:table
+             (into [:tbody]
+                   (for [badges (partition-all (/ (count (:required_badges m) ) 2) (take 20 (shuffle (:required_badges m))))]
+                     (into [:tr]
+                           (for [badge badges
+                                 :let [{:keys [badge-info received current]} badge
+                                       {:keys [name image criteria]} badge-info]]
+                             (if received
+                               [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
+                               [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]])))))]]]]]]]]]))
 
-
-#_(defn metabadge-block [assertion-url]
-  (let [state (atom {})]
-    (init-metabadge-data assertion-url state)
-    (fn []
-      (let [{:keys [metabadge obf-url]} @state]
-        (when-not (empty? metabadge)
-          (into [:div#metabadge
-                 (for [m metabadge
-                       :let [{:keys [milestone? badge]} m]]
-                   (if milestone? ^{:key m} [milestone-badge-block m] ^{:key m} [required-badge-block m]))]))))))
 
 (defn metabadge-block [state]
-  ;(let [state (atom {})]
-    ;(init-metabadge-data assertion-url state)
-    (fn []
-      (let [{:keys [metabadge obf-url]} @state]
-        (when-not (empty? metabadge)
-          (into [:div#metabadge
-                 (for [m metabadge
-                       :let [{:keys [milestone? badge]} m]]
-                   (if milestone? ^{:key m} [milestone-badge-block m] ^{:key m} [required-badge-block m]))])))));)
+  (fn []
+    (let [{:keys [metabadge obf-url]} @state]
+      (when-not (empty? metabadge)
+        (into [:div#metabadge
+               (for [m metabadge
+                     :let [{:keys [milestone? badge]} m]]
+                 ^{:key m} [badge-block m])])))));)
 
 (defn metabadge-link [assertion-url state]
   (init-metabadge-data assertion-url state)
   (fn []
     (let [metabadge (:metabadge @state)]
       (when-not (empty? (:metabadge @state))
-        [:div#metabadge
+        [:div.link-icon
          [:a {:href "#"
               :on-click #(mo/open-modal [:metabadge :grid] state)}
-         (if (> (count metabadge) 1)
-          [:div [:i.link-icon {:class "fa fa-sitemap"}] (str (count metabadge) " Metabadges")]
-           (if (-> metabadge first :milestone?)
-             [:div [:i.link-icon {:class "fa fa-sitemap"}] "Milestone Badge"]
-              [:div [:i.link-icon {:class "fa fa-puzzle-piece"}] "Required Badge"]))]]))))
+          (if (> (count metabadge) 1)
+            [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] (str (count metabadge) " Metabadges")]
+            (if (-> metabadge first :milestone?)
+              [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] "Milestone Badge"]
+              [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] "Required Badge"]))]]))))
 
 (defn metabadge [assertion-url]
+  (fn []
   (let [state (atom {:assertion_url assertion-url})]
     [:div
-     [metabadge-link assertion-url state]]))
+     [metabadge-link assertion-url state]])))
 

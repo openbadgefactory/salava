@@ -19,30 +19,32 @@
 
 (defn metabadge-content [metabadge]
   (fn []
-    (let [ {:keys [badge required_badges milestone? min_required]} metabadge
+    (let [{:keys [badge required_badges milestone? min_required]} metabadge
            amount_received (count (filter :received required_badges))
-           completed (str (%completed min_required amount_received))
+           completed-percentage (%completed min_required amount_received)
+           completed (if (> completed-percentage 100) 100 (str completed-percentage))
            is-complete? (completed? min_required amount_received)]
       [:div#metabadgegrid {:class "row"}
        [:div.col-md-3.badge-image
-        [:img {:src (:image badge)}]
+        [:div.image-container [:img {:src (:image badge)}]
+         [:span.veil #_{:style {:height (str (- 100 completed) "%")}} ]]
         [:div.progress
          [:div.progress-bar.progress-bar-success
           {:class (if  is-complete? "" " progress-bar-striped active")
            :role "progressbar"
-           :aria-valuenow completed
+           :aria-valuenow (str completed)
            :style {:width (str completed "%")}
            :aria-valuemin "0"
            :aria-valuemax "100"}
           (str completed "%")]]]
        [:div.col-md-9
         [:div.row
+         [:div.col-md-12
          [:h1.uppercase-header (:name badge)]
          [:div.description (:description badge)]
          [:div {:style {:margin-top "10px"}}[:label "Minimum required: "] min_required]
          [:div [:label "Amount received: "] amount_received]
          [:div [:label (t :badge/Criteria) ": "] [:a {:href (:criteria badge) :target "_blank"} (t :badge/Opencriteriapage) "..."]]
-         ;[:div [:label "% completed: "] (str (%completed min_required amount_received) " %" )]
 
          [:div.panel
           [:div.panel-body
@@ -50,14 +52,14 @@
            [:hr]
            [:div.icons
             (conj
-              (into [:div.col-xs-12]
+              (into [:div]
                     (for [badge required_badges
                           :let [{:keys [badge-info received current]} badge
                                 {:keys [name image criteria]} badge-info]]
                       (if received
-                        [:img {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
+                        [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
                         [:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
-                         [:img.not-received {:src image :alt name :title name} ]]))))]]]]]])))
+                         [:img.not-received.img-circle {:src image :alt name :title name} ]]))))]]]]]]])))
 
 (defn multi-block [state]
   (let [current (current-badge (:metabadge @state))]
@@ -67,8 +69,9 @@
        [:img {:src (or (:image current) (-> current :badge-info :image))}]]]
      [:div.col-md-9
       [:div.row
-       [:h1.uppercase-header (or (:name current) (-> current :badge-info :name))]
-       [mb/metabadge-block state]]]]))
+       [:div.col-md-12
+        [:h1.uppercase-header (or (:name current) (-> current :badge-info :name))]
+        [mb/metabadge-block state]]]]]))
 
 (defn content [state]
   (fn []

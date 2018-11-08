@@ -19,7 +19,7 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
-            [salava.metabadge.ui.metabadge :refer [metabadge-block metabadge]]))
+            [salava.metabadge.ui.metabadge :refer [metabadge]]))
 
 
 (defn init-badge-connection [state badge-id]
