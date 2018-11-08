@@ -14,22 +14,6 @@
      :handler (fn [data]
                 (reset! state data))}))
 
-#_(defn milestone-badge-block [m]
-  (let [{:keys [received name image criteria]} (:badge m)]
-    [:div
-     [:div.info [:span [:i {:class "fa fa-sitemap"}] "Milestone badge"]]
-     [:div.metabadge
-      [:div.icons
-       (conj
-         (into [:div]
-               (for [badge (:required_badges m)
-                     :let [{:keys [badge-info received]} badge
-                           {:keys [name image]} badge-info]]
-                 (if received
-                   [:img {:src image :alt name :title name}]
-                   [:img.not-received {:src image :alt name :title name} ])))
-         [:div.milestone-badge [:img.img-thumbnail {:src image :title name }]])]]]))
-
 (defn badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
@@ -43,7 +27,8 @@
          [:tbody
           [:tr
            [:td.meta {:rowSpan "2"}
-            [:div [:img {:src image :title name :class milestone-image-class}]]]
+            [:div [:object.image {:data image :title name :class milestone-image-class}
+                   [:div.dummy [:i.fa.fa-certificate]]] #_[:img.image {:src image :title name :class milestone-image-class}]]]
            [:td.icon-container
             [:table
              (into [:tbody]
@@ -53,8 +38,13 @@
                                  :let [{:keys [badge-info received current]} badge
                                        {:keys [name image criteria]} badge-info]]
                              (if received
-                               [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
-                               [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]])))))]]]]]]]]]))
+                               [:td [:div [:object.img-circle {:data image :title name :class (if current "img-thumbnail" "")}
+                                           [:div.dummy [:i.fa.fa-certificate]]]
+                                     #_[:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
+                               [:td [:div [:object.img-circle.not-received {:data image :alt name :title name}
+                                           [:div.dummy [:i.fa.fa-certificate]]
+                                           ]
+                                     #_[:img.img-circle.not-received {:src image :alt name :title name} ]]])))))]]]]]]]]]))
 
 
 (defn metabadge-block [state]

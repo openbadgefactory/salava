@@ -75,9 +75,27 @@
           border-color: #CCC5C8;
 
           div {
-            img {
+            .image {
               width: 80px;
               height: 80px;
+
+              .dummy {
+                vertical-align: middle;
+                min-width: 70px;
+                height: 70px;
+                display: inline-block;
+                border: 1px solid #CCC5C8;
+                border-radius: 2px;
+                text-align: center;
+                padding: 5px;
+                i {
+                  margin: auto;
+                  font-size: 60px;
+
+                }
+
+
+              }
             }
           }
         }
@@ -97,9 +115,29 @@
             margin: 2px;
             transition: all .2s ease-in-out;
             &:hover {
-              transform: scale(1.4);
+              transform: scale(1.3);
 
             }
+          }
+
+          .dummy {
+            vertical-align: middle;
+            max-width: 40px;
+            height: 40px;
+            display: inline-block;
+            // border: 1px solid #CCC5C8;
+            border-radius: 2px;
+            text-align: center;
+            padding: 5px;
+            i {
+              margin: auto;
+              font-size: 20px;
+
+            }
+            &:hover {
+              transform: scale(1.4);
+            }
+
           }
         }
       }
@@ -146,7 +184,20 @@
 #metabadgegrid {
   .image-container {
     position:relative;
-    display:inline-block
+    display:inline-block;
+    object {
+      max-width: 100%;
+      height: auto;
+      display:inline-block;
+      padding: 4px;
+      max-height: 200px;
+
+      .fa {
+        font-size: 100px;
+        //min-width: 80px;
+        //height: auto;
+      }
+    }
 
   }
 
@@ -180,10 +231,30 @@
       padding: 5px;
       margin: 2px;
       transition: all .2s ease-in-out;
-      &:hover {
-        transform: scale(1.4);
+      vertical-align: middle;
+      .dummy {
+        vertical-align: middle;
+        max-width: 40px;
+        height: 40px;
+        display: inline-block;
+        border: 1px solid #CCC5C8;
+        border-radius: 2px;
+        text-align: center;
+        padding: 5px;
+        i {
+          margin: auto;
+          font-size: 30px;
+
+        }
+        &:hover {
+          transform: scale(1.4);
+        }
 
       }
+      &:hover {
+        transform: scale(1.4);
+      }
+
     }
     .not-received {
       opacity: 0.2;

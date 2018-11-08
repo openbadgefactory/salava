@@ -26,8 +26,11 @@
            is-complete? (completed? min_required amount_received)]
       [:div#metabadgegrid {:class "row"}
        [:div.col-md-3.badge-image
-        [:div.image-container [:img {:src (:image badge)}]
-         [:span.veil #_{:style {:height (str (- 100 completed) "%")}} ]]
+        [:div.image-container
+         #_[:img {:src (:image badge)}]
+         [:object {:data (:image badge)}
+          [:i.fa.fa-certificate]]
+         [:span.veil {:style {:height (if is-complete? "0%" "100%")}} ]]
         [:div.progress
          [:div.progress-bar.progress-bar-success
           {:class (if  is-complete? "" " progress-bar-striped active")
@@ -57,9 +60,12 @@
                           :let [{:keys [badge-info received current]} badge
                                 {:keys [name image criteria]} badge-info]]
                       (if received
-                        [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
+                        [:object.img-circle {:class (if current "img-thumbnail" "") :data image :title name}
+                         [:div.dummy [:i.fa.fa-certificate]]]
+                        #_[:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
                         [:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
-                         [:img.not-received.img-circle {:src image :alt name :title name} ]]))))]]]]]]])))
+                         [:object.not-received.img-circle {:data image :title name} [:div.dummy [:i.fa.fa-certificate]]]
+                         #_[:img.not-received.img-circle {:src image :alt name :title name} ]]))))]]]]]]])))
 
 (defn multi-block [state]
   (let [current (current-badge (:metabadge @state))]
