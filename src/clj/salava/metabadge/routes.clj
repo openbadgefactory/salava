@@ -11,4 +11,4 @@
              (GET "/info" [assertion_url]
                   :summary "get metabadge info via assertion url"
                   :current-user current-user
-                  (ok (mb/check-metabadge ctx assertion_url))))))
+                  (ok (mb/get-data ctx assertion_url))))))

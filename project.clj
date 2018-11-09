@@ -52,6 +52,7 @@
                  [clj.qrgen "0.4.0"]
                  [clj-pdf "2.2.31"]
                  [clj-pdf-markdown "0.2.0"]
+                 [org.clojure/core.cache "0.7.1"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.9.456"]
