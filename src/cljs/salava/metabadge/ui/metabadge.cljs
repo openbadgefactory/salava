@@ -14,6 +14,10 @@
      :handler (fn [data]
                 (reset! state data))}))
 
+(defn partition-count [m]
+  (let [no (count (:required_badges m))]
+    (if (< no 4) no (/ no 2))))
+
 (defn badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
@@ -27,24 +31,24 @@
          [:tbody
           [:tr
            [:td.meta {:rowSpan "2"}
-            [:div [:object.image {:data image :title name :class milestone-image-class}
-                   [:div.dummy [:i.fa.fa-certificate]]] #_[:img.image {:src image :title name :class milestone-image-class}]]]
+            [:div #_[:object.image {:data image :title name :class milestone-image-class}
+                     [:div.dummy [:i.fa.fa-certificate]]] [:img.image {:src image :title name :class milestone-image-class}]]]
            [:td.icon-container
             [:table
              (into [:tbody]
-                   (for [badges (partition-all (/ (count (:required_badges m) ) 2) (take 20 (shuffle (:required_badges m))))]
+                   (for [badges (partition-all (partition-count m) #_(/ (count (:required_badges m) ) 2) (take 20 (shuffle (:required_badges m))))]
                      (into [:tr]
                            (for [badge badges
                                  :let [{:keys [badge-info received current]} badge
                                        {:keys [name image criteria]} badge-info]]
                              (if received
-                               [:td [:div [:object.img-circle {:data image :title name :class (if current "img-thumbnail" "")}
-                                           [:div.dummy [:i.fa.fa-certificate]]]
-                                     #_[:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
-                               [:td [:div [:object.img-circle.not-received {:data image :alt name :title name}
-                                           [:div.dummy [:i.fa.fa-certificate]]
-                                           ]
-                                     #_[:img.img-circle.not-received {:src image :alt name :title name} ]]])))))]]]]]]]]]))
+                               [:td [:div #_[:object.img-circle {:data image :title name :class (if current "img-thumbnail" "")}
+                                             [:div.dummy [:i.fa.fa-certificate]]]
+                                     [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
+                               [:td [:div #_[:object.img-circle.not-received {:data image :alt name :title name}
+                                             [:div.dummy [:i.fa.fa-certificate]]
+                                             ]
+                                     [:img.img-circle.not-received {:src image :alt name :title name} ]]])))))]]]]]]]]]))
 
 
 (defn metabadge-block [state]
@@ -62,17 +66,18 @@
     (let [metabadge (:metabadge @state)]
       (when-not (empty? (:metabadge @state))
         [:div.link-icon
+         [:label (str #_(t :badge/Expiredon) "Milestone badge: ")]
          [:a {:href "#"
               :on-click #(mo/open-modal [:metabadge :grid] state)}
           (if (> (count metabadge) 1)
-            [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] (str (count metabadge) " Metabadges")]
+            [:div #_{:style {:display "inline" :margin-left "10px"}} [:span [:i.link-icon {:class "fa fa-sitemap"}]] #_"Part of a milestone badge" (str (count metabadge) " Milestones")]
             (if (-> metabadge first :milestone?)
               [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] "Milestone Badge"]
-              [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] "Required Badge"]))]]))))
+              [:div.inline [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] "Required in milestone badge"]))]]))))
 
 (defn metabadge [assertion-url]
   (fn []
-  (let [state (atom {:assertion_url assertion-url})]
-    [:div
-     [metabadge-link assertion-url state]])))
+    (let [state (atom {:assertion_url assertion-url})]
+      [:div
+       [metabadge-link assertion-url state]])))
 

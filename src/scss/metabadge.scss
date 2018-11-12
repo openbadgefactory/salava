@@ -102,7 +102,7 @@
 
         .icon-container {
           width: auto;
-          vertical-align: top;
+          vertical-align: inherit;
           //max-width: 140px;
           padding: 0px 5px;
           border: none;
@@ -281,10 +281,15 @@
 
 .link-icon {
   i {
-    font-size: 20px !important;
+    font-size: 18px !important;
+    margin-right: 10px;
   }
+
   vertical-align: text-bottom;
+  div {
+    display: inline;
   margin-left: 10px;
+  }
 }
 
 .badge-container-pending .link-icon {

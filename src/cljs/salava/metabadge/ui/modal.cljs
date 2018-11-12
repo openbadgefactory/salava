@@ -27,8 +27,8 @@
       [:div#metabadgegrid {:class "row"}
        [:div.col-md-3.badge-image
         [:div.image-container
-         #_[:img {:src (:image badge)}]
-         [:object {:data (:image badge)}
+         [:img {:src (:image badge)}]
+         #_[:object {:data (:image badge)}
           [:i.fa.fa-certificate]]
          [:span.veil {:style {:height (if is-complete? "0%" "100%")}} ]]
         [:div.progress
@@ -60,12 +60,12 @@
                           :let [{:keys [badge-info received current]} badge
                                 {:keys [name image criteria]} badge-info]]
                       (if received
-                        [:object.img-circle {:class (if current "img-thumbnail" "") :data image :title name}
+                        #_[:object.img-circle {:class (if current "img-thumbnail" "") :data image :title name}
                          [:div.dummy [:i.fa.fa-certificate]]]
-                        #_[:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
+                        [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
                         [:a {:href criteria :target "_blank" :rel "noopener noreferrer" }
-                         [:object.not-received.img-circle {:data image :title name} [:div.dummy [:i.fa.fa-certificate]]]
-                         #_[:img.not-received.img-circle {:src image :alt name :title name} ]]))))]]]]]]])))
+                         #_[:object.not-received.img-circle {:data image :title name} [:div.dummy [:i.fa.fa-certificate]]]
+                         [:img.not-received.img-circle {:src image :alt name :title name} ]]))))]]]]]]])))
 
 (defn multi-block [state]
   (let [current (current-badge (:metabadge @state))]
@@ -77,6 +77,7 @@
       [:div.row
        [:div.col-md-12
         [:h1.uppercase-header (or (:name current) (-> current :badge-info :name))]
+        [:div "A milestone badge can be earned when a number of required badges has been earned. Each block below represents a milestone badge, click on block to see your progress....."]
         [mb/metabadge-block state]]]]]))
 
 (defn content [state]
