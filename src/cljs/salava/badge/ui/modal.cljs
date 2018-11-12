@@ -143,8 +143,7 @@
           [badge-message-link message_count  badge_id])])
      ;endorsements
      [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]
-     ;metabadges
-     [:div.row [metabadge (:assertion_url @state)]]
+
      ]))
 
 (defn badge-content [state]
@@ -183,8 +182,11 @@
           (if (and user-logged-in? (not owner?))
             [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
+                ;metabadges
+        [:div [metabadge (:assertion_url @state)]]
 
         [:div.description description]
+
 
         ;check-badge
         (check-badge id)]]
