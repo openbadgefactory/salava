@@ -43,6 +43,7 @@
            [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
          (if (pos? @show-recipient-name-atom)
            [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
+         [:div [mb/metabadge (:assertion_url @state)]]
          [:div {:class "criteria-html"}
           [:h2.uppercase-header (t :badge/Criteria)]
           [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
@@ -67,7 +68,8 @@
   (let [state (atom {:id id
                      :show-result "none"
                      :show-link "block"
-                     :result {}})]
+                     :result {}
+                     :assertion_url assertion_url})]
     (init-badge-preview state)
     (fn []
       (let [data (:result @state)
@@ -82,12 +84,13 @@
           [:div.col-md-3.badge-image
            [:img.badge-image {:src (str "/" image_file)}]
            (bm/badge-endorsement-modal-link badge_id endorsement_count)
-           [mb/metabadge assertion_url]]
+           ]
           [:div.col-md-9
            [:h4.media-heading name]
 
            ;METABADGE
            [:div (bh/meta-badge meta_badge meta_badge_req)]
-           [:div assertion_url]
+           ;[:div [mb/metabadge assertion_url]]
+          ; [:div assertion_url]
            [:div description]
            [show-more state]]] ]))))
