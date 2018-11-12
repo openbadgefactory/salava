@@ -7,7 +7,9 @@
             [slingshot.slingshot :refer :all]
             [pantomime.mime :refer [extension-for-name mime-type-of]]))
 
-(defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 100) (cache/ttl-cache-factory :ttl (* 3600 1000)))))
+(def no-of-days-in-cache 7)
+
+(defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 100) (cache/ttl-cache-factory :ttl (* (* 86400 no-of-days-in-cache) 1000)))))
 
 (defn- file-extension [filename]
   (try+
@@ -34,7 +36,7 @@
         {}))))
 
 (defn fetch-image [ctx url]
-  (let [ext (file-extension url) #_(escape (file-extension url) {\. ""})]
+  (let [ext (file-extension url)]
     (try
       (if-let [image (u/bytes->base64 (http/http-get url {:as :byte-array :max-redirects 5}))]
         (str "data:" ext ";base64, " image))
@@ -60,9 +62,7 @@
                 milestone-badge (:badge m)
                 processed-required-badges (expand-required-badges ctx required-badges assertion-url)
                 milestone-badge-info (if-let [info (public-badge-info ctx milestone-badge)]
-                                       ;(let [image (or (fetch-image ctx (:image info) (:image info)))]
                                          (assoc info :image (fetch-image ctx (:image info))))
-                ;milestone-badge-image (or (fetch-image ctx (:image milestone-badge-info) (:image milestone-badge-info)))
                 is-milestone? (= assertion-url (:url milestone-badge))]
             (-> m
                 (assoc :required_badges processed-required-badges :milestone? is-milestone?)
@@ -74,14 +74,15 @@
     (try
       (if-let [metabadge (fetch-json-data meta-data-url)]
         (let [processed-metabadge (process-metabadge ctx  metabadge assertion-url)]
-          (if (empty? (:metabadge processed-metabadge)) {} (assoc processed-metabadge :obf-url (get-in ctx [:config :factory :url])))))
+          (if (empty? (:metabadge processed-metabadge)) nil (assoc processed-metabadge :obf-url (get-in ctx [:config :factory :url])))))
       (catch Exception e
         (log/error (str "Did not get metabadge information: " assertion-url))
         (log/error (.getMessage e))
-        {}))))
+        nil))))
 
 (defn get-data [ctx assertion-url]
   (let [key (keyword assertion-url)]
+    ;(prn @metabadge-cache-storage)
     (cache/lookup (swap! metabadge-cache-storage
                          #(if (cache/has? % key)
                             (cache/hit % key)
