@@ -7,9 +7,9 @@
             [slingshot.slingshot :refer :all]
             [pantomime.mime :refer [extension-for-name mime-type-of]]))
 
-(def no-of-days-in-cache 7)
+(def no-of-days-in-cache 30)
 
-(defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 100) (cache/ttl-cache-factory :ttl (* (* 86400 no-of-days-in-cache) 1000)))))
+(defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 100) (cache/ttl-cache-factory :ttl (* (* 86400 1000) no-of-days-in-cache)))))
 
 (defn- file-extension [filename]
   (try+
@@ -26,15 +26,6 @@
       (log/error (.getMessage e))
       {})))
 
-(defn- public-badge-info [ctx badge]
-  (let [id (:id badge)
-        url (str (get-in ctx [:config :factory :url]) "/v1/badge/_/" id ".json")]
-    (try
-      (fetch-json-data url)
-      (catch Exception _
-        (log/error (str "Did not get required badge information: " id))
-        {}))))
-
 (defn fetch-image [ctx url]
   (let [ext (file-extension url)]
     (try
@@ -44,29 +35,41 @@
         (log/error (str "Could not fetch image: " url))
         url))))
 
+(defn- public-badge-info [ctx id]
+  (let [url (str (get-in ctx [:config :factory :url]) "/v1/badge/_/" id ".json")]
+    (try
+      (if-let [data (fetch-json-data url)]
+        (-> data
+            (assoc :image (fetch-image ctx (:image data)))))
+    (catch Exception _
+      (log/error (str "Did not get required badge information: " id))
+      {}))))
+
+
+(defn get-badge-data [ctx badge]
+  (let [id (:id badge)
+        key (keyword id)]
+    (cache/lookup (swap! metabadge-cache-storage
+                         #(if (cache/has? % key)
+                            (cache/hit % key)
+                            (cache/miss % key (public-badge-info ctx id)))) key)))
+
 (defn- expand-required-badges [ctx badges assertion-url]
-  (mapv (fn [b]
-          (if-let [badge-info (public-badge-info ctx b)]
-              (-> b
-                  (assoc :badge-info badge-info
-                    :current (= (:url b) assertion-url))
-                  (assoc-in [:badge-info :image] (fetch-image ctx (:image badge-info)))
-                  ))) badges))
+  (reduce (fn [result b]
+            (if-let [badge-info (get-badge-data ctx b) #_(public-badge-info ctx b)]
+              (conj result (-> b (assoc :badge-info badge-info
+                                        :current (= (:url b) assertion-url)))))) [] badges))
+
 
 (defn- process-metabadge [ctx metabadge assertion-url]
   (let [content (:metabadge metabadge)]
     (assoc metabadge :metabadge
-      (mapv
-        (fn [m]
-          (let [required-badges (:required_badges m)
-                milestone-badge (:badge m)
-                processed-required-badges (expand-required-badges ctx required-badges assertion-url)
-                milestone-badge-info (if-let [info (public-badge-info ctx milestone-badge)]
-                                         (assoc info :image (fetch-image ctx (:image info))))
-                is-milestone? (= assertion-url (:url milestone-badge))]
-            (-> m
-                (assoc :required_badges processed-required-badges :milestone? is-milestone?)
-                (update-in [:badge] merge milestone-badge-info ))))
+      (reduce
+        (fn [result m]
+          (conj result (-> m
+                           (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url) :milestone? (= assertion-url (get-in m [:badge :url])))
+                           (update-in [:badge] merge (get-badge-data ctx (:badge m)) ))))
+        []
         content))))
 
 (defn check-metabadge [ctx assertion-url]
@@ -80,10 +83,3 @@
         (log/error (.getMessage e))
         nil))))
 
-(defn get-data [ctx assertion-url]
-  (let [key (keyword assertion-url)]
-    ;(prn @metabadge-cache-storage)
-    (cache/lookup (swap! metabadge-cache-storage
-                         #(if (cache/has? % key)
-                            (cache/hit % key)
-                            (cache/miss % key (check-metabadge ctx assertion-url)))) key)))
