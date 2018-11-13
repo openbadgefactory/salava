@@ -31,7 +31,7 @@
          [:div.col-md-12
           [:h1.uppercase-header name]
           [:div.description description]
-          [:div [:label (t :badge/Criteria) ": "] [:a {:href criteria :target "_blank"} (t :badge/Opencriteriapage) "..."]]
+          [:div [:label (t :badge/Criteria) ": "]  [:div.inline {:dangerouslySetInnerHTML {:__html criteria}}] #_[:a {:href criteria :target "_blank"} (t :badge/Opencriteriapage) "..."]]
           ]]]])))
 
 (defn metabadge-content [metabadge]
@@ -60,9 +60,15 @@
          [:div.col-md-12
           [:h1.uppercase-header (:name badge)]
           [:div.description (:description badge)]
-          [:div [:label (t :badge/Criteria) ": "] [:a {:href (:criteria badge) :target "_blank"} (t :badge/Opencriteriapage) "..."]]
           [:div {:style {:margin-top "10px"}}[:label (str (t :metabadge/Minimumrequired) ": ")] min_required]
           [:div [:label (str (t :metabadge/Amountearned)": ")] amount_received]
+          #_[:div {:class "row criteria-html"}
+           [:div.col-md-12
+            [:h2.uppercase-header (t :badge/Criteria)]
+            ;[:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
+            [:div {:dangerouslySetInnerHTML {:__html (:criteria badge)}}]]]
+          [:div [:label (t :badge/Criteria) ": "] [:div.inline {:dangerouslySetInnerHTML {:__html (:criteria badge)}}] #_[:a {:href (:criteria badge) :target "_blank"} (t :badge/Opencriteriapage) "..."]]
+
 
           [:div.panel
            [:div.panel-body

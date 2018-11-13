@@ -12,6 +12,9 @@
 
 (defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 100) (cache/ttl-cache-factory :ttl (* (* 86400 1000) no-of-days-in-cache)))))
 
+(defn url? [s]
+  (not (clojure.string/blank? (re-find #"^http" (str s)))))
+
 (defn- file-extension [filename]
   (try+
     (let [file (if (re-find #"https?" (str filename)) (java.net.URL. filename) filename)]
@@ -37,11 +40,13 @@
         url))))
 
 (defn- public-badge-info [ctx id]
-  (let [url (str (get-in ctx [:config :factory :url]) "/v1/badge/_/" id ".json")]
+  (let [url (str (get-in ctx [:config :factory :url]) "/v1/badge/_/" id ".json?v=2.0")]
     (try
       (if-let [data (fetch-json-data url)]
-        (-> data
-            (assoc :image (fetch-image ctx (:image data)))))
+        (if (url? (:image data))
+          (-> data (assoc :image (fetch-image ctx (:image data))))
+          data)
+        )
       (catch Exception _
         (log/error (str "Did not get required badge information: " id))
         {}))))
@@ -61,7 +66,7 @@
                   (conj result (-> b (assoc :badge-info badge-info
                                        :current (= (:url b) assertion-url)))))) [] badges))
 
-(defn- expand-required-badges [ctx badges assertion-url] ;;experiment with reducers
+(defn- expand-required-badges [ctx badges assertion-url] ;;experiment with reducers -> improved speed
   (->> badges
        (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b) :current (= (:url b) assertion-url)))) )
        (r/foldcat)))
