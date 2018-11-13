@@ -1,18 +1,10 @@
 @import 'variables';
 
 #metabadge {
-  //display: inline-block;
   margin-top: 5px;
-  //text-align:center;
   min-height: 300px;
   position: relative;
 
-  .info {
-    padding: 5px;
-    border: 1px solid #d2d2d2;
-    border-bottom: none;
-    font-weight: bold;
-  }
 
   i {
     font-size: 18px;
@@ -103,7 +95,6 @@
         .icon-container {
           width: auto;
           vertical-align: inherit;
-          //max-width: 140px;
           padding: 0px 5px;
           border: none;
 
@@ -120,12 +111,11 @@
             }
           }
 
-          .dummy {
+        /*  .dummy {
             vertical-align: middle;
             max-width: 40px;
             height: 40px;
             display: inline-block;
-            // border: 1px solid #CCC5C8;
             border-radius: 2px;
             text-align: center;
             padding: 5px;
@@ -138,6 +128,11 @@
               transform: scale(1.4);
             }
 
+          }*/
+        }
+        @media (max-width: 480px) {
+          .icon-container {
+            max-width: 140px;
           }
         }
       }
@@ -185,23 +180,13 @@
   .image-container {
     position:relative;
     display:inline-block;
-    object {
-      max-width: 100%;
-      height: auto;
-      display:inline-block;
-      padding: 4px;
-      max-height: 200px;
-
-      .fa {
-        font-size: 100px;
-        //min-width: 80px;
-        //height: auto;
-      }
+    .opaque {
+      filter: opacity(25%);
+      -webkit-filter: opacity(25%);
     }
-
   }
 
-  .veil {
+ /* .veil {
     width: 100%;
     background-color:#fff;
     position:absolute;
@@ -214,7 +199,7 @@
     filter: blur(20px);
     filter: opacity(60%);
     height: 100%;
-  }
+  }*/
 
   label {
     margin-right: 5px;
@@ -232,7 +217,7 @@
       margin: 2px;
       transition: all .2s ease-in-out;
       vertical-align: middle;
-      .dummy {
+    /*  .dummy {
         vertical-align: middle;
         max-width: 40px;
         height: 40px;
@@ -250,7 +235,7 @@
           transform: scale(1.4);
         }
 
-      }
+      }*/
       &:hover {
         transform: scale(1.4);
       }
@@ -277,6 +262,10 @@
     font-size: 14px;
     margin-top: 10px;
   }
+
+  .info {
+    margin-bottom: 10px;
+  }
 }
 
 .link-icon {
@@ -284,17 +273,8 @@
     font-size: 18px !important;
     margin-right: 10px;
   }
-
   vertical-align: text-bottom;
   div {
     display: inline;
-  margin-left: 10px;
-  }
-}
-
-.badge-container-pending .link-icon {
-  i {
-    margin-right: 10px;
-    margin-left: unset !important;
   }
 }

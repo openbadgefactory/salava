@@ -2,8 +2,6 @@
   (:require [reagent.core :refer [atom]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
-            [reagent.session :as session]
-            [clojure.string :refer [split]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]))
 
@@ -31,24 +29,18 @@
          [:tbody
           [:tr
            [:td.meta {:rowSpan "2"}
-            [:div #_[:object.image {:data image :title name :class milestone-image-class}
-                     [:div.dummy [:i.fa.fa-certificate]]] [:img.image {:src image :title name :class milestone-image-class}]]]
+            [:div [:img.image {:src image :title name :class milestone-image-class}]]]
            [:td.icon-container
             [:table
-             (into [:tbody]
-                   (for [badges (partition-all (partition-count m) #_(/ (count (:required_badges m) ) 2) (take 20 (shuffle (:required_badges m))))]
-                     (into [:tr]
-                           (for [badge badges
-                                 :let [{:keys [badge-info received current]} badge
-                                       {:keys [name image criteria]} badge-info]]
-                             (if received
-                               [:td [:div #_[:object.img-circle {:data image :title name :class (if current "img-thumbnail" "")}
-                                             [:div.dummy [:i.fa.fa-certificate]]]
-                                     [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
-                               [:td [:div #_[:object.img-circle.not-received {:data image :alt name :title name}
-                                             [:div.dummy [:i.fa.fa-certificate]]
-                                             ]
-                                     [:img.img-circle.not-received {:src image :alt name :title name} ]]])))))]]]]]]]]]))
+             (reduce (fn [result coll]
+                       (conj result (reduce (fn [r badge]
+                                              (let [{:keys [badge-info received current]} badge
+                                                    {:keys [name image criteria]} badge-info]
+                                                (conj r (if received
+                                                          [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
+                                                          [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]]))))
+                                            [:tr]
+                                            coll))) [:tbody] (partition-all (partition-count m) (take 20 (shuffle (:required_badges m)))))]]]]]]]]]))
 
 
 (defn metabadge-block [state]
@@ -66,14 +58,14 @@
     (let [metabadge (:metabadge @state)]
       (when-not (empty? (:metabadge @state))
         [:div.link-icon
-         [:label (str #_(t :badge/Expiredon) "Milestone badge: ")]
+         [:label (str (t :metabadge/Metabadge) ": ")]
          [:a {:href "#"
               :on-click #(mo/open-modal [:metabadge :grid] state)}
           (if (> (count metabadge) 1)
-            [:div #_{:style {:display "inline" :margin-left "10px"}} [:span [:i.link-icon {:class "fa fa-sitemap"}]] #_"Part of a milestone badge" (str (count metabadge) " Milestones")]
+            [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] (str (count metabadge) " " (t :metabadge/Milestones))]
             (if (-> metabadge first :milestone?)
-              [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] "Milestone Badge"]
-              [:div.inline [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] "Required in milestone badge"]))]]))))
+              [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] (t :metabadge/Milestonebadge)]
+              [:div.inline [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (t :metabadge/Requiredinmilestone)]))]]))))
 
 (defn metabadge [assertion-url]
   (fn []
