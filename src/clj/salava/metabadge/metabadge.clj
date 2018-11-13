@@ -5,7 +5,8 @@
             [clojure.core.cache :as cache]
             [clojure.string :refer [escape]]
             [slingshot.slingshot :refer :all]
-            [pantomime.mime :refer [extension-for-name mime-type-of]]))
+            [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [clojure.core.reducers :as r]))
 
 (def no-of-days-in-cache 30)
 
@@ -41,9 +42,9 @@
       (if-let [data (fetch-json-data url)]
         (-> data
             (assoc :image (fetch-image ctx (:image data)))))
-    (catch Exception _
-      (log/error (str "Did not get required badge information: " id))
-      {}))))
+      (catch Exception _
+        (log/error (str "Did not get required badge information: " id))
+        {}))))
 
 
 (defn get-badge-data [ctx badge]
@@ -54,32 +55,47 @@
                             (cache/hit % key)
                             (cache/miss % key (public-badge-info ctx id)))) key)))
 
-(defn- expand-required-badges [ctx badges assertion-url]
-  (reduce (fn [result b]
-            (if-let [badge-info (get-badge-data ctx b) #_(public-badge-info ctx b)]
-              (conj result (-> b (assoc :badge-info badge-info
-                                        :current (= (:url b) assertion-url)))))) [] badges))
+#_(defn- expand-required-badges [ctx badges assertion-url]
+    (r/reduce (fn [result b]
+                (if-let [badge-info (get-badge-data ctx b)]
+                  (conj result (-> b (assoc :badge-info badge-info
+                                       :current (= (:url b) assertion-url)))))) [] badges))
+
+(defn- expand-required-badges [ctx badges assertion-url] ;;experiment with reducers
+  (->> badges
+       (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b) :current (= (:url b) assertion-url)))) )
+       (r/foldcat)))
 
 
-(defn- process-metabadge [ctx metabadge assertion-url]
-  (let [content (:metabadge metabadge)]
-    (assoc metabadge :metabadge
-      (reduce
-        (fn [result m]
-          (conj result (-> m
-                           (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url) :milestone? (= assertion-url (get-in m [:badge :url])))
-                           (update-in [:badge] merge (get-badge-data ctx (:badge m)) ))))
-        []
-        content))))
+#_(defn- process-metabadge [ctx metabadge assertion-url]
+    (let [content (:metabadge metabadge)]
+      (assoc metabadge :metabadge
+        (r/reduce
+          (fn [result m]
+            (conj result (-> m
+                             (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url) :milestone? (= assertion-url (get-in m [:badge :url])))
+                             (update-in [:badge] merge (get-badge-data ctx (:badge m)) ))))
+          []
+          content))))
+
+(defn- process-metabadge [ctx metabadge assertion-url] ;;experiment with reducers
+  (->> (:metabadge metabadge)
+       (r/map (fn [m] (-> m
+                          (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url)
+                            :milestone? (= assertion-url (get-in m [:badge :url])))
+                          (update-in [:badge] merge (get-badge-data ctx (:badge m)) ))))
+       (r/foldcat)
+       (assoc metabadge :metabadge)))
 
 (defn check-metabadge [ctx assertion-url]
   (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
     (try
       (if-let [metabadge (fetch-json-data meta-data-url)]
         (let [processed-metabadge (process-metabadge ctx  metabadge assertion-url)]
-          (if (empty? (:metabadge processed-metabadge)) nil (assoc processed-metabadge :obf-url (get-in ctx [:config :factory :url])))))
+          (if (empty? (:metabadge processed-metabadge)) nil processed-metabadge)))
       (catch Exception e
         (log/error (str "Did not get metabadge information: " assertion-url))
         (log/error (.getMessage e))
         nil))))
+
 
