@@ -1,11 +1,12 @@
 (ns salava.mail.cron
-  (:require 
+  (:require
    [salava.mail.email-notifications :as en]
    [clojure.tools.logging :as log]))
 
 
 (defn every-day [ctx]
-  (do
-    (log/info "start")
-    (en/email-sender ctx)
-    (log/info "stop")))
+  (log/info "Email notifications disabled")
+  #_(do
+      (log/info "start")
+      ;(en/email-sender ctx)
+      (log/info "stop")))
