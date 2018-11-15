@@ -22,7 +22,6 @@
   (fn []
     (let [{:keys [badge-info received current]} badge
           {:keys [image name description criteria]} badge-info]
-      (prn (dissoc badge-info :image))
       [:div#metabadgegrid {:class "row"}
        [:div.col-md-3.badge-image
         [:div.image-container
@@ -35,9 +34,7 @@
           [:div {:class "row criteria-html"}
            [:div.col-md-12
             [:h2.uppercase-header (t :badge/Criteria)]
-            ;[:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
             [:div {:dangerouslySetInnerHTML {:__html criteria}}]]]
-          ;[:div [:label (t :badge/Criteria) ": "]  [:div.inline {:dangerouslySetInnerHTML {:__html criteria}}] #_[:a {:href criteria :target "_blank"} (t :badge/Opencriteriapage) "..."]]
           ]]]])))
 
 (defn metabadge-content [metabadge]
@@ -64,9 +61,8 @@
        [:div.col-md-9
         [:div.row
          [:div.col-md-12
-          [:h1.uppercase-header (:name badge)]
+          [:h1.uppercase-header (:name metabadge)]
           [:div.description (:description badge)]
-          ;[:div [:label (t :badge/Criteria) ": "] [:div.inline {:dangerouslySetInnerHTML {:__html (:criteria badge)}}] #_[:a {:href (:criteria badge) :target "_blank"} (t :badge/Opencriteriapage) "..."]]
           [:div {:style {:margin-top "10px"}}[:label (str (t :metabadge/Minimumrequired) ": ")] min_required]
           [:div [:label (str (t :metabadge/Amountearned)": ")] amount_received]
 
@@ -76,44 +72,37 @@
             [:hr]
             [:div.icons
              (reduce (fn [result badge]
-                       (let [{:keys [badge-info received current]} badge
+                       (let [{:keys [badge-info received current user_badge_id]} badge
                              {:keys [name image criteria]} badge-info]
                          (conj result
                                (if received
-                                 [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]
+                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id user_badge_id})} [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]
                                  [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} #_{:href criteria :target "_blank" :rel "noopener noreferrer" }
                                   [:img.not-received.img-circle {:src image :alt name :title name} ]]))
                          )) [:div] (sort-by :received required_badges))]]]
           [:div {:class "row criteria-html"}
            [:div.col-md-12
             [:h2.uppercase-header (t :badge/Criteria)]
-            ;[:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
             [:div {:dangerouslySetInnerHTML {:__html (:criteria badge)}}]]]
           ]]]])))
 
-(defn multi-block [state]
-  (let [current (current-badge (:metabadge @state))]
-    [:div#metabadgegrid {:class "row"}
-     [:div.col-md-3
-      [:div.badge-image
-       [:img {:src (or (:image current) (-> current :badge-info :image))}]]]
-     [:div.col-md-9
-      [:div.row
-       [:div.col-md-12
-        [:h1.uppercase-header (or (:name current) (-> current :badge-info :name))]
-        [:div.info (t :metabadge/Metabadgeinfo)]
-        [mb/metabadge-block state]]]]]))
 
-(defn content [state]
+(defn multi-block [metabadge]
   (fn []
-    (let [metabadge (:metabadge @state)]
-      (if (empty? (rest metabadge))
-        [metabadge-content (-> metabadge first)]
-        [multi-block state]))))
+    (let [current (current-badge metabadge #_(:metabadge @state))]
+      [:div#metabadgegrid {:class "row"}
+       [:div.col-md-3
+        [:div.badge-image
+         [:img {:src (or (:image current) (-> current :badge-info :image))}]]]
+       [:div.col-md-9
+        [:div.row
+         [:div.col-md-12
+          [:h1.uppercase-header (or (:name current) (-> current :badge-info :name))]
+          [:div.info (t :metabadge/Metabadgeinfo)]
+          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge] metabadge)]]]])))
 
 
 (def ^:export modalroutes
-  {:metabadge {:grid content
-               :metadata metabadge-content
-               :dummy dummy-badge}}
-  )
+  {:metabadge {:metadata metabadge-content
+               :multiblock multi-block
+               :dummy dummy-badge}})

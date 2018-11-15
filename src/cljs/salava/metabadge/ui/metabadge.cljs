@@ -17,7 +17,7 @@
 
 (defn partition-count [m]
   (let [no (count (required-block-badges m) #_(:required_badges m))]
-    (if (< no 4) no (/ no 2))))
+    (if (<= no 4) no (/ no 2))))
 
 (defn badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)
@@ -25,7 +25,7 @@
     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
      [:div.metabadge
       [:div.panel
-       [:div.panel-heading name
+       [:div.panel-heading (:name m)
         [:div.pull-right (if (:milestone? m) [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
        [:div.panel-body
         [:table.table
@@ -46,44 +46,39 @@
                                             coll))) [:tbody] (partition-all (partition-count m) (required-block-badges m) #_(take 20 (shuffle (:required_badges m)))))]]]]]]]]]))
 
 
-(defn metabadge-block [state]
+(defn metabadge-block [metabadge]
   (fn []
-    (let [{:keys [metabadge obf-url]} @state]
-      (when-not (empty? metabadge)
-        (into [:div#metabadge
-               (for [m metabadge
-                     :let [{:keys [milestone? badge]} m]]
-                 ^{:key m} [badge-block m])])))))
-
-(defn process-links [metabadge]
-  (reduce-kv (fn [r k v]
-               (assoc r (keyword (str k)) {:content v :text (if (true? k) (str "This badge is a milestone badge") (if (empty? (rest v))
-                                                                                                                    "This badge is a part of a milestone badge"
-                                                                                                                    (str "This badge is a part of " (count v) " milestone badges")))})
-               ) {} (group-by :milestone? metabadge)))
+    (when-not (empty? metabadge)
+      (into [:div#metabadge
+             (for [m metabadge
+                   :let [{:keys [milestone? badge]} m]]
+               ^{:key m} [badge-block m])]))));)
 
 
 (defn metabadge-link [assertion-url state]
-  (init-metabadge-data assertion-url state)
   (fn []
     (let [metabadge (:metabadge @state)]
-      (prn (->> (process-links metabadge)
-               vals
-               (map :text)))
       (when-not (empty? (:metabadge @state))
-        [:div.link-icon
-         [:label (str (t :metabadge/Metabadge) ": ")]
-         [:a {:href "#"
-              :on-click #(mo/open-modal [:metabadge :grid] state)}
-          (if (> (count metabadge) 1)
-            [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] (str (count metabadge) " " (t :metabadge/Milestones))]
-            (if (-> metabadge first :milestone?)
-              [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]] (t :metabadge/Milestonebadge)]
-              [:div.inline [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (t :metabadge/Requiredinmilestone)]))]]))))
+        (reduce-kv
+          (fn [r k v]
+            (conj r (if (true? k)
+                      ^{:key k}[:a {:href "#"
+                                    :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
+                                [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (str "This badge is a milestone badge")]]
+                      (if (empty? (rest v))
+                        ^{:key k}  [:a {:href "#"
+                                        :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
+                                    [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]  "This badge is a part of a milestone badge"]]
+                        ^{:key k}  [:a {:href "#"
+                                        :on-click #(mo/open-modal [:metabadge :multiblock] v)}
+                                    [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (str "This badge is a part of " (count v) " milestone badges")]]))))
+          [:div.link-icon]
+          (group-by :milestone? metabadge))))))
 
 (defn metabadge [assertion-url]
   (fn []
     (let [state (atom {:assertion_url assertion-url})]
-      [:div
-       [metabadge-link assertion-url state]])))
+      (init-metabadge-data assertion-url state)
+      [metabadge-link assertion-url state]
+      )))
 
