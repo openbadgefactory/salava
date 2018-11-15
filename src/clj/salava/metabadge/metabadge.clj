@@ -6,7 +6,8 @@
             [clojure.string :refer [escape]]
             [slingshot.slingshot :refer :all]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
-            [clojure.core.reducers :as r]))
+            [clojure.core.reducers :as r]
+            [salava.metabadge.db :as db]))
 
 (def no-of-days-in-cache 30)
 
@@ -68,7 +69,9 @@
 
 (defn- expand-required-badges [ctx badges assertion-url] ;;experiment with reducers -> improved speed
   (->> badges
-       (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b) :current (= (:url b) assertion-url)))) )
+       (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b)
+                              :current (= (:url b) assertion-url)
+                              :user_badge_id (db/badge-id-by-assertion ctx (:url b))))) )
        (r/foldcat)))
 
 
