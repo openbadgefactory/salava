@@ -12,8 +12,11 @@
      :handler (fn [data]
                 (reset! state data))}))
 
+(defn required-block-badges [m]
+  (take 20 (shuffle (:required_badges m))))
+
 (defn partition-count [m]
-  (let [no (count (:required_badges m))]
+  (let [no (count (required-block-badges m) #_(:required_badges m))]
     (if (< no 4) no (/ no 2))))
 
 (defn badge-block [m]
@@ -40,7 +43,7 @@
                                                           [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
                                                           [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]]))))
                                             [:tr]
-                                            coll))) [:tbody] (partition-all (partition-count m) (take 20 (shuffle (:required_badges m)))))]]]]]]]]]))
+                                            coll))) [:tbody] (partition-all (partition-count m) (required-block-badges m) #_(take 20 (shuffle (:required_badges m)))))]]]]]]]]]))
 
 
 (defn metabadge-block [state]
@@ -50,12 +53,23 @@
         (into [:div#metabadge
                (for [m metabadge
                      :let [{:keys [milestone? badge]} m]]
-                 ^{:key m} [badge-block m])])))));)
+                 ^{:key m} [badge-block m])])))))
+
+(defn process-links [metabadge]
+  (reduce-kv (fn [r k v]
+               (assoc r (keyword (str k)) {:content v :text (if (true? k) (str "This badge is a milestone badge") (if (empty? (rest v))
+                                                                                                                    "This badge is a part of a milestone badge"
+                                                                                                                    (str "This badge is a part of " (count v) " milestone badges")))})
+               ) {} (group-by :milestone? metabadge)))
+
 
 (defn metabadge-link [assertion-url state]
   (init-metabadge-data assertion-url state)
   (fn []
     (let [metabadge (:metabadge @state)]
+      (prn (->> (process-links metabadge)
+               vals
+               (map :text)))
       (when-not (empty? (:metabadge @state))
         [:div.link-icon
          [:label (str (t :metabadge/Metabadge) ": ")]

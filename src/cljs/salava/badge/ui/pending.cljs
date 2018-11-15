@@ -43,7 +43,7 @@
            [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
          (if (pos? @show-recipient-name-atom)
            [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
-         [:div [mb/metabadge (:assertion_url @state)]]
+         ;[:div [mb/metabadge (:assertion_url @state)]]
          [:div {:class "criteria-html"}
           [:h2.uppercase-header (t :badge/Criteria)]
           [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
@@ -88,9 +88,11 @@
           [:div.col-md-9
            [:h4.media-heading name]
 
+           [:div description]
+
            ;METABADGE
            [:div (bh/meta-badge meta_badge meta_badge_req)]
-           ;[:div [mb/metabadge assertion_url]]
+           [:div.pending [mb/metabadge (:assertion_url @state)]]
           ; [:div assertion_url]
-           [:div description]
+
            [show-more state]]] ]))))
