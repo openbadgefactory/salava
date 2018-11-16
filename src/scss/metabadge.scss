@@ -1,4 +1,4 @@
-@import 'variables';
+ @import 'variables';
 
 #metabadge {
   margin-top: 5px;
@@ -245,4 +245,19 @@
 
 #pending-badges .pending {
   margin-top: 5px;
+}
+
+.visibility-icon {
+
+  .multi {
+    .fa-puzzle-piece {
+      padding-top: 2px;
+      margin-left: 5px;}
+  }
+  .link-icon {
+    vertical-align: baseline;
+    span i {
+      margin-left: 5px;
+    }
+  }
 }
