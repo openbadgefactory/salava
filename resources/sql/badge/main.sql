@@ -4,7 +4,7 @@ SELECT user_id AS owner from social_connections_badge where badge_id = :badge_id
 -- name: select-user-badges-all
 -- get user's badges
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
-           ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id,
+           ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, ub.assertion_url,
            b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
