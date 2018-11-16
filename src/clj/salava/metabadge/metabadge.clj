@@ -7,7 +7,8 @@
             [slingshot.slingshot :refer :all]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [clojure.core.reducers :as r]
-            [salava.metabadge.db :as db]))
+            [salava.metabadge.db :as db]
+            [clojure.string :refer [starts-with?]]))
 
 (def no-of-days-in-cache 30)
 
@@ -27,8 +28,8 @@
   (try
     (http/http-get url {:as :json :accept :json :throw-entire-message? true})
     (catch Exception e
-      (log/error "could not fetch-json-data: " url)
-      (log/error (.getMessage e))
+      ;(log/error "could not fetch-json-data: " url)
+      ;(log/error (.getMessage e))
       {})))
 
 (defn fetch-image [ctx url]
@@ -100,10 +101,33 @@
     (try
       (if-let [metabadge (fetch-json-data meta-data-url)]
         (let [processed-metabadge (process-metabadge ctx  metabadge assertion-url)]
-          (if (empty? (:metabadge processed-metabadge)) nil processed-metabadge)))
+          (if (empty? (:metabadge processed-metabadge)) nil processed-metabadge))
+        nil)
       (catch Exception e
         (log/error (str "Did not get metabadge information: " assertion-url))
         (log/error (.getMessage e))
         nil))))
+
+(defn quick-check-metabadge [ctx assertion-url]
+  (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
+    (if-let [metabadge (fetch-json-data meta-data-url)]
+      (if (empty? metabadge)
+        {}
+        (r/reduce (fn [r m]
+                    (conj r (-> m (assoc :milestone? (= assertion-url (get-in m [:badge :url])))) )) [] (:metabadge metabadge)))
+
+      nil
+      )
+    )
+  )
+
+(defn milestone? "check if badge is a milestone badge, a required badge or both" [ctx assertion-url]
+  (if-let [check (starts-with? assertion-url (get-in ctx [:config :factory :url]))]
+    (let [metabadge (quick-check-metabadge ctx assertion-url)]
+      (r/reduce (fn [r k _]
+                  (merge r (if (true? k) {:meta_badge true} {:meta_badge_req true}))
+                  ) {} (group-by :milestone? metabadge)))
+    {}))
+
 
 
