@@ -16,8 +16,7 @@
   (ajax/GET
     (path-for (str "/obpv1/metabadge/badge/info"))
     {:params {:assertion_url assertion-url}
-     :handler (fn [data] (reset! data-atom data))})
-  )
+     :handler (fn [data] (reset! data-atom data))}))
 
 
 (defn meta_icon [data-atom]

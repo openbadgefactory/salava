@@ -8,7 +8,9 @@
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [clojure.core.reducers :as r]
             [salava.metabadge.db :as db]
-            [clojure.string :refer [starts-with?]]))
+            [clojure.string :as string]
+            [salava.badge.main :as b]
+            [salava.core.helper :refer [dump]]))
 
 (def no-of-days-in-cache 30)
 
@@ -92,7 +94,7 @@
        (r/map (fn [m] (-> m
                           (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url)
                             :milestone? (= assertion-url (get-in m [:badge :url])))
-                          (update-in [:badge] merge (get-badge-data ctx (:badge m)) ))))
+                          (update-in [:badge] merge (get-badge-data ctx (:badge m))))))
        (r/foldcat)
        (assoc metabadge :metabadge)))
 
@@ -116,18 +118,26 @@
         (r/reduce (fn [r m]
                     (conj r (-> m (assoc :milestone? (= assertion-url (get-in m [:badge :url])))) )) [] (:metabadge metabadge)))
 
-      nil
-      )
-    )
-  )
+      nil)))
 
 (defn milestone? "check if badge is a milestone badge, a required badge or both" [ctx assertion-url]
-  (if-let [check (starts-with? assertion-url (get-in ctx [:config :factory :url]))]
+  (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
     (let [metabadge (quick-check-metabadge ctx assertion-url)]
       (r/reduce (fn [r k _]
                   (merge r (if (true? k) {:meta_badge true} {:meta_badge_req true}))
                   ) {} (group-by :milestone? metabadge)))
     {}))
+
+
+(defn all-metabadges [ctx user]
+  (let [obf-url (get-in ctx [:config :factory :url])
+        all-badges (filter (fn [b] (if-not (:assertion_url b) false (-> b :assertion_url (string/starts-with? obf-url)) ))(b/user-badges-all ctx (:id user)))
+        metabadges (r/reduce (fn [r m ]
+                               (if-let [check (string/starts-with? (:assertion_url m) obf-url)]
+                                 (conj r  (check-metabadge ctx (:assertion_url m)))
+                                 )) [] all-badges)]
+      metabadges
+     #_(mapv #(vals %) metabadges)))
 
 
 
