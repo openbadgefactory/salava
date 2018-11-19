@@ -33,7 +33,7 @@
       [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
        (if (:image badge)
          [:div.media-left
-          [:img.badge-img {:src (:image badge)}]
+          [:img.badge-img.opaque {:src (:image badge)}]
           ])
        [:div.media-body
         [:div.media-heading
