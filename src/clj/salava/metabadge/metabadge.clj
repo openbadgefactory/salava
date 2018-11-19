@@ -130,12 +130,12 @@
                                  )) [] all-badges)]
 
     (reduce-kv
-      (fn [r k v] (distinct-by :id (into [] (r/flatten (conj r  (->> v :metabadge
+      (fn [r k v] (distinct-by :id (into [] (r/flatten (conj r  (->> v
+                                                                     :metabadge
                                                                      (map (fn [m]
                                                                             (let [amount_received (count (filter :received (-> m :required_badges)))]
-                                                                              (assoc m :completion_status (%completed (-> m :min_required ) amount_received)))
-                                                                            ))
-                                                                     (map #(identity %))))))))
+                                                                              (assoc m :completion_status (%completed (-> m :min_required ) amount_received)))))
+                                                                     #_(map #(identity %))))))))
       []
       metabadges)))
 
