@@ -9,4 +9,4 @@
   {(str (base-path context) "/badge") [["/metabadges" my/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/badge/metabadges") {:weight 45 :title "My Goals" :site-navi true :breadcrumb (t :badge/Badges " / Test " :page/Files)}})
+  {(str (base-path context) "/badge/metabadges") {:weight 45 :title (t :metabadge/Mygoals) :site-navi true :breadcrumb (t :badge/Badges " / " :metabadge/Mygoals)}})

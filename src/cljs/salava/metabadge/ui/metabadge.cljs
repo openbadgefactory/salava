@@ -23,7 +23,7 @@
   (let [meta_badge (:meta_badge @data-atom)
         meta_badge_req (:meta_badge_req @data-atom)]
     (cond
-      (and meta_badge meta_badge_req)  [:div.multi [:span {:title "This badge is part of a milestone badge"}
+      (and meta_badge meta_badge_req)  [:div {:title "This badge is part of a milestone badge"} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]] #_[:div.multi [:span {:title "This badge is part of a milestone badge"}
                                                     [:i.link-icon {:class "fa fa-sitemap"}]]
                                         [:span {:title "This badge is part of a milestone badge"} [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       meta_badge [:div {:title "This badge is a milestone badge"}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
@@ -34,8 +34,9 @@
   (take 20 (shuffle (:required_badges m))))
 
 (defn partition-count [m]
-  (let [no (count (required-block-badges m) #_(:required_badges m))]
+  (let [no (count (required-block-badges m))]
     (if (<= no 4) no (/ no 2))))
+
 
 (defn badge-block [m]
   (let [{:keys [received name image criteria]} (:badge m)
@@ -62,15 +63,6 @@
                                                           [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]]))))
                                             [:tr]
                                             coll))) [:tbody] (partition-all (partition-count m) (required-block-badges m) #_(take 20 (shuffle (:required_badges m)))))]]]]]]]]]))
-
-
-(defn metabadge-block [metabadge]
-  (fn []
-    (when-not (empty? metabadge)
-      (into [:div#metabadge
-             (for [m metabadge
-                   :let [{:keys [milestone? badge]} m]]
-               ^{:key m} [badge-block m])]))));)
 
 
 (defn metabadge-link [assertion-url state]
