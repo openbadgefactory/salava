@@ -261,3 +261,11 @@
     }
   }
 }
+#grid  .opaque {
+  filter: opacity(50%);
+  -webkit-filter: opacity(50%);
+  &:hover {
+    filter: opacity(100%);
+    -webkit-filter: opacity(100%);
+  }
+}
