@@ -138,9 +138,9 @@
             (str " " (t :badge/Congratulate) "!")]))]]
      ;messages
      (when-not invalid?
-       [:div.row
-        (if (session/get :user)
-          [badge-message-link message_count  badge_id])])
+       (if user-logged-in?
+         [:div.row
+          [badge-message-link message_count  badge_id]]))
      ;endorsements
      [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]
 
@@ -213,7 +213,7 @@
           [:h2.uppercase-header (t :badge/Evidence)]
           [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
 
-      (if owner? "" [reporttool1 id name "badge"])]]
+      #_(if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
     ))
 
 (defn modal-navi [state]
@@ -245,7 +245,7 @@
 
 
 (defn modal-top-bar [state]
-  (let [{:keys [verified_by_obf issued_by_obf obf_url owner?]} @state]
+  (let [{:keys [verified_by_obf issued_by_obf obf_url owner? ]} @state]
     [:div.row.flip
      (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
@@ -254,9 +254,9 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? tab]} @state]
+  (let [{:keys [owner? tab user-logged-in?]} @state]
     [:div
-     (when-not owner? [follow-verified-bar @state nil nil])
+     (when (and (not owner?) user-logged-in?) [follow-verified-bar @state nil nil])
      [modal-top-bar state]
      (if tab tab [badge-content state])]))
 
