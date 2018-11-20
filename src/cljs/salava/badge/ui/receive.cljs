@@ -151,7 +151,7 @@
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
-             [mb/metabadge assertion_url #_(:assertion_url @state)]
+             [:div [mb/metabadge assertion_url #_(:assertion_url @state)]]
 
              (if assertion
                [:div {:id "assertion-link"}
