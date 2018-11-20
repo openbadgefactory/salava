@@ -23,11 +23,9 @@
   (let [meta_badge (:meta_badge @data-atom)
         meta_badge_req (:meta_badge_req @data-atom)]
     (cond
-      (and meta_badge meta_badge_req)  [:div {:title "This badge is part of a milestone badge"} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]] #_[:div.multi [:span {:title "This badge is part of a milestone badge"}
-                                                    [:i.link-icon {:class "fa fa-sitemap"}]]
-                                        [:span {:title "This badge is part of a milestone badge"} [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-      meta_badge [:div {:title "This badge is a milestone badge"}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
-      meta_badge_req [:div {:title "This badge is part of a milestone badge"} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      (and meta_badge meta_badge_req)  [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      meta_badge [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
+      meta_badge_req [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       :else nil)))
 
 (defn current-badge [required_badges]
@@ -35,7 +33,7 @@
 
 (defn required-block-badges [m]
   (let [current-badge (current-badge (:required_badges m))]
-    (into [current-badge] (take 19 (remove :current (:required_badges m))))))
+    (if (:milestone? m) (take 20 (:required_badges m)) (into [current-badge] (take 19 (remove :current (:required_badges m)))))))
 
 (defn partition-count [m]
   (let [no (count (required-block-badges m))]
@@ -76,16 +74,21 @@
         (reduce-kv
           (fn [r k v]
             (conj r (if (true? k)
-                      ^{:key k}[:a {:href "#"
-                                    :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
-                                [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (str "This badge is a milestone badge")]]
-                      (if (empty? (rest v))
-                        ^{:key k}  [:a {:href "#"
-                                        :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
-                                    [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]  "This badge is a part of a milestone badge"]]
-                        ^{:key k}  [:a {:href "#"
-                                        :on-click #(mo/open-modal [:metabadge :multiblock] v)}
-                                    [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (str "This badge is a part of " (count v) " milestone badges")]]))))
+                      ^{:key k}(if (empty? (rest v))
+                                 [:a {:href "#"
+                                      :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
+                                  [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (t :metabadge/Amilestonebadge)]]
+
+                                 [:a {:href "#"
+                                      :on-click #(mo/open-modal [:metabadge :multiblock] {:metabadge v :heading (str (t :metabadge/Multiplemilestones) "(" (count v)")")})}
+                                  [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (str (t :metabadge/Multiplemilestones) "(" (count v)")")]])
+                      ^{:key k} (if (empty? (rest v))
+                                  [:a {:href "#"
+                                       :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
+                                   [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]  (t :metabadge/Partofamilestonebadge)]]
+                                  [:a {:href "#"
+                                       :on-click #(mo/open-modal [:metabadge :multiblock] {:metabadge v :heading (str (t :metabadge/Partofmultiplemilestonebadges) "( "(count v)  ")")})}
+                                   [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (str (t :metabadge/Partofmultiplemilestonebadges) "( "(count v)  ")")]]))))
           [:div.link-icon]
           (group-by :milestone? metabadge))))))
 

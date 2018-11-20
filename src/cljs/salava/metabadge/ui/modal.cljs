@@ -77,7 +77,7 @@
                          (conj result
                                (if received
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id user_badge_id})} [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]
-                                 [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} #_{:href criteria :target "_blank" :rel "noopener noreferrer" }
+                                 [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)}
                                   [:img.not-received.img-circle {:src image :alt name :title name} ]]))
                          )) [:div] (sort-by :received required_badges))]]]
           [:div {:class "row criteria-html"}
@@ -89,7 +89,7 @@
 
 (defn multi-block [metabadge]
   (fn []
-    (let [current (current-badge metabadge #_(:metabadge @state))]
+    (let [current (current-badge (:metabadge metabadge) #_(:metabadge @state))]
       [:div#metabadgegrid {:class "row"}
        [:div.col-md-3
         [:div.badge-image
@@ -97,9 +97,9 @@
        [:div.col-md-9
         [:div.row
          [:div.col-md-12
-          [:h1.uppercase-header (or (:name current) (-> current :badge-info :name))]
+          [:h1.uppercase-header (:heading metabadge) #_(or (:name current) (-> current :badge-info :name))]
           [:div.info (t :metabadge/Metabadgeinfo)]
-          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge] metabadge)]]]])))
+          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge] (:metabadge metabadge))]]]])))
 
 
 (def ^:export modalroutes
