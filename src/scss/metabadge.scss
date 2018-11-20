@@ -1,6 +1,6 @@
 @import 'variables';
 
-#metabadge {
+body #metabadge, body.anon #metabadge {
   margin-top: 5px;
   min-height: 300px;
   position: relative;
