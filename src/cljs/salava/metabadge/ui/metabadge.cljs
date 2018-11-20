@@ -30,8 +30,12 @@
       meta_badge_req [:div {:title "This badge is part of a milestone badge"} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       :else nil)))
 
+(defn current-badge [required_badges]
+  (->> required_badges (filter :current) first))
+
 (defn required-block-badges [m]
-  (take 20 (shuffle (:required_badges m))))
+  (let [current-badge (current-badge (:required_badges m))]
+    (into [current-badge] (take 19 (remove :current (:required_badges m))))))
 
 (defn partition-count [m]
   (let [no (count (required-block-badges m))]
@@ -42,7 +46,7 @@
   (let [{:keys [received name image criteria]} (:badge m)
         milestone-image-class (if received "" " not-received")]
     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
-     [:div.metabadge
+     [:div.metabadge {:class (if (> (count (:required_badges m)) 8) " metabadge-large")}
       [:div.panel
        [:div.panel-heading (:name m)
         [:div.pull-right (if (:milestone? m) [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
@@ -62,7 +66,7 @@
                                                           [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
                                                           [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]]))))
                                             [:tr]
-                                            coll))) [:tbody] (partition-all (partition-count m) (required-block-badges m) #_(take 20 (shuffle (:required_badges m)))))]]]]]]]]]))
+                                            coll))) [:tbody] (partition-all (partition-count m) (required-block-badges m)))]]]]]]]]]))
 
 
 (defn metabadge-link [assertion-url state]
