@@ -4,7 +4,7 @@
 
 (defqueries "sql/metabadge/queries.sql")
 
-(defn badge-id-by-assertion
+(defn user-badge-by-assertion
   "in case of multiple hits return the most recent"
   [ctx assertion_url]
-  (some-> (select-user-badge-id-by-assertion-url {:assertion_url assertion_url} (u/get-db ctx)) first :id))
+  (some-> (select-user-badge-by-assertion-url {:assertion_url assertion_url} (u/get-db ctx)) first))

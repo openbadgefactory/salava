@@ -71,7 +71,7 @@
   (->> badges
        (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b)
                               :current (= (:url b) assertion-url)
-                              :user_badge_id (db/badge-id-by-assertion ctx (:url b))))) )
+                              :user_badge (db/user-badge-by-assertion ctx (:url b))))) )
        (r/foldcat)))
 
 
