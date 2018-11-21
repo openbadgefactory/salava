@@ -26,13 +26,14 @@
 
 (defn metabadge-element [milestone state]
   (let [{:keys [badge name min_required required_badges completion_status]} milestone
-        completed (if (> completion_status 100) 100 completion_status)]
+        completed (if (> completion_status 100) 100 completion_status)
+        image-class (if (= 100 completion_status) "" " opaque")]
     [:div.media.grid-container
      [:div.media-content
       [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
        (if (:image badge)
          [:div.media-left
-          [:img.badge-img.opaque {:src (:image badge)}]
+          [:img.badge-img {:src (:image badge) :class image-class}]
           ])
        [:div.media-body
         [:div.media-heading
