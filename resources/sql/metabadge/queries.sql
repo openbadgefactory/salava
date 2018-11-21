@@ -1,2 +1,2 @@
---name: select-user-badge-id-by-assertion-url
-SELECT id FROM user_badge AS ub WHERE ub.assertion_url = :assertion_url AND ub.status != 'declined' ORDER BY ctime DESC
+--name: select-user-badge-by-assertion-url
+SELECT id, issued_on, status FROM user_badge AS ub WHERE ub.assertion_url = :assertion_url ORDER BY ctime DESC
