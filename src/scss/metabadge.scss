@@ -281,6 +281,14 @@ body #metabadge, body.anon #metabadge {
   .info {
     margin-bottom: 10px;
   }
+  #badge-stats {
+    .panel {
+      display: unset;
+      font-weight: unset;
+      //font-size: unset;
+      margin-top: unset;
+    }
+  }
 }
 
 .link-icon {
