@@ -38,7 +38,7 @@
                                 :content-language (init-content-language (:content data))
                                 :tab-no tab-no
                                 :permission "success"))
-                 (init-badge-connection state (:badge_id data))))}
+               (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn show-settings-dialog [badge-id state init-data context]
