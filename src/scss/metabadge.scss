@@ -17,8 +17,6 @@ body #metabadge, body.anon #metabadge {
     padding: 0px;
     float: left;
     margin-right: 10px;
-    //width: auto;
-    //min-width: 280px;
     opacity: 0.9;
     &:hover {
       opacity: 1.0;
@@ -37,7 +35,6 @@ body #metabadge, body.anon #metabadge {
 
     .panel {
       width: auto;
-      //min-width: 280px;
       min-width: 300px;
       height: 160px;
       margin: 0;
@@ -285,8 +282,8 @@ body #metabadge, body.anon #metabadge {
     .panel {
       display: unset;
       font-weight: unset;
-      //font-size: unset;
       margin-top: unset;
+      border: unset;
     }
   }
 }
