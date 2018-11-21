@@ -51,7 +51,7 @@
 
 (defn order-radio-values []
   [{:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "status" :id "radio-status" :label "by status"#_(t :core/byname)}])
+   {:value "status" :id "radio-status" :label (t :metabadge/bystatus)}])
 
 (defn grid-form [state]
   [:div#grid-filter {:class "form-horizontal" :style {:margin "10px 0px 10px 0px"}}
