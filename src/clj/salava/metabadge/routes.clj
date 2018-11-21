@@ -17,17 +17,11 @@
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (mb/all-metabadges ctx current-user))
-                  )
+                  (ok (mb/all-metabadges ctx current-user)))
+
              (GET "/info" [assertion_url]
                   :summary "get metabadge info via assertion url"
                   :current-user current-user
-                  (mb/all-metabadges ctx current-user)
-                  #_(prn (map #(-> %
-                                 :test
-                                 :metabadge
-                                 :badge
-                                 )(mb/all-metabadges ctx current-user)))
                   (ok (mb/check-metabadge ctx assertion_url)))
 
              (GET "/badge/info" [assertion_url]
