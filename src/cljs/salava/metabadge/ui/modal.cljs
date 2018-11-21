@@ -38,7 +38,7 @@
   (fn []
     (let [{:keys [badge-info received current]} badge
           {:keys [image name description criteria]} badge-info]
-      [:div#metabadgegrid {:class "row"}
+      [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3.badge-image
         [:div.image-container
          [:img.opaque {:src image :title "dummy badge"}]]]
@@ -59,7 +59,7 @@
             {:keys [image name]} badge-info
             {:keys [owner? user-logged-in?]} @data-atom]
         (if (and user-logged-in? owner?)
-          [:div#metabadgegrid {:class "row"}
+          [:div#metabadgegrid {:class "row flip-table"}
            [:div.col-md-3.badge-image
             [:div.image-container
              [:img {:src image :title name}]]]
@@ -85,7 +85,7 @@
         completed (if (> completed-percentage 100) 100 (str completed-percentage))
         is-complete? (completed? min_required amount_received)]
 
-    [:div.row.flip {:id "metabadgegrid"}
+    [:div.row.flip-table {:id "metabadgegrid"}
      [:div.col-md-3.badge-image
       [:div.image-container
        [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]]
@@ -133,7 +133,7 @@
         completed-percentage (%completed min_required amount_received)
         completed (if (> completed-percentage 100) 100 (str completed-percentage))
         is-complete? (completed? min_required amount_received)]
-    [:div.row.flip
+    [:div.row.flip-table
      [:div.col-md-3.badge-image
       [:div.image-container
        [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]]
@@ -176,7 +176,7 @@
                                                                                    "-")]]]))) [:div.row.body] (sort-by #(-> % :user_badge :issued_on) (->> required_badges (filter :received))))]]]]))
 
 (defn modal-navi [metabadge state]
-  [:div.row.flip
+  [:div.row.flip-table
    [:div.col-md-3]
    [:div.col-md-9.badge-modal-navi
     [:ul {:class "nav nav-tabs wrap-grid"}
@@ -202,7 +202,7 @@
 (defn multi-block [metabadge]
   (fn []
     (let [current (current-badge (:metabadge metabadge) #_(:metabadge @state))]
-      [:div#metabadgegrid {:class "row"}
+      [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3
         [:div.badge-image
          [:img {:src (or (:image current) (-> current :badge-info :image))}]]]
@@ -211,7 +211,7 @@
          [:div.col-md-12
           [:h1.uppercase-header (:heading metabadge) #_(or (:name current) (-> current :badge-info :name))]
           [:div.info (t :metabadge/Metabadgeinfo)]
-          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge] (:metabadge metabadge))]]]])))
+          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge {:class "row wrap-grid"}] (:metabadge metabadge))]]]])))
 
 (defn handler [metabadge]
   (let [state (atom {:tab-no 1})]
