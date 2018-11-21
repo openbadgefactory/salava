@@ -1,7 +1,7 @@
 (ns salava.metabadge.ui.my
   (:require [salava.core.ui.layout :as layout]
             [salava.core.ui.ajax-utils :as ajax]
-            [reagent.core :refer [atom]]
+            [reagent.core :refer [atom cursor]]
             [salava.core.ui.helper :refer [path-for not-activated?]]
             [reagent-modals.modals :as m]
             [salava.core.i18n :as i18n :refer [t]]
@@ -15,7 +15,6 @@
   (ajax/GET
     (path-for "/obpv1/metabadge" true)
     {:handler (fn [data]
-                ;(session/put :metabadges data)
                 (swap! state assoc :metabadges data
                        :initializing false))}))
 
@@ -40,7 +39,7 @@
          [:p.heading-link name]]
 
         [:div.progress
-         [:div.progress-bar.progress-bar-success.progress-bar-striped.active
+         [:div.progress-bar.progress-bar-success
           { :role "progressbar"
             :aria-valuenow (str completion_status)
             :style {:width (str completion_status "%")}
@@ -54,43 +53,58 @@
    {:value "status" :id "radio-status" :label (t :metabadge/bystatus)}])
 
 (defn grid-form [state]
-  [:div#grid-filter {:class "form-horizontal" :style {:margin "10px 0px 10px 0px"}}
-   [g/grid-radio-buttons (t :core/Order ":") "order" (order-radio-values) :order state]])
+  (let [show-atom (cursor state [:show])]
+    [:div#grid-filter {:class "form-horizontal" :style {:margin "10px 0px 10px 0px"}}
+     [:label.checkbox-inline
+      [:input.form-check-input {:type "checkbox"
+                                :id "checkbox1"
+                                :on-change #(do (if (= :in-progress @show-atom)
+                                                  (reset! show-atom :all)
+                                                  (reset! show-atom :in-progress))
+                                              )}]
+      (t :metabadge/Showcompletedgoals)]]))
 
 (defn metabadge-grid [state]
-  (let [metabadges (:metabadges @state)
-        order (keyword (:order @state))
-        metabadges (case order
-                     (:name) (sort-by (comp clojure.string/upper-case str order) metabadges)
-                     (:status)(sort-by :completion_status > metabadges)
-                     metabadges)]
+  (let [order (keyword (:order @state))
+        show (cursor state [:show])
+        metabadges (case @show
+                     :in-progress (filter #(not (>= (:completion_status %) 100)) (:metabadges @state))
+                     :all (:metabadges @state)
+                     (:metabadges @state))
+        #_metabadges #_(case order
+                         (:name) (sort-by (comp clojure.string/upper-case str order) metabadges)
+                         (:status)(sort-by :completion_status > metabadges)
+                         metabadges)]
+(if (= 0 (count metabadges)) [:div (t :metabadge/Nonewgoals)]
     (reduce (fn [r m]
               (let [{:keys [required_badges min_required completion_status]} m
                     is-complete? (>= completion_status 100)]
-                (conj r (when-not is-complete? [metabadge-element m state]))
-                )) [:div#grid {:class "row wrap-grid"}] metabadges)))
+                (conj r [metabadge-element m state])
+                )) [:div#grid {:class "row wrap-grid"}] (sort-by :completion_status > metabadges)))))
 
 
 (defn content [state]
-  [:div {:id "my-badges"}
-   [m/modal-window]
-   (if (:initializing @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (str (t :core/Loading) "...")]]
-     [:div
-      [:div
-       [:h1.uppercase-header (t :metabadge/Mygoals)]
-       (t :metabadge/Mygoalsinfo)]
-      [grid-form state]
-      (cond
-        (not-activated?) (not-activated-banner)
-        (empty? (:metabadges@state)) [:div]
-        :else [metabadge-grid state])])])
+  (let [show-atom (cursor state [:show])]
+    [:div {:id "my-badges"}
+     [m/modal-window]
+     (if (:initializing @state)
+       [:div.ajax-message
+        [:i {:class "fa fa-cog fa-spin fa-2x "}]
+        [:span (str (t :core/Loading) "...")]]
+       [:div
+        [:div
+         [:h1.uppercase-header (t :metabadge/Mygoals)]
+         (t :metabadge/Mygoalsinfo)]
+       (if-not (empty? (:metabadges @state)) [grid-form state])
+        (cond
+          (not-activated?) (not-activated-banner)
+          (empty? (:metabadges@state)) [:div (t :metabadge/Nonewgoals)]
+          :else [metabadge-grid state])])]))
 
 (defn handler [site-navi]
   (let [state (atom {:initializing true
-                     :order "status"})]
+                     :show :in-progress
+                     })]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

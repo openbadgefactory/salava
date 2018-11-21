@@ -41,7 +41,7 @@
       [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3.badge-image
         [:div.image-container
-         [:img.opaque {:src image :title "dummy badge"}]]]
+         [:img.opaque {:src image :title name}]]]
        [:div.col-md-9
         [:div.col-md-12
          [:h1.uppercase-header name]
@@ -91,7 +91,7 @@
        [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]]
       [:div.progress
        [:div.progress-bar.progress-bar-success
-        {:class (if  is-complete? "" " progress-bar-striped active")
+        {;:class (if  is-complete? "" " progress-bar-striped")
          :role "progressbar"
          :aria-valuenow (str completed)
          :style {:width (str completed "%")}
@@ -101,10 +101,10 @@
      [:div.col-md-9
       [:div.col-md-12
        [:h1.uppercase-header (:name metabadge)]
-       [:div.description (:description badge)]
        [:div {:style {:margin-top "10px"}}[:label (str (t :metabadge/Minimumrequired) ": ")] min_required]
        [:div [:label (str (t :metabadge/Amountearned)": ")] amount_received]
-       [:div.panel
+       [:div.description (:description badge)]
+       #_[:div.panel
         [:div.panel-body
          [:div.panel-heading [:span [:i {:class "fa fa-puzzle-piece"}] (if (empty? (rest required_badges)) (t :metabadge/Requiredbadge) (t :metabadge/Requiredbadges))]]
          [:hr]
@@ -139,7 +139,7 @@
        [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]]
       [:div.progress
        [:div.progress-bar.progress-bar-success
-        {:class (if  is-complete? "" " progress-bar-striped active")
+        {;:class (if  is-complete? "" " progress-bar-striped")
          :role "progressbar"
          :aria-valuenow (str completed)
          :style {:width (str completed "%")}
@@ -149,11 +149,11 @@
      [:div.col-md-9 {:id "badge-stats"}
       [:div.panel
        [:div.panel-body
-        [:div.row.header
+        [:div.row.header {:style {:margin-bottom "10px"}}
          [:div.flip-table
           [:div.col-md-6]
           [:div.col-md-2 (t :metabadge/Dateissued)]
-          [:div.col-md-4 (t :metabadge/Badgestatus)]]]
+          [:div.col-md-4 #_(t :metabadge/Badgestatus)]]]
         (reduce (fn [r badge]
                   (let [{:keys [badge-info received current user_badge]} badge
                         {:keys [name image criteria]} badge-info
@@ -169,11 +169,13 @@
                                                [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
                                                )]
                               [:div.col-md-2 [:label (t :metabadge/Dateissued)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
-                              [:div.col-md-4 [:label (t :metabadge/Badgestatus)] (case status
+                              [:div.col-md-4 #_[:label (t :metabadge/Badgestatus)] #_(case status
                                                                                    "accepted" (t :social/accepted)
                                                                                    "declined" (t :social/declined)
                                                                                    "pending" (t :social/pending)
-                                                                                   "-")]]]))) [:div.row.body] (sort-by #(-> % :user_badge :issued_on) (->> required_badges (filter :received))))]]]]))
+                                                                                   "-")]]]))) [:div.row.body] (->> required_badges
+                                                                                                                   (sort-by #(-> % :user_badge :issued_on) >)
+                                                                                                                   (sort-by :received >)))]]]]))
 
 (defn modal-navi [metabadge state]
   [:div.row.flip-table

@@ -284,6 +284,15 @@ body #metabadge, body.anon #metabadge {
       font-weight: unset;
       margin-top: unset;
       border: unset;
+      .opaque {
+        filter: opacity(25%);
+        -webkit-filter: opacity(25%);
+        &:hover {
+          filter: opacity(100%);
+          -webkit-filter: opacity(100%);
+          transform: scale(1.5);
+        }
+      }
     }
   }
 }
