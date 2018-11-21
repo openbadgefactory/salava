@@ -6,7 +6,8 @@
             [clojure.string :refer [split]]
             [salava.core.i18n :refer [t]]
             [salava.metabadge.ui.metabadge :as mb]
-            [salava.core.ui.modal :as mo]))
+            [salava.core.ui.modal :as mo]
+            [salava.core.time :refer [date-from-unix-time]]))
 
 (defn current-badge [metabadge]
   (let [{:keys [milestone? required_badges badge]} (-> metabadge first)]
@@ -42,13 +43,9 @@
         amount_received (count (filter :received required_badges))
         completed-percentage (%completed min_required amount_received)
         completed (if (> completed-percentage 100) 100 (str completed-percentage))
-        is-complete? (completed? min_required amount_received)
-        ;state (atom {:tab-no 1})
-        ]
-    (prn (map #(-> %
-                   :badge-info
-                   (dissoc :image)) required_badges))
-    [:div.row.flip
+        is-complete? (completed? min_required amount_received)]
+
+    [:div.row.flip {:id "metabadgegrid"}
      [:div.col-md-3.badge-image
       [:div.image-container
        [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]
@@ -63,7 +60,7 @@
          :aria-valuemax "100"}
         (str completed "%")]]]
      [:div.col-md-9
-      [:div.row
+      ;[:div.row
        [:div.col-md-12
         [:h1.uppercase-header (:name metabadge)]
         [:div.description (:description badge)]
@@ -91,7 +88,8 @@
           [:div {:dangerouslySetInnerHTML {:__html (:criteria badge)}}]]]
         ]]]
 
-     ]))
+    ; ]
+    ))
 
 (defn history [metabadge]
   (let [{:keys [badge required_badges milestone? min_required]} metabadge
@@ -112,36 +110,28 @@
          :aria-valuemin "0"
          :aria-valuemax "100"}
         (str completed "%")]]]
-     [:div.col-md-9
-      [:div.row
-       ;[:div.col-md-12
-        [:div.panel
-         [:div.panel-body
-          [:div.row.header
-           ;[:div.col-md-12
-            [:div.flip-table
-             [:div.col-md-5]
-             [:div.col-md-2 "issued on"]
-             [:div.col-md-2 "status"]]];]
-          ]
+     [:div.col-md-9 {:id "badge-stats"}
+       [:div.panel
+        [:div.panel-body
+         [:div.row.header
+          [:div.flip-table
+           [:div.col-md-6]
+           [:div.col-md-2 (t :metabadge/Dateissued)]
+           [:div.col-md-4 (t :metabadge/Badgestatus)]]]
+         (reduce (fn [r badge]
+                   (let [{:keys [badge-info received current user_badge]} badge
+                         {:keys [name image criteria]} badge-info
+                         {:keys [id issued_on status]} user_badge
+                         image-class (if-not received " opaque")]
+                     (conj r [:div.col-md-12
+                              [:div.flip-table
+                               [:div.col-md-1 [:img.badge-icon {:src image :class image-class}]]
+                               [:div.col-md-5 (if received [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name]
+                                                [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
+                                                )]
 
-         ]
-
-        ]]
-      ;]
-     ]
-
-    #_[:table.table
-       ; [:tbody
-       (reduce (fn [result badge]
-                 (let [{:keys [badge-info received current user_badge]} badge
-                       {:keys [name image criteria]} badge-info
-                       {:keys [id issued_on status]} user_badge]
-                   (conj result [:tr [:div.inline [:image.img-circle {:src image}]  ]])
-
-                   )
-
-                 ) [:tbody] (:required_badges metabadge))];]
+                               [:div.col-md-2 [:label (t :metabadge/Dateissued)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
+                               [:div.col-md-4 [:label (t :metabadge/Badgestatus)] status]]]))) [:div.row.body] (sort-by #(-> % :user_badge :issued_on) (->> required_badges (filter :received))))]]]];]
     ))
 
 (defn modal-navi [metabadge state]
@@ -153,9 +143,8 @@
       [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [view-content metabadge] :tab-no 1 )}
        [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)  ]]]
      [:li.nav-item {:class  (if (or (nil? (:tab-no @state))(= 2 (:tab-no @state))) "active")}
-      [:a.nav-link {:href "#" :on-click #(do (swap! state assoc :tab [history metabadge] :tab-no 2 )
-                                           (prn (:tab-no @state )))}
-       [:div  [:i.nav-icon {:class "fa fa-history fa-lg"}] "History" #_(t :page/View)  ]]]]]])
+      [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [history metabadge] :tab-no 2 )}
+       [:div  [:i.nav-icon {:class "fa fa-history fa-lg"}] (t :metabadge/History)  ]]]]]])
 
 (defn metabadge-content [metabadge state]
   (let [{:keys [badge required_badges milestone? min_required]} metabadge

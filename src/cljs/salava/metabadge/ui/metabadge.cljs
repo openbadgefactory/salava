@@ -80,15 +80,15 @@
                                   [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (t :metabadge/Amilestonebadge)]]
 
                                  [:a {:href "#"
-                                      :on-click #(mo/open-modal [:metabadge :multiblock] {:metabadge v :heading (str (t :metabadge/Multiplemilestones) "(" (count v)")")})}
-                                  [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (str (t :metabadge/Multiplemilestones) "(" (count v)")")]])
+                                      :on-click #(mo/open-modal [:metabadge :multiblock] {:metabadge v :heading (str (t :metabadge/Multiplemilestones) " (" (count v)")")})}
+                                  [:div [:span [:i.link-icon {:class "fa fa-sitemap"}]]  (str (t :metabadge/Multiplemilestones) " (" (count v)")")]])
                       ^{:key k} (if (empty? (rest v))
                                   [:a {:href "#"
                                        :on-click #(mo/open-modal [:metabadge :metadata] (-> v first))}
                                    [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]  (t :metabadge/Partofamilestonebadge)]]
                                   [:a {:href "#"
-                                       :on-click #(mo/open-modal [:metabadge :multiblock] {:metabadge v :heading (str (t :metabadge/Partofmultiplemilestonebadges) "( "(count v)  ")")})}
-                                   [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (str (t :metabadge/Partofmultiplemilestonebadges) "( "(count v)  ")")]]))))
+                                       :on-click #(mo/open-modal [:metabadge :multiblock] {:metabadge v :heading (str (t :metabadge/Partofmultiplemilestonebadges) " ("(count v)  ")")})}
+                                   [:div [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]] (str (t :metabadge/Partofmultiplemilestonebadges) " ("(count v)  ")")]]))))
           [:div.link-icon]
           (group-by :milestone? metabadge))))))
 

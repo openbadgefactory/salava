@@ -51,13 +51,11 @@
 
 (defn order-radio-values []
   [{:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "status" :id "radio-status" :label "by status"#_(t :core/byname)}]
-  )
+   {:value "status" :id "radio-status" :label "by status"#_(t :core/byname)}])
 
 (defn grid-form [state]
   [:div#grid-filter {:class "form-horizontal" :style {:margin "10px 0px 10px 0px"}}
-   [g/grid-radio-buttons (t :core/Order ":") "order" (order-radio-values) :order state]
-   ])
+   [g/grid-radio-buttons (t :core/Order ":") "order" (order-radio-values) :order state]])
 
 (defn metabadge-grid [state]
   (let [metabadges (:metabadges @state)
@@ -87,15 +85,12 @@
       [grid-form state]
       (cond
         (not-activated?) (not-activated-banner)
-        (empty? (:metabadges@state)) [:div];"Its currently empty here..."
+        (empty? (:metabadges@state)) [:div]
         :else [metabadge-grid state])])])
 
 (defn handler [site-navi]
-  (let [;metabadges (session/get :metabadges)
-        state (atom {:initializing true
-                     :order "status"
-                     ;:metabadges metabadges
-                     })]
+  (let [state (atom {:initializing true
+                     :order "status"})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
