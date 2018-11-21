@@ -24,7 +24,8 @@
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
-            [salava.badge.ui.verify :refer [check-badge]]))
+            [salava.badge.ui.verify :refer [check-badge]]
+            [salava.metabadge.ui.metabadge :refer [metabadge]]))
 
 
 
@@ -253,6 +254,8 @@
              (if (and user-logged-in? (not owner?))
                [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
+
+            [:div [metabadge (:assertion_url @state)]]
 
            [:div.description description]
 
