@@ -255,7 +255,7 @@
                [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
 
-            [:div [metabadge (:assertion_url @state)]]
+            #_[:div [metabadge (:assertion_url @state)]]
 
            [:div.description description]
 
