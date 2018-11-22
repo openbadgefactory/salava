@@ -127,7 +127,7 @@
          [:div {:dangerouslySetInnerHTML {:__html (:criteria badge)}}]]]
        ]]]))
 
-(defn required-badge-tabs [metabadge]
+(defn required-badge-tab [metabadge]
   (let [{:keys [badge required_badges milestone? min_required]} metabadge
         amount_received (count (filter :received required_badges))
         completed-percentage (%completed min_required amount_received)
@@ -148,7 +148,7 @@
         (str completed "%")]]]
      [:div.col-md-9 {:id "badge-stats"}
       [:div.col-md-12
-       [:h1.uppercase-header (:name metabadge)]
+       #_[:h1.uppercase-header (:name metabadge)]
        [:div.description (if-not is-complete? (t :metabadge/Milestoneinfo) (t :metabadge/Completedmilestoneinfo))]
        [:hr]
        [:div.panel
@@ -183,7 +183,7 @@
    [:div.col-md-9.badge-modal-navi
     [:ul {:class "nav nav-tabs wrap-grid"}
      [:li.nav-item {:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
-      [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [required-badge-tabs metabadge] :tab-no 1 )}
+      [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [required-badge-tab metabadge] :tab-no 1 )}
        [:div  [:i.nav-icon {:class "fa fa-puzzle-piece fa-lg"}] (t :metabadge/Requiredbadges)  ]]]
      [:li.nav-item {:class  (if (or (nil? (:tab-no @state))(= 2 (:tab-no @state))) "active")}
       [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [view-content metabadge] :tab-no 2 )}
@@ -198,7 +198,7 @@
 
     [:div#metabadgegrid {:class "row"}
      [modal-navi metabadge state]
-     (if (:tab @state) (:tab @state) [required-badge-tabs metabadge])]))
+     (if (:tab @state) (:tab @state) [required-badge-tab metabadge])]))
 
 
 (defn multi-block [metabadge]
