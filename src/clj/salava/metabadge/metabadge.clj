@@ -17,6 +17,7 @@
 (def no-of-days-in-cache 30)
 
 (defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 100) (cache/ttl-cache-factory :ttl (* (* 86400 1000) no-of-days-in-cache)))))
+(defonce user-badge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 500) (cache/ttl-cache-factory :ttl (* 86400 1000)))))
 
 (defn url? [s]
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
@@ -106,17 +107,34 @@
         (r/reduce (fn [r m]
                     (conj r (-> m (assoc :milestone? (= assertion-url (get-in m [:badge :url])))) )) [] (:metabadge metabadge)))
 
-      nil)))
+      {})))
 
-(defn milestone?
-  "check if badge is a milestone badge, a required badge or both"
-  [ctx assertion-url]
-  (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
-    (let [metabadge (quick-check-metabadge ctx assertion-url)]
-      (r/reduce (fn [r k _]
-                  (merge r (if (true? k) {:meta_badge true} {:meta_badge_req true}))
-                  ) {} (group-by :milestone? metabadge)))
-    {}))
+#_(defn milestone?
+    "check if badge is a milestone badge, a required badge or both"
+    [ctx assertion-url]
+    (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
+      (let [metabadge (quick-check-metabadge ctx assertion-url)]
+        (r/reduce (fn [r k _]
+                    (merge r (if (true? k) {:meta_badge true} {:meta_badge_req true}))
+                    ) {} (group-by :milestone? metabadge)))
+      {}))
+
+(defn milestone? [ctx user-id user_badge_id]
+  "check if badge is a milestone badge or a required badge. If both (= required_badge)"
+  (let [assertion-url (:assertion_url (b/get-badge ctx user_badge_id user-id))]
+    (when-not (clojure.string/blank? assertion-url)
+      (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
+        (let [metabadge (quick-check-metabadge ctx assertion-url)]
+          (if-not (empty? metabadge)
+            (if (some false? (keys (group-by :milestone? metabadge))) {:required_badge true} {:milestone true})))
+        {}))))
+
+(defn get-user-badge-data [ctx user-id user_badge_id]
+  (let [key user_badge_id]
+    (cache/lookup (swap! user-badge-cache-storage
+                         #(if (cache/has? % key)
+                            (cache/hit % key)
+                            (cache/miss % key (milestone? ctx user-id user_badge_id)))) key)))
 
 
 (defn all-metabadges

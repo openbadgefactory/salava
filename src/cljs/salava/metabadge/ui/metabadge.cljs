@@ -12,20 +12,20 @@
      :handler (fn [data]
                 (reset! state data))}))
 
-(defn init-metabadge-icon [assertion-url data-atom]
+(defn init-metabadge-icon [id data-atom]
   (ajax/GET
     (path-for (str "/obpv1/metabadge/badge/info"))
-    {:params {:assertion_url assertion-url}
+    {:params {:user_badge_id id}
      :handler (fn [data] (reset! data-atom data))}))
 
 
 (defn meta_icon [data-atom]
-  (let [meta_badge (:meta_badge @data-atom)
-        meta_badge_req (:meta_badge_req @data-atom)]
+  (let [required_badge (:required_badge @data-atom)
+        milestone (:milestone @data-atom)]
     (cond
-      (and meta_badge meta_badge_req)  [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-      meta_badge [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
-      meta_badge_req [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      ;(and meta_badge meta_badge_req)  [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      milestone [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
+      required_badge [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       :else nil)))
 
 (defn current-badge [required_badges]
@@ -92,10 +92,10 @@
           [:div.link-icon]
           (group-by :milestone? metabadge))))))
 
-(defn metabadge-icon [assertion-url]
+(defn metabadge-icon [id]
   (fn []
     (let [data-atom (atom {})]
-      (init-metabadge-icon assertion-url data-atom)
+      (init-metabadge-icon id data-atom)
       [meta_icon data-atom]
       )))
 

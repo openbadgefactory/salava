@@ -63,7 +63,7 @@
                                                   (reset! show-atom :all)
                                                   (reset! show-atom :in-progress))
                                               )}]
-      (t :metabadge/Showcompletedgoals)]]))
+      (t :metabadge/Showcompletedmilestones)]]))
 
 (defn metabadge-grid [state]
   (let [order (keyword (:order @state))
@@ -71,17 +71,14 @@
         metabadges (case @show
                      :in-progress (filter #(not (>= (:completion_status %) 100)) (:metabadges @state))
                      :all (:metabadges @state)
-                     (:metabadges @state))
-        #_metabadges #_(case order
-                         (:name) (sort-by (comp clojure.string/upper-case str order) metabadges)
-                         (:status)(sort-by :completion_status > metabadges)
-                         metabadges)]
-(if (= 0 (count metabadges)) [:div {:style {:margin-top "10px"}} (t :metabadge/Nonewgoals)]
-    (reduce (fn [r m]
-              (let [{:keys [required_badges min_required completion_status]} m
-                    is-complete? (>= completion_status 100)]
-                (conj r [metabadge-element m state])
-                )) [:div#grid {:class "row wrap-grid"}] (sort-by :completion_status > metabadges)))))
+                     (:metabadges @state))]
+    (if (= 0 (count metabadges))
+      [:div {:style {:margin-top "10px"}} (t :metabadge/Nonewgoals)]
+      (reduce (fn [r m]
+                (let [{:keys [required_badges min_required completion_status]} m
+                      is-complete? (>= completion_status 100)]
+                  (conj r [metabadge-element m state])
+                  )) [:div#grid {:class "row wrap-grid"}] (sort-by :completion_status > metabadges)))))
 
 
 (defn content [state]
@@ -94,9 +91,9 @@
         [:span (str (t :core/Loading) "...")]]
        [:div
         [:div
-         [:h1.uppercase-header (t :metabadge/Mygoals)]
-         (t :metabadge/Mygoalsinfo)]
-       (if-not (empty? (:metabadges @state)) [grid-form state])
+         [:h1.uppercase-header (t :metabadge/Milestonebadges)]
+         (t :metabadge/Milestonebadgespageinfo)]
+        (if-not (empty? (:metabadges @state)) [grid-form state])
         (cond
           (not-activated?) (not-activated-banner)
           (empty? (:metabadges@state)) [:div {:style {:margin-top "10px"}} (t :metabadge/Nonewgoals)]
@@ -104,8 +101,7 @@
 
 (defn handler [site-navi]
   (let [state (atom {:initializing true
-                     :show :in-progress
-                     })]
+                     :show :in-progress})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
