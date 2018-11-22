@@ -148,36 +148,34 @@
         (str completed "%")]]]
      [:div.col-md-9 {:id "badge-stats"}
       [:div.col-md-12
-              [:h1.uppercase-header (:name metabadge)]
+       [:h1.uppercase-header (:name metabadge)]
        [:div.description (if-not is-complete? (t :metabadge/Milestoneinfo) (t :metabadge/Completedmilestoneinfo))]
-       #_[:div {:style {:margin-top "10px"}}[:label (str (t :metabadge/Minimumrequired) ": ")] min_required]
-       #_[:div [:label (str (t :metabadge/Amountearned)": ")] amount_received]
-      [:hr]
-      [:div.panel
-       [:div.panel-body
-        [:div.row.header {:style {:margin-bottom "10px" :margin-top "10px"}}
-         [:div.row.flip-table
-          [:div.col-md-6]
-          [:div.col-md-2 (t :metabadge/Earnedon)]
-          [:div.col-md-4]]]
-        (reduce (fn [r badge]
-                  (let [{:keys [badge-info received current user_badge]} badge
-                        {:keys [name image criteria]} badge-info
-                        {:keys [id issued_on status]} user_badge
-                        image-class (if-not received " opaque")]
-                    (conj r [:div
-                             [:div.row.flip-table {:style {:margin-bottom "10px"}}
-                              [:div.col-md-1 [:img.badge-icon {:src image :class image-class}]]
-                              [:div.col-md-5 (if received
-                                               (if (= status "declined")
-                                                 [:a {:href "#" :on-click #(mo/open-modal [:metabadge :declined] badge)} name]
-                                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name])
-                                               [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
-                                               )]
-                              [:div.col-md-2 [:label (t :metabadge/Dateissued)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
-                              [:div.col-md-4 ]]]))) [:div.row.body] (->> required_badges
-                                                                         (sort-by #(-> % :user_badge :issued_on) >)
-                                                                         (sort-by :received >)))]]]]]))
+       [:hr]
+       [:div.panel
+        [:div.panel-body
+         [:div.row.header {:style {:margin-bottom "10px" :margin-top "10px"}}
+          [:div.row.flip-table
+           [:div.col-md-6]
+           [:div.col-md-2 (t :metabadge/Earnedon)]
+           [:div.col-md-4]]]
+         (reduce (fn [r badge]
+                   (let [{:keys [badge-info received current user_badge]} badge
+                         {:keys [name image criteria]} badge-info
+                         {:keys [id issued_on status]} user_badge
+                         image-class (if-not received " opaque")]
+                     (conj r [:div
+                              [:div.row.flip-table {:style {:margin-bottom "10px"}}
+                               [:div.col-md-1 [:img.badge-icon {:src image :class image-class}]]
+                               [:div.col-md-5 (if received
+                                                (if (= status "declined")
+                                                  [:a {:href "#" :on-click #(mo/open-modal [:metabadge :declined] badge)} name]
+                                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name])
+                                                [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
+                                                )]
+                               [:div.col-md-2 [:label (t :metabadge/Earnedon)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
+                               [:div.col-md-4 ]]]))) [:div.row.body] (->> required_badges
+                                                                          (sort-by #(-> % :user_badge :issued_on) >)
+                                                                          (sort-by :received >)))]]]]]))
 
 (defn modal-navi [metabadge state]
   [:div.row.flip-table
