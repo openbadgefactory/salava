@@ -84,7 +84,7 @@
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
-                                     [:div.pull-right [mb/metabadge-icon assertion_url]]]
+                                     [:div.pull-right [mb/metabadge-icon id]]]
 
                                    (if expires_on
                                      [:div.righticon
