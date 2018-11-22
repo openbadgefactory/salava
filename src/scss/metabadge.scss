@@ -231,6 +231,9 @@ body #metabadge, body.anon #metabadge {
     }
   }
 
+  .badge-modal-navi .fa-puzzle-piece {
+    color: $link-color;
+  }
   label {
     margin-right: 5px;
   }
