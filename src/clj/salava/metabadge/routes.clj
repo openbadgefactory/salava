@@ -25,10 +25,10 @@
                   :current-user current-user
                   (ok (mb/check-metabadge ctx assertion_url)))
 
-             (GET "/badge/info" [assertion_url]
+             (GET "/badge/info" [user_badge_id]
                   :summary "check if badge is a metabadge"
                   :current-user current-user
-                  (ok (mb/milestone? ctx assertion_url )))
+                  (ok (mb/get-user-badge-data ctx (:id current-user) user_badge_id )))
 
              (POST "/update_status/:badgeid" []
                    :path-params [badgeid :- String]
