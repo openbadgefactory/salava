@@ -1,0 +1,336 @@
+@import 'variables';
+
+body #metabadge, body.anon #metabadge {
+  margin-top: 5px;
+  min-height: 300px;
+  position: relative;
+
+
+  i {
+    font-size: 18px;
+    margin-right:10px;
+    vertical-align:middle;
+    color:$text-color;
+  }
+  .metabadge {
+    margin: 10px 0px;
+    padding: 0px;
+    float: left;
+    margin-right: 10px;
+    opacity: 0.9;
+    &:hover {
+      opacity: 1.0;
+      .panel {
+        box-shadow: 0px 4px 15px #BBB3B7;
+        -webkit-box-shadow: 0px 4px 15px #BBB3B7;
+      }
+      .not-received {
+        opacity:1.0;
+      }
+
+    }
+    .not-received {
+      opacity: 0.2;
+    }
+
+    .panel {
+      width: auto;
+      min-width: 300px;
+      height: 160px;
+      margin: 0;
+      border: 1px solid #CCC5C8;
+      border-radius: 2px;
+      font-size: 12px;
+      box-shadow: 0px 4px 2px #BBB3B7;
+      -webkit-box-shadow: 0px 4px 2px #BBB3B7;
+      position: relative;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-wrap: break-word;
+      color: $text-color;
+
+      .panel-heading {
+        border: none;
+        font-size: 16px;
+        font-weight: 400;
+        color: $text-color;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.1em;
+        height: 2.2em;
+        word-wrap: break-word;
+      }
+      .panel-body {
+        padding: 0;
+      }
+
+      .table {
+        height: 90px;
+        margin: 0;
+
+        .meta {
+          padding-bottom: 0px;
+          width: 90px;
+          text-align: center;
+          border: none;
+          border-right: 1px dashed #DDD;
+          border-color: #CCC5C8;
+
+          div {
+            .image {
+              width: 80px;
+              height: 80px;
+
+              .dummy {
+                vertical-align: middle;
+                min-width: 70px;
+                height: 70px;
+                display: inline-block;
+                border: 1px solid #CCC5C8;
+                border-radius: 2px;
+                text-align: center;
+                padding: 5px;
+                i {
+                  margin: auto;
+                  font-size: 60px;
+
+                }
+
+
+              }
+            }
+          }
+        }
+
+        .icon-container {
+          width: auto;
+          vertical-align: inherit;
+          padding: 0px 5px;
+          border: none;
+
+          .img-circle {
+            width: 40px;
+            height: 40px;
+            padding: 4px;
+            margin: 2px;
+          }
+
+          .img-thumbnail {
+            width: 50px;
+            height: 50px;
+          }
+        }
+      }
+
+    }
+    @media only screen and (min-width: 992px) {
+      .panel {
+        width: 300px;
+      }
+    }
+    @media only screen and (max-width: 786px) {
+      .panel {
+        width: 260px;
+      }
+    }
+
+    @media only screen and (max-width: 550px) {
+      .panel {
+        min-width: unset;
+        width: 280px;
+      }
+      .icon-container {
+        max-width: 160px;
+      }
+    }
+
+    .icons {
+      img {
+        max-width: 40px;
+        margin-right: 5px;
+        vertical-align:middle;
+        &:hover {
+          max-width: 70px;
+          margin-right: 5px;
+        }
+
+      }
+      .not-received {
+        opacity: 0.2;
+      }
+      .milestone-badge {
+        display: inline-table;
+        border-right: 1px dashed #d2d2d2;
+        margin-left: 2px;
+        padding: 2px;
+        padding-left: 10px;
+        img {
+          max-width: 70px;
+          padding: 5px;
+          &:hover {
+            max-width: 100px;
+          }
+        }
+      }
+
+      .required-badges {
+        display: inline-table;
+        padding-left: 5px;
+      }
+    }
+
+  }
+  .metabadge-large {
+    .panel {
+      width: auto;
+      min-width: 610px;
+    }
+
+    @media only screen and (max-width: 992px) {
+      .panel {
+        min-width: 580px;
+      }
+    }
+    @media (max-width: 768px){
+      .panel {
+        width: 580px;
+      }
+    }
+    @media (max-width: 650px){
+      .panel {
+        min-width: unset;
+        width: 300px;
+      }
+    }
+    @media only screen and (max-width: 550px){
+      .panel {
+        min-width: unset;
+        width: 280px;
+      }
+      .icon-container {
+        max-width: 160px;
+      }
+    }
+
+
+  }
+
+}
+
+#metabadgegrid {
+  .image-container {
+    position:relative;
+    display:inline-block;
+    .opaque {
+      filter: opacity(25%);
+      -webkit-filter: opacity(25%);
+      &:hover {
+        filter: opacity(100%);
+        -webkit-filter: opacity(100%);
+      }
+    }
+  }
+
+  label {
+    margin-right: 5px;
+  }
+  .progress {
+    max-width: 80%;
+    margin: auto;
+    margin-top: 5px;
+  }
+  .icons {
+    .img-circle {
+      width: 60px;
+      height: 60px;
+      padding: 5px;
+      margin: 2px;
+      transition: all .2s ease-in-out;
+      vertical-align: middle;
+      &:hover {
+        transform: scale(1.5);
+        opacity: 1;
+      }
+
+    }
+    .not-received {
+      opacity: 0.2;
+    }
+  }
+
+  i {
+    font-size: 18px;
+    margin-right:10px;
+    vertical-align:middle;
+    color:$text-color;
+  }
+  .panel {
+    display: table;
+    border-color: #ccc;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    font-weight: bold;
+    padding-bottom: 5px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .info {
+    margin-bottom: 10px;
+  }
+  #badge-stats {
+    .panel {
+      display: unset;
+      font-weight: unset;
+      margin-top: unset;
+      border: unset;
+      .opaque {
+        filter: opacity(25%);
+        -webkit-filter: opacity(25%);
+        &:hover {
+          filter: opacity(100%);
+          -webkit-filter: opacity(100%);
+          transform: scale(1.5);
+        }
+      }
+    }
+  }
+}
+
+.link-icon {
+  i {
+    font-size: 18px !important;
+    margin-right: 10px;
+  }
+  vertical-align: text-bottom;
+  div {
+    display: table;
+  }
+}
+
+#pending-badges .pending {
+  margin-top: 5px;
+}
+
+.visibility-icon {
+
+  .multi {
+    .fa-puzzle-piece {
+      padding-top: 2px;
+      margin-left: 5px;}
+  }
+  .link-icon {
+    vertical-align: baseline;
+    span i {
+      margin-left: 5px;
+    }
+  }
+}
+#grid  .opaque {
+  filter: opacity(50%);
+  -webkit-filter: opacity(50%);
+  &:hover {
+    filter: opacity(100%);
+    -webkit-filter: opacity(100%);
+  }
+}

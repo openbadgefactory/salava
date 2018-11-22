@@ -52,14 +52,14 @@
                                                        (t :social/Emailpages lng))))]
     (html-mail-body-li
      (str  (:first_name item) " " (:last_name item) " "
-          (t :social/Emailhaspublish lng) 
+          (t :social/Emailhaspublish lng)
           badge-body
           (if (and badge-body page-body)
             (str " " (t :social/Emailand lng)))
           page-body
-         
+
           ".")))
-  
+
   )
 
 (defn follow-events
@@ -74,8 +74,8 @@
                        (assoc-in [key :first_name] (:first_name item))
                        (assoc-in [key :last_name] (:last_name item))
                        (assoc-in  [key typecount]  (inc (get-in current [key typecount] 0))))))
-        
-        reduced-events (vals (reduce helper {} (reverse follow-events)))]
+
+        reduced-events (vals (reduce helper {} (reverse (filter #(every? % [:first_name :last_name]) follow-events))))]
     (if-not (empty? follow-events)
       (map (fn [item] (follow-message item lng)) reduced-events))))
 
@@ -97,7 +97,7 @@
     (if (or admin-events follow-events message-events)
       (html-mail-body-item [:ul
                             (if-not (empty? admin-events)
-                              admin-events)                            
+                              admin-events)
                             (if-not (empty? follow-events)
                               follow-events)
                             (if-not (empty? message-events)
@@ -111,7 +111,7 @@
   (let [admin? (= "admin" (:role user))
         events (events ctx user lng)
         social-url (str (get-full-path ctx) "/social")]
-    (if (not (empty? events)) 
+    (if (not (empty? events))
       [:table
        {:width "100%", :border "0", :cellspacing "0", :cellpadding "0"}
        (html-mail-body-item  [:strong (str (t :user/Emailnotificationtext2 lng) ":")] )

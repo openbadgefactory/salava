@@ -24,5 +24,6 @@
                 [salava.extra.hpi.ui.routes]
                 [salava.extra.msftembo.ui.routes]
                 [salava.extra.hpass.ui.routes]
+                [salava.metabadge.ui.routes]
 ])))
 

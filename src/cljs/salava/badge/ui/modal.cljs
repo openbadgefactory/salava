@@ -18,7 +18,8 @@
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
-            [salava.core.ui.tag :as tag]))
+            [salava.core.ui.tag :as tag]
+            [salava.metabadge.ui.metabadge :refer [metabadge]]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -37,7 +38,7 @@
                                 :content-language (init-content-language (:content data))
                                 :tab-no tab-no
                                 :permission "success"))
-                 (init-badge-connection state (:badge_id data))))}
+               (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn show-settings-dialog [badge-id state init-data context]
@@ -137,11 +138,13 @@
             (str " " (t :badge/Congratulate) "!")]))]]
      ;messages
      (when-not invalid?
-       [:div.row
-        (if (session/get :user)
-          [badge-message-link message_count  badge_id])])
+       (if user-logged-in?
+         [:div.row
+          [badge-message-link message_count  badge_id]]))
      ;endorsements
-     [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]]))
+     [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]
+
+     ]))
 
 (defn badge-content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements]} @state
@@ -163,6 +166,8 @@
         (if expired?
           [:div.expired [:label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
+        ;[metabadge-block (:assertion_url @state)]
+        ;[metabadge (:assertion_url @state)]
         (if (< 1 (count (:content @state)))
           [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
         (issuer-modal-link issuer_content_id issuer_content_name)
@@ -177,8 +182,11 @@
           (if (and user-logged-in? (not owner?))
             [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
+                ;metabadges
+        (if owner? [:div [metabadge (:assertion_url @state)]])
 
         [:div.description description]
+
 
         ;check-badge
         (check-badge id)]]
@@ -205,7 +213,7 @@
           [:h2.uppercase-header (t :badge/Evidence)]
           [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
 
-      (if owner? "" [reporttool1 id name "badge"])]]
+      #_(if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
     ))
 
 (defn modal-navi [state]
@@ -237,7 +245,7 @@
 
 
 (defn modal-top-bar [state]
-  (let [{:keys [verified_by_obf issued_by_obf obf_url owner?]} @state]
+  (let [{:keys [verified_by_obf issued_by_obf obf_url owner? ]} @state]
     [:div.row.flip
      (if (or verified_by_obf issued_by_obf)
        (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
@@ -246,9 +254,9 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? tab]} @state]
+  (let [{:keys [owner? tab user-logged-in?]} @state]
     [:div
-     (when-not owner? [follow-verified-bar @state nil nil])
+     (when (and (not owner?) user-logged-in?) [follow-verified-bar @state nil nil])
      [modal-top-bar state]
      (if tab tab [badge-content state])]))
 

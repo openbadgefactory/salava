@@ -111,7 +111,7 @@
       [badge-grid-form state]
       (cond
         (not-activated?) (not-activated-banner)
-        (empty? (:badges @state)) [no-badges-text]
+        ;(empty? (:badges @state)) [no-badges-text]
         :else [badge-grid state])]
      )])
 
