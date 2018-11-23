@@ -29,7 +29,7 @@
                                :min_required (s/maybe s/Int)
                                :id (s/maybe s/Str)})
 
-(s/defschema Metabadge {:metabadge (s/maybe [Metabadgecontent])})
+(s/defschema Metabadge (s/maybe {:metabadge (s/maybe [Metabadgecontent])}))
 
 (s/defschema Milestone? (s/maybe {(s/optional-key :required_badge) s/Bool
                                   (s/optional-key :milestone) s/Bool}))
