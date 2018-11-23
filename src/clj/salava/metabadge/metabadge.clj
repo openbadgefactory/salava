@@ -35,14 +35,15 @@
 
 (defn- fetch-json-data [url]
   (try
-    (http/http-get url {:as :json :accept :json :throw-entire-message? true})
+    (http/http-get url {:as :json :accept :json})
     (catch Exception e
+      (log/error (str "Could not fetch data: " url))
       {})))
 
 (defn fetch-image [ctx url]
   (let [ext (file-extension url)]
     (try
-      (if-let [image (u/bytes->base64 (http/http-get url {:as :byte-array :max-redirects 5}))]
+      (if-let [image (u/bytes->base64 (http/http-get url {:as :byte-array}))]
         (str "data:" ext ";base64, " image))
       (catch Exception _
         (log/error (str "Could not fetch image: " url))
@@ -70,7 +71,7 @@
 
 (defn- expand-required-badges [ctx badges assertion-url]
   (->> badges
-       (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b)
+       (r/map (fn [b] (-> b (assoc :badge-info (dissoc (get-badge-data ctx b) :language :alt_language :tags :id)
                               :current (= (:url b) assertion-url)
                               :user_badge (db/user-badge-by-assertion ctx (:url b))))) )
        (r/foldcat)))
@@ -81,21 +82,23 @@
        (r/map (fn [m] (-> m
                           (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url)
                             :milestone? (= assertion-url (get-in m [:badge :url])))
-                          (update-in [:badge] merge (get-badge-data ctx (:badge m))))))
+                          (update-in [:badge] merge (dissoc (get-badge-data ctx (:badge m)) :language :alt_language :tags :id)))))
        (r/foldcat)
        (assoc metabadge :metabadge)))
 
 (defn check-metabadge [ctx assertion-url]
   (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
-    (try
-      (if-let [metabadge (fetch-json-data meta-data-url)]
-        (let [processed-metabadge (process-metabadge ctx  metabadge assertion-url)]
-          (if (empty? (:metabadge processed-metabadge)) nil processed-metabadge))
-        nil)
-      (catch Exception e
-        (log/error (str "Did not get metabadge information: " assertion-url))
-        (log/error (.getMessage e))
-        nil))))
+    (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
+      (try
+        (if-let [metabadge (fetch-json-data meta-data-url)]
+          (let [processed-metabadge (process-metabadge ctx  metabadge assertion-url)]
+            (if (empty? (:metabadge processed-metabadge)) nil processed-metabadge))
+          nil)
+        (catch Exception e
+          (log/error (str "Did not get metabadge information: " assertion-url))
+          (log/error (.getMessage e))
+          nil))
+      nil)))
 
 (defn quick-check-metabadge
   "check if badge is metabadge without processing"
@@ -109,15 +112,6 @@
 
       {})))
 
-#_(defn milestone?
-    "check if badge is a milestone badge, a required badge or both"
-    [ctx assertion-url]
-    (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
-      (let [metabadge (quick-check-metabadge ctx assertion-url)]
-        (r/reduce (fn [r k _]
-                    (merge r (if (true? k) {:meta_badge true} {:meta_badge_req true}))
-                    ) {} (group-by :milestone? metabadge)))
-      {}))
 
 (defn milestone? [ctx user-id user_badge_id]
   "check if badge is a milestone badge or a required badge. If both (= required_badge)"

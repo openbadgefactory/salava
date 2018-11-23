@@ -5,6 +5,7 @@
             [salava.metabadge.metabadge :as mb]
             [salava.badge.main :as b]
             [salava.core.layout :as layout]
+            [salava.metabadge.schemas :as schemas]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -15,17 +16,20 @@
     (context "/obpv1/metabadge" []
              :tags ["metabadge"]
              (GET "/" []
+                  :return [schemas/Allmetabadges]
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (mb/all-metabadges ctx current-user)))
 
              (GET "/info" [assertion_url]
+                  :return schemas/Metabadge
                   :summary "get metabadge info via assertion url"
                   :current-user current-user
                   (ok (mb/check-metabadge ctx assertion_url)))
 
              (GET "/badge/info" [user_badge_id]
+                  :return schemas/Milestone?
                   :summary "check if badge is a metabadge"
                   :current-user current-user
                   (ok (mb/get-user-badge-data ctx (:id current-user) user_badge_id )))
