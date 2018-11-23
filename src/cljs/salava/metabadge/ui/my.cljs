@@ -26,8 +26,8 @@
 
 (defn metabadge-element [milestone state]
   (let [{:keys [badge name min_required required_badges completion_status]} milestone
-        completed (if (> completion_status 100) 100 completion_status)
-        image-class (if (= 100 completion_status) "" " opaque")]
+        image-class (if (= 100 completion_status) "" " opaque")
+        is-completed? (= completion_status 100)]
     [:div.media.grid-container
      [:div.media-content
       [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
@@ -39,14 +39,15 @@
         [:div.media-heading
          [:p.heading-link name]]
 
-        [:div.progress
-         [:div.progress-bar.progress-bar-success
-          { :role "progressbar"
-            :aria-valuenow (str completion_status)
-            :style {:width (str completion_status "%")}
-            :aria-valuemin "0"
-            :aria-valuemax "100"}
-          (str completion_status "%")]]]
+        (when-not is-completed?
+          [:div.progress
+           [:div.progress-bar.progress-bar-success
+            { :role "progressbar"
+              :aria-valuenow (str completion_status)
+              :style {:width (str completion_status "%")}
+              :aria-valuemin "0"
+              :aria-valuemax "100"}
+            (str completion_status "%")]])]
        ]]]))
 
 (defn order-radio-values []
