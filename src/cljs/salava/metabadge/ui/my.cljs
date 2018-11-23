@@ -74,7 +74,7 @@
                      :all (:metabadges @state)
                      (:metabadges @state))]
     (if (= 0 (count metabadges))
-      [:div {:style {:margin-top "10px"}} (t :metabadge/Nonewgoals)]
+      [:div {:style {:margin-top "50px"}} (t :metabadge/Nonewgoals)]
       (reduce (fn [r m]
                 (let [{:keys [required_badges min_required completion_status]} m
                       is-complete? (>= completion_status 100)]
@@ -97,7 +97,7 @@
         (if-not (empty? (:metabadges @state)) [grid-form state])
         (cond
           (not-activated?) (not-activated-banner)
-          (empty? (:metabadges@state)) [:div {:style {:margin-top "10px"}} (t :metabadge/Nonewgoals)]
+          (empty? (:metabadges@state)) [:div {:style {:margin-top "50px"}} (t :metabadge/Nonewgoals)]
           :else [metabadge-grid state])])]))
 
 (defn handler [site-navi]
