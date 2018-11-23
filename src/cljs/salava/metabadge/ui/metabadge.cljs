@@ -23,7 +23,6 @@
   (let [required_badge (:required_badge @data-atom)
         milestone (:milestone @data-atom)]
     (cond
-      ;(and meta_badge meta_badge_req)  [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       milestone [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
       required_badge [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       :else nil)))

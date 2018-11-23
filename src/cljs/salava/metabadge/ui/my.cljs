@@ -93,7 +93,7 @@
        [:div
         [:div
          [:h1.uppercase-header (t :metabadge/Milestonebadges)]
-         (t :metabadge/Milestonebadgespageinfo)]
+         (str (t :metabadge/Aboutmilestonebadge) " " (t :metabadge/Milestonebadgespageinfo))]
         (if-not (empty? (:metabadges @state)) [grid-form state])
         (cond
           (not-activated?) (not-activated-banner)
