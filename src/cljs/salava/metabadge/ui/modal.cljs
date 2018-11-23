@@ -150,8 +150,9 @@
       [:div.col-md-12
        #_[:h1.uppercase-header (:name metabadge)]
        [:div.description (if-not is-complete? (t :metabadge/Milestoneinfo) (t :metabadge/Completedmilestoneinfo))]
-       [:hr]
+
        [:div.panel
+        [:hr {:style {:margin-top "50px" :border-style "dotted"}}]
         [:div.panel-body
          [:div.row.header {:style {:margin-bottom "10px" :margin-top "10px"}}
           [:div.row.flip-table
@@ -161,7 +162,7 @@
          (reduce (fn [r badge]
                    (let [{:keys [badge-info received current user_badge]} badge
                          {:keys [name image criteria]} badge-info
-                         {:keys [id issued_on status]} user_badge
+                         {:keys [id issued_on status deleted]} user_badge
                          image-class (if-not received " opaque")]
                      (conj r [:div
                               [:div.row.flip-table {:style {:margin-bottom "10px"}}
@@ -169,7 +170,7 @@
                                [:div.col-md-5 (if received
                                                 (if (= status "declined")
                                                   [:a {:href "#" :on-click #(mo/open-modal [:metabadge :declined] badge)} name]
-                                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name])
+                                                  (if (pos? deleted) name [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name]))
                                                 [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
                                                 )]
                                [:div.col-md-2 [:label (t :metabadge/Earnedon)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
