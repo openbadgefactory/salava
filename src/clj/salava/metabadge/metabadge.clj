@@ -70,7 +70,7 @@
 
 (defn- expand-required-badges [ctx badges assertion-url]
   (->> badges
-       (r/map (fn [b] (-> b (assoc :badge-info (get-badge-data ctx b)
+       (r/map (fn [b] (-> b (assoc :badge-info (dissoc (get-badge-data ctx b) :language :alt_language :tags :id)
                               :current (= (:url b) assertion-url)
                               :user_badge (db/user-badge-by-assertion ctx (:url b))))) )
        (r/foldcat)))
@@ -81,7 +81,7 @@
        (r/map (fn [m] (-> m
                           (assoc :required_badges (expand-required-badges ctx (:required_badges m) assertion-url)
                             :milestone? (= assertion-url (get-in m [:badge :url])))
-                          (update-in [:badge] merge (get-badge-data ctx (:badge m))))))
+                          (update-in [:badge] merge (dissoc (get-badge-data ctx (:badge m)) :language :alt_language :tags :id)))))
        (r/foldcat)
        (assoc metabadge :metabadge)))
 
