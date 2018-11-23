@@ -91,12 +91,11 @@
        [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]]
       [:div.progress
        [:div.progress-bar.progress-bar-success
-        {;:class (if  is-complete? "" " progress-bar-striped")
-          :role "progressbar"
-          :aria-valuenow (str completed)
-          :style {:width (str completed "%")}
-          :aria-valuemin "0"
-          :aria-valuemax "100"}
+        {:role "progressbar"
+         :aria-valuenow (str completed)
+         :style {:width (str completed "%")}
+         :aria-valuemin "0"
+         :aria-valuemax "100"}
         (str completed "%")]]]
      [:div.col-md-9
       [:div.col-md-12
@@ -148,8 +147,7 @@
         (str completed "%")]]]
      [:div.col-md-9 {:id "badge-stats"}
       [:div.col-md-12
-       #_[:h1.uppercase-header (:name metabadge)]
-       [:div.description (if-not is-complete? (t :metabadge/Milestoneinfo) (t :metabadge/Completedmilestoneinfo))]
+       [:div.description (if-not is-complete? (t :metabadge/Inprogressmilestoneinfo) (t :metabadge/Completedmilestoneinfo))]
 
        [:div.panel
         [:hr {:style {:margin-top "50px" :border-style "dotted"}}]
@@ -204,7 +202,7 @@
 
 (defn multi-block [metabadge]
   (fn []
-    (let [current (current-badge (:metabadge metabadge) #_(:metabadge @state))]
+    (let [current (current-badge (:metabadge metabadge))]
       [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3
         [:div.badge-image
@@ -213,7 +211,7 @@
         [:div.row
          [:div.col-md-12
           [:h1.uppercase-header (:heading metabadge) #_(or (:name current) (-> current :badge-info :name))]
-          [:div.info (t :metabadge/Metabadgeinfo)]
+          [:div.info (str (t :metabadge/Aboutmilestonebadge)" " (t :metabadge/Metabadgeblocksinfo))]
           (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge {:class "row wrap-grid"}] (:metabadge metabadge))]]]])))
 
 (defn handler [metabadge]
