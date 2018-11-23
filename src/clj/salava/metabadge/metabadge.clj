@@ -52,10 +52,12 @@
 (defn- public-badge-info [ctx id]
   (let [url (str (get-in ctx [:config :factory :url]) "/v1/badge/_/" id ".json?v=2.0")]
     (try
-      (if-let [data (fetch-json-data url)]
-        (if (url? (:image data))
-          (-> data (assoc :image (fetch-image ctx (:image data))))
-          data))
+      (if-let [response (fetch-json-data url)]
+        (let [criteria (u/md->html (:criteria response))
+              data (-> response (assoc :criteria criteria)) ]
+          (if (url? (:image data))
+            (-> data (assoc :image (fetch-image ctx (:image data))))
+            data)))
       (catch Exception _
         (log/error (str "Did not get required badge information: " id))
         {}))))
