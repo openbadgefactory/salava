@@ -12,6 +12,7 @@
 @import '../user';
 @import 'application';
 @import '../rtl';
+@import '../metabadge';
 
 /* LINKS */
 a, #badge-info a {
@@ -414,7 +415,7 @@ float:none;
         }
     }
     .rating {
-       padding-top:10px; 
+       padding-top:10px;
     }
     .share-wrapper {
         margin-right: 340px;
@@ -813,7 +814,7 @@ fieldset legend {
             img {
                 height:130px;
                 width: 130px;
-               
+
                 margin-top:0px;
             }
         }
@@ -837,7 +838,7 @@ fieldset legend {
         .checkbox {
             color: $link-color;
             font-size: 14px;
-            
+
             input{
                 margin:0px;
                 position: relative;

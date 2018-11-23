@@ -8,7 +8,8 @@
             [salava.admin.ui.helper :refer [admin?]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.social.ui.follow :refer [follow-badge]]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.metabadge.ui.metabadge :as mb]))
 
 
 (defn num-days-left [timestamp]
@@ -46,7 +47,7 @@
      (t :core/Delete)]]])
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)]
@@ -63,7 +64,7 @@
                                              [:div.lefticon [:i {:class "fa fa-history"}] (t :badge/Expired)]
                                              [:a.righticon {:class "righticon expired" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
                                                                                                                   {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]])
-                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
+                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))})}
                                   (if image_file
                                    [:div.media-left
                                     [:img.badge-img {:src (str "/" image_file)
@@ -75,34 +76,37 @@
                                    [:p issuer_content_name]]]
                                  ]]
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
-                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
+                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))})}
                                   [:div.icons
-                                   [:div.visibility-icon
+                                     [:div.visibility-icon.inline
                                     (case visibility
                                       "private" [:i {:class "fa fa-lock"}]
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
-                                      nil)]
+                                      nil)
+                                     [:div.pull-right [mb/metabadge-icon id]]]
+
                                    (if expires_on
                                      [:div.righticon
                                       [:i {:title (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))
                                            :class "fa fa-hourglass-half"}]])]
+
 
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
                                                       :alt name}]])
                                   [:div.media-body
+
                                    [:div.media-heading
                                     [:p.heading-link name]]
                                    [:div.media-issuer
                                     [:p issuer_content_name]]]
                                   ]])
 
-       (= "export" badge-type) [:div {:key id}
+       #_(= "export" badge-type) #_[:div {:key id}
                                 [:div.media-content
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-
                                   [:div.visibility-icon
                                    (case visibility
                                      "private" [:i {:class "fa fa-lock"}]
