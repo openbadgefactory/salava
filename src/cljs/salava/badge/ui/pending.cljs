@@ -6,7 +6,8 @@
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.badge.ui.helper :as bh]
             [salava.badge.ui.modal :as bm]
-            [salava.core.time :refer [date-from-unix-time]]))
+            [salava.core.time :refer [date-from-unix-time]]
+            [salava.metabadge.ui.metabadge :as mb]))
 
 
 (defn- init-badge-preview [state]
@@ -42,6 +43,7 @@
            [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
          (if (pos? @show-recipient-name-atom)
            [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
+         ;[:div [mb/metabadge (:assertion_url @state)]]
          [:div {:class "criteria-html"}
           [:h2.uppercase-header (t :badge/Criteria)]
           [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
@@ -62,18 +64,18 @@
      [show-more-content state]]))
 
 
-(defn pending-badge-content [{:keys [id image_file name description meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]}]
+(defn pending-badge-content [{:keys [id image_file name description assertion_url meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]}]
   (let [state (atom {:id id
                      :show-result "none"
                      :show-link "block"
-                     :result {}})]
+                     :result {}
+                     :assertion_url assertion_url})]
     (init-badge-preview state)
     (fn []
       (let [data (:result @state)
             selected-language (cursor state [:content-language])
-            {:keys [badge_id content]} data
-            {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
-
+            {:keys [badge_id content assertion_url]} data
+            {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count ]} (content-setter @selected-language content)]
         [:div
          (if (or verified_by_obf issued_by_obf)
            [:div.row.flip
@@ -81,12 +83,16 @@
          [:div.row.flip
           [:div.col-md-3.badge-image
            [:img.badge-image {:src (str "/" image_file)}]
-           (bm/badge-endorsement-modal-link badge_id endorsement_count)]
+           (bm/badge-endorsement-modal-link badge_id endorsement_count)
+           ]
           [:div.col-md-9
            [:h4.media-heading name]
 
+           [:div description]
+
            ;METABADGE
            [:div (bh/meta-badge meta_badge meta_badge_req)]
+           [:div.pending [mb/metabadge (:assertion_url @state)]]
+          ; [:div assertion_url]
 
-           [:div description]
            [show-more state]]] ]))))

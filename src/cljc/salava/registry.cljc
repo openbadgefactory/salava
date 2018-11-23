@@ -15,5 +15,6 @@
                 [salava.social.ui.routes]
                 [salava.admin.ui.routes]
                 [salava.registerlink.ui.routes]
+                [salava.metabadge.ui.routes]
 ])))
 

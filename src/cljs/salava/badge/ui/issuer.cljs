@@ -21,7 +21,7 @@
     (path-for (str "/obpv1/badge/issuer/" issuer-id))
     {:handler (fn [data]
                 (reset! state data)
-                (init-issuer-connection issuer-id state))
+                (if (session/get :user) (init-issuer-connection issuer-id state)))
      }))
 
 (defn init-creator-content [state creator-id]

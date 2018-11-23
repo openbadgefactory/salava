@@ -23,6 +23,7 @@
             [salava.core.ui.error :as err]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
+            [salava.metabadge.ui.metabadge :as mb]
             ))
 
 (defn banner [obf-url]
@@ -149,6 +150,8 @@
                [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
+
+             [:div [mb/metabadge assertion_url #_(:assertion_url @state)]]
 
              (if assertion
                [:div {:id "assertion-link"}
