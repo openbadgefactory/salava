@@ -18,7 +18,7 @@
  :languages [:en :es :fi :fr :pl :pt :ar :nl]
 
  ;; List of enabled features. Plugins can have their own config files
- :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail :oembed :rtl]
+ :plugins [:badge :page :gallery :file :user :displayer :social :admin :mail :oembed :rtl :metabadge]
 
  ;; Private site. Badges cannot be shared or imported/exported. New account registration is restricted.
  :private false
