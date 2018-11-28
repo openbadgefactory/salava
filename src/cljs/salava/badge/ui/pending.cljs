@@ -2,12 +2,13 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for plugin-fun]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.badge.ui.helper :as bh]
             [salava.badge.ui.modal :as bm]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.metabadge.ui.metabadge :as mb]))
+            [reagent.session :as session]
+            #_[salava.metabadge.ui.metabadge :as mb]))
 
 
 (defn- init-badge-preview [state]
@@ -69,7 +70,8 @@
                      :show-result "none"
                      :show-link "block"
                      :result {}
-                     :assertion_url assertion_url})]
+                     :assertion_url assertion_url})
+        metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))]
     (init-badge-preview state)
     (fn []
       (let [data (:result @state)
@@ -92,7 +94,7 @@
 
            ;METABADGE
            [:div (bh/meta-badge meta_badge meta_badge_req)]
-           [:div.pending [mb/metabadge (:assertion_url @state)]]
+           (if metabadge-fn [:div.pending [metabadge-fn (:assertion_url @state)]])
           ; [:div assertion_url]
 
            [show-more state]]] ]))))
