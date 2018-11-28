@@ -1,6 +1,6 @@
 (ns salava.core.ui.badge-grid
   (:require [salava.badge.ui.helper :as bh]
-            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for js-navigate-to]]
+            [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for js-navigate-to plugin-fun]]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.admin.ui.admintool :refer [admin-gallery-badge]]
             [salava.core.ui.modal :as mo]
@@ -9,7 +9,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.social.ui.follow :refer [follow-badge]]
             [reagent.session :as session]
-            [salava.metabadge.ui.metabadge :as mb]))
+            #_[salava.metabadge.ui.metabadge :as mb]))
 
 
 (defn num-days-left [timestamp]
@@ -50,7 +50,8 @@
   (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
-        obf_url (session/get :factory-url)]
+        obf_url (session/get :factory-url)
+        metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge_icon"))]
     [:div {:class "media grid-container"}
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
@@ -84,7 +85,7 @@
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
-                                     [:div.pull-right [mb/metabadge-icon id]]]
+                                     (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])]
 
                                    (if expires_on
                                      [:div.righticon

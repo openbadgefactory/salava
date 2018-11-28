@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private?]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -19,7 +19,7 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
-            [salava.metabadge.ui.metabadge :refer [metabadge]]))
+            #_[salava.metabadge.ui.metabadge :refer [metabadge]]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -152,6 +152,7 @@
         revoked (pos? revoked)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
+        metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)]
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
@@ -183,7 +184,7 @@
             [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
                 ;metabadges
-        (if owner? [:div [metabadge (:assertion_url @state)]])
+        (if (and owner? metabadge-fn) [:div [metabadge-fn (:assertion_url @state)]])
 
         [:div.description description]
 
