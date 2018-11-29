@@ -50,8 +50,8 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]
-                 [clj-pdf "2.2.31"]
-                 [clj-pdf-markdown "0.2.0"]
+                 [clj-pdf "2.2.33"]
+                 [clj-pdf-markdown "0.2.1"]
                  [org.clojure/core.cache "0.7.1"]
 
                  ; Client side
