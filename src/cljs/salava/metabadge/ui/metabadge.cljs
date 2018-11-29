@@ -19,13 +19,21 @@
      :handler (fn [data] (reset! data-atom data))}))
 
 
-(defn meta_icon [data-atom]
+#_(defn meta_icon [data-atom]
   (let [required_badge (:required_badge @data-atom)
         milestone (:milestone @data-atom)]
     (cond
       milestone [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
       required_badge [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       :else nil)))
+
+(defn meta_icon [meta_badge meta_badge_req]
+  (let [m (str meta_badge meta_badge_req)]
+    (case m
+      "truefalse" [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
+      "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      nil)))
 
 (defn current-badge [required_badges]
   (->> required_badges (filter :current) first))
@@ -91,11 +99,11 @@
           [:div.link-icon]
           (group-by :milestone? metabadge))))))
 
-(defn metabadge-icon [id]
+(defn metabadge-icon [meta_badge meta_badge_req]
   (fn []
     (let [data-atom (atom {})]
-      (init-metabadge-icon id data-atom)
-      [meta_icon data-atom]
+      ;(init-metabadge-icon id data-atom)
+      [meta_icon meta_badge meta_badge_req]
       )))
 
 (defn metabadge [assertion-url]
