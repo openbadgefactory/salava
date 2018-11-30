@@ -446,3 +446,11 @@
   (if user-id
     (select-badge-id-by-old-id-user-id {:user_id user-id :old_id old-id} (into {:result-set-fn first :row-fn :id} (u/get-db ctx)))
     (select-badge-content-id-by-old-id {:old_id old-id} (into {:result-set-fn first :row-fn :badge_content_id} (u/get-db ctx)))))
+
+(defn update-recipient-count [ctx user-id user_badge_id]
+  (let [badge-id (-> (select-badge-id-by-user-badge-id {:user_badge_id user_badge_id} (into {:result-set-fn first} (u/get-db ctx))) :badge_id)
+        existing-ids (select-user-badge-id-with-badge-id {:user_id user-id :badge_id badge-id} (into {:row-fn :id} (u/get-db ctx)))]
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/create-connection-badge-by-badge-id! ctx user-id user_badge_id))
+    (when (empty? (rest existing-ids))
+      (update-badge-recipient-count! {:badge_id badge-id} (u/get-db ctx)))))
