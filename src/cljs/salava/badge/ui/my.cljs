@@ -80,7 +80,7 @@
     (into [:div#grid {:class "row wrap-grid"}
            (when-not (private?)
              [:div#import-badge {:key   "new-badge"}
-            [:a.add-element-link {:href  "#" :on-click #(js-navigate-to "badge/import")}
+            [:a.add-element-link {:href  (path-for "/badge/import") }
              [:div {:class "media grid-container"}
               [:div.media-content
                [:div.media-body
