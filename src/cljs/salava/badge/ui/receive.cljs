@@ -69,9 +69,9 @@
                 (if (empty? (:content data))
                   (swap! state assoc :result "error")
                   (reset! state (assoc data :id id
-                                       :initializing false
-                                       :content-language (init-content-language (:content data))
-                                       :result "success"))))}
+                                  :initializing false
+                                  :content-language (init-content-language (:content data))
+                                  :result "success"))))}
     (fn [] (swap! state assoc :result "error"))))
 
 (defn num-days-left [timestamp]
@@ -82,7 +82,7 @@
   (let [{:keys [id badge_id email owner? issued_on expires_on assertion_url
                 user-logged-in?
                 evidence_url issued_by_obf verified_by_obf obf_url
-                recipient_count assertion  qr_code owner message_count content issuer-endorsements]} @state
+                recipient_count assertion  qr_code owner message_count content issuer-endorsements user_exists?]} @state
         expired?                                                                 (bh/badge-expired? expires_on)
         show-recipient-name-atom                                                 (cursor state [:show_recipient_name])
         selected-language                                                        (cursor state [:content-language])
@@ -117,10 +117,11 @@
 
 
           [:div.text-center
-           [:p
-            [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
-           [:p
-            [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]
+           (if user_exists?
+             [:p
+              [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
+             [:p
+              [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]])
            [:p
             [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
            [:hr]
@@ -160,7 +161,7 @@
                 [:label (t :badge/Metadata)": "]
                 [:a.link {:href     "#"
                           :on-click #(do (.preventDefault %)
-                                         (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
+                                       (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
                  (t :badge/Openassertion) "..."]])
              [:div.description description]]]
 
