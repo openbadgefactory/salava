@@ -90,6 +90,8 @@
 
 (defn check-metabadge [ctx assertion-url]
   (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
+          (prn meta-data-url)
+
     (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
       (try
         (if-let [metabadge (fetch-json-data meta-data-url)]

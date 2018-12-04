@@ -8,3 +8,7 @@
   "in case of multiple hits return the most recent"
   [ctx assertion_url]
   (some-> (select-user-badge-by-assertion-url {:assertion_url assertion_url} (u/get-db ctx)) first))
+
+(defn metabadges [ctx]
+
+  )

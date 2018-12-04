@@ -13,22 +13,25 @@
       (log/error (str "Could not fetch data: " url))
       {})))
 
-(defn- check-metabadge [db-conn factory-url user_badge]
+(defn- metabadge?!
+  "function checks if badge is a metabadge, db is updated with information"
+  [db-conn factory-url user_badge]
   (let [url (str factory-url "/v1/assertion/is_metabadge/?url=" (u/url-encode (:assertion_url user_badge)))
         data (fetch-json-data url)
-        metabadge? (if (:metabadge data) 1 0)
-        required? (if (:required_badge data) 1 0)]
+        ;metabadge? (if (:metabadge data) 1 0)
+        ;required? (if (:required_badge data) 1 0)
+        ]
     (if-not (empty? data)
       (jdbc/execute! db-conn
-                     ["UPDATE user_badge SET meta_badge = ?, meta_badge_req = ? WHERE id = ?"
-                      metabadge? required? (:id user_badge)]))))
+                     ["INSERT IGNORE INTO user_badge_metabadge (user_badge_id, meta_badge, meta_badge_req) VALUES (?,?,?)"
+                      (:id user_badge) (:metabadge data) (:required_badge data)]))))
 
 (defn- check-metabadges [db-conn factory-url]
   (log/info "check-metabadges: started working")
   (let [time-limit (+ (System/currentTimeMillis) (* 15 60 1000))
-        sql "SELECT id, badge_id, assertion_url FROM user_badge
+        sql "SELECT id, assertion_url FROM user_badge
         WHERE assertion_url IS NOT NULL
-        AND deleted = 0 AND revoked = 0 AND status = 'accepted'
+        AND deleted = 0 AND revoked = 0 AND status != 'declined'
         AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
         ORDER BY last_checked LIMIT 1000"
         all-badges (jdbc/query db-conn [sql])
@@ -38,7 +41,7 @@
       (when (> time-limit (System/currentTimeMillis))
         (doseq [user-badge chunk]
           (try
-            (check-metabadge db-conn factory-url user-badge)
+            (metabadge?! db-conn factory-url user-badge)
             (catch Throwable ex
               (log/error "check-metabadges failed")
               (log/error (.toString ex))
@@ -49,7 +52,9 @@
         )
       )
     )
-  (log/info "check-badges: done"))
+  (log/info "check-badges: done")
+  ;;call other function
+  )
 
 (defn every-hour [ctx]
   (check-metabadges (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url])))
