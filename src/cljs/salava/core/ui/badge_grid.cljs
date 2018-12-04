@@ -67,25 +67,29 @@
                                                                                                                   {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]])
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))})}
                                   (if image_file
-                                   [:div.media-left
-                                    [:img.badge-img {:src (str "/" image_file)
-                                                     :alt name}]])
-                                 [:div.media-body
-                                  [:div.media-heading
-                                   [:p.heading-link name]]
-                                  [:div.media-issuer
-                                   [:p issuer_content_name]]]
-                                 ]]
+                                    [:div.media-left
+                                     [:img.badge-img {:src (str "/" image_file)
+                                                      :alt name}]])
+                                  [:div.media-body
+                                   [:div.media-heading
+                                    [:p.heading-link name]]
+                                   [:div.media-issuer
+                                    [:p issuer_content_name]]]
+                                  ]]
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
-                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))})}
+                                 [:a {:href "#" :on-click #(do
+                                                             (.replaceState js/history "" "Badge modal" (str "/badge/" id))
+                                                             (mo/open-modal [:badge :info] {:badge-id id} {:hide (fn []
+                                                                                                                   (.replaceState js/history "" "Badge modal" "/badge")
+                                                                                                                   (init-data state))}))}
                                   [:div.icons
-                                     [:div.visibility-icon.inline
+                                   [:div.visibility-icon.inline
                                     (case visibility
                                       "private" [:i {:class "fa fa-lock"}]
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
-                                     (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])]
+                                    (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])]
 
                                    (if expires_on
                                      [:div.righticon
@@ -106,38 +110,38 @@
                                   ]])
 
        #_(= "export" badge-type) #_[:div {:key id}
-                                [:div.media-content
-                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                  [:div.visibility-icon
-                                   (case visibility
-                                     "private" [:i {:class "fa fa-lock"}]
-                                     "internal" [:i {:class "fa fa-group"}]
-                                     "public" [:i {:class "fa fa-globe"}]
-                                     nil)]
-                                  (if image_file
-                                    [:div.media-left
-                                     [:img {:src (str "/" image_file) :alt name}]])
-                                  [:div.media-body
-                                   [:div.media-heading name]
-                                   [:div.media-issuer issuer_content_name]]]]
-                                [:div.media-bottom
-                                 [:div.row
-                                  [:div.col-xs-9
-                                   (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
-                                     [:div.checkbox
-                                      [:label {:for (str "checkbox-" id)}
-                                       [:input {:type "checkbox"
-                                                :id (str "checkbox-" id)
-                                                :on-change (fn []
-                                                             (if checked?
-                                                               (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
-                                                               (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
-                                                :checked checked?}]
+                                    [:div.media-content
+                                     [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
+                                      [:div.visibility-icon
+                                       (case visibility
+                                         "private" [:i {:class "fa fa-lock"}]
+                                         "internal" [:i {:class "fa fa-group"}]
+                                         "public" [:i {:class "fa fa-globe"}]
+                                         nil)]
+                                      (if image_file
+                                        [:div.media-left
+                                         [:img {:src (str "/" image_file) :alt name}]])
+                                      [:div.media-body
+                                       [:div.media-heading name]
+                                       [:div.media-issuer issuer_content_name]]]]
+                                    [:div.media-bottom
+                                     [:div.row
+                                      [:div.col-xs-9
+                                       (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
+                                         [:div.checkbox
+                                          [:label {:for (str "checkbox-" id)}
+                                           [:input {:type "checkbox"
+                                                    :id (str "checkbox-" id)
+                                                    :on-change (fn []
+                                                                 (if checked?
+                                                                   (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
+                                                                   (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
+                                                    :checked checked?}]
 
-                                       (t :badge/Exporttobackpack)]])]
-                                  [:div {:class "col-xs-3 text-right"}
-                                   [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
-                                    [:i {:class "fa fa-download"}]]]]]]
+                                           (t :badge/Exporttobackpack)]])]
+                                      [:div {:class "col-xs-3 text-right"}
+                                       [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
+                                        [:i {:class "fa fa-download"}]]]]]]
 
        (= "gallery" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
