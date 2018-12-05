@@ -90,7 +90,6 @@
 
 (defn check-metabadge [ctx assertion-url]
   (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
-          (prn meta-data-url)
 
     (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
       (try
@@ -108,6 +107,7 @@
   "check if badge is metabadge without processing"
   [ctx assertion-url]
   (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
+    (prn meta-data-url)
     (if-let [metabadge (fetch-json-data meta-data-url)]
       (if (empty? metabadge)
         {}
