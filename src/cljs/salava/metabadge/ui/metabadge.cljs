@@ -27,8 +27,9 @@
       required_badge [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
       :else nil)))
 
-(defn meta_icon [meta_badge meta_badge_req]
-  (let [m (str meta_badge meta_badge_req)]
+(defn meta_icon [data-atom]
+  (let [{:keys [meta_badge meta_badge_req]} @data-atom
+         m (str meta_badge meta_badge_req)]
     (case m
       "truefalse" [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
       "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
@@ -99,11 +100,11 @@
           [:div.link-icon]
           (group-by :milestone? metabadge))))))
 
-(defn metabadge-icon [meta_badge meta_badge_req]
+(defn metabadge-icon [id]
   (fn []
     (let [data-atom (atom {})]
-      ;(init-metabadge-icon id data-atom)
-      [meta_icon meta_badge meta_badge_req]
+      (init-metabadge-icon id data-atom)
+      [meta_icon data-atom]
       )))
 
 (defn metabadge [assertion-url]

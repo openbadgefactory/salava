@@ -85,7 +85,7 @@
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
-                                     (if (or meta_badge_req meta_badge) [:div.pull-right [metabadge-icon-fn meta_badge meta_badge_req]])]
+                                      [:div.pull-right [metabadge-icon-fn id]]]
 
                                    (if expires_on
                                      [:div.righticon
