@@ -3,6 +3,7 @@
             [ring.util.http-response :refer :all]
             [salava.core.access :as access]
             [salava.metabadge.metabadge :as mb]
+            [salava.metabadge.db :as db]
             [salava.badge.main :as b]
             [salava.core.layout :as layout]
             [salava.metabadge.schemas :as schemas]
@@ -17,12 +18,13 @@
     (context "/obpv1/metabadge" []
              :tags ["metabadge"]
              (GET "/" []
-                  :return [schemas/Allmetabadges]
+                  ;:return [schemas/Allmetabadges]
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
-                  (cron/every-hour ctx)
-                  (ok {} #_(mb/all-metabadges ctx current-user)))
+                  ;(cron/every-hour ctx)
+                  ;(salava.metabadge.db/get-metabadges-in-progress ctx (:id current-user))
+                  (ok (mb/all-metabadges ctx current-user)))
 
              (GET "/info" [assertion_url]
                   :return schemas/Metabadge
@@ -31,10 +33,11 @@
                   (ok (mb/check-metabadge ctx assertion_url)))
 
              (GET "/badge/info" [user_badge_id]
-                  :return schemas/Milestone?
+                  ;:return schemas/Milestone?
                   :summary "check if badge is a metabadge"
                   :current-user current-user
-                  (ok (mb/get-user-badge-data ctx (:id current-user) user_badge_id )))
+                  (ok (db/is-metabadge? ctx user_badge_id))
+                  #_(ok (mb/get-user-badge-data ctx (:id current-user) user_badge_id )))
 
              (POST "/update_status/:badgeid" []
                    :path-params [badgeid :- String]

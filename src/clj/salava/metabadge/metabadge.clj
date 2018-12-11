@@ -135,7 +135,7 @@
                             (cache/miss % key (milestone? ctx user-id user_badge_id)))) key)))
 
 
-(defn all-metabadges
+#_(defn all-metabadges
   "build metabadges from user badges"
   [ctx user]
   (let [obf-url (get-in ctx [:config :factory :url])
@@ -155,5 +155,9 @@
       []
       metabadges)))
 
+
+(defn all-metabadges [ctx user]
+  (db/all-metabadges ctx (:id user))
+  )
 
 
