@@ -47,6 +47,7 @@ WHERE u.id = :user_id
 GROUP BY fm.id
 
 --name: select-metabadge-info-from-user-badge
+--check if user badge is a milestone badge or a required badge
 SELECT meta_badge, meta_badge_req FROM user_badge_metabadge AS ubm WHERE ubm.user_badge_id = :id
 
 --name: select-completed-metabadge-by-badge-id
@@ -66,3 +67,25 @@ GROUP BY umr.metabadge_id
 SELECT umrr.metabadge_id FROM user_metabadge_required_received AS umrr
 WHERE umrr.user_required_badge_id = :id
 GROUP BY umrr.metabadge_id
+
+--name: select-user-received-metabadge-by-metabadge-id
+--check if metabadge is received
+SELECT metabadge_id, user_badge_id FROM user_metabadge_received AS umr WHERE umr.metabadge_id = :metabadge_id AND umr.user_id = :user_id
+
+--name: select-completed-metabadge-by-metabadge-id
+SELECT umr.metabadge_id, umr.user_badge_id, umr.min_required, umr.name, bc.description, bc.image_file, cc.markdown_text AS criteria_content
+FROM user_metabadge_received AS umr
+JOIN user_badge AS ub ON (umr.user_badge_id = ub.id)
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
+JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND cc.language_code = badge.default_language_code)
+JOIN user as u on (u.id = ub.user_id)
+WHERE u.id = :user_id AND umr.metabadge_id = :metabadge_id
+GROUP BY umr.metabadge_id
+
+--name: select-factory-metabadge
+--select default factory metabadge info
+SELECT id, name, description, image_file, criteria, min_required
+FROM factory_metabadge WHERE id = :id
