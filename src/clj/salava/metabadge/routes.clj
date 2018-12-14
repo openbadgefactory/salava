@@ -22,15 +22,15 @@
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
-                  ;(cron/every-hour ctx)
+                  (cron/every-hour ctx)
                   ;(salava.metabadge.db/get-metabadges-in-progress ctx (:id current-user))
                   (ok (mb/all-metabadges ctx current-user)))
 
-             (GET "/info" [assertion_url]
-                  :return schemas/Metabadge
+             (GET "/info" [user_badge_id]
+                  ;:return schemas/Metabadge
                   :summary "get metabadge info via assertion url"
                   :current-user current-user
-                  (ok (mb/check-metabadge ctx assertion_url)))
+                  (ok (db/get-metabadge ctx user_badge_id (:id current-user)) #_(mb/check-metabadge ctx assertion_url)))
 
              (GET "/badge/info" [user_badge_id]
                   ;:return schemas/Milestone?
