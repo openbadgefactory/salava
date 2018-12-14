@@ -155,7 +155,6 @@
         metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)]
     [:div {:id "badge-info" :class "row flip"}
-     (prn id)
      [:div {:class "col-md-3"}
       [:div.badge-image
        [:img {:src (str "/" image_file)}]]
@@ -185,7 +184,7 @@
             [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
                 ;metabadges
-        (if (and owner? metabadge-fn) [:div [metabadge-fn (:assertion_url @state)]])
+        (if (and owner? metabadge-fn) [:div [metabadge-fn (:id @state)]])
 
         [:div.description description]
 

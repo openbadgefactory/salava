@@ -11,9 +11,12 @@
             [salava.core.ui.error :as err]
             [salava.badge.ui.modal :refer []]))
 
-(defn current-badge [metabadge]
+#_(defn current-badge [metabadge]
   (let [{:keys [milestone? required_badges badge]} (-> metabadge first)]
     (if milestone? badge (->> required_badges (filter :current) first))))
+
+(defn current-badge [metabadge milestone? current-badge-id]
+(if milestone? (->> metabadge first) (->> metabadge first :required_badges (filter #(= current-badge-id (:id %))) first)))
 
 (defn %completed [req gotten]
   (Math/round (double (* (/ gotten req) 100))))
@@ -263,7 +266,7 @@
        [:div  [:i.nav-icon {:class "fa fa-info-circle fa-lg"}] (t :metabadge/Info)]]]]]])
 
 (defn metabadge-content [metabadge state]
-  (let [{:keys [badge required_badges milestone? min_required]} metabadge
+  (let [{:keys [badge required_badges milestonefirst? min_required]} metabadge
         amount_received (count (filter :received required_badges))
         completed-percentage (%completed min_required amount_received)
         completed (if (> completed-percentage 100) 100 (str completed-percentage))
@@ -276,17 +279,17 @@
 
 (defn multi-block [metabadge]
   (fn []
-    (let [current (current-badge (:metabadge metabadge))]
+    (let [current (current-badge (:metabadge metabadge) (:milestone? metabadge) (:current metabadge))]
       [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3
         [:div.badge-image
-         [:img {:src (or (:image current) (-> current :badge-info :image))}]]]
+         [:img {:src (str "/" (:image_file current)) #_(or (:image current) (-> current :badge-info :image))}]]]
        [:div.col-md-9
         [:div.row
          [:div.col-md-12
-          [:h1.uppercase-header (:heading metabadge) #_(or (:name current) (-> current :badge-info :name))]
+          [:h1.uppercase-header (:heading metabadge)]
           [:div.info (str (t :metabadge/Aboutmilestonebadge)" " (t :metabadge/Metabadgeblocksinfo))]
-          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m]))  [:div#metabadge {:class "row wrap-grid"}] (:metabadge metabadge))]]]])))
+          (reduce (fn [r m] (conj r ^{:key m}[mb/badge-block m (:current metabadge) (:milestone? metabadge)]))  [:div#metabadge {:class "row wrap-grid"}] (:metabadge metabadge))]]]])))
 
 (defn handler [metabadge]
   (let [state (atom {:tab-no 1})]
