@@ -8,55 +8,73 @@
 (defn user-badge-by-assertion
   "in case of multiple hits return the most recent"
   [ctx assertion_url]
-  (some-> (select-user-badge-by-assertion-url {:assertion_url assertion_url} (u/get-db ctx)) first))
+  (some-> (select-user-badge-by-assertion-url {:assertion_url assertion_url} (u/get-db ctx))))
 
 (defn %completed [req gotten]
   (let [calc (Math/round (double (* (/ gotten req) 100)))]
     (if (> calc 100) 100 calc)))
 
-(defn get-completed-metabadges [ctx user_id]
-  (let [metabadges (select-completed-metabadges {:user_id user_id} (u/get-db ctx))]
-    (reduce (fn [r m]
-              (let [not-received-required-badges (select-not-received-required-badges {:metabadge_id (:metabadge_id m)} (u/get-db ctx))
-                    received-required-badges (select-received-required-badges {:metabadge_id (:metabadge_id m) :user_id user_id} (u/get-db ctx))
-                    required-badges (remove (fn [m] (some #(identical? (:name m) (:name %)) not-received-required-badges))
-                                            (concat received-required-badges not-received-required-badges))]
-                (conj r (assoc m :required_badges required-badges
-                          :completion_status (%completed (:min_required m) (count received-required-badges)))) )) [] metabadges)))
-;;TODO refactor
+(defn get-required-badges
+  ([ctx user_id metabadge_id]
+   (let [received-required-badges (select-received-required-badges {:metabadge_id metabadge_id :user_id user_id} (u/get-db ctx))
+         not-received-required-badges (select-not-received-required-badges {:metabadge_id metabadge_id} (u/get-db ctx))]
+     {:received received-required-badges :not-received not-received-required-badges}))
+  ([ctx user_id metabadge_id option]
+   (case option
+     :in_progress  (let [required-badges-map (get-required-badges ctx user_id metabadge_id)]
+                     (assoc {} :required_badges (->> required-badges-map  vals concat flatten)
+                       :received-badge-count (->> required-badges-map :received count)))
+     :completed    (let [required-badges-map (get-required-badges ctx user_id metabadge_id)]
+                     (assoc {} :required_badges (remove (fn [m] (some #(identical? (:name m) (:name %)) (:not-received required-badges-map))) (->> required-badges-map vals concat flatten))
+                       :received-badge-count (->> required-badges-map :received count)
+                       )))))
 
-(defn get-metabadges-in-progress [ctx user_id]
-  (let [all-metabadges (reduce (fn [r m]
-                                 (let [not-received-required-badges (select-not-received-required-badges {:metabadge_id (:id m)} (u/get-db ctx))
-                                       received-required-badges (select-received-required-badges {:metabadge_id (:id m) :user_id user_id} (u/get-db ctx))
-                                       required-badges (concat received-required-badges not-received-required-badges) #_(remove (fn [m] (some #(identical? (:name m) (:name %)) not-received-required-badges))
-                                                                                                                                (concat received-required-badges not-received-required-badges))]
-                                   (conj r (assoc m :required_badges required-badges
-                                             :completion_status (%completed (:min_required m) (count received-required-badges)))) )) [] (select-all-user-metabadges {:user_id user_id} (u/get-db ctx)))
-        completed-metabadges (get-completed-metabadges ctx user_id)]
-    (remove (fn [m] (some #(= (:metabadge_id %) (:id m)) completed-metabadges)) all-metabadges)))
+(defn expand-required-badges [ctx user_id option coll]
+  (reduce (fn [r m]
+            (let [required-badges-map (get-required-badges ctx user_id (or (:metabadge_id m) (:id m) ) option)]
+              (conj r (assoc m :required_badges (->> required-badges-map :required_badges)
+                        :completion_status (%completed (:min_required m) (->> required-badges-map :received-badge-count)))))) [] coll))
+
+;;test
+(declare get-metabadge)
+
+(defn completed-metabadges [ctx user_id]
+  (prn (get-metabadge ctx 514 12))
+  (let [metabadges (select-completed-metabadges {:user_id user_id} (u/get-db ctx))]
+    (get-metabadge ctx 454 209)
+    (->> metabadges (expand-required-badges ctx user_id :completed))))
+
+(defn metabadges-in-progress [ctx user_id]
+  (let [metabadges (->> (select-all-user-metabadges {:user_id user_id} (u/get-db ctx)) (expand-required-badges ctx user_id :in_progress))
+        completed-metabadges (completed-metabadges ctx user_id)]
+    (remove (fn [m] (some #(= (:metabadge_id %) (:id m)) completed-metabadges)) metabadges)))
 
 (defn all-metabadges [ctx user_id]
-  {:in_progress (get-metabadges-in-progress ctx user_id)
-   :completed (get-completed-metabadges ctx user_id)})
+  {:in_progress (metabadges-in-progress ctx user_id)
+   :completed (completed-metabadges ctx user_id)})
 
 (defn is-metabadge? [ctx user_badge_id]
-  (let [resp (some-> (select-metabadge-info-from-user-badge {:id user_badge_id} (u/get-db ctx)) first)]
+  (let [x (some-> (select-metabadge-info-from-user-badge {:id user_badge_id} (u/get-db ctx)) first)]
     (reduce-kv (fn [r k v]
-          (assoc r k (if (blank? v) false true))) {} resp)))
+                 (assoc r k (if (blank? v) false true))) {} x)))
 
-;;TODO
-#_(defn metabadge-helper [ctx user_badge_id user_id ids]
+(defn is-received-metabadge? [ctx user_id metabadge_id]
+  (let [check (select-user-received-metabadge-by-metabadge-id {:metabadge_id metabadge_id :user_id user_id} (u/get-db ctx))]
+    (if (empty? check) false true)))
+
+(defn metabadge-helper [ctx user_badge_id user_id metabadge_ids]
   (reduce (fn [r id]
-            (let [received-metabadge? ])
-            ) [] ids)
-  )
-;;TODO
-#_(defn get-metabadge [ctx user_badge_id user_id]
+            (conj r
+                  (if-let [received-metabadge? (is-received-metabadge? ctx user_id id)]
+                    (->> (select-completed-metabadge-by-metabadge-id {:user_id user_id :metabadge_id id} (u/get-db ctx)) (expand-required-badges ctx user_id :completed))
+                    (->> (select-factory-metabadge {:id id} (u/get-db ctx)) (expand-required-badges ctx user_id :in_progress))))) [] metabadge_ids))
+
+(defn get-metabadge [ctx user_badge_id user_id]
   (if-let [check (empty? (is-metabadge? ctx user_badge_id))]
     {}
-    (let [milestones (select-completed-metabadge-by-badge-id {:user_id user_id :user_badge_id user_badge_id} (u/get-db ctx))
-          required (select-required-metatabadge-by-badge-id {:id user_badge_id} (u/get-db ctx))])
-
-    )
-  )
+    (let [milestones (->> (select-completed-metabadge-by-badge-id {:user_id user_id :user_badge_id user_badge_id} (u/get-db ctx)) (expand-required-badges ctx user_id :completed))
+          required-in (->> (select-required-metatabadge-by-badge-id {:id user_badge_id} (u/get-db ctx))
+                           (map :metabadge_id)
+                           (metabadge-helper ctx user_badge_id user_id)
+                           flatten)]
+      {:milestones milestones :required-in required-in})))
