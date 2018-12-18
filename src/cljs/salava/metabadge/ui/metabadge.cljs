@@ -55,7 +55,7 @@
      [:div.metabadge {:class (if (> (count required_badges) 8) " metabadge-large")}
       [:div.panel
        [:div.panel-heading (:name m)
-        [:div.pull-right (if (:milestone? m) [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
+        [:div.pull-right (if milestone? #_(:milestone? m) [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
        [:div.panel-body
         [:table.table
          [:tbody

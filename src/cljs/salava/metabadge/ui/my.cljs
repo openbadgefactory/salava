@@ -55,7 +55,6 @@
   (let [{:keys [name min_required image_file criteria completion_status]} milestone
         image-class (if (= 100 completion_status) "" " opaque")
         is-completed? (= completion_status 100)]
-    (prn milestone)
     [:div.media.grid-container
      [:div.media-content
       [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
