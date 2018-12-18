@@ -94,7 +94,7 @@
 
            ;METABADGE
            [:div (bh/meta-badge meta_badge meta_badge_req)]
-           (if metabadge-fn [:div.pending [metabadge-fn (:assertion_url @state)]])
+           (if metabadge-fn [:div.pending [metabadge-fn (:id @state)]])
           ; [:div assertion_url]
 
            [show-more state]]] ]))))
