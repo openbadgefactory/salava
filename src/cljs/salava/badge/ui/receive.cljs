@@ -16,14 +16,14 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? js-navigate-to]]
+            [salava.core.ui.helper :refer [path-for private? js-navigate-to plugin-fun]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            [salava.metabadge.ui.metabadge :as mb]
+            #_[salava.metabadge.ui.metabadge :as mb]
             ))
 
 (defn banner [obf-url]
@@ -90,7 +90,9 @@
                 issuer_content_id issuer_content_name issuer_content_url issuer_contact
                 issuer_image issuer_description criteria_url
                 creator_content_id creator_name creator_url creator_email
-                creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
+                creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)
+
+        metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))]
 
     (session/assoc-in! [:user :pending :email] email)
 
@@ -151,7 +153,7 @@
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
-             [:div [mb/metabadge assertion_url #_(:assertion_url @state)]]
+             (if metabadge-fn [:div [metabadge-fn assertion_url]])
 
              (if assertion
                [:div {:id "assertion-link"}
