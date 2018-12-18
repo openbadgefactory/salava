@@ -23,7 +23,8 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
 JOIN user as u on (u.id = ub.user_id)
 WHERE umrr.metabadge_id = :metabadge_id AND u.id = :user_id
-GROUP BY ub.id
+GROUP BY bc.name, bc.image_file
+ORDER BY ub.issued_on ASC
 
 --name: select-not-received-required-badges
 SELECT name, description, criteria, image_file
@@ -68,6 +69,11 @@ SELECT umrr.metabadge_id FROM user_metabadge_required_received AS umrr
 WHERE umrr.user_required_badge_id = :id
 GROUP BY umrr.metabadge_id
 
+--name: select-received-metabadge-by-badge-id
+SELECT ub.id, ub.user_id, ub.assertion_url, ubm.last_modified FROM user_badge_metabadge AS ubm
+JOIN user_badge AS ub ON ubm.user_badge_id = ub.id
+where ubm.user_badge_id = :id
+
 --name: select-user-received-metabadge-by-metabadge-id
 --check if metabadge is received
 SELECT metabadge_id, user_badge_id FROM user_metabadge_received AS umr WHERE umr.metabadge_id = :metabadge_id AND umr.user_id = :user_id
@@ -89,3 +95,6 @@ GROUP BY umr.metabadge_id
 --select default factory metabadge info
 SELECT id, name, description, image_file, criteria, min_required
 FROM factory_metabadge WHERE id = :id
+
+--name: select-user-id-by-user-badge-id
+SELECT user_id from user_badge AS ub where ub.id = :id
