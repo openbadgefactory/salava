@@ -48,16 +48,22 @@
 (defn save-pending-assertions
   ""
   [ctx user-id]
-  (doseq [pending-assertion (select-pending-badges-by-user {:user_id user-id} (u/get-db ctx))]
+  (let [metabadge-fn (first (u/plugin-fun (u/get-plugins ctx) "metabadge" "pending-metabadge?"))]
+  (doseq [pending-assertion (select-pending-badges-by-user {:user_id user-id} (u/get-db ctx))
+         ]
     (log/info "try to save pending assertion: " pending-assertion)
     (try
-      (db/save-user-badge! ctx
+     (let [id (db/save-user-badge! ctx
                            (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-                               (p/str->badge (:assertion_url pending-assertion))))
+                               (p/str->badge (:assertion_url pending-assertion))))]
+       (if metabadge-fn (metabadge-fn ctx (assoc pending-assertion :user_id user-id) id ))
+       )
       (delete-duplicate-pending-badges! (assoc pending-assertion :user_id user-id) (u/get-db ctx))
+      ;;process metabadge?
+
       (catch Exception ex
         (log/error "save-pending-assertions: failed to save badge")
-        (log/error (.toString ex))))))
+        (log/error (.toString ex)))))))
 
 (defn get-badge-updates
   ""
@@ -109,15 +115,17 @@
     (http/json-get receive-url)))
 
 (defn receive-badge [ctx {:keys [email assertion_url]}]
+  (let [metabadge-fn (first (u/plugin-fun (u/get-plugins ctx) "metabadge" "pending-metabadge?"))]
   (try
     (if (and email assertion_url)
       (if-let [id (select-badge-by-assertion {:email email :url assertion_url} (u/get-db-1 ctx))]
         (:id id)
-        (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url)))
+        (->> (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url))
+             (metabadge-fn ctx {:assertion_url assertion_url})))
       (log/error "receive-badge: failed to fetch pending badge"))
     (catch Exception ex
       (log/error "receive-badge: failed to fetch pending badge")
-      (log/error (.toString ex)))))
+      (log/error (.toString ex))))))
 
 (defn reject-badge! [ctx user-badge-id]
   (delete-pending-user-badge! {:id user-badge-id} (u/get-db ctx))
