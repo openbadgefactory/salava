@@ -9,14 +9,12 @@
             [salava.core.ui.modal :as mo]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.error :as err]
-            [salava.badge.ui.modal :refer []]))
+            [salava.badge.ui.modal :refer []]
+            [reagent.session :as session]))
 
-#_(defn current-badge [metabadge]
-  (let [{:keys [milestone? required_badges badge]} (-> metabadge first)]
-    (if milestone? badge (->> required_badges (filter :current) first))))
 
 (defn current-badge [metabadge milestone? current-badge-id]
-(if milestone? (->> metabadge first) (->> metabadge first :required_badges (filter #(= current-badge-id (:id %))) first)))
+  (if milestone? (->> metabadge first) (->> metabadge first :required_badges (filter #(or (= current-badge-id (:id %)) (= current-badge-id (:url %)))) first)))
 
 (defn %completed [req gotten]
   (Math/round (double (* (/ gotten req) 100))))
@@ -39,11 +37,11 @@
 
 (defn dummy-badge [badge]
   (fn []
-    (let [{:keys [image_file name description criteria]} badge]
+    (let [{:keys [image_file image name description criteria]} badge]
       [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3.badge-image
         [:div.image-container
-         [:img.opaque {:src (str "/" image_file) :title name}]]]
+         [:img.opaque {:src (if image_file (str "/" image_file) image) :title name}]]]
        [:div.col-md-9
         [:div.col-md-12
          [:h1.uppercase-header name]
@@ -129,13 +127,13 @@
          ]]]))
 
 (defn view-content [metabadge]
-  (let [{:keys [image_file description required_badges milestone? min_required completion_status criteria criteria_content]} metabadge
+  (let [{:keys [image_file image description required_badges milestone? min_required completion_status criteria criteria_content]} metabadge
         amount_received (count (filter :id required_badges))
         is-complete? (= 100 completion_status)]
     [:div.row.flip-table {:id "metabadgegrid"}
      [:div.col-md-3.badge-image
       [:div.image-container
-       [:img {:src (str "/" image_file) :class (if-not is-complete? " opaque")}]]
+       [:img {:src (if image_file (str "/" image_file) image) :class (if-not is-complete? " opaque")}]]
       [:div.progress
        [:div.progress-bar.progress-bar-success
         {:role "progressbar"
@@ -157,63 +155,14 @@
        ]]]
     ))
 
-#_(defn required-badge-tab [metabadge]
-    (let [{:keys [badge required_badges milestone? min_required]} metabadge
-          amount_received (count (filter :received required_badges))
-          completed-percentage (%completed min_required amount_received)
-          completed (if (> completed-percentage 100) 100 (str completed-percentage))
-          is-complete? (completed? min_required amount_received)]
-      [:div.row.flip-table
-       [:div.col-md-3.badge-image
-        [:div.image-container
-         [:img {:src (:image badge) :class (if-not is-complete? " opaque")}]]
-        [:div.progress
-         [:div.progress-bar.progress-bar-success
-          {:role "progressbar"
-           :aria-valuenow (str completed)
-           :style {:width (str completed "%")}
-           :aria-valuemin "0"
-           :aria-valuemax "100"}
-          (str completed "%")]]]
-       [:div.col-md-9 {:id "badge-stats"}
-        [:div.col-md-12
-         [:div.description (if-not is-complete? (t :metabadge/Inprogressmilestoneinfo) (t :metabadge/Completedmilestoneinfo))]
-
-         [:div.panel
-          [:hr {:style {:margin-top "50px" :border-style "dotted"}}]
-          [:div.panel-body
-           [:div.row.header {:style {:margin-bottom "10px" :margin-top "10px"}}
-            [:div.row.flip-table
-             [:div.col-md-6]
-             [:div.col-md-2 (t :metabadge/Earnedon)]
-             [:div.col-md-4]]]
-           (reduce (fn [r badge]
-                     (let [{:keys [badge-info received current user_badge]} badge
-                           {:keys [name image criteria]} badge-info
-                           {:keys [id issued_on status deleted]} user_badge
-                           image-class (if-not received " opaque")]
-                       (conj r [:div
-                                [:div.row.flip-table {:style {:margin-bottom "10px"}}
-                                 [:div.col-md-1 [:img.badge-icon {:src image :class image-class}]]
-                                 [:div.col-md-5 (if received
-                                                  (if (= status "declined")
-                                                    [:a {:href "#" :on-click #(mo/open-modal [:metabadge :declined] badge)} name]
-                                                    (if (pos? deleted) name [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name]))
-                                                  [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
-                                                  )]
-                                 [:div.col-md-2 [:label (t :metabadge/Earnedon)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
-                                 [:div.col-md-4 ]]]))) [:div.row.body] (->> required_badges
-                                                                            (sort-by #(-> % :user_badge :issued_on) >)
-                                                                            (sort-by :received >)))]]]]]))
-
 (defn required-badge-tab [metabadge]
-  (let [{:keys [image_file required_badges milestone? min_required completion_status]} metabadge
+  (let [{:keys [image_file image required_badges milestone? min_required completion_status]} metabadge
         amount_received (count (filter :received required_badges))
         is-complete? (= 100 completion_status)]
     [:div.row.flip-table
      [:div.col-md-3.badge-image
       [:div.image-container
-       [:img {:src (str "/" image_file) :class (if-not is-complete? " opaque")}]]
+       [:img {:src (if image_file (str "/" image_file) image) :class (if-not is-complete? " opaque")}]]
       [:div.progress
        [:div.progress-bar.progress-bar-success
         {
@@ -236,20 +185,22 @@
            [:div.col-md-2 (t :metabadge/Earnedon)]
            [:div.col-md-4]]]
          (reduce (fn [r badge]
-                   (let [{:keys [name image_file issued_on id status deleted]} badge
+                   (let [{:keys [name image_file image issued_on id status deleted]} badge
                          image-class (if-not id " opaque")]
                      (conj r [:div
                               [:div.row.flip-table {:style {:margin-bottom "10px"}}
-                               [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file) :class image-class}]]
+                               [:div.col-md-1 [:img.badge-icon {:src (if image_file (str "/" image_file) image) :class image-class}]]
                                [:div.col-md-5 (if id
-                                                (if (= status "declined")
-                                                  [:a {:href "#" :on-click #(mo/open-modal [:metabadge :declined] badge)} name]
-                                                  (if (pos? deleted) name [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name]))
+                                                (if  (empty? (-> (session/get :user) (dissoc :pending))) ;; disable received badge link when user is not logged in
+                                                  name
+                                                  (if (= status "declined")
+                                                    [:a {:href "#" :on-click #(mo/open-modal [:metabadge :declined] badge)} name]
+                                                    (if (pos? deleted) name [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})} name])))
                                                 [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name]
                                                 )]
                                [:div.col-md-2 [:label (t :metabadge/Earnedon)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
                                [:div.col-md-4 ]]]))) [:div.row.body] (->> required_badges
-                                                                          (sort-by #(-> % :user_badge :issued_on) >)
+                                                                          (sort-by #(-> % :issued_on) >)
                                                                           (sort-by :received >)))]]]]]))
 
 
@@ -283,7 +234,7 @@
       [:div#metabadgegrid {:class "row flip-table"}
        [:div.col-md-3
         [:div.badge-image
-         [:img {:src (str "/" (:image_file current)) #_(or (:image current) (-> current :badge-info :image))}]]]
+         [:img {:src (str "/" (:image_file current))}]]]
        [:div.col-md-9
         [:div.row
          [:div.col-md-12
