@@ -1,5 +1,10 @@
 --name: select-user-badge-by-assertion-url
-SELECT id, issued_on, status, deleted FROM user_badge AS ub WHERE ub.assertion_url = :assertion_url ORDER BY ctime DESC
+SELECT ub.id, bc.name, bc.image_file, ub.issued_on, ub.status, ub.deleted FROM user_badge AS ub
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
+WHERE ub.assertion_url = :assertion_url AND ub.revoked = 0
+ORDER BY ctime DESC
 
 --name: select-completed-metabadges
 SELECT umr.metabadge_id, umr.user_badge_id, umr.min_required, umr.name, bc.description, bc.image_file, cc.markdown_text AS criteria_content
@@ -23,11 +28,11 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
 JOIN user as u on (u.id = ub.user_id)
 WHERE umrr.metabadge_id = :metabadge_id AND u.id = :user_id
-GROUP BY bc.name, bc.image_file
+GROUP BY ub.id
 ORDER BY ub.issued_on ASC
 
 --name: select-not-received-required-badges
-SELECT name, description, criteria, image_file
+SELECT metabadge_id, name, description, criteria, image_file
 FROM factory_metabadge_required
 WHERE metabadge_id = :metabadge_id;
 
@@ -98,3 +103,7 @@ FROM factory_metabadge WHERE id = :id
 
 --name: select-user-id-by-user-badge-id
 SELECT user_id from user_badge AS ub where ub.id = :id
+
+--name: select-factory-metabadge-required
+SELECT name, description, criteria, image_file
+FROM factory_metabadge_required WHERE metabadge_id = :metabadge_id AND required_badge_id = :required_badge_id
