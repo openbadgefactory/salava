@@ -7,7 +7,6 @@
             [salava.badge.main :as b]
             [salava.core.layout :as layout]
             [salava.metabadge.schemas :as schemas]
-            [salava.metabadge.cron :as cron]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -22,21 +21,25 @@
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
-                  (cron/every-hour ctx)
-                  ;(salava.metabadge.db/get-metabadges-in-progress ctx (:id current-user))
-                  (ok (mb/all-metabadges ctx current-user)))
+                  (ok (mb/all-metabadges ctx (:id current-user))))
 
              (GET "/info" [user_badge_id]
                   ;:return schemas/Metabadge
+                  :summary "get metabadge info via badge-id"
+                  :current-user current-user
+                  (ok (mb/get-metabadge ctx user_badge_id (:id current-user)) #_(mb/check-metabadge ctx assertion_url)))
+
+             (GET "/assertion/info" [assertion_url]
+                  ;:return schemas/Metabadge
                   :summary "get metabadge info via assertion url"
                   :current-user current-user
-                  (ok (db/get-metabadge ctx user_badge_id (:id current-user)) #_(mb/check-metabadge ctx assertion_url)))
+                  (ok (mb/check-metabadge ctx assertion_url)))
 
              (GET "/badge/info" [user_badge_id]
                   ;:return schemas/Milestone?
                   :summary "check if badge is a metabadge"
                   :current-user current-user
-                  (ok (db/is-metabadge? ctx user_badge_id))
+                  (ok (mb/is-metabadge? ctx user_badge_id))
                   #_(ok (mb/get-user-badge-data ctx (:id current-user) user_badge_id )))
 
              (POST "/update_status/:badgeid" []
