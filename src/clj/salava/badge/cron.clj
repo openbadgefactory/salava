@@ -37,12 +37,16 @@
           false))
       (catch Throwable _ false))))
 
-(defn- check-badge [db-conn factory-url user-badge]
-  (let [asr (assertion (:assertion_url user-badge))]
+(defn- check-badge [ctx db-conn factory-url user-badge]
+  (let [asr (assertion (:assertion_url user-badge))
+        clean-metabadge-tables! (first (u/plugin-fun (u/get-plugins ctx) "db" "clean-metabadge-tables"))]
     (if (revoked? asr)
-      (jdbc/execute! db-conn
-                     ["UPDATE user_badge SET revoked = 1, last_checked = UNIX_TIMESTAMP() WHERE id = ?"
-                      (:id user-badge)])
+      (do
+        (jdbc/execute! db-conn
+                       ["UPDATE user_badge SET revoked = 1, last_checked = UNIX_TIMESTAMP() WHERE id = ?"
+                        (:id user-badge)])
+        (if clean-metabadge-tables! (clean-metabadge-tables! ctx db-conn (:id user-badge)))
+        )
       ;; still valid, check verified issuer
       (jdbc/with-db-transaction [t-con db-conn]
         (jdbc/execute! t-con ["UPDATE badge SET remote_url = ? WHERE id = ? AND remote_url IS NULL"
@@ -52,22 +56,22 @@
                                 1
                                 0) (:badge_id user-badge)])))))
 
-(defn- check-badges [db-conn factory-url]
+(defn- check-badges [ctx db-conn factory-url]
   (log/info "check-badges: started working")
   (let [time-limit (+ (System/currentTimeMillis) (* 15 60 1000))
         sql "SELECT id, badge_id, assertion_url FROM user_badge
-            WHERE assertion_url IS NOT NULL
-            AND deleted = 0 AND revoked = 0 AND status = 'accepted'
-            AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
-            ORDER BY last_checked LIMIT 1000"]
+        WHERE assertion_url IS NOT NULL
+        AND deleted = 0 AND revoked = 0 AND status = 'accepted'
+        AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
+        ORDER BY last_checked LIMIT 1000"]
     (doseq [chunk (partition-all 10 (jdbc/query db-conn [sql]))]
       (when (> time-limit (System/currentTimeMillis))
         (doseq [user-badge chunk]
           (try
             ;(log/debug "check-badges: working on id " (:id user-badge))
-            (check-badge db-conn factory-url user-badge)
+            (check-badge ctx db-conn factory-url user-badge)
             (jdbc/execute! db-conn ["UPDATE user_badge SET last_checked = UNIX_TIMESTAMP() WHERE id = ?"
-                              (:id user-badge)])
+                                    (:id user-badge)])
             (catch Throwable ex
               (log/error "check-badges failed")
               (log/error (.toString ex)))))
@@ -77,4 +81,4 @@
 ;;;
 
 (defn every-hour [ctx]
-  (check-badges (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url])))
+  (check-badges ctx (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url])))
