@@ -184,7 +184,7 @@
             [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
                 ;metabadges
-        (if (and owner? metabadge-fn) [:div [metabadge-fn (:id @state)]])
+        (if (and owner? metabadge-fn) [:div [metabadge-fn {:user_badge_id id}]])
 
         [:div.description description]
 
