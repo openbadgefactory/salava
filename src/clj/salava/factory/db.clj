@@ -56,10 +56,8 @@
      (let [id (db/save-user-badge! ctx
                            (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
                                (p/str->badge (:assertion_url pending-assertion))))]
-       (if metabadge-fn (metabadge-fn ctx (assoc pending-assertion :user_id user-id) id ))
-       )
+       (if metabadge-fn (metabadge-fn ctx (assoc pending-assertion :user_id user-id) id )))
       (delete-duplicate-pending-badges! (assoc pending-assertion :user_id user-id) (u/get-db ctx))
-      ;;process metabadge?
 
       (catch Exception ex
         (log/error "save-pending-assertions: failed to save badge")
@@ -120,8 +118,7 @@
     (if (and email assertion_url)
       (if-let [id (select-badge-by-assertion {:email email :url assertion_url} (u/get-db-1 ctx))]
         (:id id)
-        (->> (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url))
-             (metabadge-fn ctx {:assertion_url assertion_url})))
+        (db/save-user-badge! ctx (p/str->badge {:id 0 :emails [email]} assertion_url)))
       (log/error "receive-badge: failed to fetch pending badge"))
     (catch Exception ex
       (log/error "receive-badge: failed to fetch pending badge")
