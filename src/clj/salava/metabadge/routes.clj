@@ -7,6 +7,7 @@
             [salava.badge.main :as b]
             [salava.core.layout :as layout]
             [salava.metabadge.schemas :as schemas]
+            [salava.metabadge.cron :as cron]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -21,6 +22,7 @@
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
+                  ;(ok (cron/every-hour ctx))
                   (ok (mb/all-metabadges ctx (:id current-user))))
 
              (GET "/info" [user_badge_id]

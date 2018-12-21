@@ -20,7 +20,6 @@
 (def no-of-days-in-cache 3)
 
 (defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 200) (cache/ttl-cache-factory :ttl (* (* 86400 1000) no-of-days-in-cache)))))
-;(defonce user-badge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 500) (cache/ttl-cache-factory :ttl (* 86400 1000)))))
 
 (defn url? [s]
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
@@ -71,40 +70,33 @@
     (cache/lookup (swap! metabadge-cache-storage
                          #(if (cache/has? % key)
                             (cache/hit % key)
-                            (cache/miss % key (public-badge-info ctx key)))) key)))
+                            (cache/miss % key
+                                        (-> (public-badge-info ctx key)
+                                            (dissoc :language :alt_language :tags :id))))) key)))
 
 (defn lookup-badge
-  "first check db for badge-info, if not in db perform cache lookup"
-  [ctx metabadge_id option badge]
-  (-> badge
-      (dissoc :id)
-      (merge (if (:received badge)
-               (-> (db/user-badge-by-assertion ctx (:url badge)) first)
-               (if option
-                 (if-let [metabadge (->> (select-factory-metabadge {:id metabadge_id} (u/get-db ctx)) first)]
-                   (do
-                     (prn metabadge)
-                     metabadge)
-                   (dissoc (get-badge-data ctx badge) :language :alt_language :tags :id))
-                 (if-let [required-badge (->> (select-factory-metabadge-required {:metabadge_id metabadge_id :required_badge_id (:id badge)} (u/get-db ctx)) first)]
-                   required-badge
-                   (dissoc (get-badge-data ctx badge) :language :alt_language :tags :id))
-
-                 )))))
+  ([ctx metabadge_id milestone badge]
+   (if (:received badge)
+     (let [badge-info (-> (db/user-badge-by-assertion ctx (:url badge)) first)]
+       (if (empty? badge-info) (assoc (get-badge-data ctx badge) :received true :user_badge_id 0) (assoc badge-info :url (:url badge))))
+     (if-not milestone
+       (->> (select-factory-metabadge-required {:metabadge_id metabadge_id :required_badge_id (:id badge)} (u/get-db ctx)) first)
+       (->> (select-factory-metabadge {:id metabadge_id} (u/get-db ctx)) first)))))
 
 (defn get-required-badges [ctx user_id metabadge_id user_badge_id]
-  (let [received-required-badges (->> (select-received-required-badges {:metabadge_id metabadge_id :user_id user_id} (u/get-db ctx))
-                                      (group-by :name)
-                                      (reduce-kv
-                                        (fn [r k v]
-                                          (conj r (if (empty? (rest v))
-                                                    (first v)
-                                                    (if (some #(= (str (:id %)) (str user_badge_id)) v)
-                                                      (->> (remove #(not (= (str user_badge_id) (str (:id %)))) v) first)
-                                                      (->> v (sort-by :issued_on <) first))))) [])
-                                      (sort-by :issued_on <))
-        not-received-required-badges (some->> (select-not-received-required-badges {:metabadge_id metabadge_id} (u/get-db ctx))
-                                              (remove (fn [badge] (some #(= (select-keys badge [:name]) (select-keys % [:name])) received-required-badges))))] ;todo compare with more than name
+  (let [all-required-badges (select-all-required-badges {:metabadge_id metabadge_id} (u/get-db ctx))
+        received-required-badges (some->> (select-received-required-badges {:metabadge_id metabadge_id :user_id user_id} (u/get-db ctx))
+                                          (filter (fn [badge] (some #(= (select-keys badge [:name :required_badge_id]) (select-keys % [:name :required_badge_id])) all-required-badges)))
+                                          (group-by :required_badge_id)
+                                          (reduce-kv
+                                            (fn [r k v]
+                                              (conj r (if (empty? (rest v))
+                                                        (first v)
+                                                        (if (some #(= (str (:user_badge_id %)) (str user_badge_id)) v)
+                                                          (->> (remove #(not (= (str user_badge_id) (str (:user_badge_id %)))) v) first)
+                                                          (->> v (sort-by :issued_on <) first))))) []))
+        not-received-required-badges (some->> all-required-badges
+                                              (remove (fn [badge] (some #(= (select-keys badge [:required_badge_id]) (select-keys % [:required_badge_id])) received-required-badges))))]
     (assoc {} :required_badges ((comp flatten concat) received-required-badges not-received-required-badges)
       :received-badge-count (count received-required-badges))))
 
@@ -112,18 +104,20 @@
   "build required badges from db"
   [ctx user_id user_badge_id coll]
   (reduce (fn [r m]
-            (let [required-badges-map (get-required-badges ctx user_id (or (:metabadge_id m) (:id m) ) user_badge_id) ]
+            (let [required-badges-map (get-required-badges ctx user_id (:metabadge_id m) user_badge_id) ]
               (conj r (assoc m :required_badges (->> required-badges-map :required_badges)
                         :completion_status (%completed (:min_required m) (->> required-badges-map :received-badge-count)))))) [] coll))
 
-(defn expand-required-badges [ctx metabadge_id badges assertion-url]
+(defn expand-required-badges
+  "use cache lookup to build required badges"
+  [ctx metabadge_id badges assertion-url]
   (->> badges (r/map #(lookup-badge ctx metabadge_id nil %)) (r/foldcat)))
 
 (defn- process-metabadge [ctx metabadge assertion-url]
   (->> (:metabadge metabadge)
        (r/map (fn [m]
                 (let [required-badges (expand-required-badges ctx (:id m) (:required_badges m) assertion-url)
-                      received-required-badges (filter :received required-badges)]
+                      received-required-badges (filter :user_badge_id required-badges)]
                   (-> m
                       (merge (lookup-badge ctx (:id m) "milestone" (:badge m)))
                       (assoc :required_badges required-badges
@@ -154,8 +148,10 @@
 (defn metabadge->badge-map [ctx badge-id]
   (some-> (select-received-metabadge-by-badge-id {:id badge-id} (u/get-db ctx)) first))
 
-(defn pending-metabadge? [ctx pending-assertion id]
-  (if-let [is-metabadge? (db/metabadge?! (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url]) (-> pending-assertion (assoc :id id)))]
+(defn pending-metabadge?
+  "pending-badge->metabadge"
+  [ctx pending-assertion id]
+  (if-let [is-metabadge? (db/metabadge?! ctx (get-in ctx [:config :factory :url]) (-> pending-assertion (assoc :id id)))]
     (let [badge (metabadge->badge-map ctx id)]
       (db/get-metabadge! ctx (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url]) badge))))
 
@@ -167,7 +163,7 @@
 (defn metabadges-in-progress [ctx user_id]
   (let [metabadges (->> (select-all-user-metabadges {:user_id user_id} (u/get-db ctx)) (expand-required-badges-db ctx user_id nil))
         completed-metabadges (completed-metabadges ctx user_id)]
-    (remove (fn [m] (some #(= (:metabadge_id %) (:id m)) completed-metabadges)) metabadges)))
+    (remove (fn [m] (some #(= (:metabadge_id %) (:metabadge_id m)) completed-metabadges)) metabadges)))
 
 (defn all-metabadges [ctx user_id]
   {:in_progress (metabadges-in-progress ctx user_id)
@@ -199,6 +195,5 @@
                            (metabadge-helper ctx user_badge_id user_id)
                            flatten)]
       {:milestones milestones :required-in required-in})))
-
 
 
