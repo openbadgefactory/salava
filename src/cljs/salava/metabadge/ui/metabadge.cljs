@@ -38,11 +38,11 @@
         nil)))
 
   (defn current-badge [required_badges current-badge-id]
-    (->> required_badges (filter #(or (= (:id %) current-badge-id) (= (:url %) current-badge-id))) first))
+    (->> required_badges (filter #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id))) first))
 
   (defn required-block-badges [m current-badge-id milestone?]
     (let [current-badge (current-badge (:required_badges m) current-badge-id ) ]
-      (if milestone? (take 20 (:required_badges m)) (into [current-badge] (->> (take 19 (remove #(or (= (:id %) current-badge-id) (= (:url %) current-badge-id)) (:required_badges m)))
+      (if milestone? (take 20 (:required_badges m)) (into [current-badge] (->> (take 19 (remove #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id)) (:required_badges m)))
                                                                                (sort-by :received >))))))
 
   (defn partition-count [m current-badge-id milestone?]
@@ -51,13 +51,13 @@
 
 
   (defn badge-block [m current-badge-id milestone?]
-    (let [{:keys [user_badge_id name image_file image criteria criteria_content required_badges]} m
-          milestone-image-class (if user_badge_id "" " not-received")]
+    (let [{:keys [user_badge_id name image_file image criteria criteria_content required_badges received]} m
+          milestone-image-class (if (or user_badge_id received)"" " not-received")]
       [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
        [:div.metabadge {:class (if (> (count required_badges) 8) " metabadge-large")}
         [:div.panel
          [:div.panel-heading (:name m)
-          [:div.pull-right (if milestone? #_(:milestone? m) [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
+          [:div.pull-right (if milestone? [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
          [:div.panel-body
           [:table.table
            [:tbody
@@ -69,10 +69,10 @@
                (reduce (fn [result coll]
                          (conj result (reduce (fn [r badge]
                                                 (let [;{:keys [badge-info received current]} badge
-                                                       {:keys [id name image_file image criteria criteria_content url]} badge
-                                                       current (if (string? current-badge-id) (= url current-badge-id) (= id current-badge-id))]
+                                                       {:keys [user_badge_id name image_file image criteria criteria_content url]} badge
+                                                       current (if (string? current-badge-id) (= url current-badge-id) (= user_badge_id current-badge-id))]
 
-                                                  (conj r (if id
+                                                  (conj r (if user_badge_id
                                                             [:td [:div [:img.img-circle {:src (str "/" image_file) :alt name :title name :class (if current "img-thumbnail" "")
                                                                                          }]]]
                                                             [:td [:div [:img.img-circle.not-received {:src (if image_file (str "/" image_file) image) :alt name :title name} ]]]))))
