@@ -3,10 +3,11 @@
             [salava.core.http :as http]
             [salava.core.time :refer [iso8601-to-unix-time unix-time date-from-unix-time]]
             [clojure.tools.logging :as log]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db plugin-fun get-plugins]]
             [yesql.core :refer [defqueries]]
             [salava.badge.parse :refer [str->badge]]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            ))
 
 (defqueries "sql/badge/main.sql")
 
@@ -63,7 +64,8 @@
   (log/info "Badge verification initiated:")
   (let [badge (b/fetch-badge ctx id)
         asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
-        result {}]
+        result {}
+        delete-user-metabadge (first (plugin-fun (get-plugins ctx) "db" "clear-user-metabadge!"))]
     (if (url? asr)
       (let [asr-response (assertion asr)]
         (case (:status asr-response)
@@ -72,6 +74,7 @@
           410 (do
                 (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
                 (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))
+                (if delete-user-metabadge (delete-user-metabadge ctx id))
                 (assoc result :assertion-status 410
                               :asr asr
                               :revoked? true))

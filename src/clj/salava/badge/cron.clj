@@ -39,13 +39,13 @@
 
 (defn- check-badge [ctx db-conn factory-url user-badge]
   (let [asr (assertion (:assertion_url user-badge))
-        clean-metabadge-tables! (first (u/plugin-fun (u/get-plugins ctx) "db" "clean-metabadge-tables"))]
+        delete-user-metabadge (first (u/plugin-fun (u/get-plugins ctx) "db" "clear-user-metabadge!"))]
     (if (revoked? asr)
       (do
         (jdbc/execute! db-conn
                        ["UPDATE user_badge SET revoked = 1, last_checked = UNIX_TIMESTAMP() WHERE id = ?"
                         (:id user-badge)])
-        (if clean-metabadge-tables! (clean-metabadge-tables! ctx db-conn (:id user-badge)))
+        (if delete-user-metabadge (clean-metabadge-tables! ctx db-conn (:id user-badge)))
         )
       ;; still valid, check verified issuer
       (jdbc/with-db-transaction [t-con db-conn]
