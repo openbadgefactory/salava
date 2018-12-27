@@ -51,7 +51,7 @@
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
-        metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge_icon"))]
+        metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "meta_icon"))]
     [:div {:class "media grid-container"}
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
@@ -85,7 +85,7 @@
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
-                                      [:div.pull-right [metabadge-icon-fn id]]]
+                                      [:div.pull-right [metabadge-icon-fn meta_badge meta_badge_req]]]
 
                                    (if expires_on
                                      [:div.righticon

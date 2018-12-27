@@ -3,7 +3,8 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.modal :as mo]))
+            [salava.core.ui.modal :as mo]
+            [clojure.string :refer [blank?]]))
 
 (defn init-metabadge-data [param state]
   (let [link (if (:assertion_url param) (str "/obpv1/metabadge/assertion/info") (str "/obpv1/metabadge/info"))]
@@ -19,16 +20,7 @@
       {:params {:user_badge_id id}
        :handler (fn [data] (reset! data-atom data))}))
 
-
   #_(defn meta_icon [data-atom]
-      (let [required_badge (:required_badge @data-atom)
-            milestone (:milestone @data-atom)]
-        (cond
-          milestone [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
-          required_badge [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-          :else nil)))
-
-  (defn meta_icon [data-atom]
     (let [{:keys [meta_badge meta_badge_req]} @data-atom
           m (str meta_badge meta_badge_req)]
       (case m
@@ -36,6 +28,14 @@
         "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
         "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
         nil)))
+
+(defn meta_icon [meta_badge meta_badge_req]
+    (cond
+      (and (blank? meta_badge) (blank? meta_badge_req)) nil
+      (and (= "NULL" meta_badge) (not (blank? meta_badge_req))) [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      (and (and (not= "NULL" meta_badge) (not (blank? meta_badge))) (blank? meta_badge_req)) [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
+      (and (or (not= "NULL" meta_badge) (not (blank? meta_badge))) (not (blank? meta_badge_req))) [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]))
+
 
   (defn current-badge [required_badges current-badge-id]
     (->> required_badges (filter #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id))) first))
