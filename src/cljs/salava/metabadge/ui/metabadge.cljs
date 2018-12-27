@@ -14,27 +14,21 @@
        :handler (fn [data]
                   (reset! state data))})))
 
-  (defn init-metabadge-icon [id data-atom]
-    (ajax/GET
-      (path-for (str "/obpv1/metabadge/badge/info"))
-      {:params {:user_badge_id id}
-       :handler (fn [data] (reset! data-atom data))}))
-
-  #_(defn meta_icon [data-atom]
-    (let [{:keys [meta_badge meta_badge_req]} @data-atom
-          m (str meta_badge meta_badge_req)]
-      (case m
-        "truefalse" [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
-        "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-        "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-        nil)))
+(defn init-metabadge-icon [id data-atom]
+  (ajax/GET
+    (path-for (str "/obpv1/metabadge/badge/info"))
+    {:params {:user_badge_id id}
+     :handler (fn [data] (reset! data-atom data))}))
 
 (defn meta_icon [meta_badge meta_badge_req]
-    (cond
-      (and (blank? meta_badge) (blank? meta_badge_req)) nil
-      (and (= "NULL" meta_badge) (not (blank? meta_badge_req))) [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-      (and (and (not= "NULL" meta_badge) (not (blank? meta_badge))) (blank? meta_badge_req)) [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
-      (and (or (not= "NULL" meta_badge) (not (blank? meta_badge))) (not (blank? meta_badge_req))) [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]))
+  (let [is_milestone? (and (not= "NULL" meta_badge) (not (blank? meta_badge)))
+        is_required? (not (blank? meta_badge_req))
+        string (str is_milestone? is_required?)]
+    (case string
+      "truefalse" [:div {:title (t :metabadge/Amilestonebadge)}[:span [:i.link-icon {:class "fa fa-sitemap"}]]]
+      "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+      nil)))
 
 
   (defn current-badge [required_badges current-badge-id]
