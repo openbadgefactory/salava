@@ -169,7 +169,7 @@
   {:in_progress (metabadges-in-progress ctx user_id)
    :completed (completed-metabadges ctx user_id)})
 
-(defn is-metabadge? [ctx user_badge_id]
+#_(defn is-metabadge? [ctx user_badge_id]
   (let [x (some-> (select-metabadge-info-from-user-badge {:id user_badge_id} (u/get-db ctx)) first)]
     (reduce-kv (fn [r k v]
                  (assoc r k (if (clojure.string/blank? v) false true))) {} x)))
