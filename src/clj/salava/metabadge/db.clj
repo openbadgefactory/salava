@@ -51,21 +51,19 @@
           (when-not (empty? metabadge-badge-content)
             (jdbc/with-db-transaction  [db-conn (:connection (u/get-db ctx))]
               (delete-factory-metabadge! {:id (:id metabadge)} {:connection db-conn})
-              (insert-factory-metabadge! {:id (:id metabadge) :name (:name metabadge) :description description :criteria (u/md->html criteria) :image_file (u/file-from-url ctx image) :min_required (:min_required metabadge)} {:connection db-conn}))
-            (doseq [badge (:required_badges metabadge)
-                    :let [required-badge-content (if-not (:received badge)
-                                                   (fetch-json-data (:url badge))
-                                                   (some->> (:badge (fetch-json-data (:url badge)))
-                                                            (badge-url)
-                                                            (fetch-json-data)))
-                          {:keys [name description image criteria]} required-badge-content]]
-              (when-not (empty? required-badge-content)
-                (jdbc/with-db-transaction  [db-conn (:connection (u/get-db ctx))]
-                  (delete-factory-metabadge-required-badge! {:metabadge_id (:id metabadge) :required_badge_id (:id badge)} {:connection db-conn})
+              (insert-factory-metabadge! {:id (:id metabadge) :name (:name metabadge) :description description :criteria (u/md->html criteria) :image_file (u/file-from-url ctx image) :min_required (:min_required metabadge)} {:connection db-conn})
+              (doseq [badge (:required_badges metabadge)
+                      :let [required-badge-content (if-not (:received badge)
+                                                     (fetch-json-data (:url badge))
+                                                     (some->> (:badge (fetch-json-data (:url badge)))
+                                                              (badge-url)
+                                                              (fetch-json-data)))
+                            {:keys [name description image criteria]} required-badge-content]]
+                (when-not (empty? required-badge-content)
                   (insert-factory-metabadge-required-badge! {:metabadge_id (:id metabadge) :required_badge_id (:id badge) :name name :description description :criteria (u/md->html criteria) :image_file (u/file-from-url ctx image)} {:connection db-conn})
                   ))))))
-    (catch Exception e
-      (log/error (.getMessage e))))))
+      (catch Exception e
+        (log/error (.getMessage e))))))
 
 (defn all-badges [ctx factory-url]
   (select-all-badges {:obf_url (str factory-url "%")} (u/get-db ctx)))

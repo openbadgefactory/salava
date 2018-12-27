@@ -34,7 +34,7 @@ GROUP BY ub.id
 ORDER BY ub.issued_on ASC
 
 --name: select-all-required-badges
-SELECT metabadge_id, required_badge_id, name, description, criteria, image_file
+SELECT metabadge_id, required_badge_id, name, description, criteria AS criteria_content, image_file
 FROM factory_metabadge_required
 WHERE metabadge_id = :metabadge_id;
 
@@ -46,7 +46,7 @@ where u.id = :user_id
 GROUP BY ubm.meta_badge_req
 
 --name: select-all-user-metabadges
-SELECT fm.id AS metabadge_id, fm.min_required, fm.name, fm.description, fm.image_file, fm.criteria
+SELECT fm.id AS metabadge_id, fm.min_required, fm.name, fm.description, fm.image_file, fm.criteria AS criteria_content
 FROM user_badge as ub
 JOIN user_badge_metabadge as ubm on (ubm.user_badge_id = ub.id)
 JOIN factory_metabadge_required as fmr on (fmr.required_badge_id = ubm.meta_badge_req)
@@ -106,17 +106,18 @@ GROUP BY fm.id
 
 --name: select-factory-metabadge
 --select default factory metabadge info
-SELECT id AS metabadge_id, name, description, image_file, criteria, min_required
+SELECT id AS metabadge_id, name, description, image_file, criteria AS criteria_content, min_required
 FROM factory_metabadge WHERE id = :id
 
 --name: select-user-id-by-user-badge-id
 SELECT user_id from user_badge AS ub where ub.id = :id
 
 --name: select-factory-metabadge-required
-SELECT name, description, criteria, image_file
+SELECT name, description, criteria AS criteria_content, image_file
 FROM factory_metabadge_required WHERE metabadge_id = :metabadge_id AND required_badge_id = :required_badge_id
 
 --name: select-all-badges
+--fix
 SELECT id, assertion_url FROM user_badge
 WHERE assertion_url IS NOT NULL AND assertion_url LIKE :obf_url
 AND revoked = 0 AND status != 'declined'
@@ -140,12 +141,12 @@ INSERT IGNORE INTO factory_metabadge (id, name, description, criteria, image_fil
 VALUES (:id, :name, :description, :criteria, :image_file, :min_required, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: delete-factory-metabadge!
-DELETE FROM factory_metabadge WHERE id = :id
+DELETE fm,fmr FROM factory_metabadge AS fm
+JOIN factory_metabadge_required AS fmr ON fmr.metabadge_id = fm.id
+WHERE fm.id = :id;
 
 --name: insert-factory-metabadge-required-badge!
 INSERT IGNORE INTO factory_metabadge_required (metabadge_id, required_badge_id, name, description, criteria, image_file, ctime, mtime)
 VALUES (:metabadge_id, :required_badge_id, :name, :description, :criteria, :image_file, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
---name: delete-factory-metabadge-required-badge!
-DELETE FROM factory_metabadge_required WHERE metabadge_id = :metabadge_id AND required_badge_id = :required_badge_id
 
