@@ -64,12 +64,13 @@
                          (conj result (reduce (fn [r badge]
                                                 (let [;{:keys [badge-info received current]} badge
                                                        {:keys [user_badge_id name image_file image criteria criteria_content url]} badge
+                                                       image (if image_file (str "/" image_file) image)
                                                        current (if (string? current-badge-id) (= url current-badge-id) (= user_badge_id current-badge-id))]
 
                                                   (conj r (if user_badge_id
-                                                            [:td [:div [:img.img-circle {:src (str "/" image_file) :alt name :title name :class (if current "img-thumbnail" "")
+                                                            [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")
                                                                                          }]]]
-                                                            [:td [:div [:img.img-circle.not-received {:src (if image_file (str "/" image_file) image) :alt name :title name} ]]]))))
+                                                            [:td [:div [:img.img-circle.not-received {:src image :alt name :title name} ]]]))))
                                               [:tr]
                                               coll))) [:tbody] (partition-all (partition-count m current-badge-id milestone?) (required-block-badges m current-badge-id milestone?)))]]]]]]]]]))
 
