@@ -5,13 +5,14 @@ SELECT user_id AS owner from social_connections_badge where badge_id = :badge_id
 -- get user's badges
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, ub.assertion_url,
-           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, ubm.meta_badge, ubm.meta_badge_req
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
 INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+LEFT JOIN user_badge_metabadge ubm ON ub.id = ubm.user_badge_id
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND bc.language_code = b.default_language_code
     AND ic.language_code = b.default_language_code
