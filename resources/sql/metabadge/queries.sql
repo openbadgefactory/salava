@@ -17,8 +17,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code =
 JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
 JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id AND cc.language_code = badge.default_language_code)
 JOIN user as u on (u.id = ub.user_id)
-WHERE u.id = :user_id
-GROUP BY fm.id;
+WHERE u.id = :user_id AND ub.revoked = 0
+GROUP BY fm.id
 
 --name: select-received-required-badges
 SELECT fmr.metabadge_id, fmr.required_badge_id, ubm.user_badge_id, bc.name, bc.image_file, ub.issued_on, ub.status, ub.deleted
@@ -29,7 +29,7 @@ JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
 JOIN user as u on (u.id = ub.user_id)
-WHERE fmr.metabadge_id = :metabadge_id AND u.id = :user_id
+WHERE fmr.metabadge_id = :metabadge_id AND u.id = :user_id AND ub.revoked = 0
 GROUP BY ub.id
 ORDER BY ub.issued_on ASC
 
