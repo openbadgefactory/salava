@@ -94,7 +94,7 @@
                                                         (first v)
                                                         (if (some #(= (str (:user_badge_id %)) (str user_badge_id)) v)
                                                           (->> (remove #(not (= (str user_badge_id) (str (:user_badge_id %)))) v) first)
-                                                          (->> v (sort-by :issued_on <) first))))) []))
+                                                          (->> v (sort-by :issued_on <) (sort-by :deleted) first))))) []))
         not-received-required-badges (some->> all-required-badges
                                               (remove (fn [badge] (some #(= (select-keys badge [:required_badge_id]) (select-keys % [:required_badge_id])) received-required-badges))))]
     (assoc {} :required_badges ((comp flatten concat) received-required-badges not-received-required-badges)
