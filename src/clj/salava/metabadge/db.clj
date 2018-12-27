@@ -19,6 +19,9 @@
   [ctx assertion_url]
   (some-> (select-user-badge-by-assertion-url {:assertion_url assertion_url} (u/get-db ctx))))
 
+(defn clear-user-metabadge! [ctx user_badge_id]
+  (delete-user-badge-metabadge! {:user_badge_id user_badge_id} (u/get-db ctx)))
+
 (defn metabadge?!
   "checks if badge is a metabadge, db is updated with information"
   [ctx factory-url user_badge]
