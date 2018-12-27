@@ -3,16 +3,11 @@
             [salava.core.util :as u]
             [clojure.tools.logging :as log]
             [clojure.core.cache :as cache]
-            [clojure.string :refer [escape]]
             [slingshot.slingshot :refer :all]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
             [clojure.core.reducers :as r]
             [salava.metabadge.db :as db]
             [clojure.string :as string]
-            [salava.badge.main :as b]
-            [salava.core.helper :refer [dump]]
-            [clojure.set :as s]
-            [medley.core :refer [distinct-by]]
             [yesql.core :refer [defqueries]]))
 
 (defqueries "sql/metabadge/queries.sql")
@@ -22,7 +17,7 @@
 (defonce metabadge-cache-storage (atom (-> {} (cache/lru-cache-factory :threshold 200) (cache/ttl-cache-factory :ttl (* (* 86400 1000) no-of-days-in-cache)))))
 
 (defn url? [s]
-  (not (clojure.string/blank? (re-find #"^http" (str s)))))
+  (not (string/blank? (re-find #"^http" (str s)))))
 
 (defn %completed [req gotten]
   (let [calc (Math/round (double (* (/ gotten req) 100)))]
@@ -173,7 +168,7 @@
 (defn is-metabadge? [ctx user_badge_id]
   (let [x (some-> (select-metabadge-info-from-user-badge {:id user_badge_id} (u/get-db ctx)) first)]
     (reduce-kv (fn [r k v]
-                 (assoc r k (if (clojure.string/blank? v) false true))) {} x)))
+                 (assoc r k (if (string/blank? v) false true))) {} x)))
 
 (defn is-received-metabadge? [ctx user_id metabadge_id]
   (let [check (select-user-received-metabadge-by-metabadge-id {:metabadge_id metabadge_id :user_id user_id} (u/get-db ctx))]
