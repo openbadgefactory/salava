@@ -18,7 +18,7 @@
     (context "/obpv1/metabadge" []
              :tags ["metabadge"]
              (GET "/" []
-                  ;:return [schemas/Allmetabadges]
+                  :return schemas/AllMetabadges
                   :summary "get all metabadges"
                   :auth-rules access/signed
                   :current-user current-user
@@ -26,23 +26,22 @@
                   (ok (mb/all-metabadges ctx (:id current-user))))
 
              (GET "/info" [user_badge_id]
-                  ;:return schemas/Metabadge
-                  :summary "get metabadge info via badge-id"
+                  :return schemas/BadgeMetabadge
+                  :summary "get metabadge info via user-badge-id"
                   :current-user current-user
-                  (ok (mb/get-metabadge ctx user_badge_id (:id current-user)) #_(mb/check-metabadge ctx assertion_url)))
+                  (ok (mb/get-metabadge ctx user_badge_id (:id current-user))))
 
              (GET "/assertion/info" [assertion_url]
-                  ;:return schemas/Metabadge
+                  :return schemas/BadgeMetabadge
                   :summary "get metabadge info via assertion url"
                   :current-user current-user
                   (ok (mb/check-metabadge ctx assertion_url)))
 
-             (GET "/badge/info" [user_badge_id]
+             #_(GET "/badge/info" [user_badge_id]
                   ;:return schemas/Milestone?
                   :summary "check if badge is a metabadge"
                   :current-user current-user
-                  (ok (mb/is-metabadge? ctx user_badge_id))
-                  #_(ok (mb/get-user-badge-data ctx (:id current-user) user_badge_id )))
+                  (ok (mb/is-metabadge? ctx user_badge_id)))
 
              (POST "/update_status/:badgeid" []
                    :path-params [badgeid :- String]
