@@ -119,7 +119,8 @@
                 (let [required-badges (expand-required-badges ctx (:id m) (:required_badges m) assertion-url)
                       received-required-badges (filter :user_badge_id required-badges)]
                   (-> m
-                      (merge (lookup-badge ctx (:id m) "milestone" (:badge m)))
+                      (assoc :name (:name m))
+                      (merge (dissoc (lookup-badge ctx (:id m) "milestone" (:badge m)) :name))
                       (assoc :required_badges required-badges
                         :completion_status (%completed (:min_required m) (count received-required-badges))
                         :milestone? (= assertion-url (get-in m [:badge :url])))
@@ -153,7 +154,7 @@
   [ctx pending-assertion id]
   (if-let [is-metabadge? (db/metabadge?! ctx (get-in ctx [:config :factory :url]) (-> pending-assertion (assoc :id id)))]
     (let [badge (metabadge->badge-map ctx id)]
-      (db/get-metabadge! ctx (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url]) badge))))
+      (db/get-metabadge! ctx (get-in ctx [:config :factory :url]) badge))))
 
 
 (defn completed-metabadges [ctx user_id]
@@ -169,7 +170,7 @@
   {:in_progress (metabadges-in-progress ctx user_id)
    :completed (completed-metabadges ctx user_id)})
 
-#_(defn is-metabadge? [ctx user_badge_id]
+(defn is-metabadge? [ctx user_badge_id]
   (let [x (some-> (select-metabadge-info-from-user-badge {:id user_badge_id} (u/get-db ctx)) first)]
     (reduce-kv (fn [r k v]
                  (assoc r k (if (clojure.string/blank? v) false true))) {} x)))
