@@ -52,17 +52,16 @@
            [:div {:dangerouslySetInnerHTML {:__html criteria}}]]]]]])))
 
 (defn declined-badge [badge]
-  (let [data-atom (atom {:id (-> badge :id)})]
+  (let [data-atom (atom {:id (-> badge :user_badge_id)})]
     (init-user-badge data-atom)
     (fn []
-      (let [{:keys [badge-info user_badge]} badge
-            {:keys [image name]} badge-info
+      (let [{:keys [image_file name]}badge
             {:keys [owner? user-logged-in?]} @data-atom]
         (if (and user-logged-in? owner?)
           [:div#metabadgegrid {:class "row flip-table"}
            [:div.col-md-3.badge-image
             [:div.image-container
-             [:img {:src image :title name}]]]
+             [:img {:src (str "/" image_file) :title name}]]]
            [:div.col-md-9
             [:div.col-md-12
              [:h1.uppercase-header name]
