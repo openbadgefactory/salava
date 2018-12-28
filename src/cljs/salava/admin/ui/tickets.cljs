@@ -142,18 +142,13 @@
        [:h3 {:class "media-heading"}
         [:u (t (keyword (str "admin/" report_type)))]]
        [:h4 {:class "media-heading"}
-        (cond
-          (= "badges" item_type)[:a {:href "#" :on-click #(do
-                                                            (.preventDefault %)
-                                                            (open-admintool-modal "badges" (badge-id item_url) nil nil))}
-                                 (str (t (keyword (str "admin/" item_type))) " - " item_name)]
-
-          (= "badge" item_type) [:a {:href "#" :on-click #(do
-                                                            (.preventDefault %)
-                                                            (open-admintool-modal item_id "badge"))}
-                                 (str (t (keyword (str "admin/" item_type))) " - " item_name)]
-          :else [:a {:href item_url :target "_blank"}
-                 (str (t (keyword (str "admin/" item_type))) " - " item_name)])]]
+        (if (= "badges" item_type)
+          [:a {:href "#" :on-click #(do
+                                      (.preventDefault %)
+                                      (open-admintool-modal "badges" (badge-id item_url) nil nil))}
+           (str (t (keyword (str "admin/" item_type))) " - " item_name)]
+          [:a {:href item_url :target "_blank"}
+           (str (t (keyword (str "admin/" item_type))) " - " item_name)])]]
       [:div.media-descriprtion
        [:div {:class "col-xs-12"  :id (if open? "" "closed")}
         [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description) ]
