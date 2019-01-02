@@ -6,7 +6,7 @@
     [clojure.set :as set :refer [intersection]]
     [clojure.string :refer [upper-case]]
     [salava.core.ui.ajax-utils :as ajax]
-    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private?]]
+    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private? js-navigate-to]]
     [salava.core.ui.notactivated :refer [not-activated-banner]]
     [salava.core.ui.layout :as layout]
     [salava.core.ui.grid :as g]
@@ -80,7 +80,7 @@
     (into [:div#grid {:class "row wrap-grid"}
            (when-not (private?)
              [:div#import-badge {:key   "new-badge"}
-            [:a.add-element-link {:href  "#" :on-click #(navigate-to "badge/import")}
+            [:a.add-element-link {:href  (path-for "/badge/import") }
              [:div {:class "media grid-container"}
               [:div.media-content
                [:div.media-body

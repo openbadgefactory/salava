@@ -214,7 +214,7 @@
           [:h2.uppercase-header (t :badge/Evidence)]
           [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
 
-      #_(if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
+      (if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
     ))
 
 (defn modal-navi [state]

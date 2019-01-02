@@ -35,8 +35,8 @@
                            :image_file (:image_file data)
                            :item_owner (:item_owner data)
                            :item_owner_id (:item_owner_id data)
-                           :info (:info data))
-                    )
+                           :info (:info data)
+                           :selected-email (->> (get-in data [:info :emails]) (filter #(:primary_address %)) first :email)))
                   (m/modal! [admin-modal state nil nil] {:size :lg}))})))
 
   ([item-type item-id gallery-state init-data]

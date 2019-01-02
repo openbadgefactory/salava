@@ -655,3 +655,6 @@ WHERE scb.badge_id = :badge_id AND scb.ctime = :ctime
 
 --name: get-assertion-jws
 SELECT assertion_jws FROM user_badge AS ub WHERE ub.id = :id;
+
+--name: select-user-badge-id-with-badge-id
+SELECT id FROM user_badge AS ub WHERE ub.badge_id = :badge_id AND  ub.user_id = :user_id AND ub.status = 'accepted';

@@ -134,8 +134,9 @@
                                                                    (:description %)"\n"
                                                                    [:spacer 0]
                                                                    [:paragraph {:keep-together true}
-                                                                    [:phrase.bold (str (t :badge/Criteria ul)": ")] [:spacer 0]
-                                                                    [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
+                                                                    [:phrase.bold (str (t :badge/Criteria ul)": ")]
+                                                                    [:anchor {:target (:criteria_url %)} [:chunk.link (t :badge/Opencriteriapage ul)]] "\n"
+                                                                    [:paragraph {:style :italic} (:criteria_url %) ]
                                                                     [:spacer 0]
                                                                     (let [content (some->> (pdf-generator-helper ctx user-id (list (:badge_id %))) first :content first) ]
                                                                       (when-not (empty? content)
@@ -181,8 +182,9 @@
                                                                                                                          (:description badge)"\n"
                                                                                                                          [:spacer 0]
                                                                                                                          [:paragraph {:keep-together true}
-                                                                                                                          [:phrase.bold (str (t :badge/Criteria ul)": ")] "\n"
-                                                                                                                          [:anchor {:target (:criteria_url badge) :style{:family :times-roman :color [66 100 162]}} (:criteria_url badge)] "\n"
+                                                                                                                          [:phrase.bold (str (t :badge/Criteria ul)": ")]
+                                                                                                                          [:anchor {:target (:criteria_url badge)} [:chunk.link (t :badge/Opencriteriapage ul)]] "\n"
+                                                                                                                          [:paragraph {:style :italic} (:criteria_url badge) ]
                                                                                                                           (process-markdown (:criteria_content content) (:id badge) "Criteria")
                                                                                                                           ]
                                                                                                                          ][:spacer 0]]))))

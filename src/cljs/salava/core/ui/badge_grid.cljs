@@ -49,7 +49,6 @@
 (defn badge-grid-element [element-data state badge-type init-data]
   (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req]} element-data
         expired? (bh/badge-expired? expires_on)
-        badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
         metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge_icon"))]
     [:div {:class "media grid-container"}
@@ -77,7 +76,11 @@
                                    [:p issuer_content_name]]]
                                  ]]
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
-                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))})}
+                                 [:a {:href "#" :on-click #(do
+                                                             (.replaceState js/history "" "Badge modal" (str "/badge/" id))
+                                                             (mo/open-modal [:badge :info] {:badge-id id} {:hide (fn []
+                                                                                                                 (.replaceState js/history "" "Badge modal" "/badge")
+                                                                                                                 (init-data state))}))}
                                   [:div.icons
                                      [:div.visibility-icon.inline
                                     (case visibility

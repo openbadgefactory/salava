@@ -169,9 +169,9 @@
              :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
              :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
              :datefrom issued_on
-             :dateto   expires_on}]]]
+             :dateto   expires_on}]]])
          (if (and (not expired?) (not revoked))
-           (admintool id "badge")))
+           (admintool id "badge"))
 
        (if (or verified_by_obf issued_by_obf)
          [:div.row (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])

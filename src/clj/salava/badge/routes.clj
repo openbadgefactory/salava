@@ -59,7 +59,7 @@
                         (if (and badge (not owner?))
                           (b/badge-viewed ctx badgeid user-id))
                         (ok (assoc badge :owner? owner?
-                                         :user-logged-in? (boolean user-id))))
+                              :user-logged-in? (boolean user-id))))
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
@@ -68,16 +68,18 @@
                   :path-params [badgeid :- Long]
                   :summary "verify badge"
                   :current-user current-user
-                (ok (v/verify-badge ctx badgeid)))
+                  (ok (v/verify-badge ctx badgeid)))
 
              (GET "/pending/:badgeid" req
                   :path-params [badgeid :- Long]
                   :summary "Get pending badge content"
                   (if (= badgeid (get-in req [:session :pending :user-badge-id]))
-                    (ok (->> badgeid
-                             (b/fetch-badge ctx)
-                             (b/badge-issued-and-verified-by-obf ctx)))
-                      (not-found)))
+                    (ok (assoc (->> badgeid
+                                    (b/fetch-badge ctx)
+                                    (b/badge-issued-and-verified-by-obf ctx))
+                          :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))
+                          ))
+                    (not-found)))
 
              (GET "/issuer/:issuerid" []
                   :return schemas/IssuerContent
@@ -114,7 +116,7 @@
                         (if badge
                           (b/badge-viewed ctx badgeid user-id))
                         (ok (assoc badge :owner? owner?
-                                   :user-logged-in? (boolean user-id))))
+                              :user-logged-in? (boolean user-id))))
                       (not-found))))
 
              (POST "/set_visibility/:badgeid" []
@@ -161,16 +163,16 @@
 
 
              (GET "/export-to-pdf" [badges lang-option]
-                   :summary "Export badges to PDF"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (let [badge-ids (map #(Integer/parseInt %)  (vals badges))
+                  :summary "Export badges to PDF"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (let [badge-ids (map #(Integer/parseInt %)  (vals badges))
                         h (if-not (empty? (rest badge-ids)) (str "attachment; filename=\"badge-collection_"lang-option".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang-option ".pdf\""))]
-                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
-                         ok
-                         (header "Content-Disposition" h)
-                         (header "Content-Type" "application/pdf")
-                         )))
+                    (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
+                        ok
+                        (header "Content-Disposition" h)
+                        (header "Content-Type" "application/pdf")
+                        )))
 
              (GET "/export" []
                   :return {:emails [schemas/UserBackpackEmail] :badges [schemas/BadgesToExport]}
