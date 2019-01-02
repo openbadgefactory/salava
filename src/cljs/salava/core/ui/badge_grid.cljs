@@ -77,9 +77,9 @@
                                  ]]
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
                                  [:a {:href "#" :on-click #(do
-                                                             (.replaceState js/history "" "Badge modal" (str "/badge/" id))
+                                                             (.replaceState js/history "" "Badge modal" (path-for (str "/badge/" id)))
                                                              (mo/open-modal [:badge :info] {:badge-id id} {:hide (fn []
-                                                                                                                 (.replaceState js/history "" "Badge modal" "/badge")
+                                                                                                                 (.replaceState js/history "" "Badge modal" (path-for "/badge"))
                                                                                                                  (init-data state))}))}
                                   [:div.icons
                                      [:div.visibility-icon.inline
