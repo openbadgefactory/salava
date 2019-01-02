@@ -119,9 +119,9 @@
                                               :else [badge-grid state])]
                                            )])
                  :component-did-mount (fn [] (if (:init-id @state) (do
-                                                             (.pushState js/history "" "Badge modal" (path-for (str "/badge?id=" (:init-id @state))))
+                                                             ;(.pushState js/history "" "Badge modal" (path-for (str "/badge?id=" (:init-id @state))))
                                                              (mo/open-modal [:badge :info] {:badge-id (:init-id @state)} {:hide (fn []
-                                                                                                                 (.replaceState js/history "" "Badge modal" (path-for "/badge"))
+                                                                                                                 ;(.replaceState js/history "" "Badge modal" (path-for "/badge"))
                                                                                                                  (init-data state))}))))}))
 
 
