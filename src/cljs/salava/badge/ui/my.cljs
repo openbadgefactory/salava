@@ -1,6 +1,6 @@
 (ns salava.badge.ui.my
   (:require
-    [reagent.core :refer [atom]]
+    [reagent.core :refer [atom create-class]]
     [reagent.session :as session]
     [reagent-modals.modals :as m]
     [clojure.set :as set :refer [intersection]]
@@ -15,16 +15,20 @@
     ;[salava.extra.application.ui.helper :refer [application-plugin?]]
     [salava.core.time :refer [unix-time date-from-unix-time]]
     [salava.core.i18n :as i18n :refer [t]]
-    [salava.core.ui.badge-grid :refer [badge-grid-element]]))
+    [salava.core.ui.badge-grid :refer [badge-grid-element]]
+    [clojure.walk :refer [keywordize-keys]]
+    [cemerick.url :as url]
+    [salava.core.ui.modal :as mo]))
 
 
-(defn init-data [state]
-  (ajax/GET
-    (path-for "/obpv1/badge" true)
-    {:handler (fn [data]
-                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                                   :pending () ;(filter #(= "pending" (:status %)) data)
-                                   :initializing false))}))
+(defn init-data
+  ([state]
+   (ajax/GET
+     (path-for "/obpv1/badge" true)
+     {:handler (fn [data]
+                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                        :pending () ;(filter #(= "pending" (:status %)) data)
+                        :initializing false))})))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -80,14 +84,14 @@
     (into [:div#grid {:class "row wrap-grid"}
            (when-not (private?)
              [:div#import-badge {:key   "new-badge"}
-            [:a.add-element-link {:href  (path-for "/badge/import") }
-             [:div {:class "media grid-container"}
-              [:div.media-content
-               [:div.media-body
-                [:div {:id "add-element-icon"}
-                 [:i {:class "fa fa-plus"}]]
-                [:div {:id "add-element-link"}
-                 (t :badge/Import)]]]]]])]
+              [:a.add-element-link {:href  (path-for "/badge/import") }
+               [:div {:class "media grid-container"}
+                [:div.media-content
+                 [:div.media-body
+                  [:div {:id "add-element-icon"}
+                   [:i {:class "fa fa-plus"}]]
+                  [:div {:id "add-element-link"}
+                   (t :badge/Import)]]]]]])]
           (doall
             (for [element-data badges]
               (if (badge-visible? element-data state)
@@ -101,30 +105,40 @@
 
 
 (defn content [state]
-  [:div {:id "my-badges"}
-   [m/modal-window]
-   (if (:initializing @state)
-     [:div.ajax-message
-      [:i {:class "fa fa-cog fa-spin fa-2x "}]
-      [:span (str (t :core/Loading) "...")]]
-     [:div
-      [badge-grid-form state]
-      (cond
-        (not-activated?) (not-activated-banner)
-        ;(empty? (:badges @state)) [no-badges-text]
-        :else [badge-grid state])]
-     )])
+  (create-class {:reagent-render (fn [] [:div {:id "my-badges"}
+                                         [m/modal-window]
+                                         (if (:initializing @state)
+                                           [:div.ajax-message
+                                            [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                            [:span (str (t :core/Loading) "...")]]
+                                           [:div
+                                            [badge-grid-form state]
+                                            (cond
+                                              (not-activated?) (not-activated-banner)
+                                              ;(empty? (:badges @state)) [no-badges-text]
+                                              :else [badge-grid state])]
+                                           )])
+                 :component-did-mount (fn [] (if (:init-id @state) (do
+                                                             (.pushState js/history "" "Badge modal" (path-for (str "/badge?id=" (:init-id @state))))
+                                                             (mo/open-modal [:badge :info] {:badge-id (:init-id @state)} {:hide (fn []
+                                                                                                                 (.replaceState js/history "" "Badge modal" (path-for "/badge"))
+                                                                                                                 (init-data state))}))))}))
 
 
+(defn init-values
+  "take url params" []
+  (if-let [id (-> (keywordize-keys (:query (url/url (-> js/window .-location .-href)))) :id)] id nil))
 
 (defn handler [site-navi]
-  (let [state (atom {:badges []
+  (let [id (init-values)
+        state (atom {:badges []
                      :pending []
                      :visibility "all"
                      :order "mtime"
                      :tags-all true
                      :tags-selected []
-                     :initializing true})]
+                     :initializing true
+                     :init-id id})]
     (init-data state)
     (fn []
-      (layout/default site-navi (content state)))))
+      (layout/default site-navi [content state]))))
