@@ -18,8 +18,7 @@
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
-            [salava.core.ui.tag :as tag]
-            [clojure.string :refer [blank?]]))
+            [salava.core.ui.tag :as tag]))
 
 
 (defn init-badge-connection [state badge-id]
