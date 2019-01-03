@@ -224,7 +224,7 @@
           [:h2.uppercase-header (t :badge/Evidence)]
           [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
 
-      (if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
+      #_(if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
     ))
 
 (defn modal-navi [state]
@@ -265,11 +265,14 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? tab user-logged-in?]} @state]
+  (let [{:keys [id owner? tab user-logged-in?]} @state
+        selected-language (cursor state [:content-language])
+        data (content-setter @selected-language (:content @state))]
     [:div
      (when (and (not owner?) user-logged-in?) [follow-verified-bar @state nil nil])
      [modal-top-bar state]
-     (if tab tab [badge-content state])]))
+     (if tab tab [badge-content state])
+     (if (and owner? (session/get :user)) "" [reporttool1 id  (:name data) "badge"])]))
 
 
 (defn handler [params]
