@@ -6,7 +6,7 @@
     [clojure.set :as set :refer [intersection]]
     [clojure.string :refer [upper-case]]
     [salava.core.ui.ajax-utils :as ajax]
-    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private? js-navigate-to]]
+    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private? js-navigate-to current-path current-route-path]]
     [salava.core.ui.notactivated :refer [not-activated-banner]]
     [salava.core.ui.layout :as layout]
     [salava.core.ui.grid :as g]
@@ -105,7 +105,13 @@
 (defn open-modal [id state]
   (ajax/GET
     (path-for (str "/obpv1/badge/info/" id))
-    {:handler (fn [data] (mo/open-modal [:badge :info] {:badge-id id :data data} {:hide (fn [] (init-data state))}))}))
+    {:handler (fn [data] (mo/open-modal [:badge :info] {:badge-id id :data data} {:hidden (fn []
+                                                                                            (do
+                                                                                              (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
+                                                                                                (.replaceState js/history {} "Badge modal" (path-for "/badge"))
+                                                                                                (navigate-to (current-route-path)))
+                                                                                              (init-data state))
+                                                                                            )}))}))
 
 (defn content [state]
   (create-class {:reagent-render (fn [] [:div {:id "my-badges"}
