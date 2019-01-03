@@ -102,7 +102,10 @@
   [:div
    #_(if (application-plugin?)  [:div (t :badge/Youhavenobadgesyet) (str ". ") (t :social/Getyourfirstbadge) [:a {:href (path-for "/gallery/application") } (str " ") (t :badge/Gohere)] (str ".")] [:div (t :badge/Youhavenobadgesyet) (str ".")]) ] )
 
-
+(defn open-modal [id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/info/" id))
+    {:handler (fn [data] (mo/open-modal [:badge :info] {:badge-id id :data data} {:hide (fn [] (init-data state))}))}))
 
 (defn content [state]
   (create-class {:reagent-render (fn [] [:div {:id "my-badges"}
@@ -118,19 +121,14 @@
                                               ;(empty? (:badges @state)) [no-badges-text]
                                               :else [badge-grid state])]
                                            )])
-                 :component-did-mount (fn [] (if (:init-id @state) (do
-                                                             ;(.pushState js/history "" "Badge modal" (path-for (str "/badge?id=" (:init-id @state))))
-                                                             (mo/open-modal [:badge :info] {:badge-id (:init-id @state)} {:hide (fn []
-                                                                                                                 ;(.replaceState js/history "" "Badge modal" (path-for "/badge"))
-                                                                                                                 (init-data state))}))))}))
+                 :component-did-mount (fn [] (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
 
-(defn init-values
-  "take url params" []
+(defn init-id "take url params" []
   (if-let [id (-> (keywordize-keys (:query (url/url (-> js/window .-location .-href)))) :id)] id nil))
 
 (defn handler [site-navi]
-  (let [id (init-values)
+  (let [id (init-id)
         state (atom {:badges []
                      :pending []
                      :visibility "all"
