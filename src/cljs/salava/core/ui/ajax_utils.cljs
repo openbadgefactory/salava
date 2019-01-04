@@ -1,7 +1,7 @@
 (ns salava.core.ui.ajax-utils
   (:require [ajax.core :as ajax]
             [reagent.session :as session]
-            [salava.core.ui.helper :refer [navigate-to]]
+            [salava.core.ui.helper :refer [navigate-to current-route-path]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
@@ -10,7 +10,8 @@
                     (do
                       (if (and (not (session/get :user)) (= status 401))
                        (do
-                         (session/put! :referrer (.-location.pathname js/window))
+                         ;(session/put! :referrer (.-location.pathname js/window))
+                         (session/put! :referrer (current-route-path))
                         (navigate-to "/user/login"))
                         (additional-error-fn))
                       ))})
