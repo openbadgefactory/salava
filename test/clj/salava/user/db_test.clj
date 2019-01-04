@@ -15,7 +15,6 @@
    :password "123456"
    :language "fi"
    :password_verify "123456"
-   :accept_terms "accepted"
    })
 
 
@@ -83,14 +82,22 @@
 
   (testing "register user and accept terms"
     (testing "register user with correct data"
-      (let [connect connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password_verify registration-data)) (:accept_terms registration-data) ]
+      (let [connect (db/register-user ctx (:email registration-data) (:first_name registration-data) (:last_name registration-data) (:country registration-data) (:language registration-data) (:password registration-data) (:password_verify registration-data)) ]
         (is (=  "success" (:status connect)))
         (is (=  "" (:message connect)))
         ))
 
+    (testing "accept terms"
+      (let [registered-user (db/get-user-by-email ctx (:email registration-data))
+            connect (db/insert-user-terms ctx (:id registered-user) "accepted")]
+        (is (= "success" (:status connect)))
+        (is (= "accepted" (:input connect)))
+        ))
+
     (testing "check if accepted terms"
-      (let [login (db/login-user ctx (:email registration-data) (:password registration-data))]
-        (is (= "accepted" (:terms login)))
+      (let [registered-user (db/get-user-by-email ctx (:email registration-data))
+             connect (db/get-accepted-terms-by-id ctx (:id registered-user))]
+        (is (= "accepted" connect))
         ))
     )
 
@@ -110,8 +117,6 @@
           (is (= nil (:email (first emails))))))
 
       ))
-
-
   )
 
 ;(migrator/run-test-reset)
