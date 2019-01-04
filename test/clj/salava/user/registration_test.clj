@@ -15,7 +15,8 @@
    :country "FI"
    :password "123456"
    :password_verify "123456"
-   :token "registerationToken"})
+   :token "registerationToken"
+   :accept_terms "accepted"})
 
 (t/deftest-ctx main-test [ctx]
 
