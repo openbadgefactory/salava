@@ -370,7 +370,8 @@
          (delete-user-badge-message-views! {:user_id user-id} {:connection tr-cn}) ;remove badge message views
          (delete-user-pending-badges! {:user_id user-id} {:connection tr-cn}) ;delete pending badges
          (delete-user-badge! {:user_id user-id} {:connection tr-cn}) ;remove user badge completely
-         (delete-social-connections-user-following! {:owner_id user-id} {:connection tr-cn} );remove social-connections-user
+         (if (some #(= % :extra/socialuser) (get-in ctx [:config :core :plugins]))
+           (delete-social-connections-user-following! {:owner_id user-id} {:connection tr-cn} )) ;remove social-connections-user
          (delete-user-social-events! {:owner user-id} {:connection tr-cn} );remove users social events
          (delete-all-user-events! {:subject user-id} {:connection tr-cn}) ;remove all user events
          (delete-social-connections-badge! {:user_id user-id} {:connection tr-cn} );remove social-connections-badge
