@@ -31,13 +31,12 @@
         (is (=  "error" (:status connect)))
         (is (=  "user/Enteredaddressisalready" (:message connect)))
         )))
-  (testing "delete user (softdelete) "
+  (testing "delete user"
     (let [registered-user (db/get-user-by-email ctx (:email registration-data))]
       (testing " delete created user"
         (let [connect (db/delete-user ctx (:id registered-user) (:password registration-data))]
           (is (= "success" (:status connect)))
           ))
-
       (testing " check can login with user"
         (let [login (db/login-user ctx (:email registration-data) (:password registration-data))]
           (is (= "error" (:status login)))
@@ -45,8 +44,7 @@
 
       (testing " check can login with user"
         (let [emails (db/email-addresses ctx (:id registered-user))]
-           (is (= "deleted-test.registration@example.com.so.deleted" (:email (first emails))))))
-
+           (is (= nil (:email (first emails))))))
       ))
 
   (testing "register user and  verify email"
