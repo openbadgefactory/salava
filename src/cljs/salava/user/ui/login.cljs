@@ -27,14 +27,11 @@
   (let [blocks (plugin-fun (session/get :plugins) "block" fn-name)]
     [:div (doall (map #(%) blocks))]))
 
-(defn referrer-helper [referrer]
-  (-> (string/split referrer #"/app") last))
-
 (defn follow-up-url []
 
   (let [
          verification-key (verification-token js/window.location.search)
-         manual-referrer (referrer-helper (session/get :referrer))
+         manual-referrer (session/get :referrer)
          referrer js/document.referrer
          site-url (str (session/get :site-url) (base-path))
          path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url "") )]
