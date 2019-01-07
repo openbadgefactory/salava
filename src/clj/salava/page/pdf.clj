@@ -146,7 +146,7 @@
 
                                                              (when (and (= "html" (:type %)) (not (= "-" (:content %))))
                                                                [:paragraph.generic {:keep-together false :align :left}
-                                                                [:chunk.bold {:size 11 :style :bold} (str (t :page/html ul) ": ")]"\n"
+                                                                [:chunk.bold {:size 11 :style :bold} (str (t :page/Html ul) ": ")]"\n"
                                                                 [:spacer 1]
                                                                 (clojure.walk/postwalk
                                                                   (fn [n] (if (:tag n) (transform-node n) n))(strip-html-tags (:content %)))"\n"
