@@ -123,7 +123,7 @@
                                                                                              [:chunk.link (:url a)] [:spacer 0]]) )]))]
                                                                 [:paragraph
                                                                  [:chunk.chunk (str (t :badge/Criteria ul)": ")] [:anchor {:target (:criteria_url %)} [:chunk.link (t :badge/Opencriteriapage ul)]]"\n"
-                                                                 [:paragraph {:style :italic} (:criteria_url %)]
+                                                                 #_[:paragraph {:style :italic} (:criteria_url %)]
 
                                                                  [:spacer 0]
                                                                  (process-markdown (:criteria_content %) $id "Criteria")]]

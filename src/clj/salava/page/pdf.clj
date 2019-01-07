@@ -136,7 +136,7 @@
                                                                    [:paragraph {:keep-together true}
                                                                     [:phrase.bold (str (t :badge/Criteria ul)": ")]
                                                                     [:anchor {:target (:criteria_url %)} [:chunk.link (t :badge/Opencriteriapage ul)]] "\n"
-                                                                    [:paragraph {:style :italic} (:criteria_url %) ]
+                                                                    #_[:paragraph {:style :italic} (:criteria_url %) ]
                                                                     [:spacer 0]
                                                                     (let [content (some->> (pdf-generator-helper ctx user-id (list (:badge_id %))) first :content first) ]
                                                                       (when-not (empty? content)
@@ -184,7 +184,7 @@
                                                                                                                          [:paragraph {:keep-together true}
                                                                                                                           [:phrase.bold (str (t :badge/Criteria ul)": ")]
                                                                                                                           [:anchor {:target (:criteria_url badge)} [:chunk.link (t :badge/Opencriteriapage ul)]] "\n"
-                                                                                                                          [:paragraph {:style :italic} (:criteria_url badge) ]
+                                                                                                                          #_[:paragraph {:style :italic} (:criteria_url badge) ]
                                                                                                                           (process-markdown (:criteria_content content) (:id badge) "Criteria")
                                                                                                                           ]
                                                                                                                          ][:spacer 0]]))))

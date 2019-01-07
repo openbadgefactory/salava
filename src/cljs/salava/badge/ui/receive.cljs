@@ -118,20 +118,19 @@
 
           [:div.text-center
            (if user_exists?
+             [:div [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]]
+
              [:div
-              [:p
-               [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
-              [:p
-               [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]]
-             [:p
-              [:a {:class "btn btn-primary" :href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]
+              [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
+              [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]]
              )
-           [:p
-            [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+
            [:hr]
-           [:p
-            [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]
+           [:div.col-md-12
+            [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+            [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]
            ]]]]]
+
       [:div#badge-info
        [m/modal-window]
        [:div.panel
