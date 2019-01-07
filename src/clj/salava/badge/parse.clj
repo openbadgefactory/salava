@@ -233,7 +233,7 @@
 ;;
 
 (defn- get-endorsement
-  ([item] (get-endorsement item 3))
+  ([item] (get-endorsement item 1))
   ([item depth]
    (let [item-id (:id item)]
      (if (empty? (:endorsement item))
