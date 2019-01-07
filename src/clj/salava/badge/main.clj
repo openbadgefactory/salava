@@ -254,6 +254,14 @@
         (u/event ctx user-id "publish" user-badge-id "badge")
         (u/event ctx user-id "unpublish" user-badge-id "badge")))))
 
+(defn update-recipient-count-and-connect [ctx user-id user_badge_id]
+  (let [badge-id (-> (select-badge-id-by-user-badge-id {:user_badge_id user_badge_id} (into {:result-set-fn first} (u/get-db ctx))) :badge_id)
+        existing-ids (select-user-badge-id-with-badge-id {:user_id user-id :badge_id badge-id} (into {:row-fn :id} (u/get-db ctx)))]
+    (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
+      (so/create-connection-badge-by-badge-id! ctx user-id user_badge_id))
+    (when (empty? (rest existing-ids))
+      (update-badge-recipient-count! {:badge_id badge-id} (u/get-db ctx)))))
+
 
 (defn set-recipient-count! [ctx user-badge-id]
   (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)) )]
@@ -265,7 +273,8 @@
   (if (badge-owner? ctx user-badge-id user-id)
     (update-status! {:id user-badge-id :status status} (u/get-db ctx)))
   (if (= "accepted" status)
-    (do
+    (update-recipient-count-and-connect ctx user-id user-badge-id)
+    #_(do
       (set-recipient-count! ctx user-badge-id)
       (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
         (so/create-connection-badge-by-badge-id! ctx user-id user-badge-id))))

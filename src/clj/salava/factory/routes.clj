@@ -45,7 +45,7 @@
                     (if-let [user-badge-id (f/receive-badge ctx badge-info)]
                       (-> (str (u/get-base-path ctx) (str "/badge/receive/" user-badge-id "?banner=" (f/receive-banner (:banner badge-info))))
                           redirect
-                          (assoc-in [:session :pending] {:user-badge-id user-badge-id}))
+                          (assoc-in [:session :pending] {:user-badge-id user-badge-id :email e}))
                       (not-found "404 Not Found"))))
 
              (DELETE "/receive/:id" req

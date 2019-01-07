@@ -18,28 +18,38 @@
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
-            [salava.core.ui.tag :as tag]
-            #_[salava.metabadge.ui.metabadge :refer [metabadge]]))
+            [salava.core.ui.tag :as tag]))
 
 
 (defn init-badge-connection [state badge-id]
   (ajax/GET
-   (path-for (str "/obpv1/social/connected/" badge-id))
-   {:handler (fn [data]
-               (swap! state assoc :receive-notifications data))}))
-
-(defn init-data [state id tab-no]
-  (ajax/GET
-    (path-for (str "/obpv1/badge/info/" id))
+    (path-for (str "/obpv1/social/connected/" badge-id))
     {:handler (fn [data]
-               (do (reset! state (assoc data :id id
-                                :show-link-or-embed-code nil
-                                :initializing false
-                                :content-language (init-content-language (:content data))
-                                :tab-no tab-no
-                                :permission "success"))
-               (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
-    (fn [] (swap! state assoc :permission "error"))))
+                (swap! state assoc :receive-notifications data))}))
+
+(defn init-data
+  ([state id tab-no]
+   (ajax/GET
+     (path-for (str "/obpv1/badge/info/" id))
+     {:handler (fn [data]
+                 (do (reset! state (assoc data :id id
+                                     :show-link-or-embed-code nil
+                                     :initializing false
+                                     :content-language (init-content-language (:content data))
+                                     :tab-no tab-no
+                                     :permission "success"))
+                   (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
+     (fn [] (swap! state assoc :permission "error"))))
+
+  ([state id tab-no data]
+   (do (reset! state (assoc data :id id
+                       :show-link-or-embed-code nil
+                       :initializing false
+                       :content-language (init-content-language (:content data))
+                       :tab-no tab-no
+                       :permission "success"))
+     (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))
+   ))
 
 (defn show-settings-dialog [badge-id state init-data context]
   (ajax/GET
@@ -48,9 +58,9 @@
                 (swap! state assoc :badge-settings data (assoc data :new-tag ""))
                 (if (= context "settings")
                   (swap! state assoc :tab [se/settings-tab-content data state init-data]
-                                     :tab-no 2)
+                         :tab-no 2)
                   (swap! state assoc :tab [se/share-tab-content data state init-data]
-                                     :tab-no 3)))}))
+                         :tab-no 3)))}))
 
 (defn congratulate [state]
   (ajax/POST
@@ -83,8 +93,8 @@
      [:label.pull-left (t :badge/Createdby) ":"]
      [:div {:class "issuer-links pull-label-left inline"}
       [:a {:href "#"
-             :on-click #(do (.preventDefault %)
-                          (mo/open-modal [:badge :creator] creator-id))} name]]]))
+           :on-click #(do (.preventDefault %)
+                        (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
@@ -99,17 +109,17 @@
 
 (defn follow-verified-bar [{:keys [verified_by_obf issued_by_obf badge_id obf_url]} context show-messages]
   (let [visibility (if show-messages "hidden" "visible")]
-  (if (= context "gallery")
-    [:div.row.flip
-     (if (or verified_by_obf issued_by_obf)
-       (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
-       [:div.col-md-3])
-     [:div.col.md-9.text-right {:style {:padding-right "10px" :margin-right "auto" :visibility visibility}}
-      [follow-badge badge_id]]]
-    [:div.row.flip {:style {:padding "10px"}}
-     [:div.col-md-3]
-     [:div.col.md-9.pull-right {:style {:padding-right "10px" :margin-bottom "10px" :margin-right "auto"}}
-      [follow-badge badge_id]]])))
+    (if (= context "gallery")
+      [:div.row.flip
+       (if (or verified_by_obf issued_by_obf)
+         (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)
+         [:div.col-md-3])
+       [:div.col.md-9.text-right {:style {:padding-right "10px" :margin-right "auto" :visibility visibility}}
+        [follow-badge badge_id]]]
+      [:div.row.flip {:style {:padding "10px"}}
+       [:div.col-md-3]
+       [:div.col.md-9.pull-right {:style {:padding-right "10px" :margin-bottom "10px" :margin-right "auto"}}
+        [follow-badge badge_id]]])))
 
 
 (defn below-image-block [state endorsement_count]
@@ -183,7 +193,7 @@
           (if (and user-logged-in? (not owner?))
             [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
-                ;metabadges
+        ;metabadges
         (if (and owner? metabadge-fn) [:div [metabadge-fn (:assertion_url @state)]])
 
         [:div.description description]
@@ -236,7 +246,7 @@
         [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)  ]]]
       [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
-                                                                                                       :obf_url (:obf_url @state)) state] :tab-no 4)}
+                                                                                                                    :obf_url (:obf_url @state)) state] :tab-no 4)}
         [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)  ]]]
       [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
        [:a.nav-link.delete-button {:href "#" :on-click #(do
@@ -255,20 +265,24 @@
 
 
 (defn content [state]
-  (let [{:keys [owner? tab user-logged-in?]} @state]
+  (let [{:keys [id owner? tab user-logged-in?]} @state
+        selected-language (cursor state [:content-language])
+        data (content-setter @selected-language (:content @state))]
     [:div
      (when (and (not owner?) user-logged-in?) [follow-verified-bar @state nil nil])
      [modal-top-bar state]
-     (if tab tab [badge-content state])]))
+     (if tab tab [badge-content state])
+     (if (and owner? (session/get :user)) "" [reporttool1 id  (:name data) "badge"])]))
 
 
 (defn handler [params]
 
   (let [id (:badge-id params)
+        data (:data params)
         state (atom {:initializing true
                      :permission "initial"})
         user (session/get :user)]
-    (init-data state id nil)
+    (if data (init-data state id nil data) (init-data state id nil))
 
     (fn []
       (cond
