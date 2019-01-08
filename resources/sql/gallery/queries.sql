@@ -188,7 +188,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
-GROUP BY ic.name, bc.name
+--GROUP BY ic.name, bc.name
+GROUP BY badge.id
 ORDER BY recipients DESC
 LIMIT :limit OFFSET :offset
 
@@ -205,7 +206,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
-GROUP BY ic.name, bc.name
+--GROUP BY ic.name, bc.name
+GROUP BY badge.id
 ORDER BY ic.name
 LIMIT :limit OFFSET :offset
 
@@ -222,7 +224,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
-GROUP BY ic.name, bc.name
+--GROUP BY ic.name, bc.name
+GROUP BY badge.id
 ORDER BY bc.name
 LIMIT :limit OFFSET :offset
 
