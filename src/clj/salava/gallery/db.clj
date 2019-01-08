@@ -80,16 +80,12 @@
       badges-left
       0)))
 
-(defn badge-sorter [sorter badges]
-  (prn sorter)
-  (prn badges)
-  (if (or (= sorter :recipients) (= sorter :ctime))
-    (sort-by sorter > badges)
-    (sort-by sorter badges)
-    #_(sort #(compare (sorter %1) (sorter %2)) badges)))
 
-(defn process-badges [sorter badges]
-  (let [p (->> badges (group-by (juxt :issuer_content_name :name)))]
+(defn add-index [coll]
+  (mapv #(assoc % :index (.indexOf coll %)) coll))
+
+(defn process-badges [badges]
+  (let [indexed-badge-maps (->> (add-index badges) (group-by (juxt :issuer_content_name :name)))]
     (->> (reduce-kv
            (fn [r k v]
              (conj r (if (empty? (rest v))
@@ -98,19 +94,19 @@
                              otherids (->> (map :badge_id v)
                                            (remove #(= (:badge_id badge) %))
                                            vec)]
-                         (assoc badge :other_ids otherids))))) [] p)
-         (badge-sorter sorter)
-         #_(if (= sorter (or :ctime :recipients)) (sort-by sorter >) (sort-by sorter)))))
+                         (assoc badge :other_ids otherids))))) [] indexed-badge-maps)
+         (sort-by :index <)
+         (map #(dissoc % :index)))))
 
 (defn select-badges [ctx badge_ids order page_count]
   (let [limit 20
         offset (* limit page_count)]
     (if (not-empty badge_ids)
       (case order
-        "recipients"          (process-badges :recipients (select-gallery-badges-order-by-recipients {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))
-        "issuer_content_name" (process-badges :issuer_content_name (select-gallery-badges-order-by-ic-name {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))
-        "name"                (process-badges :name (select-gallery-badges-order-by-name {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))
-        (process-badges :ctime (select-gallery-badges-order-by-ctime {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))))))
+        "recipients"          (process-badges (select-gallery-badges-order-by-recipients {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))
+        "issuer_content_name" (process-badges (select-gallery-badges-order-by-ic-name {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))
+        "name"                (process-badges (select-gallery-badges-order-by-name {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))
+        (process-badges (select-gallery-badges-order-by-ctime {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx)))))))
 
 
 (defn db-connect [ctx query params]
