@@ -141,7 +141,7 @@
            )) badges))
 
 
-(defn aggregate-badge-versions [ctx badges]
+(defn process-badge-versions [ctx badges]
   (map (fn [b]
          (let [other-badge-ids (->> (get-badge-ids ctx "all" nil (:name b) (:issuer_content_name b) nil nil nil) (remove #(= (:badge_id b) %)))]
            (if (empty? other-badge-ids) b (assoc b :otherids other-badge-ids)))) badges))
@@ -150,7 +150,7 @@
   "Get badge-ids"
   [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
   (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)
-        badges (some->> (select-badges ctx badge-ids order page_count) (aggregate-badge-versions ctx) (badge-checker) (remove nil?)) #_(remove nil? (badge-checker (select-badges ctx badge-ids order page_count)))]
+        badges (some->> (select-badges ctx badge-ids order page_count) (process-badge-versions ctx) (badge-checker) (remove nil?)) #_(remove nil? (badge-checker (select-badges ctx badge-ids order page_count)))]
     {:badges badges
      :tags (select-tags ctx badge-ids)
      :badge_count (badge-count (if-not (= (count badge-ids) (count badges)) badge-ids badges) page_count) }))
