@@ -48,7 +48,7 @@
 
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req otherids]} element-data
         expired? (bh/badge-expired? expires_on)
         obf_url (session/get :factory-url)
         metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge_icon"))]
@@ -114,42 +114,8 @@
                                     [:p issuer_content_name]]]
                                   ]])
 
-       #_(= "export" badge-type) #_[:div {:key id}
-                                    [:div.media-content
-                                     [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                      [:div.visibility-icon
-                                       (case visibility
-                                         "private" [:i {:class "fa fa-lock"}]
-                                         "internal" [:i {:class "fa fa-group"}]
-                                         "public" [:i {:class "fa fa-globe"}]
-                                         nil)]
-                                      (if image_file
-                                        [:div.media-left
-                                         [:img {:src (str "/" image_file) :alt name}]])
-                                      [:div.media-body
-                                       [:div.media-heading name]
-                                       [:div.media-issuer issuer_content_name]]]]
-                                    [:div.media-bottom
-                                     [:div.row
-                                      [:div.col-xs-9
-                                       (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
-                                         [:div.checkbox
-                                          [:label {:for (str "checkbox-" id)}
-                                           [:input {:type "checkbox"
-                                                    :id (str "checkbox-" id)
-                                                    :on-change (fn []
-                                                                 (if checked?
-                                                                   (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
-                                                                   (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
-                                                    :checked checked?}]
-
-                                           (t :badge/Exporttobackpack)]])]
-                                      [:div {:class "col-xs-3 text-right"}
-                                       [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
-                                        [:i {:class "fa fa-download"}]]]]]]
-
        (= "gallery" badge-type) [:div
-                                 [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
+                                 [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :otherids otherids})
                                       :title name}
                                   [:div.media-content
                                    (if image_file

@@ -28,7 +28,7 @@
 
 
 (defn content [state show-messages]
-  (let [{:keys [badge public_users private_user_count reload-fn]} @state
+  (let [{:keys [badge public_users private_user_count reload-fn otherids]} @state
         {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
@@ -45,8 +45,9 @@
            [:div (if (= rating_count 1)
                    (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
+        (prn average_rating)
         [:div
-         [gallery-modal-message-info-link show-messages badge_id]]
+         [gallery-modal-message-info-link show-messages badge_id otherids]]
 
         (when-not @show-messages (bm/badge-endorsement-modal-link badge_id endorsement_count))]
 
@@ -54,7 +55,7 @@
         (if @show-messages
           [:div.rowmessage
            [:h1.uppercase-header (str name " - " (t :social/Messages))]
-           [badge-message-handler badge_id reload-fn]]
+           [badge-message-handler badge_id reload-fn otherids]]
 
           [:div.rowcontent
            [:h1.uppercase-header name]
@@ -120,19 +121,22 @@
                 (reset! state (assoc data
                                 :permission "success"
                                 :reload-fn (:reload-fn @state)
+                                :otherids (:otherids @state)
                                 :content-language (init-content-language  (get-in data [:badge :content])))))}
     (fn [] (swap! state assoc :permission "error")))
   )
 
 (defn handler [params]
   (let [badge-id (:badge-id params)
+        other-ids (:otherids params)
         state (atom {:permission "initial"
                      :badge {:badge_id badge-id}
                      :public_users []
                      :private_user_count 0
                      :badge-small-view false
                      :pages-small-view true
-                     :reload-fn (or (:reload-fn params) nil)})
+                     :reload-fn (or (:reload-fn params) nil)
+                     :otherids (or other-ids nil)})
         user (session/get :user)
         show-messages (atom (or (:show-messages params) false))]
     (init-data badge-id state)
