@@ -45,7 +45,6 @@
            [:div (if (= rating_count 1)
                    (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
-        (prn average_rating)
         [:div
          [gallery-modal-message-info-link show-messages badge_id otherids]]
 
