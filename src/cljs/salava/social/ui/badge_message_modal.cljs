@@ -53,8 +53,8 @@
 (defn badge-message-content-modal [modal-data init-data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data))
                  :component-will-unmount (fn [] (do (close-modal!)
-                                                    (if (and init-data state)
-                                                      (init-data state))))}))
+                                                  (if (and init-data state)
+                                                    (init-data state))))}))
 
 
 (defn open-modal
@@ -63,16 +63,23 @@
   ([badge-id init-data state]
 
    (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
-    {:handler (fn [data]
-                (do
-                  (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
+     (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
+     {:handler (fn [data]
+                 (do
+                   (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
 
-(defn get-messages [badge-id data-atom]
-  (ajax/GET
-   (path-for (str "/obpv1/social/messages_count/" badge-id))
-   {:handler (fn [data]
-               (reset! data-atom data))}))
+(defn get-messages
+  ([badge-id data-atom]
+   (ajax/GET
+     (path-for (str "/obpv1/social/messages_count/" badge-id))
+     {:handler (fn [data]
+                 (reset! data-atom data))}))
+  ([badge-id data-atom other-ids]
+   (ajax/GET
+     (path-for (str "/obpv1/social/messages_count/" badge-id))
+     { :params {:other_ids other-ids}
+       :handler (fn [data]
+                  (reset! data-atom data))})))
 
 
 (defn badge-message-link [message-count badge-id]
@@ -100,11 +107,11 @@
             "")]]))))
 
 
-(defn gallery-modal-message-info-link [show-messages badge-id]
+(defn gallery-modal-message-info-link [show-messages badge-id other-ids]
   (if (social-plugin?)
     (let [message-count (atom {:new-messages 0
                                :all-messages 0})]
-      (get-messages badge-id message-count)
+      (if (empty? other-ids) (get-messages badge-id message-count) (get-messages badge-id message-count other-ids))
       (fn []
         (let [all-messages (str (t :social/Messages)  " (" (:all-messages @message-count) ") ")
               new-messages (if (pos? (:new-messages @message-count))
