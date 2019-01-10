@@ -49,7 +49,7 @@ GROUP BY badge.id
 --get badge by id
 SELECT
 badge.id as badge_id, badge.remote_url, badge.issuer_verified,
-badge.default_language_code,
+badge.default_language_code, badge.last_received,
 bbc.badge_content_id,
 bc.language_code,
 bc.name, bc.description,
@@ -159,6 +159,16 @@ SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibilit
        JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
        WHERE bc.name = :name AND ic.name = :issuer_content_name AND bc.description = :description AND status = 'accepted' AND ub.deleted = 0
 
+-- name: select-badge-recipients-fix-2
+SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibility FROM user AS u
+       JOIN user_badge AS ub ON ub.user_id = u.id
+       JOIN badge AS badge ON (badge.id = ub.badge_id)
+       JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+       JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+       JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+       JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+       WHERE bc.name = :name AND ic.name = :issuer_content_name AND status = 'accepted' AND ub.deleted = 0
+
 -- name: select-common-badge-counts
 SELECT ub.user_id,
        COUNT(DISTINCT ub.badge_id) AS c
@@ -188,8 +198,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
---GROUP BY ic.name, bc.name
-GROUP BY badge.id
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
 ORDER BY recipients DESC
 LIMIT :limit OFFSET :offset
 
@@ -206,8 +216,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
---GROUP BY ic.name, bc.name
-GROUP BY badge.id
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
 ORDER BY ic.name
 LIMIT :limit OFFSET :offset
 
@@ -224,8 +234,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
---GROUP BY ic.name, bc.name
-GROUP BY badge.id
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
 ORDER BY bc.name
 LIMIT :limit OFFSET :offset
 
@@ -242,7 +252,8 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
-GROUP BY badge.id
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
 ORDER BY ctime DESC
 LIMIT :limit OFFSET :offset
 

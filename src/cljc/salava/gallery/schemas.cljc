@@ -28,7 +28,7 @@
                             :issuer_content_name s/Str
                             :name                s/Str
                             :recipients          s/Int
-                            (s/optional-key :other_ids) [s/Str]})
+                            (s/optional-key :otherids) [s/Str]})
 
 
 (s/defschema Badgesgallery {:badge_count s/Int
