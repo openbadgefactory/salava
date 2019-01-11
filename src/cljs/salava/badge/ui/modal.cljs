@@ -34,6 +34,7 @@
      {:handler (fn [data]
                  (do (reset! state (assoc data :id id
                                      :show-link-or-embed-code nil
+                                     ::show_evidence_options false
                                      :initializing false
                                      :content-language (init-content-language (:content data))
                                      :tab-no tab-no

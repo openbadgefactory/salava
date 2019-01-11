@@ -11,7 +11,9 @@
             [reagent.session :as session]
             [clojure.string :refer [upper-case replace]]
             [salava.core.ui.rate-it :as r]
-            [salava.badge.ui.my :as my]))
+            [salava.badge.ui.my :as my]
+            [salava.core.ui.modal :as mo]
+            [salava.badge.ui.evidence :as evidence]))
 
 
 (defn set-visibility [visibility state]
@@ -159,25 +161,61 @@
      [:div {:class "col-md-9 settings-content"}
       (if (and (not expired?) (not revoked))
         [visibility-form state init-data])
-        [:div
-         [:hr]
-         [s/share-buttons-badge
-          (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-          name
-          (= "public" @visibility)
-          true
-          (cursor state [:show-link-or-embed])
-          image_file
-          {:name     name
-           :authory  issuer_content_name
-           :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
-           :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-           :datefrom issued_on
-           :dateto   expires_on}]]
+      [:div
+       [:hr]
+       [s/share-buttons-badge
+        (str (session/get :site-url) (path-for (str "/badge/info/" id)))
+        name
+        (= "public" @visibility)
+        true
+        (cursor state [:show-link-or-embed])
+        image_file
+        {:name     name
+         :authory  issuer_content_name
+         :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
+         :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
+         :datefrom issued_on
+         :dateto   expires_on}]]
       ]]))
 
-(defn settings-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} state init-data]
-  (let [expired? (bh/badge-expired? expires_on)
+(defn evidence-modal [state]
+    [:div
+     "test"
+
+     ]
+    )
+
+
+(defn evidence-block [evidence-url]
+  [:div.evidence-block evidence-url])
+
+(defn evidences [evidences state]
+  (let [show-evidence-options (cursor state [:show_evidence_options])
+        evidence-url-input (cursor state [:show_url_input])]
+    [:div
+     [:label {:class "col-md-12 sub-heading" :for "evidence"}
+      #_(t :badge/Evidenceurl) "Evidence"]
+     [:div.form-group
+      [:i.fa.fa-plus-square] [:a {:href "#" :on-click #_(mo/open-modal [:badge :evidence] {:state state}) #(do (.preventDefault %)(swap! state assoc :tab [evidence/evidence-form state] :tab-no 6))} "Add new evidence"]
+
+      (when @show-evidence-options
+        [:div.resource-options.inline-block
+         [:div [:i.fa.fa-file] "file"]
+         [:a {:href "#" :on-click #(swap! state assoc :show_url_input true)}[:div [:i.fa.fa-link] "url"]]])
+
+      (when @evidence-url-input
+        [:input {:type      "textbox"
+                 ;:on-change #(toggle-evidence state)
+                 ;:checked    (get-in @state [:badge-settings :show_evidence])
+                 }]
+        )
+
+      ]
+     [evidence-block evidences]]))
+
+(defn settings-tab-content [data state init-data]
+  (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
+         expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         notifications-atom (cursor state [:receive-notifications])
         revoked (pos? revoked)
@@ -215,7 +253,7 @@
                                                                               :id        "receive-notifications"
                                                                               :on-change #(toggle-receive-notifications badge_id notifications-atom)
                                                                               :checked   @notifications-atom}]
-                                                                    (str (t :social/Followbadge))]]
+                                                                     (str (t :social/Followbadge))]]
                                                     [:div.col-md-12 (t :social/Badgenotificationsinfo)]]]
 
                                                   [:div
@@ -247,7 +285,9 @@
                                                              [:input {:type      "checkbox"
                                                                       :on-change #(toggle-evidence state)
                                                                       :checked    (get-in @state [:badge-settings :show_evidence])}]
-                                                             (t :badge/Showevidence)]]])]]
+                                                             (t :badge/Showevidence)]]])
+                                                   #_[evidences (get-in @state [:badge-settings :evidence_url]) state]
+                                                   [evidence/evidence-block data state init-data]]]
                                             [:div.modal-footer
                                              [:button {:type         "button"
                                                        :class        "btn btn-primary"

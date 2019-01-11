@@ -194,6 +194,8 @@ button {
     font-weight: 600;
     text-transform: uppercase;
   }
+
+
 }
 /* BADGE STATS */
 #badge-stats {
@@ -419,10 +421,18 @@ button {
     opacity: 0;
     position: absolute;
   }
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle {
+
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file {
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
+  }
+
+  .fa-plus-square{
+    font-size: 20px;
+    margin-right: 10px;
+    color: $icon-color;
+
   }
 
   .fa-trash{
@@ -468,6 +478,11 @@ button {
   }
   .view-tab {
     padding-bottom: 20px;
+  }
+    .evidence-block {
+    width: auto;
+    height: auto;
+    border: 1px solid #f2f2f2;
   }
 }
 #share #share-buttons {
