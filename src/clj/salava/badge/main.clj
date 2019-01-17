@@ -4,7 +4,7 @@
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
-            [clojure.string :refer [blank? split upper-case lower-case capitalize includes?]]
+            [clojure.string :refer [blank? split upper-case lower-case capitalize includes? join]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time date-from-unix-time]]
@@ -146,6 +146,9 @@
     (catch Object _
       (log/error "parse-assertion-json: " _))))
 
+(defn badge-evidences "get user-badge evidences" [ctx badge-id]
+  (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx)))
+
 
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
@@ -173,6 +176,7 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
+        evidences (badge-evidences ctx badge-id)
 
     ]
     (assoc badge :congratulated? user-congratulation?
@@ -184,7 +188,10 @@
                  :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
                  :assertion (parse-assertion-json (:assertion_json badge))
 
-                 :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))))
+                 :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
+              ;;
+                 :evidences evidences
+      )))
 
 
 (defn get-endorsements [ctx badge-id]
@@ -307,13 +314,25 @@
     (catch Object _
       {:status "error" :message _})))
 
-(defn badge-settings
+#_(defn badge-settings
   "Get badge settings"
   [ctx user-badge-id user-id]
   (if (badge-owner? ctx user-badge-id user-id)
     (let [badge (update (select-badge-settings {:id user-badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
           tags (select-taglist {:user_badge_ids [user-badge-id]} (u/get-db ctx))]
       (assoc-badge-tags badge tags))))
+
+(defn badge-settings "Get badge settings" [ctx user-badge-id user-id]
+  (if (badge-owner? ctx user-badge-id user-id)
+    (let [badge (update (select-badge-settings {:id user-badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
+          tags (select-taglist {:user_badge_ids [user-badge-id]} (u/get-db ctx))
+          evidences (badge-evidences ctx user-badge-id)]
+      (-> (assoc-badge-tags badge tags)
+          (assoc :evidences evidences)
+          )
+      )
+    )
+  )
 
 (defn send-badge-info-to-obf [ctx user-badge-id user-id]
   (let [obf-url (get-in ctx [:config :core :obf :url])
@@ -333,6 +352,38 @@
     (if id
       (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
       (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
+
+
+(defn save-badge-evidence [ctx user-id user-badge-id evidence-id name description audience genre url narrative]
+    (try+
+      (if (badge-owner? ctx user-badge-id user-id)
+        (let [data {:user_badge_id user-badge-id :url url :narrative narrative :name name :description description :genre genre :audience audience}]
+          (if evidence-id
+            (update-user-badge-evidence2! (assoc data :id evidence-id) #_{:id evidence-id :user_badge_id user-badge-id :url url :narrative narrative :name name :description description :genre genre :audience audience} (u/get-db ctx))
+            (insert-evidence<! data #_{:user_badge_id user-badge-id :url url :narrative narrative :name name :description description :genre genre :audience audience} (u/get-db ctx))
+            )
+          {:status "success"})
+        (throw+ {:status "error"})
+        )
+      (catch Object _
+        (log/error _)
+        {:status "error"})
+      ))
+
+(defn delete-evidence! [ctx evidence-id user-badge-id user-id]
+  (try+
+    (if (badge-owner? ctx user-badge-id user-id)
+      (do
+        (delete-user-badge-evidence! {:id evidence-id :user_badge_id user-badge-id} (u/get-db ctx))
+        {:status "success"})
+
+      {:status "error"})
+
+    (catch Object _
+    (log/error _)
+    {:status "error"}))
+  )
+
 
 ;TODO rework evidence
 (defn save-badge-settings!
