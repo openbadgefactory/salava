@@ -268,4 +268,29 @@
                   :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (b/badge-stats ctx (:id current-user)))))))
+                  (ok (b/badge-stats ctx (:id current-user))))
+
+             (POST "/evidence/:user-badge-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [user-badge-id :- Long]
+                   :body-params [id :- (s/maybe s/Int)
+                                 name :- (s/maybe s/Str)
+                                 description :- (s/maybe s/Str)
+                                 audience :- (s/maybe s/Str)
+                                 genre :- (s/maybe s/Str)
+                                 url :- s/Str
+                                 narrative :- (s/maybe s/Str)]
+                   :summary "Save badge evidence"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id id name description audience genre url narrative)))
+
+             (DELETE "/evidence/:evidenceid" [user_badge_id]
+                     :return {:status (s/enum "success" "error")}
+                     :path-params [evidenceid :- Long]
+                     :summary "Delete evidence"
+                     :auth-rules access/authenticated
+                     :current-user current-user
+                     ;(prn user_badge_id evidenceid)
+                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))
+                     ))))
