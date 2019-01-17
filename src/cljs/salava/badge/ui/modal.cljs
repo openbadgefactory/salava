@@ -38,7 +38,9 @@
                                      :initializing false
                                      :content-language (init-content-language (:content data))
                                      :tab-no tab-no
-                                     :permission "success"))
+                                     :permission "success"
+                                     :evidence {:url nil :show_url false}
+                                     ))
                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
 
@@ -158,7 +160,7 @@
      ]))
 
 (defn badge-content [state]
-  (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements]} @state
+  (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements evidences]} @state
         expired? (bh/badge-expired? expires_on)
         revoked (pos? revoked)
         show-recipient-name-atom (cursor state [:show_recipient_name])
@@ -219,13 +221,31 @@
         [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-      (if (and (pos? show_evidence) evidence_url)
+      #_(if (and (pos? show_evidence) evidence_url)
+          [:div.row
+           [:div.col-md-12
+            [:h2.uppercase-header (t :badge/Evidence)]
+            [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
+
+      (if (and (pos? show_evidence) (not (empty? evidences)))
         [:div.row
          [:div.col-md-12
-          [:h2.uppercase-header (t :badge/Evidence)]
-          [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
-
-      #_(if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
+          [:h2.uppercase-header (if (= (count evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidences) ": " (count evidences)) ) ]
+          (reduce (fn [r e]
+                    (let [{:keys [name narrative description genre audience url]} e]
+                      (conj r [:div {:style {:margin-bottom "10px"}}
+                               (if name [:div.inline [:label (t :badge/Name) ": "] name])
+                               (if narrative [:div [:label (t :badge/Narrative)] narrative])
+                               (if description [:div [:label (t :admin/Description)]  description])
+                               (if genre [:div [:label (t :badge/Genre) ": "] genre])
+                               (if audience [:div [:label (t :badge/Audience) ": "] audience])
+                               [:div [:a {:target "_blank" :href url} (t :badge/Openevidencepage) "..."]]
+                               ]
+                            )
+                      )) [:div] evidences)
+          ]
+         ]
+        )]]
     ))
 
 (defn modal-navi [state]
