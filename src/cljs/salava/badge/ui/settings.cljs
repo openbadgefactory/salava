@@ -178,41 +178,6 @@
          :dateto   expires_on}]]
       ]]))
 
-(defn evidence-modal [state]
-    [:div
-     "test"
-
-     ]
-    )
-
-
-(defn evidence-block [evidence-url]
-  [:div.evidence-block evidence-url])
-
-(defn evidences [evidences state]
-  (let [show-evidence-options (cursor state [:show_evidence_options])
-        evidence-url-input (cursor state [:show_url_input])]
-    [:div
-     [:label {:class "col-md-12 sub-heading" :for "evidence"}
-      #_(t :badge/Evidenceurl) "Evidence"]
-     [:div.form-group
-      [:i.fa.fa-plus-square] [:a {:href "#" :on-click #_(mo/open-modal [:badge :evidence] {:state state}) #(do (.preventDefault %)(swap! state assoc :tab [evidence/evidence-form state] :tab-no 6))} "Add new evidence"]
-
-      (when @show-evidence-options
-        [:div.resource-options.inline-block
-         [:div [:i.fa.fa-file] "file"]
-         [:a {:href "#" :on-click #(swap! state assoc :show_url_input true)}[:div [:i.fa.fa-link] "url"]]])
-
-      (when @evidence-url-input
-        [:input {:type      "textbox"
-                 ;:on-change #(toggle-evidence state)
-                 ;:checked    (get-in @state [:badge-settings :show_evidence])
-                 }]
-        )
-
-      ]
-     [evidence-block evidences]]))
-
 (defn settings-tab-content [data state init-data]
   (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
          expired? (bh/badge-expired? expires_on)
@@ -266,10 +231,10 @@
                                                    [:div {:class "form-group"}
                                                     [:div {:class "col-md-12"}
                                                      [tag/new-tag-input (cursor state [:badge-settings :tags]) (cursor state [:badge-settings :new-tag])]]]
-                                                   [:div {:class "row"}
+                                                   #_[:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "evidenceurl"}
                                                      (t :badge/Evidenceurl)]]
-                                                   [:div {:class "form-group"}
+                                                   #_[:div {:class "form-group"}
                                                     [:div {:class "col-md-12"}
                                                      [:input {:class       "form-control"
                                                               :type        "text"
@@ -286,7 +251,6 @@
                                                                       :on-change #(toggle-evidence state)
                                                                       :checked    (get-in @state [:badge-settings :show_evidence])}]
                                                              (t :badge/Showevidence)]]])
-                                                   #_[evidences (get-in @state [:badge-settings :evidence_url]) state]
                                                    [evidence/evidence-block data state init-data]]]
                                             [:div.modal-footer
                                              [:button {:type         "button"
