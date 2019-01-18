@@ -25,6 +25,16 @@ SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evide
        LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
        WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
 
+--name: select-badge-updates2
+SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ub.rating FROM user_badge AS ub
+       WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
+
+--name: select-user-badge-evidence
+SELECT ube.url AS id, ube.narrative, ube.description, ube.name, ube.genre, ube.audience
+FROM user_badge_evidence AS ube
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+WHERE ube.user_badge_id = :id
+
 -- name: select-badge-by-assertion
 SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0 AND status != 'declined'
 

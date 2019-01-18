@@ -59,11 +59,19 @@
         (log/error "save-pending-assertions: failed to save badge")
         (log/error (.toString ex))))))
 
-(defn get-badge-updates
+#_(defn get-badge-updates
   ""
   [ctx user-id badge-id]
   (if-let [badge-updates (select-badge-updates {:user_id user-id :id badge-id} (u/get-db-1 ctx))]
     {"user" {user-id {"badge" {badge-id badge-updates}}}}))
+
+(defn get-badge-updates
+  ""
+  [ctx user-id badge-id]
+  (let [badge-updates (select-badge-updates2 {:user_id user-id :id badge-id} (u/get-db-1 ctx))
+        evidence (select-user-badge-evidence {:id badge-id} (u/get-db ctx))
+        updates (if-not (empty? evidence) (assoc badge-updates :evidence evidence) badge-updates)]
+    {"user" {user-id {"badge" {badge-id updates}}}}))
 
 
 (defn- issued-by-factory [ctx badge]
