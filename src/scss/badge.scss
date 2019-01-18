@@ -110,16 +110,30 @@ button {
     }
   }
   .panel {
-  position: relative;
-  .panel-heading {
-       word-wrap:break-word;
-  }
+    position: relative;
+    .evidence-panel-body {
+      margin-bottom: 20px;
+    }
 
-  .panel-title {
-    font-size: 12px;
-  }
+    .description {
+      font-weight:normal;
+      word-wrap: break-word;
+      margin: unset;
+      min-width: 95%;
+    }
+    .panel-heading {
+      word-wrap:break-word;
+    }
 
-  .show-more {
+    .panel-title {
+      font-size: 12px;
+      .url {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+    }
+
+    .show-more {
       position:absolute;
       bottom: 0px;
       right:14px;
@@ -127,7 +141,6 @@ button {
   }
 
   .evidence-list, #accordion .evidence-list {
-    //border-top: 1px dashed #ddd;
     margin-bottom: 15px;
     width: 100%;
 
@@ -191,17 +204,16 @@ button {
   .radio {
     padding: 10px;
     border-bottom: 1px dashed #ddd;
-    //margin-top: 15px;
-    //margin: 5px;
     &:first-child {
       border-top: 1px dashed #ddd;
     }
-    .resource-upload {
-      span {
-      cursor: pointer;
-      }
-    }
 
+
+  }
+  .resource-upload {
+    span {
+      cursor: pointer;
+    }
   }
 
   .resource-container {
@@ -210,8 +222,13 @@ button {
   }
 
   .selected-url {
-    overflow: hidden;
-    text-overflow: ellipsis;
+    float:left;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    a {
+      word-break: break-word;
+    }
+
 
   }
 }
