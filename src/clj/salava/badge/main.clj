@@ -354,14 +354,16 @@
       (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
 
 
-(defn save-badge-evidence [ctx user-id user-badge-id evidence-id name description audience genre url narrative]
+(defn save-badge-evidence [ctx user-id user-badge-id evidence-id name description url]
     (try+
       (if (badge-owner? ctx user-badge-id user-id)
-        (let [data {:user_badge_id user-badge-id :url url :narrative narrative :name name :description description :genre genre :audience audience}]
+        (let [data {:user_badge_id user-badge-id :url url :name name :description description}]
           (if evidence-id
-            (update-user-badge-evidence2! (assoc data :id evidence-id) #_{:id evidence-id :user_badge_id user-badge-id :url url :narrative narrative :name name :description description :genre genre :audience audience} (u/get-db ctx))
-            (insert-evidence<! data #_{:user_badge_id user-badge-id :url url :narrative narrative :name name :description description :genre genre :audience audience} (u/get-db ctx))
-            )
+            (update-user-badge-evidence2! (assoc data :id evidence-id) (u/get-db ctx))
+            (insert-evidence<! data (u/get-db ctx)))
+
+          ;;send badge info to factory
+          (send-badge-info-to-obf ctx user-badge-id user-id)
           {:status "success"})
         (throw+ {:status "error"})
         )

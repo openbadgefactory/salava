@@ -276,14 +276,11 @@
                    :body-params [id :- (s/maybe s/Int)
                                  name :- (s/maybe s/Str)
                                  description :- (s/maybe s/Str)
-                                 audience :- (s/maybe s/Str)
-                                 genre :- (s/maybe s/Str)
-                                 url :- s/Str
-                                 narrative :- (s/maybe s/Str)]
+                                 url :- s/Str]
                    :summary "Save badge evidence"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id id name description audience genre url narrative)))
+                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id id name description url)))
 
              (DELETE "/evidence/:evidenceid" [user_badge_id]
                      :return {:status (s/enum "success" "error")}

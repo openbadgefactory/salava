@@ -660,18 +660,18 @@ SELECT assertion_jws FROM user_badge AS ub WHERE ub.id = :id;
 SELECT id FROM user_badge AS ub WHERE ub.badge_id = :badge_id AND  ub.user_id = :user_id AND ub.status = 'accepted';
 
 --name: select-user-badge-evidence
-SELECT ube.id, ube.url, ube.narrative, ube.description, ube.name, ube.genre, ube.audience, ube.ctime, ube.mtime
+SELECT ube.id, ube.url, ube.description, ube.name, ube.ctime, ube.mtime
 FROM user_badge_evidence AS ube
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ube.user_badge_id = :user_badge_id
 
 --name: insert-evidence<!
-INSERT INTO user_badge_evidence (user_badge_id, url, narrative, name, description, genre, audience, ctime, mtime )
-VALUES (:user_badge_id, :url, :narrative, :name, :description, :genre, :audience, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+INSERT INTO user_badge_evidence (user_badge_id, url, name, description, ctime, mtime )
+VALUES (:user_badge_id, :url, :name, :description,  UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: update-user-badge-evidence2!
-UPDATE user_badge_evidence SET  url = :url, narrative = :narrative, name = :name,
-description = :description, genre = :genre, audience = :audience, mtime = UNIX_TIMESTAMP()
+UPDATE user_badge_evidence SET url = :url, name = :name,
+description = :description, mtime = UNIX_TIMESTAMP()
 WHERE id = :id AND user_badge_id = :user_badge_id
 
 --name: delete-user-badge-evidence!
