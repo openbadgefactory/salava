@@ -4,7 +4,7 @@
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
-            [clojure.string :refer [blank? split upper-case lower-case capitalize includes? join]]
+            [clojure.string :refer [blank? split upper-case lower-case capitalize includes? join starts-with?]]
             [slingshot.slingshot :refer :all]
             [clojure.data.json :as json]
             [salava.core.time :refer [unix-time date-from-unix-time]]
@@ -16,7 +16,8 @@
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]
-            [salava.core.i18n :refer [t]]))
+            [salava.core.i18n :refer [t]]
+            [pantomime.mime :refer [mime-type-of]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -146,8 +147,17 @@
     (catch Object _
       (log/error "parse-assertion-json: " _))))
 
+(defn evidence-type [ctx url]
+  (let [site-url (u/get-site-url ctx)]
+    (cond
+      (and (starts-with? url site-url) (includes? url "/page/view/")) {:type "page"}
+      (and (starts-with? url site-url) (includes? url "/file/")) {:type "file" :mime_type (mime-type-of (java.net.URL. url))}
+      :else {:type "url"})))
+
 (defn badge-evidences "get user-badge evidences" [ctx badge-id]
-  (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx)))
+  (->> (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))
+       (reduce (fn [r evidence]
+                 (conj r (assoc evidence :evidence_type (evidence-type ctx (:url evidence)))))[] )))
 
 
 (defn fetch-badge [ctx badge-id]
