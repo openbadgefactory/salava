@@ -62,7 +62,7 @@
                 (prn data))}))
 
 (defn save-badge-evidence [data state init-data]
-  (let [{:keys [id name description url visibility resource_id]} (:evidence @state)
+  (let [{:keys [id name description url resource_visibility resource_id resource_type]} (:evidence @state)
         badge-id (:id data)
         init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
     (swap! state assoc :evidence {:message nil})
@@ -75,13 +75,15 @@
                                       :description description
                                       :url url})
         (do
-          (if (= "private" visibility) (set-page-visibility-to-private resource_id))
+          (if (= "private" resource_visibility) (set-page-visibility-to-private resource_id))
           (ajax/POST
             (path-for (str "/obpv1/badge/evidence/" badge-id))
             {:params {:id id
                       :name (if name (trim name))
                       :description description
-                      :url (if url (trim url))}
+                      :url (if url (trim url))
+                      :resource_id resource_id
+                      :resource_type resource_type}
              :handler (fn [resp]
                         (when (= "success" (:status resp))
                           (init-settings (:id data) state init-data "settings")))})))));)
@@ -129,25 +131,36 @@
                 :page_input (str (session/get :site-url) (path-for (str "/page/view/" id)))
                 :file_input (str (session/get :site-url) "/" path)
                 nil)
-        evidence-url-atom (cursor state [:evidence :url])
-        evidence-name-atom (cursor state [:evidence :name])
-        evidence-description-atom (cursor state [:evidence :description])
-        evidence-visibility-atom (cursor state [:evidence :visibility])
-        resource-id-atom (cursor state [:evidence :resource_id])
-        resource-mime-type-atom (cursor state [:evidence :mime_type])]
+        ;evidence-url-atom (cursor state [:evidence :url])
+        ;evidence-name-atom (cursor state [:evidence :name])
+        ;evidence-description-atom (cursor state [:evidence :description])
+        ;evidence-visibility-atom (cursor state [:evidence :visibility])
+        ;resource-id-atom (cursor state [:evidence :resource_id])
+        ;resource-mime-type-atom (cursor state [:evidence :mime_type])
+        ]
     [:div
      [:a.resource-link {:href "#"
                         :on-click #(do
                                      (.preventDefault %)
-                                     (reset! evidence-url-atom value)
-                                     (reset! evidence-name-atom name)
-                                     (reset! evidence-description-atom description)
-                                     (reset! evidence-visibility-atom visibility)
-                                     (reset! resource-id-atom id)
-                                     (reset! resource-mime-type-atom mime_type)
+                                     ;(reset! evidence-url-atom value)
+                                     ;(reset! evidence-name-atom name)
+                                     ;(reset! evidence-description-atom description)
+                                     ;(reset! evidence-visibility-atom visibility)
+                                     ;(reset! resource-id-atom id)
+                                     ;(reset! resource-mime-type-atom mime_type)
                                      ;(reset! (cursor state [:show-preview]) true)
                                      (swap! state assoc :show-form false
-                                                        :show-preview true)) }
+                                                        :show-preview true
+                                                        :evidence {:url value
+                                                                   :name name
+                                                                   :description description
+                                                                   :mime_type mime_type
+                                                                   :resource_id id
+                                                                   :resource_type (case key
+                                                                                    :page_input "page"
+                                                                                    :file_input "file"
+                                                                                    "url")
+                                                                   :resource_visibility visibility})) }
       (case key
         :page_input [:div.resource  [:i.fa.fa-file-text-o] name]
         :file_input [:div.resource [:i {:style {:margin-right "10px"}

@@ -276,18 +276,19 @@
                    :body-params [id :- (s/maybe s/Int)
                                  name :- (s/maybe s/Str)
                                  description :- (s/maybe s/Str)
-                                 url :- s/Str]
+                                 url :- s/Str
+                                 resource_id :- (s/maybe s/Int)
+                                 resource_type :- (s/maybe s/Str)]
                    :summary "Save badge evidence"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id id name description url)))
+                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id id name description url resource_id resource_type)))
 
-             (DELETE "/evidence/:evidenceid" [user_badge_id]
+             (DELETE "/evidence/:evidenceid" [user_badge_id resource_type resource_id]
                      :return {:status (s/enum "success" "error")}
                      :path-params [evidenceid :- Long]
                      :summary "Delete evidence"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     ;(prn user_badge_id evidenceid)
-                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))
+                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user) resource_id resource_type))
                      ))))
