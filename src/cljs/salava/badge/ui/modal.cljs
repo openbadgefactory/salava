@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -19,7 +19,8 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
-            [clojure.string :refer [blank?]]))
+            [clojure.string :refer [blank?]]
+            [salava.badge.ui.evidence :refer [evidence-icon]]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -40,7 +41,7 @@
                                      :content-language (init-content-language (:content data))
                                      :tab-no tab-no
                                      :permission "success"
-                                     :evidence {:url nil :show_url false}
+                                     :evidence {:url nil}
                                      ))
                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
@@ -223,45 +224,23 @@
         [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-      #_(if (and (pos? show_evidence) evidence_url)
-          [:div.row
-           [:div.col-md-12
-            [:h2.uppercase-header (t :badge/Evidence)]
-            [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
 
-      (if (and (pos? show_evidence) (not (empty? evidences)))
+      (when (and (pos? show_evidence) (not (empty? evidences)))
         [:div.row {:id "badge-settings"}
          [:div.col-md-12
           [:h2.uppercase-header (if (= (count evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
           (reduce (fn [r evidence]
-                    (let [{:keys [genre description narrative name audience id url mtime ctime]} evidence]
+                    (let [{:keys [description name evidence_type id url mtime ctime]} evidence]
                       (conj r
-                            [:div.panel.panel-default
-                             [:div.panel-heading {:id (str "heading" id)
-                                                  :role "tab"}
-                              [:div.panel-title
-                               [:div.url [:div {:style {:float "left"}} [:i.fa.fa-link]] [:a {:target "_blank" :href url} (t :badge/Openevidencepage) "..."]]
-                              (when-not (every? #(blank? %) (vector genre description narrative name audience))
-                                 [:div.show-more [:a {:role "button" :data-toggle "collapse"
-                                                      :data-parent "#accordion"
-                                                      :href (str "#collapse" id)
-                                                      :aria-expanded "true"
-                                                      :aria-controls (str "collapse" id)} (t :admin/Showmore)]])]]
-                             (when-not (every? #(blank? %) (vector genre description narrative name audience))
-                               [:div {:id (str "collapse" id)
-                                      :class "panel-collapse collapse"
-                                      :role "tabpanel"
-                                      :aria-labelledby (str "heading" id)}
-                                [:div.panel-body.evidence-panel-body {:style {:padding-top "10px"}}
-                                 (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
-                                 (when-not (blank? genre) [:div [:label (t :badge/Genre) ": "] genre])
-                                 (when-not (blank? audience) [:div [:label (t :badge/Audience) ": "] audience])
-                                 (when-not (blank? narrative) [:div [:label (t :badge/Narrative)] [:div.description narrative]])
-                                 (when-not (blank? description) [:div [:label (t :admin/Description)]  [:div.description description]])
-                                 ]])])
-                      )
-                    )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] evidences)
-          ]])]]))
+                            [:div.modal-evidence
+                             [evidence-icon evidence_type]
+                             [:div.content
+
+                              (when-not (blank? name) [:div.content-body.name name])
+                              (when-not (blank? description) [:div.content-body.description description])
+                              [:div.content-body.url (hyperlink url)]]
+                             ])))
+                  [:div ] evidences)]])]]))
 
 (defn modal-navi [state]
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
