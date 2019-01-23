@@ -102,6 +102,59 @@ button {
 }
 /* BADGE SETTINGS */
 #badge-settings {
+
+
+  .modal-evidence {
+    margin-bottom: 10px;
+    border-bottom: 1px dashed #ddd;
+    padding: 10px;
+    width: 100%;
+
+    .evidence-icon {
+      float: left;
+      margin-right: 15px;
+      margin-top: 5px;
+      i {
+        font-size: 30px;
+        margin-right: 10px;
+        color: $link-color;
+        vertical-align: text-top;
+        opacity: 0.8;
+
+      }
+    }
+
+    .evidence-description {
+      width: 100%;
+      display: block;
+      font-style: bold;
+    }
+
+    .content {
+      display: grid;
+      font-size: 16px;
+      vertical-align: middle;
+      margin: 5px;
+
+      .content-body {
+        float: left;
+        clear: both;
+      }
+      .name{
+        font-size: 16px;
+      }
+      .description{
+        font-size: 13px;
+        margin: 5px 0;
+        font-weight: bold;
+      }
+      .url{
+        font-size: 12px;
+        word-break: break-all;
+      }
+    }
+  }
+
   .settings-content {
     label {
       margin-left: 5px;
@@ -111,8 +164,24 @@ button {
   }
   .panel {
     position: relative;
+    border-color: #ccc;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
     .evidence-panel-body {
       margin-bottom: 20px;
+    }
+
+    div {
+      .trash{
+        font-size: 18px;
+        margin-right: unset;
+        color: $dark-red;
+      }
+
+      .edit-evidence {
+        font-size: 18px;
+        color: $link-color;
+      }
     }
 
     .description {
@@ -123,12 +192,15 @@ button {
     }
     .panel-heading {
       word-wrap:break-word;
+      background-color: #fff;
+      background-image: none;
+      color: $text-color;
     }
 
     .panel-title {
       font-size: 12px;
       .url {
-        margin-top: 10px;
+        margin-top: 20px;
         margin-bottom: 10px;
       }
     }
@@ -138,6 +210,19 @@ button {
       bottom: 0px;
       right:14px;
     }
+
+    .evidence-icon {
+      i {
+        font-size: 30px;
+        margin-right: 10px;
+        color: $icon-color;
+      }
+    }
+  }
+
+  a.cancel {
+    cursor: pointer;
+    padding: 7px 13px;
   }
 
   .evidence-list, #accordion .evidence-list {
@@ -155,6 +240,9 @@ button {
   }
 
   .new-evidence{
+    cursor: pointer;
+    margin-top: 5px;
+    margin-left: 5px;
     margin-bottom: 15px;
     i {
       vertical-align: text-top;
@@ -199,38 +287,87 @@ button {
     right:15px !important;
   }
 
-
-
-  .radio {
-    padding: 10px;
-    border-bottom: 1px dashed #ddd;
-    &:first-child {
-      border-top: 1px dashed #ddd;
+  button.panel-edit {
+    position: absolute;
+    top: -1px;
+    right: 25px;
+    opacity: 0.8;
+    &:hover {
+      opacity: 1;
     }
 
-
   }
-  .resource-upload {
-    span {
-      cursor: pointer;
+  .resource-options {
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    div {
+      float: left;
+      margin-right: 10px;
+
+      .active-resource {
+        font-weight: bold;
+          i {
+            transform: scale(1.2);
+          }
+      }
+
+      a {
+        margin: 10px;
+        text-decoration: none;
+        &:hover {
+          font-weight: bold;
+          i {
+            transform: scale(1.2);
+          }
+        }
+      }
     }
-  }
 
+  }
   .resource-container {
     margin-top: 15px;
     margin-bottom: 15px;
-  }
-
-  .selected-url {
-    float:left;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    a {
-      word-break: break-word;
+    padding:5px;
+    span {
+      cursor: pointer;
+      margin: 5px;
     }
 
+    div {
+      margin: 5px;
+    }
+    .file-icon-large {
+      font-size: 20px;
+    }
 
+    .resource-link {
+      cursor:pointer;
+      text-decoration: none;
+      .resource {
+        padding: 5px;
+      }
+      &:hover {
+        font-weight: bold;
+        i {
+          transform: scale(1.2);
+        }}
+
+      &:active, &:focus {
+        font-weight: bold;
+        i {
+          transform: scale(1.2);
+        }
+        .resource {
+          border: 1px solid #d2d2d2;
+          -webkit-box-shadow: 0 1px 5px rgba(0,0,0,.05);
+          box-shadow: 0 1px 2px rgba(0,0,0,.05);
+          border-radius: 4px;
+        }
+      }
+    }
   }
+
 }
 #badge-settings  {
   h1.uppercase-header {
@@ -544,7 +681,7 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file {
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, {
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
