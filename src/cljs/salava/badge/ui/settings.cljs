@@ -55,12 +55,12 @@
     (ajax/POST
       (path-for (str "/obpv1/badge/save_settings/" id))
       {:params  {:visibility   visibility
+                 :evidence-url evidence_url
                  :tags         tags
-                 :rating       (if (pos? rating) rating nil)
-                 :evidence-url evidence_url}
+                 :rating       (if (pos? rating) rating nil)}
        :handler (fn []
-                  (if (= "share" context)
-                    (update-settings id state)
+                  (case context
+                    "share" (update-settings id state)
                     (init-data state id nil)))})))
 
 
@@ -180,7 +180,7 @@
 
 (defn settings-tab-content [data state init-data]
   (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
-         expired? (bh/badge-expired? expires_on)
+        expired? (bh/badge-expired? expires_on)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         notifications-atom (cursor state [:receive-notifications])
         revoked (pos? revoked)
@@ -192,7 +192,7 @@
       (cond
         revoked [:div.revoked (t :badge/Revoked)]
         expired? [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))]
-        (and (not revoked) (not expired?)) [:div [:form {:class "form-horizontal"}
+        (and (not revoked) (not expired?)) [:div [:div {:class "form-horizontal"}
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
                                                     [:legend {:class "col-md-9 sub-heading"}
@@ -227,36 +227,24 @@
                                                      (t :badge/Tags)]]
                                                    [:div {:class "row"}
                                                     [:div {:class "col-md-12"}
-                                                     [tag/tags (cursor state [:badge-settings :tags])]]]
+                                                     [tag/tags (cursor state [:badge-settings :tags]) state init-data]]]
                                                    [:div {:class "form-group"}
                                                     [:div {:class "col-md-12"}
-                                                     [tag/new-tag-input (cursor state [:badge-settings :tags]) (cursor state [:badge-settings :new-tag])]]]
-                                                   #_[:div {:class "row"}
-                                                    [:label {:class "col-md-12 sub-heading" :for "evidenceurl"}
-                                                     (t :badge/Evidenceurl)]]
-                                                   #_[:div {:class "form-group"}
-                                                    [:div {:class "col-md-12"}
-                                                     [:input {:class       "form-control"
-                                                              :type        "text"
-                                                              :id          "evidenceurl"
-                                                              :placeholder (t :badge/EnterevidenceURLstartingwith)
-                                                              :value       (get-in @state [:badge-settings :evidence_url])
-                                                              :on-change   #(swap! state assoc-in [:badge-settings :evidence_url] (-> % .-target .-value))}]]]
-                                                   (if (not-empty (get-in @state [:badge-settings :evidence_url]))
-                                                     [:fieldset {:class "checkbox"}
-                                                      [:legend {:class "sub-heading"}
-                                                       (t :badge/Evidencevisibility)]
-                                                      [:div [:label {:class (str show_evidence)}
-                                                             [:input {:type      "checkbox"
-                                                                      :on-change #(toggle-evidence state)
-                                                                      :checked    (get-in @state [:badge-settings :show_evidence])}]
-                                                             (t :badge/Showevidence)]]])
+                                                     [tag/new-tag-input (cursor state [:badge-settings :tags]) (cursor state [:badge-settings :new-tag]) state init-data]]]
+
+                                                   [:div.form-group
+                                                    [:label {:class "col-md-12 sub-heading" :for "evidence"} (t :badge/Evidence)]
+                                                    [:div
+                                                     (when-not (empty? (:evidences data))
+                                                      [:fieldset {:class "col-md-9 checkbox"}
+                                                       [:div.col-md-12 [:label {:for "show-evidence"}
+                                                                        [:input {:type      "checkbox"
+                                                                                 :id        "show-evidence"
+                                                                                 :on-change #(toggle-evidence state)
+                                                                                 :checked   (get-in @state [:badge-settings :show_evidence])}]
+                                                                        (t :badge/Evidencevisibility)]]])]]
                                                    [evidence/evidence-block data state init-data]]]
-                                            [:div.modal-footer
-                                             [:button {:type         "button"
-                                                       :class        "btn btn-primary"
-                                                       :on-click     #(save-settings state init-data nil)}
-                                              (t :badge/Save)]]])]]))
+                                            [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
   [:div {:id "badge-settings" :class "row flip"}
