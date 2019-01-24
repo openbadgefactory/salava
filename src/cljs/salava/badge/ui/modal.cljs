@@ -231,14 +231,17 @@
           [:h2.uppercase-header (if (= (count evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
           (reduce (fn [r evidence]
                     (let [{:keys [narrative description name evidence_type id url mtime ctime properties]} evidence
+                          added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient"))
                           desc (cond
                                  (not (blank? narrative)) narrative
-                                 (and (not (blank? description)) (not (starts-with? description "Evidence added by badge owner from"))) description
+                                 (not added-by-user?) description ;;todo use regex to match description
                                  :else nil
                                  )]
                       (conj r
                             [:div.modal-evidence
-                             (if (empty? properties) [:span.label.label-success (t :user/verified)])
+                             ;(if (empty? properties) )
+
+                             (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                              [evidence-icon evidence_type]
                              [:div.content
 
