@@ -17,7 +17,8 @@
             [salava.core.http :as http]
             [salava.badge.assertion :refer [fetch-json-data]]
             [salava.core.i18n :refer [t]]
-            [pantomime.mime :refer [mime-type-of]]))
+            [pantomime.mime :refer [mime-type-of]]
+            [clj-time.core :refer [today]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -374,12 +375,14 @@
       (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
 
 ;;TEST
-(defn save-badge-evidence [ctx user-id user-badge-id evidence-id name description url resource-id resource-type]
+(defn save-badge-evidence [ctx user-id user-badge-id evidence-id name narrative url resource-id resource-type]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
-      (let [data {:user_badge_id user-badge-id :url url :name name :description description}]
+      (let [site-url (u/get-site-url ctx)
+            description (str "Added by badge recipient " (today)  " at " site-url )
+            data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
         (if evidence-id
-          (update-user-badge-evidence2! (assoc data :id evidence-id) (u/get-db ctx))
+          (update-user-badge-evidence! (assoc data :id evidence-id) (u/get-db ctx))
           (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
             (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
                   property-name (str "evidence_id:" id)
@@ -397,6 +400,7 @@
       (log/error _)
       {:status "error"})
     ))
+
 
 ;;TEST
 (defn delete-evidence! [ctx evidence-id user-badge-id user-id resource-id resource-type]
