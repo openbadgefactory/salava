@@ -19,7 +19,7 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
-            [clojure.string :refer [blank?]]
+            [clojure.string :refer [blank? starts-with?]]
             [salava.badge.ui.evidence :refer [evidence-icon]]))
 
 
@@ -230,7 +230,12 @@
          [:div.col-md-12
           [:h2.uppercase-header (if (= (count evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
           (reduce (fn [r evidence]
-                    (let [{:keys [description name evidence_type id url mtime ctime properties]} evidence]
+                    (let [{:keys [narrative description name evidence_type id url mtime ctime properties]} evidence
+                          desc (cond
+                                 (not (blank? narrative)) narrative
+                                 (and (not (blank? description)) (not (starts-with? description "Evidence added by badge owner from"))) description
+                                 :else nil
+                                 )]
                       (conj r
                             [:div.modal-evidence
                              (if (empty? properties) [:span.label.label-success (t :user/verified)])
@@ -238,7 +243,7 @@
                              [:div.content
 
                               (when-not (blank? name) [:div.content-body.name name])
-                              (when-not (blank? description) [:div.content-body.description description])
+                              (when-not (blank? desc) [:div.content-body.description desc])
                               [:div.content-body.url (hyperlink url)]]
                              ])))
                   [:div ] evidences)]])]]))
