@@ -182,6 +182,7 @@ button {
         font-size: 18px;
         color: $link-color;
       }
+
     }
 
     .description {
@@ -298,18 +299,20 @@ button {
 
   }
   .resource-options {
-    margin-top: 10px;
+    margin-top: 20px;
     margin-bottom: 10px;
 
     div {
       float: left;
       margin-right: 10px;
 
+
       .active-resource {
         font-weight: bold;
           i {
-            transform: scale(1.2);
+            transform: scale(1.3);
           }
+
       }
 
       a {
@@ -681,7 +684,7 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, {
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off{
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
