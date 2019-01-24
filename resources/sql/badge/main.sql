@@ -687,3 +687,8 @@ DELETE FROM user_properties WHERE name = :name AND user_id = :user_id
 
 --name: select-user-evidence-property
 SELECT value FROM user_properties WHERE name = :name AND user_id = :user_id
+
+--name: select-user-evidence-by-url
+SELECT DISTINCT ube.url FROM user_badge_evidence AS ube
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+WHERE ub.user_id = :user_id AND ube.url = :url
