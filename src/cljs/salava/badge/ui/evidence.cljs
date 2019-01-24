@@ -58,35 +58,31 @@
   (ajax/POST
     (path-for (str "/obpv1/page/toggle_visibility/" page-id))
     {:params {:visibility "public"}
-     :handler (fn [data]
-                (prn data))}))
+     :handler (fn [data])}))
 
 (defn save-badge-evidence [data state init-data]
   (let [{:keys [id name description url resource_visibility resource_id resource_type]} (:evidence @state)
         badge-id (:id data)
         init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
     (swap! state assoc :evidence {:message nil})
-    ;(if (blank? url)
-     ; (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p "Resource field can't be empty!"]]})
-
-      (if (and (not (blank? description)) (blank? name))
-        (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
-                                      :name name
-                                      :description description
-                                      :url url})
-        (do
-          (if (= "private" resource_visibility) (set-page-visibility-to-private resource_id))
-          (ajax/POST
-            (path-for (str "/obpv1/badge/evidence/" badge-id))
-            {:params {:id id
-                      :name (if name (trim name))
-                      :description description
-                      :url (if url (trim url))
-                      :resource_id resource_id
-                      :resource_type resource_type}
-             :handler (fn [resp]
-                        (when (= "success" (:status resp))
-                          (init-settings (:id data) state init-data "settings")))})))));)
+    (if (and (not (blank? description)) (blank? name))
+      (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
+                                    :name name
+                                    :description description
+                                    :url url})
+      (do
+        (if (= "private" resource_visibility) (set-page-visibility-to-private resource_id))
+        (ajax/POST
+          (path-for (str "/obpv1/badge/evidence/" badge-id))
+          {:params {:id id
+                    :name (if name (trim name))
+                    :description description
+                    :url (if url (trim url))
+                    :resource_id resource_id
+                    :resource_type resource_type}
+           :handler (fn [resp]
+                      (when (= "success" (:status resp))
+                        (init-settings (:id data) state init-data "settings")))})))));)
 
 ;;;;
 
@@ -150,17 +146,16 @@
                                      ;(reset! resource-mime-type-atom mime_type)
                                      ;(reset! (cursor state [:show-preview]) true)
                                      (swap! state assoc :show-form false
-                                                        :show-preview true
-                                                        :evidence {:url value
-                                                                   :name name
-                                                                   :description description
-                                                                   :mime_type mime_type
-                                                                   :resource_id id
-                                                                   :resource_type (case key
-                                                                                    :page_input "page"
-                                                                                    :file_input "file"
-                                                                                    "url")
-                                                                   :resource_visibility visibility})) }
+                                            :show-preview true
+                                            :evidence {:url value
+                                                       :name name
+                                                       :description description
+                                                       :mime_type mime_type
+                                                       :resource_id id
+                                                       :resource_type (case key
+                                                                        :page_input "page"
+                                                                        :file_input "file")
+                                                       :resource_visibility visibility})) }
       (case key
         :page_input [:div.resource  [:i.fa.fa-file-text-o] name]
         :file_input [:div.resource [:i {:style {:margin-right "10px"}
@@ -257,7 +252,8 @@
       [:div
        [:div.form-horizontal
         [:div.form-group
-         [:label.col-md-9.sub-heading "Add evidence resource"]
+         [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]
+         [:div.col-md-9.evidence-info (t :badge/Evidenceinfo)]
          [:div.col-md-9.resource-options
           [:div ;{:style {:float "left"}}
            [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
@@ -297,9 +293,9 @@
                [:div [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! (cursor state [:show-form]) true))}[:div [:i.fa.fa-plus] (t :badge/Addmoreinfoaboutevidence) ]]])
-              (when (or  @(cursor state [:show-form])(not (every? #(blank? %)(vector @evidence-name-atom @evidence-description-atom))))
+             (when (or  @(cursor state [:show-form])(not (every? #(blank? %)(vector @evidence-name-atom @evidence-description-atom))))
 
-                [:div [:div.form-group
+               [:div [:div.form-group
                       [:label.col-md-3 "Name"]
                       [:div.col-md-9
                        [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
@@ -322,6 +318,7 @@
                    :on-click #(do
 
                                 (.preventDefault %)
+                                (if (= @input-mode :url_input) (reset! (cursor state [:evidence :resource_type] ) "url"))
                                 (save-badge-evidence data state init-data))}
           (t :core/Add)]
          [:a.cancel {:on-click #(do (.preventDefault %) (swap! state assoc :tab [settings-tab (dissoc data :evidence) state init-data]
@@ -334,56 +331,62 @@
   (let [evidence-name-atom (cursor state [:evidence :name])
         evidence-description-atom (cursor state [:evidence :description])]
     (reduce (fn [r evidence]
-              (let [{:keys [description name id url mtime ctime evidence_type]} evidence]
+              (let [{:keys [description name id url mtime ctime evidence_type properties]} evidence]
+
                 (init-evidence-form evidence state true)
                 (conj r
-                      [:div.panel.panel-default
-                       [:div.panel-heading {:id (str "heading" id)
-                                            :role "tab"}
-                        [:div.panel-title
-                         [:div.url [:div {:style {:float "left"}} [evidence-icon evidence_type]] (hyperlink url)]
-                         (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
-                         (when-not (blank? description) [:div [:label (t :admin/Description) ": "]   description])]
-                        [:div [:button {:type "button"
-                                        :aria-label "OK"
-                                        :class "close panel-edit"
-                                        :on-click #(do (.preventDefault %)
-                                                     (init-evidence-form evidence state true))
-                                        :role "button" :data-toggle "collapse"
-                                        :data-parent "#accordion"
-                                        :href (str "#collapse" id)
-                                        :aria-expanded "true"
-                                        :aria-controls (str "collapse" id)}
-                               [:i.fa.fa-edit.edit-evidence]]];;edit-button
+                      (when-not (blank? url)
+                        [:div.panel.panel-default
+                         [:div.panel-heading {:id (str "heading" id)
+                                              :role "tab"}
+                          [:div.panel-title
+                           [:div.url [:div {:style {:float "left"}} [evidence-icon evidence_type]] (hyperlink url)]
+                           (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
+                           (when-not (blank? description) [:div [:label (t :admin/Description) ": "]   description])]
+                          (when properties
+                            [:div [:div [:button {:type "button"
+                                                  :aria-label "OK"
+                                                  :class "close panel-edit"
+                                                  :on-click #(do (.preventDefault %)
+                                                               (init-evidence-form evidence state true)
+                                                               (prn evidence))
+                                                  :role "button" :data-toggle "collapse"
+                                                  :data-parent "#accordion"
+                                                  :href (str "#collapse" id)
+                                                  :aria-expanded "true"
+                                                  :aria-controls (str "collapse" id)}
+                                         [:i.fa.fa-edit.edit-evidence]]];;edit-button
 
-                        [:div [:button {:type "button"
-                                        :aria-label "OK"
-                                        :class "close panel-close"
-                                        :on-click #(do (.preventDefault %)(delete-evidence! id data state init-data))}
-                               [:i.fa.fa-trash.trash]]]] ;;delete-button
+                             [:div [:button {:type "button"
+                                             :aria-label "OK"
+                                             :class "close panel-close"
+                                             :on-click #(do (.preventDefault %)(delete-evidence! id data state init-data))}
+                                    [:i.fa.fa-trash.trash]]] ;;delete-button
+                             ])
+                          ]
 
-                       [:div {:id (str "collapse" id)
-                              :class "panel-collapse collapse"
-                              :role "tabpanel"
-                              :aria-labelledby (str "heading" id)}
-                        [:div.panel-body.evidence-panel-body {:style {:padding-top "10px"}}
-                         [:div.form-group
-                          [:label.col-md-3 (t :badge/Name)]
-                          [:div.col-md-9
-                           [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
-                         [:div.form-group
-                          [:label.col-md-3 (t :page/Description)]
-                          [:div.col-md-9
-                           [input {:name "Description" :rows 5 :cols 40 :atom evidence-description-atom } true]]]
-                         [:hr]
-                         [:div
-                          [:button {:type         "button"
-                                    :class        "btn btn-primary"
-                                    :on-click     #(do (.preventDefault %)(save-badge-evidence data state init-data))
-                                    :data-toggle "collapse"
-                                    :data-target (str "#collapse" id)}
-                           (t :badge/Save)]]
-                         ]]]))
+                         [:div {:id (str "collapse" id)
+                                :class "panel-collapse collapse"
+                                :role "tabpanel"
+                                :aria-labelledby (str "heading" id)}
+                          [:div.panel-body.evidence-panel-body {:style {:padding-top "10px"}}
+                           [:div.form-group
+                            [:label.col-md-3 (t :badge/Name)]
+                            [:div.col-md-9
+                             [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+                           [:div.form-group
+                            [:label.col-md-3 (t :page/Description)]
+                            [:div.col-md-9
+                             [input {:name "Description" :rows 5 :cols 40 :atom evidence-description-atom } true]]]
+                           [:hr]
+                           [:div
+                            [:button {:type         "button"
+                                      :class        "btn btn-primary"
+                                      :on-click     #(do (.preventDefault %)(save-badge-evidence data state init-data))
+                                      :data-toggle "collapse"
+                                      :data-target (str "#collapse" id)}
+                             (t :badge/Save)]]
+                           ]]])))
               )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] (:evidences data))))
 
 (defn evidence-block [data state init-data]
