@@ -230,9 +230,10 @@
          [:div.col-md-12
           [:h2.uppercase-header (if (= (count evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
           (reduce (fn [r evidence]
-                    (let [{:keys [description name evidence_type id url mtime ctime]} evidence]
+                    (let [{:keys [description name evidence_type id url mtime ctime properties]} evidence]
                       (conj r
                             [:div.modal-evidence
+                             (if (empty? properties) [:span.label.label-success (t :user/verified)])
                              [evidence-icon evidence_type]
                              [:div.content
 
