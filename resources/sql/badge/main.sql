@@ -677,13 +677,13 @@ WHERE id = :id AND user_badge_id = :user_badge_id
 --name: delete-user-badge-evidence!
 DELETE FROM user_badge_evidence WHERE id = :id AND user_badge_id = :user_badge_id
 
--- name: insert-user-evidence-properties!
+-- name: insert-user-evidence-property!
 -- this is used to keep track of the evidences the user has added
-INSERT INTO user_properties (user_id, name, value)
- VALUES (:user_id, 'user_input_evidence', :value)
+REPLACE INTO user_properties (user_id, name, value)
+ VALUES (:user_id, :name, :value)
 
---name: delete-user-evidence-properties!
-DELETE FROM user_properties WHERE name = "user_input_evidence" AND user_id = :user_id AND value = :value
+--name: delete-user-evidence-property!
+DELETE FROM user_properties WHERE name = :name AND user_id = :user_id
 
---name: select-user-evidence-properties
-SELECT value FROM user_properties WHERE name = "user_input_evidence" AND user_id = :user_id
+--name: select-user-evidence-property
+SELECT value FROM user_properties WHERE name = :name AND user_id = :user_id

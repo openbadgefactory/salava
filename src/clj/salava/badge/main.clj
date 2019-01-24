@@ -159,13 +159,15 @@
        (reduce (fn [r evidence]
                  (conj r (assoc evidence :evidence_type (evidence-type ctx (:url evidence)))))[] )))
 
+;;TEST (fix information duplication)
 (defn badge-evidences "get user-badge evidences" [ctx badge-id user-id]
-  (let [evidences (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))
-        properties (->> (select-user-evidence-properties {:user_id user-id} (into {:row-fn :value}(u/get-db ctx)))
-                        (map #(json/read-str %)))]
-    (prn properties)
-    )
-  )
+  (let [evidences (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))]
+    (reduce (fn [r evidence]
+              (let [property-name (str "evidence_id:" (:id evidence))
+                    property (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
+                                     (json/read-str))]
+              (conj r (assoc evidence :properties property
+                                      :evidence_type (evidence-type ctx (:url evidence))) ))) [] evidences)))
 
 
 (defn fetch-badge [ctx badge-id]
@@ -371,7 +373,7 @@
       (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
       (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
 
-
+;;TEST
 (defn save-badge-evidence [ctx user-id user-badge-id evidence-id name description url resource-id resource-type]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
@@ -380,9 +382,10 @@
           (update-user-badge-evidence2! (assoc data :id evidence-id) (u/get-db ctx))
           (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
             (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
-                  properties (->> {:evidence_id id :resource_id resource-id :resource_type resource-type}
+                  property-name (str "evidence_id:" id)
+                  properties (->> {:resource_id resource-id :resource_type resource-type}
                                   (json/write-str))]
-              (insert-user-evidence-properties! {:user_id user-id :value properties} {:connection tx})
+              (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
               )))
 
         ;;send badge info to factory
@@ -395,15 +398,15 @@
       {:status "error"})
     ))
 
+;;TEST
 (defn delete-evidence! [ctx evidence-id user-badge-id user-id resource-id resource-type]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
       (do
         (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-          (let [properties (->> {:evidence_id evidence-id :resource_id resource-id :resource_type resource-type}
-                                  (json/write-str))]
+          (let [property-name (str "evidence_id:" evidence-id)]
           (delete-user-badge-evidence! {:id evidence-id :user_badge_id user-badge-id} {:connection tx})
-          (delete-user-evidence-properties! {:user_id user-id :value properties} {:connection tx})
+          (delete-user-evidence-property! {:user_id user-id :name property-name} {:connection tx})
 
           ))
         {:status "success"})
@@ -414,7 +417,6 @@
       (log/error _)
       {:status "error"}))
   )
-
 
 ;TODO rework evidence
 (defn save-badge-settings!
