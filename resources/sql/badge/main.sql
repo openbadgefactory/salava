@@ -331,8 +331,8 @@ SELECT issuer_content_id AS client_id FROM issuer_endorsement_content
 REPLACE INTO badge_tag (user_badge_id, tag)
        VALUES (:user_badge_id, :tag)
 
---name: update-user-badge-evidence!
-UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
+-- --name: update-user-badge-evidence!
+--UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: insert-user-badge-evidence-url<!
 INSERT INTO user_badge_evidence (user_badge_id, url, ctime, mtime) VALUES (:user_badge_id, :url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
@@ -660,18 +660,18 @@ SELECT assertion_jws FROM user_badge AS ub WHERE ub.id = :id;
 SELECT id FROM user_badge AS ub WHERE ub.badge_id = :badge_id AND  ub.user_id = :user_id AND ub.status = 'accepted';
 
 --name: select-user-badge-evidence
-SELECT ube.id, ube.url, ube.description, ube.name, ube.ctime, ube.mtime
+SELECT ube.id, ube.url, ube.description, ube.narrative, ube.name, ube.ctime, ube.mtime
 FROM user_badge_evidence AS ube
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ube.user_badge_id = :user_badge_id
 
 --name: insert-evidence<!
-INSERT INTO user_badge_evidence (user_badge_id, url, name, description, ctime, mtime )
-VALUES (:user_badge_id, :url, :name, :description,  UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+INSERT INTO user_badge_evidence (user_badge_id, url, name, description, narrative, ctime, mtime )
+VALUES (:user_badge_id, :url, :name, :description, :narrative, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
---name: update-user-badge-evidence2!
+--name: update-user-badge-evidence!
 UPDATE user_badge_evidence SET url = :url, name = :name,
-description = :description, mtime = UNIX_TIMESTAMP()
+narrative = :narrative, mtime = UNIX_TIMESTAMP()
 WHERE id = :id AND user_badge_id = :user_badge_id
 
 --name: delete-user-badge-evidence!
