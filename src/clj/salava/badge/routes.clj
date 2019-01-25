@@ -145,13 +145,13 @@
                    :current-user current-user
                    (ok (str (b/toggle-show-recipient-name! ctx badgeid show_recipient_name (:id current-user)))))
 
-             (POST "/toggle_evidence/:badgeid" []
+             (POST "/toggle_evidences_all/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [show_evidence :- (s/enum false true)]
-                   :summary "Set evidence visibility"
+                   :summary "disable or enable all badge evidences"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (b/toggle-show-evidence! ctx badgeid show_evidence (:id current-user)))))
+                   (ok (str (b/toggle-show-all-evidences! ctx badgeid show_evidence (:id current-user)))))
 
              (POST "/congratulate/:badgeid" []
                    :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
@@ -238,13 +238,12 @@
                    :return {:status (s/enum "success" "error")}
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public" "internal")
-                                 evidence-url :- (s/maybe s/Str)
                                  rating :- (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
+                   (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility rating tags)))
 
              (POST "/save_raiting/:badgeid" []
                    :return {:status (s/enum "success" "error")}
@@ -273,16 +272,12 @@
              (POST "/evidence/:user-badge-id" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [user-badge-id :- Long]
-                   :body-params [id :- (s/maybe s/Int)
-                                 name :- (s/maybe s/Str)
-                                 narrative :- (s/maybe s/Str)
-                                 url :- s/Str
-                                 resource_id :- (s/maybe s/Int)
-                                 resource_type :- (s/maybe s/Str)]
+                   :body-params [evidence :- schemas/Evidence]
                    :summary "Save badge evidence"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id id name narrative url resource_id resource_type)))
+                   (prn evidence)
+                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id evidence)))
 
              (DELETE "/evidence/:evidenceid" [user_badge_id resource_type resource_id]
                      :return {:status (s/enum "success" "error")}
@@ -291,4 +286,13 @@
                      :auth-rules access/authenticated
                      :current-user current-user
                      (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user) resource_id resource_type))
-                     ))))
+                     )
+             (POST "/toggle_evidence/:evidenceid" []
+                   ;:return {} ;{:status (s/enum "success" "error")}
+                   :path-params [evidenceid :- Long]
+                   :body-params [show_evidence :- (s/enum false true)
+                                 user_badge_id :- s/Int]
+                   :summary "Set evidence visibility"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (str (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user))))))))
