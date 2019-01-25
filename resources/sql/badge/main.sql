@@ -678,7 +678,7 @@ WHERE id = :id AND user_badge_id = :user_badge_id
 DELETE FROM user_badge_evidence WHERE id = :id AND user_badge_id = :user_badge_id
 
 -- name: insert-user-evidence-property!
--- this is used to keep track of the evidences the user has added
+-- this is used to more information about evidences e.g. {:hidden true :type url}
 REPLACE INTO user_properties (user_id, name, value)
  VALUES (:user_id, :name, :value)
 
