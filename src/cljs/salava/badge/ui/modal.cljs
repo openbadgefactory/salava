@@ -19,7 +19,7 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
-            [clojure.string :refer [blank? starts-with?]]
+            [clojure.string :refer [blank? starts-with? split]]
             [salava.badge.ui.evidence :refer [evidence-icon]]))
 
 
@@ -232,6 +232,8 @@
           (reduce (fn [r evidence]
                     (let [{:keys [narrative description name evidence_type id url mtime ctime properties]} evidence
                           added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient"))
+                          resource_id (when-not (= "file" (:type evidence_type)) (->> (split url #"/") ;;FIX
+                                                                                      (last)))
                           desc (cond
                                  (not (blank? narrative)) narrative
                                  (not added-by-user?) description ;;todo use regex to match description
@@ -247,7 +249,16 @@
 
                               (when-not (blank? name) [:div.content-body.name name])
                               (when-not (blank? desc) [:div.content-body.description desc])
-                              [:div.content-body.url (hyperlink url)]]
+                              [:div.content-body.url
+                               (case (:type evidence_type)
+                                 "file" (hyperlink url)
+                                 "page" (if (session/get :user)
+                                          [:a {:href "#"
+                                               :on-click #(do
+                                                            (.preventDefault %)
+                                                            (mo/open-modal [:page :view] {:page-id resource_id}))} url]
+                                          (hyperlink url))
+                                 (hyperlink url))]]
                              ])))
                   [:div ] evidences)]])]]))
 
