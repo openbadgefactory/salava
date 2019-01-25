@@ -8,15 +8,21 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
-
-(defn save-settings [page next-url]
-  (let [{:keys [id tags visibility password]} page]
+;;fix, show error message!
+(defn save-settings [state next-url]
+  (let [{:keys [id tags visibility password]} (:page @state)]
+    (reset! (cursor state [:message]) nil)
     (ajax/POST
       (path-for (str "/obpv1/page/save_settings/" id))
       {:params {:tags tags
                 :visibility visibility
                 :password password}
-       :handler #(navigate-to next-url)})))
+       :handler (fn [data]
+                  (if (= "error" (:status data))
+                    (swap! state assoc :message (keyword (:message data)))
+                    (navigate-to next-url)
+                    )
+                  )})))
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)
@@ -25,6 +31,8 @@
         new-tag-atom (cursor state [:new-tag])
         password-atom (cursor state [:page :password])]
     [:div {:id "page-settings"}
+     (when-not (clojure.string/blank? @(cursor state [:message]))
+       [:div.alert.alert-warning (t @(cursor state [:message])) ])
      [ph/edit-page-header (t :page/Settings ": " name)]
      [ph/edit-page-buttons id :settings (fn [next-url] (save-settings (:page @state) next-url))]
      [:div {:class "panel page-panel" :id "settings-panel"}
@@ -85,7 +93,7 @@
        [:button {:class    "btn btn-primary"
                  :on-click #(do
                              (.preventDefault %)
-                             (save-settings (:page @state) (str "/page/preview/" id)))
+                             (save-settings state (str "/page/preview/" id)))
                  :disabled (and (empty? @password-atom)
                                 (= @visibility-atom "password"))}
         (t :page/Save)]]]]))
@@ -98,7 +106,8 @@
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
-        state (atom {:page {}})]
+        state (atom {:page {}
+                     :message nil})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))

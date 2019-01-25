@@ -27,17 +27,21 @@
                       (if (= status 401)
                         (swap! state assoc :password-error true)))}))
 
-(defn toggle-visibility [page-id visibility-atom]
+(defn toggle-visibility [page-id state]
+  (let [visibility-atom (cursor state [:page :visibility])]
   (ajax/POST
     (path-for (str "/obpv1/page/toggle_visibility/" page-id))
     {:response-format :json
      :keywords? true
      :params {:visibility (if (= "private" @visibility-atom) "public" "private")}
      :handler (fn [data]
-                (reset! visibility-atom data))
+                (if (string? data)
+                  (reset! visibility-atom data)
+                  (if (= "error" (:status data))
+                    (reset! (cursor state [:error]) (keyword (:message data))))))
      :error-handler (fn [{:keys [status status-text]}]
                       (if (= status 401)
-                          (navigate-to "/user/login")))}))
+                          (navigate-to "/user/login")))})))
 
 (defn page-password-field [state]
   (let [password-atom (cursor state [:password])]
@@ -109,6 +113,7 @@
         visibility-atom (cursor state [:page :visibility])]
     [:div {:id "page-view"}
      [m/modal-window]
+     (when @(cursor state [:error]) [:div.alert.alert-warning (t @(cursor state [:error]))])
      (if (:owner? page)
        [:div {:id "page-buttons-share"}
         [:div {:id "buttons"
@@ -129,7 +134,7 @@
            [:label
             [:input {:name      "visibility"
                      :type      "checkbox"
-                     :on-change #(toggle-visibility (:id page) visibility-atom)
+                     :on-change #(toggle-visibility (:id page) state)
                      :checked   (= @visibility-atom "public")}]
             [:i.fa]
             (if (= @visibility-atom "public")
@@ -171,7 +176,8 @@
                      :password ""
                      :password-error false
                      :show-link-or-embed-code nil
-                     :pdf-header "false"})
+                     :pdf-header "false"
+                     :error nil})
         user (session/get :user)]
     (init-data state id)
     (fn []

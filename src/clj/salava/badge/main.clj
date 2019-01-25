@@ -422,6 +422,16 @@
       {:status "error"}))
   )
 
+
+;;TEST
+(defn is-evidence? [ctx user-id opts]
+  (let [{:keys [id resource-type]} opts
+        url (case resource-type
+              "page" (str (u/get-full-path ctx) "/page/view/" id)
+              "badge" (str (u/get-full-path ctx) "/badge/info/" id)
+              (str (u/get-full-path ctx) "/page/view/" id))]
+    (if-let [check (empty? (select-user-evidence-by-url {:user_id user-id :url url} (u/get-db ctx)))] false true)))
+
 ;TODO rework evidence
 (defn save-badge-settings!
   "Update badge settings"
