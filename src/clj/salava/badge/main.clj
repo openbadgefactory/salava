@@ -148,17 +148,18 @@
     (catch Object _
       (log/error "parse-assertion-json: " _))))
 
-(defn evidence-type [ctx url]
-  (let [site-url (u/get-site-url ctx)]
-    (cond
-      (and (starts-with? url site-url) (includes? url "/page/view/")) {:type "page"}
-      (and (starts-with? url site-url) (includes? url "/file/")) {:type "file" :mime_type (mime-type-of (java.net.URL. url))}
-      :else {:type "url"})))
+(defn send-badge-info-to-obf [ctx user-badge-id user-id]
+  (let [obf-url (get-in ctx [:config :core :obf :url])
+        site-url (get-in ctx [:config :core :site-url])]
+    (if (string? obf-url)
+      (let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
+        (if (re-find (re-pattern obf-url) (str assertion-url))
+          (try+
+            (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
+            (catch Object _
+              (log/error "send-badge-info-to-obf: " _))))))))
 
-#_(defn badge-evidences "get user-badge evidences" [ctx badge-id]
-  (->> (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))
-       (reduce (fn [r evidence]
-                 (conj r (assoc evidence :evidence_type (evidence-type ctx (:url evidence)))))[] )))
+;;EVIDENCE
 
 ;;TEST (fix information duplication)
 (defn badge-evidences "get user-badge evidences" [ctx badge-id user-id]
@@ -166,10 +167,96 @@
     (reduce (fn [r evidence]
               (let [property-name (str "evidence_id:" (:id evidence))
                     property (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
-                                     (json/read-str))]
-              (conj r (assoc evidence :properties property
-                                      :evidence_type (evidence-type ctx (:url evidence))) ))) [] evidences)))
+                                     (json/read-str :key-fn keyword))]
+                (conj r (assoc evidence :properties property)))) [] evidences)))
 
+#_(defn user-badge-evidence
+    [ctx user-badge-id url]
+    (let [id (select-user-badge-evidence-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :id} (u/get-db ctx)))]
+      (if id
+        (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
+        (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
+
+;;TEST
+(defn save-badge-evidence [ctx user-id user-badge-id evidence]
+  (let [{:keys [id name narrative url resource_id resource_type mime_type]} evidence]
+    (try+
+      (if (badge-owner? ctx user-badge-id user-id)
+        (let [site-url (u/get-site-url ctx)
+              description (str "Added by badge recipient " (today)  " at " site-url )
+              data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
+          (if id
+            (update-user-badge-evidence! (assoc data :id id) (u/get-db ctx))
+            (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+              (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
+                    property-name (str "evidence_id:" id)
+                    properties (->> {:resource_id resource_id :resource_type resource_type :hidden false :mime_type mime_type}
+                                    (remove (comp nil? second))
+                                    (into {})
+                                    (json/write-str))]
+                (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
+                )))
+          ;;send badge info to factory
+          (send-badge-info-to-obf ctx user-badge-id user-id)
+          {:status "success"})
+        (throw+ {:status "error"})
+        )
+      (catch Object _
+        (log/error _)
+        {:status "error"}))))
+
+
+;;TEST
+(defn delete-evidence! [ctx evidence-id user-badge-id user-id resource-id resource-type]
+  (try+
+    (if (badge-owner? ctx user-badge-id user-id)
+      (do
+        (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+          (let [property-name (str "evidence_id:" evidence-id)]
+            (delete-user-badge-evidence! {:id evidence-id :user_badge_id user-badge-id} {:connection tx})
+            (delete-user-evidence-property! {:user_id user-id :name property-name} {:connection tx})))
+        {:status "success"})
+      {:status "error"})
+    (catch Object _
+      (log/error _)
+      {:status "error"})))
+
+
+;;TEST
+(defn is-evidence? [ctx user-id opts]
+  (let [{:keys [id resource-type]} opts
+        url (case resource-type
+              "page" (str (u/get-full-path ctx) "/page/view/" id)
+              "badge" (str (u/get-full-path ctx) "/badge/info/" id)
+              (str (u/get-full-path ctx) "/page/view/" id))]
+    (if-let [check (empty? (select-user-evidence-by-url {:user_id user-id :url url} (u/get-db ctx)))] false true)))
+
+
+(defn toggle-show-all-evidences!
+  "Toggle evidence visibility"
+  [ctx badge-id show-evidence user-id]
+  (if (badge-owner? ctx badge-id user-id)
+    (update-show-evidence! {:id badge-id :show_evidence show-evidence} (u/get-db ctx))))
+
+(defn toggle-show-evidence! [ctx badge-id evidence-id show_evidence user-id]
+  "Toggle evidence visibility"
+  (try+
+    (if (badge-owner? ctx badge-id user-id)
+      (do
+      (let [property-name (str "evidence_id:" evidence-id)
+            metadata (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
+                             (json/read-str :key-fn keyword))
+            updated-metadata (-> (assoc metadata :hidden show_evidence)
+                                 (json/write-str))]
+
+          (insert-user-evidence-property! {:user_id user-id :value updated-metadata :name property-name} (u/get-db ctx)))
+        (hash-map :status "success")
+        #_{:status "success"}))
+    (catch Object _
+      (log/error _)
+      {:status "error"})))
+
+;;
 
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
@@ -314,11 +401,6 @@
   (if (badge-owner? ctx badge-id user-id)
     (update-show-recipient-name! {:id badge-id :show_recipient_name show-recipient-name} (u/get-db ctx))))
 
-(defn toggle-show-evidence!
-  "Toggle evidence visibility"
-  [ctx badge-id show-evidence user-id]
-  (if (badge-owner? ctx badge-id user-id)
-    (update-show-evidence! {:id badge-id :show_evidence show-evidence} (u/get-db ctx))))
 
 (defn congratulate!
   "User congratulates badge receiver"
@@ -335,13 +417,6 @@
     (catch Object _
       {:status "error" :message _})))
 
-#_(defn badge-settings
-    "Get badge settings"
-    [ctx user-badge-id user-id]
-    (if (badge-owner? ctx user-badge-id user-id)
-      (let [badge (update (select-badge-settings {:id user-badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
-            tags (select-taglist {:user_badge_ids [user-badge-id]} (u/get-db ctx))]
-        (assoc-badge-tags badge tags))))
 
 (defn badge-settings "Get badge settings" [ctx user-badge-id user-id]
   (if (badge-owner? ctx user-badge-id user-id)
@@ -349,107 +424,21 @@
           tags (select-taglist {:user_badge_ids [user-badge-id]} (u/get-db ctx))
           evidences (badge-evidences ctx user-badge-id user-id)]
       (-> (assoc-badge-tags badge tags)
-          (assoc :evidences evidences)
-          )
-      )
-    )
-  )
+          (assoc :evidences evidences)))))
 
-(defn send-badge-info-to-obf [ctx user-badge-id user-id]
-  (let [obf-url (get-in ctx [:config :core :obf :url])
-        site-url (get-in ctx [:config :core :site-url])]
-    (if (string? obf-url)
-      (let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
-        (if (re-find (re-pattern obf-url) (str assertion-url))
-          (try+
-            (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
-            (catch Object _
-              (log/error "send-badge-info-to-obf: " _))))))))
-
-
-(defn user-badge-evidence
-  [ctx user-badge-id url]
-  (let [id (select-user-badge-evidence-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :id} (u/get-db ctx)))]
-    (if id
-      (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
-      (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
-
-;;TEST
-(defn save-badge-evidence [ctx user-id user-badge-id evidence-id name narrative url resource-id resource-type]
-  (try+
-    (if (badge-owner? ctx user-badge-id user-id)
-      (let [site-url (u/get-site-url ctx)
-            description (str "Added by badge recipient " (today)  " at " site-url )
-            data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
-        (if evidence-id
-          (update-user-badge-evidence! (assoc data :id evidence-id) (u/get-db ctx))
-          (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-            (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
-                  property-name (str "evidence_id:" id)
-                  properties (->> {:resource_id resource-id :resource_type resource-type}
-                                  (json/write-str))]
-              (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
-              )))
-
-        ;;send badge info to factory
-        (send-badge-info-to-obf ctx user-badge-id user-id)
-        {:status "success"})
-      (throw+ {:status "error"})
-      )
-    (catch Object _
-      (log/error _)
-      {:status "error"})
-    ))
-
-
-;;TEST
-(defn delete-evidence! [ctx evidence-id user-badge-id user-id resource-id resource-type]
-  (try+
-    (if (badge-owner? ctx user-badge-id user-id)
-      (do
-        (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-          (let [property-name (str "evidence_id:" evidence-id)]
-          (delete-user-badge-evidence! {:id evidence-id :user_badge_id user-badge-id} {:connection tx})
-          (delete-user-evidence-property! {:user_id user-id :name property-name} {:connection tx})
-
-          ))
-        {:status "success"})
-
-      {:status "error"})
-
-    (catch Object _
-      (log/error _)
-      {:status "error"}))
-  )
-
-
-;;TEST
-(defn is-evidence? [ctx user-id opts]
-  (let [{:keys [id resource-type]} opts
-        url (case resource-type
-              "page" (str (u/get-full-path ctx) "/page/view/" id)
-              "badge" (str (u/get-full-path ctx) "/badge/info/" id)
-              (str (u/get-full-path ctx) "/page/view/" id))]
-    (if-let [check (empty? (select-user-evidence-by-url {:user_id user-id :url url} (u/get-db ctx)))] false true)))
-
-;TODO rework evidence
 (defn save-badge-settings!
   "Update badge settings"
-  [ctx user-badge-id user-id visibility evidence-url rating tags]
+  [ctx user-badge-id user-id visibility rating tags]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
       (let [data {:id          user-badge-id
                   :visibility   visibility
-                  ;:evidence_url (if (blank? evidence-url) nil evidence-url)
                   :rating       rating}]
         (if (and (private? ctx) (= "public" visibility))
           (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
-        (if (blank? evidence-url) (toggle-show-evidence! ctx user-badge-id 0 user-id))
         (update-badge-settings! data (u/get-db ctx))
         (save-badge-tags! ctx tags user-badge-id)
         (send-badge-info-to-obf ctx user-badge-id user-id)
-        (if evidence-url
-          (user-badge-evidence ctx user-badge-id evidence-url))
         (badge-publish-update! ctx user-badge-id visibility)
         (if (or (= "internal" visibility) (= "public" visibility))
           (u/event ctx user-id "publish" user-badge-id "badge")

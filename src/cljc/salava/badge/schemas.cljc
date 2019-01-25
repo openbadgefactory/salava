@@ -51,8 +51,8 @@
    :status                               (s/maybe (s/enum "pending" "accepted" "declined"))
    :mtime                                s/Int
    :badge_id                     (s/maybe s/Str)
-;  :issuer_url                           (s/maybe s/Str)
-;  :badge_url                            (s/maybe s/Str)
+   ;  :issuer_url                           (s/maybe s/Str)
+   ;  :badge_url                            (s/maybe s/Str)
    :obf_url                              (s/maybe s/Str)
    :issued_by_obf                        s/Bool
    :verified_by_obf                      s/Bool
@@ -128,7 +128,7 @@
                            :name  s/Str
                            :image_file  s/Str
                            :description s/Str
-           (s/optional-key :obf_url)    (s/maybe s/Str)
+                           (s/optional-key :obf_url)    (s/maybe s/Str)
                            :alignment [(s/maybe {:name s/Str
                                                  :url  s/Str
                                                  :description s/Str})]
@@ -156,6 +156,14 @@
 
 (s/defschema UserBackpackEmail {:email s/Str
                                 :backpack_id (s/maybe s/Int)})
+
+(s/defschema Evidence {:id (s/maybe s/Str)
+                       :name (s/maybe s/Str)
+                       :narrative (s/maybe s/Str)
+                       :url s/Str
+                       :resource_id (s/maybe s/Int)
+                       :resource_type s/Str
+                       :mime_type (s/maybe s/Str)} )
 
 
 
