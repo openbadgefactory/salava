@@ -51,11 +51,10 @@
 
 
 (defn save-settings [state init-data context]
-  (let [{:keys [id visibility tags rating evidence_url]} (:badge-settings @state)]
+  (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/save_settings/" id))
       {:params  {:visibility   visibility
-                 :evidence-url evidence_url
                  :tags         tags
                  :rating       (if (pos? rating) rating nil)}
        :handler (fn []
@@ -75,7 +74,7 @@
   (let [id (get-in @state [:badge-settings :id])
         new-value (not (get-in @state [:badge-settings :show_evidence]))]
     (ajax/POST
-      (path-for (str "/obpv1/badge/toggle_evidence/" id))
+      (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
       {:params {:show_evidence new-value}
        :handler (fn [] (do
 
