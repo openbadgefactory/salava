@@ -692,3 +692,6 @@ SELECT value FROM user_properties WHERE name = :name AND user_id = :user_id
 SELECT DISTINCT ube.url FROM user_badge_evidence AS ube
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ub.user_id = :user_id AND ube.url = :url
+
+--name: delete-all-badge-evidences!
+DELETE FROM user_badge_evidence WHERE user_badge_id = :user_badge_id
