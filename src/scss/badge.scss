@@ -230,6 +230,12 @@ button {
     margin-bottom: 15px;
     width: 100%;
 
+    .inline.name {
+      label {
+        margin-right: 53px;
+      }
+    }
+
     a {
       color: $text-color;
       text-decoration: none;
@@ -284,25 +290,19 @@ button {
       opacity: 1;
     }
   }
-/*   div.panel-close {
-    right:15px !important;
-  } */
-
   button.panel-edit {
     top: -1px;
     right: 25px;
   }
 
-    button.evidence-toggle {
-    top: -1px;
-    right: 45px;
+  button.evidence-toggle {
+    .fa{
+      margin-right: 0px;
+    }
+    top: unset;
+    bottom: 4px;
+    right: 0px;
   }
-
-/*   .show-more {
-    position:absolute;
-    bottom: 0px;
-    right:14px;
-  } */
   .resource-options {
     margin-top: 20px;
     margin-bottom: 10px;
