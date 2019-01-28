@@ -358,7 +358,7 @@
                                                          (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                        (hyperlink url))
                               (hyperlink url))]
-                           (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
+                           (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
                            (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
                           [:div [:button {:type "button"
