@@ -161,14 +161,17 @@
 
 ;;EVIDENCE
 
-;;TEST (fix information duplication)
-(defn badge-evidences "get user-badge evidences" [ctx badge-id user-id]
-  (let [evidences (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))]
-    (reduce (fn [r evidence]
-              (let [property-name (str "evidence_id:" (:id evidence))
-                    property (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
-                                     (json/read-str :key-fn keyword))]
-                (conj r (assoc evidence :properties property)))) [] evidences)))
+;;TEST
+(defn badge-evidences "get user-badge evidences"
+  ([ctx badge-id]
+   (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx)))
+  ([ctx badge-id user-id]
+   (let [evidences (badge-evidences ctx badge-id) #_(select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))]
+     (reduce (fn [r evidence]
+               (let [property-name (str "evidence_id:" (:id evidence))
+                     property (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
+                                      (json/read-str :key-fn keyword))]
+                 (conj r (assoc evidence :properties property)))) [] evidences))))
 
 #_(defn user-badge-evidence
     [ctx user-badge-id url]
@@ -238,25 +241,25 @@
   (if (badge-owner? ctx badge-id user-id)
     (update-show-evidence! {:id badge-id :show_evidence show-evidence} (u/get-db ctx))))
 
+;;TEST
 (defn toggle-show-evidence! [ctx badge-id evidence-id show_evidence user-id]
   "Toggle evidence visibility"
   (try+
     (if (badge-owner? ctx badge-id user-id)
       (do
-      (let [property-name (str "evidence_id:" evidence-id)
-            metadata (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
-                             (json/read-str :key-fn keyword))
-            updated-metadata (-> (assoc metadata :hidden show_evidence)
-                                 (json/write-str))]
+        (let [property-name (str "evidence_id:" evidence-id)
+              metadata (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
+                               (json/read-str :key-fn keyword))
+              updated-metadata (-> (assoc metadata :hidden show_evidence)
+                                   (json/write-str))]
 
           (insert-user-evidence-property! {:user_id user-id :value updated-metadata :name property-name} (u/get-db ctx)))
-        (hash-map :status "success")
-        #_{:status "success"}))
+        (hash-map :status "success")))
     (catch Object _
       (log/error _)
       {:status "error"})))
 
-;;
+;;;;;;;;;;;;;
 
 (defn fetch-badge [ctx badge-id]
   (let [my-badge (select-multi-language-user-badge {:id badge-id} (u/get-db-1 ctx))
@@ -265,8 +268,10 @@
                            (update :criteria_content u/md->html)
                            (assoc  :alignment (select-alignment-content {:badge_content_id (:badge_content_id content)} (u/get-db ctx)))
                            (dissoc :badge_content_id)))
-                     (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))]
-    (assoc my-badge :content content)))
+                     (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
+        evidences (badge-evidences ctx badge-id)]
+    (assoc my-badge :content content
+                    :evidences evidences)))
 
 
 (defn get-badge
