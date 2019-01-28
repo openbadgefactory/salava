@@ -157,13 +157,13 @@
 (s/defschema UserBackpackEmail {:email s/Str
                                 :backpack_id (s/maybe s/Int)})
 
-(s/defschema Evidence {:id (s/maybe s/Str)
+(s/defschema Evidence {:id (s/maybe s/Int)
                        :name (s/maybe s/Str)
                        :narrative (s/maybe s/Str)
                        :url s/Str
-                       :resource_id (s/maybe s/Int)
-                       :resource_type s/Str
-                       :mime_type (s/maybe s/Str)} )
+                       (s/optional-key  :resource_id) (s/maybe s/Int)
+                       (s/optional-key  :resource_type) s/Str
+                       (s/optional-key  :mime_type) (s/maybe s/Str)} )
 
 
 
