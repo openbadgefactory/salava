@@ -47,22 +47,22 @@
                     :name (:name evidence)
                     :url (:url evidence)
                     :narrative (:narrative evidence)
-                    :properties {:hidden (get-in evidence [:properties :hidden])}}]
+                    :properties {:resource_type (get-in evidence [:properties :resource_type]) :hidden (get-in evidence [:properties :hidden])}}]
     (swap! state assoc :evidence evidence)))
 
 (defn toggle-show-evidence! [id data state init-data]
   (let [visibility-atom (cursor state [:evidence :properties :hidden])
         new-value (not @visibility-atom)
-        badgeid (:id data)
+        badgeid (:id @state)
         init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value
                 :user_badge_id badgeid}
-       #_:handler #_(fn [data]
-                  (prn data)
-                  #_(when (= (:status data) "success")
-                    (init-settings (:id data) state init-data "settings"))
+       :handler (fn [data]
+                  ;eset! visibility-atom new-value)
+                  (when (= (:status data) "success")
+                    (init-settings badgeid state init-data "settings"))
                   )})))
 
 (defn set-page-visibility-to-private [page-id]
@@ -72,7 +72,8 @@
      :handler (fn [data])}))
 
 (defn save-badge-evidence [data state init-data]
-  (let [{:keys [id name narrative url resource_visibility resource_id resource_type mime_type]} (:evidence @state)
+  (let [{:keys [id name narrative url resource_visibility properties]} (:evidence @state)
+        {:keys [resource_type mime_type resource_id]} properties
         badge-id (:id data)
         init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
     (swap! state assoc :evidence {:message nil})
@@ -148,11 +149,11 @@
                                             :evidence {:url value
                                                        :name name
                                                        :narrative description
-                                                       :mime_type mime_type
-                                                       :resource_id id
-                                                       :resource_type (case key
-                                                                        :page_input "page"
-                                                                        :file_input "file")
+                                                       :properties {:mime_type mime_type
+                                                                    :resource_id id
+                                                                    :resource_type (case key
+                                                                                     :page_input "page"
+                                                                                     :file_input "file")}
                                                        :resource_visibility visibility})) }
       (case key
         :page_input [:div.resource  [:i.fa.fa-file-text-o] name]
@@ -316,7 +317,7 @@
                    :on-click #(do
 
                                 (.preventDefault %)
-                                (if (= @input-mode :url_input) (reset! (cursor state [:evidence :resource_type] ) "url"))
+                                (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
                                 (save-badge-evidence data state init-data)
 
                                 ;(reset! (cursor state [:show-form]) false)
@@ -332,24 +333,31 @@
 (defn evidence-list [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
         evidence-narrative-atom (cursor state [:evidence :narrative])
-        visibility-atom (cursor state [:evidence :properties :hidden])]
+        ]
     (reduce (fn [r evidence]
-              (let [{:keys [narrative description name id url mtime ctime evidence_type properties]} evidence
+              (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                     {:keys [resource_id resource_type mime_type hidden]} properties
                     added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient"))
                     desc (cond
                            (not (blank? narrative)) narrative
                            (not added-by-user?) description ;;todo use regex to match description
                            :else nil)]
-                (prn @visibility-atom)
-                (init-evidence-form evidence state true)
                 (conj r
                       (when-not (blank? url)
                         [:div.panel.panel-default
                          [:div.panel-heading {:id (str "heading" id)
                                               :role "tab"}
                           [:div.panel-title
-                           [:div.url [:div {:style {:float "left"}} [evidence-icon evidence_type]] (hyperlink url)]
+                           [:div.url [:div {:style {:float "left"}} [evidence-icon {:type resource_type :mime_type mime_type}]]
+                            (case resource_type
+                              "file" (hyperlink url)
+                              "page" (if (session/get :user)
+                                       [:a {:href "#"
+                                            :on-click #(do
+                                                         (.preventDefault %)
+                                                         (mo/open-modal [:page :view] {:page-id resource_id}))} url]
+                                       (hyperlink url))
+                              (hyperlink url))]
                            (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
                            (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
@@ -358,8 +366,9 @@
                                           :class "close evidence-toggle"
                                           :on-click #(do
                                                        (.preventDefault %)
-                                                       (toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if @visibility-atom (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                            :title (if @visibility-atom (t :badge/Showevidence) (t :badge/Showevidence))}]]]
+                                                       (init-evidence-form evidence state true)
+                                                       (toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
+                                                                                                                           :title (t :badge/Showevidence)}]]]
                           (when added-by-user?
                             [:div [:div [:button {:type "button"
                                                   :aria-label "OK"
