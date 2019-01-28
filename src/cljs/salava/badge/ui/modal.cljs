@@ -169,7 +169,8 @@
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
         metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))
-        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)]
+        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)
+        evidences (remove #(= true (get-in % [:properties :hidden])) evidences)]
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
@@ -228,38 +229,35 @@
       (when (and (pos? show_evidence) (not (empty? evidences)))
         [:div.row {:id "badge-settings"}
          [:div.col-md-12
-          [:h2.uppercase-header (if (= (count evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
+          [:h2.uppercase-header (if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
           (reduce (fn [r evidence]
-                    (let [{:keys [narrative description name evidence_type id url mtime ctime properties]} evidence
-                          added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient"))
-                          resource_id (when-not (= "file" (:type evidence_type)) (->> (split url #"/") ;;FIX
-                                                                                      (last)))
+                    (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+                          added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
+                          {:keys [resource_id resource_type mime_type hidden]} properties
                           desc (cond
                                  (not (blank? narrative)) narrative
                                  (not added-by-user?) description ;;todo use regex to match description
                                  :else nil
                                  )]
-                      (conj r
-                            [:div.modal-evidence
-                             ;(if (empty? properties) )
+                      (conj r (when-not hidden
+                                [:div.modal-evidence
+                                 (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
+                                 [evidence-icon {:type resource_type :mime_type mime_type}]
+                                 [:div.content
 
-                             (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
-                             [evidence-icon evidence_type]
-                             [:div.content
-
-                              (when-not (blank? name) [:div.content-body.name name])
-                              (when-not (blank? desc) [:div.content-body.description desc])
-                              [:div.content-body.url
-                               (case (:type evidence_type)
-                                 "file" (hyperlink url)
-                                 "page" (if (session/get :user)
-                                          [:a {:href "#"
-                                               :on-click #(do
-                                                            (.preventDefault %)
-                                                            (mo/open-modal [:page :view] {:page-id resource_id}))} url]
-                                          (hyperlink url))
-                                 (hyperlink url))]]
-                             ])))
+                                  (when-not (blank? name) [:div.content-body.name name])
+                                  (when-not (blank? desc) [:div.content-body.description desc])
+                                  [:div.content-body.url
+                                   (case resource_type
+                                     "file" (hyperlink url)
+                                     "page" (if (session/get :user)
+                                              [:a {:href "#"
+                                                   :on-click #(do
+                                                                (.preventDefault %)
+                                                                (mo/open-modal [:page :view] {:page-id resource_id}))} url]
+                                              (hyperlink url))
+                                     (hyperlink url))]]
+                                 ]))))
                   [:div ] evidences)]])]]))
 
 (defn modal-navi [state]
