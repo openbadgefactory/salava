@@ -271,7 +271,7 @@
                      (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
         evidences (badge-evidences ctx badge-id)]
     (assoc my-badge :content content
-                    :evidences evidences)))
+      :evidences evidences)))
 
 
 (defn get-badge
@@ -438,11 +438,13 @@
     (if (badge-owner? ctx user-badge-id user-id)
       (let [data {:id          user-badge-id
                   :visibility   visibility
-                  :rating       rating}]
+                  :rating       rating}
+            evidences (badge-evidences ctx user-badge-id)]
         (if (and (private? ctx) (= "public" visibility))
           (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
         (update-badge-settings! data (u/get-db ctx))
         (save-badge-tags! ctx tags user-badge-id)
+        (if-not (empty? evidences) (toggle-show-all-evidences! ctx user-badge-id 1 user-id ))
         (send-badge-info-to-obf ctx user-badge-id user-id)
         (badge-publish-update! ctx user-badge-id visibility)
         (if (or (= "internal" visibility) (= "public" visibility))
@@ -465,6 +467,13 @@
       {:status "success"})
     {:status "error"}))
 
+(defn delete-badge-evidences! [db badge-id user-id]
+  (if-let [evidences (select-user-badge-evidence {:user_badge_id badge-id} db)]
+    (when-not (empty? evidences)
+        (delete-all-badge-evidences! {:user_badge_id badge-id} db)
+        (doseq [evidence evidences
+                :let [name (str "evidence_id:"(:id evidence))]]
+          (delete-user-evidence-property! {:name name :user_id user-id} db)))))
 
 (defn delete-badge-with-db! [db user-badge-id]
   (delete-badge-tags! {:user_badge_id user-badge-id} db)
@@ -482,11 +491,14 @@
       [tr-cn (u/get-datasource ctx)]
       (do
         #_(db/delete-badge-endorsements ctx badge-id)
-        (delete-badge-with-db! {:connection tr-cn} badge-id)))
+        (delete-badge-with-db! {:connection tr-cn} badge-id)
+        (delete-badge-evidences! {:connection tr-cn} badge-id user-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
       (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
     {:status "success" :message "Badge deleted"}
-    (catch Object _ {:status "error" :message ""})))
+    (catch Object _
+      (log/error _)
+      {:status "error" :message ""})))
 
 (defn badges-images-names
   "Get badge images and names. Return a map."
