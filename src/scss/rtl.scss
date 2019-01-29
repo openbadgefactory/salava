@@ -1293,3 +1293,36 @@ html[dir="rtl"] #metabadge {
 
 }
 
+html[dir="rtl"] #badge-settings {
+  i, .evidence-icon i {
+    margin-right: unset;
+    margin-left: 10px;
+  }
+
+  button.evidence-toggle {
+    right: unset;
+    left: 0px;
+  }
+
+  button.close {
+    right: unset;
+    left: 0px;
+  }
+
+  button.panel-edit {
+    right: unset;
+    left: 25px;
+  }
+
+  .panel {
+ .panel-title .url .evidence-icon {
+      float: right;
+    }
+  }
+
+  .modal-evidence .evidence-icon {
+    float: right;
+    margin-right: unset;
+    margin-left: 15px;
+  }
+}
