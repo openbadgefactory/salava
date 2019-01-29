@@ -58,7 +58,7 @@
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value
-                :user_badge_id badgeid}
+                :user_badge_id (int badgeid)}
        :handler (fn [data]
                   ;eset! visibility-atom new-value)
                   (when (= (:status data) "success")
@@ -210,7 +210,7 @@
                                                      :on-change #(upload-file resource-atom state)
                                                      :style {:display "none"}}]]]
                          :page_input [:div])]
-    [:div.col-md-9.resource-container
+    [:div.col-md-12.resource-container
      (reduce (fn [r resource]
                (conj r [grid-element resource state key data init-data])
                ) init-container (if files files @resource-atom))]))
@@ -249,12 +249,13 @@
      [:div {:class "col-md-9 settings-content settings-tab"}
       (if @message [:div @message])
       [:div
-       [:div.form-horizontal
-        [:div.form-group
-         [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]
-         [:div.col-md-9.evidence-info (t :badge/Evidenceinfo)]
-         [:div.col-md-9.resource-options
-          [:div ;{:style {:float "left"}}
+       [:div.row [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
+       [:div.evidence-info (t :badge/Evidenceinfo)]
+
+       [:div.row.form-horizontal
+        [:div.row
+         [:div.col-md-12.resource-options
+          [:div
            [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
                       :href "#"
                       :on-click #(do
@@ -275,11 +276,11 @@
 
         ;;Preview
         (when @(cursor state [:show-preview])
-          [:div.preview.evidence-list
+          [:div.preview.evidence-list.col-md-9
            [:div.panel.panel-default
             [:div.panel-heading
              [:div.panel-title
-              [:div.url [:div {:style {:float "left"}} [evidence-icon @evidence-url-atom (cursor state [:evidence :mime_type])]] (hyperlink @evidence-url-atom)]]
+              [:div.url  [evidence-icon @evidence-url-atom (cursor state [:evidence :properties :mime_type])]] (hyperlink @evidence-url-atom)]
              [:div [:button {:type "button"
                              :aria-label "OK"
                              :class "close panel-close"
@@ -319,10 +320,6 @@
                                 (.preventDefault %)
                                 (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
                                 (save-badge-evidence data state init-data)
-
-                                ;(reset! (cursor state [:show-form]) false)
-                                ;(reset! (cursor state [:show-preview]) false)
-
                                 (reset! input-mode nil)
                                 )}
           (t :core/Add)]
@@ -341,15 +338,16 @@
                     desc (cond
                            (not (blank? narrative)) narrative
                            (not added-by-user?) description ;;todo use regex to match description
-                           :else nil)]
+                           :else nil)
+                    visibility-class (if (= true hidden) " opaque" "")]
                 (conj r
                       (when-not (blank? url)
-                        [:div.panel.panel-default
+                        [:div.panel.panel-default {:class visibility-class}
                          [:div.panel-heading {:id (str "heading" id)
                                               :role "tab"}
                           [:div.panel-title
-                           [:div.url [:div {:style {:float "left"}} [evidence-icon {:type resource_type :mime_type mime_type}]]
-                            (case resource_type
+                           [:div.url.row.flip [:div.col-md-1 [evidence-icon {:type resource_type :mime_type mime_type}]]
+                            [:div.col-md.11.break (case resource_type
                               "file" (hyperlink url)
                               "page" (if (session/get :user)
                                        [:a {:href "#"
@@ -357,7 +355,7 @@
                                                          (.preventDefault %)
                                                          (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                        (hyperlink url))
-                              (hyperlink url))]
+                              (hyperlink url))]]
                            (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
                            (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
@@ -368,7 +366,7 @@
                                                        (.preventDefault %)
                                                        (init-evidence-form evidence state true)
                                                        (toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                                                           :title (t :badge/Showevidence)}]]]
+                                                                                                                           :title (if (= true hidden) (t :badge/Showevidence) (t :badge/Hideevidence))}]]]
                           (when added-by-user?
                             [:div [:div [:button {:type "button"
                                                   :aria-label "OK"
