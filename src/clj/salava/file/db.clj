@@ -10,6 +10,9 @@
 
 (defqueries "sql/file/queries.sql")
 
+(defn used-quota [ctx user-id]
+  (select-used-file-quota {:user_id user-id} (into {:result-set-fn first :row-fn :used_quota} (get-db ctx))))
+
 (defn user-files-all [ctx user-id]
   (let [files (select-user-files {:user_id user-id} (get-db ctx))
         max-size (get-in ctx [:config :file :max-size] 100000000)
