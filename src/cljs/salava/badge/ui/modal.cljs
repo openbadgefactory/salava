@@ -246,7 +246,7 @@
                                  [:div.content
 
                                   (when-not (blank? name) [:div.content-body.name name])
-                                  (when-not (blank? desc) [:div.content-body.description desc])
+                                  (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
                                   [:div.content-body.url
                                    (case resource_type
                                      "file" (hyperlink url)
@@ -269,7 +269,7 @@
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
-       [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [badge-content state] :tab-no 1 )}
+       [:a.nav-link {:href "#" :on-click #(do (init-data state (:id @state) 1) #_(swap! state assoc :tab [badge-content state] :tab-no 1 ))}
         [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)  ]]]
       [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}

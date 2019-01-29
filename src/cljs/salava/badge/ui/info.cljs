@@ -300,7 +300,7 @@
                                  [:div.content
 
                                   (when-not (blank? name) [:div.content-body.name name])
-                                  (when-not (blank? desc) [:div.content-body.description desc])
+                                  (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
                                   [:div.content-body.url
                                    (case resource_type
                                      "file" (hyperlink url)

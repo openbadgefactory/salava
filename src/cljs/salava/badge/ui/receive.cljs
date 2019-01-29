@@ -201,7 +201,7 @@
                                   [:div.evidence-icon [:i.fa.fa-link]]
                                   [:div.content
                                    (when-not (blank? name) [:div.content-body.name name])
-                                   (when-not (blank? desc) [:div.content-body.description desc])
+                                   (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
                                    [:div.content-body.url
                                     (hyperlink url)]]])))
                        [:div ] evidences)]])
