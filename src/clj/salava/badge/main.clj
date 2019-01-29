@@ -166,12 +166,13 @@
   ([ctx badge-id]
    (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx)))
   ([ctx badge-id user-id]
-   (let [evidences (badge-evidences ctx badge-id) #_(select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx))]
+   (let [evidences (badge-evidences ctx badge-id)]
      (reduce (fn [r evidence]
                (let [property-name (str "evidence_id:" (:id evidence))
-                     property (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
+                     properties (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
                                       (json/read-str :key-fn keyword))]
-                 (conj r (assoc evidence :properties property)))) [] evidences))))
+                 (conj r (-> evidence (assoc :properties properties))))) [] evidences)))
+  ([ctx badge-id user-id markdown?] (map (fn [evidence] (-> evidence (update :narrative u/md->html))) (badge-evidences ctx badge-id user-id))) )
 
 #_(defn user-badge-evidence
     [ctx user-badge-id url]
@@ -269,7 +270,7 @@
                            (assoc  :alignment (select-alignment-content {:badge_content_id (:badge_content_id content)} (u/get-db ctx)))
                            (dissoc :badge_content_id)))
                      (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
-        evidences (badge-evidences ctx badge-id)]
+        evidences (map (fn [evidence] (-> evidence (update :narrative u/md->html)))(badge-evidences ctx badge-id))]
     (assoc my-badge :content content
       :evidences evidences)))
 
@@ -289,9 +290,8 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
-        evidences (badge-evidences ctx badge-id user-id)
+        evidences (badge-evidences ctx badge-id user-id true)]
 
-        ]
     (assoc badge :congratulated? user-congratulation?
       :congratulations all-congratulations
       :view_count view-count

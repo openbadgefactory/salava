@@ -288,21 +288,11 @@
                      (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user) resource_id resource_type))
                      )
 
-             #_(POST "/toggle_evidence/:evidenceid" []
-                   ;:return {} ;{:status (s/enum "success" "error")}
-                   :path-params [evidenceid :- Long]
-                   :body-params [show_evidence :- (s/enum false true)
-                                 user_badge_id :- s/Int]
-                   :summary "Set evidence visibility"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (ok (str (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user)))))
-
              (POST "/toggle_evidence/:evidenceid" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [evidenceid :- Long]
                    :body-params [show_evidence :- (s/enum false true)
-                                 user_badge_id :- s/Int]
+                                 user_badge_id :- Long]
                    :summary "Set evidence visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
