@@ -276,7 +276,6 @@
                    :summary "Save badge evidence"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (prn evidence)
                    (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id evidence)))
 
              (DELETE "/evidence/:evidenceid" [user_badge_id resource_type resource_id]
