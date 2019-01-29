@@ -231,17 +231,17 @@
                                                     [:div {:class "col-md-12"}
                                                      [tag/new-tag-input (cursor state [:badge-settings :tags]) (cursor state [:badge-settings :new-tag]) state init-data]]]
 
-                                                   [:div.form-group
-                                                    [:label {:class "col-md-12 sub-heading" :for "evidence"} (t :badge/Evidence)]
-                                                    [:div
-                                                     (when-not (empty? (:evidences data))
-                                                      [:fieldset {:class "col-md-9 checkbox"}
-                                                       [:div.col-md-12 [:label {:for "show-evidence"}
-                                                                        [:input {:type      "checkbox"
-                                                                                 :id        "show-evidence"
-                                                                                 :on-change #(toggle-evidence state)
-                                                                                 :checked   (get-in @state [:badge-settings :show_evidence])}]
-                                                                        (t :badge/Evidencevisibility)]]])]]
+                                                   [:div {:class "row"}
+                                                    [:label {:class "col-md-12 sub-heading" :for "evidence"}
+                                                     (t :badge/Evidence)]]
+                                                   (when-not (empty? (:evidences data))
+                                                     [:div.form-group[:fieldset {:class "col-md-9 checkbox"}
+                                                      [:div.col-md-12 [:label {:for "show-evidence"}
+                                                                       [:input {:type      "checkbox"
+                                                                                :id        "show-evidence"
+                                                                                :on-change #(toggle-evidence state)
+                                                                                :checked   (get-in @state [:badge-settings :show_evidence])}]
+                                                                       (t :badge/Evidencevisibility)]]]])
                                                    [evidence/evidence-block data state init-data]]]
                                             [:div.modal-footer]])]]))
 
