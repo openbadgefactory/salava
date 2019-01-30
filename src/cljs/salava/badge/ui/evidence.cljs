@@ -23,14 +23,20 @@
            :show-form false
            :evidence nil)))
 
+(defn show-settings-dialog [badge-id state init-data ]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings data (assoc data :new-tag ""))
+                (swap! state assoc :tab [se/settings-tab-content data state init-data]
+                       :tab-no 2
+                       :evidences (:evidences data)))}))
+
 (defn delete-evidence! [id data state init-data]
-  (let [init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
     (ajax/DELETE
       (path-for (str "/obpv1/badge/evidence/" id))
       { :params {:user_badge_id (:id data)}
-        :handler (fn [r]
-                   (when (= "success" (:status r))
-                     (init-settings (:id data) state init-data "settings")))})))
+        :handler #(show-settings-dialog (:id @state) state init-data)}))
 
 
 (defn init-resources [key resource-atom]
@@ -55,16 +61,13 @@
   (let [visibility-atom (cursor state [:evidence :properties :hidden])
         new-value (not @visibility-atom)
         badgeid (:id @state)
-        init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
+        ;init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))
+        ]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value
                 :user_badge_id (int badgeid)}
-       :handler (fn [data]
-                  ;eset! visibility-atom new-value)
-                  (when (= (:status data) "success")
-                    (init-settings badgeid state init-data "settings"))
-                  )})))
+       :handler #(show-settings-dialog badgeid state init-data)})))
 
 (defn set-page-visibility-to-private [page-id]
   (ajax/POST
@@ -76,7 +79,8 @@
   (let [{:keys [id name narrative url resource_visibility properties]} (:evidence @state)
         {:keys [resource_type mime_type resource_id]} properties
         badge-id (:id data)
-        init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
+        ;init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))
+        ]
     (swap! state assoc :evidence {:message nil})
     (if (and (not (blank? narrative)) (blank? name))
       (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
@@ -94,9 +98,7 @@
                                :resource_id resource_id
                                :resource_type resource_type
                                :mime_type mime_type}}
-           :handler (fn [resp]
-                      (when (= "success" (:status resp))
-                        (init-settings (:id data) state init-data "settings")))})))))
+           :handler #(show-settings-dialog (:id @state) state init-data)})))))
 
 ;;;;
 
@@ -236,7 +238,7 @@
           nil)]])))
 
 (defn evidence-form [data state init-data]
-  (let [settings-tab (first (plugin-fun (session/get :plugins) "settings" "settings_tab_content"))
+  (let [;settings-tab (first (plugin-fun (session/get :plugins) "settings" "settings_tab_content"))
         evidence-name-atom (cursor state [:evidence :name])
         evidence-narrative-atom (cursor state [:evidence :narrative])
         evidence-url-atom (cursor state [:evidence :url])
@@ -320,14 +322,17 @@
 
                                 (.preventDefault %)
                                 (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
-                                (save-badge-evidence data state init-data)
                                 (reset! input-mode nil)
+                                (reset! (cursor state [:show-form]) nil)
+                                (reset! (cursor state [:show-preview]) nil)
+                                (save-badge-evidence data state init-data)
+
                                 )}
           (t :core/Add)]
          [:a.cancel {:on-click #(do
                                   (.preventDefault %)
                                   (swap! state assoc :tab [se/settings-tab-content (dissoc data :evidence) state init-data]
-                                                               :tab-no 2))}
+                                         :tab-no 2))}
           (t :core/Cancel)]]]]]]))
 
 (defn evidence-list [data state init-data]
@@ -351,14 +356,14 @@
                           [:div.panel-title
                            [:div.url.row.flip [:div.col-md-1 [evidence-icon {:type resource_type :mime_type mime_type}]]
                             [:div.col-md.11.break (case resource_type
-                              "file" (hyperlink url)
-                              "page" (if (session/get :user)
-                                       [:a {:href "#"
-                                            :on-click #(do
-                                                         (.preventDefault %)
-                                                         (mo/open-modal [:page :view] {:page-id resource_id}))} url]
-                                       (hyperlink url))
-                              (hyperlink url))]]
+                                                    "file" (hyperlink url)
+                                                    "page" (if (session/get :user)
+                                                             [:a {:href "#"
+                                                                  :on-click #(do
+                                                                               (.preventDefault %)
+                                                                               (mo/open-modal [:page :view] {:page-id resource_id}))} url]
+                                                             (hyperlink url))
+                                                    (hyperlink url))]]
                            (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
                            (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
@@ -415,7 +420,7 @@
                            ]]])))
               )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] (:evidences data))))
 
-(defn evidence-block [data state init-data]
+(defn evidenceblock [data state init-data]
   [:div#badge-settings
    [:div.form-group
     [:div.col-md-9 {:class "new-evidence"}
