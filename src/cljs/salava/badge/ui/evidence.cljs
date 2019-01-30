@@ -23,20 +23,18 @@
            :show-form false
            :evidence nil)))
 
-(defn show-settings-dialog [badge-id state init-data ]
+(defn init-settings [badge-id state init-data ]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
-                (swap! state assoc :badge-settings data (assoc data :new-tag ""))
-                (swap! state assoc :tab [se/settings-tab-content data state init-data]
-                       :tab-no 2
+                (swap! state assoc :badge-settings data (assoc data :new-tag "")
                        :evidences (:evidences data)))}))
 
 (defn delete-evidence! [id data state init-data]
-    (ajax/DELETE
-      (path-for (str "/obpv1/badge/evidence/" id))
-      { :params {:user_badge_id (:id data)}
-        :handler #(show-settings-dialog (:id @state) state init-data)}))
+  (ajax/DELETE
+    (path-for (str "/obpv1/badge/evidence/" id))
+    { :params {:user_badge_id (:id data)}
+      :handler #(init-settings (:id @state) state init-data)}))
 
 
 (defn init-resources [key resource-atom]
@@ -60,14 +58,12 @@
 (defn toggle-show-evidence! [id data state init-data]
   (let [visibility-atom (cursor state [:evidence :properties :hidden])
         new-value (not @visibility-atom)
-        badgeid (:id @state)
-        ;init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))
-        ]
+        badgeid (:id @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value
                 :user_badge_id (int badgeid)}
-       :handler #(show-settings-dialog badgeid state init-data)})))
+       :handler #(init-settings badgeid state init-data)})))
 
 (defn set-page-visibility-to-private [page-id]
   (ajax/POST
@@ -78,9 +74,7 @@
 (defn save-badge-evidence [data state init-data]
   (let [{:keys [id name narrative url resource_visibility properties]} (:evidence @state)
         {:keys [resource_type mime_type resource_id]} properties
-        badge-id (:id data)
-        ;init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))
-        ]
+        badge-id (:id data)]
     (swap! state assoc :evidence {:message nil})
     (if (and (not (blank? narrative)) (blank? name))
       (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
@@ -98,7 +92,7 @@
                                :resource_id resource_id
                                :resource_type resource_type
                                :mime_type mime_type}}
-           :handler #(show-settings-dialog (:id @state) state init-data)})))))
+           :handler #(init-settings (:id @state) state init-data)})))))
 
 ;;;;
 
@@ -239,12 +233,12 @@
 
 (defn evidence-form [data state init-data]
   (let [;settings-tab (first (plugin-fun (session/get :plugins) "settings" "settings_tab_content"))
-        evidence-name-atom (cursor state [:evidence :name])
-        evidence-narrative-atom (cursor state [:evidence :narrative])
-        evidence-url-atom (cursor state [:evidence :url])
-        message (cursor state [:evidence :message])
-        input-mode (cursor state [:input_mode])
-        {:keys [image_file name]} data]
+         evidence-name-atom (cursor state [:evidence :name])
+         evidence-narrative-atom (cursor state [:evidence :narrative])
+         evidence-url-atom (cursor state [:evidence :url])
+         message (cursor state [:evidence :message])
+         input-mode (cursor state [:input_mode])
+         {:keys [image_file name]} data]
 
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
@@ -325,7 +319,9 @@
                                 (reset! input-mode nil)
                                 (reset! (cursor state [:show-form]) nil)
                                 (reset! (cursor state [:show-preview]) nil)
-                                (save-badge-evidence data state init-data)
+                                (save-badge-evidence @(cursor state [:badge-settings]) state init-data)
+                                (swap! state assoc :tab [se/settings-tab-content data state init-data]
+                                       :tab-no 2)
 
                                 )}
           (t :core/Add)]
@@ -338,7 +334,7 @@
 (defn evidence-list [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
         evidence-narrative-atom (cursor state [:evidence :narrative])
-        ]
+        visibility-atom (cursor state [:evidence :properties :hidden])]
     (reduce (fn [r evidence]
               (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                     {:keys [resource_id resource_type mime_type hidden]} properties
@@ -418,7 +414,7 @@
                                       :data-target (str "#collapse" id)}
                              (t :badge/Save)]]
                            ]]])))
-              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] (:evidences data))))
+              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))))
 
 (defn evidenceblock [data state init-data]
   [:div#badge-settings
