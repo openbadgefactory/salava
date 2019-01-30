@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -18,7 +18,9 @@
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
-            [salava.core.ui.tag :as tag]))
+            [salava.core.ui.tag :as tag]
+            [clojure.string :refer [blank? starts-with? split]]
+            [salava.badge.ui.evidence :refer [evidence-icon]]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -34,10 +36,13 @@
      {:handler (fn [data]
                  (do (reset! state (assoc data :id id
                                      :show-link-or-embed-code nil
+                                     :show_evidence_options false
                                      :initializing false
                                      :content-language (init-content-language (:content data))
                                      :tab-no tab-no
-                                     :permission "success"))
+                                     :permission "success"
+                                     :evidence {:url nil}
+                                     ))
                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
 
@@ -58,7 +63,8 @@
                 (swap! state assoc :badge-settings data (assoc data :new-tag ""))
                 (if (= context "settings")
                   (swap! state assoc :tab [se/settings-tab-content data state init-data]
-                         :tab-no 2)
+                         :tab-no 2
+                         :evidences (:evidences data))
                   (swap! state assoc :tab [se/share-tab-content data state init-data]
                          :tab-no 3)))}))
 
@@ -157,13 +163,14 @@
      ]))
 
 (defn badge-content [state]
-  (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements]} @state
+  (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements evidences]} @state
         expired? (bh/badge-expired? expires_on)
         revoked (pos? revoked)
         show-recipient-name-atom (cursor state [:show_recipient_name])
         selected-language (cursor state [:content-language])
         metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))
-        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)]
+        {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url  creator_name creator_url creator_email creator_image creator_description message_count endorsement_count creator_content_id]} (content-setter @selected-language content)
+        evidences (remove #(= true (get-in % [:properties :hidden])) evidences)]
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
@@ -218,14 +225,40 @@
         [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-      (if (and (pos? show_evidence) evidence_url)
-        [:div.row
-         [:div.col-md-12
-          [:h2.uppercase-header (t :badge/Evidence)]
-          [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])
 
-      #_(if (and owner? (session/get :user)) "" [reporttool1 id name "badge"])]]
-    ))
+      (when (and (pos? show_evidence) (not (empty? evidences)))
+        [:div.row {:id "badge-settings"}
+         [:div.col-md-12
+          [:h2.uppercase-header (if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
+          (reduce (fn [r evidence]
+                    (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+                          added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
+                          {:keys [resource_id resource_type mime_type hidden]} properties
+                          desc (cond
+                                 (not (blank? narrative)) narrative
+                                 (not added-by-user?) description ;;todo use regex to match description
+                                 :else nil
+                                 )]
+                      (conj r (when-not hidden
+                                [:div.modal-evidence
+                                 (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
+                                 [evidence-icon {:type resource_type :mime_type mime_type}]
+                                 [:div.content
+
+                                  (when-not (blank? name) [:div.content-body.name name])
+                                  (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
+                                  [:div.content-body.url
+                                   (case resource_type
+                                     "file" (hyperlink url)
+                                     "page" (if (session/get :user)
+                                              [:a {:href "#"
+                                                   :on-click #(do
+                                                                (.preventDefault %)
+                                                                (mo/open-modal [:page :view] {:page-id resource_id}))} url]
+                                              (hyperlink url))
+                                     (hyperlink url))]]
+                                 ]))))
+                  [:div ] evidences)]])]]))
 
 (defn modal-navi [state]
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
@@ -236,7 +269,7 @@
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
-       [:a.nav-link {:href "#" :on-click #(swap! state assoc :tab [badge-content state] :tab-no 1 )}
+       [:a.nav-link {:href "#" :on-click #(do (init-data state (:id @state) 1) #_(swap! state assoc :tab [badge-content state] :tab-no 1 ))}
         [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)  ]]]
       [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}

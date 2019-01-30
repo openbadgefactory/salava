@@ -110,6 +110,8 @@
                                                                 (when-not (empty? $tags)
                                                                   [:paragraph.generic
                                                                    [:chunk.chunk (str (t :badge/Tags ul)": ")] (into [:phrase ] (for [t $tags] (str t " ")))])
+
+
                                                                 [:paragraph
                                                                  (let [alignments (replace-nils (select-alignment-content {:badge_content_id (:badge_content_id %)} (u/get-db ctx)))]
                                                                    (when-not (empty? alignments)
@@ -127,6 +129,20 @@
 
                                                                  [:spacer 0]
                                                                  (process-markdown (:criteria_content %) $id "Criteria")]]
+
+                                                               (when-not (empty? $evidences)
+                                                                 [:paragraph.generic
+                                                                  [:spacer 0]
+                                                                  [:phrase {:size 12 :style :bold} (if (= 1 (count $evidences)) (t :badge/Evidence ul) (t :badge/Evidences ul))]
+                                                                  [:spacer]
+                                                                  (reduce (fn [r evidence]
+                                                                            (conj r [:phrase
+                                                                                     (when (and (not (blank? (:name evidence))) (not= "-" (:name evidence))) [:phrase [:chunk (:name evidence)]"\n"])
+                                                                                     (when (and (not (blank? (:narrative evidence))) (not= "-" (:narrative evidence)))  [:phrase [:chunk (:narrative evidence)] "\n"])
+                                                                                     (when (and (not (blank? (:description evidence))) (not= "-" (:description evidence))) [:phrase [:chunk (:description evidence)]"\n"])
+                                                                                     [:anchor {:target (:url evidence)} [:chunk.link (str (t :badge/Openevidencepage ul) "...")]]
+                                                                                     [:spacer 2]])
+                                                                            ) [:list {:numbered true :indent 0}] $evidences)])
 
                                                                (when-not (empty? $endorsements)
                                                                  [:paragraph.generic

@@ -19,11 +19,21 @@ DELETE FROM pending_factory_badge
 WHERE email = :email AND assertion_url =
     (SELECT assertion_url FROM user_badge WHERE user_id = :user_id AND assertion_url = :assertion_url LIMIT 1)
 
---name: select-badge-updates
+-- --name: select-badge-updates
 -- FIXME (evidence_url)
-SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evidence_url, ub.rating FROM user_badge AS ub
-       LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+--SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ube.url AS evidence_url, ub.rating FROM user_badge AS ub
+--       LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+--       WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
+
+--name: select-badge-updates
+SELECT ub.id, ub.user_id, ub.email, ub.assertion_url, ub.mtime, ub.rating FROM user_badge AS ub
        WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.user_id = :user_id AND ub.id = :id
+
+--name: select-user-badge-evidence
+SELECT ube.url AS id, ube.name, ube.narrative, ube.description
+FROM user_badge_evidence AS ube
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+WHERE ube.user_badge_id = :id
 
 -- name: select-badge-by-assertion
 SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0 AND status != 'declined'

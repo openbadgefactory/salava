@@ -53,8 +53,8 @@
 (defn create-empty-page! [ctx user-id]
   (let [language (select-user-language {:id user-id} (into {:result-set-fn first :row-fn :language} (get-db ctx)))
         name (or (t :page/Untitled language) "Untitled")]
-   (:generated_key (insert-empty-page<! {:user_id user-id
-                                         :name    name} (get-db ctx)))))
+    (:generated_key (insert-empty-page<! {:user_id user-id
+                                          :name    name} (get-db ctx)))))
 
 (defn page-owner [ctx page-id]
   (select-page-owner {:id page-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx))))
@@ -109,8 +109,8 @@
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
         blocks (page-blocks ctx page-id)]
     (assoc page :blocks blocks
-                :border (border-attributes (:border page))
-                :qr_code (str->qr-base64 (page-url ctx page-id)))))
+      :border (border-attributes (:border page))
+      :qr_code (str->qr-base64 (page-url ctx page-id)))))
 
 
 (defn generate-pdf [ctx page-id]
@@ -119,61 +119,61 @@
          page (conj () (-> (select-page {:id page-id} (get-db ctx))
                            first
                            (assoc :blocks blocks)))
-        data-dir (get-in ctx [:config :core :data-dir])
-        page-template (pdf/template
-                        (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
-                                                            #_[:paragraph {:align :center}
-                                                             [:chunk (str $first_name " " $last_name)]][:spacer 1]
-                                                            [:line {:dotted true}]
-                                                            [:spacer 2]
-                                                            (if (= "heading"  (:type %))
-                                                              (case (:size %)
+         data-dir (get-in ctx [:config :core :data-dir])
+         page-template (pdf/template
+                         (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
+                                                             #_[:paragraph {:align :center}
+                                                                [:chunk (str $first_name " " $last_name)]][:spacer 1]
+                                                             [:line {:dotted true}]
+                                                             [:spacer 2]
+                                                             (if (= "heading"  (:type %))
+                                                               (case (:size %)
                                                                  "h1" [:paragraph {:align :center}
-                                                                   [:heading (:content %)]]
+                                                                       [:heading (:content %)]]
                                                                  "h2" [:paragraph {:align :center}
-                                                                        [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
-                                                            (if (= "badge" (:type %))
-                                                            [:pdf-table {:width-percent 100 :cell-border false }
-                                                             [25 75]
-                                                             [[:pdf-cell {:align :right}
-                                                               (if (contains? % :image_file)
-                                                               [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
-                                                               [:spacer 2]]
-                                                              [:pdf-cell
-                                                               (if (contains? % :name )
-                                                               [:heading (:name %)] " ")
-                                                               [:spacer]
-                                                               #_(if (contains? % :type)
-                                                                 [:paragraph
-                                                                   [:heading (:content %)]] " ")
-                                                               (if (or
-                                                                       (contains? % :issuer_content_name) (contains? % :issued_on) (contains? % :description) (contains? % :criteria_url))
+                                                                       [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
+                                                             (if (= "badge" (:type %))
+                                                               [:pdf-table {:width-percent 100 :cell-border false }
+                                                                [25 75]
+                                                                [[:pdf-cell {:align :right}
+                                                                  (if (contains? % :image_file)
+                                                                    [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
+                                                                  [:spacer 2]]
+                                                                 [:pdf-cell
+                                                                  (if (contains? % :name )
+                                                                    [:heading (:name %)] " ")
+                                                                  [:spacer]
+                                                                  #_(if (contains? % :type)
+                                                                      [:paragraph
+                                                                       [:heading (:content %)]] " ")
+                                                                  (if (or
+                                                                        (contains? % :issuer_content_name) (contains? % :issued_on) (contains? % :description) (contains? % :criteria_url))
+                                                                    [:paragraph
+                                                                     [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
+                                                                     [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
+                                                                     [:spacer 1]
+                                                                     (:description %) "\n"
+                                                                     ;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
+                                                                     [:spacer 0]
+                                                                     [:paragraph
+                                                                      [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
+                                                                      [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
+                                                                ] " ")
+                                                             (if (= "html" (:type %))
+                                                               [:paragraph {:align :center}
+                                                                (:content %)] "")
+                                                             (if (= "tag" (:type %))
                                                                [:paragraph
-                                                                 [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
-                                                                 [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
-                                                                 [:spacer 1]
-                                                                 (:description %) "\n"
-;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
-                                                                 [:spacer 0]
-                                                                [:paragraph
-                                                                 [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                 [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
-                                                             ] " ")
-                                                            (if (= "html" (:type %))
-                                                              [:paragraph {:align :center}
-                                                               (:content %)] "")
-                                                            (if (= "tag" (:type %))
-                                                              [:paragraph
-                                                               [:chunk ]
-                                                               ]
-                                                              )
+                                                                [:chunk ]
+                                                                ]
+                                                               )
 
-                                                            [:spacer 0]])
+                                                             [:spacer 0]])
 
-                              content (map template $blocks)
-                              ]
-                         (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
-                                                             [:chunk (str $first_name " " $last_name)]]]] content)))]
+                               content (map template $blocks)
+                               ]
+                           (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
+                                                                                                                              [:chunk (str $first_name " " $last_name)]]]] content)))]
 
     (dump page)
     (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
@@ -227,39 +227,39 @@
         "iframe"))))
 
 (defn sanitize-html [ctx]
- (fn [content]
-   (let [policy (html-policy :allow-elements ["a" "big" "blockquote" "br" "caption" "cite" "code" "del" "div"
-                                              "em" "h1" "h2" "h3" "hr" "img" "ins" "kbd" "li" "ol" "p" "pre"
-                                              "q" "s" "samp" "small" "span" "strong" "table" "tbody" "td" "tfoot"
-                                              "th" "thead" "tr" "tt" "ul" "var"]
-                             :allow-elements [(url-checker ctx)
-                                              "iframe"]
-                             :allow-attributes ["align" :on-elements ["table"]]
-                             :allow-attributes ["alt" :on-elements ["img"]]
-                             :allow-attributes ["border" :on-elements ["table"]]
-                             :allow-attributes ["bordercolor" :on-elements ["table"]]
-                             :allow-attributes ["cellpadding" :on-elements ["table"]]
-                             :allow-attributes ["cellspacing" :on-elements ["table"]]
-                             :allow-attributes ["colspan" :on-elements ["td" "th"]]
-                             :allow-attributes ["data-cke-realelement" :on-elements ["img"]]
-                             :allow-attributes ["dir" :on-elements ["span"]]
-                             :allow-attributes ["href" :on-elements ["a"]]
-                             :allow-attributes ["id" :on-elements ["a"]]
-                             :allow-attributes ["name" :on-elements ["a"]]
-                             :allow-attributes ["onclick" :on-elements ["a"]]
-                             :allow-attributes ["rowspan" :on-elements ["td" "th"]]
-                             :allow-attributes ["scope" :on-elements ["th" "td" "tr"]]
-                             :allow-attributes ["src" :on-elements ["img"]]
-                             :allow-attributes ["summary" :on-elements ["table"]]
-                             :allow-attributes ["target" :on-elements ["a"]]
-                             :allow-attributes ["rowspan" :on-elements ["td" "th"]]
-                             :allow-attributes ["title" :on-elements ["img"]]
-                             :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
-                             :allow-attributes ["src" :on-elements ["iframe"]]
-                             :allow-standard-url-protocols
-                             :require-rel-nofollow-on-links
-                             :allow-styling)]
-     (html-sanitize policy content))))
+  (fn [content]
+    (let [policy (html-policy :allow-elements ["a" "big" "blockquote" "br" "caption" "cite" "code" "del" "div"
+                                               "em" "h1" "h2" "h3" "hr" "img" "ins" "kbd" "li" "ol" "p" "pre"
+                                               "q" "s" "samp" "small" "span" "strong" "table" "tbody" "td" "tfoot"
+                                               "th" "thead" "tr" "tt" "ul" "var"]
+                              :allow-elements [(url-checker ctx)
+                                               "iframe"]
+                              :allow-attributes ["align" :on-elements ["table"]]
+                              :allow-attributes ["alt" :on-elements ["img"]]
+                              :allow-attributes ["border" :on-elements ["table"]]
+                              :allow-attributes ["bordercolor" :on-elements ["table"]]
+                              :allow-attributes ["cellpadding" :on-elements ["table"]]
+                              :allow-attributes ["cellspacing" :on-elements ["table"]]
+                              :allow-attributes ["colspan" :on-elements ["td" "th"]]
+                              :allow-attributes ["data-cke-realelement" :on-elements ["img"]]
+                              :allow-attributes ["dir" :on-elements ["span"]]
+                              :allow-attributes ["href" :on-elements ["a"]]
+                              :allow-attributes ["id" :on-elements ["a"]]
+                              :allow-attributes ["name" :on-elements ["a"]]
+                              :allow-attributes ["onclick" :on-elements ["a"]]
+                              :allow-attributes ["rowspan" :on-elements ["td" "th"]]
+                              :allow-attributes ["scope" :on-elements ["th" "td" "tr"]]
+                              :allow-attributes ["src" :on-elements ["img"]]
+                              :allow-attributes ["summary" :on-elements ["table"]]
+                              :allow-attributes ["target" :on-elements ["a"]]
+                              :allow-attributes ["rowspan" :on-elements ["td" "th"]]
+                              :allow-attributes ["title" :on-elements ["img"]]
+                              :allow-attributes ["allowfullscreen" :on-elements ["iframe"]]
+                              :allow-attributes ["src" :on-elements ["iframe"]]
+                              :allow-standard-url-protocols
+                              :require-rel-nofollow-on-links
+                              :allow-styling)]
+      (html-sanitize policy content))))
 
 
 (defn save-page-content! [ctx page-id page-content user-id]
@@ -280,7 +280,7 @@
       (doseq [block-index (range (count blocks))]
         (let [block (-> (nth blocks block-index)
                         (assoc :page_id page-id
-                               :block_order block-index))
+                          :block_order block-index))
               id (and (:id block)
                       (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) page-blocks))]
           (case (:type block)
@@ -334,25 +334,30 @@
     (delete-page-tags! {:page_id page-id} (get-db ctx))
     (doall (for [tag valid-tags]
              (replace-page-tag! {:page_id page-id :tag tag}
-                                 (get-db ctx))))))
+                                (get-db ctx))))))
+
 
 (defn save-page-settings! [ctx page-id tags visibility pword user-id]
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
-    (let [password (if (= visibility "password") (trim pword) "")
-          page-visibility (if (and (= visibility "password")
-                                   (empty? password))
-                            "private"
-                            visibility)]
-      (if (and (private? ctx) (= "public" visibility))
-         (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
-      (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
-      (save-page-tags! ctx page-id tags)
-      (if (or (= "internal" visibility) (= "public" visibility))
-        (u/event ctx user-id "publish" page-id "page")
-        (u/event ctx user-id "unpublish" page-id "page"))
-      {:status "success" :message "page/Pagesavedsuccessfully"})
+    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+      {:status "error" :message "page/Evidenceerror"}
+      (let [password (if (= visibility "password") (trim pword) "")
+            page-visibility (if (and (= visibility "password")
+                                     (empty? password))
+                              "private"
+                              visibility)
+            evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
+            page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
+        (if (and (private? ctx) (= "public" visibility))
+          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
+        (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
+        (save-page-tags! ctx page-id tags)
+        (if (or (= "internal" visibility) (= "public" visibility))
+          (u/event ctx user-id "publish" page-id "page")
+          (u/event ctx user-id "unpublish" page-id "page"))
+        {:status "success" :message "page/Pagesavedsuccessfully"}))
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
       {:status "error" :message "page/Errorwhilesavingpage"})))
@@ -383,12 +388,15 @@
 
 (defn toggle-visibility! [ctx page-id visibility user-id]
   (if (page-owner? ctx page-id user-id)
-    (do
-      (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
-      (if (or (= "internal" visibility) (= "public" visibility))
-        (u/event ctx user-id "publish" page-id "page")
-        (u/event ctx user-id "unpublish" page-id "page"))
-      visibility)
+    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+      {:status "error" :message "page/Evidenceerror"}
+      (do
+        (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
+        (if (or (= "internal" visibility) (= "public" visibility))
+          (u/event ctx user-id "publish" page-id "page")
+          (u/event ctx user-id "unpublish" page-id "page"))
+        visibility))
+
     (if (= visibility "public") "private" "public")))
 
 (defn meta-tags [ctx id]

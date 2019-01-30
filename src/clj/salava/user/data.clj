@@ -96,15 +96,15 @@
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
          user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) ())]
      (replace-nils (assoc all-user-info
-                          :emails email-addresses
-                          :user_badges user-badges
-                          :user_pages user-pages
-                          :user_files user-files
-                          :events events
-                          :connections connections
-                          :pending_badges pending-badges
-                          :user_followers user-followers
-                          :user_following user-following
+                     :emails email-addresses
+                     :user_badges user-badges
+                     :user_pages user-pages
+                     :user_files user-files
+                     :events events
+                     :connections connections
+                     :pending_badges pending-badges
+                     :user_followers user-followers
+                     :user_following user-following
                      )))))
 
 (defn strip-html-tags [s]
@@ -196,9 +196,10 @@
         badge-template (pdf/template
                          [:paragraph.generic
                           (when-not (empty? $user_badges)
-                            [:spacer 0]
-                            [:heading.heading-name (t :badge/Mybadges ul)]
-                            (into [:paragraph]
+
+                            (into [:paragraph
+                                   [:spacer 0]
+                                   [:heading.heading-name (t :badge/Mybadges ul)]]
                                   (for [b $user_badges
                                         :let [more-badge-info (replace-nils (b/get-badge ctx (:id b) user-id))
                                               content (:content more-badge-info)
@@ -243,8 +244,19 @@
                                                                             [:chunk.chunk (str (t :badge/OBFurl ul) ": ")] [:anchor {:target (:obf_url b)} [:chunk.link (:obf_url b)]]"\n"
                                                                             [:chunk.chunk (str (t :badge/Assertionurl ul) ": ")] [:anchor {:target (:assertion_url more-badge-info) } [:chunk.link (str (:assertion_url more-badge-info))]]"\n"
                                                                             [:chunk.chunk (str (t :badge/Assertionjson ul) ": ")][:chunk (str (:assertion_json more-badge-info))]"\n"
-                                                                            [:chunk.chunk (str (t :badge/Badgerating ul) ": ") ] [:chunk (str (:rating more-badge-info) "  ")]
-                                                                            [:chunk.chunk (str (t :badge/Evidenceurl ul) ": ")] [:anchor {:target (:evidence_url more-badge-info)} [:chunk.link (str (:evidence_url more-badge-info) " ")]]"\n"
+                                                                            [:chunk.chunk (str (t :badge/Badgerating ul) ": ") ] [:chunk (str (:rating more-badge-info) "  ")]"\n"
+                                                                            ;[:chunk.chunk (str (t :badge/Evidenceurl ul) ": ")] [:anchor {:target (:evidence_url more-badge-info)} [:chunk.link (str (:evidence_url more-badge-info) " ")]]"\n"
+                                                                            (when-not (empty? (:evidences more-badge-info))
+                                                                              [:paragraph
+                                                                               [:spacer]
+                                                                               [:chunk.chunk (str (t :badge/Evidence ul) ": " (count (:evidences more-badge-info)))]"\n"
+                                                                               (reduce (fn [r evidence]
+                                                                                         (conj r [:paragraph
+                                                                                                  (when-not (blank? (:name evidence))[:phrase [:chunk.chunk (str (t :badge/Name ul) ": ")] [:chunk (:name evidence)]])"\n"
+                                                                                                  (when-not (blank? (:narrative evidence)) [:phrase [:chunk.chunk (str (t :badge/Narrative ul) ": ")][:chunk (:narrative evidence)]])"\n"
+                                                                                                  (when-not (blank? (:description evidence)) [:phrase [:chunk.chunk (str (t :admin/Description ul) ": ")][:chunk (:description evidence)]])"\n"
+                                                                                                  [:anchor {:target (:url evidence)}[:phrase [:chunk.chunk (str (t :admin/Url ul) ": ")] [:chunk.link (:url evidence)]]]
+                                                                                                  [:spacer 0]]) )[:paragraph] (:evidences more-badge-info))])
                                                                             (when (not-empty (:alignment %))
                                                                               [:paragraph
                                                                                [:chunk.chunk (str (t :badge/Alignments ul) ": " (count (:alignment %)))]"\n"

@@ -40,3 +40,7 @@ SELECT (SELECT COUNT(*) FROM user_file WHERE path = :path) AS file_count,
 
 --name: select-profile-picture-path
 SELECT profile_picture FROM user WHERE id = :id
+
+--name: select-used-file-quota
+SELECT CAST(SUM(f.size) AS UNSIGNED) AS used_quota FROM user_file AS f
+WHERE user_id = :user_id

@@ -65,7 +65,7 @@
                                              [:div.lefticon [:i {:class "fa fa-history"}] (t :badge/Expired)]
                                              [:a.righticon {:class "righticon expired" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
                                                                                                                   {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]])
-                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))})}
+                                 [:a {:href "#" :on-click #(do (.preventDefault %)(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))}))}
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
@@ -78,6 +78,7 @@
                                   ]]
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
                                  [:a {:href "#" :on-click #(do
+                                                             (.preventDefault %)
                                                              (mo/open-modal [:badge :info] {:badge-id id} {
                                                                                                             :shown (fn [] (.replaceState js/history {} "Badge modal" (path-for (str "/badge?id=" id))))
                                                                                                             :hidden (fn []
