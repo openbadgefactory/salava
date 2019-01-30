@@ -56,7 +56,6 @@
         new-value (not @visibility-atom)
         badgeid (:id @state)
         init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
-    (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value
