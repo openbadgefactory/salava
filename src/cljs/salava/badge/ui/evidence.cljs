@@ -241,7 +241,6 @@
          message (cursor state [:evidence :message])
          input-mode (cursor state [:input_mode])
          {:keys [image_file name]} data]
-    (fn []
 
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
@@ -332,7 +331,7 @@
                                   (.preventDefault %)
                                   (swap! state assoc :tab [se/settings-tab-content (dissoc data :evidence) state init-data]
                                          :tab-no 2))}
-          (t :core/Cancel)]]]]]])))
+          (t :core/Cancel)]]]]]]))
 
 (defn evidence-list [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
@@ -426,7 +425,8 @@
      [:div.form-group
       [:div.col-md-9 {:class "new-evidence"}
        [:i.fa.fa-plus]
-       [:a {:on-click #(do (.preventDefault %)
+       [:a {:href "#"
+            :on-click #(do (.preventDefault %)
                          (swap! state assoc :evidence nil
                                 :show-preview false
                                 :show-form false
@@ -434,7 +434,7 @@
                                 :tab [evidence-form data state init-data]
                                 :tab-no 2)
                          #_(swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
-     (when-not (empty? (:evidences data)) [:div.form-group
+     #_(when-not (empty? (:evidences data)) [:div.form-group
                                            [:div.col-md-12 [evidence-list data state init-data]]])]))
 
 (defn evidence [data state init-data]
