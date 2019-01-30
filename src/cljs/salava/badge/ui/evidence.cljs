@@ -9,7 +9,7 @@
             [clojure.string :refer [blank? includes? split trim starts-with?]]
             [salava.file.icons :refer [file-icon]]
             [salava.file.ui.my :refer [send-file]]
-            [salava.badge.ui.settings :as se]))
+            #_[salava.badge.ui.settings :as se]))
 
 (defn url? [s]
   (when-not (blank? s)
@@ -55,7 +55,7 @@
                     :properties {:resource_type (get-in evidence [:properties :resource_type]) :hidden (get-in evidence [:properties :hidden])}}]
     (swap! state assoc :evidence evidence)))
 
-(defn toggle-show-evidence! [id data state init-data]
+(defn toggle-show-evidence! [id data state init-data]evidence
   (let [visibility-atom (cursor state [:evidence :properties :hidden])
         new-value (not @visibility-atom)
         badgeid (:id @state)]
