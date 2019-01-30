@@ -5,7 +5,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
             [salava.core.ui.rate-it :as r]
-            [salava.core.ui.helper :refer [private? navigate-to path-for js-navigate-to]]
+            [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.share :as s]
             [reagent.session :as session]
@@ -13,7 +13,7 @@
             [salava.core.ui.rate-it :as r]
             [salava.badge.ui.my :as my]
             [salava.core.ui.modal :as mo]
-            [salava.badge.ui.evidence :as evidence]))
+            #_[salava.badge.ui.evidence :as evidence]))
 
 
 (defn set-visibility [visibility state]
@@ -183,7 +183,8 @@
         show-recipient-name-atom (cursor state [:show_recipient_name])
         notifications-atom (cursor state [:receive-notifications])
         revoked (pos? revoked)
-        badge_id (:badge_id @state)]
+        badge_id (:badge_id @state)
+        evidence-block (first (plugin-fun (session/get :plugins) "evidence" "evidence_block"))]
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
       [:img {:src (str "/" image_file) :alt name}]]
@@ -242,7 +243,7 @@
                                                                                 :on-change #(toggle-evidence state)
                                                                                 :checked   (get-in @state [:badge-settings :show_evidence])}]
                                                                        (t :badge/Evidencevisibility)]]]])
-                                                   [evidence/evidence-block data state init-data]]]
+                                                   [evidence-block data state init-data]]]
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
