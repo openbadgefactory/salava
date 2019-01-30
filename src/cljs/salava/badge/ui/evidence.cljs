@@ -337,7 +337,7 @@
   (let [evidence-name-atom (cursor state [:evidence :name])
         evidence-narrative-atom (cursor state [:evidence :narrative])
         visibility-atom (cursor state [:evidence :properties :hidden])]
-    (fn []
+    [:div
     (reduce (fn [r evidence]
               (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                     {:keys [resource_id resource_type mime_type hidden]} properties
@@ -417,10 +417,9 @@
                                       :data-target (str "#collapse" id)}
                              (t :badge/Save)]]
                            ]]])))
-              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences])))))
+              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))]))
 
 (defn evidenceblock [data state init-data]
-  (fn []
     [:div#badge-settings
      [:div.form-group
       [:div.col-md-9 {:class "new-evidence"}
@@ -434,8 +433,8 @@
                                 :tab [evidence-form data state init-data]
                                 :tab-no 2)
                          #_(swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
-     #_(when-not (empty? (:evidences data)) [:div.form-group
-                                           [:div.col-md-12 [evidence-list data state init-data]]])]))
+     (when-not (empty? (:evidences data)) [:div.form-group
+                                           [:div.col-md-12 [evidence-list data state init-data]]])])
 
 (defn evidence [data state init-data]
- (fn [] [evidenceblock data state init-data]))
+ (fn [] (evidenceblock data state init-data)))
