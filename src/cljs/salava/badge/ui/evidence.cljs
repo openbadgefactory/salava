@@ -25,7 +25,7 @@
            :show-form false
            :evidence nil))))
 
-(defn init-settings [badge-id state init-data tab]
+(defn init-settings [badge-id state init-data]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
