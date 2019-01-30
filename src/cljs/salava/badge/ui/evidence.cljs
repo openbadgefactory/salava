@@ -8,7 +8,8 @@
             [salava.core.time :refer [date-from-unix-time]]
             [clojure.string :refer [blank? includes? split trim starts-with?]]
             [salava.file.icons :refer [file-icon]]
-            [salava.file.ui.my :refer [send-file]]))
+            [salava.file.ui.my :refer [send-file]]
+            [salava.badge.ui.settings :as se]))
 
 (defn url? [s]
   (when-not (blank? s)
@@ -22,6 +23,18 @@
            :show-form false
            :evidence nil)))
 
+(defn show-settings-dialog [badge-id state init-data context]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings data (assoc data :new-tag ""))
+                (if (= context "settings")
+                  (swap! state assoc :tab [se/settings-tab-content data state init-data]
+                         :tab-no 2
+                         :evidences (:evidences data))
+                  (swap! state assoc :tab [se/share-tab-content data state init-data]
+                         :tab-no 3)))}))
+
 (defn delete-evidence! [id data state init-data]
   (let [init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
     (ajax/DELETE
@@ -29,7 +42,8 @@
       { :params {:user_badge_id (:id data)}
         :handler (fn [r]
                    (when (= "success" (:status r))
-                     (init-settings (:id data) state init-data "settings")))})))
+                     (show-settings-dialog (:id data) state init-data "settings")
+                     #_(init-settings (:id data) state init-data "settings")))})))
 
 
 (defn init-resources [key resource-atom]
@@ -62,7 +76,8 @@
        :handler (fn [data]
                   ;eset! visibility-atom new-value)
                   (when (= (:status data) "success")
-                    (init-settings badgeid state init-data "settings"))
+                    (show-settings-dialog badgeid state init-data "settings")
+                    #_(init-settings badgeid state init-data "settings"))
                   )})))
 
 (defn set-page-visibility-to-private [page-id]
@@ -76,6 +91,7 @@
         {:keys [resource_type mime_type resource_id]} properties
         badge-id (:id data)
         init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
+    (prn init-settings)
     (swap! state assoc :evidence {:message nil})
     (if (and (not (blank? narrative)) (blank? name))
       (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
@@ -95,7 +111,8 @@
                                :mime_type mime_type}}
            :handler (fn [resp]
                       (when (= "success" (:status resp))
-                        (init-settings (:id data) state init-data "settings")))})))))
+                        (show-settings-dialog (:id data) state init-data "settings")
+                        #_(init-settings (:id data) state init-data "settings")))})))))
 
 ;;;;
 
