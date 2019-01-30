@@ -243,7 +243,7 @@
                                                                                 :on-change #(toggle-evidence state)
                                                                                 :checked   (get-in @state [:badge-settings :show_evidence])}]
                                                                        (t :badge/Evidencevisibility)]]]])
-                                                   #_[evidence-block data state init-data]]]
+                                                   [:div [evidence-block data state init-data]]]]
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
