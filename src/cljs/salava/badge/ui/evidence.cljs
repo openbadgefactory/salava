@@ -417,16 +417,17 @@
               )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))))
 
 (defn evidenceblock [data state init-data]
-  [:div#badge-settings
-   [:div.form-group
-    [:div.col-md-9 {:class "new-evidence"}
-     [:i.fa.fa-plus]
-     [:a {:on-click #(do (.preventDefault %)
-                       (swap! state assoc :evidence nil
-                              :show-preview false
-                              :show-form false
-                              :input_mode :url_input)
-                       (swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
-   (when-not (empty? (:evidences data)) [:div.form-group
-                                         [:div.col-md-12 [evidence-list data state init-data]]])])
+  (fn []
+    [:div#badge-settings
+     [:div.form-group
+      [:div.col-md-9 {:class "new-evidence"}
+       [:i.fa.fa-plus]
+       [:a {:on-click #(do (.preventDefault %)
+                         (swap! state assoc :evidence nil
+                                :show-preview false
+                                :show-form false
+                                :input_mode :url_input)
+                         (swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
+     (when-not (empty? (:evidences data)) [:div.form-group
+                                           [:div.col-md-12 [evidence-list data state init-data]]])]))
 
