@@ -184,7 +184,7 @@
         notifications-atom (cursor state [:receive-notifications])
         revoked (pos? revoked)
         badge_id (:badge_id @state)
-        evidence-block (first (plugin-fun (session/get :plugins) "evidence" "evidenceblock"))]
+        evidence-block (first (plugin-fun (session/get :plugins) "evidence" "evidence"))]
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
       [:img {:src (str "/" image_file) :alt name}]]

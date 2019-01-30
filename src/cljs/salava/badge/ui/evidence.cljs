@@ -137,6 +137,7 @@
                 :page_input (str (session/get :site-url) (path-for (str "/page/view/" id)))
                 :file_input (str (session/get :site-url) "/" path)
                 nil)]
+    (fn []
     [:div
      [:a.resource-link {:href "#"
                         :on-click #(do
@@ -156,7 +157,7 @@
         :page_input [:div.resource  [:i.fa.fa-file-text-o] name]
         :file_input [:div.resource [:i {:style {:margin-right "10px"}
                                         :class (str "file-icon-large fa " (file-icon mime_type))}]
-                     name])]]))
+                     name])]])))
 
 (defn upload-status [status title message]
   [:div
@@ -207,10 +208,11 @@
                                                      :on-change #(upload-file resource-atom state)
                                                      :style {:display "none"}}]]]
                          :page_input [:div])]
+    (fn []
     [:div.col-md-12.resource-container
      (reduce (fn [r resource]
                (conj r [grid-element resource state key data init-data])
-               ) init-container (if files files @resource-atom))]))
+               ) init-container (if files files @resource-atom))])))
 
 (defn resource-input [data state init-data]
   (let [resource-input-mode (cursor state [:input_mode])
@@ -239,6 +241,7 @@
          message (cursor state [:evidence :message])
          input-mode (cursor state [:input_mode])
          {:keys [image_file name]} data]
+    (fn []
 
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
@@ -329,12 +332,13 @@
                                   (.preventDefault %)
                                   (swap! state assoc :tab [se/settings-tab-content (dissoc data :evidence) state init-data]
                                          :tab-no 2))}
-          (t :core/Cancel)]]]]]]))
+          (t :core/Cancel)]]]]]])))
 
 (defn evidence-list [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
         evidence-narrative-atom (cursor state [:evidence :narrative])
         visibility-atom (cursor state [:evidence :properties :hidden])]
+    (fn []
     (reduce (fn [r evidence]
               (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                     {:keys [resource_id resource_type mime_type hidden]} properties
@@ -414,7 +418,7 @@
                                       :data-target (str "#collapse" id)}
                              (t :badge/Save)]]
                            ]]])))
-              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))))
+              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences])))))
 
 (defn evidenceblock [data state init-data]
   (fn []
@@ -426,8 +430,12 @@
                          (swap! state assoc :evidence nil
                                 :show-preview false
                                 :show-form false
-                                :input_mode :url_input)
-                         (swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
+                                :input_mode :url_input
+                                :tab [evidence-form data state init-data]
+                                :tab-no 2)
+                         #_(swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
      (when-not (empty? (:evidences data)) [:div.form-group
                                            [:div.col-md-12 [evidence-list data state init-data]]])]))
 
+(defn evidence [data state init-data]
+ (fn [] [evidenceblock data state init-data]))
