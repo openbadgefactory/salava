@@ -161,7 +161,7 @@
 
 ;;EVIDENCE
 
-;;TEST
+;;Refactor
 (defn badge-evidences "get user-badge evidences"
   ([ctx badge-id]
    (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx)))
@@ -170,7 +170,7 @@
      (reduce (fn [r evidence]
                (let [property-name (str "evidence_id:" (:id evidence))
                      properties (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
-                                      (json/read-str :key-fn keyword))]
+                                        (json/read-str :key-fn keyword))]
                  (conj r (-> evidence (assoc :properties properties))))) [] evidences)))
   ([ctx badge-id user-id markdown?] (map (fn [evidence] (-> evidence (update :narrative u/md->html))) (badge-evidences ctx badge-id user-id))) )
 
@@ -181,7 +181,7 @@
         (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
         (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
 
-;;TEST
+;;Refactor
 (defn save-badge-evidence [ctx user-id user-badge-id evidence]
   (let [{:keys [id name narrative url resource_id resource_type mime_type]} evidence]
     (try+
@@ -210,7 +210,7 @@
         {:status "error"}))))
 
 
-;;TEST
+;;Refactor
 (defn delete-evidence! [ctx evidence-id user-badge-id user-id resource-id resource-type]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
@@ -219,6 +219,10 @@
           (let [property-name (str "evidence_id:" evidence-id)]
             (delete-user-badge-evidence! {:id evidence-id :user_badge_id user-badge-id} {:connection tx})
             (delete-user-evidence-property! {:user_id user-id :name property-name} {:connection tx})))
+
+        ;;send badge info to factory
+        (send-badge-info-to-obf ctx user-badge-id user-id)
+
         {:status "success"})
       {:status "error"})
     (catch Object _
@@ -470,10 +474,10 @@
 (defn delete-badge-evidences! [db badge-id user-id]
   (if-let [evidences (select-user-badge-evidence {:user_badge_id badge-id} db)]
     (when-not (empty? evidences)
-        (delete-all-badge-evidences! {:user_badge_id badge-id} db)
-        (doseq [evidence evidences
-                :let [name (str "evidence_id:"(:id evidence))]]
-          (delete-user-evidence-property! {:name name :user_id user-id} db)))))
+      (delete-all-badge-evidences! {:user_badge_id badge-id} db)
+      (doseq [evidence evidences
+              :let [name (str "evidence_id:"(:id evidence))]]
+        (delete-user-evidence-property! {:name name :user_id user-id} db)))))
 
 (defn delete-badge-with-db! [db user-badge-id]
   (delete-badge-tags! {:user_badge_id user-badge-id} db)
