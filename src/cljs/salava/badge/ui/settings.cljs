@@ -5,7 +5,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
             [salava.core.ui.rate-it :as r]
-            [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to hyperlink]]
+            [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to hyperlink url?]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.share :as s]
             [reagent.session :as session]
@@ -212,8 +212,8 @@
           :page_input (do
                         (evidence/init-resources :page_input resource-atom)
                         [:div [resources-grid :page_input resource-atom state]])
-          :url_input [:div.resource-container {:style {:margin-bottom "10px"}}
-                      [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]
+          #_:url_input #_[:div.resource-container {:style {:margin-bottom "10px"}}
+                          [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]
           nil)]])))
 
 (defn evidence-form [data state init-data]
@@ -257,8 +257,10 @@
                                              (evidence/toggle-input-mode :file_input state))
                        } [:i.fa.fa-files-o] (t :page/Files)]]]]]
 
+
         ;;Preview
         (when @(cursor state [:show-preview])
+         [:div.row
           [:div.preview.evidence-list.col-md-9
            [:div.panel.panel-default
             [:div.panel-heading
@@ -287,8 +289,13 @@
                  [:div.col-md-9
                   [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])
 
-             ]]])
+             ]]]])
 
+        ;;url input
+        (when (= @input-mode :url_input) [:div.row.flip
+                                          [:div.col-md-9
+                                           [:div.resource-container {:style {:margin-bottom "10px"}}
+                                            [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]]])
         ;;Resource grid
         (when-not @(cursor state [:show-preview])[resource-input data state init-data])
 
@@ -297,7 +304,7 @@
          [:hr]
          [:button {:type "button"
                    :class "btn btn-primary"
-                   :disabled (not (evidence/url? @evidence-url-atom))
+                   :disabled (not (url? @evidence-url-atom))
                    :on-click #(do
 
                                 (.preventDefault %)

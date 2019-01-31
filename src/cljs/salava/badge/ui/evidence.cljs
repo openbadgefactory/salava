@@ -3,7 +3,7 @@
             [reagent.core :refer [cursor atom]]
             [salava.core.i18n :refer [t translate-text]]
             [reagent.session :as session]
-            [salava.core.ui.helper :refer [plugin-fun path-for hyperlink base-url]]
+            [salava.core.ui.helper :refer [plugin-fun path-for hyperlink base-url url?]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.time :refer [date-from-unix-time]]
             [clojure.string :refer [blank? includes? split trim starts-with?]]
@@ -11,7 +11,7 @@
             [salava.file.ui.my :refer [send-file]]
             #_[salava.badge.ui.settings :as se]))
 
-(defn url? [s]
+#_(defn url? [s]
   (when-not (blank? s)
     (not (blank? (re-find #"^http" (str (trim s)))))))
 
