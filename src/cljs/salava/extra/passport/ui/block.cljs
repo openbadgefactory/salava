@@ -23,7 +23,7 @@
   [:div {:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} (clojure.string/upper-case "Conditions d’utilisation")]]
-   [:div
+   [:div {:style {:text-align "center"}}
     [:p "Mis à jour le 29.1.2019 "]]
    [:div
     [:h2 "Informations générales sur l’utilisation du service Open Badge Passport"]
@@ -74,7 +74,7 @@
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} "Déclaration de protection des données"]
      [:div
-      [:p "Mis à jour le 29.1.2019 "]
+      [:p {:style {:text-align "center"}} "Mis à jour le 29.1.2019 "]
       [:p " "]
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Responsable du traitement"]
@@ -165,7 +165,7 @@
   [:div {:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} "TERMS OF USE"]]
-   [:div
+   [:div {:style {:text-align "center"}}
     [:p "Updated 29.1.2019 "]]
    [:div
     [:h2 "General information about the use of Open Badge Passport service"]
@@ -225,7 +225,7 @@
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} " Privacy Notice"]
      [:div
-      [:p "Updated 29.01.2019"]
+      [:p {:style {:text-align "center"}} "Updated 29.01.2019"]
       [:p ""]
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Controller"]
