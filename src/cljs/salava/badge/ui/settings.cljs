@@ -260,7 +260,6 @@
 
         ;;Preview
         (when @(cursor state [:show-preview])
-         [:div.row
           [:div.preview.evidence-list.col-md-9
            [:div.panel.panel-default
             [:div.panel-heading
@@ -289,11 +288,11 @@
                  [:div.col-md-9
                   [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])
 
-             ]]]])
+             ]]])
 
         ;;url input
-        (when (= @input-mode :url_input) [:div.row.flip
-                                          [:div.col-md-9
+        (when (= @input-mode :url_input) [:div
+                                          [:div.col-md-12
                                            [:div.resource-container {:style {:margin-bottom "10px"}}
                                             [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]]])
         ;;Resource grid
