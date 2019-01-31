@@ -28,7 +28,7 @@
    [:div
     [:h2 "Informations générales sur l’utilisation du service Open Badge Passport"]
     [:p  "Le service Open Badge Passport (ci-après dénommé ” le service ”) est
-     proposé par Discendum Oy (ci-après dénommé ” le prestataire de services ”).
+     proposé par Open Badge Factory Oy (ci-après dénommé ” le prestataire de services ”).
      Le service fourni par le prestataire de services consiste en une plate-forme basée
      sur le cloud permettant aux bénéficiaires de badges ouverts de recevoir, partager,
      gérer et publier leurs badges.  Les conditions d’utilisation s’appliquent aux utilisateurs du service (ci-après dénommés ” l’utilisateur ” ou ” les utilisateurs ”). Le terme d’utilisateur correspond à deux niveaux d’utilisateur : 1) les utilisateurs qui utilisent le service à des fins personnelles ; 2) l’organisation du client, qui dispose de son propre environnement dans le service."]
