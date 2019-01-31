@@ -6,7 +6,7 @@
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
-     "Copyright © 2015-2017 Discendum Oy | "
+     "Copyright © 2015-2019 Discendum Oy | "
      [:a {:class "bottom-link" :href "/terms" }
       "Terms of Use"]
      " | "
@@ -23,6 +23,8 @@
   [:div {:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} (clojure.string/upper-case "Conditions d’utilisation")]]
+   [:div
+    [:p "Mis à jour le 29.1.2019 "]]
    [:div
     [:h2 "Informations générales sur l’utilisation du service Open Badge Passport"]
     [:p  "Le service Open Badge Passport (ci-après dénommé ” le service ”) est
@@ -72,28 +74,30 @@
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} "Déclaration de protection des données"]
      [:div
+      [:p "Mis à jour le 29.1.2019 "]
+      [:p " "]
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Responsable du traitement"]
         [:div
-         [:p "Discendum Oy" ]
+         [:p "Open Badge Factory Oy" ]
          [:p ""]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
-         [:p "Numéro de téléphone: 020 718 1850 "]
-         [:p [:a {:href "mailto:info@discendum.com"} "info@discendum.com"]]
-         [:p "(ci-après dénommé ” nous ” ou ” Discendum ”)"]]
+         [:p "FINLAND"]
+         [:p [:a {:href "mailto:contact@openbadgefactory.com"} "contact@openbadgefactory.com"]]
+         [:p "(ci-après dénommé ” nous ” ou ” Open Badge Factory ”)"]]
         ]
        [:li [:h3 "Interlocuteur pour les questions liées au registre "]
         [:div
-         [:p "Esko Pulkkinen" ]
+         [:p "Eric Rouselle" ]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
-         [:p "Numéro de téléphone: 020 718 1850"]
+         [:p "Phone number: +358 400 587 373"]
          [:p [:a {:href "mailto:dataprotection@openbadgefactory.com"} "dataprotection@openbadgefactory.com"]]]]
        [:li  [:h3 "Nom du registre"]
         [:div
          [:p "REGISTRE DES CLIENTS ET DE PROSPECTION DU SERVICE OPEN BADGE PASSPORT" ]]]
        [:li [:h3 "Quelles sont la base juridique et la finalité du traitement des données à caractère personnel?"]
         [:div
-         [:p "La base du traitement de données à caractère personnel est l’intérêt légitime de Discendum reposant sur une relation avec le client ou la mise en œuvre d’un contrat avec la personne concernée, ainsi que l’obtention d’un consentement à la prospection." ]
+         [:p "La base du traitement de données à caractère personnel est l’intérêt légitime de Open Badge Factory reposant sur une relation avec le client ou la mise en œuvre d’un contrat avec la personne concernée, ainsi que l’obtention d’un consentement à la prospection." ]
          [:p "La base du traitement de données à caractère personnel est la suivante : "]
          [:ul
           [:li "fournir et développer notre service Open Badge Passport (ci-après dénommé le ” service ”),"]
@@ -162,9 +166,11 @@
    [:div
     [:h1 {:style {:text-align "center"}} "TERMS OF USE"]]
    [:div
+    [:p "Updated 29.1.2019 "]]
+   [:div
     [:h2 "General information about the use of Open Badge Passport service"]
     [:p  "The Open Badge Passport service (later referred to as Service) is
-     offered by Discendum Oy (later referred to as Service Provider). The Service delivered by the Service Provider consist of a cloud based platform,
+     offered by Open Badge Factory Oy (later referred to as Service Provider). The Service delivered by the Service Provider consist of a cloud based platform,
      where Open Badges earners can receive, share, manage and publish their badges.  The terms of Use apply to the users
      of the Service (later referred to as User(s)). User refers to 2 user levels: 1) Users, who use the service for personal
      purposes 2) customer organization, which has it’s own environment in the Service."]
@@ -219,21 +225,23 @@
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} " Privacy Notice"]
      [:div
+      [:p "Updated 29.01.2019"]
+      [:p ""]
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Controller"]
         [:div
-         [:p "Discendum Oy" ]
+         [:p "Open Badge Factory Oy" ]
          [:p ""]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
-         [:p "Phone number: 020 718 1850 "]
-         [:p [:a {:href "mailto:info@discendum.com"} "info@discendum.com"]]
-         [:p "(hereafter ”we” or  ”Discendum”)"]]
+         [:p "FINLAND"]
+         [:p [:a {:href "mailto:contact@openbadgefactory.com"} "contact@openbadgefactory.com"]]
+         [:p "(hereafter ”we” or  ”Open Badge Factory”)"]]
         ]
        [:li [:h3 "Contact person for register matters "]
         [:div
-         [:p "Esko Pulkkinen" ]
+         [:p "Eric Rouselle" ]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
-         [:p "Phone number: 020 718 1850"]
+         [:p "Phone number: +358 400 587 373"]
          [:p [:a {:href "mailto:dataprotection@openbadgefactory.com"} "dataprotection@openbadgefactory.com"]]]]
 
        [:li  [:h3 "Name of register"]
@@ -241,11 +249,11 @@
          [:p "CUSTOMER AND MARKETING REGISTER FOR OPEN BADGE PASSPORT SERVICE" ]]]
        [:li [:h3 "What is the legal basis for and purpose of the processing of personal data?"]
         [:div
-         [:p "The basis of processing personal data is Discendum’s justified interest on the basis of a customer
+         [:p "The basis of processing personal data is Open Badge Factory's justified interest on the basis of a customer
           relationship or implementing a contract with the data subject, as well as consent as regards direct marketing." ]
          [:p "The basis of processing personal data is: "]
          [:ul
-          [:li "the delivery and development of our Open Badge Passeport Service (“Service”),"]
+          [:li "the delivery and development of our Open Badge Passport Service (“Service”),"]
           [:li "fulfilling our contractual and other promises and obligations, "]
           [:li "taking care of the customer relationship, "]
           [:li "analyzing and profiling behaviour of the data subject, "]
