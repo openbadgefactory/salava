@@ -278,13 +278,13 @@
                    :current-user current-user
                    (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id evidence)))
 
-             (DELETE "/evidence/:evidenceid" [user_badge_id resource_type resource_id]
+             (DELETE "/evidence/:evidenceid" [user_badge_id]
                      :return {:status (s/enum "success" "error")}
                      :path-params [evidenceid :- Long]
                      :summary "Delete evidence"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user) resource_id resource_type))
+                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))
                      )
 
              (POST "/toggle_evidence/:evidenceid" []

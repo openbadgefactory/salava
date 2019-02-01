@@ -3,57 +3,53 @@
             [reagent.core :refer [cursor atom]]
             [salava.core.i18n :refer [t translate-text]]
             [reagent.session :as session]
-            [salava.core.ui.helper :refer [plugin-fun path-for hyperlink base-url]]
+            [salava.core.ui.helper :refer [plugin-fun path-for hyperlink base-url url?]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.time :refer [date-from-unix-time]]
             [clojure.string :refer [blank? includes? split trim starts-with?]]
             [salava.file.icons :refer [file-icon]]
             [salava.file.ui.my :refer [send-file]]
-            [salava.badge.ui.settings :as se]))
+            #_[salava.badge.ui.settings :as se]))
 
-(defn url? [s]
-  (when-not (blank? s)
-    (not (blank? (re-find #"^http" (str (trim s)))))))
+#_(defn url? [s]
+    (when-not (blank? s)
+      (not (blank? (re-find #"^http" (str (trim s)))))))
 
 
 (defn toggle-input-mode [key state]
   (let [key-atom (cursor state [:input_mode])]
-    (swap! state assoc :input_mode key
-           :show-preview false
-           :show-form false
-           :evidence nil)))
+    (do
+      (reset! key-atom nil)
+      (swap! state assoc :input_mode key
+             :show-preview false
+             :show-form false
+             :evidence nil))))
 
-(defn show-settings-dialog [badge-id state init-data context]
+(defn init-settings [badge-id state init-data]
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
-                (swap! state assoc :badge-settings data (assoc data :new-tag ""))
-                (if (= context "settings")
-                  (swap! state assoc :tab [se/settings-tab-content data state init-data]
-                         :tab-no 2
-                         :evidences (:evidences data))
-                  (swap! state assoc :tab [se/share-tab-content data state init-data]
-                         :tab-no 3)))}))
+                (swap! state assoc :badge-settings data (assoc data :new-tag "")
+                       :evidences (:evidences data)))}))
 
 (defn delete-evidence! [id data state init-data]
-  (let [init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
-    (ajax/DELETE
-      (path-for (str "/obpv1/badge/evidence/" id))
-      { :params {:user_badge_id (:id data)}
-        :handler (fn [r]
-                   (when (= "success" (:status r))
-                     (show-settings-dialog (:id data) state init-data "settings")
-                     #_(init-settings (:id data) state init-data "settings")))})))
+  (ajax/DELETE
+    (path-for (str "/obpv1/badge/evidence/" id))
+    { :params {:user_badge_id (:id data)}
+      :handler #(init-settings (:id @state) state init-data)}))
 
 
 (defn init-resources [key resource-atom]
   (let [url (case key
               :page_input "/obpv1/page"
-              :file_input "/obpv1/file")]
+              :file_input "/obpv1/file"
+              nil)]
     (ajax/GET
       (path-for url true)
       {:handler (fn [data]
                   (reset! resource-atom data))})))
+
+
 
 (defn init-evidence-form [evidence state show-url?]
   (let [ {:keys [id name url narrative]} evidence
@@ -67,18 +63,12 @@
 (defn toggle-show-evidence! [id data state init-data]
   (let [visibility-atom (cursor state [:evidence :properties :hidden])
         new-value (not @visibility-atom)
-        badgeid (:id @state)
-        init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
+        badgeid (:id @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/toggle_evidence/" id))
       {:params {:show_evidence new-value
                 :user_badge_id (int badgeid)}
-       :handler (fn [data]
-                  ;eset! visibility-atom new-value)
-                  (when (= (:status data) "success")
-                    (show-settings-dialog badgeid state init-data "settings")
-                    #_(init-settings badgeid state init-data "settings"))
-                  )})))
+       :handler #(init-settings badgeid state init-data)})))
 
 (defn set-page-visibility-to-private [page-id]
   (ajax/POST
@@ -86,18 +76,25 @@
     {:params {:visibility "public"}
      :handler (fn [data])}))
 
-(defn save-badge-evidence [data state init-data]
+(defn save-badge-evidence [data state init-data ]
   (let [{:keys [id name narrative url resource_visibility properties]} (:evidence @state)
         {:keys [resource_type mime_type resource_id]} properties
-        badge-id (:id data)
-        init-settings (first (plugin-fun (session/get :plugins) "modal" "show_settings_dialog"))]
-    (prn init-settings)
-    (swap! state assoc :evidence {:message nil})
+        badge-id (:id data)]
+    (swap! state assoc :evidence {:message nil}
+           ;:input_mode nil
+           )
     (if (and (not (blank? narrative)) (blank? name))
       (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
                                     :name name
                                     :narrative narrative
-                                    :url url})
+                                    :url url
+                                    :properties {:mime_type mime_type
+                                                 :resource_id resource_id
+                                                 :resource_type (case @(cursor state [:input_mode])
+                                                                  :page_input "page"
+                                                                  :file_input "file"
+                                                                  "url")}
+                                    :resource_visibility resource_visibility})
       (do
         (if (= "private" resource_visibility) (set-page-visibility-to-private resource_id))
         (ajax/POST
@@ -109,12 +106,8 @@
                                :resource_id resource_id
                                :resource_type resource_type
                                :mime_type mime_type}}
-           :handler (fn [resp]
-                      (when (= "success" (:status resp))
-                        (show-settings-dialog (:id data) state init-data "settings")
-                        #_(init-settings (:id data) state init-data "settings")))})))))
+           :handler #(init-settings (:id @state) state init-data)})))))
 
-;;;;
 
 (defn input [input-data textarea?]
   (let [{:keys [name atom placeholder type error-message-atom rows cols preview?]} input-data]
@@ -151,7 +144,7 @@
           :else [:i.fa.fa-link])]
        ))))
 
-(defn grid-element [element-data state key data init-data]
+(defn grid-element [element-data state key]
   (let [{:keys [id name path description visibility mtime badges ctime mime_type]} element-data
         value (case key
                 :page_input (str (session/get :site-url) (path-for (str "/page/view/" id)))
@@ -172,7 +165,7 @@
                                                                                      :page_input "page"
                                                                                      :file_input "file")}
                                                        :resource_visibility visibility})) }
-      (case key
+      (case @(cursor state [:input_mode])
         :page_input [:div.resource  [:i.fa.fa-file-text-o] name]
         :file_input [:div.resource [:i {:style {:margin-right "10px"}
                                         :class (str "file-icon-large fa " (file-icon mime_type))}]
@@ -214,232 +207,35 @@
                         (swap! state assoc :evidence {:message [upload-status "error" (t :file/Errorwhileuploading) (t :file/Filetoobig)]})
                         )})))
 
-
-(defn resources-grid [key resource-atom state data init-data]
-  (let [evidence-url-atom (cursor state [:evidence :url])
-        {:keys[files]} @resource-atom
-        init-container (case key
-                         :file_input [:div [:label
-                                            [:span [:i.fa.fa-upload] (t :file/Upload) ]
-                                            [:input {:id "grid-file-upload"
-                                                     :type "file"
-                                                     :name "file"
-                                                     :on-change #(upload-file resource-atom state)
-                                                     :style {:display "none"}}]]]
-                         :page_input [:div])]
+(defn files-grid [state]
+  (let [files (:files @(cursor state [:files]))]
     [:div.col-md-12.resource-container
      (reduce (fn [r resource]
-               (conj r [grid-element resource state key data init-data])
-               ) init-container (if files files @resource-atom))]))
+               (conj r [grid-element resource state :file_input])
+               ) [:div [:label
+                        [:span [:i.fa.fa-upload] (t :file/Upload) ]
+                        [:input {:id "grid-file-upload"
+                                 :type "file"
+                                 :name "file"
+                                 :on-change #(upload-file (cursor state [:files]) state)
+                                 :style {:display "none"}}]]] files)]))
+
+(defn pages-grid [state]
+  (let [pages @(cursor state [:pages])]
+    [:div.col-md-12.resource-container
+     (reduce (fn [r resource]
+               (conj r [grid-element resource state :page_input])
+               ) [:div] pages)]))
+
 
 (defn resource-input [data state init-data]
   (let [resource-input-mode (cursor state [:input_mode])
         evidence-url-atom (cursor state [:evidence :url])
-        resource-atom (atom {})
         show-url? (cursor state [:evidence :show_url])]
     (fn []
       [:div.form-group
        [:div.col-md-9
         (case @resource-input-mode
-          :file_input (do
-                        (init-resources :file_input resource-atom)
-                        [:div [resources-grid :file_input resource-atom state data init-data]])
-          :page_input (do
-                        (init-resources :page_input resource-atom)
-                        [:div [resources-grid :page_input resource-atom state data init-data]])
-          :url_input [:div.resource-container {:style {:margin-bottom "10px"}}
-                      [input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]
+          :file_input [files-grid state]
+          :page_input [pages-grid state]
           nil)]])))
-
-(defn evidence-form [data state init-data]
-  (let [settings-tab (first (plugin-fun (session/get :plugins) "settings" "settings_tab_content"))
-        evidence-name-atom (cursor state [:evidence :name])
-        evidence-narrative-atom (cursor state [:evidence :narrative])
-        evidence-url-atom (cursor state [:evidence :url])
-        message (cursor state [:evidence :message])
-        input-mode (cursor state [:input_mode])
-        {:keys [image_file name]} data]
-
-    [:div {:id "badge-settings" :class "row flip"}
-     [:div {:class "col-md-3 badge-image modal-left"}
-      [:img {:src (str "/" image_file) :alt name}]]
-     [:div {:class "col-md-9 settings-content settings-tab"}
-      (if @message [:div @message])
-      [:div
-       [:div.row [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
-       [:div.evidence-info (t :badge/Evidenceinfo)]
-
-       [:div.row.form-horizontal
-        [:div.row
-         [:div.col-md-12.resource-options
-          [:div
-           [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
-                      :href "#"
-                      :on-click #(do
-                                   (.preventDefault %)
-                                   (toggle-input-mode :url_input state))}
-                  [:i.fa.fa-link] (t :admin/Url)]]
-           [:div  [:a {:class (if (= :page_input @input-mode) "active-resource" "")
-                       :href "#"
-                       :on-click #(do
-                                    (.preventDefault %)
-                                    (toggle-input-mode :page_input state)) }
-                   [:i.fa.fa-file-text] (t :page/Mypages)]]
-           [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
-                       :href "#":on-click #(do
-                                             (.preventDefault %)
-                                             (toggle-input-mode :file_input state))
-                       } [:i.fa.fa-files-o] (t :page/Files)]]]]]
-
-        ;;Preview
-        (when @(cursor state [:show-preview])
-          [:div.preview.evidence-list.col-md-9
-           [:div.panel.panel-default
-            [:div.panel-heading
-             [:div.panel-title
-              [:div.url  [evidence-icon @evidence-url-atom (cursor state [:evidence :properties :mime_type])]] (hyperlink @evidence-url-atom)]
-             [:div [:button {:type "button"
-                             :aria-label "OK"
-                             :class "close panel-close"
-                             :on-click #(do (.preventDefault %)(swap! state assoc :show-preview false
-                                                                      :evidence nil
-                                                                      :show-form false))}
-                    [:i.fa.fa-trash.trash]]]]
-            [:div.panel-body.evidence-panel-body
-             (if (and (not @(cursor state [:show-form]))(every? #(blank? %)(vector @evidence-name-atom @evidence-narrative-atom)))
-               [:div [:a {:href "#" :on-click #(do
-                                                 (.preventDefault %)
-                                                 (reset! (cursor state [:show-form]) true))}[:div [:i.fa.fa-plus] (t :badge/Addmoreinfoaboutevidence) ]]])
-             (when (or  @(cursor state [:show-form])(not (every? #(blank? %)(vector @evidence-name-atom @evidence-narrative-atom))))
-
-               [:div [:div.form-group
-                      [:label.col-md-3 "Name"]
-                      [:div.col-md-9
-                       [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
-                [:div.form-group
-                 [:label.col-md-3 (t :page/Description)]
-                 [:div.col-md-9
-                  [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])
-
-             ]]])
-
-        ;;Resource grid
-        (when-not @(cursor state [:show-preview])[resource-input data state init-data])
-
-        ;;Buttons
-        [:div
-         [:hr]
-         [:button {:type "button"
-                   :class "btn btn-primary"
-                   :disabled (not (url? @evidence-url-atom))
-                   :on-click #(do
-
-                                (.preventDefault %)
-                                (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
-                                (save-badge-evidence data state init-data)
-                                (reset! input-mode nil)
-                                )}
-          (t :core/Add)]
-         [:a.cancel {:on-click #(do (.preventDefault %) (swap! state assoc :tab [settings-tab (dissoc data :evidence) state init-data]
-                                                               :tab-no 2))}
-          (t :core/Cancel)]]]]]]))
-
-(defn evidence-list [data state init-data]
-  (let [evidence-name-atom (cursor state [:evidence :name])
-        evidence-narrative-atom (cursor state [:evidence :narrative])
-        ]
-    (reduce (fn [r evidence]
-              (let [{:keys [narrative description name id url mtime ctime properties]} evidence
-                    {:keys [resource_id resource_type mime_type hidden]} properties
-                    added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient"))
-                    desc (cond
-                           (not (blank? narrative)) narrative
-                           (not added-by-user?) description ;;todo use regex to match description
-                           :else nil)
-                    visibility-class (if (= true hidden) " opaque" "")]
-                (conj r
-                      (when-not (blank? url)
-                        [:div.panel.panel-default {:class visibility-class}
-                         [:div.panel-heading {:id (str "heading" id)
-                                              :role "tab"}
-                          [:div.panel-title
-                           [:div.url.row.flip [:div.col-md-1 [evidence-icon {:type resource_type :mime_type mime_type}]]
-                            [:div.col-md.11.break (case resource_type
-                              "file" (hyperlink url)
-                              "page" (if (session/get :user)
-                                       [:a {:href "#"
-                                            :on-click #(do
-                                                         (.preventDefault %)
-                                                         (mo/open-modal [:page :view] {:page-id resource_id}))} url]
-                                       (hyperlink url))
-                              (hyperlink url))]]
-                           (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
-                           (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
-
-                          [:div [:button {:type "button"
-                                          :aria-label "OK"
-                                          :class "close evidence-toggle"
-                                          :on-click #(do
-                                                       (.preventDefault %)
-                                                       (init-evidence-form evidence state true)
-                                                       (toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                                                           :title (if (= true hidden) (t :badge/Showevidence) (t :badge/Hideevidence))}]]]
-                          (when added-by-user?
-                            [:div [:div [:button {:type "button"
-                                                  :aria-label "OK"
-                                                  :class "close panel-edit"
-                                                  :on-click #(do (.preventDefault %)
-                                                               (init-evidence-form evidence state true))
-                                                  :role "button" :data-toggle "collapse"
-                                                  :data-parent "#accordion"
-                                                  :href (str "#collapse" id)
-                                                  :aria-expanded "true"
-                                                  :aria-controls (str "collapse" id)}
-                                         [:i.fa.fa-edit.edit-evidence]]];;edit-button
-
-                             [:div [:button {:type "button"
-                                             :aria-label "OK"
-                                             :class "close"
-                                             :on-click #(do (.preventDefault %)(delete-evidence! id data state init-data))}
-                                    [:i.fa.fa-trash.trash]]] ;;delete-button
-                             ])
-                          ]
-
-                         [:div {:id (str "collapse" id)
-                                :class "panel-collapse collapse"
-                                :role "tabpanel"
-                                :aria-labelledby (str "heading" id)}
-                          [:div.panel-body.evidence-panel-body {:style {:padding-top "10px"}}
-                           [:div.form-group
-                            [:label.col-md-3 (t :badge/Name)]
-                            [:div.col-md-9
-                             [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
-                           [:div.form-group
-                            [:label.col-md-3 (t :page/Description)]
-                            [:div.col-md-9
-                             [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]
-                           [:hr]
-                           [:div
-                            [:button {:type         "button"
-                                      :class        "btn btn-primary"
-                                      :on-click     #(do (.preventDefault %)(save-badge-evidence data state init-data))
-                                      :data-toggle "collapse"
-                                      :data-target (str "#collapse" id)}
-                             (t :badge/Save)]]
-                           ]]])))
-              )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] (:evidences data))))
-
-(defn evidence-block [data state init-data]
-  [:div#badge-settings
-   [:div.form-group
-    [:div.col-md-9 {:class "new-evidence"}
-     [:i.fa.fa-plus]
-     [:a {:on-click #(do (.preventDefault %)
-                       (swap! state assoc :evidence nil
-                              :show-preview false
-                              :show-form false
-                              :input_mode :url_input)
-                       (swap! state assoc :tab [evidence-form data state init-data] :tab-no 2))} (t :badge/Addnewevidence)]]]
-   (when-not (empty? (:evidences data)) [:div.form-group
-                                         [:div.col-md-12 [evidence-list data state init-data]]])])
-

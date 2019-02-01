@@ -161,7 +161,6 @@
 
 ;;EVIDENCE
 
-;;TEST
 (defn badge-evidences "get user-badge evidences"
   ([ctx badge-id]
    (select-user-badge-evidence {:user_badge_id badge-id} (u/get-db ctx)))
@@ -170,7 +169,7 @@
      (reduce (fn [r evidence]
                (let [property-name (str "evidence_id:" (:id evidence))
                      properties (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
-                                      (json/read-str :key-fn keyword))]
+                                        (json/read-str :key-fn keyword))]
                  (conj r (-> evidence (assoc :properties properties))))) [] evidences)))
   ([ctx badge-id user-id markdown?] (map (fn [evidence] (-> evidence (update :narrative u/md->html))) (badge-evidences ctx badge-id user-id))) )
 
@@ -181,37 +180,48 @@
         (update-user-badge-evidence! {:url url :id id} (u/get-db ctx))
         (insert-user-badge-evidence-url<! {:user_badge_id user-badge-id :url url} (u/get-db ctx)))))
 
-;;TEST
+(defn update-evidence! [ctx user-badge-id evidence-id evidence]
+  (let [{:keys [name narrative url]} evidence
+        site-url (u/get-site-url ctx)
+        description (str "Added by badge recipient " (today)  " at " site-url )
+        data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
+    (update-user-badge-evidence! (assoc data :id evidence-id) (u/get-db ctx))
+    evidence-id))
+
+(defn save-new-evidence! [ctx user-id user-badge-id evidence]
+  (let [{:keys [name narrative url resource_id resource_type mime_type]} evidence
+        site-url (u/get-site-url ctx)
+        description (str "Added by badge recipient " (today)  " at " site-url )
+        data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
+    (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+      (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
+            property-name (str "evidence_id:" id)
+            properties (->> {:resource_id resource_id :resource_type resource_type :hidden false :mime_type mime_type}
+                            (remove (comp nil? second))
+                            (into {})
+                            (json/write-str))]
+        (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
+        id))))
+
 (defn save-badge-evidence [ctx user-id user-badge-id evidence]
   (let [{:keys [id name narrative url resource_id resource_type mime_type]} evidence]
     (try+
       (if (badge-owner? ctx user-badge-id user-id)
-        (let [site-url (u/get-site-url ctx)
-              description (str "Added by badge recipient " (today)  " at " site-url )
-              data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
+        (do
           (if id
-            (update-user-badge-evidence! (assoc data :id id) (u/get-db ctx))
-            (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-              (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
-                    property-name (str "evidence_id:" id)
-                    properties (->> {:resource_id resource_id :resource_type resource_type :hidden false :mime_type mime_type}
-                                    (remove (comp nil? second))
-                                    (into {})
-                                    (json/write-str))]
-                (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
-                )))
-          ;;send badge info to factory
+            (update-evidence! ctx user-badge-id id evidence)
+            (save-new-evidence! ctx user-id user-badge-id evidence)
+            )
           (send-badge-info-to-obf ctx user-badge-id user-id)
-          {:status "success"})
+          {:status "success"}
+          )
         (throw+ {:status "error"})
         )
       (catch Object _
         (log/error _)
         {:status "error"}))))
 
-
-;;TEST
-(defn delete-evidence! [ctx evidence-id user-badge-id user-id resource-id resource-type]
+(defn delete-evidence! [ctx evidence-id user-badge-id user-id]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
       (do
@@ -219,14 +229,16 @@
           (let [property-name (str "evidence_id:" evidence-id)]
             (delete-user-badge-evidence! {:id evidence-id :user_badge_id user-badge-id} {:connection tx})
             (delete-user-evidence-property! {:user_id user-id :name property-name} {:connection tx})))
+
+        ;;send badge info to factory
+        (send-badge-info-to-obf ctx user-badge-id user-id)
+
         {:status "success"})
       {:status "error"})
     (catch Object _
       (log/error _)
       {:status "error"})))
 
-
-;;TEST
 (defn is-evidence? [ctx user-id opts]
   (let [{:keys [id resource-type]} opts
         url (case resource-type
@@ -242,7 +254,6 @@
   (if (badge-owner? ctx badge-id user-id)
     (update-show-evidence! {:id badge-id :show_evidence show-evidence} (u/get-db ctx))))
 
-;;TEST
 (defn toggle-show-evidence! [ctx badge-id evidence-id show_evidence user-id]
   "Toggle evidence visibility"
   (try+
@@ -470,10 +481,10 @@
 (defn delete-badge-evidences! [db badge-id user-id]
   (if-let [evidences (select-user-badge-evidence {:user_badge_id badge-id} db)]
     (when-not (empty? evidences)
-        (delete-all-badge-evidences! {:user_badge_id badge-id} db)
-        (doseq [evidence evidences
-                :let [name (str "evidence_id:"(:id evidence))]]
-          (delete-user-evidence-property! {:name name :user_id user-id} db)))))
+      (delete-all-badge-evidences! {:user_badge_id badge-id} db)
+      (doseq [evidence evidences
+              :let [name (str "evidence_id:"(:id evidence))]]
+        (delete-user-evidence-property! {:name name :user_id user-id} db)))))
 
 (defn delete-badge-with-db! [db user-badge-id]
   (delete-badge-tags! {:user_badge_id user-badge-id} db)
