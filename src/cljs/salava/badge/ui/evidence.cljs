@@ -81,12 +81,20 @@
         {:keys [resource_type mime_type resource_id]} properties
         badge-id (:id data)]
     (swap! state assoc :evidence {:message nil}
-                       :input_mode nil)
+           ;:input_mode nil
+           )
     (if (and (not (blank? narrative)) (blank? name))
       (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
                                     :name name
                                     :narrative narrative
-                                    :url url})
+                                    :url url
+                                    :properties {:mime_type mime_type
+                                                 :resource_id resource_id
+                                                 :resource_type (case @(cursor state [:input_mode])
+                                                                  :page_input "page"
+                                                                  :file_input "file"
+                                                                  :url "url")}
+                                    :resource_visibility resource_visibility})
       (do
         (if (= "private" resource_visibility) (set-page-visibility-to-private resource_id))
         (ajax/POST
