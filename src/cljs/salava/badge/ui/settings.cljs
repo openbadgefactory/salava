@@ -5,7 +5,7 @@
             [salava.core.time :refer [date-from-unix-time]]
             [salava.core.ui.tag :as tag]
             [salava.core.ui.rate-it :as r]
-            [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to hyperlink]]
+            [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to hyperlink url?]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.share :as s]
             [reagent.session :as session]
@@ -179,43 +179,6 @@
 
 (declare settings-tab-content)
 
-(defn resources-grid [key resource-atom state]
-  (fn []
-    (let [{:keys[files]} @resource-atom
-          input-atom (cursor state [:input_mode])
-          init-container (case @input-atom
-                           :file_input [:div [:label
-                                              [:span [:i.fa.fa-upload] (t :file/Upload) ]
-                                              [:input {:id "grid-file-upload"
-                                                       :type "file"
-                                                       :name "file"
-                                                       :on-change #(evidence/upload-file resource-atom state)
-                                                       :style {:display "none"}}]]]
-                           :page_input [:div])]
-      [:div.col-md-12.resource-container
-       (reduce (fn [r resource]
-                 (conj r [evidence/grid-element resource state key])
-                 ) init-container (if files files @resource-atom))])))
-
-(defn resource-input [data state init-data]
-  (let [resource-input-mode (cursor state [:input_mode])
-        evidence-url-atom (cursor state [:evidence :url])
-        resource-atom (atom {})
-        show-url? (cursor state [:evidence :show_url])]
-    (fn []
-      [:div.form-group
-       [:div.col-md-9
-        (case @resource-input-mode
-          :file_input (do
-                        (evidence/init-resources :file_input resource-atom)
-                        [:div [resources-grid :file_input resource-atom state]])
-          :page_input (do
-                        (evidence/init-resources :page_input resource-atom)
-                        [:div [resources-grid :page_input resource-atom state]])
-          :url_input [:div.resource-container {:style {:margin-bottom "10px"}}
-                      [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]
-          nil)]])))
-
 (defn evidence-form [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
         evidence-narrative-atom (cursor state [:evidence :narrative])
@@ -257,6 +220,7 @@
                                              (evidence/toggle-input-mode :file_input state))
                        } [:i.fa.fa-files-o] (t :page/Files)]]]]]
 
+
         ;;Preview
         (when @(cursor state [:show-preview])
           [:div.preview.evidence-list.col-md-9
@@ -289,28 +253,26 @@
 
              ]]])
 
+        ;;url input
+        (when (= @input-mode :url_input) [:div
+                                          [:div.col-md-12
+                                           [:div.resource-container {:style {:margin-bottom "10px"}}
+                                            [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]]])
         ;;Resource grid
-        (when-not @(cursor state [:show-preview])[resource-input data state init-data])
+        (when-not @(cursor state [:show-preview])[evidence/resource-input data state init-data])
 
         ;;Buttons
-        [:div
+        [:div.col-md-12
          [:hr]
          [:button {:type "button"
                    :class "btn btn-primary"
-                   :disabled (not (evidence/url? @evidence-url-atom))
+                   :disabled (not (url? @evidence-url-atom))
                    :on-click #(do
-
                                 (.preventDefault %)
                                 (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
-                                (reset! input-mode nil)
-                                (reset! (cursor state [:show-form]) nil)
-                                (reset! (cursor state [:show-preview]) nil)
                                 (evidence/save-badge-evidence data state init-data)
-                                (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content (assoc data :evidences @(cursor state [:badge-settings :evidences])) state init-data]
-                                                                                     :tab-no 2
-                                                                                     :evidences @(cursor state [:badge-settings :evidences] ))
-
-                                  ))}
+                                (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                     :tab-no 2)))}
           (t :core/Add)]
          [:a.cancel {:on-click #(do
                                   (.preventDefault %)
@@ -377,8 +339,7 @@
                                               :class "close"
                                               :on-click #(do (.preventDefault %)(evidence/delete-evidence! id data state init-data))}
                                      [:i.fa.fa-trash.trash]]] ;;delete-button
-                              ])
-                           ]
+                              ])]
 
                           [:div {:id (str "collapse" id)
                                  :class "panel-collapse collapse"
@@ -405,20 +366,25 @@
                )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))]))
 
 (defn evidenceblock [data state init-data]
-  [:div#badge-settings
-   [:div.form-group
-    [:div.col-md-9 {:class "new-evidence"}
-     [:i.fa.fa-plus]
-     [:a {:href "#"
-          :on-click #(do (.preventDefault %)
-                       (swap! state assoc :evidence nil
-                              :show-preview false
-                              :show-form false
-                              :input_mode :url_input
-                              :tab [evidence-form data state init-data]
-                              :tab-no 2))} (t :badge/Addnewevidence)]]]
-   (when-not (empty? @(cursor state [:badge-settings :evidences])) [:div.form-group
-                                                                    [:div.col-md-12 [evidence-list data state init-data]]])])
+  (let [files-atom (cursor state [:files])
+        pages-atom (cursor state [:pages])]
+    [:div#badge-settings
+     [:div.form-group
+      [:div.col-md-9 {:class "new-evidence"}
+       [:i.fa.fa-plus]
+       [:a {:href "#"
+            :on-click #(do (.preventDefault %)
+                         (when (empty? @(cursor state [:files])) (evidence/init-resources :file_input files-atom))
+                         (when (empty? @(cursor state [:pages]))(evidence/init-resources :page_input pages-atom))
+                         (swap! state assoc :evidence nil
+                                :show-preview false
+                                :show-form false
+                                :input_mode :url_input
+                                :tab [evidence-form data state init-data]
+                                :tab-no 2)
+                         )} (t :badge/Addnewevidence)]]]
+     (when-not (empty? @(cursor state [:badge-settings :evidences])) [:div.form-group
+                                                                      [:div.col-md-12 [evidence-list data state init-data]]])]))
 
 (defn settings-tab-content [data state init-data]
   (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
