@@ -10,14 +10,17 @@
 
 (defqueries "sql/file/queries.sql")
 
-(defn used-quota [ctx user-id]
-  (select-used-file-quota {:user_id user-id} (into {:result-set-fn first :row-fn :used_quota} (get-db ctx))))
-
 (defn user-files-all [ctx user-id]
   (let [files (select-user-files {:user_id user-id} (get-db ctx))
         max-size (get-in ctx [:config :file :max-size] 100000000)
         sorted-files (map #(assoc % :tags (if (:tags %) (split (get % :tags "") #",") [])) files)]
     {:files sorted-files :max-size (str (quot max-size (* 1024 1024)) "MB")}))
+
+(defn used-quota [ctx user-id]
+  (let [user-files (:files (user-files-all ctx user-id))]
+    (if (seq user-files)
+      (select-used-file-quota {:user_id user-id} (into {:result-set-fn first :row-fn :used_quota} (get-db ctx)))
+      0)))
 
 (defn file-owner? [ctx file-id user-id]
   (let [owner (select-file-owner {:id file-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
