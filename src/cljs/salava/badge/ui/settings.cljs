@@ -293,6 +293,11 @@
                             (not (blank? narrative)) narrative
                             (not added-by-user?) description ;;todo use regex to match description
                             :else nil)
+                     hidden (if (and (blank? properties) (not added-by-user?))
+                              (case @(cursor state [:badge-settings :show_evidence])
+                                0 false
+                                1 true)
+                              hidden)
                      visibility-class (if (= true hidden) " opaque" "")]
                  (conj r
                        (when-not (blank? url)
@@ -300,6 +305,7 @@
                           [:div.panel-heading {:id (str "heading" id)
                                                :role "tab"}
                            [:div.panel-title
+                            (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                             [:div.url.row.flip [:div.col-md-1 [evidence/evidence-icon {:type resource_type :mime_type mime_type}]]
                              [:div.col-md.11.break (case resource_type
                                                      "file" (hyperlink url)
@@ -313,14 +319,17 @@
                             (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
                             (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
-                           [:div [:button {:type "button"
-                                           :aria-label "OK"
-                                           :class "close evidence-toggle"
-                                           :on-click #(do
-                                                        (.preventDefault %)
-                                                        (evidence/init-evidence-form evidence state true)
-                                                        (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                                                                     :title (if (= true hidden) (t :badge/Showevidence) (t :badge/Hideevidence))}]]]
+                           [:div [:div.evidence-status
+                                  (case hidden
+                                    true (t :badge/Hidden)
+                                    false (t :badge/Visibleinbadge))][:button {:type "button"
+                                                                               :aria-label "OK"
+                                                                               :class "close evidence-toggle"
+                                                                               :on-click #(do
+                                                                                            (.preventDefault %)
+                                                                                            (evidence/init-evidence-form evidence state true)
+                                                                                            (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
+                                                                                       }]]]
                            (when added-by-user?
                              [:div [:div [:button {:type "button"
                                                    :aria-label "OK"
@@ -442,15 +451,15 @@
 
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "evidence"}
-                                                     (t :badge/Evidence)]]
-                                                   (when-not (empty? @(cursor state [:badge-settings :evidences]))
-                                                     [:div.form-group[:fieldset {:class "col-md-9 checkbox"}
-                                                                      [:div.col-md-12 [:label {:for "show-evidence"}
-                                                                                       [:input {:type      "checkbox"
-                                                                                                :id        "show-evidence"
-                                                                                                :on-change #(toggle-evidence state)
-                                                                                                :checked   (get-in @state [:badge-settings :show_evidence])}]
-                                                                                       (t :badge/Evidencevisibility)]]]])
+                                                     (t :badge/Evidences)]]
+                                                   #_(when-not (empty? @(cursor state [:badge-settings :evidences]))
+                                                       [:div.form-group[:fieldset {:class "col-md-9 checkbox"}
+                                                                        [:div.col-md-12 [:label {:for "show-evidence"}
+                                                                                         [:input {:type      "checkbox"
+                                                                                                  :id        "show-evidence"
+                                                                                                  :on-change #(toggle-evidence state)
+                                                                                                  :checked   (get-in @state [:badge-settings :show_evidence])}]
+                                                                                         (t :badge/Evidencevisibility)]]]])
                                                    [:div [evidenceblock data state init-data]]]]
                                             [:div.modal-footer]])]]))
 

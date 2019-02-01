@@ -229,7 +229,7 @@
       (when (and (pos? show_evidence) (not (empty? evidences)))
         [:div.row {:id "badge-settings"}
          [:div.col-md-12
-          [:h2.uppercase-header (if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
+          [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
           (reduce (fn [r evidence]
                     (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                           added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
