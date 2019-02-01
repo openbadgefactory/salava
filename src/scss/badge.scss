@@ -169,7 +169,7 @@ button {
   }
 
   .opaque {
-    opacity: 0.7;
+    opacity: 0.5;
   }
 
   .panel {
@@ -312,10 +312,21 @@ button {
     .fa{
       margin-right: 0px;
     }
+
+
     top: unset;
     bottom: 4px;
     right: 0px;
   }
+
+  .evidence-status {
+    position: absolute;
+    bottom: 0px;
+    right: 40px;
+    padding-bottom: 5px;
+    margin-top: 10px;
+  }
+
   .resource-options {
     margin-top: 20px;
     margin-bottom: 10px;
