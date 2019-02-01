@@ -262,7 +262,7 @@
         (when-not @(cursor state [:show-preview])[evidence/resource-input data state init-data])
 
         ;;Buttons
-        [:div
+        [:div.col-md-12
          [:hr]
          [:button {:type "button"
                    :class "btn btn-primary"
