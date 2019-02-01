@@ -93,7 +93,7 @@
                                                  :resource_type (case @(cursor state [:input_mode])
                                                                   :page_input "page"
                                                                   :file_input "file"
-                                                                  :url "url")}
+                                                                  "url")}
                                     :resource_visibility resource_visibility})
       (do
         (if (= "private" resource_visibility) (set-page-visibility-to-private resource_id))
