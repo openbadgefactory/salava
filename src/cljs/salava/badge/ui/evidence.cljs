@@ -12,18 +12,18 @@
             #_[salava.badge.ui.settings :as se]))
 
 #_(defn url? [s]
-  (when-not (blank? s)
-    (not (blank? (re-find #"^http" (str (trim s)))))))
+    (when-not (blank? s)
+      (not (blank? (re-find #"^http" (str (trim s)))))))
 
 
 (defn toggle-input-mode [key state]
   (let [key-atom (cursor state [:input_mode])]
     (do
       (reset! key-atom nil)
-    (swap! state assoc :input_mode key
-           :show-preview false
-           :show-form false
-           :evidence nil))))
+      (swap! state assoc :input_mode key
+             :show-preview false
+             :show-form false
+             :evidence nil))))
 
 (defn init-settings [badge-id state init-data]
   (ajax/GET
@@ -48,6 +48,8 @@
       (path-for url true)
       {:handler (fn [data]
                   (reset! resource-atom data))})))
+
+
 
 (defn init-evidence-form [evidence state show-url?]
   (let [ {:keys [id name url narrative]} evidence
@@ -78,7 +80,8 @@
   (let [{:keys [id name narrative url resource_visibility properties]} (:evidence @state)
         {:keys [resource_type mime_type resource_id]} properties
         badge-id (:id data)]
-    (swap! state assoc :evidence {:message nil})
+    (swap! state assoc :evidence {:message nil}
+                       :input_mode nil)
     (if (and (not (blank? narrative)) (blank? name))
       (swap! state assoc :evidence {:message [:div.alert.alert-warning [:p (t :badge/Emptynamefield)]]
                                     :name name
@@ -97,7 +100,6 @@
                                :mime_type mime_type}}
            :handler #(init-settings (:id @state) state init-data)})))))
 
-;;;;
 
 (defn input [input-data textarea?]
   (let [{:keys [name atom placeholder type error-message-atom rows cols preview?]} input-data]
@@ -196,3 +198,36 @@
        :error-handler (fn [{:keys [status status-text]}]
                         (swap! state assoc :evidence {:message [upload-status "error" (t :file/Errorwhileuploading) (t :file/Filetoobig)]})
                         )})))
+
+(defn files-grid [state]
+  (let [files (:files @(cursor state [:files]))]
+    [:div.col-md-12.resource-container
+     (reduce (fn [r resource]
+               (conj r [grid-element resource state :file_input])
+               ) [:div [:label
+                        [:span [:i.fa.fa-upload] (t :file/Upload) ]
+                        [:input {:id "grid-file-upload"
+                                 :type "file"
+                                 :name "file"
+                                 :on-change #(upload-file (cursor state [:files]) state)
+                                 :style {:display "none"}}]]] files)]))
+
+(defn pages-grid [state]
+  (let [pages @(cursor state [:pages])]
+    [:div.col-md-12.resource-container
+     (reduce (fn [r resource]
+               (conj r [grid-element resource state :page_input])
+               ) [:div] pages)]))
+
+
+(defn resource-input [data state init-data]
+  (let [resource-input-mode (cursor state [:input_mode])
+        evidence-url-atom (cursor state [:evidence :url])
+        show-url? (cursor state [:evidence :show_url])]
+    (fn []
+      [:div.form-group
+       [:div.col-md-9
+        (case @resource-input-mode
+          :file_input [files-grid state]
+          :page_input [pages-grid state]
+          nil)]])))
