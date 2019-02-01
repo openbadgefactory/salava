@@ -455,7 +455,6 @@
           (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
         (update-badge-settings! data (u/get-db ctx))
         (save-badge-tags! ctx tags user-badge-id)
-        ;(if-not (empty? evidences) (toggle-show-all-evidences! ctx user-badge-id 1 user-id ))
         (send-badge-info-to-obf ctx user-badge-id user-id)
         (badge-publish-update! ctx user-badge-id visibility)
         (if (or (= "internal" visibility) (= "public" visibility))
