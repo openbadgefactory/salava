@@ -69,9 +69,8 @@
   ""
   [ctx user-id badge-id]
   (let [badge-updates (select-badge-updates {:user_id user-id :id badge-id} (u/get-db-1 ctx))
-        evidence (select-user-badge-evidence {:id badge-id} (u/get-db ctx))
-        updates (if-not (empty? evidence) (assoc badge-updates :evidence evidence) badge-updates)]
-    {"user" {user-id {"badge" {badge-id updates}}}}))
+        evidence (select-user-badge-evidence {:id badge-id} (u/get-db ctx))]
+    {"user" {user-id {"badge" {badge-id (assoc badge-updates :evidence evidence)}}}}))
 
 
 (defn- issued-by-factory [ctx badge]
