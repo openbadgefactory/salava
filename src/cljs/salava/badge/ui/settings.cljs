@@ -297,7 +297,6 @@
                      show_evidence (if (pos? @(cursor state [:badge-settings :show_evidence])) true false)]
                  (if (and (blank? properties) (not added-by-user?))
                    (evidence/toggle-show-evidence! id data state init-data show_evidence))
-                 (prn properties)
                  (conj r
                        (when-not (blank? url)
                          [:div.panel.panel-default
