@@ -60,15 +60,24 @@
                     :properties {:resource_type (get-in evidence [:properties :resource_type]) :hidden (get-in evidence [:properties :hidden])}}]
     (swap! state assoc :evidence evidence)))
 
-(defn toggle-show-evidence! [id data state init-data]
-  (let [visibility-atom (cursor state [:evidence :properties :hidden])
-        new-value (not @visibility-atom)
-        badgeid (:id @state)]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/toggle_evidence/" id))
-      {:params {:show_evidence new-value
-                :user_badge_id (int badgeid)}
-       :handler #(init-settings badgeid state init-data)})))
+(defn toggle-show-evidence!
+  ([id data state init-data]
+   (let [visibility-atom (cursor state [:evidence :properties :hidden])
+         new-value (not @visibility-atom)
+         badgeid (:id @state)]
+     (ajax/POST
+       (path-for (str "/obpv1/badge/toggle_evidence/" id))
+       {:params {:show_evidence new-value
+                 :user_badge_id (int badgeid)}
+        :handler #(init-settings badgeid state init-data)})))
+  ([id data state init-data show_evidence]
+   (let [badgeid (:id @state)]
+     (ajax/POST
+       (path-for (str "/obpv1/badge/toggle_evidence/" id))
+       {:params {:show_evidence show_evidence
+                 :user_badge_id (int badgeid)}
+        :handler #(init-settings badgeid state init-data)})
+     )))
 
 (defn set-page-visibility-to-private [page-id]
   (ajax/POST

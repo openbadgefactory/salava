@@ -293,18 +293,17 @@
                             (not (blank? narrative)) narrative
                             (not added-by-user?) description ;;todo use regex to match description
                             :else nil)
-                     hidden (if (and (blank? properties) (not added-by-user?))
-                              (case @(cursor state [:badge-settings :show_evidence])
-                                0 false
-                                1 true)
-                              hidden)
-                     visibility-class (if (= true hidden) " opaque" "")]
+                     visibility-class (if (= true hidden) " opaque" "")
+                     show_evidence (if (pos? @(cursor state [:badge-settings :show_evidence])) true false)]
+                 (if (and (blank? properties) (not added-by-user?))
+                   (evidence/toggle-show-evidence! id data state init-data show_evidence))
+                 (prn properties)
                  (conj r
                        (when-not (blank? url)
-                         [:div.panel.panel-default {:class visibility-class}
+                         [:div.panel.panel-default
                           [:div.panel-heading {:id (str "heading" id)
                                                :role "tab"}
-                           [:div.panel-title
+                           [:div.panel-title {:class visibility-class}
                             (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                             [:div.url.row.flip [:div.col-md-1 [evidence/evidence-icon {:type resource_type :mime_type mime_type}]]
                              [:div.col-md.11.break (case resource_type
@@ -320,16 +319,19 @@
                             (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
                            [:div [:div.evidence-status
+                                  ;[:span.label.label-info
                                   (case hidden
                                     true (t :badge/Hidden)
-                                    false (t :badge/Visibleinbadge))][:button {:type "button"
-                                                                               :aria-label "OK"
-                                                                               :class "close evidence-toggle"
-                                                                               :on-click #(do
-                                                                                            (.preventDefault %)
-                                                                                            (evidence/init-evidence-form evidence state true)
-                                                                                            (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                       }]]]
+                                    false (t :badge/Visibleinbadge)
+                                    nil)];]
+                            [:button {:type "button"
+                                      :aria-label "OK"
+                                      :class "close evidence-toggle"
+                                      :on-click #(do
+                                                   (.preventDefault %)
+                                                   (evidence/init-evidence-form evidence state true)
+                                                   (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str "fa-toggle-on"))
+                                                                                                                                }]]]
                            (when added-by-user?
                              [:div [:div [:button {:type "button"
                                                    :aria-label "OK"

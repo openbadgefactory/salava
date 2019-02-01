@@ -213,6 +213,7 @@ button {
 
     .panel-title {
       font-size: 12px;
+      margin-bottom: 30px;
       .url {
         margin-top: 20px;
         margin-bottom: 10px;
@@ -314,6 +315,10 @@ button {
     }
 
 
+    i {
+      color: #006400;
+    }
+
     top: unset;
     bottom: 4px;
     right: 0px;
@@ -322,9 +327,12 @@ button {
   .evidence-status {
     position: absolute;
     bottom: 0px;
-    right: 40px;
+    right: 35px;
     padding-bottom: 5px;
     margin-top: 10px;
+    font-size: 11px;
+    font-style: italic;
+    font-weight: bold;
   }
 
   .resource-options {
