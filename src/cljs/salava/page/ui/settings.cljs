@@ -21,7 +21,7 @@
                   (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
                     (swap! state assoc :message (keyword (:message data))
                            :page {:id id
-                                  :tag tags
+                                  :tags tags
                                   :password password
                                   :visibility "public"})
                     (navigate-to next-url)
