@@ -248,7 +248,9 @@
     [:div.col-md-12.resource-container
      (reduce (fn [r resource]
                (conj r [grid-element resource state :page_input])
-               ) [:div] pages)]))
+               ) [:div
+                  [:label {:style {:margin "5px"}} (t :badge/Clickpagebelow)]
+                  ] pages)]))
 
 
 (defn resource-input [data state init-data]
