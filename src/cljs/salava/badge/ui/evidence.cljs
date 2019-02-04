@@ -206,9 +206,21 @@
        :response-format :json
        :keywords?       true
        :handler (fn [data]
-                  (if (= (:status data) "success")
-                    (swap! files-atom assoc :files (conj files (:data data))))
                   (swap! state assoc :evidence {:message [upload-status (:status data) (:message data) (:reason data)]})
+                  (if (= (:status data) "success")
+                    (do
+                      (swap! state assoc :show-form false
+                             :show-preview true
+                             :evidence {:url (str (session/get :site-url) "/" (get-in data [:data :path]))
+                                        :name (get-in data [:data :name])
+                                        :narrative nil
+                                        :properties {:mime_type (get-in data [:data :mime_type])
+                                                     :resource_id (get-in data [:data :id])
+                                                     :resource_type "file"}
+                                        :message [upload-status (:status data) (:message data) (:reason data)]})
+                      (swap! files-atom assoc :files (conj files (:data data))))
+                    (swap! state assoc :evidence {:message [upload-status (:status data) (:message data) (:reason data)]}))
+                  #_(swap! state assoc :evidence {:message [upload-status (:status data) (:message data) (:reason data)]})
                   )
 
 
@@ -227,7 +239,9 @@
                                  :type "file"
                                  :name "file"
                                  :on-change #(upload-file (cursor state [:files]) state)
-                                 :style {:display "none"}}]]] files)]))
+                                 :style {:display "none"}}]]
+                  [:div [:label {:style {:margin "5px"}} (t :badge/Orchoosefile)]]
+                  ] files)]))
 
 (defn pages-grid [state]
   (let [pages @(cursor state [:pages])]
