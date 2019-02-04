@@ -1315,8 +1315,11 @@ html[dir="rtl"] #badge-settings {
   }
 
   .panel {
- .panel-title .url .evidence-icon {
+    .panel-title .url .evidence-icon {
       float: right;
+    }
+    .add {
+      padding: 5px 15px 5px 5px;
     }
   }
 
