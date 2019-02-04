@@ -34,7 +34,7 @@
                          (dissoc :content)
                          (assoc :qr_code (str->qr-base64 (badge-url ctx (:id %1)))
                            :endorsements (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
-                           :evidences (badge-evidences ctx (:id %1))
+                           :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (badge-evidences ctx (:id %1) user-id))
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
 
