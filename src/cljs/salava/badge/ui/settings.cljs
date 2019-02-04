@@ -264,16 +264,16 @@
         ;;Buttons
         [:div.col-md-12
          [:hr]
-         [:button {:type "button"
-                   :class "btn btn-primary"
-                   :disabled (not (url? @evidence-url-atom))
-                   :on-click #(do
-                                (.preventDefault %)
-                                (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
-                                (evidence/save-badge-evidence data state init-data)
-                                (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
-                                                                                     :tab-no 2)))}
-          (t :core/Add)]
+         (when @(cursor state [:show-preview])[:button {:type "button"
+                                                        :class "btn btn-primary"
+                                                        :disabled (not (url? @evidence-url-atom))
+                                                        :on-click #(do
+                                                                     (.preventDefault %)
+                                                                     (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
+                                                                     (evidence/save-badge-evidence data state init-data)
+                                                                     (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                                                          :tab-no 2)))}
+                                               (t :core/Add)])
          [:a.cancel {:on-click #(do
                                   (.preventDefault %)
                                   (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
