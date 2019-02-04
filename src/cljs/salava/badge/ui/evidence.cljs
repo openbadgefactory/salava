@@ -234,13 +234,13 @@
      (reduce (fn [r resource]
                (conj r [grid-element resource state :file_input])
                ) [:div [:label
-                        [:span [:i.fa.fa-upload] (t :file/Upload) ]
+                       [:a [:span [:i.fa.fa-upload] (t :file/Upload)]]
                         [:input {:id "grid-file-upload"
                                  :type "file"
                                  :name "file"
                                  :on-change #(upload-file (cursor state [:files]) state)
                                  :style {:display "none"}}]]
-                  [:div [:label {:style {:margin "5px"}} (t :badge/Orchoosefile)]]
+                  (if (seq files) [:div [:label {:style {:margin "5px" :margin-bottom "10px"}} (t :badge/Orchoosefile)]])
                   ] files)]))
 
 (defn pages-grid [state]
@@ -249,7 +249,7 @@
      (reduce (fn [r resource]
                (conj r [grid-element resource state :page_input])
                ) [:div
-                  [:label {:style {:margin "5px"}} (t :badge/Clickpagebelow)]
+                  (if (seq pages) [:div [:label {:style {:margin-bottom "10px"}} (t :badge/Clickpagebelow)]])
                   ] pages)]))
 
 
