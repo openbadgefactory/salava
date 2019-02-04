@@ -8,7 +8,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]))
-;;fix, show error message!
+
 (defn save-settings [state next-url]
   (let [{:keys [id tags visibility password]} (:page @state)]
     (reset! (cursor state [:message]) nil)
@@ -18,8 +18,12 @@
                 :visibility visibility
                 :password password}
        :handler (fn [data]
-                  (if (= "error" (:status data))
-                    (swap! state assoc :message (keyword (:message data)))
+                  (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
+                    (swap! state assoc :message (keyword (:message data))
+                           :page {:id id
+                                  :tag tags
+                                  :password password
+                                  :visibility "public"})
                     (navigate-to next-url)
                     )
                   )})))
@@ -31,11 +35,12 @@
         new-tag-atom (cursor state [:new-tag])
         password-atom (cursor state [:page :password])]
     [:div {:id "page-settings"}
-     (when-not (clojure.string/blank? @(cursor state [:message]))
-       [:div.alert.alert-warning (t @(cursor state [:message])) ])
+
      [ph/edit-page-header (t :page/Settings ": " name)]
-     [ph/edit-page-buttons id :settings (fn [next-url] (save-settings (:page @state) next-url))]
+     [ph/edit-page-buttons id :settings (fn [next-url] (save-settings state next-url))]
      [:div {:class "panel page-panel" :id "settings-panel"}
+      (when-not (clojure.string/blank? @(cursor state [:message]))
+        [:div.alert.alert-warning (t @(cursor state [:message])) ])
       [:div.form-group
        [:label {:for "page-tags"}
         (t :page/Pagetags)]
@@ -92,8 +97,8 @@
       [:div.form-group
        [:button {:class    "btn btn-primary"
                  :on-click #(do
-                             (.preventDefault %)
-                             (save-settings state (str "/page/preview/" id)))
+                              (.preventDefault %)
+                              (save-settings state (str "/page/preview/" id)))
                  :disabled (and (empty? @password-atom)
                                 (= @visibility-atom "password"))}
         (t :page/Save)]]]]))

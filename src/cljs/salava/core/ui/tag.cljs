@@ -1,8 +1,27 @@
 (ns salava.core.ui.tag
   (:require [clojure.string :refer [trim lower-case]]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [plugin-fun]]
-            [reagent.session :as session]))
+            [salava.core.ui.helper :refer [plugin-fun path-for]]
+            [reagent.session :as session]
+            [reagent.core :refer [cursor atom]]
+            [salava.core.ui.ajax-utils :as ajax]
+            ))
+
+(defn update-settings [badge-id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/settings/" badge-id) true)
+    {:handler (fn [data]
+                (swap! state assoc :badge-settings data (assoc data :new-tag "")))}))
+
+(defn save-settings [state]
+  (let [{:keys [id visibility tags rating]} @(cursor state [:badge-settings])]
+    (ajax/POST
+      (path-for (str "/obpv1/badge/save_settings/" id))
+      {:params  {:visibility   visibility
+                 :tags         tags
+                 :rating       (if (pos? rating) rating nil)}
+       :handler (fn []
+                  (update-settings id state))})))
 
 (defn add-tag
   ([tags-atom new-tag-atom]
@@ -13,12 +32,11 @@
                 (not tag-exists?))
        (reset! tags-atom (conj (vec @tags-atom) new-tag))
        (reset! new-tag-atom ""))))
-  ([tags-atom new-tag-atom state reload-fn]
-   (let [save-settings (first (plugin-fun (session/get :plugins) "settings" "save_settings"))]
-     (do
-       (add-tag tags-atom new-tag-atom)
-       (save-settings state reload-fn "share")
-       ))))
+  ([tags-atom new-tag-atom state]
+   (do
+     (add-tag tags-atom new-tag-atom)
+     (save-settings state)
+     )))
 
 (defn remove-tag [tags-atom tag-value]
   (reset! tags-atom (remove #(= % tag-value) @tags-atom)))
@@ -42,7 +60,7 @@
             :value       @new-tag-atom
             :on-change   #(reset! new-tag-atom (-> % .-target .-value))
             :on-key-down #(if (= (.-which %) 13)
-                            (add-tag tags-atom new-tag-atom state reload-fn))}]))
+                            (add-tag tags-atom new-tag-atom state))}]))
 
 (defn tags
   ([tags-atom] (tags tags-atom true))
@@ -56,14 +74,13 @@
                    :dangerouslySetInnerHTML {:__html "&times;"}
                    :on-click #(remove-tag tags-atom tag)}])])))
   ([tags-atom state reload-fn]
-   (let [save-settings (first (plugin-fun (session/get :plugins) "settings" "save_settings"))]
-     (into [:div.tag-labels]
-           (for [tag @tags-atom]
-             [:span {:class "label label-default"}
-              tag
-              [:a {:class "remove-tag"
-                   :dangerouslySetInnerHTML {:__html "&times;"}
-                   :on-click #(do
-                                (.preventDefault %)
-                                (remove-tag tags-atom tag)
-                                (save-settings state reload-fn "share"))}]])))))
+   (into [:div.tag-labels]
+         (for [tag @tags-atom]
+           [:span {:class "label label-default"}
+            tag
+            [:a {:class "remove-tag"
+                 :dangerouslySetInnerHTML {:__html "&times;"}
+                 :on-click #(do
+                              (.preventDefault %)
+                              (remove-tag tags-atom tag)
+                              (save-settings state))}]]))))
