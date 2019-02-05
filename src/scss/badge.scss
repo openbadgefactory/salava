@@ -254,12 +254,6 @@ button {
     margin-bottom: 15px;
     width: 100%;
 
-    .inline.name {
-      label {
-        margin-right: 53px;
-      }
-    }
-
     a {
       color: $text-color;
       text-decoration: none;
@@ -267,6 +261,7 @@ button {
     label {
       color: $text-color;
       font-weight: bold;
+      min-width: 100px;
     }
 
   }
