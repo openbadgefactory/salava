@@ -178,11 +178,19 @@ button {
     -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
     box-shadow: 0 1px 2px rgba(0,0,0,.05);
 
-
-    .evidence-panel-body {
-      margin-bottom: 20px;
+    .add {
+      padding: 5px 5px 5px 15px;
+    }
+    label {
+      margin-left: unset;
     }
 
+
+
+    /*     .evidence-panel-body {
+    margin-bottom: 20px;
+  }
+    */
     div {
       .trash{
         font-size: 18px;
@@ -235,20 +243,9 @@ button {
     }
   }
 
-  a.cancel {
-    cursor: pointer;
-    padding: 7px 13px;
-  }
-
   .evidence-list, #accordion .evidence-list {
     margin-bottom: 15px;
     width: 100%;
-
-    .inline.name {
-      label {
-        margin-right: 53px;
-      }
-    }
 
     a {
       color: $text-color;
@@ -257,7 +254,9 @@ button {
     label {
       color: $text-color;
       font-weight: bold;
+      min-width: 80px;
     }
+
   }
 
   .new-evidence{
@@ -366,8 +365,22 @@ button {
           }
         }
       }
+
+
     }
 
+  }
+
+  .cancel{
+    button.close {
+      position: unset;
+      font-size: 18px;
+      margin-right: 15px;
+      color: $dark-red;
+    }
+    i{
+      color: $dark-red;
+    }
   }
   .resource-container {
     margin-top: 15px;
@@ -725,7 +738,7 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off{
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove{
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
