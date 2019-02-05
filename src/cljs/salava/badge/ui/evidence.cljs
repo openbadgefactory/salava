@@ -60,15 +60,24 @@
                     :properties {:resource_type (get-in evidence [:properties :resource_type]) :hidden (get-in evidence [:properties :hidden])}}]
     (swap! state assoc :evidence evidence)))
 
-(defn toggle-show-evidence! [id data state init-data]
-  (let [visibility-atom (cursor state [:evidence :properties :hidden])
-        new-value (not @visibility-atom)
-        badgeid (:id @state)]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/toggle_evidence/" id))
-      {:params {:show_evidence new-value
-                :user_badge_id (int badgeid)}
-       :handler #(init-settings badgeid state init-data)})))
+(defn toggle-show-evidence!
+  ([id data state init-data]
+   (let [visibility-atom (cursor state [:evidence :properties :hidden])
+         new-value (not @visibility-atom)
+         badgeid (:id @state)]
+     (ajax/POST
+       (path-for (str "/obpv1/badge/toggle_evidence/" id))
+       {:params {:show_evidence new-value
+                 :user_badge_id (int badgeid)}
+        :handler #(init-settings badgeid state init-data)})))
+  ([id data state init-data show_evidence]
+   (let [badgeid (:id @state)]
+     (ajax/POST
+       (path-for (str "/obpv1/badge/toggle_evidence/" id))
+       {:params {:show_evidence show_evidence
+                 :user_badge_id (int badgeid)}
+        :handler #(init-settings badgeid state init-data)})
+     )))
 
 (defn set-page-visibility-to-private [page-id]
   (ajax/POST
@@ -197,9 +206,21 @@
        :response-format :json
        :keywords?       true
        :handler (fn [data]
-                  (if (= (:status data) "success")
-                    (swap! files-atom assoc :files (conj files (:data data))))
                   (swap! state assoc :evidence {:message [upload-status (:status data) (:message data) (:reason data)]})
+                  (if (= (:status data) "success")
+                    (do
+                      (swap! state assoc :show-form false
+                             :show-preview true
+                             :evidence {:url (str (session/get :site-url) "/" (get-in data [:data :path]))
+                                        :name (get-in data [:data :name])
+                                        :narrative nil
+                                        :properties {:mime_type (get-in data [:data :mime_type])
+                                                     :resource_id (get-in data [:data :id])
+                                                     :resource_type "file"}
+                                        :message [upload-status (:status data) (:message data) (:reason data)]})
+                      (swap! files-atom assoc :files (conj files (:data data))))
+                    (swap! state assoc :evidence {:message [upload-status (:status data) (:message data) (:reason data)]}))
+                  #_(swap! state assoc :evidence {:message [upload-status (:status data) (:message data) (:reason data)]})
                   )
 
 
@@ -213,19 +234,23 @@
      (reduce (fn [r resource]
                (conj r [grid-element resource state :file_input])
                ) [:div [:label
-                        [:span [:i.fa.fa-upload] (t :file/Upload) ]
+                       [:a [:span [:i.fa.fa-upload] (t :file/Upload)]]
                         [:input {:id "grid-file-upload"
                                  :type "file"
                                  :name "file"
                                  :on-change #(upload-file (cursor state [:files]) state)
-                                 :style {:display "none"}}]]] files)]))
+                                 :style {:display "none"}}]]
+                  (if (seq files) [:div [:label {:style {:margin "5px" :margin-bottom "10px"}} (t :badge/Orchoosefile)]])
+                  ] files)]))
 
 (defn pages-grid [state]
   (let [pages @(cursor state [:pages])]
     [:div.col-md-12.resource-container
      (reduce (fn [r resource]
                (conj r [grid-element resource state :page_input])
-               ) [:div] pages)]))
+               ) [:div
+                  (if (seq pages) [:div [:label {:style {:margin-bottom "10px"}} (t :badge/Clickpagebelow)]])
+                  ] pages)]))
 
 
 (defn resource-input [data state init-data]

@@ -1315,8 +1315,11 @@ html[dir="rtl"] #badge-settings {
   }
 
   .panel {
- .panel-title .url .evidence-icon {
+    .panel-title .url .evidence-icon {
       float: right;
+    }
+    .add {
+      padding: 5px 15px 5px 5px;
     }
   }
 
@@ -1324,5 +1327,10 @@ html[dir="rtl"] #badge-settings {
     float: right;
     margin-right: unset;
     margin-left: 15px;
+  }
+
+  .evidence-status {
+    right: unset;
+    left: 38px;
   }
 }

@@ -189,15 +189,16 @@
 
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
-      [:img {:src (str "/" image_file) :alt name}]]
+      [:img {:src (str "/" image_file) :alt name}]
+      ]
      [:div {:class "col-md-9 settings-content settings-tab"}
       (if @message [:div @message])
       [:div
-       [:div.row [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
+       [:div.row {:style {:margin-bottom "10px"}} [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
        [:div.evidence-info (t :badge/Evidenceinfo)]
 
        [:div.row.form-horizontal
-        [:div.row
+        [:div
          [:div.col-md-12.resource-options
           [:div
            [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
@@ -213,12 +214,18 @@
                                     (evidence/toggle-input-mode :page_input state)
                                     )
                        }
-                   [:i.fa.fa-file-text] (t :page/Mypages)]]
+                   [:i.fa.fa-file-text] (t :page/Pages)]]
            [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
                        :href "#":on-click #(do
                                              (.preventDefault %)
                                              (evidence/toggle-input-mode :file_input state))
-                       } [:i.fa.fa-files-o] (t :page/Files)]]]]]
+                       } [:i.fa.fa-files-o] (t :page/Files)]]
+           [:div.cancel [:a {:href "#":on-click #(do
+                                                   (.preventDefault %)
+                                                   (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
+                                                          :tab-no 2))}
+
+                         [:i.fa.fa-remove] (t :core/Cancel)]]]]]
 
 
         ;;Preview
@@ -251,34 +258,70 @@
                  [:div.col-md-9
                   [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])
 
-             ]]])
+             ]
+            [:div.add
+             [:button {:type "button"
+                       :class "btn btn-primary"
+                       :disabled (not (url? @evidence-url-atom))
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
+                                    (evidence/save-badge-evidence data state init-data)
+                                    (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                         :tab-no 2)))}
+              (t :core/Add)]]]])
 
         ;;url input
-        (when (= @input-mode :url_input) [:div
-                                          [:div.col-md-12
-                                           [:div.resource-container {:style {:margin-bottom "10px"}}
-                                            [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]]]])
+        (when (= @input-mode :url_input)
+          [:div.preview.evidence-list.col-md-9
+           [:div.panel.panel-default
+            [:div.panel-heading
+             [:div.panel-title
+              [:div.url [:i.fa.fa-link]] [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith)}]]]
+            [:div.panel-body.evidence-panel-body
+             [:div [:div.form-group
+                    [:label.col-md-3 "Name"]
+                    [:div.col-md-9
+                     [evidence/input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+              [:div.form-group
+               [:label.col-md-3 (t :page/Description)]
+               [:div.col-md-9
+                [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]]]
+            [:div.add
+             [:button {:type "button"
+                       :class "btn btn-primary"
+                       :disabled (not (url? @evidence-url-atom))
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (reset! (cursor state [:evidence :properties :resource_type] ) "url")
+                                    (evidence/save-badge-evidence data state init-data)
+                                    (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                         :tab-no 2)))}
+              (t :core/Add)]]]]
+          #_[:div.resource-container {:style {:margin-bottom "10px"}}
+             [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://" :preview? (cursor state [:show-preview])}]])
+
         ;;Resource grid
         (when-not @(cursor state [:show-preview])[evidence/resource-input data state init-data])
 
         ;;Buttons
-        [:div.col-md-12
-         [:hr]
-         [:button {:type "button"
-                   :class "btn btn-primary"
-                   :disabled (not (url? @evidence-url-atom))
-                   :on-click #(do
-                                (.preventDefault %)
-                                (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
-                                (evidence/save-badge-evidence data state init-data)
-                                (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
-                                                                                     :tab-no 2)))}
-          (t :core/Add)]
-         [:a.cancel {:on-click #(do
-                                  (.preventDefault %)
-                                  (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
-                                         :tab-no 2))}
-          (t :core/Cancel)]]]]]]))
+        #_[:div.col-md-12
+           [:hr]
+           (when @(cursor state [:show-preview])[:button {:type "button"
+                                                          :class "btn btn-primary"
+                                                          :disabled (not (url? @evidence-url-atom))
+                                                          :on-click #(do
+                                                                       (.preventDefault %)
+                                                                       (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type] ) "url"))
+                                                                       (evidence/save-badge-evidence data state init-data)
+                                                                       (when-not @(cursor state [:evidence :message])(swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                                                            :tab-no 2)))}
+                                                 (t :core/Add)])
+           [:a.cancel {:on-click #(do
+                                    (.preventDefault %)
+                                    (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
+                                           :tab-no 2))}
+            (t :core/Cancel)]]]]]]))
 
 (defn evidence-list [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
@@ -293,18 +336,16 @@
                             (not (blank? narrative)) narrative
                             (not added-by-user?) description ;;todo use regex to match description
                             :else nil)
-                     hidden (if (and (blank? properties) (not added-by-user?))
-                              (case @(cursor state [:badge-settings :show_evidence])
-                                0 false
-                                1 true)
-                              hidden)
-                     visibility-class (if (= true hidden) " opaque" "")]
+                     visibility-class (if (= true hidden) " opaque" "")
+                     show_evidence (if (pos? @(cursor state [:badge-settings :show_evidence])) true false)]
+                 (if (and (blank? properties) (not added-by-user?))
+                   (evidence/toggle-show-evidence! id data state init-data show_evidence))
                  (conj r
                        (when-not (blank? url)
-                         [:div.panel.panel-default {:class visibility-class}
+                         [:div.panel.panel-default
                           [:div.panel-heading {:id (str "heading" id)
                                                :role "tab"}
-                           [:div.panel-title
+                           [:div.panel-title {:class visibility-class}
                             (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                             [:div.url.row.flip [:div.col-md-1 [evidence/evidence-icon {:type resource_type :mime_type mime_type}]]
                              [:div.col-md.11.break (case resource_type
@@ -316,44 +357,56 @@
                                                                                 (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                                               (hyperlink url))
                                                      (hyperlink url))]]
-                            (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
+                            (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
                             (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
                            [:div [:div.evidence-status
+                                  ;[:span.label.label-info
                                   (case hidden
                                     true (t :badge/Hidden)
-                                    false (t :badge/Visibleinbadge))][:button {:type "button"
-                                                                               :aria-label "OK"
-                                                                               :class "close evidence-toggle"
-                                                                               :on-click #(do
-                                                                                            (.preventDefault %)
-                                                                                            (evidence/init-evidence-form evidence state true)
-                                                                                            (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                       }]]]
+                                    false (t :badge/Visibleinbadge)
+                                    nil)];]
+                            [:button {:type "button"
+                                      :aria-label "OK"
+                                      :class "close evidence-toggle"
+                                      :on-click #(do
+                                                   (.preventDefault %)
+                                                   (evidence/init-evidence-form evidence state true)
+                                                   (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
+                                                                                                                                }]]]
                            (when added-by-user?
                              [:div [:div [:button {:type "button"
                                                    :aria-label "OK"
                                                    :class "close panel-edit"
                                                    :on-click #(do (.preventDefault %)
                                                                 (evidence/init-evidence-form evidence state true))
-                                                   :role "button" :data-toggle "collapse"
+                                                   :role "button"
+                                                   :data-toggle "collapse"
+                                                   :data-target (str "#collapse" id)
                                                    :data-parent "#accordion"
                                                    :href (str "#collapse" id)
                                                    :aria-expanded "true"
-                                                   :aria-controls (str "collapse" id)}
+                                                   ;:aria-controls (str "collapse" id)
+                                                   }
                                           [:i.fa.fa-edit.edit-evidence]]];;edit-button
 
                               [:div [:button {:type "button"
                                               :aria-label "OK"
                                               :class "close"
-                                              :on-click #(do (.preventDefault %)(evidence/delete-evidence! id data state init-data))}
+                                              :data-toggle "collapse"
+                                              ;data-target (str "#collapse" id)
+                                              :on-click #(do (.preventDefault %)
+                                                           (evidence/delete-evidence! id data state init-data))
+                                              :aria-expanded "false"
+                                              :aria-controls (str "collapse" id)
+                                              }
                                      [:i.fa.fa-trash.trash]]] ;;delete-button
                               ])]
 
-                          [:div {:id (str "collapse" id)
-                                 :class "panel-collapse collapse"
-                                 :role "tabpanel"
-                                 :aria-labelledby (str "heading" id)}
+                          [:div.panel-collapse {:id (str "collapse" id)
+                                                :class "collapse"
+                                                :role "tabpanel"
+                                                :aria-labelledby (str "heading" id)}
                            [:div.panel-body.evidence-panel-body {:style {:padding-top "10px"}}
                             [:div.form-group
                              [:label.col-md-3 (t :badge/Name)]
@@ -363,7 +416,7 @@
                              [:label.col-md-3 (t :page/Description)]
                              [:div.col-md-9
                               [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]
-                            [:hr]
+                            ;[:hr]
                             [:div
                              [:button {:type         "button"
                                        :class        "btn btn-primary"

@@ -184,7 +184,7 @@
              [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
              [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-           (when (not (empty? evidences))
+           (when (seq evidences)
              [:div.row {:id "badge-settings"}
               [:div.col-md-12
                [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
