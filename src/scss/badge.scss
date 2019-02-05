@@ -243,13 +243,6 @@ button {
     }
   }
 
-  /*   a.cancel {
-  cursor: pointer;
-  padding: 7px 13px;
-} */
-
-
-
   .evidence-list, #accordion .evidence-list {
     margin-bottom: 15px;
     width: 100%;
@@ -261,7 +254,7 @@ button {
     label {
       color: $text-color;
       font-weight: bold;
-      min-width: 100px;
+      min-width: 80px;
     }
 
   }
