@@ -198,7 +198,7 @@
        [:div.evidence-info (t :badge/Evidenceinfo)]
 
        [:div.row.form-horizontal
-        [:div.row
+        [:div
          [:div.col-md-12.resource-options
           [:div
            [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
@@ -214,7 +214,7 @@
                                     (evidence/toggle-input-mode :page_input state)
                                     )
                        }
-                   [:i.fa.fa-file-text] (t :page/Mypages)]]
+                   [:i.fa.fa-file-text] (t :page/Pages)]]
            [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
                        :href "#":on-click #(do
                                              (.preventDefault %)
@@ -357,7 +357,7 @@
                                                                                 (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                                               (hyperlink url))
                                                      (hyperlink url))]]
-                            (when-not (blank? name) [:div.inline.name [:label (t :badge/Name) ": "] name])
+                            (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
                             (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
 
                            [:div [:div.evidence-status
