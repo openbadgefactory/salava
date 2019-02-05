@@ -277,7 +277,7 @@
            [:div.panel.panel-default
             [:div.panel-heading
              [:div.panel-title
-              [:div.url [:i.fa.fa-link]] [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder "http://"}]]]
+              [:div.url [:i.fa.fa-link]] [evidence/input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith)}]]]
             [:div.panel-body.evidence-panel-body
              [:div [:div.form-group
                     [:label.col-md-3 "Name"]
