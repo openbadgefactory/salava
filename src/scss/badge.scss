@@ -1434,3 +1434,23 @@ button {
   }
 }
 
+#endorsebadge {
+
+  hr{
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $menu-active, rgba(0, 0, 0, 0));
+    margin: 30px 0px;
+
+  }
+
+
+  i {
+    font-size: 18px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  .close {
+  }
+}
+
