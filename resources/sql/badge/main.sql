@@ -695,3 +695,21 @@ WHERE ub.user_id = :user_id AND ube.url = :url
 
 --name: delete-all-badge-evidences!
 DELETE FROM user_badge_evidence WHERE user_badge_id = :user_badge_id
+
+--name: insert-user-badge-endorsement<!
+INSERT INTO user_badge_endorsement (user_badge_id, endorser_id, content, status, ctime, mtime)
+VALUES (:user_badge_id, :endorser_id, :content, 'pending', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: delete-user-badge-endorsement!
+DELETE FROM user_badge_endorsement WHERE id = :id
+
+--name: select-endorsement-owner
+SELECT endorser_id FROM user_badge_endorsement WHERE id = :id
+
+--name: get-user-badge-endorsements
+SELECT id, user_badge_id, endorser_id, content, status, ctime, mtime FROM user_badge_endorsement
+WHERE user_badge_id = :user_badge_id
+ORDER BY mtime DESC
+
+--name: update-endorsement-status!
+UPDATE user_badge_endorsement SET status = :status WHERE id = :id
