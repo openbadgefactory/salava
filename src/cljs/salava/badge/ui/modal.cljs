@@ -210,7 +210,7 @@
         (check-badge id)
 
         ;;Endorse-badge
-        [endr/endorse-badge]
+        (when-not owner? (endr/endorse-badge id))
         ]]
 
       (when-not (empty? alignment)
@@ -340,4 +340,5 @@
            :creator issuer/creator-content
            :linkedin1 s/linkedin-modal1
            :linkedin2 s/content-modal-render
+           :endorse endr/endorse-badge-content
            }})
