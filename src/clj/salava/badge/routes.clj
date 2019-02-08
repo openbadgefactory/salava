@@ -15,6 +15,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.db :as u]
             [salava.badge.verify :as v]
+            [salava.badge.endorsement :as e]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -295,4 +296,33 @@
                    :summary "Set evidence visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user)))))))
+                   (ok (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user))))
+
+             (POST "/endorsement/:user-badge-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [user-badge-id :- Long]
+                   :body-params [content :- s/Str]
+                   :summary "Endorse user badge"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
+
+             (DELETE "/endorsement/:user-badge-id/:endorsement-id" []
+                     :return {:status (s/enum "success" "error")}
+                     :path-params [user-badge-id :- Long
+                                   endorsement-id :- Long]
+                     :summary "Delete endorsement"
+                     :auth-rules access/authenticated
+                     :current-user current-user
+                     (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user) ))
+                     )
+             (POST "/endorsement/update_status/:user-badge-id/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [user-badge-id :- Long
+                                 endorsement-id :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")]
+                   :summary "Update endorsement status"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/update-status! ctx (:id current-user) user-badge-id endorsement-id status))
+                   ))))
