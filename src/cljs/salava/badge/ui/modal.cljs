@@ -206,8 +206,12 @@
         [:div.description description]
 
 
-        ;check-badge
-        (check-badge id)]]
+        ;;Check-badge
+        (check-badge id)
+
+        ;;Endorse-badge
+        [endr/endorse-badge]
+        ]]
 
       (when-not (empty? alignment)
         [:div.row
