@@ -299,13 +299,21 @@
                    (ok (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user))))
 
              (POST "/endorsement/:user-badge-id" []
-                   :return {:status (s/enum "success" "error")}
+                   :return {:id s/Int :status (s/enum "success" "error")}
                    :path-params [user-badge-id :- Long]
                    :body-params [content :- s/Str]
                    :summary "Endorse user badge"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
+
+             (GET "/user/endorsement/:user-badge-id" []
+                  :return schemas/UserEndorsement
+                  :path-params [user-badge-id :- Long]
+                  :summary "Get user badge endorsements"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (e/user-badge-endorsements ctx user-badge-id)))
 
              (DELETE "/endorsement/:user-badge-id/:endorsement-id" []
                      :return {:status (s/enum "success" "error")}
@@ -325,4 +333,12 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (e/update-status! ctx (:id current-user) user-badge-id endorsement-id status))
-                   ))))
+                   )
+
+             (GET "/user/pending_endorsement" []
+                  :auth-rules access/authenticated
+                  :summary "Get pending badge endorsments"
+                  :current-user current-user
+                  (ok (e/received-pending-endorsements ctx (:id current-user)))
+                  )
+             )))
