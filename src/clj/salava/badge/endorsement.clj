@@ -1,6 +1,6 @@
 (ns salava.badge.endorsement
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db md->html]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]))
 
@@ -42,24 +42,22 @@
   (try+
     (if (or (endorsement-owner? ctx endorsement-id user-id) (badge-owner? ctx user-badge-id user-id ))
       (do (delete-user-badge-endorsement! {:id endorsement-id} (get-db ctx))
-      {:status "success"})
+        {:status "success"})
       {:status "error"}
       )
     (catch Object _
       (log/error _)
       {:status "error"})))
 
-#_(defn edit!
-  "Edit endorsement.
-  Does this reset status and promp user to receive again"
-  [ctx endorsement-id user-id])
+(defn user-badge-endorsements
+  [ctx user-badge-id]
+  (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)))
 
-(defn badge-endorsements [ctx user-badge-id]
-  (get-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)))
+(defn received-pending-endorsements [ctx user-id]
+  (map (fn [e]
+         (-> e (update :content md->html)))(select-received-pending-endorsements {:user_id user-id} (get-db ctx))))
 
-
-
-(defn recieved-endorsements [ctx user-id])
+(defn all-recieved-endorsements [ctx user-id])
 (defn all-given-endorsements [ctx endorser-id])
 
 
