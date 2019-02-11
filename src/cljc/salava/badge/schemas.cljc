@@ -165,6 +165,16 @@
                        (s/optional-key  :resource_type) s/Str
                        (s/optional-key  :mime_type) (s/maybe s/Str)} )
 
+(s/defschema UserEndorsement [{:id (s/maybe s/Int)
+                            :endorser_id s/Int
+                            :user_badge_id s/Int
+                            :content s/Str
+                            :status (s/enum "pending" "accepted" "declined")
+                            :ctime s/Int
+                            (s/optional-key :first_name) s/Str
+                            (s/optional-key :last_name) s/Str
+
+                            }])
 
 
 
