@@ -1438,19 +1438,42 @@ button {
 
   hr{
     height: 1px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $menu-active, rgba(0, 0, 0, 0));
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
     margin: 30px 0px;
 
   }
-
 
   i {
     font-size: 18px;
     margin-right: 10px;
     vertical-align: middle;
+    color: $link-color;
   }
 
-  .close {
+  .cancel {
+    i {
+      color: $dark-red;}
   }
+
+  img {
+    width: 72px;
+    height: 72px;
+  }
+
+   .thumbnail {
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+   transition: 0.3s;
+   min-width: 40%;
+   border-radius: 5px;
+ }
+
+ .thumbnail-description {
+   min-height: 40px;
+ }
+
+ .thumbnail:hover {
+   cursor: pointer;
+   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 1);
+ }
 }
 
