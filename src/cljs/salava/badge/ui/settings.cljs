@@ -13,7 +13,8 @@
             [salava.core.ui.rate-it :as r]
             [salava.badge.ui.my :as my]
             [salava.core.ui.modal :as mo]
-            [salava.badge.ui.evidence :as evidence]))
+            [salava.badge.ui.evidence :as evidence]
+            [salava.badge.ui.endorsement :as endorsement]))
 
 
 (defn set-visibility [visibility state]
@@ -505,15 +506,9 @@
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "evidence"}
                                                      (t :badge/Evidences)]]
-                                                   #_(when-not (empty? @(cursor state [:badge-settings :evidences]))
-                                                       [:div.form-group[:fieldset {:class "col-md-9 checkbox"}
-                                                                        [:div.col-md-12 [:label {:for "show-evidence"}
-                                                                                         [:input {:type      "checkbox"
-                                                                                                  :id        "show-evidence"
-                                                                                                  :on-change #(toggle-evidence state)
-                                                                                                  :checked   (get-in @state [:badge-settings :show_evidence])}]
-                                                                                         (t :badge/Evidencevisibility)]]]])
-                                                   [:div [evidenceblock data state init-data]]]]
+                                                   [:div [evidenceblock data state init-data]]
+
+                                                   [:div [endorsement/endorsement-list (:id @state)]]]]
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
