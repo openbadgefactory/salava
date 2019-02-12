@@ -15,7 +15,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :refer [pending-badge-content]]
             [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
-            [salava.badge.ui.modal :as bm]))
+            [salava.badge.ui.modal :as bm]
+            [salava.badge.ui.endorsement :refer [pending-endorsements]]))
 
 
 (defn init-data [state]
@@ -421,6 +422,7 @@
      [m/modal-window]
      [badge-alert state]
      [pending-connections reload-fn]
+     [pending-endorsements]
      [badges-pending state]
      (if (not-activated?)
        (not-activated-banner))
