@@ -1436,12 +1436,31 @@ button {
 
 #endorsebadge {
 
+/*   .badge-image {
+    text-align: center;
+    img {
+      display: inline-block;
+      max-width: 100%;
+      height: auto;
+      padding: 4px;
+      max-height: 200px;
+    }
+  }
+ */
+    .media-heading {
+    font-family: 'Open Sans Condensed',sans-serif;
+    font-size: 45px;
+    margin: 20px 0px;
+    .pending-a{
+      font-weight: 500 !important;
+      cursor: pointer;
+    }
+  }
+
   hr{
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
-    margin: 30px 0px;
-
-  }
+    margin: 10px 0px;}
 
   i {
     font-size: 18px;
@@ -1450,30 +1469,77 @@ button {
     color: $link-color;
   }
 
+
   .cancel {
     i {
       color: $dark-red;}
   }
-
-  img {
-    width: 72px;
-    height: 72px;
+ img {
+    width: 100x;
+    height: 100px;
   }
 
-   .thumbnail {
-   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
-   transition: 0.3s;
-   min-width: 40%;
-   border-radius: 5px;
- }
+  .thumbnail {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+    transition: 0.3s;
+    min-width: 40%;
+    border-radius: 5px;
+  }
 
- .thumbnail-description {
-   min-height: 40px;
- }
+  .thumbnail-description {
+    min-height: 40px;
+  }
 
- .thumbnail:hover {
-   cursor: pointer;
-   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 1);
- }
+  .thumbnail:hover {
+    cursor: pointer;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 1);
+  }
+
+  .caption {
+    .buttons {
+      display: table;
+      width: 100%;
+
+      .button {
+        display: table-cell;
+        text-align: center;
+      }
+    }
+  }
+
+  .endorser {
+    img {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+      padding: 5px;
+    }
+    .border {
+      margin: 10px 0px;
+    }
+  }
+
+  .small-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .endorsement {
+
+    .panel-title {
+      margin-bottom: unset;
+    }
+
+
+    .settings-endorsement {
+      margin-top: 5px;
+      img {
+        margin-right: 10px;
+      }
+    }
+
+
+  }
 }
 
