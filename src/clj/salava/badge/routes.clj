@@ -324,15 +324,15 @@
                      :current-user current-user
                      (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user) ))
                      )
-             (POST "/endorsement/update_status/:user-badge-id/:endorsement-id" []
+             (POST "/endorsement/update_status/:endorsement-id" []
                    :return {:status (s/enum "success" "error")}
-                   :path-params [user-badge-id :- Long
-                                 endorsement-id :- Long]
-                   :body-params [status :- (s/enum "accepted" "declined")]
+                   :path-params [endorsement-id :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")
+                                 user_badge_id :- s/Int]
                    :summary "Update endorsement status"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (e/update-status! ctx (:id current-user) user-badge-id endorsement-id status))
+                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status))
                    )
 
              (GET "/user/pending_endorsement" []
