@@ -707,7 +707,7 @@ DELETE FROM user_badge_endorsement WHERE id = :id
 SELECT endorser_id FROM user_badge_endorsement WHERE id = :id
 
 --name: select-user-badge-endorsements
-SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.ctime, u.first_name, u.last_name
+SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.ctime, u.first_name, u.last_name,u.profile_picture
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.endorser_id
 WHERE user_badge_id = :user_badge_id
@@ -721,7 +721,7 @@ SELECT endorser_id FROM user_badge_endorsement WHERE user_badge_id = :user_badge
 
 --name: select-received-pending-endorsements
 SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.ctime,
-endorser.first_name, endorser.last_name, ub.id, bc.name, bc.image_file
+endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS endorser ON endorser.id = ube.endorser_id
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
