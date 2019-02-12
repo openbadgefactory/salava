@@ -51,7 +51,9 @@
 
 (defn user-badge-endorsements
   [ctx user-badge-id]
-  (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)))
+  (reduce (fn [r e]
+            (conj r (-> e (update :content md->html)))
+            ) [] (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx))))
 
 (defn received-pending-endorsements [ctx user-id]
   (map (fn [e]
@@ -61,13 +63,9 @@
 (defn all-given-endorsements [ctx endorser-id])
 
 
-;;Endorse a badge earner
-;Accept or decline endorsement
+
 ;Send information to obf
-;Pick from suggested phrases or write own endorsement
 ;Endorsements show in user profile
-;Notifications for new endorsements in stream where user can accept or reject.
-;User cannot endorse themselves
 ;Delete endorsement?
 ;GDPR
 ;badge-pdf
