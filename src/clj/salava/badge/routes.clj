@@ -332,13 +332,29 @@
                    :summary "Update endorsement status"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status))
-                   )
+                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
+
+             (POST "endorsement/edit/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [content :- s/Str
+                                 user_badge_id :- s/Str]
+                   :summary "Edit endorsement"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
 
              (GET "/user/pending_endorsement" []
                   :auth-rules access/authenticated
                   :summary "Get pending badge endorsments"
                   :current-user current-user
                   (ok (e/received-pending-endorsements ctx (:id current-user)))
+                  )
+
+             (GET "/user/endorsements" []
+                  :auth-rules access/authenticated
+                  :summary "Get all user's endorsements"
+                  :current-user current-user
+                  (ok (e/all-user-endorsements ctx (:id current-user)))
                   )
              )))
