@@ -7,7 +7,7 @@
 
 (defqueries "sql/badge/main.sql")
 
-(defn external-id []
+(defn generate-external-id []
   (str "urn:uuid:" (java.util.UUID/randomUUID)))
 
 (defn badge-owner? [ctx badge-id user-id]
@@ -25,7 +25,7 @@
     (if (badge-owner? ctx user-badge-id user-id)
       (throw+ {:status "error" :message "User cannot endorse himself"})
       (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
-                                                           :external_id (external-id)
+                                                           :external_id (generate-external-id)
                                                            :endorser_id user-id
                                                            :content content} (get-db ctx))
                          :generated_key)]
@@ -37,7 +37,9 @@
 (defn delete! [ctx user-badge-id endorsement-id user-id]
   (try+
     (if (or (endorsement-owner? ctx endorsement-id user-id) (badge-owner? ctx user-badge-id user-id ))
-      (do (delete-user-badge-endorsement! {:id endorsement-id} (get-db ctx))
+      (do
+        (delete-user-badge-endorsement! {:id endorsement-id} (get-db ctx))
+        (send-badge-info-to-obf ctx user-badge-id user-id)
         {:status "success"})
       {:status "error"}
       )
@@ -52,9 +54,8 @@
       (update-endorsement-status! {:id endorsement-id :status status} (get-db ctx))
       (case status
         "accepted" (send-badge-info-to-obf ctx user-badge-id user-id)
-        "declined" (do
-                     (delete! ctx user-badge-id endorsement-id user-id)
-                     (send-badge-info-to-obf ctx user-badge-id user-id)))
+        "declined" (delete! ctx user-badge-id endorsement-id user-id)
+        nil)
       {:status "success"})
     (catch Object _
       (log/error _)
