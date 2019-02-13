@@ -719,7 +719,7 @@ UPDATE user_badge_endorsement SET status = :status WHERE id = :id
 --name: select-user-badge-endorser
 SELECT endorser_id FROM user_badge_endorsement WHERE user_badge_id = :user_badge_id AND endorser_id = :endorser_id
 
---name: select-received-pending-endorsements
+--name: select-pending-endorsements
 SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.ctime,
 endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file
 FROM user_badge_endorsement AS ube
@@ -730,4 +730,31 @@ JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE recepient.id = :user_id AND ube.status = 'pending'
-ORDER BY ube.ctime DESC
+ORDER BY ube.mtime DESC
+
+--name: update-user-badge-endorsement!
+UPDATE user_badge_endorsement SET status = 'pending', content = :content, mtime = UNIX_TIMESTAMP()
+WHERE id = :id
+
+--name: select-given-endorsements
+SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.image_file
+FROM user_badge_endorsement AS ube
+JOIN user_badge AS ub ON ub.id=ube.user_badge_id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE ube.endorser_id = :user_id
+
+--name: select-received-endorsements
+SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.ctime,
+endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file
+FROM user_badge_endorsement AS ube
+LEFT JOIN user AS endorser ON endorser.id = ube.endorser_id
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+JOIN user AS recepient ON  ub.user_id = recepient.id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE recepient.id = :user_id
+ORDER BY ube.mtime DESC
+

@@ -34,6 +34,16 @@
       (log/error _)
       {:status "error"})))
 
+(defn edit! [ctx user-badge-id endorsement-id content user-id]
+  (try+
+    (if (endorsement-owner? ctx endorsement-id user-id)
+      (do
+        (update-user-badge-endorsement! {:content content} (get-db ctx))
+        {:status "success"})
+      (throw+ {:status "error" :message "User cannot delete endorsement they do not own"}))
+    (catch Object _
+      {:status "error" :message _ })))
+
 (defn delete! [ctx user-badge-id endorsement-id user-id]
   (try+
     (if (or (endorsement-owner? ctx endorsement-id user-id) (badge-owner? ctx user-badge-id user-id ))
@@ -68,16 +78,21 @@
             ) [] (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx))))
 
 (defn received-pending-endorsements [ctx user-id]
-  (map (fn [e] (-> e (update :content md->html))) (select-received-pending-endorsements {:user_id user-id} (get-db ctx))))
+  (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))
 
-(defn all-recieved-endorsements [ctx user-id])
-(defn all-given-endorsements [ctx endorser-id])
+(defn endorsements-received [ctx user-id]
+  (select-received-endorsements {:user_id user-id} (get-db ctx)))
+
+(defn endorsements-given [ctx user-id]
+  (select-given-endorsements {:user_id user-id} (get-db ctx)))
+
+(defn all-user-endorsements [ctx user-id]
+  {:given (endorsements-given ctx user-id)
+   :received (endorsements-received ctx user-id)})
 
 
 
-;Send information to obf
 ;Endorsements show in user profile
-;Delete endorsement?
 ;GDPR
 ;badge-pdf
 ;see declined-endorsements???
