@@ -1,5 +1,6 @@
 CREATE TABLE user_badge_endorsement (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `external_id` varchar(255) NOT NULL,
   `user_badge_id` bigint(20) UNSIGNED NOT NULL,
   `endorser_id` bigint(20) UNSIGNED DEFAULT NULL,
   `content` text,
