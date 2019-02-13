@@ -2,9 +2,13 @@
   (:require [yesql.core :refer [defqueries]]
             [salava.core.util :refer [get-db md->html]]
             [slingshot.slingshot :refer :all]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [salava.badge.main :refer [send-badge-info-to-obf]]))
 
 (defqueries "sql/badge/main.sql")
+
+(defn external-id []
+  (str "urn:uuid:" (java.util.UUID/randomUUID)))
 
 (defn badge-owner? [ctx badge-id user-id]
   (let [owner (select-badge-owner {:id badge-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
@@ -21,19 +25,11 @@
     (if (badge-owner? ctx user-badge-id user-id)
       (throw+ {:status "error" :message "User cannot endorse himself"})
       (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
+                                                           :external_id (external-id)
                                                            :endorser_id user-id
                                                            :content content} (get-db ctx))
                          :generated_key)]
         {:id id :status "success"}))
-    (catch Object _
-      (log/error _)
-      {:status "error"})))
-
-(defn update-status! [ctx user-id user-badge-id endorsement-id status]
-  (try+
-    (when (badge-owner? ctx user-badge-id user-id)
-      (update-endorsement-status! {:id endorsement-id :status status} (get-db ctx))
-      {:status "success"})
     (catch Object _
       (log/error _)
       {:status "error"})))
@@ -49,6 +45,21 @@
       (log/error _)
       {:status "error"})))
 
+
+(defn update-status! [ctx user-id user-badge-id endorsement-id status]
+  (try+
+    (when (badge-owner? ctx user-badge-id user-id)
+      (update-endorsement-status! {:id endorsement-id :status status} (get-db ctx))
+      (case status
+        "accepted" (send-badge-info-to-obf ctx user-badge-id user-id)
+        "declined" (do
+                     (delete! ctx user-badge-id endorsement-id user-id)
+                     (send-badge-info-to-obf ctx user-badge-id user-id)))
+      {:status "success"})
+    (catch Object _
+      (log/error _)
+      {:status "error"})))
+
 (defn user-badge-endorsements
   [ctx user-badge-id]
   (reduce (fn [r e]
@@ -56,8 +67,7 @@
             ) [] (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx))))
 
 (defn received-pending-endorsements [ctx user-id]
-  (map (fn [e]
-         (-> e (update :content md->html)))(select-received-pending-endorsements {:user_id user-id} (get-db ctx))))
+  (map (fn [e] (-> e (update :content md->html))) (select-received-pending-endorsements {:user_id user-id} (get-db ctx))))
 
 (defn all-recieved-endorsements [ctx user-id])
 (defn all-given-endorsements [ctx endorser-id])
@@ -69,9 +79,8 @@
 ;Delete endorsement?
 ;GDPR
 ;badge-pdf
-;see declined-endorsements
+;see declined-endorsements???
 ;request-endorsement
 ;;edit-endorsement
-;;only person who has given the endorsement can delete it
 ;;should the endorsement be editable, if yes does the user have to accept or decline after every edit
 ;;update endorsement
