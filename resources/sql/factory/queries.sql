@@ -36,10 +36,10 @@ JOIN user_badge AS ub ON ub.id = ube.user_badge_id
 WHERE ube.user_badge_id = :id
 
 --name: select-user-badge-endorsements
-SELECT ube.external_id AS id, ube.endorser_id, ube.content, ub.assertion_url
+SELECT ube.external_id AS id, ube.endorser_id, ube.content, ube.mtime, ub.assertion_url
 FROM user_badge_endorsement AS ube
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
-WHERE ube.user_badge_id = :id
+WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
 
 -- name: select-badge-by-assertion
 SELECT id FROM user_badge WHERE email = :email AND assertion_url = :url AND deleted = 0 AND status != 'declined'

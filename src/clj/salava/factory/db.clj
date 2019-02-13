@@ -9,7 +9,9 @@
             [salava.badge.parse :as p]
             [salava.badge.main :as b]
             [salava.badge.db :as db]
-            [salava.user.db :as user]))
+            [salava.user.db :as user]
+            [clj-time.local :as l]
+            [clj-time.coerce :as c]))
 
 (defqueries "sql/factory/queries.sql")
 
@@ -72,9 +74,11 @@
   (map (fn [endorsement]
          (-> endorsement
              (dissoc :content :endorser_id :assertion_url)
-             (assoc :issuer (str (u/get-full-path ctx) "/user/profile/" (:endorser_id endorsement))
+             (assoc :issuer {:id (str (u/get-full-path ctx) "/user/profile/" (:endorser_id endorsement))
+                             :type "Issuer"}
                :claim {:id (:assertion_url endorsement)
-                       :endorsementComment (:content endorsement)}))) coll))
+                       :endorsementComment (:content endorsement)}
+               :issuedOn (str (l/to-local-date-time (long (* (:mtime endorsement) 1000))))))) coll))
 
 (defn get-badge-updates
   ""
