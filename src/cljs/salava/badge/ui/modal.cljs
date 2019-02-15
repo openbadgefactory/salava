@@ -341,4 +341,5 @@
            :linkedin1 s/linkedin-modal1
            :linkedin2 s/content-modal-render
            :endorse endr/endorse-badge-content
+           :user-endorsement endr/user-endorsement-content
            }})
