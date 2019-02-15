@@ -13,7 +13,8 @@
             [salava.badge.ui.stats :as stats]
             [reagent.session :as session]
             [salava.badge.ui.modal :as badgemodal]
-            [salava.core.i18n :as i18n :refer [t]]))
+            [salava.core.i18n :as i18n :refer [t]]
+            [salava.badge.ui.endorsement :as e]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -27,11 +28,13 @@
                                        [["/info/" :badge-id "/embed"] embed/handler]
                                        [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
                                        ["/import" imp/handler]
-                                       [["/receive/" :badge-id] rec/handler]]})
+                                       [["/receive/" :badge-id] rec/handler]
+                                       [["/user/endorsements"] e/handler]]})
 
 (defn ^:export navi [context]
   {(str (base-path context) "/badge") {:weight 20 :title (t :badge/Badges)   :top-navi true  :breadcrumb (t :badge/Badges " / " :badge/Mybadges)}
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
    (str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi false :breadcrumb (t :badge/Badges " / " :badge/Import)}
-   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}})
+   (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}
+   (str (base-path context) "/badge/user/endorsements") {:weight 50 :title (t :badge/Endorsements) :breadcrumb (t :badge/Badges " / " :badge/Endorsements) :site-navi true}})
 
