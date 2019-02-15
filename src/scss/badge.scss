@@ -1436,18 +1436,18 @@ button {
 
 #endorsebadge {
 
-/*   .badge-image {
-    text-align: center;
-    img {
-      display: inline-block;
-      max-width: 100%;
-      height: auto;
-      padding: 4px;
-      max-height: 200px;
-    }
-  }
- */
-    .media-heading {
+  /*   .badge-image {
+  text-align: center;
+  img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  padding: 4px;
+  max-height: 200px;
+}
+}
+  */
+  .media-heading {
     font-family: 'Open Sans Condensed',sans-serif;
     font-size: 45px;
     margin: 20px 0px;
@@ -1474,7 +1474,7 @@ button {
     i {
       color: $dark-red;}
   }
- img {
+  img {
     width: 100x;
     height: 100px;
   }
@@ -1539,6 +1539,123 @@ button {
       }
     }
 
+
+  }
+}
+
+#user-endorsements, #badge-stats, #badge-info {
+
+  hr{
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
+    margin: 20px 0px;}
+
+  .list-item {
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 1px dashed #DDD;
+    width: 100%;
+
+    a {
+      text-decoration: none;
+    }
+  }
+
+
+
+  .profile-pic{
+    width:50px;
+    height:auto;
+  }
+
+  .badge-img {
+    width:40px;
+    height: auto;
+  }
+
+  .badge-info {
+    display: inline-block;
+  }
+
+  .badge-name {
+    margin-top: 15px;
+    color: $badge-title;
+  }
+
+  .endorsement-profile {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    max-width: 340px;
+    border: 1px solid #CCC5C8;
+    border-radius: 2px;
+    box-shadow: 0px 4px 2px #BBB3B7;
+    -webkit-box-shadow: 0px 4px 2px #BBB3B7;
+    max-width: 340px;
+    height: auto !important;
+    .panel-body {
+      padding: 0px;
+      .header {
+        padding: 5px;
+      }
+      .col-md-4 {
+        padding: 6px;
+        .profile-image {
+          text-align: center;
+          .img-thumbnail{
+            border: none;
+            box-shadow: none;
+          }
+        }
+      }
+
+      .col-md-8 {
+        padding: 5px;
+        padding-top:15px;
+        padding-bottom: 15px;
+
+        .delete-btn {
+          margin: 10px;
+        }
+
+        h4 {
+          margin-top: 0px;
+          margin-bottom: 5px;
+          //font: 400 16px/20px "Source Sans Pro", sans-serif;
+          color: $link-color;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.1em;
+          height: 2.2em;
+          word-wrap: break-word;
+        }
+
+        .caption {
+          .buttons {
+            display: table;
+            width: 100%;
+
+            .button {
+              display: table-cell;
+              text-align: center;
+            }
+          }
+        }
+
+      }
+    }
+
+
+  }
+
+  .list-item-body {
+    padding-right: 15px;
+  }
+
+
+  .labels {
+    span {
+      margin: 5px;
+    }
 
   }
 }
