@@ -737,16 +737,17 @@ UPDATE user_badge_endorsement SET status = 'pending', content = :content, mtime 
 WHERE id = :id
 
 --name: select-given-endorsements
-SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.image_file
+SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.image_file, u.id AS endorsee_id, u.profile_picture, u.first_name, u.last_name, ube.status
 FROM user_badge_endorsement AS ube
 JOIN user_badge AS ub ON ub.id=ube.user_badge_id
+JOIN user AS u on u.id = ub.user_id
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE ube.endorser_id = :user_id
 
 --name: select-received-endorsements
-SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.ctime,
+SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.mtime,
 endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS endorser ON endorser.id = ube.endorser_id
