@@ -29,7 +29,8 @@
              (layout/main ctx "/import")
              #_(layout/main ctx "/export")
              (layout/main ctx "/receive/:id")
-             (layout/main ctx "/application"))
+             (layout/main ctx "/application")
+             (layout/main ctx "/user/endorsements"))
 
     (context "/obpv1/badge" []
              :tags  ["badge"]
@@ -334,11 +335,11 @@
                    :current-user current-user
                    (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
 
-             (POST "endorsement/edit/:endorsement-id" []
+             (POST "/endorsement/edit/:endorsement-id" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [endorsement-id :- Long]
                    :body-params [content :- s/Str
-                                 user_badge_id :- s/Str]
+                                 user_badge_id :- s/Int]
                    :summary "Edit endorsement"
                    :auth-rules access/authenticated
                    :current-user current-user
