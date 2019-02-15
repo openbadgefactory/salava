@@ -38,7 +38,7 @@
   (try+
     (if (endorsement-owner? ctx endorsement-id user-id)
       (do
-        (update-user-badge-endorsement! {:content content} (get-db ctx))
+        (update-user-badge-endorsement! {:content content :id endorsement-id} (get-db ctx))
         {:status "success"})
       (throw+ {:status "error" :message "User cannot delete endorsement they do not own"}))
     (catch Object _
@@ -81,10 +81,12 @@
   (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))
 
 (defn endorsements-received [ctx user-id]
-  (select-received-endorsements {:user_id user-id} (get-db ctx)))
+  (map (fn [e] (-> e (update :content md->html)) )
+       (select-received-endorsements {:user_id user-id} (get-db ctx))))
 
 (defn endorsements-given [ctx user-id]
-  (select-given-endorsements {:user_id user-id} (get-db ctx)))
+  ;(map (fn [e] (-> e (update :content md->html)) )
+       (select-given-endorsements {:user_id user-id} (get-db ctx)));)
 
 (defn all-user-endorsements [ctx user-id]
   {:given (endorsements-given ctx user-id)
