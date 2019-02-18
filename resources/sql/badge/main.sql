@@ -707,7 +707,7 @@ DELETE FROM user_badge_endorsement WHERE id = :id
 SELECT endorser_id FROM user_badge_endorsement WHERE id = :id
 
 --name: select-user-badge-endorsements
-SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.ctime, u.first_name, u.last_name,u.profile_picture
+SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.mtime, u.first_name, u.last_name,u.profile_picture
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.endorser_id
 WHERE user_badge_id = :user_badge_id
@@ -721,7 +721,7 @@ SELECT endorser_id FROM user_badge_endorsement WHERE user_badge_id = :user_badge
 
 --name: select-pending-endorsements
 SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.ctime,
-endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file
+endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file, bc.description
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS endorser ON endorser.id = ube.endorser_id
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
@@ -737,7 +737,7 @@ UPDATE user_badge_endorsement SET status = 'pending', content = :content, mtime 
 WHERE id = :id
 
 --name: select-given-endorsements
-SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.image_file, u.id AS endorsee_id, u.profile_picture, u.first_name, u.last_name, ube.status
+SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.description, bc.image_file, u.id AS endorsee_id, u.profile_picture, u.first_name, u.last_name, ube.status
 FROM user_badge_endorsement AS ube
 JOIN user_badge AS ub ON ub.id=ube.user_badge_id
 JOIN user AS u on u.id = ub.user_id
@@ -748,7 +748,7 @@ WHERE ube.endorser_id = :user_id
 
 --name: select-received-endorsements
 SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.mtime,
-endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file
+endorser.first_name, endorser.last_name, endorser.profile_picture, bc.name, bc.image_file, bc.description
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS endorser ON endorser.id = ube.endorser_id
 JOIN user_badge AS ub ON ub.id = ube.user_badge_id
@@ -759,3 +759,5 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code 
 WHERE recepient.id = :user_id
 ORDER BY ube.mtime DESC
 
+--name: select-accepted-badge-endorsements
+SELECT id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
