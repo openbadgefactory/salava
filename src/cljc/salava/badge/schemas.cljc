@@ -170,7 +170,7 @@
                             :user_badge_id s/Int
                             :content s/Str
                             :status (s/enum "pending" "accepted" "declined")
-                            :ctime s/Int
+                            :mtime s/Int
                             (s/optional-key :first_name) s/Str
                             (s/optional-key :last_name) s/Str
                             (s/optional-key :profile_picture) (s/maybe s/Str)
