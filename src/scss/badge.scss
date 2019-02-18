@@ -1474,28 +1474,34 @@ button {
     i {
       color: $dark-red;}
   }
-  img {
+/*   img {
     width: 100x;
     height: 100px;
-  }
+  } */
 
   .thumbnail {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
     transition: 0.3s;
     min-width: 40%;
     border-radius: 5px;
+    color: $text-color;
   }
 
   .thumbnail-description {
     min-height: 40px;
   }
 
-  .thumbnail:hover {
+  .description {
+    //font-weight: bold;
+    margin: 20px 0 15px 0;
+  }
+/*   .thumbnail:hover {
     cursor: pointer;
     box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 1);
-  }
+  } */
 
   .caption {
+    color: $text-color;
     .buttons {
       display: table;
       width: 100%;
@@ -1511,7 +1517,7 @@ button {
     img {
       display: inline-block;
       width: 50px;
-      height: 50px;
+      height: auto;
       margin-right: 10px;
       padding: 5px;
     }
@@ -1522,7 +1528,7 @@ button {
 
   .small-image {
     width: 40px;
-    height: 40px;
+    height: auto;
   }
 
   .endorsement {
@@ -1559,16 +1565,20 @@ button {
     a {
       text-decoration: none;
     }
+
+    small {
+      color: $text-color;
+    }
   }
 
 
 
-  .profile-pic{
+  .main-img{
     width:50px;
     height:auto;
   }
 
-  .badge-img {
+  .small-img {
     width:40px;
     height: auto;
   }
@@ -1578,7 +1588,7 @@ button {
   }
 
   .badge-name {
-    margin-top: 15px;
+    //margin-top: 15px;
     color: $badge-title;
   }
 
@@ -1592,11 +1602,16 @@ button {
     -webkit-box-shadow: 0px 4px 2px #BBB3B7;
     max-width: 340px;
     height: auto !important;
+
+    a {
+      text-decoration: none;
+    }
     .panel-body {
       padding: 0px;
       .header {
         padding: 5px;
       }
+
       .col-md-4 {
         padding: 6px;
         .profile-image {
@@ -1629,18 +1644,6 @@ button {
           word-wrap: break-word;
         }
 
-        .caption {
-          .buttons {
-            display: table;
-            width: 100%;
-
-            .button {
-              display: table-cell;
-              text-align: center;
-            }
-          }
-        }
-
       }
     }
 
@@ -1649,6 +1652,27 @@ button {
 
   .list-item-body {
     padding-right: 15px;
+  }
+
+  .caption {
+    .buttons {
+      display: table;
+      width: 100%;
+
+      .button {
+        display: table-cell;
+        text-align: center;
+      }
+
+      .fa {
+        font-size: 18px;
+      }
+
+      .cancel {
+        i {
+          color: $dark-red;}
+      }
+    }
   }
 
 
