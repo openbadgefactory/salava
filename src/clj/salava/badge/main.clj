@@ -311,10 +311,9 @@
       ;:followed? followed?
       :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
       :assertion (parse-assertion-json (:assertion_json badge))
-
       :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
-      ;;
       :evidences evidences
+      :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count)
       )))
 
 
