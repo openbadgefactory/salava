@@ -31,8 +31,54 @@
     (path-for (str "/obpv1/badge/endorsement/" badge-id))
     {:handler (fn [data] (reset! state data))}))
 
-(defn badge-endorsement-content [badge-id]
-  (let [endorsements (atom [])]
+(defn init-user-badge-endorsement [state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
+    {:handler (fn [data]
+                (swap! state assoc :user-badge-endorsements data)
+                (when (some #(= (:endorser_id %) (:endorser-id @state)) data)
+                  (swap! state assoc :show-link "none"
+                         :show-content "none"
+                         :show-endorsement-status "block")))}))
+
+(defn user-badge-endorsement-content [badge-id]
+  (let [state (atom {:id badge-id})]
+    (init-user-badge-endorsement state)
+    (fn []
+      (let [endorsements (:user-badge-endorsements @state)]
+        (when (seq endorsements)
+          [:div;.row {:id "badge-contents"}
+           ;[:div.col-xs-12
+           ;[:h4 {:style {:margin-bottom "20px"}} (t :badge/BadgeEndorsedBy)]
+           (reduce (fn [r endorsement]
+                     (let [{:keys [id user_badge_id image_file name content first_name last_name profile_picture endorser_id mtime]} endorsement]
+                       (conj r [:div {:style {:margin-bottom "20px"}}
+                                [:h5
+                                 [:a {:href "#"
+                                      :on-click #(do (.preventDefault %) (mo/set-new-view [:user :profile] {:user-id endorser_id}))
+                                      } (str first_name " " last_name)]
+                                 " "
+                                 [:small (date-from-unix-time (* 1000 mtime))]]
+                                [:div {:dangerouslySetInnerHTML {:__html content}}]]
+                             ))) [:div] endorsements)]
+          ;]
+          )))))
+
+#_(defn user-badge-endorsement-modal-link [id endorsement-count]
+    (when (pos? endorsement-count)
+      [:div.endorsement-link
+       [:span [:i {:class "fa fa-users"}]]
+       [:a {:href "#"
+            :on-click #(do (.preventDefault %)
+                         (mo/set-new-view [:badge :userbadgeendorsement] id))}
+        (if (== endorsement-count 1)
+          (str  endorsement-count " " (t :badge/endorsement))
+          (str  endorsement-count " " (t :badge/endorsements)))]]))
+
+(defn badge-endorsement-content [param]
+  (let [endorsements (atom [])
+        badge-id (if (map? param) (:badge-id param) param)
+        user-badge-id (:id param)]
     (init-badge-endorsements endorsements badge-id)
     (fn []
       [:div.row {:id "badge-contents"}
@@ -40,7 +86,13 @@
         [:h4 {:style {:margin-bottom "20px"}} (t :badge/BadgeEndorsedBy)]
         (into [:div]
               (for [endorsement @endorsements]
-                (endorsement-row endorsement)))]])))
+                (endorsement-row endorsement)))]
+       (when user-badge-id
+         (if (seq @endorsements) [:hr])
+         [:div.col-xs-12
+          [user-badge-endorsement-content user-badge-id]]
+         )
+       ])))
 
 ;; User Badge Endorsements
 
@@ -54,15 +106,6 @@
                 )}
     (fn [] (swap! state assoc :permission "error"))))
 
-(defn init-user-badge-endorsement [state]
-  (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
-    {:handler (fn [data]
-                (swap! state assoc :user-badge-endorsements data)
-                (when (some #(= (:endorser_id %) (:endorser-id @state)) data)
-                  (swap! state assoc :show-link "none"
-                         :show-content "none"
-                         :show-endorsement-status "block")))}))
 
 
 (defn init-pending-endorsements [state]
@@ -100,7 +143,7 @@
               :status status}
      :handler (fn [data]
                 (when (= "success" (:status data))
-                  (reload-fn state)))}))
+                  (when reload-fn (reload-fn state))))}))
 
 (defn delete-endorsement [id user_badge_id state reload-fn]
   (ajax/DELETE
@@ -154,7 +197,7 @@
                                                     )  } [:i.fa.fa-plus-circle](t :badge/Endorsephrase5)]]]]
 
      [:div.form-group
-      [:label {:for "claim"} (t :badge/Composeyourendorsement)  ]
+      [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":") ]
       [:textarea.form-control {:id "claim"
                                :rows "10"
                                :cols "50"
@@ -164,12 +207,12 @@
                                :on-change #(do
                                              (reset! (cursor state [:endorsement-comment]) (.-target.value %))
                                              )
-                               :on-key-down #(when (= (.-which %) 13)
-                                               (prn (clojure.string/split-lines @(cursor state [:endorsement-comment])))
-                                               ;(process-text "test" state)
-                                               ;(reset! (cursor state [:endorsement-comment]) (str (.-target.value %) "\n\n* ") )
-                                               ;(prn @(cursor state [:endorsement-comment]))
-                                               #_(add-tag tags-atom new-tag-atom))}]]
+                               #_:on-key-down #_(when (= (.-which %) 13)
+                                                  (prn (clojure.string/split-lines @(cursor state [:endorsement-comment])))
+                                                  ;(process-text "test" state)
+                                                  ;(reset! (cursor state [:endorsement-comment]) (str (.-target.value %) "\n\n* ") )
+                                                  ;(prn @(cursor state [:endorsement-comment]))
+                                                  #_(add-tag tags-atom new-tag-atom))}]]
      [:div
       [:button.btn.btn-primary {:on-click #(do
                                              (.preventDefault %)
@@ -178,7 +221,7 @@
                                              )
                                 :disabled (blank? @(cursor state [:endorsement-comment]))
 
-                                } (t :badge/endorse)]]
+                                } (t :badge/Endorsebadge)]]
      [:hr]]))
 
 (defn endorsement-text [state]
@@ -201,7 +244,7 @@
                        (.preventDefault %)
                        (swap! state assoc :show-link "none"
                               :show-content "block")
-                       )}[:i.fa.fa-handshake-o] (t :badge/Endorsethisbadge)]
+                       )}[:i.fa.fa-thumbs-o-up] (t :badge/Endorsethisbadge)]
      [:div {:style {:display @(cursor state [:show-endorsement-status])}} [:i.fa.fa-thumbs-up] (endorsement-text state)]]))
 
 (defn profile-link-inline [id first_name last_name picture]
@@ -216,7 +259,7 @@
     (fn []
       [:div#endorsebadge
        (reduce (fn [r endorsement]
-                 (let [{:keys [id user_badge_id image_file name content first_name last_name profile_picture endorser_id]} endorsement]
+                 (let [{:keys [id user_badge_id image_file name content first_name last_name profile_picture endorser_id description]} endorsement]
                    (conj r
                          [:div
                           [:div.col-md-12
@@ -230,21 +273,31 @@
                               [:img{:src (str "/" image_file)}]]
 
                              [:div.col-md-9 [:h4.media-heading name]
+                              ;[:div.description description]
                               [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]
                              ]
 
                             [:div.caption.card-footer.text-center
                              [:hr]
-                             [:ul.list-inline.buttons
-                              [:a.button {:href "#"
-                                          :on-click #(do
-                                                       (.preventDefault %)
-                                                       (update-status id "accepted" user_badge_id state init-pending-endorsements)
-                                                       )} [:li [:i.fa.fa-check] ]]
-                              [:a.button {:href "#"
-                                          :on-click #(do
-                                                       (.preventDefault %)
-                                                       (update-status id "declined" user_badge_id state init-pending-endorsements))}[:li.cancel [:i.fa.fa-remove]]]]]]]]))) [:div.row] @(cursor state [:pending]))
+                             [:button.btn.btn-primary {:href "#"
+                                                       :on-click #(do
+                                                                    (.preventDefault %)
+                                                                    (update-status id "accepted" user_badge_id state init-pending-endorsements)
+                                                                    )}  [:i.fa.fa-check] (t :badge/Acceptendorsement)]
+                             [:button.btn.btn-warning.cancel {:href "#"
+                                                       :on-click #(do
+                                                                    (.preventDefault %)
+                                                                    (update-status id "declined" user_badge_id state init-pending-endorsements))} [:i.fa.fa-remove] (t :badge/Declineendorsement)]
+                             #_[:ul.list-inline.buttons
+                                [:a.button {:href "#"
+                                            :on-click #(do
+                                                         (.preventDefault %)
+                                                         (update-status id "accepted" user_badge_id state init-pending-endorsements)
+                                                         )} [:li [:i.fa.fa-check] (t :badge/Acceptendorsement)]]
+                                [:a.button {:href "#"
+                                            :on-click #(do
+                                                         (.preventDefault %)
+                                                         (update-status id "declined" user_badge_id state init-pending-endorsements))}[:li.cancel [:i.fa.fa-remove] (t :badge/Declineendorsement)]]]]]]]))) [:div.row] @(cursor state [:pending]))
        ])))
 
 (defn endorse-badge [badge-id]
@@ -275,11 +328,7 @@
                       (conj r [:div.panel.panel-default.endorsement
                                [:div.panel-heading {:id (str "heading" id)}
                                 [:div.panel-title
-                                 (case status
-                                   "accepted" [:span.label.label-success (t :core/Accepted)]
-                                   "declined" [:span.label.label-danger (t :core/Declined)]
-                                   "pending" [:span.label.label-info (t :core/Pending)]
-                                   [:span.label.label-info (t :core/Pending)])
+                                 (if (= "pending" status)  [:span.label.label-info (t :social/Pending)])
                                  [:div.row.flip.settings-endorsement
                                   [:div.col-md-9
                                    [:a {:href "#"
@@ -320,7 +369,7 @@
     [:div.endorsement-profile.panel.panel-default
      [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})}
       [:div.panel-body
-       [:div.header [:span.label.label-default.text-center header]]
+       ;[:div.header [:span.label.label-default.text-center header]]
        [:div.col-md-4
         [:div.profile-image
          [:img.img-responsive.img-thumbnail
@@ -337,16 +386,16 @@
       [:div.row {:id "badge-info"}
        [:div.col-md-3
         [:div.badge-image [:img.badge-image {:src (str "/" image_file)}]]]
-       [:div.col-md-9.badge-info
+       [:div.col-md-9
         [:div
          [:h1.uppercase-header name]
-
-         [:div.pull-right.delete-btn
-          [:a {:on-click #(do
-                            (.preventDefault %)
-                            (delete-endorsement id user_badge_id nil nil)
-                            )
-               :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Delete)]
+         [:div.delete-btn
+          [:a.pull-right {:style {:margin "10px 0px" :cursor "pointer"}
+                          :on-click #(do
+                                       (.preventDefault %)
+                                       (delete-endorsement id user_badge_id nil nil)
+                                       )
+                          :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/DeleteEndorsement)]
           ]
 
          [:div (t :badge/Manageendorsementtext)]
@@ -375,7 +424,22 @@
                                        :disabled (blank? @(cursor params [:endorsement :content]))
                                        :data-dismiss "modal"
 
-                                       } (t :core/Save)]]]
+                                       } (t :core/Save)]
+
+             #_[:a.pull-right {:style {:margin "10px 0px" :cursor "pointer"}
+                               :on-click #(do
+                                            (.preventDefault %)
+                                            (delete-endorsement id user_badge_id nil nil)
+                                            )
+                               :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/DeleteEndorsement)]]
+            #_[:div.pull-right.delete-btn
+               [:a {:style {:margin "10px 0px" :cursor "pointer"}
+                    :on-click #(do
+                                 (.preventDefault %)
+                                 (delete-endorsement id user_badge_id nil nil)
+                                 )
+                    :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/DeleteEndorsement)]
+               ]]
 
            [:div
             [:div
@@ -384,16 +448,18 @@
                [:div.caption
                 [:hr]
                 [:div.text-center
-                 [:ul.list-inline.buttons.buttons
+                 [:ul.list-inline.buttons
                   [:a.button {:href "#"
                               :on-click #(do
                                            (.preventDefault %)
-                                           (update-status id "accepted" user_badge_id state init-user-badge-endorsement)
-                                           )} [:li [:i.fa.fa-check] ]]
+                                           (update-status id "accepted" user_badge_id nil nil)
+                                           )
+                              :data-dismiss "modal"} [:li [:i.fa.fa-check] ]]
                   [:a.button {:href "#"
                               :on-click #(do
                                            (.preventDefault %)
-                                           (update-status id "declined" user_badge_id state init-user-badge-endorsement))}[:li.cancel [:i.fa.fa-remove]]]]]])
+                                           (update-status id "declined" user_badge_id nil nil ))
+                              :data-dismiss "modal"}[:li.cancel [:i.fa.fa-remove]]]]]])
              ]
 
 
@@ -418,123 +484,26 @@
                    (conj r [:div.list-item
                             [:a {:href "#" :on-click #(do
                                                         (.preventDefault %)
-                                                        (mo/open-modal [:badge :user-endorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))} ))}
+                                                        (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))} ))}
                              [:div.col-md-12 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
                              [:div.row
-                              [:div.labels [:span.label.label-default (if endorser_id
-                                                                        (t :badge/Endorsedyou)
-                                                                        (t :badge/YouEndorsed))]
-                               [:span.label {:class (case status
-                                                      "pending" "label-info"
-                                                      "accepted" "label-success"
-                                                      nil)}
-                                (case status
-                                  "pending" (t :badge/Pending)
-                                  "accepted" (t :badge/Accepted)
-                                  nil)
-                                ]]
+                              [:div.labels
+                               [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/YouEndorsed))]
+                               (if (= "pending" status) [:span.label.label-info (t :badge/Pending)])]
                               ]
                              [:div.media
                               [:div.media-left.media-top.list-item-body
-                               [:img.profile-pic.media-object {:src (profile-picture profile_picture)}]
+                               [:img.main-img.media-object {:src (profile-picture profile_picture)}]
                                ]
                               [:div.media-body
                                [:h4.media-heading  endorser]
                                [:div.media
-                                [:div.media-left.media-middle
-                                 [:img.media-object.badge-img {:src (str "/" image_file)}]]
+                                [:div.media-left.media-top
+                                 [:img.media-object.small-img {:src (str "/" image_file)}]]
                                 [:div.media-body
                                  [:p.badge-name name]
                                  ]]]
                               ]]]))) [:div] endorsements)]]]))
-
-(defn received-endorsements [state]
-  (let [endorsements @(cursor state [:received])]
-    [:div.panel
-     [:div.panel-heading
-      [:h3
-       (str (t :badge/Receivedendorsements) " (" (count endorsements) ")")]]
-     [:div.panel-body
-      [:table.table  {:summary (t :badge/Receivedendorsements)}
-       (reduce (fn [r endorsement]
-                 (let [{:keys [id endorser_id profile_picture first_name last_name name image_file content status user_badge_id mtime]} endorsement
-                       endorser (str first_name " " last_name)]
-                   (conj r [:div.list-item
-                            [:div.col-md-12 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
-                            [:div [:span.label.label-info.table-cell (t :badge/Endorsedyou)]
-                             [:span.label.table-cell {:class (case status
-                                                               "pending" "label-info"
-                                                               "accepted" "label-success"
-                                                               nil)}
-                              (case status
-                                "pending" (t :badge/Pending)
-                                "accepted" (t :badge/Accepted))
-                              ]]
-                            [:div.media
-                             [:div.media-left.media-middle
-                              [:img.profile-pic.media-object {:src (profile-picture profile_picture)}]
-                              ]
-                             [:div.media-body
-
-                              [:h4.media-heading  endorser #_[:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
-                              ;[:span.label.label-info (t :badge/Endorsedyou)]
-                              [:div.media
-                               [:div.media-left.media-middle
-                                [:img.media-object.badge-img {:src (str "/" image_file)}]]
-                               [:div.media-body
-                                [:p.media-heading.badge-name name]
-                                #_[:span.label.label-info (t :badge/Endorsedyou)]
-                                #_[:span.label {:class (case status
-                                                         "pending" "label-info"
-                                                         "accepted" "label-success"
-                                                         nil)}
-                                   (case status
-                                     "pending" (t :badge/Pending)
-                                     "accepted" (t :badge/Accepted))
-                                   ]]]]
-                             ]]))) [:div] endorsements)]]]))
-
-(defn given-endorsements [state]
-  (let [endorsements @(cursor state [:given])]
-    [:div.panel
-     [:div.panel-heading
-      [:h3
-       (str (t :badge/Givenendorsements) " (" (count endorsements) ")")]]
-     [:div.panel-body
-      [:table.table  {:summary (t :badge/Givenendorsements)}
-       (reduce (fn [r endorsement]
-                 (let [{:keys [id endorsee_id profile_picture first_name last_name name image_file content status user_badge_id mtime]} endorsement
-                       endorser (str first_name " " last_name)]
-                   (conj r [:div.list-item
-                            [:div.col-md-12 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
-                            [:div.row
-                             ;[:div.col-md-3 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
-                             [:div [:span.label.label-info.table-cell (t :badge/YouEndorsed)]
-                              [:span.label.table-cell {:class (case status
-                                                                "pending" "label-info"
-                                                                "accepted" "label-success"
-                                                                nil)}
-                               (case status
-                                 "pending" (t :badge/Pending)
-                                 "accepted" (t :badge/Accepted))
-                               ]]
-                             ]
-                            [:div.media
-                             [:div.media-left.media-top
-                              [:img.profile-pic.media-object {:src (profile-picture profile_picture)}]
-                              ]
-                             [:div.media-body.list-item-body
-                              ;[:span.label.label-info (t :badge/YouEndorsed)]
-
-                              [:h4.media-heading  endorser #_[:small.pull-right ]]
-
-                              [:div.media
-                               [:div.media-left.media-middle
-                                [:img.media-object.badge-img {:src (str "/" image_file)}]]
-                               [:div.media-body
-                                [:p.badge-name name]
-                                ]]]
-                             ]]))) [:div] endorsements)]]]))
 
 (defn user-endorsements-content [state]
   [:div
@@ -542,9 +511,8 @@
    [:div#badge-stats
 
     (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given]))) (endorsements state) [:div (t :badge/Youhavenoendorsements)])
-    ;(when (seq @(cursor state [:received]))(received-endorsements state))
-    ;(when (seq @(cursor state [:given]))(given-endorsements state))
-
+    #_(when (seq @(cursor state [:received]))(received-endorsements state))
+    #_(when (seq @(cursor state [:given]))(given-endorsements state))
     ]])
 
 (defn request-endorsement [])
@@ -564,6 +532,100 @@
       )
     )
   )
+
+
+
+
+
+
+#_(defn received-endorsements [state]
+    (let [endorsements @(cursor state [:received])]
+      [:div.panel
+       [:div.panel-heading
+        [:h3
+         (str (t :badge/Receivedendorsements) " (" (count endorsements) ")")]]
+       [:div.panel-body
+        [:table.table  {:summary (t :badge/Receivedendorsements)}
+         (reduce (fn [r endorsement]
+                   (let [{:keys [id endorser_id profile_picture first_name last_name name image_file content status user_badge_id mtime]} endorsement
+                         endorser (str first_name " " last_name)]
+                     (conj r [:div.list-item
+                              [:div.col-md-12 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
+                              [:div [:span.label.label-info.table-cell (t :badge/Endorsedyou)]
+                               [:span.label.table-cell {:class (case status
+                                                                 "pending" "label-info"
+                                                                 "accepted" "label-success"
+                                                                 nil)}
+                                (case status
+                                  "pending" (t :badge/Pending)
+                                  "accepted" (t :badge/Accepted))
+                                ]]
+                              [:div.media
+                               [:div.media-left.media-middle
+                                [:img.profile-pic.media-object {:src (profile-picture profile_picture)}]
+                                ]
+                               [:div.media-body
+
+                                [:h4.media-heading  endorser #_[:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
+                                ;[:span.label.label-info (t :badge/Endorsedyou)]
+                                [:div.media
+                                 [:div.media-left.media-middle
+                                  [:img.media-object.badge-img {:src (str "/" image_file)}]]
+                                 [:div.media-body
+                                  [:p.media-heading.badge-name name]
+                                  #_[:span.label.label-info (t :badge/Endorsedyou)]
+                                  #_[:span.label {:class (case status
+                                                           "pending" "label-info"
+                                                           "accepted" "label-success"
+                                                           nil)}
+                                     (case status
+                                       "pending" (t :badge/Pending)
+                                       "accepted" (t :badge/Accepted))
+                                     ]]]]
+                               ]]))) [:div] endorsements)]]]))
+
+
+#_(defn given-endorsements [state]
+    (let [endorsements @(cursor state [:given])]
+      [:div.panel
+       [:div.panel-heading
+        [:h3
+         (str (t :badge/Givenendorsements) " (" (count endorsements) ")")]]
+       [:div.panel-body
+        [:table.table  {:summary (t :badge/Givenendorsements)}
+         (reduce (fn [r endorsement]
+                   (let [{:keys [id endorsee_id profile_picture first_name last_name name image_file content status user_badge_id mtime]} endorsement
+                         endorser (str first_name " " last_name)]
+                     (conj r [:div.list-item
+                              [:div.col-md-12 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
+                              [:div.row
+                               ;[:div.col-md-3 [:small.pull-right [:i (date-from-unix-time (* 1000 mtime) "days")]]]
+                               [:div [:span.label.label-info.table-cell (t :badge/YouEndorsed)]
+                                [:span.label.table-cell {:class (case status
+                                                                  "pending" "label-info"
+                                                                  "accepted" "label-success"
+                                                                  nil)}
+                                 (case status
+                                   "pending" (t :badge/Pending)
+                                   "accepted" (t :badge/Accepted))
+                                 ]]
+                               ]
+                              [:div.media
+                               [:div.media-left.media-top
+                                [:img.profile-pic.media-object {:src (profile-picture profile_picture)}]
+                                ]
+                               [:div.media-body.list-item-body
+                                ;[:span.label.label-info (t :badge/YouEndorsed)]
+
+                                [:h4.media-heading  endorser #_[:small.pull-right ]]
+
+                                [:div.media
+                                 [:div.media-left.media-middle
+                                  [:img.media-object.badge-img {:src (str "/" image_file)}]]
+                                 [:div.media-body
+                                  [:p.badge-name name]
+                                  ]]]
+                               ]]))) [:div] endorsements)]]]))
 
 ;;;;;;
 ;;     [:div#endorsebadge
