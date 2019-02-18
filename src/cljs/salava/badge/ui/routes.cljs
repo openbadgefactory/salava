@@ -36,5 +36,5 @@
    (str (base-path context) "/badge/mybadges") {:weight 20 :title (t :badge/Mybadges) :site-navi true :breadcrumb (t :badge/Badges " / "  :badge/Mybadges)}
    (str (base-path context) "/badge/import") {:weight 22 :title (t :badge/Import) :site-navi false :breadcrumb (t :badge/Badges " / " :badge/Import)}
    (str (base-path context) "/badge/info/\\d+") {:breadcrumb   (t :badge/Badges " / " :badge/Badgeinfo)}
-   (str (base-path context) "/badge/user/endorsements") {:weight 50 :title (t :badge/Endorsements) :breadcrumb (t :badge/Badges " / " :badge/Endorsements) :site-navi true}})
+   (str (base-path context) "/badge/user/endorsements") {:weight 50 :title (t :badge/Endorsements) :breadcrumb (t :badge/Badges " / " :badge/Myendorsements) :site-navi true}})
 
