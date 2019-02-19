@@ -482,13 +482,13 @@
                             [:a {:href "#" :on-click #(do
                                                         (.preventDefault %)
                                                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))} ))}
-                              [:div.media
-                             [:div.col-md-12 [:small [:i (date-from-unix-time (* 1000 mtime) "days")]]]
-                             #_[:div.row
-                                [:div.labels
-                                 [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
-                                 (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]
-                                ]
+                             [:div.media
+                              [:div.col-md-12 [:small [:i (date-from-unix-time (* 1000 mtime) "days")]]]
+                              #_[:div.row
+                                 [:div.labels
+                                  [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
+                                  (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]
+                                 ]
 
                               [:div.media-left.media-top.list-item-body
                                [:img.main-img.media-object {:src (str "/" image_file)}]
@@ -500,10 +500,10 @@
                                  [:img.media-object.small-img {:src (profile-picture profile_picture)}]]
                                 [:div.media-body
                                  [:p endorser]
-                                  [:div.labels
-                                   [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
-                                   (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]]
-                                 ]]
+                                 [:div.labels
+                                  [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
+                                  (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]]
+                                ]]
                               ]
 
                              #_[:div.media
