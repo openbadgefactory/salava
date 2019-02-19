@@ -382,7 +382,7 @@ html[dir="rtl"] .flip{
   -webkit-flex-direction: row;
   flex-direction: row;
 
-  @media (max-width:767px){
+  @media (max-width:769px){
     -webkit-flex-direction: column;
     flex-direction: column;
   }
@@ -1334,3 +1334,17 @@ html[dir="rtl"] #badge-settings {
     left: 38px;
   }
 }
+
+html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
+  .delete-btn {
+    i {
+        margin-left: 10px;
+    }
+  }
+
+  .endorsement .settings-endorsement img {
+    margin-right: unset;
+    margin-left: 10px;
+  }
+}
+
