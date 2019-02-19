@@ -72,10 +72,11 @@
       {:status "error"})))
 
 (defn user-badge-endorsements
-  [ctx user-badge-id]
+  ([ctx user-badge-id]
+   (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)))
+  ([ctx user-badge-id html?]
   (reduce (fn [r e]
-            (conj r (-> e (update :content md->html)))
-            ) [] (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx))))
+            (conj r (-> e (update :content md->html)))) [] (user-badge-endorsements ctx user-badge-id))))
 
 (defn received-pending-endorsements [ctx user-id]
   (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))

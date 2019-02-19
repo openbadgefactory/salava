@@ -314,7 +314,7 @@
                   :summary "Get user badge endorsements"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (e/user-badge-endorsements ctx user-badge-id)))
+                  (ok (e/user-badge-endorsements ctx user-badge-id true)))
 
              (DELETE "/endorsement/:user-badge-id/:endorsement-id" []
                      :return {:status (s/enum "success" "error")}
