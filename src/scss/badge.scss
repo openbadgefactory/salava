@@ -1562,13 +1562,16 @@ button {
 
 
   .main-img{
-    width:50px;
+    width:65px;
     height:auto;
+    max-height: 65px;
   }
 
   .small-img {
     width:40px;
     height: auto;
+    //border: 1px solid silver;
+    border-radius: 3px;
   }
 
   .badge-info {
