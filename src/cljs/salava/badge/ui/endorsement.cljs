@@ -474,7 +474,7 @@
       [:h3
        (str (t :badge/Endorsements) ) [:span.badge {:style {:vertical-align "text-top"}}  (count endorsements)]]]
      [:div.panel-body
-      [:table.table  {:summary (t :badge/Endorsements)}
+      [:div.table  {:summary (t :badge/Endorsements)}
        (reduce (fn [r endorsement]
                  (let [{:keys [id endorsee_id endorser_id profile_picture first_name last_name name image_file content status user_badge_id mtime]} endorsement
                        endorser (str first_name " " last_name)]
@@ -482,13 +482,14 @@
                             [:a {:href "#" :on-click #(do
                                                         (.preventDefault %)
                                                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state state}) {:hidden (fn [] (init-user-endorsements state))} ))}
+                              [:div.media
                              [:div.col-md-12 [:small [:i (date-from-unix-time (* 1000 mtime) "days")]]]
-                             [:div.row
-                              [:div.labels
-                               [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
-                               (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]
-                              ]
-                             [:div.media
+                             #_[:div.row
+                                [:div.labels
+                                 [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
+                                 (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]
+                                ]
+
                               [:div.media-left.media-top.list-item-body
                                [:img.main-img.media-object {:src (str "/" image_file)}]
                                ]
@@ -499,7 +500,10 @@
                                  [:img.media-object.small-img {:src (profile-picture profile_picture)}]]
                                 [:div.media-body
                                  [:p endorser]
-                                 ]]]
+                                  [:div.labels
+                                   [:span.label.label-success (if endorser_id (t :badge/Endorsedyou) (t :badge/Youendorsed))]
+                                   (if (= "pending" status) [:span.label.label-info (t :social/Pending)])]]
+                                 ]]
                               ]
 
                              #_[:div.media
