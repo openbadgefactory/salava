@@ -387,17 +387,18 @@
          [:hr]
          [:div.row
           [:div.col-md-4.col-md-push-8 (when-not (and endorser_id (= "pending" status))
-                           [:div.row
-                            [:div.col-xs-12.delete-btn {:style {:margin "5px 0px" :cursor "pointer" :width "100%"}}
-                             [:a.pull-right {:on-click #(do
-                                                          (.preventDefault %)
-                                                          (delete-endorsement id user_badge_id nil nil))
-                                             :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]
-                             ]])]
+                                         [:div.row
+                                          [:div.col-xs-12.delete-btn {:style {:margin "5px 0px" :cursor "pointer" :width "100%"}}
+                                           [:a {:style {:line-height "4"}
+                                                :on-click #(do
+                                                             (.preventDefault %)
+                                                             (delete-endorsement id user_badge_id nil nil))
+                                                :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]
+                                           ]])]
           [:div.col-md-8.col-md-pull-4 [profile {:id (or endorsee_id endorser_id) :profile_picture profile_picture :first_name first_name :last_name last_name :status status}]]]
 
          (if endorsee_id
-           [:div
+           [:div {:style {:margin-top "15px"}}
             [:div;.form-group
              [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
              [:textarea.form-control {:id "claim"
@@ -432,7 +433,7 @@
                     :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/DeleteEndorsement)]
                ]]
 
-           [:div
+           [:div {:style {:margin-top "15px"}}
             [:div {:dangerouslySetInnerHTML {:__html content}}]
             (when (= "pending" status)
               [:div.caption
@@ -489,24 +490,38 @@
                               ]
                              [:div.media
                               [:div.media-left.media-top.list-item-body
-                               [:img.main-img.media-object {:src (profile-picture profile_picture)}]
+                               [:img.main-img.media-object {:src (str "/" image_file)}]
                                ]
                               [:div.media-body
-                               [:h4.media-heading  endorser]
+                               [:h4.media-heading.badge-name  name]
                                [:div.media
                                 [:div.media-left.media-top
-                                 [:img.media-object.small-img {:src (str "/" image_file)}]]
+                                 [:img.media-object.small-img {:src (profile-picture profile_picture)}]]
                                 [:div.media-body
-                                 [:p.badge-name name]
+                                 [:p endorser]
                                  ]]]
-                              ]]]))) [:div] endorsements)]]]))
+                              ]
+
+                             #_[:div.media
+                                [:div.media-left.media-top.list-item-body
+                                 [:img.main-img.media-object {:src (profile-picture profile_picture)}]
+                                 ]
+                                [:div.media-body
+                                 [:h4.media-heading  endorser]
+                                 [:div.media
+                                  [:div.media-left.media-top
+                                   [:img.media-object.small-img {:src (str "/" image_file)}]]
+                                  [:div.media-body
+                                   [:p.badge-name name]
+                                   ]]]
+                                ]]]))) [:div] endorsements)]]]))
 
 (defn user-endorsements-content [state]
   [:div
    [m/modal-window]
    [:div#badge-stats
     [:h1.uppercase-header (t :badge/Myendorsements)]
-    [:div {:style {:margin-bottom "15px"}} (t :badge/Endorsementpageinstruction)]
+    [:div {:style {:margin-bottom "15px"}} (t :badge/Endorsementpageinfo)]
     [:div.manage]
 
     (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given]))) (endorsements state) [:div (t :badge/Youhavenoendorsements)])
