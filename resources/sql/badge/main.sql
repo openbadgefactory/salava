@@ -761,3 +761,6 @@ ORDER BY ube.mtime DESC
 
 --name: select-accepted-badge-endorsements
 SELECT id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
+
+--name: delete-user-badge-endorsements!
+DELETE FROM user_badge_endorsement WHERE user_badge_id = :id
