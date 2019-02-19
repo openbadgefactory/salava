@@ -383,17 +383,19 @@
        [:div.col-md-9
         [:div
          [:h1.uppercase-header name]
-         [:div (t :badge/Manageendorsementtext)]
-
-         [profile {:id (or endorsee_id endorser_id) :profile_picture profile_picture :first_name first_name :last_name last_name :status status}]
+         [:div (if endorsee_id (t :badge/Manageendorsementtext1) (t :badge/Manageendorsementtext2))]
          [:hr]
          [:div.row
-          [:div.col-xs-12.delete-btn {:style {:margin "5px 0px" :cursor "pointer" :width "100%"}}
-          [:a.pull-right {:on-click #(do
-                            (.preventDefault %)
-                            (delete-endorsement id user_badge_id nil nil))
-               :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]
-          ]]
+          [:div.col-md-4.col-md-push-8 (when-not (and endorser_id (= "pending" status))
+                           [:div.row
+                            [:div.col-xs-12.delete-btn {:style {:margin "5px 0px" :cursor "pointer" :width "100%"}}
+                             [:a.pull-right {:on-click #(do
+                                                          (.preventDefault %)
+                                                          (delete-endorsement id user_badge_id nil nil))
+                                             :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]
+                             ]])]
+          [:div.col-md-8.col-md-pull-4 [profile {:id (or endorsee_id endorser_id) :profile_picture profile_picture :first_name first_name :last_name last_name :status status}]]]
+
          (if endorsee_id
            [:div
             [:div;.form-group
