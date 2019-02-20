@@ -55,7 +55,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
          connections (so/get-connections-badge ctx current-user-id)
-         endorsements (-> (all-user-endorsements ctx user-id) vals flatten)
+         endorsements (-> (all-user-endorsements ctx user-id) :all)
          pending-badges (b/user-badges-pending ctx user-id)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
@@ -94,7 +94,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
          connections (count (so/get-connections-badge ctx current-user-id))
-         endorsements (-> (all-user-endorsements ctx user-id) vals flatten count)
+         endorsements (-> (all-user-endorsements ctx user-id) :all count)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) ())
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))

@@ -89,8 +89,12 @@
   (select-given-endorsements {:user_id user-id} (get-db ctx)))
 
 (defn all-user-endorsements [ctx user-id]
-  {:given (endorsements-given ctx user-id)
-   :received (endorsements-received ctx user-id)})
+  (let [received (endorsements-received ctx user-id)
+        given (endorsements-given ctx user-id)
+        all (->> (list* given received) flatten (sort-by :mtime >))]
+    {:given given
+     :received received
+     :all-endorsements all}))
 
 ;Endorsements show in user profile
 ;request-endorsement
