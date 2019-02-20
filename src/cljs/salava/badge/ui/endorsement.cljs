@@ -276,25 +276,25 @@
 
                             [:div.caption.card-footer.text-center
                              [:hr]
-                             [:button.btn.btn-primary {:href "#"
+                             #_[:button.btn.btn-primary {:href "#"
                                                        :on-click #(do
                                                                     (.preventDefault %)
                                                                     (update-status id "accepted" user_badge_id state init-pending-endorsements)
                                                                     )} (t :badge/Acceptendorsement)]
-                             [:button.btn.btn-warning.cancel {:href "#"
+                             #_[:button.btn.btn-warning.cancel {:href "#"
                                                               :on-click #(do
                                                                            (.preventDefault %)
                                                                            (update-status id "declined" user_badge_id state init-pending-endorsements))} (t :badge/Declineendorsement)]
-                             #_[:ul.list-inline.buttons
-                                [:a.button {:href "#"
+                              [:ul.list-inline.buttons
+                                [:li {:style {:margin "10px"}} [:a.button {:href "#"
                                             :on-click #(do
                                                          (.preventDefault %)
                                                          (update-status id "accepted" user_badge_id state init-pending-endorsements)
-                                                         )} [:li [:i.fa.fa-check] (t :badge/Acceptendorsement)]]
-                                [:a.button {:href "#"
+                                                         )} [:i.fa.fa-check] (t :badge/Acceptendorsement)]]
+                                [:li.cancel {:style {:margin "10px"}}[:a.button {:href "#"
                                             :on-click #(do
                                                          (.preventDefault %)
-                                                         (update-status id "declined" user_badge_id state init-pending-endorsements))}[:li.cancel [:i.fa.fa-remove] (t :badge/Declineendorsement)]]]]]]]))) [:div.row] @(cursor state [:pending]))
+                                                         (update-status id "declined" user_badge_id state init-pending-endorsements))} [:i.fa.fa-remove] (t :badge/Declineendorsement)]]]]]]]))) [:div.row] @(cursor state [:pending]))
        ])))
 
 (defn endorse-badge [badge-id]
@@ -418,22 +418,7 @@
                                        :disabled (blank? @(cursor params [:endorsement :content]))
                                        :data-dismiss "modal"
 
-                                       } (t :core/Save)]
-
-             #_[:a.pull-right {:style {:margin "10px 0px" :cursor "pointer"}
-                               :on-click #(do
-                                            (.preventDefault %)
-                                            (delete-endorsement id user_badge_id nil nil)
-                                            )
-                               :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/DeleteEndorsement)]]
-            #_[:div.pull-right.delete-btn
-               [:a {:style {:margin "10px 0px" :cursor "pointer"}
-                    :on-click #(do
-                                 (.preventDefault %)
-                                 (delete-endorsement id user_badge_id nil nil)
-                                 )
-                    :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/DeleteEndorsement)]
-               ]]
+                                       } (t :core/Save)]]]
 
            [:div {:style {:margin-top "15px"}}
             [:div {:dangerouslySetInnerHTML {:__html content}}]
@@ -441,29 +426,32 @@
               [:div.caption
                [:hr.line]
                [:div.text-center
-                [:button.btn.btn-primary {:href "#"
+                #_[:button.btn.btn-primary {:href "#"
                                           :on-click #(do
                                                        (.preventDefault %)
                                                        (update-status id "accepted" user_badge_id state init-pending-endorsements)
                                                        )
                                           :data-dismiss "modal"}  (t :badge/Acceptendorsement)]
-                [:button.btn.btn-warning.cancel {:href "#"
+                #_[:button.btn.btn-warning.cancel {:href "#"
                                                  :on-click #(do
                                                               (.preventDefault %)
                                                               (update-status id "declined" user_badge_id state init-pending-endorsements))
                                                  :data-dismiss "modal"} (t :badge/Declineendorsement)]
-                #_[:ul.list-inline.buttons
-                   [:a.button {:href "#"
+                ;[:ul.list-inline.buttons
+                [:ul.list-inline.buttons
+                  [:li [:a.button {:href "#"
                                :on-click #(do
                                             (.preventDefault %)
                                             (update-status id "accepted" user_badge_id nil nil)
                                             )
-                               :data-dismiss "modal"} [:li [:i.fa.fa-check] ]]
-                   [:a.button {:href "#"
+                               :data-dismiss "modal"}  [:i.fa.fa-check] (t :badge/Acceptendorsement)]]
+                   [:li.cancel [:a.button {:href "#"
                                :on-click #(do
                                             (.preventDefault %)
                                             (update-status id "declined" user_badge_id nil nil ))
-                               :data-dismiss "modal"}[:li.cancel [:i.fa.fa-remove]]]]]])
+                               :data-dismiss "modal"} [:i.fa.fa-remove] (t :badge/Declineendorsement)]]]]
+              ]
+              )
             ])]]])))
 
 
@@ -519,8 +507,7 @@
    [m/modal-window]
    [:div#badge-stats
     [:h1.uppercase-header (t :badge/Myendorsements)]
-    [:div (t :badge/Endorsementpageinfo)]
-    [:div {:style {:margin-bottom "15px"}} (t :badge/Manageyourendorsementsbelow)]
+    [:div {:style {:margin-bottom "15px"}} (t :badge/Endorsementpageinfo)]
 
     (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given])))
       [:div

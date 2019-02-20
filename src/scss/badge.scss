@@ -1583,6 +1583,13 @@ button {
     color: $badge-title;
   }
 
+  .profile-container {
+    @media (max-width: 768px) {
+      text-align: -webkit-center;
+      text-align: center;
+    }
+  }
+
   .endorsement-profile {
     margin-top: 15px;
     margin-bottom: 15px;
@@ -1651,6 +1658,10 @@ button {
       display: table;
       width: 100%;
 
+      li {
+        margin: 10px;
+      }
+
       .button {
         display: table-cell;
         text-align: center;
@@ -1658,11 +1669,13 @@ button {
 
       .fa {
         font-size: 18px;
+        margin-right: 10px;
       }
 
       .cancel {
         i {
           color: $dark-red;}
+
       }
     }
   }
