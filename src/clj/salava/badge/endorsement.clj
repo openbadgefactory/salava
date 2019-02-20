@@ -75,8 +75,8 @@
   ([ctx user-badge-id]
    (select-user-badge-endorsements {:user_badge_id user-badge-id} (get-db ctx)))
   ([ctx user-badge-id html?]
-  (reduce (fn [r e]
-            (conj r (-> e (update :content md->html)))) [] (user-badge-endorsements ctx user-badge-id))))
+   (reduce (fn [r e]
+             (conj r (-> e (update :content md->html)))) [] (user-badge-endorsements ctx user-badge-id))))
 
 (defn received-pending-endorsements [ctx user-id]
   (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))
@@ -86,20 +86,12 @@
        (select-received-endorsements {:user_id user-id} (get-db ctx))))
 
 (defn endorsements-given [ctx user-id]
-  ;(map (fn [e] (-> e (update :content md->html)) )
-       (select-given-endorsements {:user_id user-id} (get-db ctx)));)
+  (select-given-endorsements {:user_id user-id} (get-db ctx)))
 
 (defn all-user-endorsements [ctx user-id]
   {:given (endorsements-given ctx user-id)
    :received (endorsements-received ctx user-id)})
 
-
-
 ;Endorsements show in user profile
-;GDPR
-;badge-pdf
-;see declined-endorsements???
 ;request-endorsement
-;;edit-endorsement
-;;should the endorsement be editable, if yes does the user have to accept or decline after every edit
-;;update endorsement
+
