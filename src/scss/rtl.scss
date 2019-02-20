@@ -1346,5 +1346,10 @@ html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
     margin-right: unset;
     margin-left: 10px;
   }
+
+
+  .list-item .pull {
+    float: left;
+  }
 }
 

@@ -1436,12 +1436,12 @@ button {
 
 #endorsebadge {
 
-    .list-group {
-      a {
-        color: $text-color;
-      }
-
+  .list-group {
+    a {
+      color: $text-color;
     }
+
+  }
 
   .media-heading {
     font-family: 'Open Sans Condensed',sans-serif;
@@ -1536,9 +1536,9 @@ button {
   }
 }
 
-#user-endorsements, #badge-stats, #badge-info {
+#user-endorsements, #badge-stats, #badge-info, #my-badges{
 
-  hr{
+  .line{
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
     margin: 20px 0px;}
@@ -1554,8 +1554,11 @@ button {
     }
 
     small {
-      float: right !important;
       color: $text-color;
+    }
+
+    .pull {
+      float: right;
     }
   }
 
@@ -1665,11 +1668,47 @@ button {
   }
 
 
-  .labels {
+  .labels, .labels-inline {
+    margin-bottom: 10px;
     span {
-      margin: 5px;
+      margin-left: 15px;
     }
 
+  }
+
+  .child-status {
+    display: none;
+  }
+
+  .media {
+    .main-img {
+      width: 90px;
+      height: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .main-img {
+      width: 50px !important;
+    }
+    .labels {
+      display: none;
+    }
+
+    .child-profile {
+      display: none;
+    }
+    .child-status {
+      display: block;
+    }
+
+    .media-body {
+      vertical-align: bottom;
+    }
+
+    small {
+      padding-top: 15px;
+    }
   }
 }
 
