@@ -1725,3 +1725,33 @@ button {
   }
 }
 
+#badge-info, #user-endorsements, #badge-stats {
+
+  .editor {
+    .fa {
+      font-size: 16px;
+    }
+
+
+    .fa-eye {
+      float: right;
+      font-size: 20px;
+    }
+
+    .editor-toolbar a.fa-header-3:after {
+      content: none;
+    }
+
+    .editor-statusbar {
+      display: none;
+    }
+
+    a {
+      margin: 2px;
+
+    }
+  }
+
+
+}
+
