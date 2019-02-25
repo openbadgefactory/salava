@@ -1700,6 +1700,16 @@ button {
     }
   }
 
+  .caption .buttons .btn{
+    font-weight: normal;
+  }
+
+  @media (max-width: 768px) {
+    .caption .buttons {
+      text-align: center;
+    }
+  }
+
   @media (max-width: 480px) {
     .main-img {
       width: 50px !important;
@@ -1723,6 +1733,8 @@ button {
       padding-top: 15px;
     }
   }
+
+
 }
 
 #badge-info, #user-endorsements, #badge-stats {
@@ -1734,7 +1746,8 @@ button {
 
 
     .fa-eye {
-      float: right;
+
+      //float: right;
       font-size: 20px;
     }
 
