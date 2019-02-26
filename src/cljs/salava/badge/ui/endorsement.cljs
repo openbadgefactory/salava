@@ -266,7 +266,7 @@
 
   (fn []
     [:div {:style {:display @(cursor state [:show-content])}}
-     [:hr]
+     [:hr.border]
      [:div.row
       [:div.col-xs-12 {:style {:margin-bottom "10px"}} [:a.cancel.pull-right {:href "#" :on-click #(do
                                                                                                      (.preventDefault %)
@@ -317,7 +317,7 @@
                                 :disabled (blank? @(cursor state [:endorsement-comment]))
 
                                 } (t :badge/Endorsebadge)]]
-     [:hr]]))
+     [:hr.border]]))
 
 (defn endorsement-text [state]
   (let [user-endorsement (->> @(cursor state [:user-badge-endorsements])
