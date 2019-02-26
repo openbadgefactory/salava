@@ -710,7 +710,7 @@ SELECT endorser_id FROM user_badge_endorsement WHERE id = :id
 SELECT ube.id, ube.user_badge_id, ube.endorser_id, ube.content, ube.status, ube.mtime, u.first_name, u.last_name,u.profile_picture
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.endorser_id
-WHERE user_badge_id = :user_badge_id AND ube.status = 'accepted'
+WHERE user_badge_id = :user_badge_id
 ORDER BY ube.mtime DESC
 
 --name: update-endorsement-status!
