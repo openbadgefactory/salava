@@ -20,11 +20,11 @@
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
-     (path-for "/obpv1/user/profile/set_visibility")
-     {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
-      :handler (fn [new-value]
-                 (reset! visibility-atom new-value)
-                 )}))
+    (path-for "/obpv1/user/profile/set_visibility")
+    {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
+     :handler (fn [new-value]
+                (reset! visibility-atom new-value)
+                )}))
 
 (defn profile-visibility-input [visibility-atom]
   [:div.col-xs-12
@@ -36,28 +36,41 @@
               :checked   (= "public" @visibility-atom)}]
      (t :user/Publishandshare)]]])
 
+#_(defn badge-grid-element [element-data]
+    (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count]} element-data]
+      ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
+      [:div {:class "media grid-container"}
+       [:div.media-content
+        (if image_file
+          [:div.media-left
+           [:a {:href "#";(path-for (str "/badge/info/" id))
+                :on-click #(set-new-view [:badge :info] {:badge-id id})}
+            [:img {:src (str "/" image_file)
+                   :alt name}]]])
+        [:div.media-body
+         [:div.media-heading
+          [:a.heading-link {:href "#"
+                            :on-click #(set-new-view [:badge :info] {:badge-id id})}
+           name]]
+         [:div.media-issuer
+          [:p issuer_content_name]]
+         (when (pos? user_endorsements_count)
+           [:div.text-center [:i.fa.fa-handshake-o {:style {:font-size "18px"}}]])]]]
+      ;]
+      ))
+
 (defn badge-grid-element [element-data]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count]} element-data]
-    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:a {:href "#";(path-for (str "/badge/info/" id))
-               :on-click #(set-new-view [:badge :info] {:badge-id id})}
-            [:img {:src (str "/" image_file)
-                 :alt name}]]])
-       [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:href "#"
-                           :on-click #(set-new-view [:badge :info] {:badge-id id})}
-          name]]
-        [:div.media-issuer
-         [:p issuer_content_name]]
-        (when (pos? user_endorsements_count)
-        [:div.text-center [:i.fa.fa-handshake-o]])]]]
-              ;]
-              ))
+    [:div {:class "media grid-container"}
+     [:div.media-content
+     [:a {:href "#" :on-click #(set-new-view [:badge :info] {:badge-id id})}
+
+      (when image_file [:div.media-left [:img {:src (str "/" image_file)}]])
+      [:div.media-body
+       [:div.media-heading name]
+       [:div.media-issuer [:p issuer_content_name]]
+       (when (pos? user_endorsements_count) [:div.badge-view.text-center [:i.fa.fa-handshake-o]])]
+      ]]]))
 
 (defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
@@ -111,8 +124,8 @@
     [:div
      (if-not owner?
        [:div.col-xs-12[:div.pull-right
-         (connect-user user-id)]]
-        )
+                       (connect-user user-id)]]
+       )
 
      [:div {:id "profile"}
       [:div.col-xs-12
@@ -169,13 +182,13 @@
 
 (defn init-data [user-id state]
   (ajax/GET
-     (path-for (str "/obpv1/user/profile/" user-id) true)
-     {:handler (fn [data]
-                 (reset! state (assoc data :user-id user-id
-                                      :show-link-or-embed-code nil
-                                      :permission "success"
-                                      :badge-small-view false)))}
-     (fn [] (swap! state assoc :permission "error"))))
+    (path-for (str "/obpv1/user/profile/" user-id) true)
+    {:handler (fn [data]
+                (reset! state (assoc data :user-id user-id
+                                :show-link-or-embed-code nil
+                                :permission "success"
+                                :badge-small-view false)))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [params]
 
