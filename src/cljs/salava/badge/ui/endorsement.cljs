@@ -19,6 +19,7 @@
 
     [:div {:style {:margin-bottom "20px"}}
      [:h5
+      (when (:image_file issuer) [:img {:src (str "/" (:image_file issuer)) :style {:width "65px" :height "auto" :padding "7px"}}])
       [:a {:href "#"
            :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] (:id issuer)))
            } (:name issuer)]
