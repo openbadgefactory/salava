@@ -37,7 +37,7 @@
      (t :user/Publishandshare)]]])
 
 (defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url]} element-data]
+  (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count]} element-data]
     ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
      [:div {:class "media grid-container"}
       [:div.media-content
@@ -53,7 +53,9 @@
                            :on-click #(set-new-view [:badge :info] {:badge-id id})}
           name]]
         [:div.media-issuer
-         [:p issuer_content_name]]]]]
+         [:p issuer_content_name]]
+        (when (pos? user_endorsements_count)
+        [:div.text-center [:i.fa.fa-handshake-o]])]]]
               ;]
               ))
 
