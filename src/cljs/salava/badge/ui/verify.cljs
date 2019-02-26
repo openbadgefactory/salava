@@ -41,18 +41,19 @@
          [:div.ajax-message {:style {:padding-top "20px"}}
           [:i {:class "fa fa-cog fa-spin fa-2x "}]
           [:span (str (t :core/Loading) "...")]]
-         [:div.panel {:style {:padding-top "20px"}}
-          [:div.panel-body
-           [:div.close-button
-            [:button {:type       "button"
-                      :class      "close"
+         [:div;.panel {:style {:padding-top "20px"}}
+          [:hr.border]
+          [:div;.panel-body
+           [:div ;.close-button
+            [:a.cancel.pull-right {
                       :aria-label "OK"
                       :on-click   #(do
                                      (.preventDefault %)
                                      (swap! state assoc :show-result "none"
                                                         :show-link "block"
                                                         :display "none"))}
-             [:span {:aria-hidden "true"
+             [:i.fa.fa-remove {:title (t :core/Cancel)}]
+             #_[:span {:aria-hidden "true"
                      :dangerouslySetInnerHTML {:__html "&times;"}}]]]
 
            (case assertion-status
@@ -74,7 +75,7 @@
                 expired? [:div [:div {:class "alert alert-danger"} (t :badge/Badgeisexpired)] [bottom-links state]]
                 :else [:div
                        #_[:p.validation-header (t :badge/Badgevaliditycheck)]
-                       [:h2.uppercase-header.validation-header (t :badge/Badgevaliditycheck)]
+                       #_[:h2.uppercase-header.validation-header (t :badge/Badgevaliditycheck)]
 
                        [:table
                         [:tbody
@@ -95,7 +96,8 @@
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])]]
 
                        [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
-                       [bottom-links state]])])]])])))
+                       [bottom-links state]
+                       [:hr.border]])])]])])))
 
 (defn check-badge-link [state]
   (fn []
@@ -106,7 +108,7 @@
                        (swap! state assoc :show-result "block"
                                           :show-link "none")
                        (when (empty? (:result @state)) (init-verify-info state))
-                       (.preventDefault %))} (str (t :badge/Verifybadge) "...")]]))
+                       (.preventDefault %))}[:i.fa.fa-search] (str (t :badge/Verifybadge) "...")]]))
 
 
 (defn check-badge [badgeid]
