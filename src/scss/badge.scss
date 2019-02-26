@@ -738,7 +738,7 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove{
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove, .fa-search{
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
@@ -751,7 +751,11 @@ button {
 
   }
 
-  .fa-trash{
+  .fa-search {
+    font-size: 18px;
+  }
+
+  .fa-trash, .fa-remove{
     font-size: 20px;
     margin-right: 10px;
     color: $dark-red;
@@ -1436,6 +1440,8 @@ button {
 
 #endorsebadge {
 
+
+
   .list-group {
     a {
       color: $text-color;
@@ -1453,10 +1459,14 @@ button {
     }
   }
 
-  hr{
+  .line {
+    border-top: 2px dashed #bfbfbf;
+  }
+
+/*   hr{
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
-    margin: 10px 0px;}
+    margin: 10px 0px;} */
 
   i {
     font-size: 18px;
@@ -1472,11 +1482,15 @@ button {
   }
 
   .thumbnail {
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
-    transition: 0.3s;
+    //box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: none;
+    //transition: 0.3s;
+    transition: none;
     min-width: 40%;
-    border-radius: 5px;
+    //border-radius: 5px;
+    border-radius: 0px;
     color: $text-color;
+    border: unset;
   }
 
   .thumbnail-description {
@@ -1508,9 +1522,6 @@ button {
       margin-right: 10px;
       padding: 5px;
     }
-    .border {
-      margin: 10px 0px;
-    }
   }
 
   .small-image {
@@ -1540,8 +1551,9 @@ button {
 
   .line{
     height: 1px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
+    //background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
     margin: 20px 0px;}
+
 
   .list-item {
     cursor: pointer;
@@ -1746,7 +1758,6 @@ button {
 
 
     .fa-eye {
-
       //float: right;
       font-size: 20px;
     }
@@ -1766,5 +1777,18 @@ button {
   }
 
 
+}
+
+.border {
+  border-color: #ccc;
+  margin: 10px 0px;
+  min-width: 100%;
+}
+
+.badge-view {
+  .fa-handshake-o {
+    font-size: 18px;
+    color: $text-color;//$badge-title;
+  }
 }
 
