@@ -379,6 +379,7 @@
                                                         :issuer_name (get-in assertion [:endorsement :issuer :name])
                                                         :issuer_url (get-in assertion [:endorsement :issuer :id])
                                                         :content (get-in assertion [:endorsement :claim :endorsementComment])
+                                                        :status "accepted"
                                                         :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
                                                         :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
                                                         }]
@@ -391,6 +392,7 @@
                                                                :issuer_name (get-in assertion [:endorsement :issuer :name])
                                                                :issuer_url (get-in assertion [:endorsement :issuer :id])
                                                                :content (get-in assertion [:endorsement :claim :endorsementComment])
+                                                               :status "accepted"
                                                                :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
                                                                :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
                                                                }) (:endorsement assertion))
