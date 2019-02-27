@@ -1,9 +1,10 @@
 (ns salava.badge.endorsement
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db md->html]]
+            [salava.core.util :refer [get-db md->html get-full-path]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
-            [salava.badge.main :refer [send-badge-info-to-obf]]))
+            [salava.badge.main :refer [send-badge-info-to-obf]]
+            [salava.user.db :as user]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -15,7 +16,7 @@
     (= owner user-id)))
 
 (defn endorsement-owner? [ctx endorsement-id user-id]
-  (let [owner (select-endorsement-owner {:id endorsement-id} (into {:result-set-fn first :row-fn :endorser_id} (get-db ctx)))]
+  (let [owner (select-endorsement-owner {:id endorsement-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx)))]
     (= owner user-id)))
 
 (defn request-endorsement [])
@@ -24,12 +25,15 @@
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
       (throw+ {:status "error" :message "User cannot endorse himself"})
-      (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
-                                                           :external_id (generate-external-id)
-                                                           :endorser_id user-id
-                                                           :content content} (get-db ctx))
-                         :generated_key)]
-        {:id id :status "success"}))
+      (let [endorser-info (user/user-information ctx user-id)]
+        (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
+                                                             :external_id (generate-external-id)
+                                                             :issuer_id user-id
+                                                             :issuer_name (str (:first_name endorser-info) " " (:last_name endorser-info))
+                                                             :issuer_url (str (get-full-path ctx) "/user/profile/" user-id)
+                                                             :content content} (get-db ctx))
+                           :generated_key)]
+          {:id id :status "success"})))
     (catch Object _
       (log/error _)
       {:status "error"})))
