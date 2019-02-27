@@ -166,7 +166,9 @@
                        (s/optional-key  :mime_type) (s/maybe s/Str)} )
 
 (s/defschema UserEndorsement [{:id (s/maybe s/Int)
-                            :endorser_id s/Int
+                            :issuer_id (s/maybe s/Int)
+                            :issuer_name (s/maybe s/Str)
+                            :issuer_url (s/maybe s/Str)
                             :user_badge_id s/Int
                             :content s/Str
                             :status (s/enum "pending" "accepted" "declined")
