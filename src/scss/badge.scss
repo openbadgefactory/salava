@@ -1440,8 +1440,6 @@ button {
 
 #endorsebadge {
 
-
-
   .list-group {
     a {
       color: $text-color;
@@ -1461,6 +1459,8 @@ button {
 
   .line {
     border-top: 2px dashed #bfbfbf;
+    margin-top: 5px;
+    margin-bottom: 10px;
   }
 
 /*   hr{
@@ -1476,9 +1476,12 @@ button {
   }
 
 
-  .cancel {
+  .close {
+     opacity: 1;
     i {
-      color: $dark-red;}
+      color: $dark-red;
+
+    }
   }
 
   .thumbnail {
@@ -1745,7 +1748,9 @@ button {
       padding-top: 15px;
     }
   }
-
+  .delete-btn {
+    float: right;
+  }
 
 }
 
