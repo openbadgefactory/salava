@@ -704,7 +704,7 @@ VALUES (:external_id, :user_badge_id, :issuer_id, :issuer_name, :issuer_url, :co
 DELETE FROM user_badge_endorsement WHERE id = :id
 
 --name: select-endorsement-owner
-SELECT endorser_id FROM user_badge_endorsement WHERE id = :id
+SELECT issuer_id FROM user_badge_endorsement WHERE id = :id
 
 --name: select-user-badge-endorsements
 SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture
