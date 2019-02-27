@@ -38,7 +38,7 @@
     (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
     {:handler (fn [data]
                 (swap! state assoc :user-badge-endorsements data)
-                (when (some #(= (:endorser_id %) (:endorser-id @state)) data)
+                (when (some #(= (:issuer_id %) (:endorser-id @state)) data)
                   (swap! state assoc :show-link "none"
                          :show-content "none"
                          :show-endorsement-status "block")))}))
@@ -47,7 +47,7 @@
   (let [state (atom {:id badge-id})]
     (init-user-badge-endorsement state)
     (fn []
-      (let [endorsements (:user-badge-endorsements @state)
+      (let [endorsements (filter #(= (:status %) "accepted") (:user-badge-endorsements @state))
             badge-endorsements? (pos? (count @badge-endorsements))]
         (when (seq endorsements)
           [:div;.row {:id "badge-contents"}
@@ -343,11 +343,11 @@
                        )}[:i.fa.fa-thumbs-o-up {:style {:vertical-align "unset"}}] (t :badge/Endorsethisbadge)]
      [:div {:style {:display @(cursor state [:show-endorsement-status])}} [:i.fa.fa-thumbs-up] (endorsement-text state)]]))
 
-(defn profile-link-inline [id first_name last_name picture]
+(defn profile-link-inline [id issuer_name picture]
   [:div [:a {:href "#"
              :on-click #(mo/open-modal [:user :profile] {:user-id id})}
          [:img {:src (profile-picture picture)}]
-         (str first_name " " last_name " ")]  (t :badge/Hasendorsedyou)])
+         (str issuer_name " ")]  (t :badge/Hasendorsedyou)])
 
 (defn pending-endorsements []
   (let [state (atom {:user-id (-> (session/get :user) :id)})]
@@ -355,13 +355,13 @@
     (fn []
       [:div#endorsebadge
        (reduce (fn [r endorsement]
-                 (let [{:keys [id user_badge_id image_file name content first_name last_name profile_picture endorser_id description]} endorsement]
+                 (let [{:keys [id user_badge_id image_file name content profile_picture issuer_id description issuer_name]} endorsement]
                    (conj r
                          [:div
                           [:div.col-md-12
                            [:div.thumbnail
                             [:div.endorser.col-md-12
-                             [profile-link-inline endorser_id first_name last_name profile_picture id]
+                             [profile-link-inline issuer_id issuer_name profile_picture id]
                              [:hr.line]
                              ]
                             [:div.caption.row.flip
@@ -419,7 +419,7 @@
          [:div#endorsebadge
 
           (reduce (fn [r endorsement]
-                    (let [{:keys [id user_badge_id image_file name content first_name last_name profile_picture endorser_id status]} endorsement]
+                    (let [{:keys [id user_badge_id image_file name content issuer_name first_name last_name profile_picture endorser_id status]} endorsement]
                       (conj r [:div.panel.panel-default.endorsement
                                [:div.panel-heading {:id (str "heading" id)}
                                 [:div.panel-title
@@ -459,7 +459,7 @@
                     ) [:div] @(cursor state [:user-badge-endorsements]))]]))))
 
 (defn profile [element-data]
-  (let [{:keys [id first_name last_name profile_picture status label]} element-data
+  (let [{:keys [id first_name last_name profile_picture status label issuer_name]} element-data
         current-user (session/get-in [:user :id])]
     [:div.endorsement-profile.panel-default
      [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})}
@@ -468,15 +468,15 @@
         [:div.profile-image
          [:img.img-responsive.img-thumbnail
           {:src (profile-picture profile_picture)
-           :alt (str first_name " " last_name)}]]]
+           :alt (or issuer_name (str first_name " " last_name))}]]]
        [:div.col-md-8
-        [:h4 (str first_name " " last_name)]
+        [:h4 (or issuer_name (str first_name " " last_name))]
         (when (= status "pending") [:p [:span.label.label-info label]])]]]]))
 
 (defn user-endorsement-content [params]
   (fn []
     (let [{:keys [endorsement state]} @params
-          {:keys [id profile_picture name first_name last_name image_file content user_badge_id endorser_id endorsee_id status]} endorsement]
+          {:keys [id profile_picture name first_name last_name image_file content user_badge_id issuer_id issuer_name endorsee_id status]} endorsement]
       [:div.row.flip {:id "badge-info"}
        [:div.col-md-3
         [:div.badge-image [:img.badge-image {:src (str "/" image_file)}]]]
@@ -495,12 +495,13 @@
                                                                    (delete-endorsement id user_badge_id nil nil))
                                                       :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]
                                                  ]])]
-          [:div.col-md-8.col-md-pull-4 [profile {:id (or endorsee_id endorser_id)
+          [:div.col-md-8.col-md-pull-4 [profile {:id (or endorsee_id issuer_id)
                                                  :profile_picture profile_picture
                                                  :first_name first_name
                                                  :last_name last_name
+                                                 :issuer_name issuer_name
                                                  :status status
-                                                 :label (if endorser_id
+                                                 :label (if issuer_id
                                                           (t :badge/pendingreceived)
                                                           (t :badge/pendinggiven)
                                                           )}]]]
@@ -606,8 +607,8 @@
      [:div.panel-body
       [:div.table  {:summary (t :badge/Endorsements)}
        (reduce (fn [r endorsement]
-                 (let [{:keys [id endorsee_id endorser_id profile_picture first_name last_name name image_file content status user_badge_id mtime]} endorsement
-                       endorser (str first_name " " last_name)]
+                 (let [{:keys [id endorsee_id issuer_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime]} endorsement
+                       endorser (or issuer_name (str first_name " " last_name))]
                    (conj r [:div.list-item.row.flip
                             [:a {:href "#" :on-click #(do
                                                         (.preventDefault %)
@@ -616,12 +617,12 @@
                              [:div.col-md-8.col-md-pull-4 [:div.media
                                                            [:div;.row
                                                             [:div.labels
-                                                             (if endorser_id
+                                                             (if issuer_id
                                                                [:span.label.label-success (t :badge/Endorsedyou)]
                                                                [:span.label.label-primary (t :badge/Youendorsed)])
                                                              (if (= "pending" status)
                                                                [:span.label.label-info
-                                                                (if endorser_id
+                                                                (if issuer_id
                                                                   (t :badge/pendingreceived)
                                                                   (t :badge/pendinggiven)
                                                                   )])]
