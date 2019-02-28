@@ -1252,6 +1252,10 @@ html[dir="rtl"] .badge-info-container {
 
 html[dir="rtl"] #my-badges #grid .grid-container .media-content .visibility-icon, #export-badges #grid .grid-container .media-content .visibility-icon {
   text-align:unset;
+
+  span.badge-view {
+  float: left;
+}
   .pull-right {
     float: left !important;
   }
@@ -1366,4 +1370,5 @@ html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
 html [dir="rtl"] .editor .form-group {
   display: block;
 }
+
 

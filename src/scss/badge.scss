@@ -1790,7 +1790,12 @@ button {
   min-width: 100%;
 }
 
+span.badge-view {
+  float: right;
+}
+
 .badge-view {
+
   .fa-handshake-o {
     font-size: 18px;
     color: $text-color;//$badge-title;
