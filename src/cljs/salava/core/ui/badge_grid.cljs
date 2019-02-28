@@ -48,7 +48,7 @@
 
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsements_count]} element-data
         expired? (bh/badge-expired? expires_on)
         obf_url (session/get :factory-url)
         metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge_icon"))]
@@ -95,7 +95,10 @@
                                       "internal" [:i {:class "fa fa-group"}]
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
-                                    (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])]
+                                    (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
+                                    (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+
+                                    ]
 
                                    (if expires_on
                                      [:div.righticon
@@ -115,39 +118,21 @@
                                     [:p issuer_content_name]]]
                                   ]])
 
-       #_(= "export" badge-type) #_[:div {:key id}
-                                    [:div.media-content
-                                     [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                      [:div.visibility-icon
-                                       (case visibility
-                                         "private" [:i {:class "fa fa-lock"}]
-                                         "internal" [:i {:class "fa fa-group"}]
-                                         "public" [:i {:class "fa fa-globe"}]
-                                         nil)]
-                                      (if image_file
-                                        [:div.media-left
-                                         [:img {:src (str "/" image_file) :alt name}]])
-                                      [:div.media-body
-                                       [:div.media-heading name]
-                                       [:div.media-issuer issuer_content_name]]]]
-                                    [:div.media-bottom
-                                     [:div.row
-                                      [:div.col-xs-9
-                                       (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
-                                         [:div.checkbox
-                                          [:label {:for (str "checkbox-" id)}
-                                           [:input {:type "checkbox"
-                                                    :id (str "checkbox-" id)
-                                                    :on-change (fn []
-                                                                 (if checked?
-                                                                   (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
-                                                                   (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
-                                                    :checked checked?}]
+       (= "profile" badge-type) [:div.media-content
+                                 [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
+                                  [:div.icons.col-xs-12 {:style {:padding "2px"}}
+                                   [:div.visibility-icon.inline
+                                    ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
+                                    (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
 
-                                           (t :badge/Exporttobackpack)]])]
-                                      [:div {:class "col-xs-3 text-right"}
-                                       [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
-                                        [:i {:class "fa fa-download"}]]]]]]
+                                    ]]
+                                  [:div.media-left
+                                   ;(when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o ]])
+                                   (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                   [:div.media-body
+                                    [:div.media-heading name]
+                                    [:div.media-issuer [:p issuer_content_name]]]
+                                   ]]]
 
        (= "gallery" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
