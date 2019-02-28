@@ -241,7 +241,7 @@
 
 (defn endorsement-text [state]
   (let [user-endorsement (->> @(cursor state [:user-badge-endorsements])
-                              (filter #(= (:endorser-id @state) (:endorser_id %))))]
+                              (filter #(= (:endorser-id @state) (:issuer_id %))))]
     (if (seq user-endorsement)
       (case  (->> user-endorsement first :status)
         "accepted" [:span.label.label-success (t :badge/Youendorsebadge)]
