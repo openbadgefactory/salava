@@ -5,13 +5,15 @@ SELECT user_id AS owner from social_connections_badge where badge_id = :badge_id
 -- get user's badges
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, ub.assertion_url,
-           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsements_count
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
 INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = ub.badge_id)
+LEFT JOIN user_badge_endorsement AS ube ON (ube.user_badge_id = ub.id) AND ube.status = 'accepted'
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
     AND bc.language_code = b.default_language_code
     AND ic.language_code = b.default_language_code
