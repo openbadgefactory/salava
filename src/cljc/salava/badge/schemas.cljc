@@ -66,6 +66,8 @@
    (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
                                           :all-messages (s/maybe s/Int)}
    (s/optional-key :tags)                (s/maybe [s/Str])
+   (s/optional-key :user_endorsements_count) (s/maybe s/Int)
+   (s/optional-key :endorsement_count) (s/maybe s/Int)
    })
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
