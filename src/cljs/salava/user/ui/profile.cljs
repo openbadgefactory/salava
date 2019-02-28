@@ -15,6 +15,7 @@
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]
             ))
 
 
@@ -63,7 +64,7 @@
           [:p issuer_content_name]]]]]
       ;]
       ))
-(defn badge-grid-element [element-data]
+#_(defn badge-grid-element [element-data]
   (let [{:keys [id image_file name description issuer_content_name issuer_content_url endorsement_count user_endorsements_count]} element-data]
     [:div.media.grid-container
      [:div.media-content
@@ -105,7 +106,7 @@
 (defn badge-grid [badges badge-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
-          (badge-grid-element element-data))))
+          (badge-grid-element element-data nil "profile" nil))))
 
 (defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]

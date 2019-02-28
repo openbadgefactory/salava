@@ -15,6 +15,7 @@
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.core.ui.modal :refer [set-new-view]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]
             ))
 
 
@@ -37,7 +38,7 @@
      (t :user/Publishandshare)]]])
 
 #_(defn badge-grid-element [element-data]
-    (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count]} element-data]
+    (let [{:keys [id image_file name description issuer_content_name issuer_content_url]} element-data]
       ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
       [:div {:class "media grid-container"}
        [:div.media-content
@@ -53,24 +54,9 @@
                             :on-click #(set-new-view [:badge :info] {:badge-id id})}
            name]]
          [:div.media-issuer
-          [:p issuer_content_name]]
-         (when (pos? user_endorsements_count)
-           [:div.text-center [:i.fa.fa-handshake-o {:style {:font-size "18px"}}]])]]]
+          [:p issuer_content_name]]]]]
       ;]
       ))
-
-(defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count endorsement_count]} element-data]
-    [:div {:class "media grid-container"}
-     [:div.media-content
-     [:a {:href "#" :on-click #(set-new-view [:badge :info] {:badge-id id})}
-
-      (when image_file [:div.media-left [:img {:src (str "/" image_file)}]])
-      [:div.media-body
-       [:div.media-heading name]
-       [:div.media-issuer [:p issuer_content_name]]
-       (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:div.badge-view.text-center [:i.fa.fa-handshake-o]])]
-      ]]]))
 
 (defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
@@ -100,7 +86,7 @@
 (defn badge-grid [badges badge-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
-          (badge-grid-element element-data))))
+          (badge-grid-element element-data nil "profile" nil ))))
 
 (defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
