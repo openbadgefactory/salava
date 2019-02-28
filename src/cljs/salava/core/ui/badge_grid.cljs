@@ -120,14 +120,13 @@
 
        (= "profile" badge-type) [:div.media-content
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                  [:div.icons.col-xs-12 {:style {:padding "2px"}}
+                                  [:div.icons.col-xs-12 {:style {:min-height "15px"}}
                                    [:div.visibility-icon.inline
                                     ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
                                     (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
 
                                     ]]
                                   [:div.media-left
-                                   ;(when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o ]])
                                    (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                    [:div.media-body
                                     [:div.media-heading name]
