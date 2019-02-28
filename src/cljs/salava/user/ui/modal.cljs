@@ -60,7 +60,7 @@
       ))
 
 (defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count]} element-data]
+  (let [{:keys [id image_file name description issuer_content_name issuer_content_url user_endorsements_count endorsement_count]} element-data]
     [:div {:class "media grid-container"}
      [:div.media-content
      [:a {:href "#" :on-click #(set-new-view [:badge :info] {:badge-id id})}
@@ -69,7 +69,7 @@
       [:div.media-body
        [:div.media-heading name]
        [:div.media-issuer [:p issuer_content_name]]
-       (when (pos? user_endorsements_count) [:div.badge-view.text-center [:i.fa.fa-handshake-o]])]
+       (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:div.badge-view.text-center [:i.fa.fa-handshake-o]])]
       ]]]))
 
 (defn page-grid-element [element-data profile_picture]
