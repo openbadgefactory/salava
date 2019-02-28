@@ -44,8 +44,8 @@
          [:div;.panel {:style {:padding-top "20px"}}
           [:hr.border]
           [:div;.panel-body
-           [:div ;.close-button
-            [:a.cancel.pull-right {
+           [:div.close {:style {:opacity 1}};.close-button
+            [:a {
                       :aria-label "OK"
                       :on-click   #(do
                                      (.preventDefault %)
