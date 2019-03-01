@@ -269,7 +269,7 @@
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
-    [:div (into [:div {:class "row wrap-grid"
+    [:div#badges (into [:div {:class "row wrap-grid"
                        :id    "grid"}]
                 (for [element-data badges]
                   (badge-grid-element element-data state "gallery" fetch-badges)))

@@ -60,7 +60,7 @@
         ))]])
 
 (defn content [state]
-  (let [{user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges
+  (let [{user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
          user_pages :user_pages owner? :owner? {id :id first_name :first_name last_name :last_name profile_picture :profile_picture about :about role :role language :language
                                                 private :private activated? :activated country :country
                                                 email_notifications :email_notifications
@@ -185,9 +185,12 @@
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
           [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity) ]
-          (if (> connections 0)
+          (if (pos? connections)
             [:div
              [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ")  connections]]])
+          (if (pos? endorsements)
+            [:div
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge/user/endorsements")} (str (t :badge/Myendorsements) ": ")  endorsements]]])
           (if (or (not-empty user_following) (not-empty user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]

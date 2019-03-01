@@ -8,7 +8,8 @@
             [salava.core.ui.grid :as g]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [salava.core.ui.page-grid :refer [page-grid-element]]))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -35,7 +36,7 @@
    [g/grid-buttons       (t :core/Tags ":") (unique-values :tags (:pages @state)) :tags-selected :tags-all state]
    [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
 
-(defn page-grid-element [element-data state]
+#_(defn page-grid-element [element-data state]
   (let [{:keys [id name visibility mtime badges]} element-data
         badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -120,7 +121,8 @@
        (doall
         (for [element-data pages]
           (if (page-visible? element-data state)
-            (page-grid-element element-data state))))])))
+            #_(page-grid-element element-data state)
+            (page-grid-element element-data {:type "basic"}))))])))
 
 (defn content [state]
   [:div {:class "my-badges pages"}

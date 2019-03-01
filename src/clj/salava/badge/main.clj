@@ -311,10 +311,9 @@
       ;:followed? followed?
       :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
       :assertion (parse-assertion-json (:assertion_json badge))
-
       :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
-      ;;
       :evidences evidences
+      :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count)
       )))
 
 
@@ -479,11 +478,14 @@
 
 (defn delete-badge-evidences! [db badge-id user-id]
   (if-let [evidences (select-user-badge-evidence {:user_badge_id badge-id} db)]
-    (when-not (empty? evidences)
+    (when (seq evidences)
       (delete-all-badge-evidences! {:user_badge_id badge-id} db)
       (doseq [evidence evidences
               :let [name (str "evidence_id:"(:id evidence))]]
         (delete-user-evidence-property! {:name name :user_id user-id} db)))))
+
+(defn delete-badge-endorsements! [db id]
+  (delete-user-badge-endorsements! {:id id} db))
 
 (defn delete-badge-with-db! [db user-badge-id]
   (delete-badge-tags! {:user_badge_id user-badge-id} db)
@@ -502,7 +504,8 @@
       (do
         #_(db/delete-badge-endorsements ctx badge-id)
         (delete-badge-with-db! {:connection tr-cn} badge-id)
-        (delete-badge-evidences! {:connection tr-cn} badge-id user-id)))
+        (delete-badge-evidences! {:connection tr-cn} badge-id user-id)
+        (delete-badge-endorsements! {:connection tr-cn} badge-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
       (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
     {:status "success" :message "Badge deleted"}

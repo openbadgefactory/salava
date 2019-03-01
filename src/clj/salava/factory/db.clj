@@ -9,7 +9,9 @@
             [salava.badge.parse :as p]
             [salava.badge.main :as b]
             [salava.badge.db :as db]
-            [salava.user.db :as user]))
+            [salava.user.db :as user]
+            [clj-time.local :as l]
+            [clj-time.coerce :as c]))
 
 (defqueries "sql/factory/queries.sql")
 
@@ -60,17 +62,31 @@
         (log/error (.toString ex))))))
 
 #_(defn get-badge-updates
-  ""
-  [ctx user-id badge-id]
-  (if-let [badge-updates (select-badge-updates {:user_id user-id :id badge-id} (u/get-db-1 ctx))]
-    {"user" {user-id {"badge" {badge-id badge-updates}}}}))
+    ""
+    [ctx user-id badge-id]
+    (if-let [badge-updates (select-badge-updates {:user_id user-id :id badge-id} (u/get-db-1 ctx))]
+      {"user" {user-id {"badge" {badge-id badge-updates}}}}))
+
+(defn endorsement->endorsement-class
+  "Conforms endorsment to specification: https://www.imsglobal.org/sites/default/files/Badges/OBv2p0Final/index.html#Endorsement
+  Endorser profile link is used as issuer id"
+  [ctx coll]
+  (map (fn [endorsement]
+         (-> endorsement
+             (dissoc :content :endorser_id :assertion_url)
+             (assoc :issuer {:id (str (u/get-full-path ctx) "/user/profile/" (:endorser_id endorsement))
+                             :type "Issuer"}
+               :claim {:id (:assertion_url endorsement)
+                       :endorsementComment (:content endorsement)}
+               :issuedOn (str (l/to-local-date-time (long (* (:mtime endorsement) 1000))))))) coll))
 
 (defn get-badge-updates
   ""
   [ctx user-id badge-id]
   (let [badge-updates (select-badge-updates {:user_id user-id :id badge-id} (u/get-db-1 ctx))
-        evidence (select-user-badge-evidence {:id badge-id} (u/get-db ctx))]
-    {"user" {user-id {"badge" {badge-id (assoc badge-updates :evidence evidence)}}}}))
+        evidence (select-user-badge-evidence {:id badge-id} (u/get-db ctx))
+        endorsments (->> (select-user-badge-endorsements {:id badge-id} (u/get-db ctx)) (endorsement->endorsement-class ctx))]
+    {"user" {user-id {"badge" {badge-id (assoc badge-updates :evidence evidence :endorsement endorsments)}}}}))
 
 
 (defn- issued-by-factory [ctx badge]
