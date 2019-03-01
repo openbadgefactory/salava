@@ -15,28 +15,28 @@
         total-views (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0 views)]
     [:div.panel
      [:div.panel-heading
-      [:h3
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Badgeviews) ":"] " (" total-views ")"]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
+       [:h3 (t :badge/Badgeviews) ":" " (" total-views ")"]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:div {:class "row header"}
          [:div.col-md-12
-           [:div.flip-table
+          [:div.flip-table
            [:div.col-md-6]
-                      [:div.col-md-2 (t :badge/Loggedinusers)]
+           [:div.col-md-2 (t :badge/Loggedinusers)]
            [:div.col-md-2 (t :badge/Anonymoususers)]
            [:div.col-md-2 (t :badge/Latestview)]]]]
-         (into [:div {:class "row body "}]
-               (for [badge-views views
-                     :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
-                 [:div.col-md-12
-                  [:div.flip-table
+        (into [:div {:class "row body "}]
+              (for [badge-views views
+                    :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
+                [:div.col-md-12
+                 [:div.flip-table
                   [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
                   [:div.col-md-5 [:a {:href "#"
-                                 :on-click #(do
-                                              (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
-                                              (.preventDefault %)) }  name]]
+                                      :on-click #(do
+                                                   (mo/open-modal [:badge :info] {:badge-id id})
+                                                   ;(b/open-modal id false init-data state)
+                                                   (.preventDefault %)) }  name]]
                   [:div.col-md-2 [:label (t :badge/Loggedinusers)] reg_count]
                   [:div.col-md-2 [:label (t :badge/Anonymoususers)]anon_count]
                   [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
@@ -46,8 +46,8 @@
         total-congratulations (->> congratulations (map :congratulation_count) (reduce +))]
     [:div.panel
      [:div.panel-heading
-      [:h3
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Congratulations) ":"] " (" total-congratulations ")"]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
+       [:h3 (t :badge/Congratulations) ":" " (" total-congratulations ")"]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Congratulations)}
@@ -66,7 +66,7 @@
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
+                                              ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } name]]
                   [:td congratulation_count]
                   [:td (if latest_congratulation (date-from-unix-time (* 1000 latest_congratulation)))]]))]])]))
@@ -75,8 +75,8 @@
   (let [panel-identity :issuers]
     [:div.panel
      [:div.panel-heading
-      [:h3
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))} (t :badge/Issuers) ":"] " (" (count issuers) ")"]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
+       [:h3 (t :badge/Issuers) ":" " (" (count issuers) ")"]]]
      (if (= @visible-area-atom panel-identity)
        (into [:div.panel-body]
              (for [issuer issuers
@@ -87,10 +87,10 @@
                       (for [badge badges
                             :let [{:keys [id image_file name]} badge]]
                         [:a {:href "#"
-                                 :on-click #(do
-                                              (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
-                                              (.preventDefault %)) }
+                             :on-click #(do
+                                          (mo/open-modal [:badge :info] {:badge-id id})
+                                          ;(b/open-modal id false init-data state)
+                                          (.preventDefault %)) }
                          [:img.badge-icon {:src (str "/"  image_file) :title name :alt name}]]))])))]))
 
 (defn content [state]
@@ -100,12 +100,13 @@
      [m/modal-window]
      [:h1.uppercase-header
       (t :badge/Badgestatistics)]
+     [:p (t :connections/Statisticspageinfo)]
      [:h3 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
      [views-panel badge_views visible-area-atom]
      [congratulations-panel badge_congratulations visible-area-atom]
      [issuers-panel badge_issuers visible-area-atom]]))
 
-(def initial-state {:visible_area :views
+(def initial-state {:visible_area nil
                     :badge_count nil
                     :expired_badge_count nil
                     :badge_views []
