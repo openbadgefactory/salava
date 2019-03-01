@@ -99,7 +99,8 @@
     [:div {:id "badge-stats"}
      [m/modal-window]
      [:h1.uppercase-header
-      (t :badge/Badgestatistics)]
+      (t :badge/Stats)
+      #_(t :badge/Badgestatistics)]
      [:p (t :connections/Statisticspageinfo)]
      [:h3 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
      [views-panel badge_views visible-area-atom]
