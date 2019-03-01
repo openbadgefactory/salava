@@ -10,11 +10,10 @@
   (routes
     (context "/connections" []
              (layout/main ctx "/")
-             (layout/main ctx "/connections")
              (layout/main ctx "/badge")
-             (layout/main ctx "/stream")
              (layout/main ctx "/stats")
              (layout/main ctx "/endorsement"))
+
     (context "/obpv1/connections" []
              :tags ["connections"]
              (GET "/connections_badge" []
