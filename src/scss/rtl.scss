@@ -150,6 +150,12 @@ html[dir="rtl"] #profile {
       text-align: left;
     }
   }
+
+  #user-badges {
+    span.badge-view {
+      float: left;
+    }
+  }
 }
 
 html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
@@ -614,6 +620,9 @@ html[dir="rtl"] #badge-gallery {
 }
 /*PAGE GALLERY*/
 html[dir="rtl"] #page-gallery, html[dir="rtl"] #user-pages #grid {
+  #grid.row #admin-link {
+    float: left;
+  }
   margin-right: -15px;
   margin-left: -15px;
 }
@@ -835,6 +844,13 @@ html[dir="rtl"] #badge-info {
     @media (max-width:992px){
       -webkit-flex-direction:column;
       flex-direction: column;
+    }
+  }
+
+  #endorsebadge, #verify-link{
+    .fa {
+      margin-right: unset;
+      margin-left: 10px;
     }
   }
 }
@@ -1254,8 +1270,8 @@ html[dir="rtl"] #my-badges #grid .grid-container .media-content .visibility-icon
   text-align:unset;
 
   span.badge-view {
-  float: left;
-}
+    float: left;
+  }
   .pull-right {
     float: left !important;
   }
@@ -1361,8 +1377,8 @@ html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
   .editor {
 
     .form-group {
-    display: block;
-  }
+      display: block;
+    }
 
   }
 }
@@ -1370,5 +1386,4 @@ html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
 html [dir="rtl"] .editor .form-group {
   display: block;
 }
-
 

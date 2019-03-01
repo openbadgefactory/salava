@@ -1,6 +1,6 @@
 @import 'variables';
 /* GRID */
-.pages #grid, #page-gallery #grid, #user-pages #grid, #profile-gallery #grid, #my-files #grid{
+.pages #grid, #page-gallery #grid, #user-pages #grid, #profile-gallery #grid, #my-files #grid, #badge-gallery #user-pages #grid{
     .grid-container {
         background-color: #ffffff;
         border: 1px solid #d2d2d2;
@@ -36,7 +36,7 @@
                     overflow-y: hidden;
                     margin-bottom: 0px;
 
-                    a.heading-link {
+                    a.heading-link, p.heading-link {
                         cursor: pointer;
                         color: $grid-link;
                         text-decoration: none;

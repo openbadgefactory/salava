@@ -16,6 +16,7 @@
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.core.ui.badge-grid :refer [badge-grid-element]]
+            [salava.core.ui.page-grid :refer [page-grid-element]]
             ))
 
 
@@ -80,7 +81,7 @@
 
        ]]]))
 
-(defn page-grid-element [element-data profile_picture]
+#_(defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
         badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
@@ -111,7 +112,8 @@
 (defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
-          (page-grid-element element-data profile_picture))))
+          (page-grid-element (assoc element-data :profile_picture profile_picture) {:type "profile"})
+          #_(page-grid-element element-data profile_picture))))
 
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
