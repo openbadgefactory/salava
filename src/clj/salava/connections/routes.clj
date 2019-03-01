@@ -11,7 +11,7 @@
     (context "/connections" []
              (layout/main ctx "/")
              (layout/main ctx "/connections")
-             (layout/main ctx "/badges")
+             (layout/main ctx "/badge")
              (layout/main ctx "/stream")
              (layout/main ctx "/stats")
              (layout/main ctx "/endorsement"))
