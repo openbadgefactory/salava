@@ -338,7 +338,7 @@
          [:div#endorsebadge
 
           (reduce (fn [r endorsement]
-                    (let [{:keys [id user_badge_id image_file name content issuer_name first_name last_name profile_picture endorser_id status]} endorsement]
+                    (let [{:keys [id user_badge_id image_file name content issuer_name first_name last_name profile_picture issuer_id issuer_name status]} endorsement]
                       (conj r [:div.panel.panel-default.endorsement
                                [:div.panel-heading {:id (str "heading" id)}
                                 [:div.panel-title
@@ -346,9 +346,9 @@
                                  [:div.row.flip.settings-endorsement
                                   [:div.col-md-9
                                    [:a {:href "#"
-                                        :on-click #(mo/open-modal [:user :profile] {:user-id endorser_id})}
+                                        :on-click #(mo/open-modal [:user :profile] {:user-id issuer_id})}
                                     [:img.small-image {:src (profile-picture profile_picture)}]
-                                    (str first_name " " last_name " ")] ]]]
+                                    issuer_name] ]]]
 
                                 [:div [:button {:type "button"
                                                 :aria-label "OK"
