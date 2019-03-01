@@ -79,15 +79,14 @@
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
                                  [:a {:href "#" :on-click #(do
                                                              (.preventDefault %)
-                                                             (mo/open-modal [:badge :info] {:badge-id id} {
-                                                                                                            :shown (fn [] (.replaceState js/history {} "Badge modal" (path-for (str "/badge?id=" id))))
-                                                                                                            :hidden (fn []
-                                                                                                                      (do
-                                                                                                                        (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
-                                                                                                                          (.replaceState js/history {} "Badge modal" (path-for "/badge"))
-                                                                                                                          (navigate-to (current-route-path)))
-                                                                                                                        (init-data state)))
-                                                                                                            }))}
+                                                             (mo/open-modal [:badge :info] {:badge-id id} {:shown (fn [] (.replaceState js/history {} "Badge modal" (path-for (str "/badge?id=" id))))
+                                                                                                           :hidden (fn []
+                                                                                                                     (do
+                                                                                                                       (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
+                                                                                                                         (.replaceState js/history {} "Badge modal" (path-for "/badge"))
+                                                                                                                         (navigate-to (current-route-path)))
+                                                                                                                       (init-data state)))
+                                                                                                           }))}
                                   [:div.icons
                                    [:div.visibility-icon.inline
                                     (case visibility
@@ -96,9 +95,7 @@
                                       "public" [:i {:class "fa fa-globe"}]
                                       nil)
                                     (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                    (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
-
-                                    ]
+                                    (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]
 
                                    (if expires_on
                                      [:div.righticon
@@ -118,9 +115,11 @@
                                     [:p issuer_content_name]]]
                                   ]])
 
-       (= "profile" badge-type) [:div.media-content
+       (= "profile" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                  [:div.icons.col-xs-12 {:style {:min-height "15px"}}
+                                 [:div.media-content
+
+                                  [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
                                    [:div.visibility-icon.inline
                                     ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
                                     (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
@@ -131,7 +130,7 @@
                                    [:div.media-body
                                     [:div.media-heading name]
                                     [:div.media-issuer [:p issuer_content_name]]]
-                                   ]]]
+                                   ]]]]
 
        (= "gallery" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
