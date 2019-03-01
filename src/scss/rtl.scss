@@ -304,6 +304,18 @@ html[dir="rtl"] #badge-stats {
       }
     }
   }
+
+  .list-item {
+    .pull-right {
+      float: left !important;
+    }
+    .col-md-push-8 {
+      left: unset;
+    }
+    .col-md-pull-4 {
+      right: unset;
+    }
+  }
 }
 
 /* BADGE INFO */
