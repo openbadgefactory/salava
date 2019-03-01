@@ -279,15 +279,16 @@ ul#secondary-menu-links li a{
 }
 
 .line, .border {
+  border-top: none !important;
   height: 1px;
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
   margin: 20px 0px;
 }
 
 .thumbnail {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
-  transition: 0.3s;
-  border-radius: 5px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5) !important;
+  transition: 0.3s !important;
+  border-radius: 5px !important;
 }
 /* #user-endorsements, #badge-stats, #badge-info, #my-badges{
   .line {
