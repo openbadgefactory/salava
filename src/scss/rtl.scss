@@ -234,6 +234,10 @@ html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
     padding-left: unset;
     padding-right: 35px;
   }
+
+  .pull-left {
+    float: right !important;
+  }
 }
 
 /*BADGE*/
@@ -1398,4 +1402,3 @@ html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
 html [dir="rtl"] .editor .form-group {
   display: block;
 }
-
