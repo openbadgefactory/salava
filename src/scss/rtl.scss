@@ -206,6 +206,13 @@ html[dir="rtl"] #badge-info {
       border-right: 3px solid $green;
     }
   }
+  .col-md-push-8 {
+    left: unset;
+  }
+  .col-md-pull-4 {
+    right: unset;
+  }
+}
 }
 
 /* ADMIN MODALS */
