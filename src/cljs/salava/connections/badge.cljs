@@ -48,7 +48,7 @@
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! (cursor state [:visible-area]) :issuers))}
        [:h3 (str (t :badge/Issuers) " (" (count issuers) ")")]
-       [:div {:style {:margin-top "5px"}} (t :connections/Issuerblockinfo)]]]
+       #_[:div {:style {:margin-top "5px"}} (t :connections/Issuerblockinfo)]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Issuers)}
@@ -70,7 +70,7 @@
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! (cursor state [:visible-area]) :badges))}
        [:h3 (str (t :badge/Badges) " (" (count badges) ")")]
-       [:p {:style {:margin-top "5px"}} (t :connections/Badgeblockinfo)]]]
+       #_[:p {:style {:margin-top "5px"}} (t :connections/Badgeblockinfo)]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Badgeviews)}
