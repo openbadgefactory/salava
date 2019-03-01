@@ -1698,7 +1698,10 @@ button {
 
   .labels, .labels-inline {
     margin-bottom: 10px;
-    span {
+    span:first-child {
+      margin-left: 0px;
+    }
+    span{
       margin-left: 15px;
     }
 
