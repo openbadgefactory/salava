@@ -213,7 +213,7 @@ html[dir="rtl"] #badge-info {
     right: unset;
   }
 }
-}
+
 
 /* ADMIN MODALS */
 html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
@@ -326,6 +326,16 @@ html[dir="rtl"] #badge-stats {
     .col-md-pull-4 {
       right: unset;
     }
+
+    span:first-child {
+      margin-left: 15px;
+    }
+  }
+
+  .issuer-panel img{
+
+    margin-left: 10px;
+
   }
 }
 
