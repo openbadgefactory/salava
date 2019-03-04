@@ -51,7 +51,8 @@
 (defn process-markdown-helper [markdown id context]
   (let [file (java.io.File/createTempFile "markdown" ".pdf")]
     (try
-      (pdf/pdf [{} (markdown->clj-pdf {:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
+      (pdf/pdf [{} (markdown->clj-pdf {;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
+                                       :wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
       true
       (catch Exception e
         (log/error (str "Markdown Error in Badge id:  "id " in " context))
@@ -62,7 +63,9 @@
   (if (== 1 (count markdown))
     markdown
     (if-let [p (process-markdown-helper markdown id context)]
-      (markdown->clj-pdf {:image {:x 10 :y 10} :spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2} :wrap {:global-wrapper :paragraph}} markdown)
+      (markdown->clj-pdf {:image {:x 10 :y 10}
+                          ;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
+                          :wrap {:global-wrapper :paragraph}} markdown)
       ""
       )))
 
