@@ -84,6 +84,17 @@
                        :ctime s/Int
                        :mtime s/Int})
 
+(s/defschema UserEndorsement [{:id (s/maybe s/Int)
+                            :issuer_id (s/maybe s/Int)
+                            :issuer_name (s/maybe s/Str)
+                            :issuer_url (s/maybe s/Str)
+                            :user_badge_id (s/maybe s/Int)
+                            :external_id (s/maybe s/Str)
+                            :content s/Str
+                            :mtime s/Int
+                            :ctime s/Int
+                            }])
+
 
 (s/defschema UserBadge {:id (s/maybe s/Int)
                         :badge Badge
@@ -106,7 +117,8 @@
                         :issuer_verified (s/enum 0 1)
                         :show_evidence   (s/enum 0 1)
                         :last_checked (s/maybe s/Int)
-                        :old_id (s/maybe s/Int)})
+                        :old_id (s/maybe s/Int)
+                        :endorsement (s/maybe UserEndorsement)})
 
 
 (def valid-badge (s/validator UserBadge))
@@ -265,6 +277,32 @@
                                    (get-endorsement (dec depth))))
                      (assoc-in e [:issuer :endorsement] [])))))))))
 
+(defn- get-assertion-endorsement [assertion]
+  (let [endorsement (:endorsement assertion)]
+    (if (empty? endorsement)
+      []
+      (->> endorsement
+           (map #(if (map? %) {:id nil
+                               :external_id (:id %)
+                               :user_badge_id nil
+                               :issuer_id nil
+                               :issuer_name (get-in % [:issuer :name] nil)
+                               :issuer_url (get-in % [:issuer :id] nil)
+                               :content (get-in % [:claim :endorsementComment])
+                               :ctime (u/str->epoch (:issuedOn %))
+                               :mtime (u/str->epoch (:issuedOn %))}
+
+                   (http/json-get %)))
+           (map (fn [e] {:id nil
+                         :external_id (:id e)
+                         :user_badge_id nil
+                         :issuer_id nil
+                         :issuer_name (get-in e [:issuer :name] nil)
+                         :issuer_url (get-in e [:issuer :id] nil)
+                         :content (get-in e [:claim :endorsementComment])
+                         :ctime (u/str->epoch (:issuedOn e))
+                         :mtime (u/str->epoch (:issuedOn e))}))))))
+
 (defn- get-alignment [badge]
   (map (fn [a]
          {:name (:targetName a)
@@ -371,34 +409,33 @@
                      (map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")
-        endorsement (cond
-                      (map? (:endorsement assertion)) [{:id nil
-                                                        :external_id (get-in assertion [:endorsement :id])
-                                                        :user_badge_id nil
-                                                        :issuer_id nil
-                                                        :issuer_name (get-in assertion [:endorsement :issuer :name])
-                                                        :issuer_url (get-in assertion [:endorsement :issuer :id])
-                                                        :content (get-in assertion [:endorsement :claim :endorsementComment])
-                                                        :status "accepted"
-                                                        :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                        :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                        }]
+        endorsement (get-assertion-endorsement assertion) #_(cond
+                                                    (map? (:endorsement assertion)) [{:id nil
+                                                                                      :external_id (get-in assertion [:endorsement :id])
+                                                                                      :user_badge_id nil
+                                                                                      :issuer_id nil
+                                                                                      :issuer_name (get-in assertion [:endorsement :issuer :name])
+                                                                                      :issuer_url (get-in assertion [:endorsement :issuer :id])
+                                                                                      :content (get-in assertion [:endorsement :claim :endorsementComment])
+                                                                                      :status "accepted"
+                                                                                      :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
+                                                                                      :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
+                                                                                      }]
 
-                      (coll? (:endorsement assertion)) (mapv (fn [e]
-                                                              {:id nil
-                                                               :external_id (get-in assertion [:endorsement :id])
-                                                               :user_badge_id nil
-                                                               :issuer_id nil
-                                                               :issuer_name (get-in assertion [:endorsement :issuer :name])
-                                                               :issuer_url (get-in assertion [:endorsement :issuer :id])
-                                                               :content (get-in assertion [:endorsement :claim :endorsementComment])
-                                                               :status "accepted"
-                                                               :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                               :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                               }) (:endorsement assertion))
-                      :else []
-                      ) ]
-
+                                                    (coll? (:endorsement assertion)) (mapv (fn [e]
+                                                                                             {:id nil
+                                                                                              :external_id (get-in assertion [:endorsement :id])
+                                                                                              :user_badge_id nil
+                                                                                              :issuer_id nil
+                                                                                              :issuer_name (get-in assertion [:endorsement :issuer :name])
+                                                                                              :issuer_url (get-in assertion [:endorsement :issuer :id])
+                                                                                              :content (get-in assertion [:endorsement :claim :endorsementComment])
+                                                                                              :status "accepted"
+                                                                                              :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
+                                                                                              :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
+                                                                                              }) (:endorsement assertion))
+                                                    :else []
+                                                    ) ]
     (assoc initial
       :badge (merge {:id ""
                      :remote_url nil
@@ -593,7 +630,7 @@
                          (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
 
 (defmethod str->badge :json [user input]
-  (let [content (json/read-str input :key-fn keyword)
+  (let [content (-> (json/read-str input :key-fn keyword) (dissoc :endorsement))
         kind (get-in content [:verify :type] (get-in content [:verification :type]))]
     (if (or (= kind "hosted") (= kind "HostedBadge"))
       (str->badge user (get-in content [:verify :url] (:id content))))))
