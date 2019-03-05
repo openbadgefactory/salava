@@ -281,7 +281,7 @@ ul#secondary-menu-links li a{
 .line, .border {
   border-top: none !important;
   height: 1px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $titlebar-color, rgba(0, 0, 0, 0));
   margin: 20px 0px;
 }
 
@@ -290,13 +290,13 @@ ul#secondary-menu-links li a{
   transition: 0.3s !important;
   border-radius: 5px !important;
 }
-/* #user-endorsements, #badge-stats, #badge-info, #my-badges{
-  .line {
-    height: 1px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
-    margin: 20px 0px;
-  }
-} */
+
+.badge-container-pending .button-row {
+  border-width: 1px;
+  border-image: linear-gradient(to right, rgba(0, 0, 0, 0), $titlebar-color, rgba(0, 0, 0, 0));
+  border-image-slice: 1;
+  border-height: 1px;
+}
 
 /*
 a#login-button {
