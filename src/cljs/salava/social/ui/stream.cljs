@@ -69,7 +69,7 @@
 (defn badge-pending [badge state]
   [:div.row {:key (:id badge)}
    [:div.col-md-12
-    [:div.badge-container-pending
+    [:div.badge-container-pending.thumbnail
      [pending-badge-content badge]
      [:div {:class "row button-row"}
       [:div.col-md-12

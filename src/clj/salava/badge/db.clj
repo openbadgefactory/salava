@@ -222,10 +222,11 @@
                                                        (assoc :user_badge_id user-badge-id
                                                               :ctime now
                                                               :mtime now))))))
+      (dump (:endorsement user-badge))
       (when (seq (:endorsement user-badge))
         (doseq [endorsement (:endorsement user-badge)]
           (when (map? endorsement)
             (jdbc/insert! tx "user_badge_endorsement" (-> endorsement
                                                           (dissoc :id)
-                                                          (assoc :user_badge_id user-badge-id))))))
+                                                          (assoc :user_badge_id user-badge-id :status "accepted"))))))
       user-badge-id)))
