@@ -74,7 +74,8 @@
   (map (fn [endorsement]
          (-> endorsement
              (dissoc :content :endorser_id :assertion_url)
-             (assoc :issuer {:id (str (u/get-full-path ctx) "/user/profile/" (:endorser_id endorsement))
+             (assoc :issuer {:id (:url endorsement)
+                             :name (:name endorsement)
                              :type "Issuer"}
                :claim {:id (:assertion_url endorsement)
                        :endorsementComment (:content endorsement)}
