@@ -15,7 +15,7 @@
   (connect/handler user-id))
 
 
-(defn ^:export connections []
+#_(defn ^:export connections []
   (connections/handler))
 
 (defn ^:export pendingconnections [parent-data]

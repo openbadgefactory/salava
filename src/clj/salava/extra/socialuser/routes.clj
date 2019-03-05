@@ -15,9 +15,7 @@
 (defn route-def [ctx]
   (routes
     (context "/connections" []
-             (layout/main ctx "/users")
-            ; (layout/main ctx "/connections")
-             #_(layout/main ctx "/stream"))
+             (layout/main ctx "/connections"))
 
     (context "/obpv1/socialuser" []
              :tags ["socialuser"]
