@@ -74,8 +74,8 @@
   (map (fn [endorsement]
          (-> endorsement
              (dissoc :content :endorser_id :assertion_url)
-             (assoc :issuer {:id (:url endorsement)
-                             :name (:name endorsement)
+             (assoc :issuer {:id (:issuer_url endorsement)
+                             :name (:issuer_name endorsement)
                              :type "Issuer"}
                :claim {:id (:assertion_url endorsement)
                        :endorsementComment (:content endorsement)}
