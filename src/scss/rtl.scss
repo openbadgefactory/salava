@@ -1345,12 +1345,12 @@ html[dir="rtl"] #pending-badges {
 
   }
 
-.visibility {
+  .visibility {
     .dropdown {
       float: left;
     }
-  .dropdown-menu {
-    text-align:right;
-  }
+    .dropdown-menu {
+      text-align:right;
+    }
   }
 }
