@@ -10,7 +10,8 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [salava.core.time :refer [date-from-unix-time]]))
+            [salava.core.time :refer [date-from-unix-time]]
+            [salava.core.helper :refer [dump]]))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -161,27 +162,30 @@
       [profile-gallery-grid state])]])
 
 (defn init-data [state]
-  (let [country (session/get-in [:user :country] "all")]
+  (let [country (session/get-in [:user :country] "all")
+        filter-options (session/get :filter-options nil)
+        common-badges? (if filter-options (:common-badges filter-options) true)]
     (ajax/POST
       (path-for (str "/obpv1/gallery/profiles/"))
-      {:params {:country country
+      {:params {:country (session/get-in [:filter-options :country] country)
                 :name ""
-                :common_badges true
+                :common_badges common-badges?
                 :order_by "ctime"}
        :handler (fn [{:keys [users countries]} data]
                   (swap! state assoc :users users
                          :countries countries
-                         :country-selected country))})))
+                         :country-selected (session/get-in [:filter-options :country] country)))})))
 
 (defn handler [site-navi]
-  (let [state (atom {:users []
+  (let [ filter-options (session/get :filter-options nil)
+         state (atom {:users []
                      :countries []
                      :country-selected "all"
                      :name ""
                      :order_by "ctime"
                      :timer nil
                      :ajax-message nil
-                     :common-badges? true})]
+                     :common-badges? (if filter-options (:common-badges filter-options) true)})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
