@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [create-class]]
             [salava.core.i18n :refer [t]]))
 
-;;placement options ["top" "bottom" "right" "left"]
+;;pop-up placement options ["top" "bottom" "right" "left"]
 (defn info [content placement]
   (create-class {:reagent-render (fn []
                                    [:a.popup-info {:tabIndex "0"
