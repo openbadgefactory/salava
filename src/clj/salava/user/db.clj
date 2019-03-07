@@ -347,7 +347,8 @@
   (let [user-badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
     (doseq [user-badge-id user-badge-ids]
       (b/delete-badge-with-db! db user-badge-id)
-      (b/delete-badge-evidences! db user-badge-id user-id))))
+      (b/delete-badge-evidences! db user-badge-id user-id)
+      (b/delete-badge-endorsements! db user-badge-id))))
 
 (defn delete-user
   "Delete user and all user data"

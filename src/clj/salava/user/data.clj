@@ -17,6 +17,7 @@
     [salava.core.i18n :refer [t translate-text]]
     [salava.user.schemas :refer [contact-fields]]
     [salava.badge.pdf :refer [replace-nils process-markdown]]
+    [salava.badge.endorsement :refer [all-user-endorsements]]
     ))
 
 (defqueries "sql/badge/main.sql")
@@ -54,6 +55,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
          connections (so/get-connections-badge ctx current-user-id)
+         endorsements (-> (all-user-endorsements ctx user-id) :all)
          pending-badges (b/user-badges-pending ctx user-id)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
@@ -67,6 +69,7 @@
                             :user_files (:files user-files)
                             ;:events events
                             :connections connections
+                            :endorsements endorsements
                             :pending_badges pending-badges
                             :user_followers user-followers
                             :user_following user-following
@@ -91,6 +94,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
          connections (count (so/get-connections-badge ctx current-user-id))
+         endorsements (-> (all-user-endorsements ctx user-id) :all count)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) ())
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
@@ -105,6 +109,7 @@
                      :pending_badges pending-badges
                      :user_followers user-followers
                      :user_following user-following
+                     :endorsements endorsements
                      )))))
 
 (defn strip-html-tags [s]
@@ -439,6 +444,27 @@
                                                   [:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description c))]"\n"
                                                   [:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"
                                                   ]))])])
+        user-endorsements-template (pdf/template
+                                     [:paragraph.generic
+                                      (prn $endorsements)
+                                      (when-not (empty? $endorsements)
+                                        [:paragraph
+                                         [:heading.heading-name (str (t :badge/Myendorsements ul) ": ")]
+                                         [:spacer 0]
+                                         (into [:paragraph]
+                                               (for [c $endorsements
+                                                     :let [name (str (:first_name c) " " (:last_name c))]]
+                                                 [:paragraph
+                                                  [:chunk name]"\n"
+                                                  [:chunk (:name c)]
+                                                  [:chunk (date-from-unix-time (long (* 1000 (:mtime c))) "date")]
+                                                  (process-markdown (:content c) (:user_badge_id c) "User Endorsements")
+                                                  ;[:chunk.chunk (str (t :badge/BadgeID ul) ": ")] [:chunk (str (:id c))]"\n"
+                                                  ;[:chunk.chunk (str (t :badge/Name ul) ": ")][:chunk (str (:name c))]"\n"
+                                                  ;[:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description c))]"\n"
+                                                  ;[:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"
+                                                  ]))])]
+                                     )
         events-template (pdf/template
                           (let [template (cons [:paragraph]
                                                [[:paragraph.generic
@@ -472,6 +498,7 @@
                                             (page-template user-data)
                                             (user-connections-template user-data)
                                             (badge-connections-template user-data)
+                                            (user-endorsements-template user-data)
                                             (events-template user-data))) output-stream)
       )))
 

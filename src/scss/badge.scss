@@ -670,7 +670,7 @@ button {
   }
   .issuer-panel {
     img {
-      padding-right: 10px;
+      margin-right: 10px;
     }
     td.name {
       width: 65% !important;
@@ -782,7 +782,7 @@ button {
     position: absolute;
   }
 
-  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove{
+  .fa-download, .fa-eye, .fa-cogs, .fa-share-alt, .fa-info-circle, .fa-link, .fa-file-text, .fa-files-o,  .fa-file-text-o, .fa-toggle-on, .fa-toggle-off, .fa-remove, .fa-search{
     font-size: 20px;
     margin-right: 10px;
     color: $link-color;
@@ -795,7 +795,11 @@ button {
 
   }
 
-  .fa-trash{
+  .fa-search {
+    font-size: 18px;
+  }
+
+  .fa-trash, .fa-remove{
     font-size: 20px;
     margin-right: 10px;
     color: $dark-red;
@@ -916,7 +920,7 @@ button {
 }
 
 /* BADGE GRID */
-#badge-gallery, #my-badges, #export-badges, .import-badges, #user-badges {
+#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges {
   #grid .grid-container {
     background-color: #ffffff;
     border: 1px solid #d2d2d2;
@@ -1475,6 +1479,374 @@ button {
     color: $link-color;
     font-size: 20px;
     margin-right: 10px;
+  }
+}
+
+#endorsebadge {
+
+  .list-group {
+    a {
+      color: $text-color;
+    }
+
+  }
+
+  .media-heading {
+    font-family: 'Open Sans Condensed',sans-serif;
+    font-size: 45px;
+    margin: 20px 0px;
+    .pending-a{
+      font-weight: 500 !important;
+      cursor: pointer;
+    }
+  }
+
+  .line {
+    border-top: 2px dashed #bfbfbf;
+    margin-top: 5px;
+    margin-bottom: 10px;
+  }
+
+/*   hr{
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
+    margin: 10px 0px;} */
+
+  i {
+    font-size: 18px;
+    margin-right: 10px;
+    vertical-align: middle;
+    color: $link-color;
+  }
+
+
+  .close {
+     opacity: 1;
+    i {
+      color: $dark-red;
+
+    }
+  }
+
+  .thumbnail {
+    //box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: none;
+    //transition: 0.3s;
+    transition: none;
+    min-width: 40%;
+    //border-radius: 5px;
+    border-radius: 0px;
+    color: $text-color;
+    border: unset;
+  }
+
+  .thumbnail-description {
+    min-height: 40px;
+  }
+
+  .description {
+    margin: 20px 0 15px 0;
+  }
+
+  .caption {
+    color: $text-color;
+    .buttons {
+      display: table;
+      width: 100%;
+
+      .button {
+        display: table-cell;
+        text-align: center;
+      }
+    }
+  }
+
+  .endorser {
+    img {
+      display: inline-block;
+      width: 50px;
+      height: auto;
+      margin-right: 10px;
+      padding: 5px;
+    }
+  }
+
+  .small-image {
+    width: 40px;
+    height: auto;
+  }
+
+  .endorsement {
+
+    .panel-title {
+      margin-bottom: unset;
+    }
+
+
+    .settings-endorsement {
+      margin-top: 5px;
+      img {
+        margin-right: 10px;
+      }
+    }
+
+
+  }
+}
+
+#user-endorsements, #badge-stats, #badge-info, #my-badges{
+
+  .line{
+    height: 1px;
+    //background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
+    margin: 20px 0px;}
+
+
+  .list-item {
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 1px dashed #DDD;
+    width: 100%;
+
+    a {
+      text-decoration: none;
+    }
+
+    small {
+      color: $text-color;
+    }
+
+    .pull {
+      float: right;
+    }
+  }
+
+
+
+  .main-img{
+    width:80px;
+    height:auto;
+  }
+
+  .small-img {
+    width:40px;
+    height: auto;
+    border-radius: 3px;
+  }
+
+  .badge-info {
+    display: inline-block;
+  }
+
+  .badge-name {
+    color: $badge-title;
+  }
+
+  .profile-container {
+    @media (max-width: 768px) {
+      text-align: -webkit-center;
+      text-align: center;
+    }
+  }
+
+  .endorsement-profile {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    max-width: 340px;
+    border: 1px solid #CCC5C8;
+    border-radius: 2px;
+    box-shadow: 0px 4px 2px #BBB3B7;
+    -webkit-box-shadow: 0px 4px 2px #BBB3B7;
+    max-width: 340px;
+    height: auto !important;
+
+    a {
+      text-decoration: none;
+    }
+    .panel-body {
+      padding: 0px;
+      .header {
+        padding: 5px;
+      }
+
+      .col-md-4 {
+        padding: 6px;
+        .profile-image {
+          text-align: center;
+          img {
+            max-height: 150px;
+          }
+          .img-thumbnail{
+            border: none;
+            box-shadow: none;
+          }
+        }
+      }
+
+      .col-md-8 {
+        padding: 5px;
+        padding-top:15px;
+        padding-bottom: 15px;
+
+        .delete-btn {
+          margin: 10px;
+        }
+
+        h4 {
+          margin-top: 0px;
+          margin-bottom: 5px;
+          color: $link-color;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.1em;
+          height: 2.2em;
+          word-wrap: break-word;
+          padding: 4px;
+        }
+
+      }
+    }
+  }
+
+  .list-item-body {
+    padding-right: 15px;
+  }
+
+  .caption {
+    .buttons {
+      display: table;
+      width: 100%;
+
+      li {
+        margin: 10px;
+      }
+
+      .button {
+        display: table-cell;
+        text-align: center;
+      }
+
+      .fa {
+        font-size: 18px;
+        margin-right: 10px;
+      }
+
+      .cancel {
+        i {
+          color: $dark-red;}
+
+      }
+    }
+  }
+
+
+  .labels, .labels-inline {
+    margin-bottom: 10px;
+    span:first-child {
+      margin-left: 0px;
+    }
+    span{
+      display: inline-block;
+      margin-left: 15px;
+    }
+
+  }
+
+  .child-status {
+    display: none;
+  }
+
+  .media {
+    .main-img {
+      width: 90px;
+      height: auto;
+    }
+  }
+
+  .caption .buttons .btn{
+    font-weight: normal;
+  }
+
+  @media (max-width: 768px) {
+    .caption .buttons {
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .main-img {
+      width: 50px !important;
+    }
+    .labels {
+      display: none;
+    }
+
+    .child-profile {
+      display: none;
+    }
+    .child-status {
+      display: block;
+    }
+
+    .media-body {
+      vertical-align: bottom;
+    }
+
+    small {
+      padding-top: 15px;
+    }
+  }
+  .delete-btn {
+    float: right;
+  }
+
+}
+
+#badge-info, #user-endorsements, #badge-stats {
+
+  .editor {
+    .fa {
+      font-size: 16px;
+    }
+
+
+    .fa-eye {
+      //float: right;
+      font-size: 20px;
+    }
+
+    .editor-toolbar a.fa-header-3:after {
+      content: none;
+    }
+
+    .editor-statusbar {
+      display: none;
+    }
+
+    a {
+      margin: 2px;
+
+    }
+  }
+
+
+}
+
+.border {
+  border-color: #ccc;
+  margin: 10px 0px;
+  min-width: 100%;
+}
+
+span.badge-view {
+  float: right;
+}
+
+.badge-view {
+
+  .fa-handshake-o {
+    font-size: 18px;
+    color: $text-color;//$badge-title;
   }
 }
 

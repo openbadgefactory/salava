@@ -66,6 +66,8 @@
    (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
                                           :all-messages (s/maybe s/Int)}
    (s/optional-key :tags)                (s/maybe [s/Str])
+   (s/optional-key :user_endorsements_count) (s/maybe s/Int)
+   (s/optional-key :endorsement_count) (s/maybe s/Int)
    })
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
@@ -165,6 +167,19 @@
                        (s/optional-key  :resource_type) s/Str
                        (s/optional-key  :mime_type) (s/maybe s/Str)} )
 
+(s/defschema UserEndorsement [{:id (s/maybe s/Int)
+                            :issuer_id (s/maybe s/Int)
+                            :issuer_name (s/maybe s/Str)
+                            :issuer_url (s/maybe s/Str)
+                            :user_badge_id s/Int
+                            :content s/Str
+                            :status (s/enum "pending" "accepted" "declined")
+                            :mtime s/Int
+                            (s/optional-key :first_name) s/Str
+                            (s/optional-key :last_name) s/Str
+                            (s/optional-key :profile_picture) (s/maybe s/Str)
+
+                            }])
 
 
 

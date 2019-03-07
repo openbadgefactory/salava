@@ -113,36 +113,6 @@
     id))
 
 
-#_(defn save-endorser-endorsements [t-con input]
-    (let [ endorser-id (content-id (-> input
-                                     (dissoc :endorsement)))
-           endorsements (:endorsement input)]
-
-    (insert-endorser-content! (assoc input :id endorser-id) {:connection t-con})
-
-    (when-not (empty? endorsements)
-      (doseq [endorsement endorsements
-              :let [
-                     parsed-endorsement (json/read-str endorsement :key-fn keyword)
-                     endorser (content-id (-> (:endorser_info parsed-endorsement)))
-                     endorsement-id (content-id (-> parsed-endorsement
-                                                   (dissoc :endorser_info)
-                                                   #_(assoc :endorser endorser-id)))]]
-
-
-        (-> parsed-endorsement
-            (update :endorser_info (fn [endorser-info] (map #(save-image t-con %) endorser-info))))
-
-
-        (insert-endorser-content! (assoc (:endorser_info parsed-endorsement) :id endorser) {:connection t-con})
-
-        (insert-endorsement-content! (assoc parsed-endorsement :id endorsement-id
-                                                  :endorser endorser) {:connection t-con})
-
-         (jdbc/execute! t-con ["INSERT IGNORE INTO client_endorsement_content (client_content_id, endorsement_content_id) VALUES (?,?)"
-                         (str endorser-id endorser) endorsement-id])))
-  endorser-id))
-
 (declare save-endorsement-content!)
 
 (defn save-issuer-content! [t-con input]
@@ -252,4 +222,11 @@
                                                        (assoc :user_badge_id user-badge-id
                                                               :ctime now
                                                               :mtime now))))))
+      (dump (:endorsement user-badge))
+      (when (seq (:endorsement user-badge))
+        (doseq [endorsement (:endorsement user-badge)]
+          (when (map? endorsement)
+            (jdbc/insert! tx "user_badge_endorsement" (-> endorsement
+                                                          (dissoc :id)
+                                                          (assoc :user_badge_id user-badge-id :status "accepted"))))))
       user-badge-id)))

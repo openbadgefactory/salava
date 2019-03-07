@@ -22,12 +22,12 @@
                          (ajax/POST
                           (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/accepted"))
                           {:response-format :json
-                           :keywords?       true          
+                           :keywords?       true
                            :handler         (fn [data]
                                               (do
                                                 (reload-fn)
                                                 (init-data state)
-                                                
+
                                                 ;((:init-data parent-data) (:state parent-data))
                                                 ))
                            :error-handler   (fn [{:keys [status status-text]}]
@@ -43,12 +43,12 @@
                          (ajax/POST
                           (path-for (str "/obpv1/socialuser/user-pending-requests/" owner-id "/declined"))
                           {:response-format :json
-                           :keywords?       true          
+                           :keywords?       true
                            :handler         (fn [data]
                                               (do
                                                 (reload-fn)
                                                 (init-data state)
-                                                
+
                                                 ;((:init-data parent-data) (:state parent-data))
                                                 ))
                            :error-handler   (fn [{:keys [status status-text]}]
@@ -61,13 +61,14 @@
 (defn request [{:keys [owner_id profile_picture first_name last_name]} state reload-fn]
   [:div.row {:key owner_id}
    [:div.col-md-12
-    [:div.badge-container-pending
-     
+    [:div.badge-container-pending.thumbnail
+
      [:div.row
       [:div.col-md-12
+
        [:div.media
         [:div.pull-left
-         [:img.badge-image {:src (profile-picture profile_picture) 
+         [:img.badge-image {:src (profile-picture profile_picture)
                             :on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}]]
         [:div.media-body
          [:h4.media-heading

@@ -73,16 +73,30 @@
     (path-for (str "/obpv1/badge/congratulate/" (:id @state)))
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
-(defn badge-endorsement-modal-link [badge-id endorsement-count]
-  (when (pos? endorsement-count)
-    [:div.endorsement-link
-     [:span [:i {:class "fa fa-handshake-o"}]]
-     [:a {:href "#"
-          :on-click #(do (.preventDefault %)
-                       (mo/open-modal [:badge :endorsement] badge-id))}
-      (if (== endorsement-count 1)
-        (str  endorsement-count " " (t :badge/endorsement))
-        (str  endorsement-count " " (t :badge/endorsements)))]]))
+(defn badge-endorsement-modal-link
+  ([badge-id endorsement-count]
+   (when (pos? endorsement-count)
+     [:div.endorsement-link
+      [:span [:i {:class "fa fa-handshake-o"}]]
+      [:a {:href "#"
+           :on-click #(do (.preventDefault %)
+                        (mo/open-modal [:badge :endorsement] badge-id))}
+       (if (== endorsement-count 1)
+         (str  endorsement-count " " (t :badge/endorsement))
+         (str  endorsement-count " " (t :badge/endorsements)))]]))
+  ([params endorsement-count user-endorsement-count]
+   (if-not (pos? user-endorsement-count)
+     (badge-endorsement-modal-link (:badge-id params) endorsement-count)
+     (let [endorsement-count (+ endorsement-count user-endorsement-count)]
+       [:div.endorsement-link
+        [:span [:i {:class "fa fa-handshake-o"}]]
+        [:a {:href "#"
+             :on-click #(do (.preventDefault %)
+                          (mo/open-modal [:badge :endorsement] params))}
+         (if (== endorsement-count 1)
+           (str  endorsement-count " " (t :badge/endorsement))
+           (str  endorsement-count " " (t :badge/endorsements)))]]
+       ))))
 
 (defn issuer-modal-link [issuer-id name]
   [:div {:class "issuer-data clearfix"}
@@ -129,7 +143,7 @@
 
 
 (defn below-image-block [state endorsement_count]
-  (let [{:keys [view_count owner? badge_id message_count user-logged-in? congratulated? expires_on revoked]} @state
+  (let [{:keys [id view_count owner? badge_id message_count user-logged-in? congratulated? expires_on revoked user_endorsement_count]} @state
         invalid? (or (bh/badge-expired? expires_on) (pos? revoked))]
     [:div.badge-info-container
      ;view count
@@ -157,8 +171,12 @@
        (if user-logged-in?
          [:div.row
           [badge-message-link message_count  badge_id]]))
+
      ;endorsements
-     [:div.row (badge-endorsement-modal-link badge_id endorsement_count)]
+     [:div.row (badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]
+
+     ;;user endorsements
+     ;[:div.row (endr/user-badge-endorsement-modal-link id user_endorsement_count)]
 
      ]))
 
@@ -206,8 +224,12 @@
         [:div.description description]
 
 
-        ;check-badge
-        (check-badge id)]]
+        ;;Check-badge
+        (check-badge id)
+
+        ;;Endorse-badge
+        (when-not owner? [endr/endorse-badge id])
+        ]]
 
       (when-not (empty? alignment)
         [:div.row
@@ -336,4 +358,7 @@
            :creator issuer/creator-content
            :linkedin1 s/linkedin-modal1
            :linkedin2 s/content-modal-render
+           :endorse endr/endorse-badge-content
+           :userbadgeendorsement endr/user-badge-endorsement-content
+           :userendorsement endr/user-endorsement-content
            }})

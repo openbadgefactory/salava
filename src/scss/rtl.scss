@@ -150,6 +150,12 @@ html[dir="rtl"] #profile {
       text-align: left;
     }
   }
+
+  #user-badges {
+    span.badge-view {
+      float: left;
+    }
+  }
 }
 
 html[dir="rtl"] #badge-gallery, .my-badges #badge-content{
@@ -200,7 +206,14 @@ html[dir="rtl"] #badge-info {
       border-right: 3px solid $green;
     }
   }
+  .col-md-push-8 {
+    left: unset;
+  }
+  .col-md-pull-4 {
+    right: unset;
+  }
 }
+
 
 /* ADMIN MODALS */
 html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
@@ -227,6 +240,10 @@ html[dir="rtl"] .admin-modal, #badge-info .admin-modal {
 
     padding-left: unset;
     padding-right: 35px;
+  }
+
+  .pull-left {
+    float: right !important;
   }
 }
 
@@ -297,6 +314,28 @@ html[dir="rtl"] #badge-stats {
         }
       }
     }
+  }
+
+  .list-item {
+    .pull-right {
+      float: left !important;
+    }
+    .col-md-push-8 {
+      left: unset;
+    }
+    .col-md-pull-4 {
+      right: unset;
+    }
+
+    span:first-child {
+      margin-left: 15px;
+    }
+  }
+
+  .issuer-panel img{
+
+    margin-left: 10px;
+
   }
 }
 
@@ -382,7 +421,7 @@ html[dir="rtl"] .flip{
   -webkit-flex-direction: row;
   flex-direction: row;
 
-  @media (max-width:767px){
+  @media (max-width:769px){
     -webkit-flex-direction: column;
     flex-direction: column;
   }
@@ -614,6 +653,9 @@ html[dir="rtl"] #badge-gallery {
 }
 /*PAGE GALLERY*/
 html[dir="rtl"] #page-gallery, html[dir="rtl"] #user-pages #grid {
+  #grid.row #admin-link {
+    float: left;
+  }
   margin-right: -15px;
   margin-left: -15px;
 }
@@ -835,6 +877,13 @@ html[dir="rtl"] #badge-info {
     @media (max-width:992px){
       -webkit-flex-direction:column;
       flex-direction: column;
+    }
+  }
+
+  #endorsebadge, #verify-link{
+    .fa {
+      margin-right: unset;
+      margin-left: 10px;
     }
   }
 }
@@ -1252,6 +1301,10 @@ html[dir="rtl"] .badge-info-container {
 
 html[dir="rtl"] #my-badges #grid .grid-container .media-content .visibility-icon, #export-badges #grid .grid-container .media-content .visibility-icon {
   text-align:unset;
+
+  span.badge-view {
+    float: left;
+  }
   .pull-right {
     float: left !important;
   }
@@ -1353,4 +1406,35 @@ html[dir="rtl"] #pending-badges {
       text-align:right;
     }
   }
+}
+html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
+
+  .delete-btn {
+    i {
+      margin-left: 10px;
+    }
+    //float:left;
+  }
+
+  .endorsement .settings-endorsement img {
+    margin-right: unset;
+    margin-left: 10px;
+  }
+
+
+  .list-item .pull {
+    float: left;
+  }
+
+  .editor {
+
+    .form-group {
+      display: block;
+    }
+
+  }
+}
+
+html [dir="rtl"] .editor .form-group {
+  display: block;
 }

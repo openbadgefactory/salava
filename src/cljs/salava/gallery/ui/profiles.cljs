@@ -129,21 +129,22 @@
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
-      [:div.media-content
-       [:div.media-left
-        [:img {:src (profile-picture profile_picture)
-               :alt (str first_name " " last_name)}]]
-       [:div.media-body
-        [:div {:class "media-heading profile-heading"}
-         [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})} first_name " " last_name]]
-        [:div.media-profile
-         [:div.join-date
-          (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
-      [:div.common-badges
-       (if (= id current-user)
-         (t :gallery/ownprofile)
-         [:span common_badge_count " " (if (= common_badge_count 1)
-                                         (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]))
+      [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id}) :style {:text-decoration "none"}}
+       [:div.media-content
+        [:div.media-left
+         [:img {:src (profile-picture profile_picture)
+                :alt (str first_name " " last_name)}]]
+        [:div.media-body
+         [:div {:class "media-heading profile-heading"}
+          first_name " " last_name]
+         [:div.media-profile
+          [:div.join-date
+           (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
+       [:div.common-badges
+        (if (= id current-user)
+          (t :gallery/ownprofile)
+          [:span common_badge_count " " (if (= common_badge_count 1)
+                                          (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]))
 
 (defn profile-gallery-grid [state]
   (let [users (:users @state)]
