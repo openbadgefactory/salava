@@ -19,6 +19,16 @@
                        :id (:id @state)
                        :content-language (init-content-language (:content data))))}))
 
+(defn update-visibility [visibility state]
+  (ajax/POST
+    (path-for (str "/obpv1/badge/set_visibility/" (:id @state)))
+    {:params {:visibility visibility}
+     :handler (fn [data]
+                (when (= (:status data) "success")
+                  (reset! (cursor state [:visibility]) visibility )
+                  ))}))
+
+
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
@@ -64,13 +74,46 @@
           }(t :admin/Showmore)]
      [show-more-content state]]))
 
+(defn visibility-settings [visibility state]
+  (fn []
+    [:div
+     [:div.dropdown
+     ; [:div [:i.fa.fa-share-alt] (str (t :badge/Badgevisibility) ": ")]
+      ;[:div [:i.fa.fa-share-alt] (str (t :badge/Badgevisibility) ": ")
+       [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
+                                                                       "public" [:i.fa.fa-globe]
+                                                                       "private" [:i.fa.fa-lock]
+                                                                       "internal" [:i.fa.fa-group]
+                                                                       (t :badge/Public)) #_[:i.fa.fa-share-alt] (case @(cursor state [:visibility])
+                                                                                                                  "public" (t :badge/Public)
+                                                                                                                  "private" (t :badge/Private)
+                                                                                                                  "internal" (t :badge/Shared)
+                                                                                                                  (t :badge/Public)) [:i.fa.fa-chevron-down] #_[:span.caret]]
+       [:ul.dropdown-menu
+        [:li [:a {:href "#" :on-click #(do
+                                         (.preventDefault %)
+                                         (update-visibility "public" state)
+                                         )} [:i {:class "fa fa-globe" }] [:div.text (t :badge/Public)]]]
+        [:li [:a {:href "#" :on-click #(do
+                                         (.preventDefault %)
+                                         (update-visibility "internal" state)
+                                         )} [:i {:class "fa fa-group" }] [:div.text (t :badge/Shared)]]]
+        [:li [:a {:href "#" :on-click #(do
+                                         (.preventDefault %)
+                                         (update-visibility "private" state)
+                                         )} [:i {:class "fa fa-lock" }] [:div.text (t :badge/Private)]]]
+        ]]
+      ]
+    ;]
+    ))
 
-(defn pending-badge-content [{:keys [id image_file name description assertion_url meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]}]
+(defn pending-badge-content [{:keys [id image_file name description visibility assertion_url meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]}]
   (let [state (atom {:id id
                      :show-result "none"
                      :show-link "block"
                      :result {}
-                     :assertion_url assertion_url})
+                     :assertion_url assertion_url
+                     :visibility visibility})
         metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))]
     (init-badge-preview state)
     (fn []
@@ -79,9 +122,11 @@
             {:keys [badge_id content assertion_url]} data
             {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count ]} (content-setter @selected-language content)]
         [:div
+         [:div.row.visibility [visibility-settings visibility state]] ;;visibility settings
          (if (or verified_by_obf issued_by_obf)
            [:div.row.flip
             (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
+
          [:div.row.flip
           [:div.col-md-3.badge-image
            [:img.badge-image {:src (str "/" image_file)}]
@@ -95,6 +140,6 @@
            ;METABADGE
            [:div (bh/meta-badge meta_badge meta_badge_req)]
            (if metabadge-fn [:div.pending [metabadge-fn (:assertion_url @state)]])
-          ; [:div assertion_url]
+           ; [:div assertion_url]
 
            [show-more state]]] ]))))

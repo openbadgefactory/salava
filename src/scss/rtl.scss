@@ -1334,3 +1334,23 @@ html[dir="rtl"] #badge-settings {
     left: 38px;
   }
 }
+
+html[dir="rtl"] #pending-badges {
+  .fa-chevron-down {
+    margin-right: 5px;
+  }
+  i {
+    margin-right: unset;
+    margin-left: 10px;
+
+  }
+
+  .visibility {
+    .dropdown {
+      float: left;
+    }
+    .dropdown-menu {
+      text-align:right;
+    }
+  }
+}

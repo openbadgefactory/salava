@@ -5,8 +5,52 @@ button {
   margin: 0 2px 2px 2px;
 }
 /* PENDING BADGES */
-#pending-badges {
+#pending-badges  {
   margin-bottom: 10px;
+
+  i {
+    font-size: 18px;
+    margin-right: 10px;
+  }
+
+  .fa-chevron-down {
+    font-size: 12px;
+    margin-left: 5px;
+    vertical-align: baseline;
+  }
+
+  .fa-lock {
+    vertical-align: text-bottom;
+  }
+
+ .visibility {
+    cursor: pointer;
+    .dropdown {
+      float: right;
+      font-size: small;
+      .text {
+        font-size: small;
+        display: contents;
+        word-break: normal;
+        white-space: normal;
+      }
+    }
+
+    .dropdown-menu li, .dropdown-menu li a {
+      white-space: normal;
+      float: left;
+      width: 100%;
+      height: auto;
+      word-wrap: break-word;
+      padding: 3px 10px;
+      color: $text-color;
+
+      &:hover, &:active, &:focus {
+          color: $link-color;
+
+      }
+    }
+  }
 }
 
 .badge-container-pending {

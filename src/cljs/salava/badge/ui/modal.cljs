@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url?]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -239,7 +239,7 @@
                                  (not added-by-user?) description ;;todo use regex to match description
                                  :else nil
                                  )]
-                      (conj r (when-not hidden
+                      (conj r (when (and (not hidden) (url? url))
                                 [:div.modal-evidence
                                  (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                                  [evidence-icon {:type resource_type :mime_type mime_type}]
