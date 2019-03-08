@@ -18,7 +18,8 @@
     [salava.core.ui.badge-grid :refer [badge-grid-element]]
     [clojure.walk :refer [keywordize-keys]]
     [cemerick.url :as url]
-    [salava.core.ui.modal :as mo]))
+    [salava.core.ui.modal :as mo]
+    [salava.social.ui.stream :refer [badge-pending badges-pending]]))
 
 
 (defn init-data
@@ -28,7 +29,11 @@
      {:handler (fn [data]
                  (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
                         :pending () ;(filter #(= "pending" (:status %)) data)
-                        :initializing false))})))
+                        :initializing false))})
+   (ajax/GET
+     (path-for "/obpv1/social/pending_badges" true)
+     {:handler (fn [data]
+                 (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -121,11 +126,12 @@
                                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                             [:span (str (t :core/Loading) "...")]]
                                            [:div
-                                            [badge-grid-form state]
+                                            (if (seq (:pending-badges @state)) [badges-pending state]
+                                              [badge-grid-form state])
                                             (cond
                                               (not-activated?) (not-activated-banner)
                                               ;(empty? (:badges @state)) [no-badges-text]
-                                              :else [badge-grid state])]
+                                              :else (when-not (seq (:pending-badges @state)) [badge-grid state]))]
                                            )])
                  :component-did-mount (fn [] (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
