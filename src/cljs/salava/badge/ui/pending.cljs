@@ -78,8 +78,6 @@
   (fn []
     [:div
      [:div.dropdown
-     ; [:div [:i.fa.fa-share-alt] (str (t :badge/Badgevisibility) ": ")]
-      ;[:div [:i.fa.fa-share-alt] (str (t :badge/Badgevisibility) ": ")
        [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
                                                                        "public" [:i.fa.fa-globe]
                                                                        "private" [:i.fa.fa-lock]
@@ -103,7 +101,7 @@
                                          (update-visibility "private" state)
                                          )} [:i {:class "fa fa-lock" }] [:div.text (t :badge/Private)]]]
         ]]
-      ]
+      [:hr.line]]
     ;]
     ))
 
