@@ -11,6 +11,12 @@
             [salava.core.ui.popover :refer [info]]
             #_[salava.metabadge.ui.metabadge :as mb]))
 
+(defn init-data [state]
+  (ajax/GET
+    (path-for "/obpv1/social/pending_badges" true)
+    {:handler (fn [data]
+                (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
+
 
 (defn- init-badge-preview [state]
   (ajax/GET
@@ -36,7 +42,7 @@
       :keywords? true
       :params {:status new-status}
       :handler (fn []
-                 (init-data state) )
+                 (init-data state))
       :error-handler (fn [{:keys [status status-text]}])}))
 
 
