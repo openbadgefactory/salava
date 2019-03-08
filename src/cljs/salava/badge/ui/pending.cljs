@@ -88,7 +88,7 @@
                                                                                                                   "private" (t :badge/Private)
                                                                                                                   "internal" (t :badge/Shared)
                                                                                                                   (t :badge/Public)) [:i.fa.fa-chevron-down]]
-      [info "Set your badge visibility" "left"]
+      [info "Set your badge visibility" "bottom"]
        [:ul.dropdown-menu
         [:li [:a {:href "#" :on-click #(do
                                          (.preventDefault %)
