@@ -59,16 +59,19 @@
            (case assertion-status
              404  [:div
                    [:div {:class "alert alert-danger"} (t :badge/Badgecheckfailed)]
-                   [:p [:i "404 not found"]]]
+                   [:p [:i "404 not found"]]
+                   [:hr.border]]
              410  [:div
                    [:div {:class "alert alert-danger"} (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))]
-                   #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
+                   #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
+                   [:hr.border]]
              500 [:div
                   [:div {:class "alert alert-danger"}
                    (t :badge/Badgecheckfailed)]
                   [:br]
                   [:p [:i message]]
-                  #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
+                  #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
+                  [:hr.border]]
              [:div
               (cond
                 revoked? [:div [:div {:class "alert alert-danger"}  (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))] [:p revocation_reason]]
