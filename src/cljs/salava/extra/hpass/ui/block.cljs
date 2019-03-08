@@ -200,3 +200,6 @@
 
 (defn ^:export accept-terms-string []
   "I have read and i agree to the privacy policy")
+
+(defn ^:export import-badge-text []
+  [:small {:key "import"} [:i (t :hpass/Importbadge)]])
