@@ -26,7 +26,7 @@
                 (swap! state assoc :events (:events data)
                                    :initial false
                                    :tips (:tips data)))})
-  (ajax/GET
+  #_(ajax/GET
     (path-for "/obpv1/social/pending_badges" true)
     {:handler (fn [data]
                 (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
@@ -58,7 +58,7 @@
                  (init-data state) )
       :error-handler (fn [{:keys [status status-text]}])}))
 
-(defn badge-alert [state]
+#_(defn badge-alert [state]
   (if (:badge-alert @state)
     [:div {:class "alert alert-success"}
      (case (:badge-alert @state)
@@ -66,7 +66,7 @@
        "declined" (t :badge/Badgedeclined)
        "")]))
 
-(defn badge-pending [badge state]
+#_(defn badge-pending [badge state]
   [:div.row {:key (:id badge)}
    [:div.col-md-12
     [:div.badge-container-pending.thumbnail
@@ -86,7 +86,7 @@
                               (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
         (t :badge/Declinebadge)]]]]]])
 
-(defn badges-pending [state]
+#_(defn badges-pending [state]
   (if (:spinner @state)
     [:div.ajax-message
      [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -420,7 +420,7 @@
     [:div {:class "my-badges pages"}
 
      [m/modal-window]
-     [badge-alert state]
+     #_[badge-alert state]
      [pending-connections reload-fn]
      [pending-endorsements]
      #_[badges-pending state]
