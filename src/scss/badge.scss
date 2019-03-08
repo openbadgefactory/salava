@@ -23,7 +23,7 @@ button {
     vertical-align: text-bottom;
   }
 
- .visibility {
+  .visibility {
     cursor: pointer;
 
     .dropdown {
@@ -47,7 +47,7 @@ button {
       color: $text-color;
 
       &:hover, &:active, &:focus {
-          color: $link-color;
+        color: $link-color;
 
       }
     }
@@ -1502,16 +1502,12 @@ button {
     }
   }
 
-  .line {
-    border-top: 2px dashed #bfbfbf;
-    margin-top: 5px;
-    margin-bottom: 10px;
-  }
 
-/*   hr{
-    height: 1px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
-    margin: 10px 0px;} */
+
+  /*   hr{
+  height: 1px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
+  margin: 10px 0px;} */
 
   i {
     font-size: 18px;
@@ -1522,7 +1518,7 @@ button {
 
 
   .close {
-     opacity: 1;
+    opacity: 1;
     i {
       color: $dark-red;
 
@@ -1833,6 +1829,12 @@ button {
 
 }
 
+.line {
+  border-top: 2px dashed #bfbfbf;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
 .border {
   border-color: #ccc;
   margin: 10px 0px;
@@ -1851,3 +1853,6 @@ span.badge-view {
   }
 }
 
+a.popup-info {
+  padding: 5px;
+}

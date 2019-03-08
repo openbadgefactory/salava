@@ -79,7 +79,7 @@
   (fn []
     [:div.col-md-12
      [:div.dropdown
-       [info "Set your badge visibility" "left"][:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
+       [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
                                                                        "public" [:i.fa.fa-globe]
                                                                        "private" [:i.fa.fa-lock]
                                                                        "internal" [:i.fa.fa-group]
@@ -87,7 +87,8 @@
                                                                                                                   "public" (t :badge/Public)
                                                                                                                   "private" (t :badge/Private)
                                                                                                                   "internal" (t :badge/Shared)
-                                                                                                                  (t :badge/Public)) [:i.fa.fa-chevron-down] #_[:span.caret]]
+                                                                                                                  (t :badge/Public)) [:i.fa.fa-chevron-down]]
+      [info "Set your badge visibility" "left"]
        [:ul.dropdown-menu
         [:li [:a {:href "#" :on-click #(do
                                          (.preventDefault %)
