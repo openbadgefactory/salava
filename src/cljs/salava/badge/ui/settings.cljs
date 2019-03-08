@@ -342,7 +342,7 @@
                  (if (and (blank? properties) (not added-by-user?))
                    (evidence/toggle-show-evidence! id data state init-data show_evidence))
                  (conj r
-                       (when-not (blank? url)
+                       (when (and (not (blank? url)) (url? url))
                          [:div.panel.panel-default
                           [:div.panel-heading {:id (str "heading" id)
                                                :role "tab"}

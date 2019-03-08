@@ -30,7 +30,7 @@ SELECT country FROM user AS u
 
 --name: select-profile-countries
 SELECT country FROM user AS u
-               WHERE profile_visibility = 'public'
+               WHERE profile_visibility = 'public' OR profile_visibility = 'internal' AND activated = 1
                GROUP BY country
                ORDER BY country
 

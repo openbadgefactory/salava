@@ -208,7 +208,7 @@
               :class     "btn btn-primary"
               :disabled  (if-not (= (:accept-terms @state) "accepted") "disabled")
               :on-click #(swap! state assoc :show-terms false)}
-     (t :user/Createnewaccount)]]])
+     (t :core/Continue)]]])
 
 (defn registeration-content [state]
   (session/put! :seen-terms true)

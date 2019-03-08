@@ -73,6 +73,7 @@
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
                    :factory-url     (get-in ctx [:config :factory :url])
                    :gdpr-disabled?  (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 

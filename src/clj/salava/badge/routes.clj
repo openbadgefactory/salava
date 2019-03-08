@@ -123,13 +123,13 @@
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
-                   :body-params [visibility :- (s/enum "private" "public")]
+                   :body-params [visibility :- (s/enum "private" "public" "internal")]
                    :summary "Set badge visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (if (:private current-user)
                      (forbidden)
-                     (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user))))))
+                     (ok (b/set-visibility! ctx badgeid visibility (:id current-user)))))
 
              (POST "/set_status/:user-badge-id" []
                    :path-params [user-badge-id :- Long]

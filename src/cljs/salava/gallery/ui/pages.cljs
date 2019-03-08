@@ -35,7 +35,7 @@
                 (let [{:keys [pages countries user-country]} data]
                   (swap! state assoc :pages pages
                          :countries countries
-                         :country-selected user-country)))}))
+                         :country-selected (session/get-in [:filter-options :country] user-country))))}))
 
 (defn fetch-pages [state]
   (let [{:keys [user-id country-selected owner-name]} @state
@@ -157,7 +157,7 @@
         state (atom {:user-id user-id
                      :pages []
                      :countries []
-                     :country-selected "Finland"
+                     :country-selected (session/get-in [:filter-options :country] "Finland")
                      :owner-name ""
                      :order "mtime"
                      :timer nil

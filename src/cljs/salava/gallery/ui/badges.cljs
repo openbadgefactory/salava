@@ -139,14 +139,15 @@
    (path-for "/obpv1/gallery/badges")
    {:params  init-params
     :handler (fn [data]
-               (let [{:keys [badges countries user-country tags badge_count]} data]
+               (let [{:keys [badges countries user-country tags badge_count]} data
+                     filter-options (session/get :fil)]
                  (value-helper state tags)
                  (swap! state assoc
                         :page_count (inc (:page_count @state))
                         :badges badges
                         :badge_count badge_count
                         :countries countries
-                        :country-selected user-country)))}))
+                        :country-selected (session/get-in [:filter-options :country] user-country))))}))
 
 
 (defn search-timer [state]
@@ -311,7 +312,7 @@
                                 :page_count             0
                                 :badges                 []
                                 :countries              []
-                                :country-selected       "FI"
+                                :country-selected       (:country init-values) ;"FI"
                                 :tags                   ()
                                 :tags-badge-ids ()
                                 :full-tags              ()
