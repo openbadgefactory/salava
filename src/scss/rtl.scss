@@ -1407,6 +1407,7 @@ html[dir="rtl"] #pending-badges {
     }
   }
 }
+
 html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
 
   .delete-btn {
@@ -1437,4 +1438,25 @@ html[dir="rtl"] #endorsebadge, #user-endorsements, #badge-stats, #badge-info {
 
 html [dir="rtl"] .editor .form-group {
   display: block;
+}
+
+
+html[dir="rtl"] #pending-badges {
+  .fa-chevron-down {
+    margin-right: 5px;
+  }
+  i {
+    margin-right: unset;
+    margin-left: 10px;
+
+  }
+
+  .visibility {
+    .dropdown {
+      float: left;
+    }
+    .dropdown-menu {
+      text-align:right;
+    }
+  }
 }
