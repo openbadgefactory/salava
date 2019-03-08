@@ -457,7 +457,7 @@
 
     (init-data state)
     (fn []
-      (layout/default site-navi [content state]))))
+      (layout/default-no-sidebar site-navi [content state]))))
 
 
 
