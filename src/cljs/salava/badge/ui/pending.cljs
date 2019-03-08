@@ -76,7 +76,7 @@
 
 (defn visibility-settings [visibility state]
   (fn []
-    [:div
+    [:div.col-md-12
      [:div.dropdown
        [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
                                                                        "public" [:i.fa.fa-globe]
