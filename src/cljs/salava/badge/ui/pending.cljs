@@ -8,6 +8,7 @@
             [salava.badge.ui.modal :as bm]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent.session :as session]
+            [salava.core.ui.popover :refer [info]]
             #_[salava.metabadge.ui.metabadge :as mb]))
 
 
@@ -78,7 +79,7 @@
   (fn []
     [:div.col-md-12
      [:div.dropdown
-       [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
+       [info "Set your badge visibility" "left"][:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
                                                                        "public" [:i.fa.fa-globe]
                                                                        "private" [:i.fa.fa-lock]
                                                                        "internal" [:i.fa.fa-group]
