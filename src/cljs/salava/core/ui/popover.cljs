@@ -10,6 +10,6 @@
                                         :data-trigger "focus"
                                         :data-content content
                                         :data-placement placement
-                                        :href "#"} [:i.fa.fa-info-circle.fa-sm]])
+                                        :href "#"} [:i.fa.fa-question-circle.fa-sm]])
                  :component-did-mount (fn []
                                         (.getScript (js* "$") "/js/pop-over.js"))}))
