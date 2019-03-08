@@ -29,6 +29,16 @@
                   (reset! (cursor state [:visibility]) visibility )
                   ))}))
 
+(defn update-status [id new-status state]
+  (ajax/POST
+     (path-for (str "/obpv1/badge/set_status/" id))
+     {:response-format :json
+      :keywords? true
+      :params {:status new-status}
+      :handler (fn []
+                 (init-data state) )
+      :error-handler (fn [{:keys [status status-text]}])}))
+
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))

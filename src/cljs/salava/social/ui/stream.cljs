@@ -48,7 +48,7 @@
     (into [:div] (for [ item (clojure.string/split-lines message)]
                    [:p item]))]])
 
-(defn update-status [id new-status state]
+#_(defn update-status [id new-status state]
   (ajax/POST
      (path-for (str "/obpv1/badge/set_status/" id))
      {:response-format :json
