@@ -423,7 +423,7 @@
      [badge-alert state]
      [pending-connections reload-fn]
      [pending-endorsements]
-     [badges-pending state]
+     #_[badges-pending state]
      (if (not-activated?)
        (not-activated-banner))
      (if admin-events
