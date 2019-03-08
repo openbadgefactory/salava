@@ -122,7 +122,7 @@
             {:keys [badge_id content assertion_url]} data
             {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count ]} (content-setter @selected-language content)]
         [:div
-         [:div.row.visibility [visibility-settings visibility state]] ;;visibility settings
+         #_[:div.row.visibility [visibility-settings visibility state]] ;;visibility settings
          (if (or verified_by_obf issued_by_obf)
            [:div.row.flip
             (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
@@ -143,3 +143,42 @@
            ; [:div assertion_url]
 
            [show-more state]]] ]))))
+
+
+(defn badge-alert [state]
+  (if (:badge-alert @state)
+    [:div {:class "alert alert-success"}
+     (case (:badge-alert @state)
+       "accepted"  [:div (str (t :badge/Youhaveaccepted) " \"" (:badge-name @state) "\". ") (t :badge/Youcanfind)]
+       "declined" (t :badge/Badgedeclined)
+       "")]))
+
+(defn badge-pending [badge state]
+  [:div.row {:key (:id badge)}
+   [:div.col-md-12
+    [:div.badge-container-pending.thumbnail
+     [pending-badge-content badge]
+     [:div {:class "row button-row"}
+      [:div.col-md-12
+       [:button {:class "btn btn-primary"
+                 :on-click #(do
+                              (update-status (:id badge) "accepted" state)
+                              (.preventDefault %)
+                              (swap! state assoc :badge-alert "accepted" :badge-name (:name badge)))}
+        (t :badge/Acceptbadge)]
+       [:button {:class "btn btn-warning"
+                 :on-click #(do
+                              (update-status (:id badge) "declined" state)
+                              (.preventDefault %)
+                              (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
+        (t :badge/Declinebadge)]]]]]])
+
+(defn badges-pending [state]
+  (if (:spinner @state)
+    [:div.ajax-message
+     [:i {:class "fa fa-cog fa-spin fa-2x "}]
+     [:span (str (t :core/Loading) "...")]
+     [:hr]]
+    (into [:div {:id "pending-badges"}]
+          (for [badge (:pending-badges @state)]
+            (badge-pending badge state)))))

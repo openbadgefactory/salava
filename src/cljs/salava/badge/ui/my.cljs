@@ -19,7 +19,7 @@
     [clojure.walk :refer [keywordize-keys]]
     [cemerick.url :as url]
     [salava.core.ui.modal :as mo]
-    [salava.social.ui.stream :refer [badge-pending badges-pending]]))
+    [salava.badge.ui.pending :refer [badge-pending badges-pending badge-alert]]))
 
 
 (defn init-data
@@ -126,6 +126,7 @@
                                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                             [:span (str (t :core/Loading) "...")]]
                                            [:div
+                                            [badge-alert state]
                                             (if (seq (:pending-badges @state)) [badges-pending state]
                                               [badge-grid-form state])
                                             (cond
