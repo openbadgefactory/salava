@@ -243,9 +243,6 @@
      [:div {:class "col-md-12" :id "content"} content]]]
   (footer site-navi)])
 
-
-
-
 (defn landing-page [site-navi content]
   [:div {:role "main"}
    [:header {:id "navbar"}
@@ -254,7 +251,6 @@
     [:div {:id "content"}
      content]]
   (footer site-navi)])
-
 
 (defn embed-page [content]
   [:div
