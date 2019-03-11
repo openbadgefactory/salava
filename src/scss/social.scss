@@ -460,6 +460,10 @@ background-color:#756A70;
   color: #333333;
   text-align: center;
   line-height: normal;
+    margin-top: 10px;
+  margin-right: 10px;
+ // padding: 5px;
+  //float: left;
 
   .icon {
     font-size: 25px;
@@ -480,11 +484,11 @@ background-color:#756A70;
 
 .block-content {
     border-width: 0px;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    width: 389px;
-    height: 395px;
+    //position: absolute;
+    //left: 0px;
+    //top: 0px;
+    //width: 389px;
+    //height: 395px;
     background: inherit;
     background-color: rgba(255, 255, 255, 1);
     box-sizing: border-box;
@@ -500,19 +504,16 @@ background-color:#756A70;
     font-style: normal;
     font-size: 20px;
 
-
-
-
 }
 
 #welcome-block {
   border-width: 0px;
-  position: absolute;
-  width: 100%;
-  //left: 360px;
-  //top: 80px;
+  //position: absolute;
+  left: 0;
+  top: 0;
+  right:0;
   //width: 1189px;
- // height: 150px;
+  height: 150px;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
   font-weight: 300;
   font-style: normal;
@@ -521,42 +522,40 @@ background-color:#756A70;
   .welcome-block {
     left: 0px;
     top: 0px;
+    //width: 1189px;
     height: 150px;
     background-color: $titlebar-color;
-    width:100%;
-/*       @media (max-width: 720px) {
-    width: 100%;
-  } */
   }
-
-
 }
 
 #notifications-block {
   border-width: 0px;
-  position: absolute;
-  //left: 360px;
-  top: 160px;
-  width: 25%; //389px;
+  //position: absolute;
+  //left: 0px;
+  //top: 160px;
+  min-width: 389px;
+  max-width: 389px;
   height: 395px;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
   font-weight: 300;
   font-style: normal;
   font-size: 20px;
+  margin-top: 10px;
+  margin-right: 10px;
 
   .notifications-block {
-    left: 0px;
-    top: 0px;
-    width: 30%; //389px;
+    //left: 0px;
+    //top: 0px;
+    //width: 389px;
     height: 395px;
   }
 }
 
 #explore-block {
   border-width: 0px;
-  position: absolute;
+  //position: absolute;
   //left: 360px;
-  top: 570px;
+  //top: 570px;
   width: 389px;
   height: 320px;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
@@ -574,8 +573,8 @@ background-color:#756A70;
 
 #badge-block {
   border-width: 0px;
- // position: absolute;
- // left: 415px;
+  //position: absolute;
+  //left: 399px;
   //top: 160px;
   width: 389px;
   height: 395px;
@@ -583,7 +582,6 @@ background-color:#756A70;
   font-weight: 300;
   font-style: normal;
   font-size: 20px;
-  float: left;
 
   .badge-block {
     left: 0px;
@@ -595,17 +593,18 @@ background-color:#756A70;
 }
 
 #dashboard-container {
-
-  border-width: 0px;
-  position: absolute;
+  display: grid;
+  /*border-width: 0px;
+  //position: absolute;
   left: 0px;
   //top: 70px;
   width: 1920px;
-  height: 965px;
+  height: 100%;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
   font-weight: 300;
   font-style: normal;
   font-size: 20px;
+
 
   .container {
     left: 0px;
@@ -613,21 +612,22 @@ background-color:#756A70;
     width: 1920px;
     height: 965px;
 
-  }
+  }*/
 
 }
 
 #profile-block {
   border-width: 0px;
-  position: absolute;
-  left: 815px;
-  top: 160px;
+ // position: absolute;
+  //left: 798px;
+  //top: 160px;
   width: 389px;
   height: 395px;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
   font-weight: 300;
   font-style: normal;
   font-size: 20px;
+  float: left;
 
   .profile-block {
     left: 0px;
@@ -640,9 +640,9 @@ background-color:#756A70;
 
 #connections-block {
   border-width: 0px;
-  position: absolute;
-  left: 415px;
-  top: 570px;
+  //position: absolute;
+  //left: 415px;
+  //top: 570px;
   width: 389px;
   height: 320px;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
@@ -662,8 +662,8 @@ background-color:#756A70;
 #help-block {
   border-width: 0px;
   position: absolute;
-  left: 815px;
-  top: 570px;
+  //left: 815px;
+  //top: 570px;
   width: 389px;
   height: 320px;
   font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
