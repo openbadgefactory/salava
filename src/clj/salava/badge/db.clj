@@ -222,7 +222,6 @@
                                                        (assoc :user_badge_id user-badge-id
                                                               :ctime now
                                                               :mtime now))))))
-      (dump (:endorsement user-badge))
       (when (seq (:endorsement user-badge))
         (doseq [endorsement (:endorsement user-badge)]
           (when (map? endorsement)
