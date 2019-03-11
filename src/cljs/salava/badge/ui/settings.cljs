@@ -11,7 +11,7 @@
             [reagent.session :as session]
             [clojure.string :refer [upper-case replace blank? starts-with?]]
             [salava.core.ui.rate-it :as r]
-            [salava.badge.ui.my :as my]
+            ;[salava.badge.ui.my :as my]
             [salava.core.ui.modal :as mo]
             [salava.badge.ui.evidence :as evidence]
             [salava.badge.ui.endorsement :as endorsement]))
@@ -20,11 +20,20 @@
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
 
+(defn init-badges
+  ([state]
+   (ajax/GET
+     (path-for "/obpv1/badge" true)
+     {:handler (fn [data]
+                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                        :pending () ;(filter #(= "pending" (:status %)) data)
+                        :initializing false))})))
+
 (defn delete-badge [state]
   (ajax/DELETE
     (path-for (str "/obpv1/badge/" (:id @state)))
     {:handler  (fn []
-                 (my/init-data state)
+                 (init-badges state)
                  (navigate-to "/badge"))}))
 
 (defn export-to-pdf [state]
