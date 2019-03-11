@@ -33,8 +33,8 @@
   (ajax/DELETE
     (path-for (str "/obpv1/badge/" (:id @state)))
     {:handler  (fn []
-                 (init-badges state)
-                 (navigate-to "/badge"))}))
+                 #_(init-badges state)
+                 #_(navigate-to "/badge"))}))
 
 (defn export-to-pdf [state]
   (let [lang-option "all"
