@@ -460,49 +460,101 @@ background-color:#756A70;
   color: #333333;
   text-align: center;
   line-height: normal;
-    margin-top: 10px;
-  margin-right: 10px;
- // padding: 5px;
+  margin-top: 10px;
+  padding: 5px;
+
+  //margin-right: 10px;
+  // padding: 5px;
   //float: left;
 
   .icon {
     font-size: 25px;
     margin-right: 10px;
-    color: $orange-color;
+    // color: $orange-color;
   }
 
   .title {
     text-decoration: underline;
-    font-size: 25px;
+    font-family: 'Open Sans Light', 'Open Sans';
+    font-weight: 500;
+    font-style: normal;
+    font-size: 28px;
     text-transform: capitalize;
-    color: $orange-color;
+    color: #DC5C10; //$orange-color;
     word-wrap: break-word;
     cursor: pointer;
 
   }
+  .help {
+    color: #333333;
+    text-decoration: none;
+    .icon {
+      color: #333333;
+    }
+
+  }
+
+  .heading_1 {
+    text-align: left;
+    padding: 20px;
+    font-weight: bold;
+    color: #DC5C10;
+  }
+
+  .ax_default {
+    font-family: 'Roboto Light', 'Roboto Regular', 'Roboto';
+    font-weight: 300;
+    font-style: normal;
+    font-size: 16px;
+    color: #333333;
+    text-align: center;
+    line-height: normal;
+  }
+
+
+  .content {
+    margin-top: 10px;
+    margin: 5px auto;
+    width: 90%;
+    text-align: left;
+    p.header {
+      font-family: 'Open Sans Semibold', 'Open Sans Regular', 'Open Sans';
+      font-weight: 600;
+      font-style: normal;
+      font-size: 16px;
+      margin:0;
+
+    }
+    .pending {
+      color: #FF3333;
+    }
+    .badges {
+      color: #7E7079;
+    }
+  }
 }
 
 .block-content {
-    border-width: 0px;
-    //position: absolute;
-    //left: 0px;
-    //top: 0px;
-    //width: 389px;
-    //height: 395px;
-    background: inherit;
-    background-color: rgba(255, 255, 255, 1);
-    box-sizing: border-box;
-    border-width: 1px;
-    border-style: solid;
-    border-color: $titlebar-color;
-    border-radius: 10px;
-    -moz-box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
-    -webkit-box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
-    box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
-    font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-    font-weight: 300;
-    font-style: normal;
-    font-size: 20px;
+  border-width: 0px;
+  //position: absolute;
+  //left: 0px;
+  //top: 0px;
+  //width: 389px;
+  //height: 395px;
+  background: inherit;
+  background-color: rgba(255, 255, 255, 1);
+  box-sizing: border-box;
+  border-width: 1px;
+  border-style: solid;
+  border-color: $titlebar-color;
+  border-radius: 10px;
+  -moz-box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
+  -webkit-box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
+  box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
+  //font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
+  font-weight: 300;
+  font-style: normal;
+  font-size: 20px;
 
 }
 
@@ -513,18 +565,16 @@ background-color:#756A70;
   top: 0;
   right:0;
   //width: 1189px;
-  height: 150px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
+  min-height: 60px;
 
   .welcome-block {
-    left: 0px;
-    top: 0px;
-    //width: 1189px;
-    height: 150px;
+    min-height: 60px;
     background-color: $titlebar-color;
+    color: #FFFFFF;
+    font-family: 'Open Sans Light', 'Open Sans';
+    font-weight: 500;
+    font-style: normal;
+    font-size: 28px;
   }
 }
 
@@ -533,21 +583,57 @@ background-color:#756A70;
   //position: absolute;
   //left: 0px;
   //top: 160px;
-  min-width: 389px;
-  max-width: 389px;
+  min-width: 25%;
+  //max-width: 389px;
   height: 395px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
-  margin-top: 10px;
-  margin-right: 10px;
+  //margin-top: 10px;
+  //margin-right: 10px;
 
   .notifications-block {
     //left: 0px;
     //top: 0px;
     //width: 389px;
     height: 395px;
+    .notification-div {
+      background-color:rgba(249, 249, 249, 1);
+      width: 100%;
+      height: 52px;
+      color: #000000;
+      border: 1px solid rgba(119, 119, 119, 1);
+      border-radius: 4px;
+      padding: 5px;
+      margin: 5px auto;
+      cursor: pointer;
+      text-decoration: none;
+      .media-left,.media-body {
+        vertical-align: bottom;
+      }
+      .content-text {
+        width: 100%;
+        text-decoration: none;
+        text-align: left;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        p.content-heading {
+          color: #000000;
+          margin: 0;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+        .date {
+          color: $orange-color;
+          font-size: 10px;
+          text-align: left;
+        }
+      }
+      img {
+        width: 39px;
+        height: auto;
+        vertical-align: top;
+      }
+    }
   }
 }
 
@@ -556,16 +642,13 @@ background-color:#756A70;
   //position: absolute;
   //left: 360px;
   //top: 570px;
-  width: 389px;
+  min-width: 25%;
+  max-width: 389px;
   height: 320px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
   .explore-block {
     left: 0px;
     top: 0px;
-    width: 389px;
+    //width: 389px;
     height: 320px;
 
   }
@@ -576,24 +659,48 @@ background-color:#756A70;
   //position: absolute;
   //left: 399px;
   //top: 160px;
-  width: 389px;
+  //max-width: 580px;
+  min-width: 50%;
   height: 395px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
 
   .badge-block {
-    left: 0px;
-    top: 0px;
-    width: 389px;
+    //left: 0px;
+    //top: 0px;
+    //width: 389px;
     height: 395px;
+    img {
+      width: 52px;
+      height: auto;
+      padding: 5px;
+    }
+
+    .stats {
+
+      .total-badges {
+        float: left;
+        margin-right: 15px;
+      }
+      .num {
+        font-weight: 800;
+        margin: 0;
+      }
+      .desc {
+        font-weight: 300;
+        font-size:16px;
+      }
+    }
+
 
   }
 }
 
 #dashboard-container {
   display: grid;
+  margin: 10px;
+  .col-sm-3, .col-sm-6, .col-sm-4 {
+    padding-right: 5px;
+    padding-right: 5px;
+  }
   /*border-width: 0px;
   //position: absolute;
   left: 0px;
@@ -607,33 +714,33 @@ background-color:#756A70;
 
 
   .container {
-    left: 0px;
-    top: 0px;
-    width: 1920px;
-    height: 965px;
+  left: 0px;
+  top: 0px;
+  width: 1920px;
+  height: 965px;
 
-  }*/
+}*/
 
 }
 
 #profile-block {
   border-width: 0px;
- // position: absolute;
+  // position: absolute;
   //left: 798px;
   //top: 160px;
-  width: 389px;
-  height: 395px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
-  float: left;
+  //width: 389px;
+  min-width:25%;
+  max-width: 389px;
+
+  // float: left;
 
   .profile-block {
-    left: 0px;
-    top: 0px;
-    width: 389px;
-    height: 395px;
+    //left: 0px;
+    //top: 0px;
+    // min-width: 389px;
+    //max-width: 389px;
+    min-height: 160px;
+    max-height: 395px;
   }
 
 }
@@ -643,40 +750,58 @@ background-color:#756A70;
   //position: absolute;
   //left: 415px;
   //top: 570px;
-  width: 389px;
+  min-width: 50%;
+  //max-width: 580px;
   height: 320px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
   .connections-block {
 
     left: 0px;
     top: 0px;
-    width: 389px;
+    // width: 389px;
     height: 320px;
 
   }
 }
 
-#help-block {
+#getting-started {
   border-width: 0px;
-  position: absolute;
+  //position: absolute;
   //left: 815px;
   //top: 570px;
-  width: 389px;
+  min-width: 25%;
+  // max-width: 389px;
   height: 320px;
-  font-family: 'Open Sans Light', 'Open Sans Regular', 'Open Sans';
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
-  .help-block {
-    left: 0px;
-    top: 0px;
-    width: 389px;
-    height: 320px;
+  .getting-started {
+    // left: 0px;
+    //top: 0px;
+
+    //width: 389px;
+    height: 395px;
 
   }
 
 }
+
+#dashboard {
+  width: 90%;
+  @media (max-width: 1024px){
+    width: 100%;
+  }
+  .badge {
+    vertical-align: text-top;
+    background-color: #FF3333;
+    color: #FFFFF;
+    margin-left: 4px;
+  }
+
+  /*  .main-container {
+  margin-top: 10px;
+  margin-bottom: 30px;
+  margin-right: 50px;
+  margin-left: 50px;
+}*/
+
+}
+
+
 

@@ -10,7 +10,7 @@
 (defn ^:export routes [context]
   {(str (base-path context) "/social") [["" d/handler]
                                         ;["" s/handler]
-                                        ;["/stream" s/handler]
+                                        ["/stream" s/handler]
                                         ["/connections" c/handler]
                                         ["/stats" stats/handler]]})
 
