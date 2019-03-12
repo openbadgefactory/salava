@@ -27,7 +27,7 @@
                    :last_name  (s/constrained s/Str #(and (>= (count %) 1)
                                                           (<= (count %) 255)))
                    :country    (apply s/enum (keys all-countries))
-                   :language   (s/enum "fi" "en" "fr" "es" "pl" "pt" "ar" "nl")
+                   :language   (s/enum "fi" "en" "fr" "es" "pl" "pt" "ar" "nl" "sv")
                    :password   (s/constrained s/Str #(and (>= (count %) 6)
                                                           (<= (count %) 50)))
                    :password_verify (s/constrained s/Str #(and (>= (count %) 6)
