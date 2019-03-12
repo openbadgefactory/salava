@@ -15,7 +15,7 @@
  :asset-version nil
 
  ;; ui translations available to users
- :languages [:en :es :fi :fr :pl :pt :ar :nl]
+ :languages [:en :es :fi :fr :pl :pt :ar :nl :sv]
 
  ;; List of enabled features. Plugins can have their own config files
  :plugins [:badge :page :gallery :file :user :displayer :social :extra/socialuser :admin :mail :oembed :rtl :factory :extra/application :extra/legacy :metabadge]
