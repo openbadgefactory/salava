@@ -96,11 +96,11 @@
 
   :profiles {:dev     {:source-paths   ["src/dev-clj"]
                        :dependencies   [[figwheel-sidecar "0.5.8"]
-                                        [com.cemerick/piggieback "0.2.1"]
+                                        ;[com.cemerick/piggieback "0.2.1"]
                                         [org.clojure/tools.namespace "0.2.11"]
                                         [lein-midje "3.2.1"]
                                         [reloaded.repl "0.2.3"]]
-                       :repl-options   {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                       ;:repl-options   {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                        :plugins        [[lein-pdo "0.1.1"]
                                         [lein-cljsbuild "1.1.5" :exclusions [org.clojure/clojure]]
                                         [lein-scss "0.3.0"]
