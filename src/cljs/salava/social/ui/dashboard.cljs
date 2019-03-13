@@ -2,33 +2,21 @@
   (:require [salava.core.ui.layout :as layout]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.social.ui.stream :as stream]
-            [reagent.core :refer [atom]]
+            [reagent.core :refer [atom cursor]]
             [salava.core.ui.modal :as mo]
             [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent-modals.modals :as m]
             [salava.core.ui.helper :refer [path-for]]
-            [salava.badge.ui.my :as my]))
+            [salava.badge.ui.my :as my]
+            [reagent.session :as session]
+            [salava.core.helper :refer [dump]]))
 
-(defn init-pending-badges [state]
+(defn init-dashboard [state]
   (ajax/GET
-    (path-for "/obpv1/social/pending_badges" true)
+    (path-for (str "/obpv1/user/dashboard"))
     {:handler (fn [data]
-                (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
-
-(defn init-badge-stats [state]
-  (ajax/GET
-    (path-for "/obpv1/badge/stats" true)
-    {:handler (fn [data]
-                (swap! state assoc :stats data)
-                )}))
-
-
-(defn init-data [state]
-  (stream/init-data state)
-  ;(init-pending-badges state)
-  (my/init-data state)
-  (init-badge-stats state))
+                (reset! state data))}))
 
 (defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
@@ -50,15 +38,16 @@
 
 (defn message-event [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
-        reload-fn (fn [] (init-data state))]
+        ;reload-fn (fn [] (init-data state))
+        ]
     [:div {:class "media"}
      [:a {:href "#"
           :on-click #(do
                        ;(b/open-modal object true init-data state)
-                       (init-data state)
+                       ;(init-data state)
                        (mo/open-modal [:gallery :badges] {:badge-id object
                                                           :show-messages true
-                                                          :reload-fn reload-fn})
+                                                          :reload-fn nil})
                        (.preventDefault %) )
           :style {:text-decoration "none"}}
       [:div.media-left
@@ -72,131 +61,198 @@
 (defn welcome-block [state]
   [:div#welcome-block {:class "block"}
    [:div.welcome-block.block-content.row
-    [:div.content "Welcome back to open badge passport"]
-    ]])
-
-#_(defn notifications-block [state]
-    [:div#notifications-block {:class "block"}
-     [:div.notifications-block.block-content
-      [:div.heading_1 [:i.fa.fa-rss.icon]
-       [:span.title "notifications"]]
-      ]])
+    [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
+   [:div.content
+    [:div
+                                                                                                                [:i.fa.fa-chevron-down.icon]
+                                                                                                                "Welcome back to open badge passport"]]
+    [:div.collapse.hidden-content {:id "hidden" }
+     [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
+     ]
+    ]]])
 
 (defn notifications-block [state]
   (let [events (:events @state)]
-    [:div#notifications-block {:class "block col-md-3" }
-     ;(prn @state)
-     [:div.notifications-block.block-content
-      [:div.heading_1 [:i.fa.fa-rss.icon]
-       [:a {:href "social/stream"} [:span.title "notifications"]] [:span.badge (count events)]]
-      (reduce (fn [r event]
-                (conj r [:div.notification-div.ax_default
-                         (cond
-                           (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
-                           (and (= "user" (:type event)) (= "follow" (:verb event))) (stream/follow-event-user event state)
-                           (and (= "badge" (:type event)) (= "publish" (:verb event))) (stream/publish-event-badge event state)
-                           (and (= "page" (:type event)) (= "publish" (:verb event))) (stream/publish-event-page event state)
-                           (= "advert" (:type event)) (stream/badge-advert-event event state)
-                           (= "message" (:verb event)) [message-event event state]
-                           :else "")
-                         ])
-                )[:div.content] (->> (take 5 events) (remove #(= (:verb %) "ticket"))))
-      ]]))
+    [:div {:class "box col-md-4" }
+     [:div#box_1
+      [:div.col-md-12.block
+       ;(prn @state)
+       [:div.notifications-block.row_1;.block-content
+        [:div.heading_1 [:i.fa.fa-rss.icon]
+         [:a {:href "social/stream"} [:span.title "notifications"]] [:span.badge (:events_count @state)]]
+        (reduce (fn [r event]
+                  (conj r [:div.notification-div.ax_default
+                           (cond
+                             (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
+                             (and (= "user" (:type event)) (= "follow" (:verb event))) (stream/follow-event-user event state)
+                             (and (= "badge" (:type event)) (= "publish" (:verb event))) (stream/publish-event-badge event state)
+                             (and (= "page" (:type event)) (= "publish" (:verb event))) (stream/publish-event-page event state)
+                             (= "advert" (:type event)) (stream/badge-advert-event event state)
+                             (= "message" (:verb event)) [message-event event state]
+                             :else "")
+                           ])
+                  )[:div.content] (->> events (remove #(= (:verb %) "ticket"))))
+        ]]]]))
 
 (defn badges-block [state]
-  [:div#badge-block {:class "block col-md-6"}
-   [:div.badge-block.block-content
-    [:div.heading_1
-     [:i.fa.fa-certificate.icon]
-      [:a {:href (path-for "/badge")} [:span.title "Badges"]]]
-     [:div.content
-      [:div.stats
-         [:div.total-badges
-          [:p.num (get-in @state [:stats :badge_count] 0)]
-          [:p.desc (t :badge/Badges)]]
-         [:div
-          [:p.num (->> (get-in @state [:stats :badge_views])
-                      (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0))]
-          [:p.desc (t :badge/Badgeviews)]]]
+  (fn []
+    (let [badges (:badges @state )]
+      [:div {:class "box col-md-5 "}
+       [:div#box_2
+        [:div.col-md-12.block
+         [:div.badge-block;.block-content
+          [:div.heading_1
+           [:i.fa.fa-certificate.icon]
+           [:a {:href (path-for "/badge")} [:span.title "Badges"]]]
+          [:button.btn.button "Earn badges"]
+          [:div.content
+           [:div.stats
+            [:div.total-badges
+             [:p.num (get-in @state [:stats :badge_count] 0)]
+             [:p.desc (t :badge/Badges)]]
+            [:div
+             [:p.num (->> (get-in @state [:stats :badge_views])
+                          (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0))]
+             [:p.desc (t :badge/Badgeviews)]]]
 
-      [:div.pending
-       [:p.header (t :badge/Pendingbadges)]
-       (if (seq (:pending-badges @state))
-         (reduce (fn [r badge]
-                   (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
-                   ) [:div] (take 5 (:pending-badges @state)))
-         )]
-      [:div.badges
-       [:p.header (t :badge/Lastestearnedbadges)]
-       (reduce (fn [r badge]
-                   (conj r [:a {:href "#" :on-click #(do
-                                                       (.preventDefault %)
-                                                       (mo/open-modal [:badge :info] {:badge-id (:id badge )}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
-                   ) [:div] (take 5 (:badges @state)))
-       ]
-      [:div.badges
-       [:p.header (t :badge/Latestearnablebadges)]
-       ;[earnable-badges state]
-       ]
-      ]
-     ]])
+           (when (seq (:pending-badges @state)) [:div.pending
+                                                 [:p.header (t :badge/Pendingbadges)]
+                                                 (if (seq (:pending-badges @state))
+                                                   (reduce (fn [r badge]
+                                                             (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
+                                                             ) [:div] (take 5 (:pending-badges @state)))
+                                                   )])
+           [:div.badges
+            [:p.header (t :badge/Lastestearnedbadges)]
+            (reduce (fn [r badge]
+                      (conj r [:a {:href "#" :on-click #(do
+                                                          (.preventDefault %)
+                                                          (mo/open-modal [:badge :info] {:badge-id (:id badge )}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
+                      ) [:div] badges)
+            ]
+           [:div.badges
+            [:p.header (t :badge/Latestearnablebadges)]
+            ;[earnable-badges state]
+            ]
+           ]
+          ]]]])))
 
 (defn explore-block [state]
-  [:div#explore-block {:class "block col-sm-3"}
-   [:div.explore-block.block-content
-    [:div.heading_1
-     [:i.fa.fa-search.icon]
-     [:span.title "Explore"]]
-    ]])
+  [:div.box.col-md-4
+
+   [:div#box_1 {:class "row_2"}
+    [:div.col-md-12.block
+     [:div.row_2;.block-content
+      [:div.heading_1
+       [:i.fa.fa-search.icon]
+       [:span.title "Explore"]]
+      [:div.content
+       [:div.info-block.badge-connection
+        [:a {:href (path-for "/gallery/badges")}
+         [:div.info
+         [:i.fa.fa-certificate.icon]
+         [:div.text
+          [:p.num (get-in @state [:gallery :badges])]
+          [:p.desc (t :badge/Badges)]]]]]
+              [:div.info-block.page
+        [:a {:href (path-for "/gallery/pages")}[:div.info
+         [:i.fa.fa-file.icon]
+         [:div.text
+          [:p.num (get-in @state [:gallery :pages])]
+          [:p.desc (t :page/Pages)]]]]]
+              [:div.info-block
+        [:a {:href (path-for "/gallery/profiles")}[:div.info
+         [:i.fa.fa-user.icon]
+         [:div.text
+          [:p.num (get-in @state [:gallery :profiles])]
+          [:p.desc (t :gallery/profiles)]]]]]
+
+       ]
+      ]]]])
 
 (defn connections-block [state]
-  [:div#connections-block {:class "block col-sm-6"}
-   [:div.connections-block.block-content
-    [:div.heading_1 [:i.fa.fa-group.icon]
-     [:span.title
-      "Connections"]]
-    ]])
+  [:div.box.col-md-5
+   [:div#box_2
+    [:div.col-md-12.block
+     [:div.row_2
+      [:div
+       [:div.heading_1 [:i.fa.fa-group.icon]
+        [:span.title
+         "Connections"]]
+       [:div.content;.connections-block;.block-content
+        [:div.info-block.badge-connection
+         [:div.info
+          [:i.fa.fa-certificate.icon]
+          [:div.text
+           [:p.num (get-in @state [:connections :badges])]
+           [:p.desc (t :badge/Badges)]]]]
+        [:div.info-block.endorsement
+         [:div.info
+          [:i.fa.fa-thumbs-up.icon]
+          [:div.text
+           [:p.num (:endorsing @state)]
+           [:p.desc "Endorsing" #_(t :badge/Endorsing)]
+           ]
+          ]
+         ]
+        [:div.info-block.endorsement
+         [:div.info
+          [:i.fa.fa-thumbs-up.icon]
+          [:div.text
+           [:p.num (:endorsers @state)]
+           [:p.desc "Endorsers" #_(t :badge/Endorsing)]
+           ]
+          ]
+         ]
+        ]]]]]])
 
 (defn profile-block [state]
-  [:div#profile-block {:class "block col-sm-3"}
-   [:div.profile-block.block-content
-    [:div.heading_1
-     [:i.fa.fa-user.icon]
-     [:span.title
-      "Profile"]]]])
+  [:div.box.col-md-3
+   [:div.row_1 {:id "box_1"}
+    [:div.col-md-12.block
+     [:div.profile-block;.block-content
+      [:div.heading_1
+       [:i.fa.fa-user.icon]
+       [:span.title
+        "Profile"]]]]]])
 
 (defn help-block [state]
-  [:div#getting-started {:class "block col-md-3"}
-   [:div.getting-started.block-content
-    [:div.heading_1
-     [:i.fa.fa-info-circle.icon]
-     [:span.title.help
-      "Help"]]
-    ]
-   ]
+  [:div {:class "box col-md-3"}
+   [:div#box_3
+    [:div.col-md-12.block
+     [:div.row_2.help;.getting-started.block-content
+      [:div.heading_1
+       [:i.fa.fa-info-circle.icon]
+       [:span.title.help
+        "Help"]]
+      [:div.content
+       [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :badge/Iwanttoseeprofile)]]
+       [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :badge/Iwanttoeditprofile)]]
+       [:a {:href (str (path-for "/badge"))}[:p (t :badge/Iwanttoseemysbadges)]]
+       (when (some #(= % :extra/application) (session/get :plugins))[:p (t :badge/Iwanttoearnnewbadges)])
+       [:a {:href (str (path-for "/gallery/badges"))} [:p (t :badge/Iwanttofindbadges)]]
+
+       ]
+      ]
+     ]]]
   )
 
 (defn content [state]
-  #_[:div.grid-container
-     [:header.row [welcome-block state]]
-     [:main [notifications-block state] [badges-block state]
-      ]
-
-     ]
-
   [:div#dashboard-container
    [m/modal-window]
    [welcome-block state]
    [:div.row
     [notifications-block state]
     [badges-block state]
-    [help-block]
-
-    ]
-   [:div.row
     [profile-block state]
-    [connections-block state]
+    ]
+
+   [:div.row
+    ;[profile-block state]
+
     [explore-block state]
+    [connections-block state]
+    [help-block]
 
 
     ]])
@@ -204,6 +260,6 @@
 
 (defn handler [site-navi]
   (let [state (atom {})]
-    (init-data state)
+    (init-dashboard state)
     (fn [] (layout/dashboard site-navi [content state]))))
 
