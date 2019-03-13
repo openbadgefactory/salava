@@ -577,6 +577,13 @@ background-color:#756A70;
   margin-right: 10px;
   margin-bottom: 10px;
   float: left;
+  position: relative;
+
+  .badge {
+    position: absolute;
+    right: 11px;
+    top: 10px;
+  }
 
   a {
     text-decoration: none;
@@ -822,7 +829,7 @@ background-color:#756A70;
   .badge {
     vertical-align: text-top;
     background-color: #FF3333;
-    color: #FFFFF;
+    color: #FFFFFF;
     margin-left: 4px;
   }
 
