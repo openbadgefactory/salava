@@ -6,7 +6,7 @@
             [salava.core.util :refer [get-db md->html]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.page.main :as p]
-            [salava.social.db :as so]
+            ;[salava.social.db :as so]
             [clojure.set :refer [subset?]]
             [clojure.string :as string]
             [schema.core :as schema]
@@ -357,4 +357,9 @@
 (defn meta-tags [ctx badge-content-id]
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]
     (rename-keys badge-content {:image_file :image :name :title})))
+
+(defn gallery-stats [ctx]
+  {:profiles (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))
+   :pages (gallery-pages-count {} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
+   :badges (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))})
 
