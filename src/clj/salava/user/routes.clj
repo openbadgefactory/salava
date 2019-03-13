@@ -285,4 +285,9 @@
                   (if (:private current-user)
                     (forbidden)
                     (ok {:status "success"}))
-                  ))))
+                  )
+             (GET "/dashboard" []
+                  :summary "Get dashboard information"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (u/dashboard-info ctx (:id current-user)))))))
