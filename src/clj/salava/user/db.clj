@@ -446,18 +446,19 @@
   (let [badges (->> (b/user-badges-all ctx user-id) (sort-by :mtime >))
         pending-badges (b/user-badges-pending ctx user-id)
         stats (b/badge-stats ctx user-id)
-        events (so/get-all-events-add-viewed ctx user-id)]
+        events (so/get-all-events-add-viewed ctx user-id)
+        user-info (user-information-with-registered-and-last-login ctx user-id)]
   {:badges (->> badges (take 5))
    :pending-badges (->> pending-badges (take 5))
    :stats stats
    :endorsing (->> (end/endorsements-given ctx user-id) count)
    :endorsers (->> (end/endorsements-received ctx user-id) count)
+   :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
    :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
    :events (->> events (take 5))
    :events_count (count events)
    :pages_count (->> (p/user-pages-all ctx user-id) count)
    :files_count (->> (f/user-files-all ctx user-id) :files count)
-   :gallery (g/gallery-stats ctx)
-   }
-  ))
+   :gallery (g/gallery-stats ctx (:last_login user-info))
+   }))
 

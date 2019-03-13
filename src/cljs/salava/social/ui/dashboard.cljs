@@ -165,7 +165,7 @@
          [:i.fa.fa-user.icon]
          [:div.text
           [:p.num (get-in @state [:gallery :profiles])]
-          [:p.desc (t :gallery/profiles)]]]]]
+          [:p.desc (t :gallery/Profiles)]]]]]
 
        ]
       ]]]])
@@ -181,12 +181,14 @@
          "Connections"]]
        [:div.content;.connections-block;.block-content
         [:div.info-block.badge-connection
+         [:a {:href (path-for "/connections/badge")}
          [:div.info
           [:i.fa.fa-certificate.icon]
           [:div.text
            [:p.num (get-in @state [:connections :badges])]
-           [:p.desc (t :badge/Badges)]]]]
+           [:p.desc (t :badge/Badges)]]]]]
         [:div.info-block.endorsement
+         [:a {:href (path-for "/connections/endorsement")}
          [:div.info
           [:i.fa.fa-thumbs-up.icon]
           [:div.text
@@ -194,16 +196,19 @@
            [:p.desc "Endorsing" #_(t :badge/Endorsing)]
            ]
           ]
-         ]
+         ]]
         [:div.info-block.endorsement
+         [:a {:href (path-for "/connections/endorsement")}
          [:div.info
+          (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
           [:i.fa.fa-thumbs-up.icon]
+
           [:div.text
            [:p.num (:endorsers @state)]
            [:p.desc "Endorsers" #_(t :badge/Endorsing)]
            ]
           ]
-         ]
+         ]]
         ]]]]]])
 
 (defn profile-block [state]

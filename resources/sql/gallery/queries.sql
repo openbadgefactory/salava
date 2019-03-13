@@ -265,3 +265,12 @@ SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibi
 
 --name: gallery-profiles-count
 SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1
+
+--name: gallery-badges-count-since-last-login
+SELECT COUNT(DISTINCT id) AS badges_count FROM badge WHERE published = 1 AND recipient_count > 0
+
+--name: gallery-pages-count-since-last-login
+SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibility = 'internal') AND deleted = 0
+
+--name: gallery-profiles-count-since-last-login
+SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1

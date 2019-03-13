@@ -358,8 +358,9 @@
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]
     (rename-keys badge-content {:image_file :image :name :title})))
 
-(defn gallery-stats [ctx]
-  {:profiles (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))
+(defn gallery-stats [ctx last-login]
+  {:profiles {:all (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))
+              :since-last-login ()}
    :pages (gallery-pages-count {} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
    :badges (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))})
 
