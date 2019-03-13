@@ -256,3 +256,12 @@ WHERE bct.tag IN (SELECT tag FROM badge_content_tag AS bct
       	      	 WHERE bbc.badge_id IN  (:badge_ids))
 AND bbc.badge_id IN (SELECT DISTINCT badge_id FROM badge WHERE published = 1 and recipient_count > 0)
 GROUP BY bct.tag
+
+--name: gallery-badges-count
+SELECT COUNT(DISTINCT id) AS badges_count FROM badge WHERE published = 1 AND recipient_count > 0
+
+--name: gallery-pages-count
+SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibility = 'internal') AND deleted = 0
+
+--name: gallery-profiles-count
+SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1
