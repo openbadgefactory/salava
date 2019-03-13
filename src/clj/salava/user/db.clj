@@ -14,7 +14,9 @@
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.mail.mail :as m]))
+            [salava.mail.mail :as m]
+            [salava.badge.endorsement :as end]
+            [salava.social.db :as so]))
 
 (defqueries "sql/user/main.sql")
 
@@ -440,4 +442,22 @@
 
 
 
+(defn dashboard-info [ctx user-id]
+  (let [badges (->> (b/user-badges-all ctx user-id) (sort-by :mtime >))
+        pending-badges (b/user-badges-pending ctx user-id)
+        stats (b/badge-stats ctx user-id)
+        events (so/get-all-events-add-viewed ctx user-id)]
+  {:badges (->> badges (take 5))
+   :pending-badges (->> pending-badges (take 5))
+   :stats stats
+   :endorsing (->> (end/endorsements-given ctx user-id) count)
+   :endorsers (->> (end/endorsements-received ctx user-id) count)
+   :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
+   :events (->> events (take 5))
+   :events_count (count events)
+   :pages_count (->> (p/user-pages-all ctx user-id) count)
+   :files_count (->> (f/user-files-all ctx user-id) :files count)
+   :gallery (g/gallery-stats ctx)
+   }
+  ))
 
