@@ -173,5 +173,11 @@
                   :current-user current-user
                   (ok (so/get-user-issuer-connections ctx (:id current-user))))
 
+             (GET "/dashboard" []
+                  :summary "Get dashboard information"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (u/dashboard-info ctx (:id current-user))))
+
              )))
 
