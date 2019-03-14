@@ -62,14 +62,14 @@
   [:div#welcome-block {:class "block"}
    [:div.welcome-block.block-content.row
     [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
-   [:div.content
-    [:div
-                                                                                                                [:i.fa.fa-chevron-down.icon]
-                                                                                                                "Welcome back to open badge passport"]]
-    [:div.collapse.hidden-content {:id "hidden" }
-     [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
-     ]
-    ]]])
+     [:div.content
+      [:div
+       [:i.fa.fa-chevron-down.icon]
+       "Welcome back to open badge passport"]]
+     [:div.collapse.hidden-content {:id "hidden" }
+      [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
+      ]
+     ]]])
 
 (defn notifications-block [state]
   (let [events (:events @state)]
@@ -94,6 +94,16 @@
                   )[:div.content] (->> events (remove #(= (:verb %) "ticket"))))
         ]]]]))
 
+(defn latest-earnable-badges []
+  (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
+    (if block [block] [:div ""])))
+
+(defn application-button []
+  (let [button (first (plugin-fun (session/get :plugins) "application" "button"))]
+    (if button
+      [button]
+      [:div ""])))
+
 (defn badges-block [state]
   (fn []
     (let [badges (:badges @state )]
@@ -104,7 +114,7 @@
           [:div.heading_1
            [:i.fa.fa-certificate.icon]
            [:a {:href (path-for "/badge")} [:span.title "Badges"]]]
-          [:button.btn.button "Earn badges"]
+         [application-button]; [:button.btn.button "Earn badges"]
           [:div.content
            [:div.stats
             [:div.total-badges
@@ -130,7 +140,8 @@
                                                           (mo/open-modal [:badge :info] {:badge-id (:id badge )}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
                       ) [:div] badges)
             ]
-           [:div.badges
+           [latest-earnable-badges]
+           #_[:div.badges
             [:p.header (t :badge/Latestearnablebadges)]
             ;[earnable-badges state]
             ]
@@ -150,22 +161,22 @@
        [:div.info-block.badge-connection
         [:a {:href (path-for "/gallery/badges")}
          [:div.info
-         [:i.fa.fa-certificate.icon]
-         [:div.text
-          [:p.num (get-in @state [:gallery :badges])]
-          [:p.desc (t :badge/Badges)]]]]]
-              [:div.info-block.page
+          [:i.fa.fa-certificate.icon]
+          [:div.text
+           [:p.num (get-in @state [:gallery :badges])]
+           [:p.desc (t :badge/Badges)]]]]]
+       [:div.info-block.page
         [:a {:href (path-for "/gallery/pages")}[:div.info
-         [:i.fa.fa-file.icon]
-         [:div.text
-          [:p.num (get-in @state [:gallery :pages])]
-          [:p.desc (t :page/Pages)]]]]]
-              [:div.info-block
+                                                [:i.fa.fa-file.icon]
+                                                [:div.text
+                                                 [:p.num (get-in @state [:gallery :pages])]
+                                                 [:p.desc (t :page/Pages)]]]]]
+       [:div.info-block
         [:a {:href (path-for "/gallery/profiles")}[:div.info
-         [:i.fa.fa-user.icon]
-         [:div.text
-          [:p.num (get-in @state [:gallery :profiles :all])]
-          [:p.desc (t :gallery/Profiles)]]]]]
+                                                   [:i.fa.fa-user.icon]
+                                                   [:div.text
+                                                    [:p.num (get-in @state [:gallery :profiles :all])]
+                                                    [:p.desc (t :gallery/Profiles)]]]]]
 
        ]
       ]]]])
@@ -189,33 +200,33 @@
         [user-connections-stats]
         [:div.info-block.badge-connection
          [:a {:href (path-for "/connections/badge")}
-         [:div.info
-          [:i.fa.fa-certificate.icon]
-          [:div.text
-           [:p.num (get-in @state [:connections :badges])]
-           [:p.desc (t :badge/Badges)]]]]]
+          [:div.info
+           [:i.fa.fa-certificate.icon]
+           [:div.text
+            [:p.num (get-in @state [:connections :badges])]
+            [:p.desc (t :badge/Badges)]]]]]
         [:div.info-block.endorsement
          [:a {:href (path-for "/connections/endorsement")}
-         [:div.info
-          [:i.fa.fa-thumbs-up.icon]
-          [:div.text
-           [:p.num (:endorsing @state)]
-           [:p.desc "Endorsing" #_(t :badge/Endorsing)]
+          [:div.info
+           [:i.fa.fa-thumbs-up.icon]
+           [:div.text
+            [:p.num (:endorsing @state)]
+            [:p.desc "Endorsing" #_(t :badge/Endorsing)]
+            ]
            ]
-          ]
-         ]]
+          ]]
         [:div.info-block.endorsement
          [:a {:href (path-for "/connections/endorsement")}
-         [:div.info
-          (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
-          [:i.fa.fa-thumbs-up.icon]
+          [:div.info
+           (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
+           [:i.fa.fa-thumbs-up.icon]
 
-          [:div.text
-           [:p.num (:endorsers @state)]
-           [:p.desc "Endorsers" #_(t :badge/Endorsing)]
+           [:div.text
+            [:p.num (:endorsers @state)]
+            [:p.desc "Endorsers" #_(t :badge/Endorsing)]
+            ]
            ]
-          ]
-         ]]
+          ]]
         ]]]]]])
 
 (defn profile-block [state]

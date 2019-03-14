@@ -231,10 +231,10 @@
      (if (pos? followed)
        [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
      #_(if (= "pro" issuer_tier)
-       [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
+         [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
 
-      [:div.media-content
-       [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state})) }
+     [:div.media-content
+      [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state})) }
        (if image_file
          [:div.media-left
           [:img {:src (str "/" image_file)
@@ -275,19 +275,19 @@
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
        [:div.panel {:class "row wrap-grid"
-                          :id    "grid"
-                          }
-              [:button.close {:aria-label "OK"
-                              :on-click #(do
-                                           (.preventDefault %)
-                                           (swap! state assoc :show-featured false))}
-               [:span {:aria-hidden "true"
-                       :dangerouslySetInnerHTML {:__html "&times;"}}]]
-              [:h3.panel-heading (t :extra-application/Featured)]
-              [:hr]
-       (into [:div.adcontainer]
-             (for [element-data featured]
-               (badge-grid-element element-data state)))])
+                    :id    "grid"
+                    }
+        [:button.close {:aria-label "OK"
+                        :on-click #(do
+                                     (.preventDefault %)
+                                     (swap! state assoc :show-featured false))}
+         [:span {:aria-hidden "true"
+                 :dangerouslySetInnerHTML {:__html "&times;"}}]]
+        [:h3.panel-heading (t :extra-application/Featured)]
+        [:hr]
+        (into [:div.adcontainer]
+              (for [element-data featured]
+                (badge-grid-element element-data state)))])
 
 
      [:h3 (str-cat tags)]
@@ -363,3 +363,20 @@
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
         (layout/landing-page site-navi [content state badge_content_id])))))
+
+(defn ^:export latestearnablebadges []
+  (let [state (atom {})]
+    (init-data state {:country "all" :order "mtime" :issuer-name "" :name ""})
+    (fn []
+      [:div.badges
+       [:p.header (t :badge/Latestearnablebadges)]
+       (reduce (fn [r application]
+                 (conj r [:a {:href "#" :on-click #(do
+                                                     (.preventDefault %)
+                                                     (mo/open-modal [:application :badge] {:id (:id application) :state state}))}
+                          [:img {:src (str "/" (:image_file application))}]]))
+                 [:div] (take 5 (:applications @state)))])))
+
+(defn ^:export button []
+  (fn []
+    [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]))
