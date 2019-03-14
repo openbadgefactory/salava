@@ -164,7 +164,7 @@
         [:a {:href (path-for "/gallery/profiles")}[:div.info
          [:i.fa.fa-user.icon]
          [:div.text
-          [:p.num (get-in @state [:gallery :profiles])]
+          [:p.num (get-in @state [:gallery :profiles :all])]
           [:p.desc (t :gallery/Profiles)]]]]]
 
        ]
