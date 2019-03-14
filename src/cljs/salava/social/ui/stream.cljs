@@ -16,7 +16,8 @@
             [salava.badge.ui.pending :refer [pending-badge-content]]
             [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
             [salava.badge.ui.modal :as bm]
-            [salava.badge.ui.endorsement :refer [pending-endorsements]]))
+            [salava.badge.ui.endorsement :refer [pending-endorsements]]
+            [salava.admin.ui.helper :refer [admin?]]))
 
 
 (defn init-data [state]
@@ -426,7 +427,7 @@
      #_[badges-pending state]
      (if (not-activated?)
        (not-activated-banner))
-     (if admin-events
+     (if (and (admin?) admin-events)
        [:div.row
         (tip-event (report-ticket-tip admin-events) state)]
        )
