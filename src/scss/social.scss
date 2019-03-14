@@ -501,10 +501,6 @@ background-color:#756A70;
     color: #DC5C10; //$orange-color;
     word-wrap: break-word;
     cursor: pointer;
-    @media (max-width: 420px) {
-      font-size:22px;
-    }
-
 
   }
   .help {
@@ -565,6 +561,13 @@ background-color:#756A70;
     }
 
   }
+
+  @media (max-width: 420px) {
+    .title, .icon {
+      font-size:22px;
+    }
+  }
+
 }
 
 .info-block {
@@ -709,6 +712,11 @@ background-color:#756A70;
         vertical-align: top;
       }
     }
+
+    @media (min-width: 420px) {
+      height: 60px;
+
+    }
   }
 
   .row_1 {
@@ -781,7 +789,7 @@ background-color:#756A70;
   min-height: 60px;
 
   .welcome-block {
-     background-color: $titlebar-color;
+    background-color: $titlebar-color;
     border: none;
     border-radius: 10px;
     -moz-box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
@@ -813,20 +821,20 @@ background-color:#756A70;
   }
 
   .hidden-content {
-   //display: none;
-   background-color: $titlebar-color;
-   color: #FFFFFF;
-   font-size: 12px;
-   margin: auto;
-   line-height: 24px;
-   width: 90%;
+    //display: none;
+    background-color: $titlebar-color;
+    color: #FFFFFF;
+    font-size: 12px;
+    margin: auto;
+    line-height: 24px;
+    width: 90%;
     padding-top: 10px;
   }
 }
 
 
 #dashboard-container {
-  display: grid;
+  //display: grid;
   margin: 10px;
 }
 
