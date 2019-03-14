@@ -7,11 +7,12 @@
             [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent-modals.modals :as m]
-            [salava.core.ui.helper :refer [path-for plugin-fun]]
+            [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
             [salava.badge.ui.my :as my]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
-            [salava.user.ui.helper :refer [profile-picture]]))
+            [salava.user.ui.helper :refer [profile-picture]]
+            [salava.core.ui.notactivated :refer [not-activated-banner]]))
 
 (defn init-dashboard [state]
   (ajax/GET
@@ -124,7 +125,7 @@
       [:div.media-body
        [:div.content-text
         [:p.content-heading (str issuer_content_name " " (t :social/Publishedbadge) " " name)]
-       [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
 
 
 (defn welcome-block [state]
@@ -183,7 +184,7 @@
           [:div.heading_1
            [:i.fa.fa-certificate.icon]
            [:a {:href (path-for "/badge")} [:span.title "Badges"]]]
-          [application-button]; [:button.btn.button "Earn badges"]
+          (when-not (not-activated?)  [application-button]); [:button.btn.button "Earn badges"]
           [:div.content
            [:div.stats
             [:div.total-badges
@@ -209,17 +210,10 @@
                                                           (mo/open-modal [:badge :info] {:badge-id (:id badge )}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
                       ) [:div] badges)
             ]
-           [latest-earnable-badges]
-           #_[:div.badges
-              [:p.header (t :badge/Latestearnablebadges)]
-              ;[earnable-badges state]
-              ]
-           ]
-          ]]]])))
+           [latest-earnable-badges]]]]]])))
 
 (defn explore-block [state]
   [:div.box.col-md-4
-
    [:div#box_1 {:class "row_2"}
     [:div.col-md-12.block
      [:div.row_2;.block-content
@@ -245,10 +239,7 @@
                                                    [:i.fa.fa-user.icon]
                                                    [:div.text
                                                     [:p.num (get-in @state [:gallery :profiles :all])]
-                                                    [:p.desc (t :gallery/Profiles)]]]]]
-
-       ]
-      ]]]])
+                                                    [:p.desc (t :gallery/Profiles)]]]]]]]]]])
 
 (defn user-connections-stats []
   (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
@@ -280,10 +271,8 @@
            [:i.fa.fa-thumbs-up.icon]
            [:div.text
             [:p.num (:endorsing @state)]
-            [:p.desc "Endorsing" #_(t :badge/Endorsing)]
-            ]
-           ]
-          ]]
+            [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]]]
+
         [:div.info-block.endorsement
          [:a {:href (path-for "/connections/endorsement")}
           [:div.info
@@ -293,20 +282,35 @@
            [:div.text
             [:p.num (:endorsers @state)]
             [:p.desc "Endorsers" #_(t :badge/Endorsing)]
-            ]
-           ]
-          ]]
-        ]]]]]])
+            ]]]]]]]]]])
 
 (defn profile-block [state]
-  [:div.box.col-md-3
-   [:div.row_1 {:id "box_1"}
-    [:div.col-md-12.block
-     [:div.profile-block;.block-content
-      [:div.heading_1
-       [:i.fa.fa-user.icon]
-       [:span.title
-        "Profile"]]]]]])
+  (let [user (:user-profile @state)]
+    [:div.box.col-md-3
+     [:div {:id "box_3"}
+      [:div.col-md-12.block
+       [:div.profile-block.row_1;.block-content
+        [:div.heading_1
+         [:i.fa.fa-user.icon]
+         [:span.title
+          (t :user/Profile)]]
+        [:div.content
+         (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
+         [:div.visibility
+          (case (get-in user [:user :profile_visibility])
+            "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
+            "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
+            nil)]
+
+         [:div
+          [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]
+          [:div.stats
+           [:div.text
+            [:p.num (:pages_count @state)]
+            [:p.desc (t :page/Pages)]]
+           [:div.text
+            [:p.num (:files_count @state)]
+            [:p.desc (t :file/Files)]]]]]]]]]))
 
 (defn help-block [state]
   [:div {:class "box col-md-3"}
@@ -318,36 +322,28 @@
        [:span.title.help
         "Help"]]
       [:div.content
-       [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :badge/Iwanttoseeprofile)]]
-       [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :badge/Iwanttoeditprofile)]]
-       [:a {:href (str (path-for "/badge"))}[:p (t :badge/Iwanttoseemysbadges)]]
-       (when (some #(= % :extra/application) (session/get :plugins))[:p (t :badge/Iwanttoearnnewbadges)])
-       [:a {:href (str (path-for "/gallery/badges"))} [:p (t :badge/Iwanttofindbadges)]]
-
-       ]
-      ]
-     ]]]
-  )
+       [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
+       [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
+       [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
+       (when (some #(= % :extra/application) (session/get :plugins))[:p (t :social/Iwanttoearnnewbadges)])
+       [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]])
 
 (defn content [state]
   [:div#dashboard-container
    [m/modal-window]
+   (if (not-activated?)
+     (not-activated-banner))
    [welcome-block state]
    [:div.row
     [notifications-block state]
     [badges-block state]
-    [profile-block state]
-    ]
+    [profile-block state]]
 
    [:div.row
     ;[profile-block state]
-
     [explore-block state]
     [connections-block state]
-    [help-block]
-
-
-    ]])
+    [help-block]]])
 
 
 (defn handler [site-navi]

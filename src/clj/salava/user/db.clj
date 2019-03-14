@@ -447,7 +447,9 @@
         pending-badges (b/user-badges-pending ctx user-id)
         stats (b/badge-stats ctx user-id)
         events (so/get-all-events-add-viewed ctx user-id)
-        user-info (user-information-with-registered-and-last-login ctx user-id)]
+        user-info (user-information-with-registered-and-last-login ctx user-id)
+        user-profile (-> (user-information-and-profile ctx user-id nil)
+                         (dissoc :badges :pages :owner?))]
   {:badges (->> badges (take 5))
    :pending-badges (->> pending-badges (take 5))
    :stats stats
@@ -460,5 +462,5 @@
    :pages_count (->> (p/user-pages-all ctx user-id) count)
    :files_count (->> (f/user-files-all ctx user-id) :files count)
    :gallery (g/gallery-stats ctx (:last_login user-info))
-   }))
+   :user-profile user-profile }))
 
