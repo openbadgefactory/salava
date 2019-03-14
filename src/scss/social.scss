@@ -665,7 +665,6 @@ background-color:#756A70;
 #box_1 {
   width: 100%;
   .notifications-block {
-    height: 395px;
     .notification-div {
       background-color:rgba(249, 249, 249, 1);
       width: 100%;
@@ -713,14 +712,19 @@ background-color:#756A70;
       }
     }
 
+  }
+  .notifications {
     @media (min-width: 420px) {
       height: 60px;
-
+      .content {
+        display: none;
+      }
     }
   }
 
   .row_1 {
     height: 396px;
+
   }
 
   .row_2 {
