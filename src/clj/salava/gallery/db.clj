@@ -360,7 +360,7 @@
 
 (defn gallery-stats [ctx last-login]
   {:profiles {:all (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))
-              :since_last_login}
+              :since_last_login nil}
    :pages (gallery-pages-count {} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
    :badges (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))})
 
