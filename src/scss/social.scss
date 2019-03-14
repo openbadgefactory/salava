@@ -453,6 +453,9 @@ background-color:#756A70;
 }
 .box {
   padding: 5px;
+  a {
+    font-weight: 300;
+  }
 }
 .block {
   background: inherit;
@@ -692,6 +695,7 @@ background-color:#756A70;
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
+          font-weight: 300;
         }
         .date {
           color: $orange-color;
