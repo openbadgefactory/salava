@@ -671,6 +671,10 @@ background-color:#756A70;
       margin: 5px auto;
       cursor: pointer;
       text-decoration: none;
+
+      a {
+        font-weight: 300;
+      }
       .media-left,.media-body {
         vertical-align: bottom;
       }
@@ -681,6 +685,7 @@ background-color:#756A70;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+
         p.content-heading {
           color: #000000;
           margin: 0;
