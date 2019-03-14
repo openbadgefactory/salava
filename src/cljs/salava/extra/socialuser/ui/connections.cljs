@@ -144,6 +144,37 @@
        [:div {:id "badge-stats"}
         (accepted-user-connections state @following-users visible-area-atom)])]))
 
+(defn init-stats [state]
+  (init-data state)
+  (ajax/GET
+    (path-for (str "/obpv1/socialuser/user-pending-requests"))
+    {:handler (fn [data]
+                (swap! state assoc :pending data))}))
+
+(defn stats []
+  (let [state (atom {})]
+    (init-stats state)
+    (fn []
+      [:div
+       [:div.info-block
+        [:a {:href (path-for "/connections/user")}
+         [:div.info
+          [:i.fa.fa-user.icon]
+          [:div.text
+           [:p.num (->> (:following-users @state) count)]
+           [:p.desc (t :social/Followedusers)]
+           ]]]]
+
+       [:div.info-block
+        [:a {:href (path-for "/connections/user")}
+         [:div.info
+          (when (pos? (count (:pending @state))) [:span.badge (count (:pending @state))])
+          [:i.fa.fa-user.icon]
+          [:div.text
+           [:p.num (->> (:followers-users @state) count)]
+           [:p.desc (t :social/Followersusers)]
+           ]]]]])))
+
 (defn handler [site-navi]
   (let [state (atom {:visible-area  nil
                      :followers-users  []

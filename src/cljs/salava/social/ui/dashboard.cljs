@@ -7,7 +7,7 @@
             [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent-modals.modals :as m]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for plugin-fun]]
             [salava.badge.ui.my :as my]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]))
@@ -170,6 +170,12 @@
        ]
       ]]]])
 
+(defn user-connections-stats []
+  (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
+    (if blocks
+      [blocks]
+      [:div ""])))
+
 (defn connections-block [state]
   [:div.box.col-md-5
    [:div#box_2
@@ -180,6 +186,7 @@
         [:span.title
          "Connections"]]
        [:div.content;.connections-block;.block-content
+        [user-connections-stats]
         [:div.info-block.badge-connection
          [:a {:href (path-for "/connections/badge")}
          [:div.info
