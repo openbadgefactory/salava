@@ -714,8 +714,8 @@ background-color:#756A70;
 
   }
   .notifications {
-    @media (min-width: 420px) {
-      height: 60px;
+    @media (max-width: 420px) {
+      height: 60px !important;
       .content {
         display: none;
       }
