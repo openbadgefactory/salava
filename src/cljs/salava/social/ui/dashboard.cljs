@@ -146,7 +146,7 @@
      [:div#box_1
       [:div.col-md-12.block
        ;(prn @state)
-       [:div.notifications-block.row_1;.block-content
+       [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
          [:a {:href "social/stream"} [:span.title "notifications"]] [:span.badge (:events_count @state)]]
         (reduce (fn [r event]
