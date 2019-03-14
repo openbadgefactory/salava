@@ -1,10 +1,10 @@
 (ns salava.badge.endorsement
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db md->html get-full-path]]
+            [salava.core.util :refer [get-db md->html get-full-path plugin-fun get-plugins]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
             [salava.badge.main :refer [send-badge-info-to-obf]]
-            [salava.user.db :as user]))
+            #_[salava.user.db :as user]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -25,7 +25,8 @@
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
       (throw+ {:status "error" :message "User cannot endorse himself"})
-      (let [endorser-info (user/user-information ctx user-id)]
+      (let [endorser-info-fn (first (plugin-fun (get-plugins ctx) "db" "user-information"))
+             endorser-info (endorser-info-fn ctx user-id)#_(user/user-information ctx user-id)]
         (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
                                                              :external_id (generate-external-id)
                                                              :issuer_id user-id

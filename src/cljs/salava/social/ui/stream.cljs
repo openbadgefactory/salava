@@ -415,7 +415,7 @@
   (let [events (:events @state)
         tips (:tips @state)
         initial (:initial @state)
-        admin-events (or (:admin-events @state) nil)
+        admin-events (or (filter #(= "ticket" (:verb %)) events) #_(:admin-events @state) nil)
         reload-fn (fn [] (init-data state))]
     [:div {:class "my-badges pages"}
 
