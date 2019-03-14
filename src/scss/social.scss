@@ -491,6 +491,11 @@ background-color:#756A70;
 
   }
 
+  .visibility {
+    font-size: 18px;
+    padding-bottom: 10px;
+
+  }
   .title {
     text-decoration: underline;
     font-family: 'Open Sans Light', 'Open Sans';
@@ -561,6 +566,24 @@ background-color:#756A70;
     }
 
   }
+
+
+  .stats {
+
+    .total-badges {
+      float: left;
+      margin-right: 15px;
+    }
+    .num {
+      font-weight: 800;
+      margin: 0;
+    }
+    .desc {
+      font-weight: 300;
+      font-size:16px;
+    }
+  }
+
 
   @media (max-width: 420px) {
     .title, .icon {
@@ -751,7 +774,7 @@ background-color:#756A70;
       padding: 5px;
     }
 
-    .stats {
+   /*stats {
 
       .total-badges {
         float: left;
@@ -765,7 +788,7 @@ background-color:#756A70;
         font-weight: 300;
         font-size:16px;
       }
-    }
+    }*/
 
 
   }
@@ -808,6 +831,7 @@ background-color:#756A70;
     text-align: left;
     min-height: 60px;
     padding: 5px;
+    position: relative;
   }
 
   .icon {
@@ -857,5 +881,23 @@ background-color:#756A70;
 
 }
 
+.profile-block {
+  img {
+    width: 45px;
+    height: auto;
+    border: 1px solid $titlebar-color;
+    float: left;
+    margin-right: 5px;
+  }
+
+  .stats {
+
+    div.text {
+      float: left;
+      margin: 0px 10px;
+
+    }
+  }
+}
 
 
