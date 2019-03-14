@@ -123,8 +123,8 @@
        [:img {:src (str "/" image_file)} ]]
       [:div.media-body
        [:div.content-text
-        [:p.content-heading (str issuer_content_name (t :social/Publishedbadge)" " name)]]
-       [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]))
+        [:p.content-heading (str issuer_content_name (t :social/Publishedbadge)" " name)]
+       [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
 
 
 (defn welcome-block [state]
