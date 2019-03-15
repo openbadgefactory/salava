@@ -12,13 +12,18 @@
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.core.ui.notactivated :refer [not-activated-banner]]))
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
+            [salava.badge.ui.pending :as pb]))
+
+
 
 (defn init-dashboard [state]
+  (stream/init-data state)
+  (pb/init-data state)
   (ajax/GET
     (path-for (str "/obpv1/user/dashboard"))
     {:handler (fn [data]
-                (reset! state data))}))
+                (swap! state merge data))}))
 
 (defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
@@ -149,7 +154,7 @@
        ;(prn @state)
        [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
-         [:a {:href "social/stream"} [:span.title "notifications"]] [:span.badge (:events_count @state)]]
+         [:a {:href "social/stream"} [:span.title "notifications"]] [:span.badge (count (:events @state))]]
         (reduce (fn [r event]
                   (conj r [:div.notification-div.ax_default
                            (cond
@@ -207,7 +212,7 @@
             (reduce (fn [r badge]
                       (conj r [:a {:href "#" :on-click #(do
                                                           (.preventDefault %)
-                                                          (mo/open-modal [:badge :info] {:badge-id (:id badge )}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
+                                                          (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
                       ) [:div] badges)
             ]
            [latest-earnable-badges]]]]]])))
