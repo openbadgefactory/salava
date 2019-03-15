@@ -12,13 +12,18 @@
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :refer [profile-picture]]
-            [salava.core.ui.notactivated :refer [not-activated-banner]]))
+            [salava.core.ui.notactivated :refer [not-activated-banner]]
+            [salava.badge.ui.pending :as pb]))
+
+
 
 (defn init-dashboard [state]
+  (stream/init-data state)
+  (pb/init-data state)
   (ajax/GET
     (path-for (str "/obpv1/user/dashboard"))
     {:handler (fn [data]
-                (reset! state data))}))
+                (swap! state merge data))}))
 
 (defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
@@ -134,8 +139,7 @@
     [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
      [:div.content
       [:div
-       [:i.fa.fa-chevron-down.icon]
-       "Welcome back to open badge passport"]]
+       [:i.fa.fa-chevron-down.icon] (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!")]]
      [:div.collapse.hidden-content {:id "hidden" }
       [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
       ]
@@ -149,7 +153,7 @@
        ;(prn @state)
        [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
-         [:a {:href "social/stream"} [:span.title "notifications"]] [:span.badge (:events_count @state)]]
+         [:a {:href "social/stream"} [:span.title (t :social/Stream)]] [:span.badge (count (:events @state))]]
         (reduce (fn [r event]
                   (conj r [:div.notification-div.ax_default
                            (cond
@@ -183,7 +187,7 @@
          [:div.badge-block;.block-content
           [:div.heading_1
            [:i.fa.fa-certificate.icon]
-           [:a {:href (path-for "/badge")} [:span.title "Badges"]]]
+           [:a {:href (path-for "/badge")} [:span.title (t :badge/Badges)]]]
           (when-not (not-activated?)  [application-button]); [:button.btn.button "Earn badges"]
           [:div.content
            [:div.stats
@@ -203,11 +207,11 @@
                                                              ) [:div] (take 5 (:pending-badges @state)))
                                                    )])
            [:div.badges
-            [:p.header (t :badge/Lastestearnedbadges)]
+            [:p.header (t :social/Lastestearnedbadges)]
             (reduce (fn [r badge]
                       (conj r [:a {:href "#" :on-click #(do
                                                           (.preventDefault %)
-                                                          (mo/open-modal [:badge :info] {:badge-id (:id badge )}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
+                                                          (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
                       ) [:div] badges)
             ]
            [latest-earnable-badges]]]]]])))
@@ -219,7 +223,7 @@
      [:div.row_2;.block-content
       [:div.heading_1
        [:i.fa.fa-search.icon]
-       [:span.title "Explore"]]
+       [:span.title (t :gallery/Explore)]]
       [:div.content
        [:div.info-block.badge-connection
         [:a {:href (path-for "/gallery/badges")}
@@ -254,8 +258,7 @@
      [:div.row_2
       [:div
        [:div.heading_1 [:i.fa.fa-group.icon]
-        [:span.title
-         "Connections"]]
+        [:span.title (t :social/Connections)]]
        [:div.content;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block.badge-connection
@@ -319,8 +322,7 @@
      [:div.row_2.help;.getting-started.block-content
       [:div.heading_1
        [:i.fa.fa-info-circle.icon]
-       [:span.title.help
-        "Help"]]
+       [:span.title.help (t :core/help)]]
       [:div.content
        [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]

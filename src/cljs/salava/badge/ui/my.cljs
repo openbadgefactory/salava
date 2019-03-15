@@ -28,9 +28,9 @@
      (path-for "/obpv1/badge" true)
      {:handler (fn [data]
                  (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                        :pending () ;(filter #(= "pending" (:status %)) data)
+                        :pending (filter #(= "pending" (:status %)) data)
                         :initializing false))})
-   (ajax/GET
+   #_(ajax/GET
      (path-for "/obpv1/social/pending_badges" true)
      {:handler (fn [data]
                  (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
@@ -127,12 +127,12 @@
                                             [:span (str (t :core/Loading) "...")]]
                                            [:div
                                             [badge-alert state]
-                                            (if (seq (:pending-badges @state)) [badges-pending state]
+                                            (if (seq (:pending @state)) [badges-pending state init-data]
                                               [badge-grid-form state])
                                             (cond
                                               (not-activated?) (not-activated-banner)
                                               ;(empty? (:badges @state)) [no-badges-text]
-                                              :else (when-not (seq (:pending-badges @state)) [badge-grid state]))]
+                                              :else (when-not (seq (:pending @state)) [badge-grid state]))]
                                            )])
                  :component-did-mount (fn [] (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
@@ -149,7 +149,8 @@
                      :tags-all true
                      :tags-selected []
                      :initializing true
-                     :init-id id})]
+                     :init-id id
+                     :badge-alert nil})]
     (init-data state)
     (fn []
       (layout/default site-navi [content state]))))
