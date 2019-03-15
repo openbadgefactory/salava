@@ -518,3 +518,29 @@ a.popup-info {
     color: $orange-color;
   }
 }
+
+#dashboard {
+  .block, #welcome-block .hidden-content{
+  font-family: "GT America", "Arial", sans-serif !important;
+  color: $link-color;
+
+    .heading_1 {
+      .icon {
+        color: $link-color;
+      }
+    }
+    .title,.heading_1.icon, .button, .help p{
+      color: $link-color;
+    }
+
+    .button {
+      border-color: $titlebar-color;
+      background-color: $titlebar-color;
+
+    }
+
+}
+ .content, .info-block{
+    color: #000000;
+  }
+}
