@@ -1,14 +1,15 @@
 (ns salava.badge.ui.pending
-  (:require [reagent.core :refer [atom cursor]]
+  (:require [reagent.core :refer [atom cursor create-class]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [path-for plugin-fun]]
+            [salava.core.ui.helper :refer [path-for plugin-fun private?]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.badge.ui.helper :as bh]
             [salava.badge.ui.modal :as bm]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent.session :as session]
             [salava.core.ui.popover :refer [info]]
+            [reagent-modals.modals :as m]
             #_[salava.metabadge.ui.metabadge :as mb]))
 
 (defn init-data [state]
@@ -26,24 +27,29 @@
                        :id (:id @state)
                        :content-language (init-content-language (:content data))))}))
 
-(defn update-visibility [visibility state]
+(defn update-status [id new-status state reload-fn]
   (ajax/POST
-    (path-for (str "/obpv1/badge/set_visibility/" (:id @state)))
+    (path-for (str "/obpv1/badge/set_status/" id))
+    {:response-format :json
+     :keywords? true
+     :params {:status new-status}
+     :handler (fn []
+                  (js/setTimeout (fn [] (swap! state assoc :badge-alert nil)) 3000)
+                #_(reload-fn state))
+     :error-handler (fn [{:keys [status status-text]}])}))
+
+(defn update-visibility [visibility badge state reload-fn]
+  (swap! state assoc :badge-alert nil)
+  (ajax/POST
+    (path-for (str "/obpv1/badge/set_visibility/" (:id badge)))
     {:params {:visibility visibility}
      :handler (fn [data]
                 (when (= (:status data) "success")
-                  (reset! (cursor state [:visibility]) visibility )
+                  (update-status (:id badge) "accepted" state reload-fn)
+                  (swap! state assoc :badge-alert "accepted" :badge-name (:name badge))
                   ))}))
 
-(defn update-status [id new-status state]
-  (ajax/POST
-     (path-for (str "/obpv1/badge/set_status/" id))
-     {:response-format :json
-      :keywords? true
-      :params {:status new-status}
-      :handler (fn []
-                 (init-data state))
-      :error-handler (fn [{:keys [status status-text]}])}))
+
 
 
 (defn num-days-left [timestamp]
@@ -91,35 +97,35 @@
           }(t :admin/Showmore)]
      [show-more-content state]]))
 
-(defn visibility-settings [visibility state]
+#_(defn visibility-settings [visibility state]
   (fn []
     [:div.col-md-12
      [:div.dropdown
-       [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
-                                                                       "public" [:i.fa.fa-globe]
-                                                                       "private" [:i.fa.fa-lock]
-                                                                       "internal" [:i.fa.fa-group]
-                                                                       (t :badge/Public)) #_[:i.fa.fa-share-alt] (case @(cursor state [:visibility])
+      [:a.dropdown-toggle {:data-toggle "dropdown" :type "button" } (case @(cursor state [:visibility])
+                                                                      "public" [:i.fa.fa-globe]
+                                                                      "private" [:i.fa.fa-lock]
+                                                                      "internal" [:i.fa.fa-group]
+                                                                      (t :badge/Public)) #_[:i.fa.fa-share-alt] (case @(cursor state [:visibility])
                                                                                                                   "public" (t :badge/Public)
                                                                                                                   "private" (t :badge/Private)
                                                                                                                   "internal" (t :badge/Shared)
                                                                                                                   (t :badge/Public)) [:i.fa.fa-chevron-down]]
       [info "Set your badge visibility" "bottom"]
-       [:ul.dropdown-menu
-        [:li [:a {:href "#" :on-click #(do
-                                         (.preventDefault %)
-                                         (update-visibility "public" state)
-                                         )} [:i {:class "fa fa-globe" }] [:div.text (t :badge/Public)]]]
-        [:li [:a {:href "#" :on-click #(do
-                                         (.preventDefault %)
-                                         (update-visibility "internal" state)
-                                         )} [:i {:class "fa fa-group" }] [:div.text (t :badge/Shared)]]]
-        [:li [:a {:href "#" :on-click #(do
-                                         (.preventDefault %)
-                                         (update-visibility "private" state)
-                                         )} [:i {:class "fa fa-lock" }] [:div.text (t :badge/Private)]]]
-        ]]
-      [:hr.line]]
+      [:ul.dropdown-menu
+       [:li [:a {:href "#" :on-click #(do
+                                        (.preventDefault %)
+                                        (update-visibility "public" state)
+                                        )} [:i {:class "fa fa-globe" }] [:div.text (t :badge/Public)]]]
+       [:li [:a {:href "#" :on-click #(do
+                                        (.preventDefault %)
+                                        (update-visibility "internal" state)
+                                        )} [:i {:class "fa fa-group" }] [:div.text (t :badge/Shared)]]]
+       [:li [:a {:href "#" :on-click #(do
+                                        (.preventDefault %)
+                                        (update-visibility "private" state)
+                                        )} [:i {:class "fa fa-lock" }] [:div.text (t :badge/Private)]]]
+       ]]
+     [:hr.line]]
     ;]
     ))
 
@@ -169,7 +175,58 @@
        "declined" (t :badge/Badgedeclined)
        "")]))
 
-(defn badge-pending [badge state]
+(defn visibility-modal [badge state reload-fn]
+  (let [visibility (atom (:visibility badge))]
+  (create-class {:reagent-render
+                 (fn [] [:div#badge-settings {:style {:padding "10px"}}
+                         [:form {:class "form-horizontal"}
+                          [:div ;{:class "col-md-12"}
+                           [:fieldset {:class "form-group visibility"}
+                            [:legend {:class "col-md-9 sub-heading"}
+                             (t :badge/Badgevisibility) [info (t :badge/Visibilityinfo) "right"]]
+                            [:div {:class (str "col-md-12 " @visibility) :style {:margin-top "20px"}}
+                             (if-not (private?)
+                               [:div [:input {:id              "visibility-public"
+                                              :name            "visibility"
+                                              :value           "public"
+                                              :type            "radio"
+                                              :on-change       #(do
+                                                                  (.preventDefault %)
+                                                                  (reset! visibility "public"))}]
+                                [:i {:class "fa fa-globe" }]
+                                [:label {:for "visibility-public"}
+                                 (t :badge/Public)]])
+                             [:div [:input {:id              "visibility-internal"
+                                            :name            "visibility"
+                                            :value           "internal"
+                                            :type            "radio"
+                                            :on-change       #(do
+                                                                (.preventDefault %)
+                                                                (reset! visibility "internal"))}]
+                              [:i {:class "fa fa-group" }]
+                              [:label {:for "visibility-internal"}
+                               (t :badge/Shared)]]
+                             [:div [:input {:id              "visibility-private"
+                                            :name            "visibility"
+                                            :value           "private"
+                                            :type            "radio"
+                                            :on-change       #(do
+                                                                (.preventDefault %)
+                                                                (reset! visibility "private"))
+                                            :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))}]
+                              [:i {:class "fa fa-lock" }]
+                              [:label {:for "visibility-private"}
+                               (t :badge/Private)]]]]]]
+                         [:hr.border]
+                         [:button.btn.btn-primary {:on-click #(do
+                                                                (.preventDefault %)
+                                                                (update-visibility @visibility badge state reload-fn)
+                                                                )
+                                                   :data-dismiss "modal"}(t :core/Save)]
+                         ])
+                 :component-will-unmount (fn [] (m/close-modal!))})))
+
+(defn badge-pending [badge state reload-fn]
   [:div.row {:key (:id badge)}
    [:div.col-md-12
     [:div.badge-container-pending.thumbnail
@@ -178,23 +235,25 @@
       [:div.col-md-12
        [:button {:class "btn btn-primary"
                  :on-click #(do
-                              (update-status (:id badge) "accepted" state)
+                              (m/modal! [visibility-modal badge state reload-fn] {:size :md :hidden (fn [] (reload-fn state))})
+                              #_(update-status (:id badge) "accepted" state init-data)
                               (.preventDefault %)
-                              (swap! state assoc :badge-alert "accepted" :badge-name (:name badge)))}
+                              )
+                 :data-dismiss "modal"}
         (t :badge/Acceptbadge)]
        [:button {:class "btn btn-warning"
                  :on-click #(do
-                              (update-status (:id badge) "declined" state)
+                              (update-status (:id badge) "declined" state reload-fn)
                               (.preventDefault %)
                               (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
         (t :badge/Declinebadge)]]]]]])
 
-(defn badges-pending [state]
+(defn badges-pending [state reload-fn]
   (if (:spinner @state)
     [:div.ajax-message
      [:i {:class "fa fa-cog fa-spin fa-2x "}]
      [:span (str (t :core/Loading) "...")]
      [:hr]]
     (into [:div {:id "pending-badges"}]
-          (for [badge (:pending-badges @state)]
-            (badge-pending badge state)))))
+          (for [badge (:pending @state)]
+            (badge-pending badge state reload-fn)))))
