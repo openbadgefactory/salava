@@ -322,7 +322,7 @@
      [:div.row_2.help;.getting-started.block-content
       [:div.heading_1
        [:i.fa.fa-info-circle.icon]
-       [:span.title.help (t :core/help)]]
+       [:span.title.help (t :core/Help)]]
       [:div.content
        [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
