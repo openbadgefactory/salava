@@ -155,7 +155,7 @@
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
     " " (t :badge/Importbadgesresults3) "."]])
 
-(defn mozilla-importer-block [state]
+#_(defn mozilla-importer-block [state]
   [:div {:class "import-badges"}
    [:h2.uppercase-header (t :badge/Importfrom)]
    [import-info]
@@ -198,12 +198,13 @@
         [:h1.uppercase-header (t :badge/ImportBadge)]
         [upload/badge-file-upload-content state]
         [:br]
-        [:a {:style {:cursor "default"}
+        [upload/assertion-url-upload-content state]
+        #_[:a {:style {:cursor "default"}
               :on-click #(do (.preventDefault %)
                           (if (identical? @display-atom "block") (reset! display-atom "none") (reset! display-atom "block")))}  (if (identical? @display-atom "none") (t :badge/Showmoreoptions) (str (t :admin/Showless) "..."))]
-        [:div {:style {:display @display-atom}}
+        #_[:div {:style {:display @display-atom}}
          [upload/assertion-url-upload-content state]
-         [mozilla-importer-block state]
+         #_[mozilla-importer-block state]
          ]])]))
 
 
