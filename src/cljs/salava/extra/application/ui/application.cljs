@@ -369,7 +369,7 @@
     (init-data state {:country "all" :order "mtime" :issuer-name "" :name ""})
     (fn []
       [:div.badges
-       [:p.header (t :badge/Latestearnablebadges)]
+       [:p.header (t :social/Latestearnablebadges)]
        (reduce (fn [r application]
                  (conj r [:a {:href "#" :on-click #(do
                                                      (.preventDefault %)
