@@ -295,7 +295,7 @@
        [:div.profile-block.row_1;.block-content
         [:div.heading_1
          [:i.fa.fa-user.icon]
-         [:a {:href (path-for "/user/profile" (get-in user [:user :id]))}[:span.title
+         [:a {:href (str (path-for "/user/profile/" ) (get-in user [:user :id]))}[:span.title
           (t :user/Profile)]]]
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
