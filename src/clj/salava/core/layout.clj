@@ -24,8 +24,7 @@
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
-   "/js/ckeditor/ckeditor.js"
-   "/js/simplemde.min.js"])
+   "/js/ckeditor/ckeditor.js"])
 
 
 (defn with-version [ctx resource-name]
