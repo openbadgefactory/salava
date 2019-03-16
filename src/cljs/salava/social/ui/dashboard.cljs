@@ -223,7 +223,7 @@
      [:div.row_2;.block-content
       [:div.heading_1
        [:i.fa.fa-search.icon]
-       [:span.title (t :gallery/Explore)]]
+       [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Explore)]]]
       [:div.content
        [:div.info-block.badge-connection
         [:a {:href (path-for "/gallery/badges")}
@@ -258,7 +258,7 @@
      [:div.row_2
       [:div
        [:div.heading_1 [:i.fa.fa-group.icon]
-        [:span.title (t :social/Connections)]]
+        [:a {:href (path-for "/connections")}[:span.title (t :social/Connections)]]]
        [:div.content;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block.badge-connection
@@ -295,8 +295,8 @@
        [:div.profile-block.row_1;.block-content
         [:div.heading_1
          [:i.fa.fa-user.icon]
-         [:span.title
-          (t :user/Profile)]]
+         [:a {:href (path-for "/user/profile" (get-in user [:user :id]))}[:span.title
+          (t :user/Profile)]]]
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
          [:div.visibility
@@ -319,7 +319,7 @@
   [:div {:class "box col-md-3"}
    [:div#box_3
     [:div.col-md-12.block
-     [:div.row_2.help;.getting-started.block-content
+     [:div.row_2.help
       [:div.heading_1
        [:i.fa.fa-info-circle.icon]
        [:span.title.help (t :core/Help)]]
@@ -327,7 +327,7 @@
        [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
        [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
-       (when (some #(= % :extra/application) (session/get :plugins))[:p (t :social/Iwanttoearnnewbadges)])
+       (when (some #(= % "extra/application") (session/get :plugins))[:p (t :social/Iwanttoearnnewbadges)])
        [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]])
 
 (defn content [state]
@@ -340,9 +340,7 @@
     [notifications-block state]
     [badges-block state]
     [profile-block state]]
-
    [:div.row
-    ;[profile-block state]
     [explore-block state]
     [connections-block state]
     [help-block]]])

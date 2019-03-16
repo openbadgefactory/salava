@@ -41,7 +41,7 @@
       (not (empty? verification-key))  (str "/user/verify_email/" verification-key)
       (and (not (empty? manual-referrer)) (string/starts-with? manual-referrer "/")) manual-referrer
       ;(and (not (empty? path)) (not= "/user/login" path) (not= path (path-for "/user/login"))) path
-      :else "/social/stream")))
+      :else "/social/dashboard")))
 
 (defn toggle-accept-terms [state]
   (let [ user-id (:user-id @state)
