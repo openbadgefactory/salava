@@ -11,7 +11,8 @@
             [reagent-modals.modals :as m]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.error :as err]
-            [salava.core.ui.grid :as g]))
+            [salava.core.ui.grid :as g]
+            [cljsjs.simplemde]))
 
 
 (defn endorsement-row [endorsement]
