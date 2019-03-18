@@ -317,8 +317,15 @@ a.popup-info {
 
   }
 
+  #box_3 {
+    .help p {
+      color: #26a0da;
+    }
+
+  }
+
   .info-block {
-    background-color: #314755 !important;
+   background-color: #314755;
   }
 
   .block {
@@ -333,6 +340,22 @@ a.popup-info {
 
     .button {
       background-color: #26a0da !important;
+    }
+
+    .content {
+      .badge-connection {
+        background-color: #26a0da !important;
+      }
+
+      .endorsement {
+        background-color: #00D2CE;
+      }
+
+      .page {
+        background-color: #49E5AD;
+      }
+
+
     }
 
   }
