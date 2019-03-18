@@ -171,7 +171,7 @@
 
     (js/setTimeout (fn [] (.value editor @value)) 200) ;;delay for editor to load
     (set! (.-onclick js/document) (fn [] (js/setTimeout (fn [] (.value editor @value)) 1))) ;refresh editor value
-    (.codemirror.on editor "mousedown" (fn [] (.value editor @value)))
+    ;(.codemirror.on editor "mousedown" (fn [] (.value editor @value)))
     (.codemirror.on editor "change" (fn [] (reset! value (.value editor))))))
 
 (defn markdown-editor [value]
@@ -183,7 +183,7 @@
                                     [:textarea {:class "form-control"
                                                 :id (str "editor" (-> (session/get :user) :id))
                                                 :value @value
-                                                :on-change #(reset! value (.-target.value %))
+                                                ;:on-change #(reset! value (.-target.value %))
                                                 }]]) }))
 
 (defn process-text [s state]
