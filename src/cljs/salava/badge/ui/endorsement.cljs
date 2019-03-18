@@ -165,21 +165,26 @@
 (defn init-editor [value element-id]
   (let [editor (js/SimpleMDE. (js-obj "element" (.getElementById js/document element-id)
                                       "toolbar" simplemde-toolbar
-                                      "autosave" "true"
-                                      "forceSync" "true"))]
+                                      "autofocus" "true"
+                                      "spellChecker" "false"
+                                      ))]
 
     (js/setTimeout (fn [] (.value editor @value)) 200) ;;delay for editor to load
-    (set! (.-onclick js/document) (fn [] (js/setTimeout (fn [] (.value editor @value)) 1))) ;refresh editor value
-    ;(.codemirror.on editor "mousedown" (fn [] (.value editor @value)))
+
+    ;(.value editor @value)
+    (set! (.-onclick js/document) (fn [] (js/setTimeout (fn [] (.value editor @value)) 10))) ;refresh editor value
+    (.codemirror.on editor "mousedown" (fn [] (.value editor @value)))
     (.codemirror.on editor "change" (fn [] (reset! value (.value editor))))))
 
 (defn markdown-editor [value]
-  (create-class {:component-did-mount #(init-editor value (str "editor" (-> (session/get :user) :id)))
+  (create-class {:component-did-mount (fn []
+                                        #_(.getScript (js* "$") "/js/simplemde.min.js")
+                                        (init-editor value (str "editor" (-> (session/get :user) :id))))
                  :reagent-render (fn []
                                    [:div.form-group {:style {:display "block"}}
                                     [:textarea {:class "form-control"
                                                 :id (str "editor" (-> (session/get :user) :id))
-                                                :value @value
+                                                :defaultValue @value
                                                 ;:on-change #(reset! value (.-target.value %))
                                                 }]]) }))
 
