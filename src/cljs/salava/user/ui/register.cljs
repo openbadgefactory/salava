@@ -22,7 +22,7 @@
     #_(if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
         "/social/stream"
         path)
-    "/social/stream"
+    "/social"
     ))
 
 (defn send-registration [state]
