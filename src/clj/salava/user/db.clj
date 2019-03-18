@@ -464,6 +464,6 @@
    ;:events_count (count events)
    :pages_count (->> (p/user-pages-all ctx user-id) count)
    :files_count (->> (f/user-files-all ctx user-id) :files count)
-   :gallery (g/gallery-stats ctx (:last_login user-info))
+   ;:gallery (g/gallery-stats ctx)
    :user-profile user-profile }))
 

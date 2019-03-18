@@ -560,6 +560,10 @@ background-color:#756A70;
       background-color: #316631;
     }
 
+    .small-text {
+      font-size: initial;
+    }
+
   }
 
 
@@ -811,7 +815,12 @@ background-color:#756A70;
   min-height: 60px;
 
   .welcome-block {
-    background-color: $titlebar-color;
+    //background-color: $titlebar-color;
+    background: #134E5E;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to left, #71B280, #134E5E);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to left, #71B280, #134E5E); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+
     border: none;
     border-radius: 10px;
     -moz-box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.149019607843137);
@@ -844,7 +853,7 @@ background-color:#756A70;
 
   .hidden-content {
     //display: none;
-    background-color: $titlebar-color;
+    //background-color: $titlebar-color;
     color: #FFFFFF;
     font-size: 12px;
     margin: auto;
