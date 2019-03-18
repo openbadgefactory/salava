@@ -190,10 +190,10 @@
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
     (if block [block] [:div ""])))
 
-(defn application-button []
+(defn application-button [opt]
   (let [button (first (plugin-fun (session/get :plugins) "application" "button"))]
     (if button
-      [button]
+      [button opt]
       [:div ""])))
 
 (defn badges-block [state]
@@ -207,7 +207,7 @@
           [:div.heading_1
            [:i.fa.fa-certificate.icon]
            [:a {:href (path-for "/badge")} [:span.title (t :badge/Badges)]]]
-          (when-not (not-activated?)  [application-button]); [:button.btn.button "Earn badges"]
+          (when-not (not-activated?)  [application-button "button"]); [:button.btn.button "Earn badges"]
           [:div.content
            [:div.stats
             [:div.total-badges
@@ -353,7 +353,7 @@
        [:div.content[:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
        [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
-       (when (some #(= % "extra/application") (session/get :plugins))[:p (t :social/Iwanttoearnnewbadges)])
+       [application-button "link"]
        [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]]])
 
 (defn content [state]
