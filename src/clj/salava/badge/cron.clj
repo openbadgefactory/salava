@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
+            [clj-time.core :as t]
             [salava.core.util :as u]
             [salava.core.http :as http]))
 
@@ -27,7 +28,7 @@
       :else nil)))
 
 (defn- issuer-verified? [factory-url asr]
-  (when (and (string? factory-url) (map? asr))
+  (when (and (string? factory-url) (map? asr) (string/starts-with? (get asr :id "") factory-url))
     (try
       (let [badge (if (map? (:badge asr)) (:badge asr) (http/json-get (:badge asr)))
             issuer-url (if (map? (:issuer badge)) (get-in badge [:issuer :id]) (:issuer badge))
@@ -54,13 +55,13 @@
 
 (defn- check-badges [db-conn factory-url]
   (log/info "check-badges: started working")
-  (let [time-limit (+ (System/currentTimeMillis) (* 15 60 1000))
+  (let [time-limit (+ (System/currentTimeMillis) (* 30 60 1000))
         sql "SELECT id, badge_id, assertion_url FROM user_badge
             WHERE assertion_url IS NOT NULL
             AND deleted = 0 AND revoked = 0 AND status = 'accepted'
             AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
             ORDER BY last_checked LIMIT 1000"]
-    (doseq [chunk (partition-all 10 (jdbc/query db-conn [sql]))]
+    (doseq [chunk (partition-all 5 (jdbc/query db-conn [sql]))]
       (when (> time-limit (System/currentTimeMillis))
         (doseq [user-badge chunk]
           (try
@@ -68,6 +69,8 @@
             (check-badge db-conn factory-url user-badge)
             (jdbc/execute! db-conn ["UPDATE user_badge SET last_checked = UNIX_TIMESTAMP() WHERE id = ?"
                               (:id user-badge)])
+            (Thread/sleep 100)
+            (catch InterruptedException _)
             (catch Throwable ex
               (log/error "check-badges failed")
               (log/error (.toString ex)))))
@@ -76,5 +79,8 @@
 
 ;;;
 
+
 (defn every-hour [ctx]
-  (check-badges (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url])))
+  (let [h (t/hour (t/now))]
+    (when (and (not= h 14) (not= h 15)) ; skip during afternoon hours
+      (check-badges (:connection (u/get-db ctx)) (get-in ctx [:config :factory :url])))))
