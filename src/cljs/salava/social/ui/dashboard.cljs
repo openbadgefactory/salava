@@ -15,11 +15,16 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :as pb]))
 
-
+(defn init-gallery-stats [state]
+  (ajax/GET
+    (path-for (str "/obpv1/gallery/stats"))
+    {:handler (fn [data]
+                (swap! state assoc :gallery data))}))
 
 (defn init-dashboard [state]
   (stream/init-data state)
   (pb/init-data state)
+  (init-gallery-stats state)
   (ajax/GET
     (path-for (str "/obpv1/user/dashboard"))
     {:handler (fn [data]
@@ -134,19 +139,22 @@
 
 
 (defn welcome-block [state]
-  [:div#welcome-block {:class "block"}
-   [:div.welcome-block.block-content.row
-    [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
-     [:div.content
-      [:div
-       [:i.fa.fa-chevron-down.icon] (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!")]]
-     [:div.collapse.hidden-content {:id "hidden" }
-      [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
-      ]
-     ]]])
+  (let [welcome-tip (get-in @state [:tips :welcome-tip])
+        site-name (session/get :site-name)]
+    [:div#welcome-block {:class "block"}
+     [:div.welcome-block.block-content.row
+      [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
+       [:div.content
+        [:div
+         [:i.fa.fa-chevron-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
+       [:div.collapse.hidden-content {:id "hidden" }
+        [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
+        ]
+       ]]]))
 
 (defn notifications-block [state]
-  (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))]
+  (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
+        tips (:tips @state)]
     [:div {:class "box col-md-4" }
      [:div#box_1
       [:div.col-md-12.block
@@ -154,18 +162,28 @@
        [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
          [:a {:href "social/stream"} [:span.title (t :social/Stream)]] [:span.badge (count (:events @state))]]
-        (reduce (fn [r event]
-                  (conj r [:div.notification-div.ax_default
-                           (cond
-                             (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
-                             (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
-                             (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
-                             (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
-                             (= "advert" (:type event)) (badge-advert-event event state)
-                             (= "message" (:verb event)) [message-event event state]
-                             :else "")
-                           ])
-                  )[:div.content] events)
+        (if (not-activated?)
+          [:div.content
+           [:div {:style {:font-size "initial"}}
+            [:p (t :social/Notactivatedbody1)]
+            [:ul
+             [:li (t :social/Notactivatedbody2)]
+             [:li (t :social/Notactivatedbody3)]
+             [:li (t :social/Notactivatedbody4)]
+             [:li (t :social/Notactivatedbody5)]
+             [:li (t :social/Notactivatedbody6)]]]]
+          (reduce (fn [r event]
+                    (conj r [:div.notification-div.ax_default
+                             (cond
+                               (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
+                               (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
+                               (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
+                               (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
+                               (= "advert" (:type event)) (badge-advert-event event state)
+                               (= "message" (:verb event)) [message-event event state]
+                               :else "")
+                             ])
+                    )[:div.content] events))
         ]]]]))
 
 (defn latest-earnable-badges []
@@ -180,7 +198,8 @@
 
 (defn badges-block [state]
   (fn []
-    (let [badges (:badges @state )]
+    (let [badges (:badges @state )
+          welcome-tip (get-in @state [:tips :welcome-tip])]
       [:div {:class "box col-md-5 "}
        [:div#box_2
         [:div.col-md-12.block
@@ -206,14 +225,16 @@
                                                              (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
                                                              ) [:div] (take 5 (:pending-badges @state)))
                                                    )])
-           [:div.badges
-            [:p.header (t :social/Lastestearnedbadges)]
-            (reduce (fn [r badge]
-                      (conj r [:a {:href "#" :on-click #(do
-                                                          (.preventDefault %)
-                                                          (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
-                      ) [:div] badges)
-            ]
+           (if welcome-tip
+             [:div.pending [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]]
+             [:div.badges
+              [:p.header (t :social/Lastestearnedbadges)]
+              (reduce (fn [r badge]
+                        (conj r [:a {:href "#" :on-click #(do
+                                                            (.preventDefault %)
+                                                            (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
+                        ) [:div] badges)
+              ])
            [latest-earnable-badges]]]]]])))
 
 (defn explore-block [state]
@@ -288,7 +309,8 @@
             ]]]]]]]]]])
 
 (defn profile-block [state]
-  (let [user (:user-profile @state)]
+  (let [user (:user-profile @state)
+        profile-picture-tip (get-in @state [:tips :profile-picture-tip])]
     [:div.box.col-md-3
      [:div {:id "box_3"}
       [:div.col-md-12.block
@@ -296,7 +318,7 @@
         [:div.heading_1
          [:i.fa.fa-user.icon]
          [:a {:href (str (path-for "/user/profile/" ) (get-in user [:user :id]))}[:span.title
-          (t :user/Profile)]]]
+                                                                                  (t :user/Profile)]]]
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
          [:div.visibility
@@ -305,7 +327,7 @@
             "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
             nil)]
 
-         [:div
+         [:div.row
           [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]
           [:div.stats
            [:div.text
@@ -313,7 +335,10 @@
             [:p.desc (t :page/Pages)]]
            [:div.text
             [:p.num (:files_count @state)]
-            [:p.desc (t :file/Files)]]]]]]]]]))
+            [:p.desc (t :file/Files)]]]]
+          [:br]
+          [:div.row.small-text ;{:style {:font-size "initial"}}
+           (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
 
 (defn help-block [state]
   [:div {:class "box col-md-3"}
@@ -324,11 +349,12 @@
        [:i.fa.fa-info-circle.icon]
        [:span.title.help (t :core/Help)]]
       [:div.content
-       [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
+       [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
+       [:div.content[:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
        [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
        (when (some #(= % "extra/application") (session/get :plugins))[:p (t :social/Iwanttoearnnewbadges)])
-       [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]])
+       [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]]])
 
 (defn content [state]
   [:div#dashboard-container
@@ -347,7 +373,13 @@
 
 
 (defn handler [site-navi]
-  (let [state (atom {})]
+  (let [state (atom {:endorsing 0
+                     :endorsers 0
+                     :badges []
+                     :pending-endorsements 0
+                     :connections {:badges 0}
+                     :pages_count 0
+                     :files_count 0})]
     (init-dashboard state)
     (fn [] (layout/dashboard site-navi [content state]))))
 
