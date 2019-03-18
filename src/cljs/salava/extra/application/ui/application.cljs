@@ -377,6 +377,10 @@
                           [:img {:src (str "/" (:image_file application))}]]))
                  [:div] (take 5 (:applications @state)))])))
 
-(defn ^:export button []
+(defn ^:export button [opt]
   (fn []
-    [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]))
+   (case opt
+     "button" [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]
+     "link" [:a {:href (str (path-for "/badge/application"))}[:p (t :social/Iwanttoearnnewbadges)]]
+     [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]])))
+
