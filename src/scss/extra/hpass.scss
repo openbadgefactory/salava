@@ -511,8 +511,8 @@ ul#secondary-menu-links li a i.fa {
 }
 
 .fa-trash {
-    color: $dark-red !important;
-  }
+  color: $dark-red !important;
+}
 a.popup-info {
   .fa {
     color: $orange-color;
@@ -520,9 +520,16 @@ a.popup-info {
 }
 
 #dashboard {
+  #welcome-block {
+    .welcome-block {
+    background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+    }
+
+  }
+
   .block, #welcome-block .hidden-content{
-  font-family: "GT America", "Arial", sans-serif !important;
-  color: $link-color;
+    font-family: "GT America", "Arial", sans-serif !important;
+    color: $link-color;
 
     .heading_1 {
       .icon {
@@ -535,12 +542,51 @@ a.popup-info {
 
     .button {
       border-color: $titlebar-color;
-      background-color: $titlebar-color;
+
+      background: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
 
     }
 
-}
- .content, .info-block{
-    color: #000000;
   }
+  .info-block {
+    background-color: rgba(86, 142, 180, 1);
+  }
+  .content, .info-block{
+    color: #000000;
+
+    .badge-connection {
+      background-color: rgba(77, 148, 139, 1) !important;
+    }
+
+    .endorsement {
+      background-color: #00D2CE;
+    }
+
+    .page {
+      background-color:rgba(199, 116, 160, 1);
+    }
+
+  }
+
+  .block {
+    background: inherit;
+    background-color: rgba(244, 244, 244, 1);
+    border-color: rgba(242, 249, 191, 1);
+    border-width:2px;
+
+    .title , a {
+      text-decoration: none !important;
+    }
+
+    .content .badges {
+      color: $text-color;
+    }
+  }
+
+
+
+  #box_1 .notifications-block .notification-div .content-text .date {
+    color: $text-color;
+  }
+
 }
