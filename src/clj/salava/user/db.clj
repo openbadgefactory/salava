@@ -133,7 +133,7 @@
     (let [{:keys [id pass activated verified primary_address role deleted last_login]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
       (if (and id pass (not deleted) (check-password ctx plain-password pass)) ;activated verified
         (do
-          (if last_login (store-user-last-login! {:user_id id :value last_login} (get-db ctx)) )
+          (if last_login (store-user-last-visited! {:user_id id :value last_login} (get-db ctx))) ;store last visited before updating last login
           (update-user-last_login! {:id id} (get-db ctx))
           {:status "success" :id id})
         (if (and id pass deleted (check-password ctx plain-password pass))
@@ -424,9 +424,13 @@
       (put-pending-badge-email! {:user_id user-id :email (:email user-badge) :primary (if new-account 1 0)} (u/get-db ctx))
       (update-user-activate! {:id user-id} (get-db ctx)))))
 
+(defn last-visited [ctx user-id]
+  (select-user-last-visited (into {:result-set-fn first :row-fn :value} (get-db ctx))))
+
 (defn set-session [ctx ok-status user-id]
-  (let [{:keys [role id private activated]} (user-information ctx user-id)]
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated})))
+  (let [{:keys [role id private activated]} (user-information ctx user-id)
+        last-visited (last-visited ctx user-id)]
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited})))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
@@ -440,7 +444,6 @@
 
 (defn get-user-ids-from-event-owners [ctx]
   (select-userid-from-event-owners {} (get-db ctx)) )
-
 
 
 (defn dashboard-info [ctx user-id]
