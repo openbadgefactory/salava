@@ -139,8 +139,7 @@
    (path-for "/obpv1/gallery/badges")
    {:params  init-params
     :handler (fn [data]
-               (let [{:keys [badges countries user-country tags badge_count]} data
-                     filter-options (session/get :fil)]
+               (let [{:keys [badges countries user-country tags badge_count]} data]
                  (value-helper state tags)
                  (swap! state assoc
                         :page_count (inc (:page_count @state))
