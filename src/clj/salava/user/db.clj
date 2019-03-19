@@ -425,7 +425,7 @@
       (update-user-activate! {:id user-id} (get-db ctx)))))
 
 (defn last-visited [ctx user-id]
-  (select-user-last-visited (into {:result-set-fn first :row-fn :value} (get-db ctx))))
+  (select-user-last-visited {:user_id user-id} (into {:result-set-fn first :row-fn :value} (get-db ctx))))
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)
