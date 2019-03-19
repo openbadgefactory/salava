@@ -254,23 +254,34 @@
            [:p.num (get-in @state [:gallery :badges])]
            [:p.desc (t :badge/Badges)]]]]]
        [:div.info-block.page
-        [:a {:href (path-for "/gallery/pages")}[:div.info
-                                                [:i.fa.fa-file.icon]
-                                                [:div.text
-                                                 [:p.num (get-in @state [:gallery :pages :all])]
-                                                 [:p.desc (t :page/Pages)]
-                                                 (when (pos? (get-in @state [:gallery :pages :since-last-visited]))
-                                                   [:p.new (get-in @state [:gallery :pages :since-last-visited] 0)]
-                                                   )
-                                                 ]]]]
+        [:a {:href (path-for "/gallery/pages")}[:div
+                                                [:div.info
+                                                 [:i.fa.fa-file.icon]
+                                                 [:div.text
+                                                  [:p.num (get-in @state [:gallery :pages :all])]
+                                                  [:p.desc (t :page/Pages)]
+                                                  #_(when (pos? (get-in @state [:gallery :pages :since-last-visited]))
+                                                      [:p.new (get-in @state [:gallery :pages :since-last-visited] 0)]
+                                                      )
+                                                  ]]
+                                                [:br]
+                                                (when (pos? (get-in @state [:gallery :pages :since-last-visited]))
+                                                  [:p.new {:style {:margin-top "10px"}} (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]
+                                                  )
+                                                ]]]
        [:div.info-block
-        [:a {:href (path-for "/gallery/profiles")}[:div.info
-                                                   [:i.fa.fa-user.icon]
-                                                   [:div.text
-                                                    [:p.num (get-in @state [:gallery :profiles :all])]
-                                                    [:p.desc (t :gallery/Profiles)]
+        [:a {:href (path-for "/gallery/profiles")}[:div
+                                                   [:div.info
+                                                    [:i.fa.fa-user.icon]
+                                                    [:div.text
+                                                     [:p.num (get-in @state [:gallery :profiles :all])]
+                                                     [:p.desc (t :gallery/Profiles)]
+                                                     #_(when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
+                                                       [:p.new (str "+ " (get-in @state [:gallery :profiles :since-last-visited] 0))])
+                                                     ]
+                                                    [:br]
                                                     (when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
-                                                      [:p.new (get-in @state [:gallery :profiles :since-last-visited] 0)])
+                                                      [:p.new {:style {:margin-top "10px"}} (get-in @state [:gallery :profiles :since-last-visited] 0)])
                                                     ]]]]]]]]])
 
 (defn user-connections-stats []
