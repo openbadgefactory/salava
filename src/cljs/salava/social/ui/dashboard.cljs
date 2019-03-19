@@ -257,14 +257,21 @@
         [:a {:href (path-for "/gallery/pages")}[:div.info
                                                 [:i.fa.fa-file.icon]
                                                 [:div.text
-                                                 [:p.num (get-in @state [:gallery :pages])]
-                                                 [:p.desc (t :page/Pages)]]]]]
+                                                 [:p.num (get-in @state [:gallery :pages :all])]
+                                                 [:p.desc (t :page/Pages)]
+                                                 (when (pos? (get-in @state [:gallery :pages :since-last-visited]))
+                                                   [:p.new (get-in @state [:gallery :pages :since-last-visited] 0)]
+                                                   )
+                                                 ]]]]
        [:div.info-block
         [:a {:href (path-for "/gallery/profiles")}[:div.info
                                                    [:i.fa.fa-user.icon]
                                                    [:div.text
                                                     [:p.num (get-in @state [:gallery :profiles :all])]
-                                                    [:p.desc (t :gallery/Profiles)]]]]]]]]]])
+                                                    [:p.desc (t :gallery/Profiles)]
+                                                    (when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
+                                                      [:p.new (get-in @state [:gallery :profiles :since-last-visited] 0)])
+                                                    ]]]]]]]]])
 
 (defn user-connections-stats []
   (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
@@ -336,9 +343,9 @@
            [:div.text
             [:p.num (:files_count @state)]
             [:p.desc (t :file/Files)]]]]
-          [:br]
-          [:div.row.small-text ;{:style {:font-size "initial"}}
-           (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
+         [:br]
+         [:div.row.small-text ;{:style {:font-size "initial"}}
+          (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
 
 (defn help-block [state]
   [:div {:class "box col-md-3"}
@@ -351,10 +358,10 @@
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
        [:div [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
-       [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
-       [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
-       [application-button "link"]
-       [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]]])
+        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
+        [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
+        [application-button "link"]
+        [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]]])
 
 (defn content [state]
   [:div#dashboard-container
