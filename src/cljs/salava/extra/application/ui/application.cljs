@@ -315,14 +315,15 @@
                 (swap! state assoc :all-applications (:applications data)))}))
 
 (defn init-data [state init-params]
+  (let [country (session/get-in [:filter-options :country] (:country init-params))]
   (ajax/GET
     (path-for "/obpv1/application/")
-    {:params  init-params
+    {:params  (assoc init-params :country country)
      :handler (fn [data]
                 (let [{:keys [applications countries user-country]} data]
                   (swap! state assoc :applications applications
                          :countries countries)
-                  (init-all-issuers state init-params)))}))
+                  (init-all-issuers state init-params)))})))
 
 
 (defn init-values
@@ -345,7 +346,7 @@
                                 :user-id            user-id
                                 :badges             []
                                 :countries          []
-                                :country-selected   (:country init-values) #_(or (:country init-values) (session/get-in [:user :country] "all"))
+                                :country-selected   (session/get-in [:filter-options :country] (:country init-values)) #_(or (:country init-values) (session/get-in [:user :country] "all"))
                                 :advanced-search    false
                                 :name               (or (:name init-values) "")
                                 :issuer-name        (or (:issuer-name init-values) "")
@@ -356,9 +357,10 @@
                                 :issuer-content {:name (t :core/All)}
                                 :issuer-search false
                                 :search-result []
-                                :show-featured true})]
+                                :show-featured true})
+        country (session/get-in [:filter-options :country] (:country init-values))]
     (init-data state init-values)
-    (autocomplete-search state (:country init-values))
+    (autocomplete-search state country #_(:country init-values))
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
