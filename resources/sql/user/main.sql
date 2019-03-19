@@ -14,7 +14,7 @@ SELECT user_id, verified FROM user_email WHERE email = :email
 
 -- name: select-user-by-email-address
 -- get user data by email address
-SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, role, profile_picture, country, deleted FROM user AS u
+SELECT id, first_name, last_name, pass, activated, primary_address, verified, verification_key, language, role, profile_picture, country, deleted, last_login FROM user AS u
        JOIN user_email AS ue ON ue.user_id = u.id
        WHERE email = :email
 
@@ -224,3 +224,5 @@ INSERT INTO user_email (user_id, email, verified, verification_key, primary_addr
 VALUES (:user_id, :email, 1, NULL, :primary, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE verified=1, verification_key=NULL, mtime=UNIX_TIMESTAMP();
 
+--name: store-user-last-login!
+REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'last_login', :value );
