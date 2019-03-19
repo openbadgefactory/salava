@@ -148,7 +148,7 @@
         [:div
          [:i.fa.fa-chevron-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
        [:div.collapse.hidden-content {:id "hidden" }
-        [:p "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."]
+        [:p "Some description here..."]
         ]
        ]]]))
 
@@ -350,7 +350,7 @@
        [:span.title.help (t :core/Help)]]
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
-       [:div.content[:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
+       [:div [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
        [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
        [application-button "link"]
