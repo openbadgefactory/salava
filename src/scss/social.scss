@@ -687,6 +687,12 @@ background-color:#756A70;
 #box_1 {
   width: 100%;
   .notifications-block {
+    .badge {
+      position: absolute;
+      right: 40px;
+      top: 20px;
+
+    }
     .notification-div {
       background-color:rgba(249, 249, 249, 1);
       width: 100%;
@@ -772,21 +778,21 @@ background-color:#756A70;
       padding: 5px;
     }
 
-   /*stats {
+    /*stats {
 
-      .total-badges {
-        float: left;
-        margin-right: 15px;
-      }
-      .num {
-        font-weight: 800;
-        margin: 0;
-      }
-      .desc {
-        font-weight: 300;
-        font-size:16px;
-      }
-    }*/
+    .total-badges {
+    float: left;
+    margin-right: 15px;
+  }
+    .num {
+    font-weight: 800;
+    margin: 0;
+  }
+    .desc {
+    font-weight: 300;
+    font-size:16px;
+  }
+  }*/
 
 
   }

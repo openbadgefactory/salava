@@ -244,7 +244,8 @@
      [:div.row_2;.block-content
       [:div.heading_1
        [:i.fa.fa-search.icon]
-       [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Explore)]]]
+       [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Explore)]]
+       [:i.fa.fa-chevron-right.icon.small]]
       [:div.content
        [:div.info-block.badge-connection
         [:a {:href (path-for "/gallery/badges")}
