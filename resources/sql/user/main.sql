@@ -224,5 +224,8 @@ INSERT INTO user_email (user_id, email, verified, verification_key, primary_addr
 VALUES (:user_id, :email, 1, NULL, :primary, NULL, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE verified=1, verification_key=NULL, mtime=UNIX_TIMESTAMP();
 
---name: store-user-last-login!
-REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'last_login', :value );
+--name: store-user-last-visited!
+REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'last_visited', :value );
+
+--name: select-user-last-visited
+SELECT value from user_properties WHERE user_id = :user_id AND name = 'last_visited';
