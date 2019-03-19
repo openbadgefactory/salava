@@ -130,9 +130,10 @@
   "Check if user exists and password matches. User account must be activated."
   [ctx email plain-password]
   (try+
-    (let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+    (let [{:keys [id pass activated verified primary_address role deleted last_login]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
       (if (and id pass (not deleted) (check-password ctx plain-password pass)) ;activated verified
         (do
+          (if last_login (store-user-last-login! {:user_id id :value last_login} (get-db ctx)) )
           (update-user-last_login! {:id id} (get-db ctx))
           {:status "success" :id id})
         (if (and id pass deleted (check-password ctx plain-password pass))
