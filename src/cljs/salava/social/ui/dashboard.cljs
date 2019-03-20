@@ -302,7 +302,7 @@
        [:div.heading_1 [:i.fa.fa-group.icon]
         [:a {:href (path-for "/connections")}[:span.title (t :social/Connections)]]
         [:i.fa.fa-angle-right.icon.small]]
-       [:div.content;.connections-block;.block-content
+       [:div.content.connections-block;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block.no-bg
          [:a {:href (path-for "/connections/badge")}

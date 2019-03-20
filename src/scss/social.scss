@@ -574,20 +574,6 @@ background-color:#756A70;
       font-size: initial;
     }
 
-    .no-bg {
-      background-color: inherit;
-      color: #000000;
-      .text {
-        p.num {
-          font-size: 36px;
-        }
-
-        p.desc {
-          font-size: 16px;
-        }
-      }
-    }
-
   }
 
 
@@ -891,6 +877,7 @@ background-color:#756A70;
 }
 
 
+
 #dashboard-container {
   //display: grid;
   margin: 10px;
@@ -906,6 +893,22 @@ background-color:#756A70;
     background-color: #FF3333;
     color: #FFFFFF;
     margin-left: 4px;
+  }
+
+  .connections-block {
+    .info-block {
+      background-color: inherit;
+      color: #000000;
+      .text {
+        p.num {
+          font-size: 36px;
+        }
+
+        p.desc {
+          font-size: 16px;
+        }
+      }
+    }
   }
 
 }
