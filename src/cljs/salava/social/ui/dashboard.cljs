@@ -141,12 +141,12 @@
 (defn welcome-block [state]
   (let [welcome-tip (get-in @state [:tips :welcome-tip])
         site-name (session/get :site-name)]
-    [:div#welcome-block {:class "block"}
+    [:div#welcome-block {:class ""}
      [:div.welcome-block.block-content.row
       [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
        [:div.content
-        [:div
-         [:i.fa.fa-chevron-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
+        [:div.row
+         [:i.fa.fa-angle-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
        [:div.collapse.hidden-content {:id "hidden" }
         [:p "Some description here..."]
         ]
@@ -240,8 +240,8 @@
            [latest-earnable-badges]]]]]])))
 
 (defn explore-block [state]
-  [:div.box.col-md-4
-   [:div#box_1 {:class "row_2"}
+  [:div.box.col-md-3.col-sm-6 {:style {:min-width "30%"}}
+   [:div#box_1 {:class "row_2 explore-block"}
     [:div.col-md-12.block
      [:div.row_2;.block-content
       [:div.heading_1
@@ -262,11 +262,7 @@
                                                  [:i.fa.fa-file.icon]
                                                  [:div.text
                                                   [:p.num (get-in @state [:gallery :pages :all])]
-                                                  [:p.desc (t :page/Pages)]
-                                                  #_(when (pos? (get-in @state [:gallery :pages :since-last-visited]))
-                                                      [:p.new (get-in @state [:gallery :pages :since-last-visited] 0)]
-                                                      )
-                                                  ]]
+                                                  [:p.desc (t :page/Pages)]]]
                                                 [:br]
                                                 (when (pos? (get-in @state [:gallery :pages :since-last-visited]))
                                                   [:p.new {:style {:margin-top "10px"}} (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]
@@ -278,14 +274,11 @@
                                                     [:i.fa.fa-user.icon]
                                                     [:div.text
                                                      [:p.num (get-in @state [:gallery :profiles :all])]
-                                                     [:p.desc (t :gallery/Profiles)]
-                                                     #_(when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
-                                                         [:p.new (str "+ " (get-in @state [:gallery :profiles :since-last-visited] 0))])
-                                                     ]
+                                                     [:p.desc (t :gallery/Profiles)]]]
                                                     [:br]
                                                     (when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
                                                       [:p.new {:style {:margin-top "10px"}} (get-in @state [:gallery :profiles :since-last-visited] 0)])
-                                                    ]]]]]]]]])
+                                                    ]]]]]]]])
 
 (defn user-connections-stats []
   (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
@@ -294,46 +287,49 @@
       [:div ""])))
 
 (defn connections-block [state]
-  [:div.box.col-md-5
-   [:div#box_2
+  [:div.box.col-md-5.col-sm-6 {:style {:min-width "45%"}}
+   [:div#box_2 {:class "connections-block"}
     [:div.col-md-12.block
      [:div.row_2
       [:div
        [:div.heading_1 [:i.fa.fa-group.icon]
         [:a {:href (path-for "/connections")}[:span.title (t :social/Connections)]]
         [:i.fa.fa-angle-right.icon.small]]
-       [:div.content.connections-block;.connections-block;.block-content
+       [:div.content;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block
          ;[:a {:href (path-for "/connections/badge")}
-          [:div.info
-           #_[:i.fa.fa-certificate.icon]
-           [:div.text
-            [:p.num (get-in @state [:connections :badges])]
-            [:p.desc (t :badge/Badges)]]]];]
+         [:div.info
+          #_[:i.fa.fa-certificate.icon]
+          [:div.text
+           [:p.num (get-in @state [:connections :badges])]
+           [:p.desc (t :badge/Badges)]]]];]
         [:div.info-block
          ;[:a {:href (path-for "/connections/endorsement")}
-          [:div.info
-           #_[:i.fa.fa-thumbs-up.icon]
-           [:div.text
-            [:p.num (:endorsing @state)]
-            [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]];]
+         [:div.info
+          #_[:i.fa.fa-thumbs-up.icon]
+          [:div.text
+           [:p.num (:endorsing @state)]
+           [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]];]
 
         [:div.info-block
          ;[:a {:href (path-for "/connections/endorsement")}
-          [:div.info
-           (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
-           #_[:i.fa.fa-thumbs-up.icon]
+         [:div.info
+          (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
+          #_[:i.fa.fa-thumbs-up.icon]
 
-           [:div.text
-            [:p.num (:endorsers @state)]
-            [:p.desc "Endorsers" #_(t :badge/Endorsing)]
-            ]]]]]]]]];]
+          [:div.text
+           [:p.num (:endorsers @state)]
+           [:p.desc "Endorsers" #_(t :badge/Endorsing)]
+           ]]]]]]]]];]
   )
 
 (defn profile-block [state]
   (let [user (:user-profile @state)
-        profile-picture-tip (get-in @state [:tips :profile-picture-tip])]
+        profile-picture-tip (get-in @state [:tips :profile-picture-tip])
+        firstname (get-in user [:user :first_name] "")
+        lastname (get-in user [:user :last_name])
+        user-name (str firstname " " lastname)]
     [:div.box.col-md-3
      [:div {:id "box_3"}
       [:div.col-md-12.block
@@ -345,27 +341,33 @@
          [:i.fa.fa-angle-right.icon.small]]
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
-         [:div.visibility
-          (case (get-in user [:user :profile_visibility])
-            "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
-            "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
-            nil)]
 
          [:div.row
-          [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]
+          [:div.media
+           [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]]
+
+          [:div.media-body[:div.name.title user-name]
           [:div.stats
            [:div.text
             [:p.num (:pages_count @state)]
             [:p.desc (t :page/Pages)]]
            [:div.text
             [:p.num (:files_count @state)]
-            [:p.desc (t :file/Files)]]]]
+            [:p.desc (t :file/Files)]]
+           [:div.text
+            [:div.visibility
+             (case (get-in user [:user :profile_visibility])
+               "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
+               "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
+               nil)]
+            ]
+           ]]]]
          [:br]
          [:div.row.small-text ;{:style {:font-size "initial"}}
           (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
 
 (defn help-block [state]
-  [:div {:class "box col-md-3"}
+  [:div {:class "box col-md-3 col-sm-12"}
    [:div#box_3
     [:div.col-md-12.block
      [:div.row_2.help
@@ -391,8 +393,8 @@
     [badges-block state]
     [profile-block state]]
    [:div.row
-    [explore-block state]
     [connections-block state]
+    [explore-block state]
     [help-block]]])
 
 
