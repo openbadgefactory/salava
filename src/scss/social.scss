@@ -897,6 +897,8 @@ background-color:#756A70;
 
   .connections-block {
     .info-block {
+      width: 120px;
+      height: 82px;
       background-color: inherit;
       color: #000000;
       margin-right: 5px;
@@ -904,7 +906,8 @@ background-color:#756A70;
         p.num {
           font-size: 36px;
           color: #4d948b;
-        }
+          font-weight: 400;
+
 
         p.desc {
           font-size: 16px;
