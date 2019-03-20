@@ -899,13 +899,16 @@ background-color:#756A70;
     .info-block {
       background-color: inherit;
       color: #000000;
+      margin-right: 5px;
       .text {
         p.num {
           font-size: 36px;
+          color: #4d948b;
         }
 
         p.desc {
           font-size: 16px;
+          color: $text-color;
         }
       }
     }

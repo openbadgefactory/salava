@@ -304,26 +304,26 @@
         [:i.fa.fa-angle-right.icon.small]]
        [:div.content.connections-block;.connections-block;.block-content
         [user-connections-stats]
-        [:div.info-block.no-bg
+        [:div.info-block
          [:a {:href (path-for "/connections/badge")}
           [:div.info
-           [:i.fa.fa-certificate.icon]
+           #_[:i.fa.fa-certificate.icon]
            [:div.text
             [:p.num (get-in @state [:connections :badges])]
             [:p.desc (t :badge/Badges)]]]]]
-        [:div.info-block.no-bg
+        [:div.info-block
          [:a {:href (path-for "/connections/endorsement")}
           [:div.info
-           [:i.fa.fa-thumbs-up.icon]
+           #_[:i.fa.fa-thumbs-up.icon]
            [:div.text
             [:p.num (:endorsing @state)]
             [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]]]
 
-        [:div.info-block.no-bg
+        [:div.info-block
          [:a {:href (path-for "/connections/endorsement")}
           [:div.info
            (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
-           [:i.fa.fa-thumbs-up.icon]
+           #_[:i.fa.fa-thumbs-up.icon]
 
            [:div.text
             [:p.num (:endorsers @state)]
