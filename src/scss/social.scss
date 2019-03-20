@@ -694,6 +694,20 @@ background-color:#756A70;
   }
 }
 
+.no-bg {
+  background-color: inherit;
+  color: #000000;
+  .text {
+    p.num {
+      font-size: 36px;
+    }
+
+    p.desc {
+      font-size: 16px;
+    }
+  }
+}
+
 #box_1 {
   width: 100%;
   .notifications-block {
