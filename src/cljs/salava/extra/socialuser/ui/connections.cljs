@@ -159,7 +159,7 @@
        [:div.info-block
         [:a {:href (path-for "/connections/user")}
          [:div.info
-          [:i.fa.fa-user.icon]
+          ;[:i.fa.fa-user.icon]
           [:div.text
            [:p.num (->> (:following-users @state) count)]
            [:p.desc (t :social/Followedusers)]
@@ -169,7 +169,7 @@
         [:a {:href (path-for "/connections/user")}
          [:div.info
           (when (pos? (count (:pending @state))) [:span.badge (count (:pending @state))])
-          [:i.fa.fa-user.icon]
+          ;[:i.fa.fa-user.icon]
           [:div.text
            [:p.num (->> (:followers-users @state) count)]
            [:p.desc (t :social/Followersusers)]

@@ -533,11 +533,11 @@ a.popup-info {
 
     .heading_1 {
       .icon {
-        color: $link-color;
+        color: #568EB4;
       }
     }
     .title{
-      color: $link-color;
+      color: #568EB4;
     }
 
     .heading_1 .icon {
@@ -549,9 +549,16 @@ a.popup-info {
     }
 
     .button {
-      border-color: #c774a0; //$titlebar-color;
-      background-color: #c774a0;
-      color: #FFFFFF;
+      //border-color: #c774a0; //$titlebar-color;
+      border: none;
+      background-color: $titlebar-color; //#c774a0;
+      color: $text-color;
+
+      &:hover, &:focus, &:active:hover  {
+        background-color: rgba(242, 249, 191, 1);
+        border-color: rgba(242, 249, 191, 1);
+        /*         box-shadow: 0px 2px $box-shadow; */
+      }
 
       //background: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
 
@@ -603,7 +610,7 @@ a.popup-info {
   }
 
   .badge {
-    background-color: #b54681;
+    background-color: #c774a0;
   }
 
   .date {
