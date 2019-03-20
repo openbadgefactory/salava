@@ -370,7 +370,7 @@
      [:div.row_2.help
       [:div.heading_1
        [:i.fa.fa-info-circle.icon]
-       [:span.title.help (t :core/Help)]]
+       [:span.title.help (t :core/Quicklinks)]]
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
        [:div [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
