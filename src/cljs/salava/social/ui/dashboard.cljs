@@ -305,22 +305,22 @@
        [:div.content.connections-block;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block
-         [:a {:href (path-for "/connections/badge")}
+         ;[:a {:href (path-for "/connections/badge")}
           [:div.info
            #_[:i.fa.fa-certificate.icon]
            [:div.text
             [:p.num (get-in @state [:connections :badges])]
-            [:p.desc (t :badge/Badges)]]]]]
+            [:p.desc (t :badge/Badges)]]]];]
         [:div.info-block
-         [:a {:href (path-for "/connections/endorsement")}
+         ;[:a {:href (path-for "/connections/endorsement")}
           [:div.info
            #_[:i.fa.fa-thumbs-up.icon]
            [:div.text
             [:p.num (:endorsing @state)]
-            [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]]]
+            [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]];]
 
         [:div.info-block
-         [:a {:href (path-for "/connections/endorsement")}
+         ;[:a {:href (path-for "/connections/endorsement")}
           [:div.info
            (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
            #_[:i.fa.fa-thumbs-up.icon]
@@ -328,7 +328,8 @@
            [:div.text
             [:p.num (:endorsers @state)]
             [:p.desc "Endorsers" #_(t :badge/Endorsing)]
-            ]]]]]]]]]])
+            ]]]]]]]]];]
+  )
 
 (defn profile-block [state]
   (let [user (:user-profile @state)
