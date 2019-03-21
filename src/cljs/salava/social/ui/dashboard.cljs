@@ -255,17 +255,17 @@
           [:i.fa.fa-certificate.icon]
           [:div.text
            [:p.num (get-in @state [:gallery :badges])]
-           [:p.desc (t :badge/Badges)]]]]]
+           [:p.desc (t :gallery/Sharedbadges)]]]]]
        [:div.info-block.page
         [:a {:href (path-for "/gallery/pages")}[:div
                                                 [:div.info
                                                  [:i.fa.fa-file.icon]
                                                  [:div.text
-                                                  [:p.num (get-in @state [:gallery :pages :all])]
-                                                  [:p.desc (t :page/Pages)]]]
-                                                [:br]
+                                                  [:p.num (get-in @state [:gallery :pages :all] 0)]
+                                                  [:p.desc (t :gallery/Sharedpages)]]]
+                                                ;[:br]
                                                 (when (pos? (get-in @state [:gallery :pages :since-last-visited]))
-                                                  [:p.new {:style {:margin-top "10px"}} (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]
+                                                  [:p.new {:style {:padding-top "15px"}} (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]
                                                   )
                                                 ]]]
        [:div.info-block
@@ -273,11 +273,11 @@
                                                    [:div.info
                                                     [:i.fa.fa-user.icon]
                                                     [:div.text
-                                                     [:p.num (get-in @state [:gallery :profiles :all])]
-                                                     [:p.desc (t :gallery/Profiles)]]]
-                                                    [:br]
+                                                     [:p.num (get-in @state [:gallery :profiles :all] 0)]
+                                                     [:p.desc (t :gallery/Sharedprofiles)]]]
+                                                    ;[:br]
                                                     (when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
-                                                      [:p.new {:style {:margin-top "10px"}} (get-in @state [:gallery :profiles :since-last-visited] 0)])
+                                                      [:p.new {:style {:padding-top "15px"}} (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))])
                                                     ]]]]]]]])
 
 (defn user-connections-stats []
