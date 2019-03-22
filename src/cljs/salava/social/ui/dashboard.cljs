@@ -249,7 +249,7 @@
            [latest-earnable-badges]]]]]])))
 
 (defn explore-block [state]
-  [:div.box.col-md-3.col-sm-6 {:style {:min-width "30%"}}
+  [:div.box.col-md-3.col-sm-6.explore ;{:style {:min-width "30%"}}
    [:div#box_1 {:class "row_2 explore-block"}
     [:div.col-md-12.block
      [:div.row_2;.block-content
@@ -299,7 +299,7 @@
       [:div ""])))
 
 (defn connections-block [state]
-  [:div.box.col-md-5.col-sm-6 {:style {:min-width "45%"}}
+  [:div.box.col-md-5.col-sm-6.connections ;{:style {:min-width "45%"}}
    [:div#box_2 {:class "connections-block"}
     [:div.col-md-12.block
      [:div.row_2
