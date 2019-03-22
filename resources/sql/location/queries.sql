@@ -1,5 +1,9 @@
 --name: select-user-location
-SELECT location_lat AS lat, location_lng AS lng FROM user WHERE id = :user;
+SELECT location_lat AS lat, location_lng AS lng FROM user
+WHERE id = :user AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
+
+--name: select-user-country
+SELECT country FROM user WHERE id = :user;
 
 --name: select-user-badge-location
 SELECT COALESCE(ub.location_lat, u.location_lat) AS lat, COALESCE(ub.location_lng, u.location_lng) AS lng FROM user_badge ub
@@ -18,8 +22,8 @@ WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL AND deleted = 0;
 
 --name: select-explore-badges
 SELECT ub.id, ub.badge_id,
-    COALESCE(ub.location_lat, (u.location_lat + (RAND() * 0.005) - (RAND() * 0.005))) AS lat,
-    COALESCE(ub.location_lng, (u.location_lng + (RAND() * 0.005) - (RAND() * 0.005))) AS lng
+    COALESCE(ub.location_lat, (u.location_lat + (RAND() * 0.003) - (RAND() * 0.003))) AS lat,
+    COALESCE(ub.location_lng, (u.location_lng + (RAND() * 0.006) - (RAND() * 0.006))) AS lng
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted'

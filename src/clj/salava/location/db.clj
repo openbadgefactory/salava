@@ -4,6 +4,7 @@
             [clojure.pprint :refer [pprint]]
             [yesql.core :refer [defqueries]]
             [salava.core.util :as u]
+            [salava.location.country :as c]
             ))
 
 (defqueries "sql/location/queries.sql")
@@ -23,10 +24,13 @@
 (defn set-user-location [ctx user-id lat lng]
   {:success (boolean (update-user-location! {:user user-id :lat lat :lng lng} (u/get-db ctx)))})
 
+
 (defn user-location [ctx user-id]
-  (if-let [loc (select-user-location {:user user-id} (u/get-db-1 ctx))]
-    loc
-    {:lat nil :lng nil}))
+  (let [country (select-user-country {:user user-id} (into {:row-fn :country} (u/get-db-1 ctx)))]
+    (or
+      (select-user-location {:user user-id} (u/get-db-1 ctx))
+      (get c/lat-lng (keyword country))
+      {:lat nil :lng nil})))
 
 (defn explore-list [ctx user-id]
   {;:users  (select-explore-users  {} (u/get-db ctx))

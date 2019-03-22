@@ -24,7 +24,7 @@
                      (let [lat-lng (js/L.latLng. (or lat 65.01) (or lng 25.47))
                            my-marker (js/L.marker. lat-lng)
                            my-map (-> (js/L.map. "map-view")
-                                      (.setView lat-lng 10)
+                                      (.setView lat-lng 5)
                                       (.addLayer (js/L.TileLayer.
                                                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                                    #js {:maxZoom 18
@@ -63,7 +63,7 @@
                      (let [lat-lng (js/L.latLng. (or lat 65.01) (or lng 25.47))
                            my-marker (js/L.marker. lat-lng)
                            my-map (-> (js/L.map. "map-view")
-                                      (.setView lat-lng 10)
+                                      (.setView lat-lng 5)
                                       (.addLayer (js/L.TileLayer.
                                                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                                    #js {:maxZoom 18

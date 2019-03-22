@@ -30,17 +30,25 @@
      :component-did-mount
      (fn []
        (ajax/GET
-         (path-for "/obpv1/location/explore" true)
-         {:handler (fn [data]
-                     (let [lat-lng (js/L.latLng. 65.01 25.47)
-                           my-map (-> (js/L.map. "map-view")
-                                      (.setView lat-lng 10)
-                                      (.addLayer (js/L.TileLayer.
-                                                   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                                   #js {:maxZoom 18
-                                                        :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"})))]
+         (path-for "/obpv1/location/user" true)
+         {:handler
+          (fn [{:keys [lat lng]}]
+            (ajax/GET
+               (path-for "/obpv1/location/explore" true)
+               {:handler
+                (fn [data]
+                  (let [lat-lng (js/L.latLng. lat lng)
+                        my-map (-> (js/L.map. "map-view")
+                                   (.setView lat-lng 8)
+                                   (.addLayer (js/L.TileLayer.
+                                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                #js {:maxZoom 18
+                                                     :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"})))]
 
-                       (set-markers my-map data)))}))}))
+                    (set-markers my-map data)))
+                }))
+          }))
+     }))
 
 (defn handler [site-navi]
   (fn []
