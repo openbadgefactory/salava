@@ -472,6 +472,7 @@ background-color:#756A70;
   font-style: normal;
   font-size: 20px;
   color: #333333;
+  overflow-y: scroll;
   .icon {
     font-size: 25px;
     margin-right: 10px;
@@ -508,14 +509,15 @@ background-color:#756A70;
     word-wrap: break-word;
     cursor: pointer;
 
-  }
-  .help {
-    color: #333333;
-    text-decoration: none;
-    .icon {
-      color: #333333;
-    }
 
+    .help {
+      color: #333333;
+      text-decoration: none;
+      .icon {
+        color: #333333;
+      }
+
+    }
   }
 
   .heading_1 {
@@ -557,7 +559,7 @@ background-color:#756A70;
 
     }
     .pending {
-      color: #FF3333;
+      color: #c774a0;
       margin-top: 10px;
     }
     .badges {
@@ -707,7 +709,13 @@ background-color:#756A70;
 
   }
 
-
+  @media (max-width: 320px) {
+    .badge-block {
+      .heading_1 {
+        padding-top: 35px;
+      }
+    }
+  }
 
   @media (max-width: 420px) {
     .title, .icon {
@@ -732,7 +740,7 @@ background-color:#756A70;
     .notification-div {
       background-color:rgba(249, 249, 249, 1);
       width: 100%;
-      height: 62px;
+      height: 60px;
       color: #000000;
       border: 1px solid rgba(119, 119, 119, 1);
       border-radius: 4px;
@@ -820,10 +828,11 @@ background-color:#756A70;
     height: 396px;
   }
   .row_2 {
-    height: 346px;
+    height: 256px;
   }
   .help {
     word-wrap: break-word;
+    overflow-y: scroll;
     p {
       color: #FF6600;
       font-size: 16px;
@@ -880,8 +889,14 @@ background-color:#756A70;
     font-size: 16px;
     margin: 20px;
     line-height: 24px;
-    width: 90%;
+    width: 50%;
     padding-top: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .hidden-content {
+      width: 90%;
+    }
   }
 
   @media (max-width: 520px){
