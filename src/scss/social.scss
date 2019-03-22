@@ -456,6 +456,10 @@ background-color:#756A70;
   a {
     font-weight: 300;
   }
+
+  .connections-block {
+    min-width:45%;
+  }
 }
 .block {
   background: inherit;
@@ -500,7 +504,7 @@ background-color:#756A70;
 
   }
   .title {
-    text-decoration: underline;
+    //text-decoration: underline;
     font-weight: 500;
     font-style: normal;
     font-size: 28px;
@@ -559,7 +563,7 @@ background-color:#756A70;
 
     }
     .pending {
-      color: #c774a0;
+      color: #cc0000;
       margin-top: 10px;
     }
     .badges {
@@ -775,7 +779,7 @@ background-color:#756A70;
           color: $orange-color;
           font-size: 10px;
           display: block;
-          margin: 3px auto;
+          //margin: 3px auto;
         }
       }
       img {
@@ -801,14 +805,14 @@ background-color:#756A70;
   }
 
   .row_2 {
-    height: 256px;
+    height: 285px;
   }
 }
 
 #box_2 {
   width: 100%;
   .row_2 {
-    height: 256px;
+    height: 285px;
   }
 
   .badge-block {
@@ -828,12 +832,12 @@ background-color:#756A70;
     height: 396px;
   }
   .row_2 {
-    height: 256px;
+    height: 285px;
   }
   .help {
     word-wrap: break-word;
     overflow-y: scroll;
-    .heading_1 {
+    .heading_1 .title {
       color: $text-color;
     }
 
@@ -947,6 +951,14 @@ background-color:#756A70;
   width: 90%;
   @media (max-width: 1024px){
     width: 100%;
+  }
+
+  .connections{
+    min-width: 45%;
+  }
+
+  .explore {
+    min-width: 30%;
   }
   .badge {
     vertical-align: text-top;
@@ -1099,7 +1111,7 @@ background-color:#756A70;
       display: contents;
       .button-block {
         height: 150px;
-        width: 100%;
+        //width: 100%;
         max-width: 120px;
         position: relative;
         padding-left: 5px;
@@ -1158,7 +1170,7 @@ background-color:#756A70;
         }
       }
 
-      @media (max-width: 375px) and (max-width: 1024px){
+      @media (max-width: 375px) {
         display: block;
 
         .button-block {
