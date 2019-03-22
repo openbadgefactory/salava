@@ -845,12 +845,12 @@ background-color:#756A70;
       -webkit-column-count: 2; /* Chrome, Safari, Opera */
       -moz-column-count: 2; /* Firefox */
       column-count: 2;
-      -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
-      -moz-column-gap: 40px; /* Firefox */
-      column-gap: 40px;
-        -webkit-column-width: 200px;
-     -moz-column-width: 200px;
-          column-width: 200px;
+      -webkit-column-gap: 25px; /* Chrome, Safari, Opera */
+      -moz-column-gap: 25px; /* Firefox */
+      column-gap: 25px;
+      -webkit-column-width: 150px;
+     -moz-column-width: 150px;
+          column-width: 150px;
     }
     p {
       color: #FF6600;
