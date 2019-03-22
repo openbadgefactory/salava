@@ -484,8 +484,8 @@ background-color:#756A70;
     color: #FFFFFF;
     background-color: #ff6600;
     position: absolute;
-    top: 13px;
-    right: 10px;
+    top: 0;
+    right: 0;
     box-shadow: none;
 
   }
@@ -558,9 +558,12 @@ background-color:#756A70;
     }
     .pending {
       color: #FF3333;
+      margin-top: 10px;
     }
     .badges {
       color: #7E7079;
+      margin-top: 10px;
+      margin-bottom: 10px;
     }
 
     .badge-connection {
@@ -597,7 +600,7 @@ background-color:#756A70;
   }
 
   .info-block {
-    width: 120px;
+    width: 105px;
     height: 125px;
     font-style: normal;
     color: #FFFFFF;
@@ -605,7 +608,7 @@ background-color:#756A70;
     line-height: 20px;
     background-color: $titlebar-color;
     border-radius: 4px;
-    margin-right: 10px;
+    margin-right: 5px;
     margin-bottom: 10px;
     float: left;
     position: relative;
@@ -621,8 +624,8 @@ background-color:#756A70;
     }
 
     @media (max-width: 420px) {
-      width: 90%;
-      height: 40px;
+      width: 100%;
+      height: 50px;
       .info {
         text-align: left !important;
         .icon {
@@ -633,20 +636,24 @@ background-color:#756A70;
     }
 
     @media (max-width: 768px) {
-      width: 120px;
-      height: 125px;
+      //width: 120px;
+      //height: 125px;
     }
 
     .info {
-      padding-top: 15px;
+      padding-top: 10px;
       text-align: center;
       color: #FFFFFF;
+
       .icon {
         font-size: 35px;
+        margin-right: unset;
       }
 
       .text {
         font-size: 16px;
+        margin: 10px auto;
+        width: 90%;
         p {
           margin: 0;
         }
@@ -657,16 +664,13 @@ background-color:#756A70;
         p.desc {
           margin-top: 5px;
         }
-        margin: 10px auto auto -10px;
+
 
       }
-      //margin: 10px auto;
-      //text-align: center;
-      //width: 90%;
     }
-    @media (max-width: 520px) {
-      width: 90%;
-      height: 40px;
+    @media (max-width: 375px) {
+      width: 100%;
+      height: 50px;
       .info {
         padding: 10px;
         text-align: left !important;
@@ -696,7 +700,7 @@ background-color:#756A70;
         font-size: 16px;
         position: absolute;
         right: 5px;
-        top: 0;
+        //top: 0;
       }
 
     }
@@ -728,41 +732,42 @@ background-color:#756A70;
     .notification-div {
       background-color:rgba(249, 249, 249, 1);
       width: 100%;
-      height: 52px;
+      height: 62px;
       color: #000000;
       border: 1px solid rgba(119, 119, 119, 1);
       border-radius: 4px;
       padding: 5px;
-      margin: 5px auto;
+      margin: 2px auto;
       cursor: pointer;
       text-decoration: none;
+      position:relative;
 
       a {
         font-weight: 300;
       }
-      .media-left,.media-body {
-        vertical-align: bottom;
+      .media,.media-body {
+        width: 100%;
       }
       .content-text {
         width: 100%;
         text-decoration: none;
         text-align: left;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
 
         p.content-heading {
           color: #000000;
           margin: 0;
+          font-size: 15px;
           text-overflow: ellipsis;
           overflow: hidden;
-          white-space: nowrap;
+          //white-space: nowrap;
           font-weight: 300;
+          max-height: 40px;
         }
         .date {
           color: $orange-color;
           font-size: 10px;
-          text-align: left;
+          display: block;
+          margin: 3px auto;
         }
       }
       img {
@@ -793,7 +798,6 @@ background-color:#756A70;
 }
 
 #box_2 {
-  //height: 396px;
   width: 100%;
   .row_2 {
     height: 256px;
@@ -806,23 +810,6 @@ background-color:#756A70;
       height: auto;
       padding: 5px;
     }
-
-    /*stats {
-
-    .total-badges {
-    float: left;
-    margin-right: 15px;
-  }
-    .num {
-    font-weight: 800;
-    margin: 0;
-  }
-    .desc {
-    font-weight: 300;
-    font-size:16px;
-  }
-  }*/
-
 
   }
 }
@@ -889,8 +876,6 @@ background-color:#756A70;
   }
 
   .hidden-content {
-    //display: none;
-    //background-color: $titlebar-color;
     color: #FFFFFF;
     font-size: 16px;
     margin: 20px;
@@ -963,6 +948,7 @@ background-color:#756A70;
         p.desc {
           font-size: 16px;
           color: $text-color;
+
         }
 
       }
@@ -1025,6 +1011,13 @@ background-color:#756A70;
       }
     }
 
+    @media (max-width: 1440px) {
+      .visibility {
+        width: 100px;
+        display: inline;
+      }
+    }
+
     @media (max-width: 1175px) {
       .media-body{
         display: block;
@@ -1032,10 +1025,26 @@ background-color:#756A70;
       }
     }
 
+    @media (max-width: 1024px) {
+      .visibility{
+        width: 70px;
+        display: block;
+        //margin-top: 10px;
+      }
+    }
+
+
     @media (max-width: 992px) {
       .media-body{
         display: table-cell;
         margin-top: unset;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .visibility {
+        width: 100px;
+        display: inline;
       }
     }
 
@@ -1057,22 +1066,133 @@ background-color:#756A70;
   .explore-block {
 
     .content {
-      display: flex;
-    }
+      display: contents;
+      .button-block {
+        height: 150px;
+        width: 100%;
+        max-width: 120px;
+        position: relative;
+        padding-left: 5px;
+        padding-right: 5px;
+        float: left;
+
+        .since-last-login {
+          text-align: center;
+          max-width: 108px;
+          margin: auto;
+          width: 100%;
+          padding-top: 5px;
+          padding-bottom: 5px;
+        }
+
+      }
 
 
-    @media (max-width: 767px) {
-      .content {
+      .info-block {
+        float: none;
+        margin: auto;
+        width: 100%;
+        max-width: 108px;
+        height: 125px;
+
+        p.desc {
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+        .icon {
+          margin-right: unset;
+        }
+
+
+      }
+
+      @media (max-width: 2560px) {
         display: block;
+      }
+
+      @media (max-width: 1440px) {
+        display: contents;
+        .button-block {
+          padding-left: 10px;
+        }
+      }
+
+      @media (max-width: 1024px) {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        display: contents;
+        .info-block {
+          max-width: 100px;
+        }
+      }
+
+      @media (max-width: 375px) {
+        display: block;
+
+        .button-block {
+          width: 95%;
+          max-width: 95%;
+          height: 50px;
+          margin: 5px auto;
+          padding: 0px;
+
+          .info-block {
+            width: 100%;
+            max-width: 100% !important;
+            height: 50px;
+          }
+
+          .since-last-login {
+            position:absolute;
+            right:0;
+            bottom:0;
+            width: unset;
+
+            p {
+              margin: 0;
+            }
+          }
+
+        }
+        .info {
+          padding: 10px;
+          text-align: left !important;
+          width: 100%;
+
+          .icon {
+            font-size: 20px !important;
+            float: left;
+          }
+          .text{
+            padding-left: 5px;
+            display: flex;
+            margin-top: -2px;
+            float:none;
+            p.desc, p.num {
+              margin-top: 0px;
+              float: left;
+              font-size: 16px;
+              margin: 3px;
+            }
+          }
+        }
+
+        p.new {
+          color: #FFFFFF !important;
+          font-weight: 700;
+          font-size: 16px;
+          padding-right: 5px;
+        }
+
       }
     }
 
+    p.new {
+      color: #4D948B;
+      font-weight: 700;
+    }
   }
-
-  p.new {
-    color: #4D948B;
-    font-weight: 700;
-  }
-
 }
 

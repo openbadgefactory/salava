@@ -249,36 +249,39 @@
        [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Explore)]]
        [:i.fa.fa-angle-right.icon.small]]
       [:div.content
-       [:div.info-block.badge-connection
-        [:a {:href (path-for "/gallery/badges")}
-         [:div.info
-          [:i.fa.fa-certificate.icon]
-          [:div.text
-           [:p.num (get-in @state [:gallery :badges])]
-           [:p.desc (t :badge/Badges)]]]]]
-       [:div.info-block.page
-        [:a {:href (path-for "/gallery/pages")}[:div
-                                                [:div.info
-                                                 [:i.fa.fa-file.icon]
-                                                 [:div.text
-                                                  [:p.num (get-in @state [:gallery :pages :all])]
-                                                  [:p.desc (t :page/Pages)]]]
-                                                [:br]
-                                                (when (pos? (get-in @state [:gallery :pages :since-last-visited]))
-                                                  [:p.new {:style {:margin-top "10px"}} (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]
-                                                  )
-                                                ]]]
-       [:div.info-block
-        [:a {:href (path-for "/gallery/profiles")}[:div
-                                                   [:div.info
-                                                    [:i.fa.fa-user.icon]
-                                                    [:div.text
-                                                     [:p.num (get-in @state [:gallery :profiles :all])]
-                                                     [:p.desc (t :gallery/Profiles)]]]
-                                                    [:br]
-                                                    (when (pos? (get-in @state [:gallery :profiles :since-last-visited]))
-                                                      [:p.new {:style {:margin-top "10px"}} (get-in @state [:gallery :profiles :since-last-visited] 0)])
-                                                    ]]]]]]]])
+       [:div.row
+        [:div.col-sm-4.button-block
+         [:div.info-block.badge-connection
+          [:a {:href (path-for "/gallery/badges")}
+           [:div.info
+            [:i.fa.fa-certificate.icon]
+            [:div.text
+             [:p.num (get-in @state [:gallery :badges])]
+             [:p.desc (t :gallery/Sharedbadges)]]]]]]
+        [:div.col-sm-4.button-block
+         [:div.info-block.page
+          [:a {:href (path-for "/gallery/pages")}
+           [:div
+            [:div.info
+             [:i.fa.fa-file.icon]
+             [:div.text
+              [:p.num (get-in @state [:gallery :pages :all] 0)]
+              [:p.desc (t :gallery/Sharedpages)]]]]]]
+         (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
+           [:div.since-last-login [:p.new (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
+        [:div.col-sm-4.button-block
+         [:div.info-block
+          [:a {:href (path-for "/gallery/profiles")}
+           [:div
+            [:div.info
+             [:i.fa.fa-user.icon]
+             [:div.text
+              [:p.num (get-in @state [:gallery :profiles :all] 0)]
+              [:p.desc (t :gallery/Sharedprofiles)]]]]]]
+         (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
+           [:div.since-last-login [:p.new (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
+        ]]]]]])
+
 
 (defn user-connections-stats []
   (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
@@ -298,31 +301,23 @@
        [:div.content;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block
-         ;[:a {:href (path-for "/connections/badge")}
          [:div.info
-          #_[:i.fa.fa-certificate.icon]
           [:div.text
            [:p.num (get-in @state [:connections :badges])]
            [:p.desc (t :badge/Badges)]]]];]
         [:div.info-block
-         ;[:a {:href (path-for "/connections/endorsement")}
          [:div.info
-          #_[:i.fa.fa-thumbs-up.icon]
           [:div.text
            [:p.num (:endorsing @state)]
-           [:p.desc "Endorsing" #_(t :badge/Endorsing)]]]];]
+           [:p.desc (t :badge/Endorsing)]]]];]
 
         [:div.info-block
-         ;[:a {:href (path-for "/connections/endorsement")}
          [:div.info
           (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
-          #_[:i.fa.fa-thumbs-up.icon]
-
           [:div.text
            [:p.num (:endorsers @state)]
-           [:p.desc "Endorsers" #_(t :badge/Endorsing)]
-           ]]]]]]]]];]
-  )
+           [:p.desc (t :badge/Endorsing)]
+           ]]]]]]]]])
 
 (defn profile-block [state]
   (let [user (:user-profile @state)
@@ -346,22 +341,22 @@
           [:div.media
            [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]]
 
-          [:div.media-body[:div.name.title user-name]
-          [:div.stats
-           [:div.text
-            [:p.num (:pages_count @state)]
-            [:p.desc (t :page/Pages)]]
-           [:div.text
-            [:p.num (:files_count @state)]
-            [:p.desc (t :file/Files)]]
-           [:div.text
-            [:div.visibility
-             (case (get-in user [:user :profile_visibility])
-               "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
-               "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
-               nil)]
-            ]
-           ]]]]
+           [:div.media-body[:div.name.title user-name]
+            [:div.stats
+             [:div.text
+              [:p.num (:pages_count @state)]
+              [:p.desc (t :page/Pages)]]
+             [:div.text
+              [:p.num (:files_count @state)]
+              [:p.desc (t :file/Files)]]
+             [:div.text
+              [:div.visibility
+               (case (get-in user [:user :profile_visibility])
+                 "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
+                 "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
+                 nil)]
+              ]
+             ]]]]
          [:br]
          [:div.row.small-text ;{:style {:font-size "initial"}}
           (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
