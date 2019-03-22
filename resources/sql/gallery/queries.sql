@@ -267,10 +267,14 @@ SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibi
 SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1
 
 --name: gallery-badges-count-since-last-login
-SELECT COUNT(DISTINCT id) AS badges_count FROM badge WHERE published = 1 AND recipient_count > 0
+SELECT COUNT(se.id) AS badges_count FROM social_event AS se
+JOIN user_badge AS ub ON se.object = ub.id
+WHERE se.verb = 'publish' AND se.type = 'badge' AND se.mtime > :last_login AND ub.deleted = 0 AND ub.revoked = 0 AND subject != :user_id
 
 --name: gallery-pages-count-since-last-login
-SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibility = 'internal') AND deleted = 0 AND mtime > :last_login
+SELECT COUNT(se.id) AS pages_count FROM social_event AS se
+JOIN page AS p ON se.object = p.id
+WHERE se.verb = 'publish' AND se.type = 'page' AND se.mtime > :last_login AND p.deleted = 0 AND subject != :user_id
 
 --name: gallery-profiles-count-since-last-login
-SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND mtime > :last_login
+SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND ctime > :last_login
