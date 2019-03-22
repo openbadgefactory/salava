@@ -1,5 +1,7 @@
 {:css ["/css/extra/hpass.css"]
-:font ["/css/extra/fonts/GTAmerica/GT-America-Standard-Bold.eot"]
-:logo ["/img/extra/hpass/logo.png"]
-:filter-options {:country "All"
-         :common-badges false}}
+ :font ["/css/extra/fonts/GTAmerica/GT-America-Standard-Bold.eot"]
+ :logo ["/img/extra/hpass/logo.png"]
+ :filter-options [{:country "all"
+                   :common-badges false}]
+ :welcome-block-body [{:en "Welcome to myHPass, here you can showcase your competencies"
+                        :fr "Bienvenue sur myHPass, ici vous pouvez présenter vos compétences"
