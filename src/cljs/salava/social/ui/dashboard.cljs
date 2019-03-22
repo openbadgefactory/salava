@@ -149,8 +149,7 @@
          [:i.fa.fa-angle-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
        [:div.collapse.hidden-content {:id "hidden" }
         [:p "Some description here..."]
-        ]
-       ]]]))
+        ]]]]))
 
 (defn notifications-block [state]
   (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
@@ -184,8 +183,7 @@
                                (= "message" (:verb event)) [message-event event state]
                                :else "")
                              ])
-                    )[:div.content] events))
-        ]]]]))
+                    )[:div.content] events))]]]]))
 
 (defn latest-earnable-badges []
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
@@ -235,8 +233,7 @@
                         (conj r [:a {:href "#" :on-click #(do
                                                             (.preventDefault %)
                                                             (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
-                        ) [:div] badges)
-              ])
+                        ) [:div] badges)])
            [latest-earnable-badges]]]]]])))
 
 (defn explore-block [state]
@@ -367,7 +364,7 @@
     [:div.col-md-12.block
      [:div.row_2.help
       [:div.heading_1
-       [:i.fa.fa-info-circle.icon]
+       ;[:i.fa.fa-info-circle.icon]
        [:span.title.help (t :core/Quicklinks)]]
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
