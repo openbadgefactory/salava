@@ -629,7 +629,7 @@ background-color:#756A70;
       text-decoration: none;
     }
 
-    @media (max-width: 420px) {
+    @media (max-width: 375px) {
       width: 100%;
       height: 50px;
       .info {
@@ -639,11 +639,6 @@ background-color:#756A70;
         }
       }
 
-    }
-
-    @media (max-width: 768px) {
-      //width: 120px;
-      //height: 125px;
     }
 
     .info {
@@ -1164,7 +1159,7 @@ background-color:#756A70;
       }
 
       @media (max-width: 768px) {
-        display: contents;
+        display: block;
         .info-block {
           max-width: 100px;
         }
