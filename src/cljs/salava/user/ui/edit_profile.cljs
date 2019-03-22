@@ -6,7 +6,7 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
+            [salava.core.ui.helper :refer [js-navigate-to path-for private? plugin-fun]]
             [salava.file.ui.my :as file]
             [salava.user.schemas :refer [contact-fields]]
             [salava.user.ui.helper :refer [profile-picture]]))
@@ -172,6 +172,10 @@
         [:label.col-xs-12 (t :user/Contactinfo)]
         [:div.col-xs-12
          (profile-fields profile-fields-atom)]]
+
+       (into [:div]
+         (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
+           [f]))
 
        [:div.row {:id "save-profile-buttons"}
         [:div.col-xs-12
