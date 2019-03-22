@@ -3,5 +3,4 @@
  :logo ["/img/extra/hpass/logo.png"]
  :filter-options [{:country "all"
                    :common-badges false}]
- :welcome-block-body [{:en "Welcome to myHPass, here you can showcase your competencies"
-                        :fr "Bienvenue sur myHPass, ici vous pouvez présenter vos compétences"
+ :welcome-block-body [{:en "Earn badges to demonstrate skills and competencies -  display in portfolio - share on social media and to enhance your CV"}]}
