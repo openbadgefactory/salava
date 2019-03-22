@@ -833,6 +833,21 @@ background-color:#756A70;
   .help {
     word-wrap: break-word;
     overflow-y: scroll;
+    .heading_1 {
+      color: $text-color;
+    }
+
+    .quicklinks {
+      -webkit-column-count: 2; /* Chrome, Safari, Opera */
+      -moz-column-count: 2; /* Firefox */
+      column-count: 2;
+      -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
+      -moz-column-gap: 40px; /* Firefox */
+      column-gap: 40px;
+        -webkit-column-width: 200px;
+     -moz-column-width: 200px;
+          column-width: 200px;
+    }
     p {
       color: #FF6600;
       font-size: 16px;
@@ -1143,7 +1158,7 @@ background-color:#756A70;
         }
       }
 
-      @media (max-width: 375px) {
+      @media (max-width: 375px) and (max-width: 1024px){
         display: block;
 
         .button-block {

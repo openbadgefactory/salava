@@ -13,7 +13,8 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
-            [salava.badge.ui.pending :as pb]))
+            [salava.badge.ui.pending :as pb]
+            [clojure.string :refer [blank?]]))
 
 (defn init-gallery-stats [state]
   (ajax/GET
@@ -137,19 +138,30 @@
         [:p.content-heading (str issuer_content_name " " (t :social/Publishedbadge) " " name)]
         [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
 
+(defn welcome-block-body [lang]
+  (let [language (keyword (or lang "en"))
+        message (session/get-in [:welcome-block-body language] "")]
+    ;(prn message)
+    message))
 
 (defn welcome-block [state]
   (let [welcome-tip (get-in @state [:tips :welcome-tip])
-        site-name (session/get :site-name)]
+        site-name (session/get :site-name)
+        user (:user-profile @state)
+        user-language (get-in user [:user :language] "en")
+        message (welcome-block-body user-language)]
     [:div#welcome-block {:class ""}
      [:div.welcome-block.block-content.row
-      [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
-       [:div.content
-        [:div.row
-         [:i.fa.fa-angle-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
-       [:div.collapse.hidden-content {:id "hidden" }
-        [:p "Some description here..."]
-        ]]]]))
+      (if (blank? message)
+        [:div.content
+         [:div.row
+          (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
+        [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
+         [:div.content
+          [:div.row
+           [:i.fa.fa-angle-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
+         [:div.collapse.hidden-content {:id "hidden" }
+          [:p message]]])]]))
 
 (defn notifications-block [state]
   (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
@@ -368,7 +380,7 @@
        [:span.title.help (t :core/Quicklinks)]]
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
-       [:div [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
+       [:div.quicklinks [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
         [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
         [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
         [application-button "link"]

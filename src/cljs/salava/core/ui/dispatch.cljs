@@ -33,6 +33,7 @@
 (session/put! :factory-url (:factory-url ctx))
 (session/put! :gdpr-disabled? (:gdpr-disabled? ctx))
 (session/put! :filter-options (:filter-options ctx))
+(session/put! :welcome-block-body (:welcome-block-body ctx))
 ;;;
 
 
