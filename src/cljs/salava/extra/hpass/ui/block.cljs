@@ -202,7 +202,8 @@
   "I have read and i agree to the privacy policy")
 
 (defn ^:export importbadgetext [lang]
-  [:small {:key "import"} [:i (case lang
-                                "en" "Import badges from other platforms, and add them to your myHPass profile"
-                                "Import badges from other platforms, and add them to your myHPass profile"
-                                )]])
+  [:div.import-button-desc {:key "import"}
+   [:i (case lang
+         "en" "Import badges from other platforms, and add them to your myHPass profile"
+         "Import badges from other platforms, and add them to your myHPass profile"
+         )]])
