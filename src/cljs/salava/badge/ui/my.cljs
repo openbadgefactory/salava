@@ -6,7 +6,7 @@
     [clojure.set :as set :refer [intersection]]
     [clojure.string :refer [upper-case]]
     [salava.core.ui.ajax-utils :as ajax]
-    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private? js-navigate-to current-path current-route-path]]
+    [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for  not-activated? private? js-navigate-to current-path current-route-path plugin-fun]]
     [salava.core.ui.notactivated :refer [not-activated-banner]]
     [salava.core.ui.layout :as layout]
     [salava.core.ui.grid :as g]
@@ -74,6 +74,12 @@
     true false))
 
 
+(defn import-button-description []
+  (let [func (first (plugin-fun (session/get :plugins) "block" "importbadgetext"))
+        user-lang (session/get-in [:user :language] "en")
+        block (func user-lang)]
+    (if block [block] [:div ""])))
+
 (defn badge-grid [state]
   (let [badges (:badges @state)
         order (keyword (:order @state))
@@ -96,7 +102,8 @@
                   [:div {:id "add-element-icon"}
                    [:i {:class "fa fa-plus"}]]
                   [:div {:id "add-element-link"}
-                   (t :badge/Import)]]]]]])]
+                   (t :badge/Import)
+                   [import-button-description]]]]]]])]
           (doall
             (for [element-data badges]
               (if (badge-visible? element-data state)
