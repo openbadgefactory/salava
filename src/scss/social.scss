@@ -1131,6 +1131,7 @@ background-color:#756A70;
         width: 100%;
         max-width: 108px;
         height: 125px;
+        border: 3px solid transparent;
 
         p.desc {
           text-overflow: ellipsis;
@@ -1140,7 +1141,9 @@ background-color:#756A70;
           margin-right: unset;
         }
 
-
+        &:hover, &:focus, &:active {
+          border: 3px solid #000000;
+        }
       }
 
       @media (max-width: 2560px) {
