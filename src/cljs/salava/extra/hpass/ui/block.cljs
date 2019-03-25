@@ -201,5 +201,8 @@
 (defn ^:export accept-terms-string []
   "I have read and i agree to the privacy policy")
 
-(defn ^:export import-badge-text []
-  [:small {:key "import"} [:i (t :hpass/Importbadge)]])
+(defn ^:export import-badge-text [lang]
+  [:small {:key "import"} [:i (case lang
+                                "en" "Import badges from other platforms, and add them to your myHPass profile"
+                                "Import badges from other platforms, and add them to your myHPass profile"
+                                )]])
