@@ -477,6 +477,11 @@ background-color:#756A70;
   font-size: 20px;
   color: #333333;
   overflow: auto;
+
+  a:hover,a:active, a:focus {
+    text-decoration: none;
+  }
+
   .icon {
     font-size: 25px;
     margin-right: 10px;
@@ -816,6 +821,10 @@ background-color:#756A70;
       width: 52px;
       height: auto;
       padding: 5px;
+
+      &:hover,&:active, &:focus {
+      transform: scale(1.5);
+    }
     }
 
   }
@@ -834,6 +843,7 @@ background-color:#756A70;
     overflow: auto;
     .heading_1 .title {
       color: $text-color;
+      cursor: auto;
     }
 
     .quicklinks {
@@ -844,8 +854,8 @@ background-color:#756A70;
       -moz-column-gap: 25px; /* Firefox */
       column-gap: 25px;
       -webkit-column-width: 150px;
-     -moz-column-width: 150px;
-          column-width: 150px;
+      -moz-column-width: 150px;
+      column-width: 150px;
     }
     p {
       color: #FF6600;
@@ -1038,6 +1048,7 @@ background-color:#756A70;
       margin: 0px 10px;
       margin-bottom: 10px;
       text-decoration: none;
+      cursor: auto;
     }
     .stats {
 
