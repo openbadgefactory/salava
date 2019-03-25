@@ -75,10 +75,9 @@
 
 
 (defn import-button-description []
-  (let [func (first (plugin-fun (session/get :plugins) "block" "importbadgetext"))
-        user-lang (session/get-in [:user :language] "en")
-        block (func user-lang)]
-    (if block [block] [:div ""])))
+  (let [block (first (plugin-fun (session/get :plugins) "block" "importbadgetext"))
+        user-lang (session/get-in [:user :language] "en")]
+    (if block [block user-lang] [:div ""])))
 
 (defn badge-grid [state]
   (let [badges (:badges @state)
@@ -94,7 +93,7 @@
                  badges)]
     (into [:div#grid {:class "row wrap-grid"}
            (when-not (private?)
-             [:div#import-badge {:key   "new-badge"}
+             [:div#import-badge {:key   "new-badge" :style {:position "relative"}}
               [:a.add-element-link {:href  (path-for "/badge/import") }
                [:div {:class "media grid-container"}
                 [:div.media-content
@@ -102,8 +101,8 @@
                   [:div {:id "add-element-icon"}
                    [:i {:class "fa fa-plus"}]]
                   [:div {:id "add-element-link"}
-                   (t :badge/Import)
-                   [import-button-description]]]]]]])]
+                   (t :badge/Import)]
+                  [import-button-description]]]]]])]
           (doall
             (for [element-data badges]
               (if (badge-visible? element-data state)
