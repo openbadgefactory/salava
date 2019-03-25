@@ -831,7 +831,7 @@ background-color:#756A70;
   }
   .help {
     word-wrap: break-word;
-    overflow-y: scroll;
+    overflow: auto;
     .heading_1 .title {
       color: $text-color;
     }
