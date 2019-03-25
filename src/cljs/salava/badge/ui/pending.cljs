@@ -183,7 +183,7 @@
                           [:div ;{:class "col-md-12"}
                            [:fieldset {:class "form-group visibility"}
                             [:legend {:class "col-md-9 sub-heading"}
-                             (t :badge/Badgevisibility) [info (t :badge/Visibilityinfo) "right"]]
+                             (t :badge/Badgevisibility) [info {:content (t :badge/Visibilityinfo) :placement "right"}]]
                             [:div {:class (str "col-md-12 " @visibility) :style {:margin-top "20px"}}
                              (if-not (private?)
                                [:div [:input {:id              "visibility-public"

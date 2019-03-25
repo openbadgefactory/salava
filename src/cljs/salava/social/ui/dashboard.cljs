@@ -265,8 +265,10 @@
            [:div.info
             [:i.fa.fa-certificate.icon]
             [:div.text
-             [:p.num (get-in @state [:gallery :badges])]
-             [:p.desc (t :gallery/Sharedbadges)]]]]]]
+             [:p.num (get-in @state [:gallery :badges :all] 0)]
+             [:p.desc (t :gallery/Sharedbadges)]]]]]
+         (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
+           [:div.since-last-login [:p.new (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
         [:div.col-sm-4.button-block
          [:div.info-block.page
           [:a {:href (path-for "/gallery/pages")}

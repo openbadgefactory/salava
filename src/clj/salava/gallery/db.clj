@@ -358,11 +358,13 @@
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]
     (rename-keys badge-content {:image_file :image :name :title})))
 
-(defn gallery-stats [ctx last-login]
+(defn gallery-stats [ctx last-login user-id]
   {:profiles {:all (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))
               :since-last-visited (gallery-profiles-count-since-last-login {:last_login last-login} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))}
    :pages {:all (gallery-pages-count {} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
-           :since-last-visited (gallery-pages-count-since-last-login {:last_login last-login} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
+           :since-last-visited (gallery-pages-count-since-last-login {:user_id user-id :last_login last-login} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
            }
-   :badges (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))})
+   :badges {:all (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))
+            :since-last-visited (gallery-badges-count-since-last-login {:user_id user-id :last_login last-login} (into {:result-set-fn first :row-fn :badges_count} (get-db ctx)))}
+   })
 
