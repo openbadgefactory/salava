@@ -11,8 +11,7 @@
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [salava.core.time :refer [date-from-unix-time]]
-            [salava.core.helper :refer [dump]]
-            [salava.core.ui.popover :refer [info]]))
+            [salava.core.helper :refer [dump]]))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -55,7 +54,7 @@
   (let [country-atom (cursor state [:country-selected])]
 
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ": ")[info "some content here e.g select country" "top"]]
+     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ": ")]
      [:div.col-sm-10
       [:select {:class     "form-control"
                 :id        "country-selector"
