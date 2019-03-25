@@ -20,7 +20,8 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [medley.core :refer [distinct-by]]
-            [salava.extra.application.ui.issuer :as i]))
+            [salava.extra.application.ui.issuer :as i]
+            [salava.core.ui.popover :refer [info]]))
 
 
 (defn hashtag? [text]
@@ -138,7 +139,7 @@
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
+     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":") [info {:content (t :extra-application/Filterbycountry) :placement "top"}]]
      [:div.col-sm-10
       [:select {:class     "form-control"
                 :id        "country-selector"
