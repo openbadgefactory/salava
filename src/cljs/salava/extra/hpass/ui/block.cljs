@@ -204,7 +204,7 @@
 (defn ^:export welcomeblockbody [lang]
   (case lang
     "en" "Welcome to HPass! We enable humanitarians to demonstrate their skills and experience using digital badges. You can earn badges on a range of humanitarian themes, from a wide range of organisations. Set up a profile or browse available badges to get started"
-    "Welcome to HPass! We enable humanitarians to demonstrate their skills and experience using digital badges. You can earn badges on a range of humanitarian themes, from a wide range of organisations. Set up a profile or browse available badges to get started"
+    "Welcome to HPass! We enable humanitarians to demonstrate their skills and experience using digital badges. You can earn badges on a range of humanitarian themes, from a wide range of organisations. Set up a profile or browse available badges to get started."
     )
   )
 
