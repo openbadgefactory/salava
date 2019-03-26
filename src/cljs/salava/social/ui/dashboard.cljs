@@ -139,10 +139,9 @@
         [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
 
 (defn welcome-block-body [lang]
-  (let [language (keyword (or lang "en"))
-        message (session/get-in [:welcome-block-body language] "")]
-    ;(prn message)
-    message))
+  (let [language (if-not (blank? lang) lang "en")
+        message (first (plugin-fun (session/get :plugins) "block" "welcomeblockbody"))]
+    (if message (message lang) "")))
 
 (defn welcome-block [state]
   (let [welcome-tip (get-in @state [:tips :welcome-tip])
