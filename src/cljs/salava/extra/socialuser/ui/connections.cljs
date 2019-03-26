@@ -7,7 +7,8 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [reagent-modals.modals :as m]
-            [salava.core.ui.layout :as layout]))
+            [salava.core.ui.layout :as layout]
+            [reagent.session :as session]))
 
 
 (defn init-data [state]
@@ -15,7 +16,8 @@
     (path-for (str "/obpv1/socialuser/connections" ))
     {:handler (fn [data]
                 (swap! state assoc :followers-users (:followers-users data)
-                       :following-users (:following-users data)))}))
+                       :following-users (:following-users data)
+                       :visible-area (session/get! :visible-area nil)))}))
 
 
 
@@ -157,18 +159,22 @@
     (fn []
       [:div
        [:div.info-block
-        ;[:a {:href (path-for "/connections/user")}
+        [:a {:href (path-for "/connections/user") :on-click #(do
+                                                               (.preventDefault %)
+                                                               (session/put! :visible-area :accepted) )}
          [:div.info
           ;[:i.fa.fa-user.icon]
           [:div.text
            [:p.num (->> (:following-users @state) count)]
            [:p.desc (t :social/Followedusers)]
            ]]
-         ;]
+         ]
         ]
 
        [:div.info-block
-        ;[:a {:href (path-for "/connections/user")}
+        [:a {:href (path-for "/connections/user")  :on-click #(do
+                                                                (.preventDefault %)
+                                                                (session/put! :visible-area :pending) )}
          [:div.info
           (when (pos? (count (:pending @state))) [:span.badge (count (:pending @state))])
           ;[:i.fa.fa-user.icon]
@@ -176,8 +182,8 @@
            [:p.num (->> (:followers-users @state) count)]
            [:p.desc (t :social/Followersusers)]
            ]
-          ;]
-        ]]])))
+          ]
+         ]]])))
 
 (defn handler [site-navi]
   (let [state (atom {:visible-area  nil
