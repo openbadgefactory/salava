@@ -103,7 +103,7 @@
                 (reset! state (assoc data
                                 :initializing false
                                 :permission "success"
-                                :show "all"
+                                :show (session/get! :visible-area "all")
                                 :search ""
                                 :order "mtime"))
                 )}

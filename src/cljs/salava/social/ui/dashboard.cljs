@@ -311,23 +311,35 @@
        [:div.content;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block
-         [:div.info
-          [:div.text
-           [:p.num (get-in @state [:connections :badges])]
-           [:p.desc (t :badge/Badges)]]]];]
+         [:a {:href (str (path-for "/connections/badge")) :on-click #(do
+                                                                       (.preventDefault %)
+                                                                       (session/put! :visible-area :badges)
+                                                                       )}
+          [:div.info
+           [:div.text
+            [:p.num (get-in @state [:connections :badges])]
+            [:p.desc (t :badge/Badges)]]]]]
         [:div.info-block
-         [:div.info
-          [:div.text
-           [:p.num (:endorsing @state)]
-           [:p.desc (t :badge/Endorsing)]]]];]
+         [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
+                                                                             (.preventDefault %)
+                                                                             (session/put! :visible-area "given")
+                                                                             )}
+          [:div.info
+           [:div.text
+            [:p.num (:endorsing @state)]
+            [:p.desc (t :badge/Endorsing)]]]]]
 
         [:div.info-block
-         [:div.info
-          (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
-          [:div.text
-           [:p.num (:endorsers @state)]
-           [:p.desc (t :badge/Endorsers)]
-           ]]]]]]]]])
+         [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
+                                                                             (.preventDefault %)
+                                                                             (session/put! :visible-area "received")
+                                                                             )}
+          [:div.info
+           (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
+           [:div.text
+            [:p.num (:endorsers @state)]
+            [:p.desc (t :badge/Endorsers)]
+            ]]]]]]]]]])
 
 (defn profile-block [state]
   (let [user (:user-profile @state)
