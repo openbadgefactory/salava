@@ -326,7 +326,7 @@
           (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
           [:div.text
            [:p.num (:endorsers @state)]
-           [:p.desc (t :badge/Endorsing)]
+           [:p.desc (t :badge/Endorsers)]
            ]]]]]]]]])
 
 (defn profile-block [state]
