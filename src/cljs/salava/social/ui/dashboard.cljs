@@ -385,7 +385,9 @@
         [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
         [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
         [application-button "link"]
-        [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]]]]]]])
+        [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]
+        [:a {:href (str (path-for "/gallery/profiles"))} [:p (t :social/Iwanttofindotherusers)]]
+        [:a {:href (str (path-for "/user/edit"))} [:p (t :social/Iwanttomanagemyaccount)]]]]]]]])
 
 (defn content [state]
   [:div#dashboard-container
