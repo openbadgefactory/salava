@@ -254,7 +254,7 @@
      [:div.row_2;.block-content
       [:div.heading_1
        [:i.fa.fa-search.icon]
-       [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Explore)]]
+       [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Gallery)]]
        [:i.fa.fa-angle-right.icon.small]]
       [:div.content
        [:div.row
