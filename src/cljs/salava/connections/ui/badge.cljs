@@ -21,7 +21,8 @@
     (path-for "/obpv1/connections/connections_badge" true)
     {:handler (fn [data]
                 ; (prn data)
-                (swap! state assoc :badges data)
+                (swap! state assoc :badges data
+                       :visible-area (session/get! :visible-area nil))
                 (init-issuer-connections state)
                 )}))
 
@@ -113,8 +114,7 @@
 
 (defn handler [site-navi]
   (let [state (atom {:badges []
-                     :issuers []
-                     :visible-area nil})]
+                     :issuers []})]
     (init-data state)
 
     (fn []
