@@ -7,11 +7,12 @@ $title-color: $menu-color;//#7f7179;
 $orange-color: #dc5c10;
 $grid-link: $orange-color;
 $orange-hover:#bf4f0e;
-$badge-title:$orange-color;
+$badge-title: #2b759a; //$orange-color;
 $badge-title-hover:$orange-hover;
-$link-color:#4a5aac;
-$button-color: $link-color;
-$link-hover: #353b75;
+$link-color: $badge-title; //#4a5aac;
+$button-color: #2b7aa1;
+$button-hover: #279ad1;
+$link-hover: $button-hover;
 $icon-color: #a28f9b;
 //error messages
 $dark-red: #8c2e0b;

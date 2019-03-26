@@ -29,6 +29,11 @@ a, #badge-info a {
     color:$title-color;
   }
 }
+.message-item.media h3.media-heading a{
+  &:hover {
+    color:$button-hover;
+  }
+}
 .btn {
   font-weight: 600;
   &:hover{
@@ -87,6 +92,13 @@ ul.side-links{
   ul.side-dropdown-links li a {
     font-size: 12.5px;
   }
+
+  @media (max-width: 767px){
+    li.active a {
+      background-color: $button-color;
+    }
+  }
+
 }
 ul.navbar-nav li {
   a {
@@ -106,7 +118,7 @@ ul#secondary-menu-links li a{
 }
 /* BUTTONS */
 #grid-filter .btn, #buttons .col-xs-8 .btn {
-  background-color:lighten($title-color, 3%);
+  background-color:  lighten($title-color, 3%);
   border: 1px solid $title-color;
   font-weight: 600;
 }
@@ -124,7 +136,25 @@ ul#secondary-menu-links li a{
   }
 }
 
+
 /* GRID */
+.pages #grid .grid-container .media-content .media-body .media-heading,
+#page-gallery #grid .grid-container .media-content .media-body .media-heading,
+#my-files #grid .grid-container .media-content .media-body .media-heading,
+#profile-gallery #grid .grid-container .media-content .media-body .media-heading,
+#user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container,
+#badge-gallery #profile #user-pages #grid .grid-container{
+  p.heading-link{
+    color: $badge-title;
+    &:hover, &:active, &:focus {
+      color: $button-hover;
+    }
+  }
+  .page-owner {
+    color: $menu-color;
+  }
+}
+
 #my-badges #grid .grid-container .media-content .visibility-icon i {
   color:  $title-color;
   &:hover {
@@ -140,7 +170,7 @@ ul#secondary-menu-links li a{
 #user-badges #grid .grid-container .media-content .media-body .media-issuer,
 #export-badges #grid .grid-container .media-content .media-body .media-issuer,
 .import-badges #grid .grid-container .media-content .media-body .media-issuer,
-#user-pages #grid .grid-container .page-create-date{
+#user-pages #grid .grid-container .page-create-date, #badge-gallery #profile #user-pages #grid .grid-container .page-create-date{
   color: $title-color;
   font-weight: 400;
   a {
@@ -168,8 +198,8 @@ ul#secondary-menu-links li a{
   }
 }
 .pages #grid, #page-gallery #grid, #my-files #grid, #profile-gallery #grid {
-  a#add-element-link, .add-element-link {
-    color:$orange-color;
+  #add-element #add-element-link, .add-element-link {
+    color: $badge-title;//$badge-title; //$orange-color;
     font-weight: bold;
     text-transform: uppercase;
     &:hover, &:focus, &:active {
@@ -179,7 +209,7 @@ ul#secondary-menu-links li a{
   }
   #grid-file-upload:hover ~ .grid-container{
     a#add-element-link{
-      color: $orange-hover;
+      color: $badge-title; //$orange-hover;
     }
   }
   .grid-container .media-content .media-body .media-heading {
@@ -208,6 +238,13 @@ ul#secondary-menu-links li a{
     }
   }
 }
+
+#badge-advert #grid .grid-container .media-content .media-body .media-heading span, .following-icon {
+  &:hover, &:active, &:focus {
+    color: $button-hover;
+  }
+}
+
 #page-gallery, #user-pages, .pages {
   .page-owner a{
     font-weight: 600;
@@ -281,7 +318,7 @@ ul#secondary-menu-links li a{
 .line, .border {
   border-top: none !important;
   height: 1px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $titlebar-color, rgba(0, 0, 0, 0));
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $text-color, rgba(0, 0, 0, 0));
   margin: 20px 0px;
 }
 
@@ -293,7 +330,7 @@ ul#secondary-menu-links li a{
 
 .badge-container-pending .button-row {
   border-width: 1px;
-  border-image: linear-gradient(to right, rgba(0, 0, 0, 0), $titlebar-color, rgba(0, 0, 0, 0));
+  border-image: linear-gradient(to right, rgba(0, 0, 0, 0), $text-color, rgba(0, 0, 0, 0));
   border-image-slice: 1;
   border-height: 1px;
 }
@@ -301,6 +338,14 @@ ul#secondary-menu-links li a{
 a.popup-info {
   .fa {
     color: $orange-color;
+  }
+}
+
+#my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link {
+  color: $badge-title;
+  &:hover, &:focus, &:active {
+    color: $button-hover;
+
   }
 }
 
@@ -319,13 +364,16 @@ a.popup-info {
 
   #box_3 {
     .help p {
-      color: #26a0da;
+      color: $badge-title;
+      &:active, &:hover, &:focus {
+        color: $button-hover;
+      }
     }
 
   }
 
   .info-block {
-   background-color: #314755;
+    background-color: #314755;
   }
 
   .block {
@@ -339,7 +387,11 @@ a.popup-info {
     }
 
     .button {
-      background-color: #26a0da !important;
+      background-color: $button-color !important;
+
+      &:hover, &:active, &:focus {
+        background-color: $button-hover !important;
+      }
     }
 
     .content {
