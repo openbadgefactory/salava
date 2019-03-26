@@ -143,16 +143,18 @@ body.anon{
 
 }
 
-a#login-button, #login-page .btn-primary, .btn-primary:active:focus, .btn-primary:focus {
+a#login-button, #login-page .btn-primary,.btn-primary, .btn-primary:active:focus, .btn-primary:focus {
   background-color: $titlebar-color;
   border-color: $titlebar-color;
-  text-transform: uppercase;
-  color: #000000;
-  font-weight:bold;
+  //text-transform: uppercase;
+  //color: #000000;
+  color: $text-color;
+  font-weight:bold !important;
   box-shadow:none;
   &:hover {
-    background-color: $login-button-active;
-    border-color: $login-button-active;
+    background-color: rgba(242, 249, 191, 1) !important;
+    border-color:rgba(242, 249, 191, 1) !important;
+    color: $text-color;
   }
 }
 
@@ -223,6 +225,10 @@ body {
     text-decoration:underline;
   }
 
+  #grid a {
+    text-decoration: none !important;
+  }
+
   #badge-info a{
 
     color:$text-color;
@@ -260,7 +266,7 @@ body {
   }
 
   .pages #grid #add-element #add-element-link, .pages #grid #add-element .add-element-link, #page-gallery #grid #add-element #add-element-link, #page-gallery #grid #add-element .add-element-link, #user-pages #grid #add-element #add-element-link, #user-pages #grid #add-element .add-element-link, #profile-gallery #grid #add-element #add-element-link, #profile-gallery #grid #add-element .add-element-link, #my-files #grid #add-element #add-element-link, #my-files #grid #add-element .add-element-link {
-    color:$text-color;
+    color: $link-color; //$blue;//$text-color;
     &:hover {
       color: $link-color;
     }
@@ -285,15 +291,32 @@ body {
     }
   }
 
+  #badge-gallery #badges #grid .grid-container .media-content .media-body .media-heading, #my-badges #grid .grid-container .media-content .media-body .media-heading, #export-badges #grid .grid-container .media-content .media-body .media-heading, .import-badges #grid .grid-container .media-content .media-body .media-heading, #user-badges #grid .grid-container .media-content .media-body .media-heading {
+    color: $link-color;
+  }
+
   #my-files #grid #add-element .add-element-link {
     color: $link-color;
   }
 
-
-  .pages #grid .media-content .media-body .media-heading a.heading-link {
+  #my-badges #grid #import-badge #add-element-link, #my-badges #grid #import-badge .add-element-link  {
     color: $link-color;
-    font-weight: bold;
+    &:hover {
+      color: $link-color;
+    }
+  }
+
+  #badge-gallery #grid-filter a {
     text-decoration: underline;
+  }
+
+  .pages #grid .media-content .media-body .media-heading a.heading-link, .pages #grid .media-content .media-body .media-heading p.heading-link, #page-gallery #grid .media-content .media-body .media-heading a.heading-link, #page-gallery #grid .media-content .media-body .media-heading p.heading-link, #user-pages #grid .media-content .media-body .media-heading a.heading-link, #user-pages #grid .media-content .media-body .media-heading p.heading-link, #profile-gallery #grid .media-content .media-body .media-heading a.heading-link, #profile-gallery #grid .media-content .media-body .media-heading p.heading-link, #my-files #grid .media-content .media-body .media-heading a.heading-link, #my-files #grid .media-content .media-body .media-heading p.heading-link, #badge-gallery #user-pages #grid .media-content .media-body .media-heading a.heading-link, #badge-gallery #user-pages #grid .media-content .media-body .media-heading p.heading-link {
+    color:$link-color;
+    //font-weight: bold;
+    &:hover {
+      color: $link-color;
+    }
+    //text-decoration: underline;
   }
 
   .pages #grid .media-content .media-body .visibility-icon {
@@ -391,11 +414,11 @@ header#navbar {
 }
 
 #badge-gallery #grid .grid-container .media-bottom .checkbox, #my-badges #grid .grid-container .media-bottom .checkbox, #export-badges #grid .grid-container .media-bottom .checkbox, .import-badges #grid .grid-container .media-bottom .checkbox, #user-badges #grid .grid-container .media-bottom .checkbox {
-  color: $text-color;
+  color: $text-color !important;
 }
 
 #badge-gallery #grid .grid-container .media-content .media-body .media-recipients, #my-badges #grid .grid-container .media-content .media-body .media-recipients, #export-badges #grid .grid-container .media-content .media-body .media-recipients, .import-badges #grid .grid-container .media-content .media-body .media-recipients, #user-badges #grid .grid-container .media-content .media-body .media-recipients {
-  color:$text-color;
+  color:$text-color !important;
 }
 
 #badge-gallery #grid .grid-container .media-bottom a.bottom-link i.fa, #badge-gallery #grid .grid-container .media-bottom a.badge-download i.fa, #my-badges #grid .grid-container .media-bottom a.bottom-link i.fa, #my-badges #grid .grid-container .media-bottom a.badge-download i.fa, #export-badges #grid .grid-container .media-bottom a.bottom-link i.fa, #export-badges #grid .grid-container .media-bottom a.badge-download i.fa, .import-badges #grid .grid-container .media-bottom a.bottom-link i.fa, .import-badges #grid .grid-container .media-bottom a.badge-download i.fa, #user-badges #grid .grid-container .media-bottom a.bottom-link i.fa, #user-badges #grid .grid-container .media-bottom a.badge-download i.fa {
@@ -474,11 +497,12 @@ button.navbar-toggle {
 
 .btn-primary {
   background-color: $button-color !important;
-  border-color: $button-hover;
+  border: none;
+  //border-color: $button-hover;
   color:$text-color;
   font-weight:bold;
   box-shadow:none;
-  &:hover {
+  &:hover, &:focus, &:active {
     background-color: $button-hover;
     border-color: $button-hover;
   }
@@ -522,7 +546,7 @@ a.popup-info {
 #dashboard {
   #welcome-block {
     .welcome-block {
-    background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+      background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
     }
 
   }
@@ -580,7 +604,7 @@ a.popup-info {
     }
 
     .endorsement {
-     // background-color: #00D2CE;
+      // background-color: #00D2CE;
     }
 
     .page {
@@ -600,7 +624,7 @@ a.popup-info {
     }
 
     .content .badges {
-        color: $text-color;
+      color: $text-color;
     }
   }
 
@@ -609,8 +633,8 @@ a.popup-info {
   #box_1 .notifications-block .notification-div .content-text{
     color: $text-color;
     .date {
-    color: #117164;
-  }
+      color: #117164;
+    }
   }
 
   .badge {
