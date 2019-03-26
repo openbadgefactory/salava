@@ -2,5 +2,4 @@
  :font ["/css/extra/fonts/GTAmerica/GT-America-Standard-Bold.eot"]
  :logo ["/img/extra/hpass/logo.png"]
  :filter-options [{:country "all"
-                   :common-badges false}]
- :welcome-block-body [{:en "Earn badges to demonstrate skills and competencies -  display in portfolio - share on social media and to enhance your CV"}]}
+                   :common-badges false}]}
