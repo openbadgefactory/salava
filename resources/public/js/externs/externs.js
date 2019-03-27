@@ -1,4 +1,9 @@
 var CKEDITOR = {};
 CKEDITOR.tools.callFunction = function() {};
 
-var SimpleMDE = {};
+var codemirror = function() {
+
+};
+
+codemirror.prototype.on = function (event, handler) {};
+
