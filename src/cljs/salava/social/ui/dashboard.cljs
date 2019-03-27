@@ -267,7 +267,7 @@
              [:p.num (get-in @state [:gallery :badges :all] 0)]
              [:p.desc (t :gallery/Sharedbadges)]]]]]
          (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
-           [:div.since-last-login [:p.new (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
+           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
         [:div.col-sm-4.button-block
          [:div.info-block.page
           [:a {:href (path-for "/gallery/pages")}
@@ -278,7 +278,7 @@
               [:p.num (get-in @state [:gallery :pages :all] 0)]
               [:p.desc (t :gallery/Sharedpages)]]]]]]
          (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
-           [:div.since-last-login [:p.new (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
+           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
         [:div.col-sm-4.button-block
          [:div.info-block
           [:a {:href (path-for "/gallery/profiles")}
@@ -289,7 +289,7 @@
               [:p.num (get-in @state [:gallery :profiles :all] 0)]
               [:p.desc (t :gallery/Sharedprofiles)]]]]]]
          (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
-           [:div.since-last-login [:p.new (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
+           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
         ]]]]]])
 
 
@@ -407,11 +407,11 @@
    (if (not-activated?)
      (not-activated-banner))
    [welcome-block state]
-   [:div.row
+   [:div.row.flip
     [notifications-block state]
     [badges-block state]
     [profile-block state]]
-   [:div.row
+   [:div.row.flip
     [connections-block state]
     [explore-block state]
     [help-block]]])
