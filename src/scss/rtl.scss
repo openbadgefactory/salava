@@ -1485,6 +1485,12 @@ html[dir="rtl"] #dashboard {
   }
 
   .profile-block .media-body {
+    .stats {
+      display: flex;
+    }
+    @media (max-width: 1175px) {
+      display: contents;
+    }
     @media (max-width: 320px) {
       display: table-cell;
     }
