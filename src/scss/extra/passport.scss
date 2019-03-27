@@ -203,7 +203,7 @@ ul#secondary-menu-links li a{
     font-weight: bold;
     text-transform: uppercase;
     &:hover, &:focus, &:active {
-      color: $orange-hover;
+      color: $button-hover;
       text-decoration: none;
     }
   }
@@ -239,7 +239,7 @@ ul#secondary-menu-links li a{
   }
 }
 
-#badge-advert #grid .grid-container .media-content .media-body .media-heading span, .following-icon {
+#badge-advert #grid .grid-container .media-content .media-body .media-heading span, .following-icon, #my-files #grid .grid-container .media-content .media-body .media-heading a{
   &:hover, &:active, &:focus {
     color: $button-hover;
   }
