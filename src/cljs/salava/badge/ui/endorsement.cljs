@@ -88,7 +88,6 @@
                   (for [endorsement @endorsements]
                     (endorsement-row endorsement)))])
          (when user-badge-id
-           ;(if (seq @endorsements) [:hr])
            [:div.col-xs-12
             [user-badge-endorsement-content user-badge-id endorsements]]
            )]))))
@@ -404,19 +403,11 @@
         [:div.badge-image [:img.badge-image {:src (str "/" image_file)}]]]
        [:div.col-md-9
         [:div
-         [:h1.uppercase-header name]
+         [:h1.uppercase-header name]-
          [:div (if endorsee_id (t :badge/Manageendorsementtext1) (t :badge/Manageendorsementtext2))]
          [:hr.line]
          [:div.row
-          [:div.col-md-4.col-md-push-8  " "#_(when-not (and endorser_id (= "pending" status))
-                                               [:div.row
-                                                [:div.col-xs-12.delete-btn {:style {:margin "5px 0px" :cursor "pointer" :width "100%"}}
-                                                 [:a {:style {:line-height "4"}
-                                                      :on-click #(do
-                                                                   (.preventDefault %)
-                                                                   (delete-endorsement id user_badge_id nil nil))
-                                                      :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]
-                                                 ]])]
+          [:div.col-md-4.col-md-push-8  " "]
           [:div.col-md-8.col-md-pull-4 [profile {:id (or endorsee_id issuer_id)
                                                  :profile_picture profile_picture
                                                  :first_name first_name
@@ -432,32 +423,22 @@
            [:div {:style {:margin-top "15px"}}
             [:div;.form-group
              [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
-             [:div.editor [markdown-editor (cursor params [:endorsement :content])]]
-             #_[:textarea.form-control {:id "claim"
-                                        :rows "10"
-                                        :cols "50"
-                                        :max-length "1500"
-                                        :type "text"
-                                        :value @(cursor params [:endorsement :content])
-                                        :on-change #(do
-                                                      (reset! (cursor params [:endorsement :content]) (.-target.value %)))}]]
-            [:div.row.flip
-             [:div.col-md-8 [:button.btn.btn-primary {:on-click #(do
-                                                                   (.preventDefault %)
-                                                                   (edit-endorsement id user_badge_id @(cursor params [:endorsement :content])))
-                                                      :disabled (blank? @(cursor params [:endorsement :content]))
-                                                      :data-dismiss "modal"
+             [:div.editor [markdown-editor (cursor params [:endorsement :content])]]]
+            [:div.row.flip.control-buttons
+             [:div.col-md-6.col-sm-6.col-xs-6.left-buttons [:button.btn.btn-primary {:on-click #(do
+                                                                                                  (.preventDefault %)
+                                                                                                  (edit-endorsement id user_badge_id @(cursor params [:endorsement :content])))
+                                                                                     :disabled (blank? @(cursor params [:endorsement :content]))
+                                                                                     :data-dismiss "modal"
 
-                                                      } (t :core/Save)]
+                                                                                     } (t :core/Save)]
               [:button.btn.btn-warning.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
-             ;[:div.col-xs-12.delete-btn {:style {:margin "10px 0px 10px 0px" :cursor "pointer" :width "100%"}}
-             [:div.col-md-4 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
-                                            :on-click #(do
-                                                         (.preventDefault %)
-                                                         (delete-endorsement id user_badge_id nil nil))
-                                            :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]
-             ]]
-           ;]
+             [:div.col-md-6.col-sm-6.col-xs-6.left-buttons [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
+                                                              :on-click #(do
+                                                                           (.preventDefault %)
+                                                                           (delete-endorsement id user_badge_id nil nil))
+                                                              :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]
+
 
            [:div {:style {:margin-top "15px"}}
             [:div {:dangerouslySetInnerHTML {:__html content}}]
@@ -490,27 +471,13 @@
                                                         (.preventDefault %)
                                                         (update-status id "declined" user_badge_id nil nil ))
                                            :data-dismiss "modal"} [:i.fa.fa-remove] (t :badge/Declineendorsement)]]]]
-               [:div.row.flip.buttons
-                [:div.col-md-8 #_[:button.btn.btn-primary {:on-click #(do
-                                                                        (.preventDefault %)
-                                                                        (edit-endorsement id user_badge_id @(cursor params [:endorsement :content])))
-                                                           :disabled (blank? @(cursor params [:endorsement :content]))
-                                                           :data-dismiss "modal"
-
-                                                           } (t :core/Save)]
-                 [:button.btn.btn-warning.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
-                ;[:div.col-xs-12.delete-btn {:style {:margin "10px 0px 10px 0px" :cursor "pointer" :width "100%"}}
-                [:div.col-md-4 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
-                                               :on-click #(do
-                                                            (.preventDefault %)
-                                                            (delete-endorsement id user_badge_id nil nil))
-                                               :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]
-                ]
-
-               )
-             ]
-
-            ])]]])))
+               [:div.row.flip.control-buttons
+                [:div.col-md-6.col-sm-6.col-xs-6  [:button.btn.btn-primary.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
+                [:div.col-md-6.col-sm-6.col-xs-6 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
+                                                                 :on-click #(do
+                                                                              (.preventDefault %)
+                                                                              (delete-endorsement id user_badge_id nil nil))
+                                                                 :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]])]])]]])))
 
 
 (defn endorsements [state]
