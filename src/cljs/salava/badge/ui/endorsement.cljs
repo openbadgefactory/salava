@@ -1,6 +1,7 @@
 (ns salava.badge.ui.endorsement
   (:require [salava.core.i18n :refer [t]]
             [reagent.core :refer [atom cursor create-class]]
+            [reagent.dom :as reagent]
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for private?]]
@@ -162,38 +163,34 @@
                               "link" "horizontal-rule"
                               "preview"))
 
-(defn init-editor [value element-id]
-  (let [editor (js/SimpleMDE. (js-obj "element" (.getElementById js/document element-id)
-                                      "toolbar" simplemde-toolbar
-                                      "autofocus" "true"
-                                      "spellChecker" "false"
-                                      ))]
+(def editor (atom nil))
 
-    (js/setTimeout (fn [] (.value editor @value)) 200) ;;delay for editor to load
+(defn init-editor [element-id value]
+  (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
+                                          :toolbar simplemde-toolbar})))
+  (.value @editor @value)
+  (js/setTimeout (fn [] (.value @editor @value)) 200)
+  (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
 
-    ;(.value editor @value)
-    (set! (.-onclick js/document) (fn [] (js/setTimeout (fn [] (.value editor @value)) 10))) ;refresh editor value
-    (.codemirror.on editor "mousedown" (fn [] (.value editor @value)))
-    (.codemirror.on editor "change" (fn [] (reset! value (.value editor))))))
 
 (defn markdown-editor [value]
   (create-class {:component-did-mount (fn []
-                                        #_(.getScript (js* "$") "/js/simplemde.min.js")
-                                        (init-editor value (str "editor" (-> (session/get :user) :id))))
+                                        (init-editor (str "editor" (-> (session/get :user) :id)) value))
                  :reagent-render (fn []
                                    [:div.form-group {:style {:display "block"}}
                                     [:textarea {:class "form-control"
                                                 :id (str "editor" (-> (session/get :user) :id))
                                                 :defaultValue @value
-                                                ;:on-change #(reset! value (.-target.value %))
-                                                }]]) }))
+                                                :on-change #(reset! value (.-target.value %))
+                                                }]])}))
 
 (defn process-text [s state]
   (let [text (-> js/document
                  (.getElementById (str "editor" (-> (session/get :user) :id)))
                  (.-innerHTML))
         endorsement-claim (str text (if (blank? text) "" "\n\n") "* " s)]
-    (reset! (cursor state [:endorsement-comment]) endorsement-claim)))
+    (reset! (cursor state [:endorsement-comment]) endorsement-claim)
+    (.value @editor  @(cursor state [:endorsement-comment]))))
 
 
 (defn endorse-badge-content [state]
@@ -212,9 +209,9 @@
       [:div.col-xs-12
        [:div.list-group
         [:a.list-group-item {:id "phrase1" :href "#" :on-click #(do
-                                                    (.preventDefault %)
-                                                    (process-text (t :badge/Endorsephrase1) state)
-                                                    )} [:i.fa.fa-plus-circle](t :badge/Endorsephrase1)]
+                                                                  (.preventDefault %)
+                                                                  (process-text (t :badge/Endorsephrase1) state)
+                                                                  )} [:i.fa.fa-plus-circle](t :badge/Endorsephrase1)]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase2) state)
@@ -495,12 +492,12 @@
                                            :data-dismiss "modal"} [:i.fa.fa-remove] (t :badge/Declineendorsement)]]]]
                [:div.row.flip.buttons
                 [:div.col-md-8 #_[:button.btn.btn-primary {:on-click #(do
-                                                                      (.preventDefault %)
-                                                                      (edit-endorsement id user_badge_id @(cursor params [:endorsement :content])))
-                                                         :disabled (blank? @(cursor params [:endorsement :content]))
-                                                         :data-dismiss "modal"
+                                                                        (.preventDefault %)
+                                                                        (edit-endorsement id user_badge_id @(cursor params [:endorsement :content])))
+                                                           :disabled (blank? @(cursor params [:endorsement :content]))
+                                                           :data-dismiss "modal"
 
-                                                         } (t :core/Save)]
+                                                           } (t :core/Save)]
                  [:button.btn.btn-warning.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
                 ;[:div.col-xs-12.delete-btn {:style {:margin "10px 0px 10px 0px" :cursor "pointer" :width "100%"}}
                 [:div.col-md-4 [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
