@@ -210,23 +210,23 @@
         [:a.list-group-item {:id "phrase1" :href "#" :on-click #(do
                                                                   (.preventDefault %)
                                                                   (process-text (t :badge/Endorsephrase1) state)
-                                                                  )} [:i.fa.fa-plus-circle](t :badge/Endorsephrase1)]
+                                                                  )} [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase1)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase2) state)
-                                                    )} [:i.fa.fa-plus-circle](t :badge/Endorsephrase2)]
+                                                    )} [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase2)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase3) state)
-                                                    ) } [:i.fa.fa-plus-circle](t :badge/Endorsephrase3)]
+                                                    ) } [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase3)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase4) state)
-                                                    ) } [:i.fa.fa-plus-circle](t :badge/Endorsephrase4)]
+                                                    ) } [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase4)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase5) state)
-                                                    )  } [:i.fa.fa-plus-circle](t :badge/Endorsephrase5)]]]]
+                                                    )  } [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase5)]]]]]
 
      [:div.editor
       [:div.form-group
