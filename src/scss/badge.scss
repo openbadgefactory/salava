@@ -1598,12 +1598,40 @@ button {
     //background-image: linear-gradient(to right, rgba(0, 0, 0, 0), $link-color, rgba(0, 0, 0, 0));
     margin: 20px 0px;}
 
+  .control-buttons {
+
+    @media (max-width: 375px) {
+      text-align: center;
+      .col-xs-6 {
+        min-width: 100%;
+        .delete-btn {
+          float: unset;
+        }
+      }
+    }
+
+    @media(max-width: 456px) {
+      text-align: center;
+      .left-buttons {
+        .delete-btn {
+          float: unset;
+        }
+        min-width: 100%;
+      }
+    }
+
+  }
+
 
   .list-item {
     cursor: pointer;
     padding: 10px;
     border-bottom: 1px dashed #DDD;
     width: 100%;
+
+    .media .child-profile .media-body p {
+      color: $text-color;
+    }
 
     a {
       text-decoration: none;

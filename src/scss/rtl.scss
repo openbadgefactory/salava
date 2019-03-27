@@ -1460,3 +1460,95 @@ html[dir="rtl"] #pending-badges {
     }
   }
 }
+
+/****Dashboard***/
+
+html[dir="rtl"] #dashboard {
+  #box_1 .notifications-block .badge {
+    position: absolute;
+    right: unset;
+    left: 40px;
+}
+
+  #welcome-block .welcome-block {
+    text-align: right;
+    .content {
+      margin-right: 20px;
+    }
+
+  }
+  .connections, .explore {
+    @media (max-width: 768px) {
+      min-width: 100%;
+    }
+  }
+
+  .explore .content {
+    display: flex;
+    @media(max-width: 375px) {
+
+      .info-block .info .icon {
+          margin-left: unset;
+          margin-right: 10px;
+        }
+      .text {
+        display: block;
+
+
+        .desc {
+          display: contents;
+          padding-left: 5px;
+        }
+      }
+
+
+    }
+  }
+
+  .profile-block .media-body {
+    .stats {
+      display: flex;
+    }
+    @media (max-width: 1175px) {
+      display: contents;
+    }
+    @media (max-width: 320px) {
+      display: table-cell;
+    }
+  }
+
+
+  .connections-block {
+    .content {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+  .block {
+    .icon {
+      margin-left: 10px;
+    }
+    .heading_1, .content {
+      text-align: right;
+    }
+
+    .stats {
+      .total-badges {
+        float: right;
+        margin-left: 15px;
+      }
+    }
+
+    .button {
+      right: unset;
+      left: 0;
+    }
+
+    .info-block {
+      .badge {
+        right: unset;
+        left: 11px;
+      }
+    }
+  }
+}
