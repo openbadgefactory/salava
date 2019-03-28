@@ -275,20 +275,43 @@
         grid-badges (if (and @show-featured (not @show-issuer-info-atom)) (remove (fn [app] (some #(identical? % app) featured)) badges) badges)]
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
-       [:div.panel {:class "row wrap-grid"
-                    :id    "grid"
-                    }
-        [:button.close {:aria-label "OK"
-                        :on-click #(do
-                                     (.preventDefault %)
-                                     (swap! state assoc :show-featured false))}
-         [:span {:aria-hidden "true"
-                 :dangerouslySetInnerHTML {:__html "&times;"}}]]
-        [:h3.panel-heading (t :extra-application/Featured)]
-        [:hr]
+       #_[:div.panel {:class "row wrap-grid"
+                      :id    "grid"
+                      }
+          [:button.close {:aria-label "OK"
+                          :on-click #(do
+                                       (.preventDefault %)
+                                       (swap! state assoc :show-featured false))}
+           [:span {:aria-hidden "true"
+                   :dangerouslySetInnerHTML {:__html "&times;"}}]]
+          [:h3.panel-heading (t :extra-application/Featured)]
+          [:hr]
+          (into [:div.adcontainer]
+                (for [element-data featured]
+                  (badge-grid-element element-data state)))]
+       [:div.panel.featured-gallery {:class "row wrap-grid"
+                                     :id    "grid"
+                                     }
+        [:div.close {:style {:opacity 1}};.close-button
+         [:a {
+               :aria-label "OK"
+               :on-click   #(do
+                              (.preventDefault %)
+                              (swap! state assoc :show-featured false))}
+          [:i.fa.fa-remove {:title (t :core/Cancel)}]]]
+
+
+        #_[:button.close {:aria-label "OK"
+                          :on-click #(do
+                                       (.preventDefault %)
+                                       (swap! state assoc :show-featured false))}
+           [:span {:aria-hidden "true"
+                   :dangerouslySetInnerHTML {:__html "&times;"}}]]
+        [:h3.panel-heading {:style {:text-align "center"}} (t :extra-application/Featured)]
+        [:div
         (into [:div.adcontainer]
               (for [element-data featured]
-                (badge-grid-element element-data state)))])
+                (badge-grid-element element-data state)))]])
 
 
      [:h3 (str-cat tags)]
@@ -317,14 +340,14 @@
 
 (defn init-data [state init-params]
   (let [country (session/get-in [:filter-options :country] (:country init-params))]
-  (ajax/GET
-    (path-for "/obpv1/application/")
-    {:params  (assoc init-params :country country)
-     :handler (fn [data]
-                (let [{:keys [applications countries user-country]} data]
-                  (swap! state assoc :applications applications
-                         :countries countries)
-                  (init-all-issuers state init-params)))})))
+    (ajax/GET
+      (path-for "/obpv1/application/")
+      {:params  (assoc init-params :country country)
+       :handler (fn [data]
+                  (let [{:keys [applications countries user-country]} data]
+                    (swap! state assoc :applications applications
+                           :countries countries)
+                    (init-all-issuers state init-params)))})))
 
 
 (defn init-values
@@ -378,12 +401,12 @@
                                                      (.preventDefault %)
                                                      (mo/open-modal [:application :badge] {:id (:id application) :state state}))}
                           [:img {:src (str "/" (:image_file application))}]]))
-                 [:div] (take 5 (:applications @state)))])))
+               [:div] (take 5 (:applications @state)))])))
 
 (defn ^:export button [opt]
   (fn []
-   (case opt
-     "button" [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]
-     "link" [:a {:href (str (path-for "/badge/application"))}[:p (t :social/Iwanttoearnnewbadges)]]
-     [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]])))
+    (case opt
+      "button" [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]
+      "link" [:a {:href (str (path-for "/badge/application"))}[:p (t :social/Iwanttoearnnewbadges)]]
+      [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]])))
 
