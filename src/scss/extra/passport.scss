@@ -116,10 +116,17 @@ ul.navbar-nav li {
 ul#secondary-menu-links li a{
   font-weight: normal;
 }
+
+button.navbar-toggle {
+  border: 1px solid $button-color;
+  .icon-bar {
+    background-color: $button-hover;
+  }
+}
 /* BUTTONS */
 #grid-filter .btn, #buttons .col-xs-8 .btn {
-  background-color:  lighten($title-color, 3%);
-  border: 1px solid $title-color;
+  background-color:  $grid-buttons; //lighten($title-color, 3%);
+  border: 1px solid $button-color;
   font-weight: 600;
 }
 .btn-success {
@@ -133,6 +140,14 @@ ul#secondary-menu-links li a{
 #page-edit .field .field-move .move-arrows{
   .move-up, .move-down {
     color: $badge-title;
+  }
+}
+
+a#login-button, #login-page .btn-primary {
+  background-color: $button-color;
+  border: 1px solid $button-hover;
+  &:hover {
+    background-color:$button-hover;
   }
 }
 
@@ -157,9 +172,10 @@ ul#secondary-menu-links li a{
 
 #my-badges #grid .grid-container .media-content .visibility-icon i {
   color:  $title-color;
-  &:hover {
+  cursor: auto;
+ /* &:hover {
     color:$menu-active;
-  }
+  }*/
 }
 #page-gallery #grid .media-content .page-create-date,
 .pages #grid .grid-container .page-create-date,
@@ -198,7 +214,11 @@ ul#secondary-menu-links li a{
   }
 }
 .pages #grid, #page-gallery #grid, #my-files #grid, #profile-gallery #grid {
-  #add-element #add-element-link, .add-element-link {
+  #add-element {
+    #add-element-icon {
+      color: $title-color;
+    }
+    #add-element-link, .add-element-link {
     color: $badge-title;//$badge-title; //$orange-color;
     font-weight: bold;
     text-transform: uppercase;
@@ -207,6 +227,7 @@ ul#secondary-menu-links li a{
       text-decoration: none;
     }
   }
+}
   #grid-file-upload:hover ~ .grid-container{
     a#add-element-link{
       color: $badge-title; //$orange-hover;
@@ -237,6 +258,18 @@ ul#secondary-menu-links li a{
       color: $menu-active;
     }
   }
+}
+
+.pages #grid .media-content .media-body .visibility-icon, #page-gallery #grid .media-content .media-body .visibility-icon, #user-pages #grid .media-content .media-body .visibility-icon, #profile-gallery #grid .media-content .media-body .visibility-icon,
+#my-files #grid .media-content .media-body .visibility-icon, #badge-gallery #user-pages #grid .media-content .media-body .visibility-icon  {
+  color: $title-color;
+  cursor:auto;
+  font-size: 20px;
+}
+
+#my-files .file-icon-large {
+  color: $titlebar-color;
+  opacity: 0.6;
 }
 
 #badge-advert #grid .grid-container .media-content .media-body .media-heading span, .following-icon, #my-files #grid .grid-container .media-content .media-body .media-heading a{
@@ -365,6 +398,7 @@ a.popup-info {
   #box_3 {
     .help p {
       color: $badge-title;
+      font-weight: 400;
       &:active, &:hover, &:focus {
         color: $button-hover;
       }
@@ -419,6 +453,12 @@ a.popup-info {
   background-color: none;
   background: linear-gradient(to left, #26a0da, #314755);
 }
+
+#my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon {
+  color: $title-color;
+}
+
+
 /*
 a#login-button {
 height: 36px;

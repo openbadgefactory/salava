@@ -13,10 +13,12 @@ $link-color: $badge-title; //#4a5aac;
 $button-color: #2b7aa1;
 $button-hover: #279ad1;
 $link-hover: $button-hover;
-$icon-color: #a28f9b;
+$icon-color: $title-color; //#a28f9b;
 //error messages
 $dark-red: #8c2e0b;
 //success messages
 $green: #5cb85c;
 
 $background-color: #f9f9f9;
+$grid-buttons: #2c6e90;
+
