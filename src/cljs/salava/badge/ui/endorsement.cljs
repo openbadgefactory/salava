@@ -226,7 +226,11 @@
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase5) state)
-                                                    )  } [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase5)]]]]]
+                                                    )  } [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase5)]]
+        [:a.list-group-item {:href "#" :on-click #(do
+                                                    (.preventDefault %)
+                                                    (process-text (t :badge/Endorsephrase6) state)
+                                                    )  } [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase6)]]]]]
 
      [:div.editor
       [:div.form-group
@@ -434,10 +438,10 @@
                                                                                      } (t :core/Save)]
               [:button.btn.btn-warning.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
              [:div.col-md-6.col-sm-6.col-xs-6.left-buttons [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
-                                                              :on-click #(do
-                                                                           (.preventDefault %)
-                                                                           (delete-endorsement id user_badge_id nil nil))
-                                                              :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]
+                                                                           :on-click #(do
+                                                                                        (.preventDefault %)
+                                                                                        (delete-endorsement id user_badge_id nil nil))
+                                                                           :data-dismiss "modal"} [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]]
 
 
            [:div {:style {:margin-top "15px"}}
