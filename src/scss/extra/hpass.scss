@@ -546,7 +546,12 @@ a.popup-info {
 #dashboard {
   #welcome-block {
     .welcome-block {
-      background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+      background-repeat: no-repeat;
+      background-image: linear-gradient(to right, rgba(255,255,255,0.7), rgba(255,255,255,0.2)), url("/img/extra/hpass/hpass_welcome_background.png");
+
+      @media (max-width: 768px) {
+        background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+      }
     }
 
   }
