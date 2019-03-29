@@ -20,7 +20,8 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [medley.core :refer [distinct-by]]
-            [salava.extra.application.ui.issuer :as i]))
+            [salava.extra.application.ui.issuer :as i]
+            [salava.core.ui.popover :refer [info]]))
 
 
 (defn hashtag? [text]
@@ -138,7 +139,7 @@
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
+     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":") [info {:content (t :extra-application/Filterbycountry) :placement "top"}]]
      [:div.col-sm-10
       [:select {:class     "form-control"
                 :id        "country-selector"
@@ -231,10 +232,10 @@
      (if (pos? followed)
        [:a.following-icon {:href "#" :on-click #(remove-from-followed id state) :title (t :extra-application/Removefromfavourites)} [:i {:class "fa fa-bookmark"}]])
      #_(if (= "pro" issuer_tier)
-       [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
+         [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
 
-      [:div.media-content
-       [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state})) }
+     [:div.media-content
+      [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state})) }
        (if image_file
          [:div.media-left
           [:img {:src (str "/" image_file)
@@ -274,20 +275,43 @@
         grid-badges (if (and @show-featured (not @show-issuer-info-atom)) (remove (fn [app] (some #(identical? % app) featured)) badges) badges)]
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
-       [:div.panel {:class "row wrap-grid"
-                          :id    "grid"
-                          }
-              [:button.close {:aria-label "OK"
-                              :on-click #(do
-                                           (.preventDefault %)
-                                           (swap! state assoc :show-featured false))}
-               [:span {:aria-hidden "true"
-                       :dangerouslySetInnerHTML {:__html "&times;"}}]]
-              [:h3.panel-heading (t :extra-application/Featured)]
-              [:hr]
-       (into [:div.adcontainer]
-             (for [element-data featured]
-               (badge-grid-element element-data state)))])
+       #_[:div.panel {:class "row wrap-grid"
+                      :id    "grid"
+                      }
+          [:button.close {:aria-label "OK"
+                          :on-click #(do
+                                       (.preventDefault %)
+                                       (swap! state assoc :show-featured false))}
+           [:span {:aria-hidden "true"
+                   :dangerouslySetInnerHTML {:__html "&times;"}}]]
+          [:h3.panel-heading (t :extra-application/Featured)]
+          [:hr]
+          (into [:div.adcontainer]
+                (for [element-data featured]
+                  (badge-grid-element element-data state)))]
+       [:div.panel.featured-gallery {:class "row wrap-grid"
+                                     :id    "grid"
+                                     }
+        [:div.close {:style {:opacity 1}};.close-button
+         [:a {
+               :aria-label "OK"
+               :on-click   #(do
+                              (.preventDefault %)
+                              (swap! state assoc :show-featured false))}
+          [:i.fa.fa-remove {:title (t :core/Cancel)}]]]
+
+
+        #_[:button.close {:aria-label "OK"
+                          :on-click #(do
+                                       (.preventDefault %)
+                                       (swap! state assoc :show-featured false))}
+           [:span {:aria-hidden "true"
+                   :dangerouslySetInnerHTML {:__html "&times;"}}]]
+        [:h3.panel-heading {:style {:text-align "center"}} (t :extra-application/Featured)]
+        [:div
+        (into [:div.adcontainer]
+              (for [element-data featured]
+                (badge-grid-element element-data state)))]])
 
 
      [:h3 (str-cat tags)]
@@ -315,14 +339,15 @@
                 (swap! state assoc :all-applications (:applications data)))}))
 
 (defn init-data [state init-params]
-  (ajax/GET
-    (path-for "/obpv1/application/")
-    {:params  init-params
-     :handler (fn [data]
-                (let [{:keys [applications countries user-country]} data]
-                  (swap! state assoc :applications applications
-                         :countries countries)
-                  (init-all-issuers state init-params)))}))
+  (let [country (session/get-in [:filter-options :country] (:country init-params))]
+    (ajax/GET
+      (path-for "/obpv1/application/")
+      {:params  (assoc init-params :country country)
+       :handler (fn [data]
+                  (let [{:keys [applications countries user-country]} data]
+                    (swap! state assoc :applications applications
+                           :countries countries)
+                    (init-all-issuers state init-params)))})))
 
 
 (defn init-values
@@ -345,7 +370,7 @@
                                 :user-id            user-id
                                 :badges             []
                                 :countries          []
-                                :country-selected   (:country init-values) #_(or (:country init-values) (session/get-in [:user :country] "all"))
+                                :country-selected   (session/get-in [:filter-options :country] (:country init-values)) #_(or (:country init-values) (session/get-in [:user :country] "all"))
                                 :advanced-search    false
                                 :name               (or (:name init-values) "")
                                 :issuer-name        (or (:issuer-name init-values) "")
@@ -356,10 +381,32 @@
                                 :issuer-content {:name (t :core/All)}
                                 :issuer-search false
                                 :search-result []
-                                :show-featured true})]
+                                :show-featured true})
+        country (session/get-in [:filter-options :country] (:country init-values))]
     (init-data state init-values)
-    (autocomplete-search state (:country init-values))
+    (autocomplete-search state country #_(:country init-values))
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
         (layout/landing-page site-navi [content state badge_content_id])))))
+
+(defn ^:export latestearnablebadges []
+  (let [state (atom {})]
+    (init-data state {:country "all" :order "mtime" :issuer-name "" :name ""})
+    (fn []
+      [:div.badges
+       [:p.header (t :social/Newestearnablebadges)]
+       (reduce (fn [r application]
+                 (conj r [:a {:href "#" :on-click #(do
+                                                     (.preventDefault %)
+                                                     (mo/open-modal [:application :badge] {:id (:id application) :state state}))}
+                          [:img {:src (str "/" (:image_file application))}]]))
+               [:div] (take 5 (:applications @state)))])))
+
+(defn ^:export button [opt]
+  (fn []
+    (case opt
+      "button" [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]
+      "link" [:a {:href (str (path-for "/badge/application"))}[:p (t :social/Iwanttoearnnewbadges)]]
+      [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]])))
+

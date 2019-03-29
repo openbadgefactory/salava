@@ -1,4 +1,5 @@
 {:css ["/css/extra/hpass.css"]
-:font ["/css/extra/fonts/GTAmerica/GT-America-Standard-Bold.eot"]
-:logo ["/img/extra/hpass/logo.png"]
- }
+ :font ["/css/extra/fonts/GTAmerica/GT-America-Standard-Bold.eot"]
+ :logo ["/img/extra/hpass/logo.png"]
+ :filter-options [{:country "all"
+                   :common-badges false}]}

@@ -146,7 +146,7 @@
                         :badges badges
                         :badge_count badge_count
                         :countries countries
-                        :country-selected user-country)))}))
+                        :country-selected (session/get-in [:filter-options :country] user-country))))}))
 
 
 (defn search-timer [state]
@@ -269,7 +269,7 @@
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
-    [:div (into [:div {:class "row wrap-grid"
+    [:div#badges (into [:div {:class "row wrap-grid"
                        :id    "grid"}]
                 (for [element-data badges]
                   (badge-grid-element element-data state "gallery" fetch-badges)))
@@ -311,7 +311,7 @@
                                 :page_count             0
                                 :badges                 []
                                 :countries              []
-                                :country-selected       "FI"
+                                :country-selected       (:country init-values) ;"FI"
                                 :tags                   ()
                                 :tags-badge-ids ()
                                 :full-tags              ()

@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? js-navigate-to plugin-fun hyperlink]]
+            [salava.core.ui.helper :refer [path-for private? js-navigate-to plugin-fun hyperlink url?]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -195,7 +195,7 @@
                                       (not (blank? narrative)) narrative
                                       (not added-by-user?) description ;;todo use regex to match description
                                       :else nil)]
-                           (conj r
+                           (conj r (when url? url
                                  [:div.modal-evidence
                                   (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                                   [:div.evidence-icon [:i.fa.fa-link]]
@@ -203,7 +203,7 @@
                                    (when-not (blank? name) [:div.content-body.name name])
                                    (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
                                    [:div.content-body.url
-                                    (hyperlink url)]]])))
+                                    (hyperlink url)]]]))))
                        [:div ] evidences)]])
 
            #_(if evidence_url

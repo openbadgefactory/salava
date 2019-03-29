@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? hyperlink]]
+            [salava.core.ui.helper :refer [path-for private? hyperlink url?]]
             [salava.core.time :refer [date-from-unix-time unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -293,7 +293,7 @@
                                  (not added-by-user?) description ;;todo use regex to match description
                                  :else nil
                                  )]
-                      (conj r (when-not hidden
+                      (conj r (when (and (not hidden) (url? url))
                                 [:div.modal-evidence
                                  (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
                                  [evidence-icon {:type resource_type :mime_type mime_type}]

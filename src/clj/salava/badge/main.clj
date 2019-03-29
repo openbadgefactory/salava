@@ -292,7 +292,7 @@
   (let [badge (fetch-badge ctx badge-id) ;(update (select-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
         owner? (= user-id (:owner badge))
         ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
-        ;followed? (if user-id (so/is-connected? ctx user-id (:badge_content_id badge)))
+        followed? (if user-id (so/is-connected? ctx user-id (:badge_id badge)))
         all-congratulations (if user-id (select-all-badge-congratulations {:user_badge_id badge-id} (u/get-db ctx)))
         user-congratulation? (and user-id
                                   (not owner?)
@@ -302,19 +302,18 @@
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
         evidences (badge-evidences ctx badge-id user-id true)]
-
     (assoc badge :congratulated? user-congratulation?
       :congratulations all-congratulations
       :view_count view-count
       :recipient_count recipient-count
       ;:message_count badge-message-count
       ;:followed? followed?
+      :receive-notifications followed?
       :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
       :assertion (parse-assertion-json (:assertion_json badge))
-
       :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
-      ;;
       :evidences evidences
+      :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count)
       )))
 
 
@@ -377,13 +376,17 @@
 (defn set-visibility!
   "Set badge visibility"
   [ctx user-badge-id visibility user-id]
-  (if (badge-owner? ctx user-badge-id user-id)
-    (do
-      (update-visibility! {:id user-badge-id :visibility visibility} (u/get-db ctx))
-      (badge-publish-update! ctx user-badge-id visibility)
-      (if (= "public" visibility)
-        (u/event ctx user-id "publish" user-badge-id "badge")
-        (u/event ctx user-id "unpublish" user-badge-id "badge")))))
+  (try+
+    (if (badge-owner? ctx user-badge-id user-id)
+      (do
+        (update-visibility! {:id user-badge-id :visibility visibility} (u/get-db ctx))
+        (badge-publish-update! ctx user-badge-id visibility)
+        (if (or (= "internal" visibility )(= "public" visibility))
+          (u/event ctx user-id "publish" user-badge-id "badge")
+          (u/event ctx user-id "unpublish" user-badge-id "badge"))))
+    {:status "success"}
+    (catch Object _
+      {:status "error" :message _})))
 
 (defn update-recipient-count-and-connect [ctx user-id user_badge_id]
   (let [badge-id (-> (select-badge-id-by-user-badge-id {:user_badge_id user_badge_id} (into {:result-set-fn first} (u/get-db ctx))) :badge_id)
@@ -479,11 +482,14 @@
 
 (defn delete-badge-evidences! [db badge-id user-id]
   (if-let [evidences (select-user-badge-evidence {:user_badge_id badge-id} db)]
-    (when-not (empty? evidences)
+    (when (seq evidences)
       (delete-all-badge-evidences! {:user_badge_id badge-id} db)
       (doseq [evidence evidences
               :let [name (str "evidence_id:"(:id evidence))]]
         (delete-user-evidence-property! {:name name :user_id user-id} db)))))
+
+(defn delete-badge-endorsements! [db id]
+  (delete-user-badge-endorsements! {:id id} db))
 
 (defn delete-badge-with-db! [db user-badge-id]
   (delete-badge-tags! {:user_badge_id user-badge-id} db)
@@ -502,7 +508,8 @@
       (do
         #_(db/delete-badge-endorsements ctx badge-id)
         (delete-badge-with-db! {:connection tr-cn} badge-id)
-        (delete-badge-evidences! {:connection tr-cn} badge-id user-id)))
+        (delete-badge-evidences! {:connection tr-cn} badge-id user-id)
+        (delete-badge-endorsements! {:connection tr-cn} badge-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
       (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
     {:status "success" :message "Badge deleted"}

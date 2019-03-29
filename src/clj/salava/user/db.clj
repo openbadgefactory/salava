@@ -14,7 +14,9 @@
             [salava.core.countries :refer [all-countries]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.mail.mail :as m]))
+            [salava.mail.mail :as m]
+            [salava.badge.endorsement :as end]
+            [salava.social.db :as so]))
 
 (defqueries "sql/user/main.sql")
 
@@ -128,9 +130,10 @@
   "Check if user exists and password matches. User account must be activated."
   [ctx email plain-password]
   (try+
-    (let [{:keys [id pass activated verified primary_address role deleted]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
+    (let [{:keys [id pass activated verified primary_address role deleted last_login]} (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx)))]
       (if (and id pass (not deleted) (check-password ctx plain-password pass)) ;activated verified
         (do
+          (if last_login (store-user-last-visited! {:user_id id :value last_login} (get-db ctx))) ;store last visited before updating last login
           (update-user-last_login! {:id id} (get-db ctx))
           {:status "success" :id id})
         (if (and id pass deleted (check-password ctx plain-password pass))
@@ -347,7 +350,8 @@
   (let [user-badge-ids (select-user-badge-ids {:user_id user-id} (into {:row-fn :id} db))]
     (doseq [user-badge-id user-badge-ids]
       (b/delete-badge-with-db! db user-badge-id)
-      (b/delete-badge-evidences! db user-badge-id user-id))))
+      (b/delete-badge-evidences! db user-badge-id user-id)
+      (b/delete-badge-endorsements! db user-badge-id))))
 
 (defn delete-user
   "Delete user and all user data"
@@ -420,9 +424,13 @@
       (put-pending-badge-email! {:user_id user-id :email (:email user-badge) :primary (if new-account 1 0)} (u/get-db ctx))
       (update-user-activate! {:id user-id} (get-db ctx)))))
 
+(defn last-visited [ctx user-id]
+  (select-user-last-visited {:user_id user-id} (into {:result-set-fn first :row-fn :value} (get-db ctx))))
+
 (defn set-session [ctx ok-status user-id]
-  (let [{:keys [role id private activated]} (user-information ctx user-id)]
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated})))
+  (let [{:keys [role id private activated]} (user-information ctx user-id)
+        last-visited (last-visited ctx user-id)]
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited})))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
@@ -438,5 +446,28 @@
   (select-userid-from-event-owners {} (get-db ctx)) )
 
 
-
+(defn dashboard-info [ctx user-id]
+  (let [badges (->> (b/user-badges-all ctx user-id)
+                    (filter #(= "accepted" (:status %)))
+                    (sort-by :mtime >)
+                    (take 5))
+        pending-badges (b/user-badges-pending ctx user-id)
+        stats (b/badge-stats ctx user-id)
+        events (so/get-all-events-add-viewed ctx user-id)
+        user-info (user-information-with-registered-and-last-login ctx user-id)
+        user-profile (-> (user-information-and-profile ctx user-id nil)
+                         (dissoc :badges :pages :owner?))]
+  {:badges badges
+   ;:pending-badges (->> pending-badges (take 5))
+   :stats stats
+   :endorsing (->> (end/endorsements-given ctx user-id) count)
+   :endorsers (->> (end/endorsements-received ctx user-id) count)
+   :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
+   :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
+   ;:events (->> events (take 5))
+   ;:events_count (count events)
+   :pages_count (->> (p/user-pages-all ctx user-id) count)
+   :files_count (->> (f/user-files-all ctx user-id) :files count)
+   ;:gallery (g/gallery-stats ctx)
+   :user-profile user-profile }))
 

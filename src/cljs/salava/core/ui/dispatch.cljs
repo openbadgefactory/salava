@@ -32,6 +32,7 @@
 (session/put! :footer (:footer ctx))
 (session/put! :factory-url (:factory-url ctx))
 (session/put! :gdpr-disabled? (:gdpr-disabled? ctx))
+(session/put! :filter-options (:filter-options ctx))
 ;;;
 
 

@@ -41,40 +41,44 @@
          [:div.ajax-message {:style {:padding-top "20px"}}
           [:i {:class "fa fa-cog fa-spin fa-2x "}]
           [:span (str (t :core/Loading) "...")]]
-         [:div.panel {:style {:padding-top "20px"}}
-          [:div.panel-body
-           [:div.close-button
-            [:button {:type       "button"
-                      :class      "close"
+         [:div;.panel {:style {:padding-top "20px"}}
+          [:hr.border]
+          [:div;.panel-body
+           [:div.close {:style {:opacity 1}};.close-button
+            [:a {
                       :aria-label "OK"
                       :on-click   #(do
                                      (.preventDefault %)
                                      (swap! state assoc :show-result "none"
                                                         :show-link "block"
                                                         :display "none"))}
-             [:span {:aria-hidden "true"
+             [:i.fa.fa-remove {:title (t :core/Cancel)}]
+             #_[:span {:aria-hidden "true"
                      :dangerouslySetInnerHTML {:__html "&times;"}}]]]
 
            (case assertion-status
              404  [:div
                    [:div {:class "alert alert-danger"} (t :badge/Badgecheckfailed)]
-                   [:p [:i "404 not found"]]]
+                   [:p [:i "404 not found"]]
+                   [:hr.border]]
              410  [:div
                    [:div {:class "alert alert-danger"} (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))]
-                   #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
+                   #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
+                   [:hr.border]]
              500 [:div
                   [:div {:class "alert alert-danger"}
                    (t :badge/Badgecheckfailed)]
                   [:br]
                   [:p [:i message]]
-                  #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]]
+                  #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
+                  [:hr.border]]
              [:div
               (cond
                 revoked? [:div [:div {:class "alert alert-danger"}  (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))] [:p revocation_reason]]
                 expired? [:div [:div {:class "alert alert-danger"} (t :badge/Badgeisexpired)] [bottom-links state]]
                 :else [:div
                        #_[:p.validation-header (t :badge/Badgevaliditycheck)]
-                       [:h2.uppercase-header.validation-header (t :badge/Badgevaliditycheck)]
+                       #_[:h2.uppercase-header.validation-header (t :badge/Badgevaliditycheck)]
 
                        [:table
                         [:tbody
@@ -95,7 +99,8 @@
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])]]
 
                        [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
-                       [bottom-links state]])])]])])))
+                       [bottom-links state]
+                       [:hr.border]])])]])])))
 
 (defn check-badge-link [state]
   (fn []
@@ -106,7 +111,7 @@
                        (swap! state assoc :show-result "block"
                                           :show-link "none")
                        (when (empty? (:result @state)) (init-verify-info state))
-                       (.preventDefault %))} (str (t :badge/Verifybadge) "...")]]))
+                       (.preventDefault %))}[:i.fa.fa-search] (str (t :badge/Verifybadge) "...")]]))
 
 
 (defn check-badge [badgeid]

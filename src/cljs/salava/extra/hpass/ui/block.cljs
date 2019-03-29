@@ -200,3 +200,17 @@
 
 (defn ^:export accept-terms-string []
   "I have read and i agree to the privacy policy")
+
+(defn ^:export welcomeblockbody [lang]
+  (case lang
+    "en" "Welcome to HPass! We enable humanitarians to demonstrate their skills and experience using digital badges. You can earn badges on a range of humanitarian themes, from a wide range of organisations. Set up a profile or browse available badges to get started"
+    "Welcome to HPass! We enable humanitarians to demonstrate their skills and experience using digital badges. You can earn badges on a range of humanitarian themes, from a wide range of organisations. Set up a profile or browse available badges to get started."
+    )
+  )
+
+(defn ^:export importbadgetext [lang]
+  [:div.import-button-desc {:key "import"}
+   [:i (case lang
+         "en" "Import badges from other platforms, and add them to your myHPass profile"
+         "Import badges from other platforms, and add them to your myHPass profile"
+         )]])

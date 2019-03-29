@@ -13,6 +13,7 @@
             [salava.user.ui.helper :as u]
             [salava.core.ui.modal :as mo]
             [salava.admin.ui.admintool :refer [admintool-gallery-page]]
+            [salava.core.ui.page-grid :refer [page-grid-element]]
            ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             ))
 
@@ -34,7 +35,7 @@
                 (let [{:keys [pages countries user-country]} data]
                   (swap! state assoc :pages pages
                          :countries countries
-                         :country-selected user-country)))}))
+                         :country-selected (session/get-in [:filter-options :country] user-country))))}))
 
 (defn fetch-pages [state]
   (let [{:keys [user-id country-selected owner-name]} @state
@@ -101,7 +102,7 @@
       [text-field :owner-name (t :gallery/Pageowner) (t :gallery/Searchbypageowner) state]])
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
-(defn page-gallery-grid-element [element-data state]
+#_(defn page-gallery-grid-element [element-data state]
   (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data
         badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
@@ -135,7 +136,8 @@
     (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data pages]
-            (page-gallery-grid-element element-data state)))))
+            (page-grid-element element-data {:state state :init-data init-data :type "gallery"})
+            #_(page-gallery-grid-element element-data state)))))
 
 (defn content [state]
   [:div
@@ -155,7 +157,7 @@
         state (atom {:user-id user-id
                      :pages []
                      :countries []
-                     :country-selected "Finland"
+                     :country-selected (session/get-in [:filter-options :country] "Finland")
                      :owner-name ""
                      :order "mtime"
                      :timer nil
