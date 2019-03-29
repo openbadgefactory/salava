@@ -68,6 +68,7 @@
                  [com.cemerick/url "0.1.1"]
                  [cljsjs/clipboard "1.6.1-1"]
                  [cljsjs/simplemde "1.11.2-0"]
+                 [prismatic/dommy "1.1.0"]
 
 
                  [org.webjars/jquery "2.2.4"]
@@ -105,7 +106,7 @@
                        ;:repl-options   {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                        :plugins        [[lein-pdo "0.1.1"]
                                         [lein-cljsbuild "1.1.5" :exclusions [org.clojure/clojure]]
-                                        [lein-scss "0.3.0"]
+                                        [lein-scss "0.3.0"]-
                                         [lein-figwheel "0.5.9"]]
                        :resource-paths ["target/generated"]}
              :uberjar {:resource-paths ["target/adv"]
