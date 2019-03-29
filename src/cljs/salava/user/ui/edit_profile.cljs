@@ -174,7 +174,7 @@
          (profile-fields profile-fields-atom)]]
 
        (into [:div]
-         (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
+         (for [f (plugin-fun (session/get :plugins) "block" "user_edit_profile")]
            [f]))
 
        [:div.row {:id "save-profile-buttons"}

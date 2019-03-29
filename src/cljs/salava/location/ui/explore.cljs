@@ -8,48 +8,90 @@
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]))
 
+(def tile-url "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 
-(defn- set-markers [my-map data]
-  (doseq [b (:badges data)]
-    (-> (js/L.latLng. (:lat b) (:lng b))
-        js/L.marker.
-        (.on "click" (fn [e]
-                       (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))
-        (.addTo my-map))))
+(def tile-opt
+  (clj->js
+    {:maxZoom 15
+     :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
 
+(defn- get-markers [kind my-map layer-group ]
+  (let [bounds (.getBounds my-map)
+        minll (.getSouthWest bounds)
+        maxll (.getNorthEast bounds)
+        click-cb (case kind
+                   "users"
+                   (fn [u] #(mo/open-modal [:user :profile] {:user-id (-> u :id .-rep)}))
+                   "badges"
+                   (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))]
+    (ajax/GET
+      (path-for (str "/obpv1/location/explore/" kind) true)
+      {:params {:max_lat (.-lat maxll) :max_lng (.-lng maxll)
+                :min_lat (.-lat minll) :min_lng (.-lng minll)}
+       :handler
+       (fn [data]
+         (.clearLayers layer-group)
+         (doseq [item (get data (keyword kind))]
+           (.addLayer
+             layer-group
+             (-> (js/L.latLng. (:lat item) (:lng item))
+                 js/L.marker.
+                 (.on "click" (click-cb item))))))
+       })))
 
-(defn content []
+(defn map-view []
   (create-class
     {:reagent-render
      (fn []
        [:div.row
         [:div.col-md-12
          [m/modal-window]
-         [:div {:id "map-view" :style {:height "700px"}}]]])
+
+         [:div.row
+          [:div.col-md-12
+           [:label.radio-inline
+            [:input {:name "map-type"
+                     :type "radio"
+                     :value "users"
+                     :default-checked true}]
+            (t :location/ShowUsers)]
+
+           [:label.radio-inline
+            [:input {:name "map-type"
+                     :type "radio"
+                     :value "badges"}]
+            (t :location/ShowBadges)]]]
+
+         [:div {:id "map-view" :style {:height "700px" :margin "20px 0"}}]]])
 
      :component-did-mount
      (fn []
-       (ajax/GET
-         (path-for "/obpv1/location/user" true)
-         {:handler
-          (fn [{:keys [lat lng]}]
-            (ajax/GET
-               (path-for "/obpv1/location/explore" true)
-               {:handler
-                (fn [data]
-                  (let [lat-lng (js/L.latLng. lat lng)
-                        my-map (-> (js/L.map. "map-view")
-                                   (.setView lat-lng 8)
-                                   (.addLayer (js/L.TileLayer.
-                                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                                #js {:maxZoom 18
-                                                     :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"})))]
+       (let [timer (atom 0)
+             layer-group (js/L.layerGroup. (clj->js []))
+             lat-lng (js/L.latLng. 40 -20)
+             my-map (-> (js/L.map. "map-view")
+                        (.setView lat-lng 3)
+                        (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
 
-                    (set-markers my-map data)))
-                }))
-          }))
+         (.addTo layer-group my-map)
+
+         (.on my-map "moveend"
+              (fn []
+                (js/clearTimeout @timer)
+                (reset! timer
+                        (js/setTimeout
+                          #(get-markers (.val (js/jQuery "input[name=map-type]:checked")) my-map layer-group)
+                          1000))))
+
+         (.on (js/jQuery "input[name=map-type]") "change"
+              (fn [e]
+                (get-markers (.-target.value e) my-map layer-group)))
+
+         (get-markers "users" my-map layer-group)
+         ))
      }))
 
 (defn handler [site-navi]
-  (fn []
-    (layout/default site-navi [content])))
+  (let [visible (atom "users")]
+    (fn []
+      (layout/default site-navi [map-view]))))
