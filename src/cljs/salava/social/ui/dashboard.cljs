@@ -14,7 +14,8 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :as pb]
-            [clojure.string :refer [blank?]]))
+            [clojure.string :refer [blank?]]
+            [dommy.core :as dommy :refer [has-class?] :refer-macros [sel sel1]]))
 
 (defn init-gallery-stats [state]
   (ajax/GET
@@ -148,19 +149,27 @@
         site-name (session/get :site-name)
         user (:user-profile @state)
         user-language (get-in user [:user :language] "en")
-        message (welcome-block-body user-language)]
+        message (welcome-block-body user-language)
+        arrow-class (cursor state [:arrow-class])]
     [:div#welcome-block {:class ""}
      [:div.welcome-block.block-content.row
       (if (blank? message)
         [:div.content
-         [:div.row
+         [:div.row.welcome-message
           (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
-        [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden"}
+        [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden" :on-click #(do
+                                                                                                                                (.preventDefault %)
+                                                                                                                                (if (= "true" (dommy/attr (sel1 :#hidden) :aria-expanded))
+                                                                                                                                  (reset! arrow-class "fa-angle-up")
+                                                                                                                                  (reset! arrow-class "fa-angle-down")
+                                                                                                                                  ))}
          [:div.content
-          [:div.row
-           [:i.fa.fa-angle-down.icon] (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
-         [:div.collapse.hidden-content {:id "hidden" }
-          [:p message]]])]]))
+          [:div.row.welcome-message
+           [:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]
+           (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]
+          [:div.collapse.hidden-content {:id "hidden" }
+           [:p message]]]
+         ])]]))
 
 (defn notifications-block [state]
   (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
@@ -424,7 +433,8 @@
                      :pending-endorsements 0
                      :connections {:badges 0}
                      :pages_count 0
-                     :files_count 0})]
+                     :files_count 0
+                     :arrow-class "fa-angle-down"})]
     (init-dashboard state)
     (fn [] (layout/dashboard site-navi [content state]))))
 

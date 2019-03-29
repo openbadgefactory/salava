@@ -824,8 +824,8 @@ background-color:#756A70;
       padding: 5px;
 
       &:hover,&:active, &:focus {
-      transform: scale(1.5);
-    }
+        transform: scale(1.5);
+      }
     }
 
   }
@@ -885,18 +885,27 @@ background-color:#756A70;
     min-height: 60px;
     padding: 5px;
     position: relative;
+
+    .welcome-message {
+      text-align: center;
+    }
   }
 
   .content {
     font-size: 28px;
-    margin:10px 10px 10px 30px;
+    //margin:10px 10px 10px 30px;
+    margin: 5px auto;
     font-weight: 400;
 
   }
 
+  .welcome-message {
+    text-align: center;
+  }
+
   .icon {
     position: absolute;
-    top: 13px;
+    top:0;
     right: 15px;
     font-size: 35px;
     font-weight: 100;
@@ -912,7 +921,7 @@ background-color:#756A70;
   .hidden-content {
     color: #FFFFFF;
     font-size: 16px;
-    margin: 20px;
+    margin: 10px auto;
     line-height: 24px;
     width: 50%;
     padding-top: 10px;
@@ -928,18 +937,18 @@ background-color:#756A70;
     .content {
       font-size: 22px;
       .icon {
-        top: 10px;
+        top: 4px;
+        //font-size: 25px;
       }
     }
   }
 
-  @media (max-width: 320px) {
+  @media (max-width: 420px) {
     .icon {
-
+      right: unset;
       left: 50%;
+      top: unset !important;
       bottom: 0;
-      /* top: unset; */
-      top: 40px !important;
       font-size: 25px;
     }
   }
