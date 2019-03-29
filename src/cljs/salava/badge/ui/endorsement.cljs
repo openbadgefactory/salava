@@ -21,7 +21,7 @@
 
     [:div {:style {:margin-bottom "20px"}}
      [:h5
-      (when (:image_file issuer) [:img {:src (str "/" (:image_file issuer)) :style {:width "65px" :height "auto" :padding "7px"}}])
+      (when (:image_file issuer) [:img {:src (str "/" (:image_file issuer)) :style {:width "55px" :height "auto" :padding "7px"}}])
       [:a {:href "#"
            :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] (:id issuer)))
            } (:name issuer)]
@@ -166,7 +166,8 @@
 
 (defn init-editor [element-id value]
   (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
-                                          :toolbar simplemde-toolbar})))
+                                          :toolbar simplemde-toolbar
+                                          :spellChecker false})))
   (.value @editor @value)
   (js/setTimeout (fn [] (.value @editor @value)) 200)
   (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
