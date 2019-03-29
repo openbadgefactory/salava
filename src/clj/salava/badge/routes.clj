@@ -353,7 +353,7 @@
                   )
 
              (GET "/user/endorsements" []
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :summary "Get all user's endorsements"
                   :current-user current-user
                   (ok (e/all-user-endorsements ctx (:id current-user)))
