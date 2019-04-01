@@ -428,7 +428,7 @@
                                                  :last_name last_name
                                                  :issuer_name issuer_name
                                                  :status status
-                                                 :label (if issuer_id
+                                                 :label (t :social/pending) #_(if issuer_id
                                                           (t :badge/pendingreceived)
                                                           (t :badge/pendinggiven)
                                                           )}]]]
@@ -548,7 +548,8 @@
                                    [:span.label.label-primary (t :badge/Youendorsed)])
                                  (if (= "pending" status)
                                    [:span.label.label-info
-                                    (if issuer_id
+                                    (t :social/pending)
+                                    #_(if issuer_id
                                       (t :badge/pendingreceived)
                                       (t :badge/pendinggiven)
                                       )])]
