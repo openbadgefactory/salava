@@ -29,7 +29,7 @@
                              )} (if (= (:display @state) "none") (str (t :badge/Openassertion) "...") (str (t :badge/Hideassertion) "..."))]
       #_[:a {:style {:float "right"} :href (str "https://badgecheck.io/?url="(:asr @state)) :target "_blank" :rel "nofollow noopener"} "use external validator"]]
      [:div {:style {:display (:display @state) :padding-top "30px"}}
-      [a/assertion-content (dissoc assertion :evidence)]]
+      [a/assertion-content (dissoc assertion :evidence :endorsement)]]
      [:br]]))
 
 (defn verify-badge-content [state]
