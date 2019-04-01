@@ -946,10 +946,11 @@ background-color:#756A70;
   @media (max-width: 420px) {
     .welcome-message {
       font-size: 20px;
+      margin-bottom: 20px;
     }
 
     .hidden-content {
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
     .icon {
       right: unset;
