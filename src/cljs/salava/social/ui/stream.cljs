@@ -137,7 +137,7 @@
                          (mo/open-modal [:gallery :badges] {:badge-id object})
                         (.preventDefault %) )} (str  name)]]
       [:div.media-body
-       (t :social/Youarefollowingthisbadge)]]
+       (t :social/Youstartedfollowbadge)]]
       ]]))
 
 

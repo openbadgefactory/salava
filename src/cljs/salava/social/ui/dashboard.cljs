@@ -46,7 +46,7 @@
       [:div.media-body
        [:div.content-text
         [:p.content-heading
-         (t :social/Youarefollowingthisbadge)]
+         (t :social/Youstartedfollowbadge)]
         [:span.date (date-from-unix-time (* 1000 ctime) "days")]
         ]]]]))
 
