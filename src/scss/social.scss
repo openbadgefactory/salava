@@ -894,7 +894,7 @@ background-color:#756A70;
   .content {
     font-size: 28px;
     //margin:10px 10px 10px 30px;
-    margin: 5px auto;
+    margin: 15px auto;
     font-weight: 400;
 
   }
@@ -905,7 +905,7 @@ background-color:#756A70;
 
   .icon {
     position: absolute;
-    top:0;
+    top:12px;
     right: 15px;
     font-size: 35px;
     font-weight: 100;
@@ -937,13 +937,20 @@ background-color:#756A70;
     .content {
       font-size: 22px;
       .icon {
-        top: 4px;
+        top: 12px;
         //font-size: 25px;
       }
     }
   }
 
   @media (max-width: 420px) {
+    .welcome-message {
+      font-size: 20px;
+    }
+
+    .hidden-content {
+      margin-bottom: 20px;
+    }
     .icon {
       right: unset;
       left: 50%;
