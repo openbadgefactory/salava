@@ -352,10 +352,11 @@
                                  (if (= "pending" status)  [:span.label.label-info (t :social/Pending)])
                                  [:div.row.flip.settings-endorsement
                                   [:div.col-md-9
-                                   [:a {:href "#"
+                                   (if issuer_id
+                                     [:a {:href "#"
                                         :on-click #(mo/open-modal [:user :profile] {:user-id issuer_id})}
                                     [:img.small-image {:src (profile-picture profile_picture)}]
-                                    issuer_name] ]]]
+                                    issuer_name] [:div [:img.small-image {:src (profile-picture profile_picture)}] issuer_name])]]]
 
                                 [:div [:button {:type "button"
                                                 :aria-label "OK"
@@ -397,16 +398,27 @@
   (let [{:keys [id first_name last_name profile_picture status label issuer_name]} element-data
         current-user (session/get-in [:user :id])]
     [:div.endorsement-profile.panel-default
-     [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})}
-      [:div.panel-body.flip
-       [:div.col-md-4
-        [:div.profile-image
-         [:img.img-responsive.img-thumbnail
-          {:src (profile-picture profile_picture)
-           :alt (or issuer_name (str first_name " " last_name))}]]]
-       [:div.col-md-8
-        [:h4 (or issuer_name (str first_name " " last_name))]
-        (when (= status "pending") [:p [:span.label.label-info label]])]]]]))
+     (if id
+       [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})}
+        [:div.panel-body.flip
+         [:div.col-md-4
+          [:div.profile-image
+           [:img.img-responsive.img-thumbnail
+            {:src (profile-picture profile_picture)
+             :alt (or issuer_name (str first_name " " last_name))}]]]
+         [:div.col-md-8
+          [:h4 (or issuer_name (str first_name " " last_name))]
+          (when (= status "pending") [:p [:span.label.label-info label]])]]]
+       [:div.panel-body.flip
+        [:div.col-md-4
+         [:div.profile-image
+          [:img.img-responsive.img-thumbnail
+           {:src (profile-picture profile_picture)
+            :alt (or issuer_name (str first_name " " last_name))}]]]
+        [:div.col-md-8
+         [:h4 (or issuer_name (str first_name " " last_name))]
+         (when (= status "pending") [:p [:span.label.label-info label]])]]
+       )]))
 
 (defn user-endorsement-content [params]
   (fn []
@@ -429,9 +441,9 @@
                                                  :issuer_name issuer_name
                                                  :status status
                                                  :label (t :social/pending) #_(if issuer_id
-                                                          (t :badge/pendingreceived)
-                                                          (t :badge/pendinggiven)
-                                                          )}]]]
+                                                                                (t :badge/pendingreceived)
+                                                                                (t :badge/pendinggiven)
+                                                                                )}]]]
 
          (if endorsee_id
            [:div {:style {:margin-top "15px"}}
@@ -543,16 +555,22 @@
                               [:div.media
                                [:div;.row
                                 [:div.labels
-                                 (if issuer_id
+                                 (cond
+                                   issuer_id [:span.label.label-success (t :badge/Endorsedyou)]
+                                   endorsee_id [:span.label.label-primary (t :badge/Youendorsed)]
+                                   ;(and (not issuer_id) (not endorsee_id)) [:span.label.label-success (t :badge/Endorsedyou)]
+                                   :else [:span.label.label-success (t :badge/Endorsedyou)]
+                                   )
+                                 #_(if issuer_id
                                    [:span.label.label-success (t :badge/Endorsedyou)]
                                    [:span.label.label-primary (t :badge/Youendorsed)])
                                  (if (= "pending" status)
                                    [:span.label.label-info
                                     (t :social/pending)
                                     #_(if issuer_id
-                                      (t :badge/pendingreceived)
-                                      (t :badge/pendinggiven)
-                                      )])]
+                                        (t :badge/pendingreceived)
+                                        (t :badge/pendinggiven)
+                                        )])]
                                 ]
                                [:div.media-left.media-top.list-item-body
                                 [:img.main-img.media-object {:src (str "/" image_file)}]
