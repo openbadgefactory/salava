@@ -840,19 +840,23 @@ background-color:#756A70;
     height: 285px;
   }
   .help {
+
     word-wrap: break-word;
     overflow: auto;
-    .heading_1 .title {
-      color: $text-color;
-      cursor: auto;
+    .heading_1 {
+      padding-left: 10px;
+      .title {
+        color: $text-color;
+        cursor: auto;
+      }
     }
 
     .quicklinks {
-      -webkit-column-count: 2; /* Chrome, Safari, Opera */
-      -moz-column-count: 2; /* Firefox */
+      -webkit-column-count: 2;
+      -moz-column-count: 2;
       column-count: 2;
-      -webkit-column-gap: 25px; /* Chrome, Safari, Opera */
-      -moz-column-gap: 25px; /* Firefox */
+      -webkit-column-gap: 25px;
+      -moz-column-gap: 25px;
       column-gap: 25px;
       -webkit-column-width: 150px;
       -moz-column-width: 150px;
@@ -1064,12 +1068,17 @@ background-color:#756A70;
     .name {
       word-wrap:break-word;
       font-size: 25px;
-      margin: 0px 10px;
+      margin: 0;
       margin-bottom: 10px;
       text-decoration: none;
       cursor: auto;
     }
     .stats {
+
+      .text:first-child, .text:last-child {
+        margin-left: 0;
+
+      }
 
       div.text {
         float: left;
@@ -1093,6 +1102,11 @@ background-color:#756A70;
     }
 
     @media (max-width: 1024px) {
+      .button {
+        max-width: 70px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .visibility{
         width: 70px;
         display: block;
@@ -1102,6 +1116,9 @@ background-color:#756A70;
 
 
     @media (max-width: 992px) {
+      .button {
+        max-width: unset;
+      }
       .media-body{
         display: table-cell;
         margin-top: unset;
@@ -1133,7 +1150,8 @@ background-color:#756A70;
   .explore-block {
 
     .content {
-      display: contents;
+      //display: contents;
+      display: block;
       .button-block {
         height: 150px;
         //width: 100%;
@@ -1181,14 +1199,14 @@ background-color:#756A70;
       }
 
       @media (max-width: 1440px) {
-        display: contents;
+        //display: contents;
         .button-block {
-          padding-left: 10px;
+          //padding-left: 10px;
         }
       }
 
       @media (max-width: 1024px) {
-        display: block;
+        display: contents;
       }
 
       @media (max-width: 768px) {
