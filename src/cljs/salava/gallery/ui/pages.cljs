@@ -29,7 +29,7 @@
 (defn init-data [state user-id]
   (ajax/POST
     (path-for (str "/obpv1/gallery/pages/" user-id))
-    {:params {:country ""
+    {:params {:country (session/get-in [:filter-options :country] "")
               :owner ""}
      :handler (fn [data]
                 (let [{:keys [pages countries user-country]} data]
