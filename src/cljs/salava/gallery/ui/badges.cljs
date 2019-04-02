@@ -296,7 +296,8 @@
 (defn init-values
   "take url params"[]
   (let [{:keys [country issuer-name order id badge-name recipient-name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
-        query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
+        query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
+        country (session/get-in [:filter-options :country] country)]
     (-> query-params
         (assoc :country (if id "all" (or country (session/get-in [:user :country]) "all")))
         (assoc :page_count 0))))
