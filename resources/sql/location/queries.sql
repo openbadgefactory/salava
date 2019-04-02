@@ -54,8 +54,16 @@ SELECT ub.id, ub.badge_id,
     COALESCE(ub.location_lng, (u.location_lng + (RAND() * 0.006) - (RAND() * 0.006))) AS lng
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted' AND ub.deleted = 0
+WHERE ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted'
     AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
 HAVING lat > :min_lat AND lat <= :max_lat AND lng > :min_lng AND lng <= :max_lng
 ORDER BY ub.mtime DESC
 LIMIT 250;
+
+
+--name: select-explore-taglist
+SELECT DISTINCT t.tag FROM badge_content_tag t
+INNER JOIN user_badge ub ON t.badge_content_id = badge_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE u.location_public = 1 AND ub.deleted = 0 AND ub.visibility = 'public' AND ub.status = 'accepted'
+    AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL));

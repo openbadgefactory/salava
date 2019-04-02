@@ -8,11 +8,15 @@
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]))
 
+(def map-opt (clj->js {:maxBounds [[-90 -180] [90 180]]
+                       :worldCopyJump true}))
+
 (def tile-url "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 
 (def tile-opt
   (clj->js
     {:maxZoom 15
+     :minZoom 3
      :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
 
 (defn- get-markers [kind my-map layer-group ]
@@ -25,7 +29,7 @@
                    "badges"
                    (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))]
     (ajax/GET
-      (path-for (str "/obpv1/location/explore/" kind) true)
+      (path-for (str "/obpv1/location/explore/" kind) false)
       {:params {:max_lat (.-lat maxll) :max_lng (.-lng maxll)
                 :min_lat (.-lat minll) :min_lng (.-lng minll)}
        :handler
@@ -69,7 +73,7 @@
        (let [timer (atom 0)
              layer-group (js/L.layerGroup. (clj->js []))
              lat-lng (js/L.latLng. 40 -20)
-             my-map (-> (js/L.map. "map-view")
+             my-map (-> (js/L.map. "map-view" map-opt)
                         (.setView lat-lng 3)
                         (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
 

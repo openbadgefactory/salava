@@ -20,61 +20,79 @@
     (context "/obpv1/location" []
              :tags ["location"]
 
-             (POST "/user_badge/:badge" [badge]
-                   :summary "Set location for a single badge"
-                   :body-params [lat :- (s/maybe s/Num)
-                                 lng :- (s/maybe s/Num)]
-                   :auth-rules access/signed
-                   :current-user current-user
-                   (ok (l/set-user-badge-location ctx (:id current-user) badge lat lng)))
+             (PUT "/self" []
+                  :summary "Set location for current user. Requires authenticated user."
+                  :return ls/success
+                  :body [body ls/lat-lng]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (l/set-user-location ctx (:id current-user) (:lat body) (:lng body))))
 
-             (POST "/user" []
-                   :summary "Set location for current user"
-                   :body-params [lat :- (s/maybe s/Num)
-                                 lng :- (s/maybe s/Num)]
-                   :auth-rules access/signed
-                   :current-user current-user
-                   (ok (l/set-user-location ctx (:id current-user) lat lng)))
+             (PUT "/self/public" []
+                  :summary "Set public location status for current user. Requires authenticated user."
+                  :return ls/success
+                  :body-params [public :- s/Bool]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (l/set-location-public ctx (:id current-user) public)))
 
-             (POST "/public" []
-                   :summary "Set public location status for current user"
-                   :body-params [public :- s/Bool]
-                   :auth-rules access/signed
-                   :current-user current-user
-                   (ok (l/set-location-public ctx (:id current-user) public)))
+             (PUT "/user_badge/:badge" []
+                  :summary "Set location for a single badge. Requires authenticated user."
+                  :return ls/success
+                  :path-params [badge :- s/Int]
+                  :body [body ls/lat-lng]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (l/set-user-badge-location ctx (:id current-user) badge (:lat body) (:lng body))))
 
 
-             (GET "/user_badge/:badge" [badge]
-                   :summary "Get location of a single badge"
-                   :auth-rules access/signed
-                   :current-user current-user
+             (GET "/user_badge/:badge" []
+                  :summary "Get location of a single badge. Requires authenticated user."
+                  :return ls/lat-lng
+                  :path-params  [badge :- s/Int]
+                  :auth-rules access/signed
+                  :current-user current-user
                   (ok (l/user-badge-location ctx (:id current-user) badge)))
 
-             (GET "/user/:user" [user]
-                   :summary "Get published location of a user"
-                   :current-user current-user
+             (GET "/user/:user" []
+                  :summary "Get published location of a user."
+                  :return ls/lat-lng
+                  :path-params  [user :- s/Int]
+                  :current-user current-user
                   (ok (l/user-enabled-location ctx user (some-> current-user :id pos?))))
 
-             (GET "/user" []
-                   :summary "Get location of current user"
-                   :auth-rules access/signed
-                   :current-user current-user
+             (GET "/self" []
+                  :summary "Get location of current user. Requires authenticated user."
+                  :return ls/self-location
+                  :auth-rules access/signed
+                  :current-user current-user
                   (ok (l/user-location ctx (:id current-user))))
 
-             (GET "/explore/badge/:badge" [badge]
-                   :summary "Get single badge location for gallery"
-                   :auth-rules access/signed
-                   :current-user current-user
+             (GET "/explore/badge/:badge" []
+                  :summary "Get single badge location for gallery. Requires authenticated user."
+                  :return ls/explore-badges
+                  :path-params  [badge :- s/Str]
+                  :auth-rules access/signed
+                  :current-user current-user
                   (ok (l/explore-badge ctx badge)))
 
-             (GET "/explore/:kind" req
-                  :coercion :schema
-                  :summary "Get public locations for gallery"
-                  :path-params  [kind :- s/Str]
-                  :query-params [max_lat :- ls/Lat
-                                 max_lng :- ls/Lng
-                                 min_lat :- ls/Lat
-                                 min_lng :- ls/Lng]
+             (GET "/explore/users" []
+                  :summary "Get public user locations for gallery"
+                  :return ls/explore-users
+                  :query [params ls/explore-query]
                   :current-user current-user
-                  (ok (l/explore-list ctx kind (pos? (:id current-user)) (:params req))))
+                  (ok (l/explore-list :users (pos? (:id current-user)) ctx params)))
+
+             (GET "/explore/badges" []
+                  :summary "Get public badge locations for gallery"
+                  :return ls/explore-badges
+                  :query [params ls/explore-query]
+                  :current-user current-user
+                  (ok (l/explore-list :badges (pos? (:id current-user)) ctx params)))
+
+             (GET "/explore/taglist" []
+                  :summary "Get list of tags available for public badges."
+                  :return ls/explore-taglist
+                  :current-user current-user
+                  (ok (l/explore-taglist ctx)))
              )))

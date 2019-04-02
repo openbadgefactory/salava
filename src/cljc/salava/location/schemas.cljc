@@ -2,17 +2,51 @@
   (:require [schema.core :as s
              :include-macros true ;; cljs only
              ]
+             [schema.coerce :as c]
             ))
 
+(defn between [min max]
+  (fn [n]
+    #?(:clj
+       (try
+         (<= min (Float. n) max)
+         (catch Exception _ false))
+       :cljs
+       (<= min (js/parseFloat n) max))))
 
-(def Lat (s/constrained s/Num (fn [n] (and (>= n -90)  (<= n 90)))))
-(def Lng (s/constrained s/Num (fn [n] (and (>= n -180)  (<= n 180)))))
+(def Lat (s/constrained #?(:clj  (s/either s/Num s/Str)
+                           :cljs (s/cond-pre s/Num s/Str)) (between -90 90) (list 'between -90 90)))
 
-(s/defschema explore-input {:_       s/Any
-                            :max_lat Lat
+(def Lng (s/constrained #?(:clj  (s/either s/Num s/Str)
+                           :cljs (s/cond-pre s/Num s/Str)) (between -180 180) (list 'between -180 180)))
+
+(s/defschema explore-query {:max_lat Lat
                             :max_lng Lng
                             :min_lat Lat
-                            :min_lng Lng
-                            })
+                            :min_lng Lng})
+
+(s/defschema lat-lng {:lat (s/maybe Lat) :lng (s/maybe Lng)})
+
+(s/defschema success {:success s/Bool})
+
+(s/defschema self-location {:enabled lat-lng
+                            :country lat-lng
+                            :public s/Bool})
 
 
+(s/defschema user-location {:id s/Int
+                            :user_url s/Str
+                            :lat Lat
+                            :lng Lng})
+
+(s/defschema badge-location {:id s/Int
+                             :badge_id s/Str
+                             :badge_url s/Str
+                             :lat Lat
+                             :lng Lng})
+
+(s/defschema explore-badges {:badges [badge-location]})
+
+(s/defschema explore-users  {:users  [user-location]})
+
+(s/defschema explore-taglist {:taglist [s/Str]})

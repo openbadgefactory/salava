@@ -7,16 +7,22 @@
             [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [js-navigate-to path-for private?]]))
 
+(def map-opt (clj->js {:maxBounds [[-90 -180] [90 180]]
+                       :worldCopyJump true}))
+
 (def tile-url "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 
 (def tile-opt
   (clj->js
-    {:maxZoom 14
+    {:maxZoom 15
+     :minZoom 3
      :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
 
 (defn midpoint [items]
-  {:lat (/ (apply + (map :lat items)) (count items))
-   :lng (/ (apply + (map :lng items)) (count items))})
+  (let [c (count items)]
+    (when (> c 0)
+      {:lat (/ (apply + (map :lat items)) c)
+       :lng (/ (apply + (map :lng items)) c)})))
 
 
 (defn gallery-badge-content [badge-id visible]
@@ -36,7 +42,7 @@
              {:handler (fn [data]
                          (if (seq (:badges data))
                            (let [lat-lng (js/L.latLng. (clj->js (midpoint (:badges data))))
-                                 my-map (-> (js/L.map. (str "map-view-badge-" badge-id))
+                                 my-map (-> (js/L.map. (str "map-view-badge-" badge-id) map-opt)
                                             (.setView lat-lng 8)
                                             (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
                              (doseq [b (:badges data)]
@@ -67,13 +73,13 @@
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
                                  my-marker (js/L.marker. lat-lng)
-                                 my-map (-> (js/L.map. "map-view-badge")
+                                 my-map (-> (js/L.map. "map-view-badge" map-opt)
                                             (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. tile-url tile-opt))
                                             (.on "click" (fn [e]
                                                            (.setLatLng my-marker (.-latlng e))
-                                                           (ajax/POST
-                                                             (path-for (str "/obpv1/location/user_badge/" user-badge-id) true)
+                                                           (ajax/PUT
+                                                             (path-for (str "/obpv1/location/user_badge/" user-badge-id))
                                                              {:params (.-latlng e)
                                                               :handler (fn [data]
                                                                          (if-not (:success data)
@@ -103,7 +109,7 @@
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
                                  my-marker (js/L.marker. lat-lng)
-                                 my-map (-> (js/L.map. (str "map-view-user-" user-id))
+                                 my-map (-> (js/L.map. (str "map-view-user-" user-id) map-opt)
                                             (.setView lat-lng 8)
                                             (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
                              (.addTo my-marker my-map))
@@ -113,13 +119,13 @@
 (defn- user-settings-map [{:keys [lat lng]}]
   (let [lat-lng (js/L.latLng. lat lng)
         my-marker (js/L.marker. lat-lng)
-        my-map (-> (js/L.map. "map-view-user")
+        my-map (-> (js/L.map. "map-view-user" map-opt)
                    (.setView lat-lng 5)
                    (.addLayer (js/L.TileLayer. tile-url tile-opt))
                    (.on "click" (fn [e]
                                   (.setLatLng my-marker (.-latlng e))
-                                  (ajax/POST
-                                    (path-for "/obpv1/location/user" true)
+                                  (ajax/PUT
+                                    (path-for "/obpv1/location/self")
                                     {:params (.-latlng e)
                                      :handler (fn [data]
                                                 (if-not (:success data)
@@ -143,12 +149,12 @@
                                   (if (.-target.checked e)
                                     (do
                                       (swap! state assoc :enabled true)
-                                      (ajax/POST (path-for "/obpv1/location/user" true) {:params (:default @state)}))
+                                      (ajax/PUT (path-for "/obpv1/location/self") {:params (:default @state)}))
                                     (do
                                       (swap! state assoc :enabled false)
                                       (swap! state assoc :public  false)
-                                      (ajax/POST (path-for "/obpv1/location/public" true) {:params {:public false}})
-                                      (ajax/POST (path-for "/obpv1/location/user" true) {:params {:lat nil :lng nil}}))))
+                                      (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public false}})
+                                      (ajax/PUT (path-for "/obpv1/location/self") {:params {:lat nil :lng nil}}))))
                      :checked (:enabled @state)}]
             (t :location/LocationEnabled)]
           [:p.help-block (t :location/LocationEnabledInfo)]]
@@ -161,7 +167,7 @@
                      :on-change (fn [e]
                                   (let [public? (.-target.checked e)]
                                     (swap! state assoc :public public?)
-                                    (ajax/POST (path-for "/obpv1/location/public" true) {:params {:public public?}})))
+                                    (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public public?}})))
                      :checked (:public @state)}]
             (t :location/LocationPublic)]
            [:p.help-block (t :location/LocationPublicInfo)]]]
@@ -172,7 +178,7 @@
      :component-did-mount
      (fn []
        (ajax/GET
-         (path-for "/obpv1/location/user" true)
+         (path-for "/obpv1/location/self" true)
          {:handler (fn [data]
                      (user-settings-map (or (:enabled data) (:country data)))
                      (swap! state assoc :public (:public data))
