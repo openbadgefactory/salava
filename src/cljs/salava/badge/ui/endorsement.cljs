@@ -371,15 +371,24 @@
                                    [:hr.line]
                                    [:div.text-center
                                     [:ul.list-inline.buttons.buttons
-                                     [:a.button {:href "#"
-                                                 :on-click #(do
-                                                              (.preventDefault %)
-                                                              (update-status id "accepted" user_badge_id state init-user-badge-endorsement)
-                                                              )} [:li [:i.fa.fa-check {:title (t :badge/Acceptendorsement)}] ]]
-                                     [:a.button {:href "#"
-                                                 :on-click #(do
-                                                              (.preventDefault %)
-                                                              (update-status id "declined" user_badge_id state init-user-badge-endorsement))}[:li.cancel [:i.fa.fa-remove {:title (t :badge/Declineendorsement)}]]]]]])
+                                     [:button.btn.btn-primary {:href "#"
+                                                               :on-click #(do
+                                                                            (.preventDefault %)
+                                                                            (update-status id "accepted" user_badge_id state init-user-badge-endorsement)
+                                                                            )} (t :badge/Acceptendorsement)]
+                                     [:button.btn.btn-warning.cancel {:href "#"
+                                                                      :on-click #(do
+                                                                                   (.preventDefault %)
+                                                                                   (update-status id "declined" user_badge_id state init-user-badge-endorsement))} (t :badge/Declineendorsement)]
+                                     #_[:a.button {:href "#"
+                                                   :on-click #(do
+                                                                (.preventDefault %)
+                                                                (update-status id "accepted" user_badge_id state init-user-badge-endorsement)
+                                                                )} [:li [:i.fa.fa-check {:title (t :badge/Acceptendorsement)}] ]]
+                                     #_[:a.button {:href "#"
+                                                   :on-click #(do
+                                                                (.preventDefault %)
+                                                                (update-status id "declined" user_badge_id state init-user-badge-endorsement))}[:li.cancel [:i.fa.fa-remove {:title (t :badge/Declineendorsement)}]]]]]])
                                 ]]))
 
                     ) [:div] @(cursor state [:user-badge-endorsements]))]]))))
@@ -419,7 +428,7 @@
                                                  :last_name last_name
                                                  :issuer_name issuer_name
                                                  :status status
-                                                 :label (if issuer_id
+                                                 :label (t :social/pending) #_(if issuer_id
                                                           (t :badge/pendingreceived)
                                                           (t :badge/pendinggiven)
                                                           )}]]]
@@ -539,7 +548,8 @@
                                    [:span.label.label-primary (t :badge/Youendorsed)])
                                  (if (= "pending" status)
                                    [:span.label.label-info
-                                    (if issuer_id
+                                    (t :social/pending)
+                                    #_(if issuer_id
                                       (t :badge/pendingreceived)
                                       (t :badge/pendinggiven)
                                       )])]
