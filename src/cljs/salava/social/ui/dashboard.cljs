@@ -266,7 +266,7 @@
        [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Gallery)]]
        [:i.fa.fa-angle-right.icon.small]]
       [:div.content
-       [:div.row
+       [:div
         [:div.col-sm-4.button-block
          [:div.info-block.badge-connection
           [:a {:href (path-for "/gallery/badges")}
@@ -368,7 +368,7 @@
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
 
-         [:div.row
+         [:div
           [:div.media
            [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]]
 
