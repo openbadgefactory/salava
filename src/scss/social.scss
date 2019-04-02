@@ -497,6 +497,7 @@ background-color:#756A70;
     top: 0;
     right: 0;
     box-shadow: none;
+    margin: 0;
 
   }
 
@@ -542,6 +543,10 @@ background-color:#756A70;
       padding-left: 10px;
 
 
+    }
+    .small:after {
+        font-family: FontAwesome;
+      content: "\f105";
     }
   }
 
