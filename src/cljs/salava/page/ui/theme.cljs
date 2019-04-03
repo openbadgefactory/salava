@@ -80,7 +80,7 @@
          [:button {:class    "btn btn-primary"
                    :on-click #(do
                                (.preventDefault %)
-                               (save-theme state (str "/page/settings/" id)))}
+                               (save-theme state (str "/profile/page/settings/" id)))}
           (t :page/Save)]]]]]
      [ph/view-page page]]))
 

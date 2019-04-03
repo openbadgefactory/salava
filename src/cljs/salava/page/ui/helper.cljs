@@ -18,7 +18,7 @@
     (path-for (str "/obpv1/page/" id))
     {:handler (fn [] (do
                        (m/close-modal!)
-                       (navigate-to "/page")))}))
+                       (navigate-to "/profile/page")))}))
 
 (defn delete-page-modal [page-id]
   [:div
@@ -217,19 +217,19 @@
    [:div.col-xs-8
     [:a {:class (str "btn" (if (= target :content) " btn-active"))
          :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/page/edit/" id)))}
+         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit/" id)))}
      (t "1." :page/Content)]
     [:a {:class (str "btn" (if (= target :theme) " btn-active"))
          :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/page/edit_theme/" id)))}
+         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit_theme/" id)))}
      (t "2." :page/Theme)]
     [:a {:class (str "btn" (if (= target :settings) " btn-active"))
          :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/page/settings/" id)))}
+         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/settings/" id)))}
      (t "3." :page/Settings)]
     [:a {:class (str "btn" (if (= target :preview) " btn-active"))
          :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/page/preview/" id)))}
+         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/preview/" id)))}
      (t "4." :page/Preview)]]
    [:div {:class "col-xs-4"
           :id "buttons-right"}
@@ -239,7 +239,7 @@
       [:i {:class "fa fa-trash"}]
      (t :page/Delete)]
     [:a {:class "btn btn-primary view-btn"
-         :on-click #(do (.preventDefault %) (save-function (str "/page/view/" id)))
+         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/view/" id)))
          :href "#"}
      (t :page/View)]]
    [m/modal-window]])

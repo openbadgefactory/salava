@@ -324,7 +324,7 @@
      [:button {:class    "btn btn-primary"
                :on-click #(do
                            (.preventDefault %)
-                           (save-page (:page @state) (str "/page/edit_theme/" (get-in @state [:page :id]))))}
+                           (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
       (t :page/Save)]]]])
 
 (defn content [state]

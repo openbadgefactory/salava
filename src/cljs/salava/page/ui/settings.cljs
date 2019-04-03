@@ -84,7 +84,7 @@
          [:input {:class     "form-control"
                   :type      "text"
                   :read-only true
-                  :value     (str (session/get :site-url) (path-for "/page/view/") id)}]])
+                  :value     (str (session/get :site-url) (path-for "/profile/page/view/") id)}]])
       (if (= @visibility-atom "password")
         [:div.form-group
          [:label {:for "page-password"}
@@ -98,7 +98,7 @@
        [:button {:class    "btn btn-primary"
                  :on-click #(do
                               (.preventDefault %)
-                              (save-settings state (str "/page/preview/" id)))
+                              (save-settings state (str "/profile/page/preview/" id)))
                  :disabled (and (empty? @password-atom)
                                 (= @visibility-atom "password"))}
         (t :page/Save)]]]]))

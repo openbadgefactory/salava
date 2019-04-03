@@ -12,7 +12,7 @@
     [:div.col-xs-12.col-sm-6.col-md-4 {:key id}
      (case type
        "basic"      [:div.media.grid-container
-                     [:a {:href (path-for (str "/page/view/" id )) :style {:text-decoration "none"}}
+                     [:a {:href (path-for (str "/profile/page/view/" id )) :style {:text-decoration "none"}}
                       [:div.media-content
 
                        [:div.media-body
@@ -36,11 +36,11 @@
                      [:div.media-bottom.flip-modal
                       [:a {:class "bottom-link"
                            :title (t :page/Edit)
-                           :href  (path-for (str "/page/edit/" id))}
+                           :href  (path-for (str "/profile/page/edit/" id))}
                        [:i {:class "fa fa-pencil"}]]
                       [:a {:class "bottom-link pull-right"
                            :title (t :page/Settings)
-                           :href  (path-for (str "/page/settings/" id))}
+                           :href  (path-for (str "/profile/page/settings/" id))}
                        [:i {:class "fa fa-cog"}]]]]
 
        "profile" [:div.media.grid-container
