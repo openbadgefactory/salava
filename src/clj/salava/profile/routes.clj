@@ -9,7 +9,4 @@
     (context "/profile" []
              (layout/main-meta ctx "/:id" :user)
              (layout/main-meta ctx "/:id/embed" :user)
-             )
-
-    )
-  )
+             )))
