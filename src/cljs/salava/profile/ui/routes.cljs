@@ -1,0 +1,20 @@
+(ns salava.profile.ui.routes
+  (:require [salava.core.ui.layout]
+            [salava.core.ui.helper :refer [base-path]]
+            [salava.user.ui.profile :as profile]
+            [salava.core.i18n :as i18n :refer [t]]
+            [salava.page.ui.my :as page])
+  )
+
+(defn ^:export routes [context]
+  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] profile/handler]]
+   (str (base-path context) "/page") [[["/mypages" page/handler]]]
+   })
+
+(defn ^:export navi [context]
+  {(str (base-path context) "/profile/\\d+")  {:breadcrumb (t :user/User " / " :user/Profile)}
+   (str (base-path context) "/profile/" (get-in context [:user :id])) {:weight 30 :title (t :user/Profile) :top-navi true :site-navi true :breadcrumb (str (t :user/User) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
+   ;(str (base-path context) "/page")                 {:weight 31 :title (t :page/Pages)  :breadcrumb (t :page/Pages " / " :page/Mypages)}
+   (str (base-path context) "/page/mypages")         {:weight 32 :title (t :page/Mypages) :site-navi true :breadcrumb (t :page/Pages " / " :page/Mypages)}
+
+   })
