@@ -47,4 +47,10 @@
 
      (GET (str (get-base-path ctx) "/user/profile/:id") []
           :path-params [id :- s/Int]
-          (temporary-redirect (str (get-base-path ctx) "/profile/" id)))))
+          (temporary-redirect (str (get-base-path ctx) "/profile/" id)))
+
+     (GET (str (get-base-path ctx) "/page/view/:id") []
+          :path-params [id :- s/Int]
+          (temporary-redirect (str (get-base-path ctx) "/profile/page/view/" id)))
+
+    ))
