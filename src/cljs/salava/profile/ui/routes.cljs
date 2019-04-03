@@ -13,5 +13,5 @@
 
 (defn ^:export navi [context]
   {(str (base-path context) "/profile/\\d+")  {:breadcrumb (t :user/User " / " :user/Profile)}
-   (str (base-path context) "/profile/" (get-in context [:user :id])) {:weight 30 :title (t :user/Profile) :top-navi true :site-navi true :breadcrumb (str (t :user/User) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
+   (str (base-path context) "/profile/" (get-in context [:user :id])) {:weight 30 :title (t :user/Profile) :top-navi true :site-navi true :breadcrumb (str (t :user/Profile) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
    })
