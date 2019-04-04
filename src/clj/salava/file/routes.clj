@@ -16,7 +16,7 @@
 
 (defn route-def [ctx]
   (routes
-    (context "/page" []
+    #_(context "/page" []
              (layout/main ctx "/files"))
 
     (context "/file" []

@@ -22,8 +22,8 @@
                                               [["/preview/" :page-id] preview/handler]]})
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/profile/page")                 {:breadcrumb (t :page/Pages " / " :page/Mypages)}
-   (str (base-path context) "/profile/page/mypages")         {:weight 32 :title (t :page/Mypages) :site-navi true :breadcrumb (t :user/Profile " / " :page/Mypages)}
+  {;(str (base-path context) "/profile/page")                 {:breadcrumb (t :page/Pages " / " :page/Mypages)}
+   (str (base-path context) "/profile/page")         {:weight 32 :title (t :page/Pages) :site-navi true :breadcrumb (t :user/Profile " / " :page/Pages)}
    (str (base-path context) "/profile/page/view/\\d+")       {:breadcrumb (t :page/Pages " / " :page/Viewpage)}
    (str (base-path context) "/profile/page/edit/\\d+")       {:breadcrumb (t :page/Pages " / " :page/Editpage)}
    (str (base-path context) "/profile/page/edit_theme/\\d+") {:breadcrumb (t :page/Pages " / " :page/Choosetheme)}
