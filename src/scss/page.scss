@@ -1359,6 +1359,12 @@
     border: 1px solid $titlebar-color;
   }
 
+  .add-field-after {
+    .btn {
+      width: 100%;
+    }
+  }
+
   .block-title {
     font-size: 28px;
   }
