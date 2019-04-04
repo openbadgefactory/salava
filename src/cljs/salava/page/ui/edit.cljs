@@ -241,6 +241,46 @@
       [:option {:value "html"} (t :page/Html)]
       [:option {:value "file"} (t :page/Files)]]]))
 
+(def block-type-map
+  [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
+   {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
+   {:icon "fa-file-code-o" :text (t :page/Html) :value "html"}
+   {:icon "fa-file" :text (t :page/Files) :value "file"}])
+
+(defn content-type [block-atom index]
+  (let [type (:type @block-atom)]
+    (fn []
+      [:div#block-modal
+       [:div.modal-body
+        [:p.block-title (t :page/Addblock)]
+        [:p "Select a block to add to your page"]
+        (reduce-kv
+          (fn [r k v]
+            (conj r
+                  [:a {:on-click #(do
+                                    (.preventDefault %)
+                                    (if index
+                                      (f/add-field block-atom {:type (:value v)} index)
+                                      (f/add-field block-atom {:type (:value v)})))
+                       :data-dismiss "modal"}
+                   [:div.row
+
+                    [:i {:class (str "fa icon " (:icon v))}]
+                    [:span (:text v)]]]
+                  ))
+          [:div.block-types]
+          block-type-map)]
+       [:div.modal-footer
+        [:button.btn.btn-warning {:on-click #(do
+                                               (.preventDefault %)
+                                               (m/close-modal!)
+                                               )}
+         (t :core/Cancel)]]])))
+
+(defn open-block-modal [block-atom index]
+  (create-class {:reagent-render (fn [] (content-type block-atom index))
+                 :component-will-unmount (fn []  (m/close-modal!))}))
+
 (defn block [block-atom index blocks badges tags files]
   (let [{:keys [type]} @block-atom
         first? (= 0 index)
@@ -250,7 +290,8 @@
       [:button {:class    "btn btn-success"
                 :on-click #(do
                              (.preventDefault %)
-                             (f/add-field blocks {:type "heading"} index))}
+                             (m/modal! [open-block-modal blocks index] {:size :md})
+                             #_(f/add-field blocks {:type "heading"} index))}
        (t :page/Addblock)]]
      [:div.field.thumbnail
       [:div.field-move
@@ -278,44 +319,7 @@
          nil)]]
      ]))
 
-(def block-type-map
-  [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
-   {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
-   {:icon "fa-file-code-o" :text (t :page/Html) :value "html"}
-   {:icon "fa-file" :text (t :page/Files) :value "file"}])
 
-(defn content-type [block-atom]
-  (let [type (:type @block-atom)]
-    (fn []
-      [:div#block-modal
-       [:div.modal-body
-        [:p.block-title (t :page/Addblock)]
-        [:p "Select a block to add to your page"]
-        (reduce-kv
-          (fn [r k v]
-            (conj r
-                  [:a {:on-click #(do
-                                    (.preventDefault %)
-                                    (prn "t")
-                                    (f/add-field block-atom {:type (:value v)}))
-                       :data-dismiss "modal"}
-                   [:div.row
-
-                    [:i {:class (str "fa icon " (:icon v))}]
-                    [:span (:text v)]]]
-                  ))
-          [:div.block-types]
-          block-type-map)]
-       [:div.modal-footer
-        [:button.btn.btn-warning {:on-click #(do
-                                               (.preventDefault %)
-                                               (m/close-modal!)
-                                               )}
-         (t :core/Cancel)]]])))
-
-(defn open-block-modal [block-atom]
-  (create-class {:reagent-render (fn [] (content-type block-atom))
-                 :component-will-unmount (fn []  (m/close-modal!))}))
 
 (defn page-blocks [blocks badges tags files]
   [:div {:id "field-editor"}
@@ -326,8 +330,7 @@
     [:button {:class    "btn btn-success"
               :on-click #(do
                            (.preventDefault %)
-                           (m/modal! [open-block-modal blocks] {:size :md})
-                           #_(f/add-field blocks {:type "heading"}))}
+                           (m/modal! [open-block-modal blocks nil] {:size :md}))}
      (t :page/Addblock)]]])
 
 #_(defn page-description [description]
