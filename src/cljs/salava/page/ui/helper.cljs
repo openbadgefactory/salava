@@ -31,7 +31,7 @@
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
     [:div {:class (str "alert alert-warning")}
-    (t :page/Deleteconfirm)]]
+     (t :page/Deleteconfirm)]]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"
@@ -54,19 +54,19 @@
      [:div.col-md-12
       [:h3.badge-name name]]]
     #_[:div.row
-     [:div
-      (bh/issuer-image issuer_image)]]
-     [:div.row
+       [:div
+        (bh/issuer-image issuer_image)]]
+    [:div.row
      [:div.col-md-12
       (bh/issued-on issued_on)]]
-     [:div.row
-      [:div.col-md-12
-       #_(bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image)
+    [:div.row
+     [:div.col-md-12
+      #_(bh/issuer-label-image-link issuer_content_name issuer_content_url issuer_description issuer_contact issuer_image)
 
-       #_(bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
-         (bm/issuer-modal-link issuer_content_id issuer_content_name)
-         (bm/creator-modal-link creator_content_id creator_name)
-       ]]
+      #_(bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
+      (bm/issuer-modal-link issuer_content_id issuer_content_name)
+      (bm/creator-modal-link creator_content_id creator_name)
+      ]]
 
     [:div.row
      [:div {:class "col-md-12 description"} description]]
@@ -85,10 +85,10 @@
         [:div {:class                   "col-md-12"
                :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
     (if (and (pos? show_evidence) evidence_url)
-            [:div.row
-             [:div.col-md-12
-              [:h2.uppercase-header (t :badge/Evidence)]
-              [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]])
+      [:div.row
+       [:div.col-md-12
+        [:h2.uppercase-header (t :badge/Evidence)]
+        [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]])
 
 (defn html-block [{:keys [content]}]
   [:div.html-block
@@ -198,7 +198,7 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]
    [:div {:class "modal-footer page-content"}
-   (reporttool1 (:id page) (:name page) "page")
+    (reporttool1 (:id page) (:name page) "page")
     ]
    ])
 
@@ -212,6 +212,43 @@
     [:h1 header]]])
 
 (defn edit-page-buttons [id target save-function]
+    [:div {:class "row flip"
+           :id "buttons"}
+     [:div.col-xs-12.wizard
+      [:a {:class (if (= target :content) "current")
+           :href "#"
+           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit/" id)))}
+       [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
+       (t :page/Content)]
+      [:a {:class (if (= target :theme) "current")
+           :href "#"
+           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit_theme/" id)))}
+       [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
+       (t :page/Theme)]
+      [:a {:class (if (= target :settings) "current")
+           :href "#"
+           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/settings/" id)))}
+       [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
+       (t :page/Settings)]
+      [:a {:class (if (= target :preview) "current")
+           :href "#"
+           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/preview/" id)))}
+       [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
+       (t  :page/Preview)]]
+     #_[:div {:class "col-xs-4"
+            :id "buttons-right"}
+      [:a {:class "delete-link"
+           :title (t :page/Delete)
+           :on-click #(m/modal! (delete-page-modal id))}
+       [:i {:class "fa fa-trash"}]
+       (t :page/Delete)]
+      [:a {:class "btn btn-primary view-btn"
+           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/view/" id)))
+           :href "#"}
+       (t :page/View)]]
+     [m/modal-window]])
+
+#_(defn edit-page-buttons [id target save-function]
   [:div {:class "row flip"
          :id "buttons"}
    [:div.col-xs-8
@@ -236,7 +273,7 @@
     [:a {:class "delete-link"
          :title (t :page/Delete)
          :on-click #(m/modal! (delete-page-modal id))}
-      [:i {:class "fa fa-trash"}]
+     [:i {:class "fa fa-trash"}]
      (t :page/Delete)]
     [:a {:class "btn btn-primary view-btn"
          :on-click #(do (.preventDefault %) (save-function (str "/profile/page/view/" id)))
