@@ -18,6 +18,14 @@
      :minZoom 3
      :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
 
+(def user-icon  (js/L.divIcon. (clj->js {:className "location-icon-user" :iconSize [36 36] :html "<i class=\"fa fa-user-circle fa-3x\"></i>"})))
+(def badge-icon (js/L.Icon.Default.))
+
+(defn put-handler [data]
+  (if-not (:success data)
+    (js/alert "Error: Update failed. Please try again.")))
+
+
 (defn midpoint [items]
   (let [c (count items)]
     (when (> c 0)
@@ -47,7 +55,7 @@
                                             (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
                              (doseq [b (:badges data)]
                                (-> (js/L.latLng. (:lat b) (:lng b))
-                                   js/L.marker.
+                                   (js/L.marker. (clj->js {:icon badge-icon}))
                                    (.addTo my-map))))
                            (reset! visible false))
                          )})) 300)
@@ -72,18 +80,16 @@
              {:handler (fn [{:keys [lat lng]}]
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
-                                 my-marker (js/L.marker. lat-lng)
+                                 my-marker (js/L.marker. lat-lng (clj->js {:icon badge-icon}))
                                  my-map (-> (js/L.map. "map-view-badge" map-opt)
                                             (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. tile-url tile-opt))
                                             (.on "click" (fn [e]
-                                                           (.setLatLng my-marker (.-latlng e))
+                                                           (.setLatLng my-marker (aget e "latlng"))
                                                            (ajax/PUT
                                                              (path-for (str "/obpv1/location/user_badge/" user-badge-id))
-                                                             {:params (.-latlng e)
-                                                              :handler (fn [data]
-                                                                         (if-not (:success data)
-                                                                           (js/alert "Error: failed to save location. Please try again.")))})))
+                                                             {:params (aget e "latlng")
+                                                              :handler put-handler})))
                                             )
                                  ]
                              (.addTo my-marker my-map))
@@ -108,7 +114,7 @@
              {:handler (fn [{:keys [lat lng]}]
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
-                                 my-marker (js/L.marker. lat-lng)
+                                 my-marker (js/L.marker. lat-lng (clj->js {:icon user-icon}))
                                  my-map (-> (js/L.map. (str "map-view-user-" user-id) map-opt)
                                             (.setView lat-lng 8)
                                             (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
@@ -118,18 +124,16 @@
 
 (defn- user-settings-map [{:keys [lat lng]}]
   (let [lat-lng (js/L.latLng. lat lng)
-        my-marker (js/L.marker. lat-lng)
+        my-marker (js/L.marker. lat-lng (clj->js {:icon user-icon}))
         my-map (-> (js/L.map. "map-view-user" map-opt)
                    (.setView lat-lng 5)
                    (.addLayer (js/L.TileLayer. tile-url tile-opt))
                    (.on "click" (fn [e]
-                                  (.setLatLng my-marker (.-latlng e))
+                                  (.setLatLng my-marker (aget e "latlng"))
                                   (ajax/PUT
                                     (path-for "/obpv1/location/self")
-                                    {:params (.-latlng e)
-                                     :handler (fn [data]
-                                                (if-not (:success data)
-                                                  (js/alert "Error: failed to save location. Please try again.")))}))))]
+                                    {:params (aget e "latlng")
+                                     :handler put-handler}))))]
     (.addTo my-marker my-map)))
 
 (defn user-edit-profile-content [state]
@@ -149,12 +153,12 @@
                                   (if (.-target.checked e)
                                     (do
                                       (swap! state assoc :enabled true)
-                                      (ajax/PUT (path-for "/obpv1/location/self") {:params (:default @state)}))
+                                      (ajax/PUT (path-for "/obpv1/location/self") {:params (:default @state) :handler put-handler}))
                                     (do
                                       (swap! state assoc :enabled false)
                                       (swap! state assoc :public  false)
-                                      (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public false}})
-                                      (ajax/PUT (path-for "/obpv1/location/self") {:params {:lat nil :lng nil}}))))
+                                      (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public false} :handler put-handler})
+                                      (ajax/PUT (path-for "/obpv1/location/self") {:params {:lat nil :lng nil} :handler put-handler}))))
                      :checked (:enabled @state)}]
             (t :location/LocationEnabled)]
           [:p.help-block (t :location/LocationEnabledInfo)]]
@@ -167,7 +171,7 @@
                      :on-change (fn [e]
                                   (let [public? (.-target.checked e)]
                                     (swap! state assoc :public public?)
-                                    (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public public?}})))
+                                    (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public public?} :handler put-handler})))
                      :checked (:public @state)}]
             (t :location/LocationPublic)]
            [:p.help-block (t :location/LocationPublicInfo)]]]

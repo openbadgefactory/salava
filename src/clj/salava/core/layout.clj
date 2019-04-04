@@ -25,7 +25,7 @@
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
-   "/assets/leaflet/leaflet-src.js"
+   "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
 

@@ -19,19 +19,21 @@
      :minZoom 3
      :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
 
+(def icon {"users"  (js/L.divIcon. (clj->js {:className "location-icon-user" :iconSize [36 36] :html "<i class=\"fa fa-user-circle fa-3x\"></i>"}))
+           "badges" (js/L.Icon.Default.)})
+
+
 (defn- get-markers [kind my-map layer-group ]
   (let [bounds (.getBounds my-map)
-        minll (.getSouthWest bounds)
-        maxll (.getNorthEast bounds)
         click-cb (case kind
                    "users"
-                   (fn [u] #(mo/open-modal [:user :profile] {:user-id (-> u :id .-rep)}))
+                   (fn [u] #(mo/open-modal [:user :profile] {:user-id (:id u)}))
                    "badges"
                    (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))]
     (ajax/GET
       (path-for (str "/obpv1/location/explore/" kind) false)
-      {:params {:max_lat (.-lat maxll) :max_lng (.-lng maxll)
-                :min_lat (.-lat minll) :min_lng (.-lng minll)}
+      {:params {:max_lat (.getNorth bounds) :max_lng (.getEast bounds)
+                :min_lat (.getSouth bounds) :min_lng (.getWest bounds)}
        :handler
        (fn [data]
          (.clearLayers layer-group)
@@ -39,7 +41,7 @@
            (.addLayer
              layer-group
              (-> (js/L.latLng. (:lat item) (:lng item))
-                 js/L.marker.
+                 (js/L.marker. (clj->js {:icon (get icon kind)}))
                  (.on "click" (click-cb item))))))
        })))
 
