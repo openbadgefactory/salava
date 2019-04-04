@@ -14,7 +14,7 @@
 
 (defn route-def [ctx]
   (routes
-    (context "/page" []
+    (context "/profile/page" []
              (layout/main ctx "/")
              (layout/main ctx "/mypages")
              (layout/main-meta ctx "/view/:id" :page)
