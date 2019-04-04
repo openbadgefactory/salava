@@ -103,7 +103,7 @@ button {
   box-shadow: 0px 2px $box-shadow;
   &:hover {
     background-color: $dark-red;
-    border-color: darken($dark-red, 5%);
+    border-color: lighten($dark-red, 30%);
     box-shadow: 0px 2px $box-shadow;
   }
 
