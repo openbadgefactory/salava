@@ -290,7 +290,7 @@
                           (f/add-field blocks {:type "heading"}))}
      (t :page/Addblock)]]])
 
-(defn page-description [description]
+#_(defn page-description [description]
   [:div.form-group
    [:label {:class "col-md-2"
             :for "page-description"}
@@ -301,7 +301,19 @@
                 :value @description
                 :on-change #(reset! description (.-target.value %))}]]])
 
-(defn page-title [name]
+(defn page-description [description]
+  [:div.col-md-12
+   [:div.form-group
+   [:label {;:class "col-md-2"
+            :for "page-description"}
+    (t :page/Description)]
+   [:div;.col-md-10
+    [:textarea {:id "page-description"
+                :class "form-control"
+                :value @description
+                :on-change #(reset! description (.-target.value %))}]]]])
+
+#_(defn page-title [name]
   [:div.form-group
    [:label {:class "col-md-2"
             :for "page-name"}
@@ -313,7 +325,20 @@
              :value @name
              :on-change #(reset! name (.-target.value %))}]]])
 
-(defn page-form [state]
+(defn page-title [name]
+  [:div.col-md-12
+   [:div.form-group
+   [:label {;:class "col-md-2"
+            :for "page-name"}
+     (t :page/Title)]
+   [:div;.col-md-10
+    [:input {:id "page-name"
+             :class "form-control"
+             :type "text"
+             :value @name
+             :on-change #(reset! name (.-target.value %))}]]]])
+
+#_(defn page-form [state]
   [:form.form-horizontal
    [:div {:id "title-and-description"}
     [page-title (cursor state [:page :name])]
@@ -326,6 +351,24 @@
                            (.preventDefault %)
                            (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
       (t :page/Save)]]]])
+
+(defn page-form [state]
+ [:div.panel.thumbnail
+  [:div.panel-heading [:p.block-title "Page Information"]]
+  [:div.panel-body
+   [:form.form-horizontal
+   [:div {:id "title-and-description"}
+
+    [page-title (cursor state [:page :name])]
+    [page-description (cursor state [:page :description])]]
+   [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
+   [:div.row
+    [:div.col-md-12
+     [:button {:class    "btn btn-primary"
+               :on-click #(do
+                           (.preventDefault %)
+                           (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
+      (t :page/Save)]]]]]])
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
