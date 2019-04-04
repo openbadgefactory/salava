@@ -180,9 +180,9 @@
     [:div.form-group
      [:div.col-md-12
       [:input {:class     "form-control"
-              :type      "text"
-              :value     content
-              :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
+               :type      "text"
+               :value     content
+               :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
 
 (defn save-editor-content [block-atom]
   (if-let [editor (aget js/CKEDITOR "instances" "ckeditor")]
@@ -249,10 +249,10 @@
      [:div.add-field-after
       [:button {:class    "btn btn-success"
                 :on-click #(do
-                            (.preventDefault %)
-                            (f/add-field blocks {:type "heading"} index))}
+                             (.preventDefault %)
+                             (f/add-field blocks {:type "heading"} index))}
        (t :page/Addblock)]]
-     [:div.field
+     [:div.field.thumbnail
       [:div.field-move
        [:div.move-arrows
         (if-not first?
@@ -278,6 +278,45 @@
          nil)]]
      ]))
 
+(def block-type-map
+  [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
+   {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
+   {:icon "fa-file-code-o" :text (t :page/Html) :value "html"}
+   {:icon "fa-file" :text (t :page/Files) :value "file"}])
+
+(defn content-type [block-atom]
+  (let [type (:type @block-atom)]
+    (fn []
+      [:div#block-modal
+       [:div.modal-body
+        [:p.block-title (t :page/Addblock)]
+        [:p "Select a block to add to your page"]
+        (reduce-kv
+          (fn [r k v]
+            (conj r
+                  [:a {:on-click #(do
+                                    (.preventDefault %)
+                                    (prn "t")
+                                    (f/add-field block-atom {:type (:value v)}))
+                       :data-dismiss "modal"}
+                   [:div.row
+
+                    [:i {:class (str "fa icon " (:icon v))}]
+                    [:span (:text v)]]]
+                  ))
+          [:div.block-types]
+          block-type-map)]
+       [:div.modal-footer
+        [:button.btn.btn-warning {:on-click #(do
+                                               (.preventDefault %)
+                                               (m/close-modal!)
+                                               )}
+         (t :core/Cancel)]]])))
+
+(defn open-block-modal [block-atom]
+  (create-class {:reagent-render (fn [] (content-type block-atom))
+                 :component-will-unmount (fn []  (m/close-modal!))}))
+
 (defn page-blocks [blocks badges tags files]
   [:div {:id "field-editor"}
    (into [:div {:id "page-blocks"}]
@@ -286,93 +325,110 @@
    [:div.add-field-after
     [:button {:class    "btn btn-success"
               :on-click #(do
-                          (.preventDefault %)
-                          (f/add-field blocks {:type "heading"}))}
+                           (.preventDefault %)
+                           (m/modal! [open-block-modal blocks] {:size :md})
+                           #_(f/add-field blocks {:type "heading"}))}
      (t :page/Addblock)]]])
 
 #_(defn page-description [description]
-  [:div.form-group
-   [:label {:class "col-md-2"
-            :for "page-description"}
-    (t :page/Description)]
-   [:div.col-md-10
-    [:textarea {:id "page-description"
-                :class "form-control"
-                :value @description
-                :on-change #(reset! description (.-target.value %))}]]])
+    [:div.form-group
+     [:label {:class "col-md-2"
+              :for "page-description"}
+      (t :page/Description)]
+     [:div.col-md-10
+      [:textarea {:id "page-description"
+                  :class "form-control"
+                  :value @description
+                  :on-change #(reset! description (.-target.value %))}]]])
 
 (defn page-description [description]
   [:div.col-md-12
    [:div.form-group
-   [:label {;:class "col-md-2"
-            :for "page-description"}
-    (t :page/Description)]
-   [:div;.col-md-10
-    [:textarea {:id "page-description"
-                :class "form-control"
-                :value @description
-                :on-change #(reset! description (.-target.value %))}]]]])
+    [:label {;:class "col-md-2"
+              :for "page-description"}
+     (t :page/Description)]
+    [:div;.col-md-10
+     [:textarea {:id "page-description"
+                 :class "form-control"
+                 :value @description
+                 :on-change #(reset! description (.-target.value %))}]]]])
 
 #_(defn page-title [name]
-  [:div.form-group
-   [:label {:class "col-md-2"
-            :for "page-name"}
-     (t :page/Title)]
-   [:div.col-md-10
-    [:input {:id "page-name"
-             :class "form-control"
-             :type "text"
-             :value @name
-             :on-change #(reset! name (.-target.value %))}]]])
+    [:div.form-group
+     [:label {:class "col-md-2"
+              :for "page-name"}
+      (t :page/Title)]
+     [:div.col-md-10
+      [:input {:id "page-name"
+               :class "form-control"
+               :type "text"
+               :value @name
+               :on-change #(reset! name (.-target.value %))}]]])
 
 (defn page-title [name]
   [:div.col-md-12
    [:div.form-group
-   [:label {;:class "col-md-2"
-            :for "page-name"}
+    [:label {;:class "col-md-2"
+              :for "page-name"}
      (t :page/Title)]
-   [:div;.col-md-10
-    [:input {:id "page-name"
-             :class "form-control"
-             :type "text"
-             :value @name
-             :on-change #(reset! name (.-target.value %))}]]]])
+    [:div;.col-md-10
+     [:input {:id "page-name"
+              :class "form-control"
+              :type "text"
+              :value @name
+              :on-change #(reset! name (.-target.value %))}]]]])
 
 #_(defn page-form [state]
-  [:form.form-horizontal
-   [:div {:id "title-and-description"}
-    [page-title (cursor state [:page :name])]
-    [page-description (cursor state [:page :description])]]
-   [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
-   [:div.row
-    [:div.col-md-12
-     [:button {:class    "btn btn-primary"
-               :on-click #(do
-                           (.preventDefault %)
-                           (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
-      (t :page/Save)]]]])
+    [:form.form-horizontal
+     [:div {:id "title-and-description"}
+      [page-title (cursor state [:page :name])]
+      [page-description (cursor state [:page :description])]]
+     [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
+     [:div.row
+      [:div.col-md-12
+       [:button {:class    "btn btn-primary"
+                 :on-click #(do
+                              (.preventDefault %)
+                              (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
+        (t :page/Save)]]]])
 
 (defn page-form [state]
- [:div.panel.thumbnail
-  [:div.panel-heading [:p.block-title "Page Information"]]
-  [:div.panel-body
-   [:form.form-horizontal
-   [:div {:id "title-and-description"}
+  [:div
+   [:div.panel.thumbnail
+    [:div.panel-heading [:p.block-title "Page Information"]]
+    [:div.panel-body
+     [:form.form-horizontal
+      [:div {:id "title-and-description"}
 
-    [page-title (cursor state [:page :name])]
-    [page-description (cursor state [:page :description])]]
-   [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
-   [:div.row
-    [:div.col-md-12
-     [:button {:class    "btn btn-primary"
-               :on-click #(do
-                           (.preventDefault %)
-                           (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
-      (t :page/Save)]]]]]])
+       [page-title (cursor state [:page :name])]
+       [page-description (cursor state [:page :description])]]]]]
+   [:div.form-horizontal
+    [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
+    [:div.row
+     [:div.col-md-12
+      [:button {:class    "btn btn-primary"
+                :on-click #(do
+                             (.preventDefault %)
+                             (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
+       (t :page/Save)]
+      [:button.btn.btn-warning {:on-click #(do
+                                             (.preventDefault %)
+                                             (navigate-to  "/profile/page"))}
+       (t :core/Cancel)]
+
+      [:button.btn.btn-danger {:on-click #(do
+                                            (.preventDefault %)
+                                            (ph/delete-page (get-in @state [:page :id])))}
+       (t :core/Delete)]
+      #_[:div.wizard.pull-right
+         [:button  "Next"]
+         ]]]
+    ]])
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-edit"}
+     [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) next-url))]
      [page-form state]]))
