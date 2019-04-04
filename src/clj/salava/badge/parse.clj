@@ -218,7 +218,9 @@
                     :genre nil
                     :audience nil
                     :ctime now
-                    :mtime now})])))
+                    :mtime now})]
+      :endorsement []
+      )))
 
 
 ; old v0.5.0 badge content
@@ -409,33 +411,8 @@
                      (map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")
-        endorsement (get-assertion-endorsement assertion) #_(cond
-                                                    (map? (:endorsement assertion)) [{:id nil
-                                                                                      :external_id (get-in assertion [:endorsement :id])
-                                                                                      :user_badge_id nil
-                                                                                      :issuer_id nil
-                                                                                      :issuer_name (get-in assertion [:endorsement :issuer :name])
-                                                                                      :issuer_url (get-in assertion [:endorsement :issuer :id])
-                                                                                      :content (get-in assertion [:endorsement :claim :endorsementComment])
-                                                                                      :status "accepted"
-                                                                                      :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                                                      :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                                                      }]
+        endorsement (get-assertion-endorsement assertion)]
 
-                                                    (coll? (:endorsement assertion)) (mapv (fn [e]
-                                                                                             {:id nil
-                                                                                              :external_id (get-in assertion [:endorsement :id])
-                                                                                              :user_badge_id nil
-                                                                                              :issuer_id nil
-                                                                                              :issuer_name (get-in assertion [:endorsement :issuer :name])
-                                                                                              :issuer_url (get-in assertion [:endorsement :issuer :id])
-                                                                                              :content (get-in assertion [:endorsement :claim :endorsementComment])
-                                                                                              :status "accepted"
-                                                                                              :ctime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                                                              :mtime (u/str->epoch (get-in assertion [:endorsement :issuedOn]))
-                                                                                              }) (:endorsement assertion))
-                                                    :else []
-                                                    ) ]
     (assoc initial
       :badge (merge {:id ""
                      :remote_url nil
@@ -518,7 +495,9 @@
                     :genre nil
                     :audience nil
                     :ctime now
-                    :mtime now})])))
+                    :mtime now})]
+      :endorsement []
+      )))
 
 ; old v1.0/v1.1 badge content
 #_{:badge_url    (:badge assertion)
