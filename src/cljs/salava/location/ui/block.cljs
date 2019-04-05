@@ -54,7 +54,7 @@
        )}))
 
 
-(defn badge-settings-content [user-badge-id visible]
+(defn badge-share-content [user-badge-id visible]
   (create-class
     {:reagent-render
      (fn []
@@ -128,47 +128,52 @@
                                      :handler put-handler}))))]
     (.addTo my-marker my-map)))
 
-(defn user-edit-profile-content [state]
+(defn user-edit-content [state]
   (create-class
     {:reagent-render
      (fn []
-       [:div.row
-        [:label.col-xs-12 (t :location/Location)]
-        [:div.col-xs-12
-         [:div
-          [:div.checkbox
-           [:label
-            [:input {:name      "enabled"
-                     :type      "checkbox"
-                     :value     1
-                     :on-change (fn [e]
-                                  (if (.-target.checked e)
-                                    (do
-                                      (swap! state assoc :enabled true)
-                                      (ajax/PUT (path-for "/obpv1/location/self") {:params (:default @state) :handler put-handler}))
-                                    (do
-                                      (swap! state assoc :enabled false)
-                                      (swap! state assoc :public  false)
-                                      (ajax/PUT (path-for "/obpv1/location/self/reset") {:handler put-handler}))))
-                     :checked (:enabled @state)}]
-            (t :location/LocationEnabled)]
-          [:p.help-block (t :location/LocationEnabledInfo)]]
+       [:div.form-group
+        [:label.col-md-3
+         (t :location/Location)]
+        [:div.col-md-9
+         [:div.row
+          [:div.col-xs-12
+           [:div
+            [:div.checkbox
+             [:label
+              [:input {:name      "enabled"
+                       :type      "checkbox"
+                       :value     1
+                       :on-change (fn [e]
+                                    (if (.-target.checked e)
+                                      (do
+                                        (swap! state assoc :enabled true)
+                                        (ajax/PUT (path-for "/obpv1/location/self") {:params (:default @state) :handler put-handler}))
+                                      (do
+                                        (swap! state assoc :enabled false)
+                                        (swap! state assoc :public  false)
+                                        (ajax/PUT (path-for "/obpv1/location/self/reset") {:handler put-handler}))))
+                       :checked (:enabled @state)}]
+              (t :location/LocationEnabled)]
+             [:p.help-block (t :location/LocationEnabledInfo)]]
 
-          [:div.checkbox {:style {:display (if (:enabled @state) "block" "none")}}
-           [:label
-            [:input {:name      "public"
-                     :type      "checkbox"
-                     :value     1
-                     :on-change (fn [e]
-                                  (let [public? (.-target.checked e)]
-                                    (swap! state assoc :public public?)
-                                    (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public public?} :handler put-handler})))
-                     :checked (:public @state)}]
-            (t :location/LocationPublic)]
-           [:p.help-block (t :location/LocationPublicInfo)]]]
+            [:div.checkbox {:style {:display (if (:enabled @state) "block" "none")}}
+             [:label
+              [:input {:name      "public"
+                       :type      "checkbox"
+                       :value     1
+                       :on-change (fn [e]
+                                    (let [public? (.-target.checked e)]
+                                      (swap! state assoc :public public?)
+                                      (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public public?} :handler put-handler})))
+                       :checked (:public @state)}]
+              (t :location/LocationPublic)]
+             [:p.help-block (t :location/LocationPublicInfo)]]]
 
-         [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]
+           [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]
+           ]]
          ]])
+
 
      :component-did-mount
      (fn []
@@ -188,9 +193,9 @@
     [gallery-badge-content badge-id visible]))
 
 
-(defn ^:export badge_settings [user-badge-id]
+(defn ^:export badge_share [user-badge-id]
   (let [visible (atom true)]
-    [badge-settings-content user-badge-id visible]))
+    [badge-share-content user-badge-id visible]))
 
 
 (defn ^:export user_profile [user-id]
@@ -198,6 +203,6 @@
     [user-profile-content user-id visible]))
 
 
-(defn ^:export user_edit_profile []
+(defn ^:export user_edit []
   (let [state (atom {:enabled true :public false :default {:lat nil :lng nil}})]
-    [user-edit-profile-content state]))
+    [user-edit-content state]))
