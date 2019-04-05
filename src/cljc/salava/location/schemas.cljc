@@ -68,7 +68,9 @@
                                 :lat Lat
                                 :lng Lng})
 
-(s/defschema explore-badges {:badges [badge-location-ex]})
+(s/defschema explore-badges {:badges [badge-location]})
+
+(s/defschema explore-badges-ex {:badges [badge-location-ex]})
 
 (s/defschema explore-users  {:users  [user-location]})
 

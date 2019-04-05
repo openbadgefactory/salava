@@ -92,7 +92,7 @@
 
              (GET "/explore/badges" []
                   :summary "Get public badge locations for gallery"
-                  :return ls/explore-badges
+                  :return ls/explore-badges-ex
                   :query [params ls/explore-badge-query]
                   :current-user current-user
                   (ok (l/explore-list-badges ctx (pos? (:id current-user)) params)))
