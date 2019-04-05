@@ -6,24 +6,16 @@
             [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :refer [js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
-            [salava.core.i18n :refer [t translate-text]]))
-
-(def map-opt (clj->js {:maxBounds [[-90 -180] [90 180]]
-                       :worldCopyJump true}))
-
-(def tile-url "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-
-(def tile-opt
-  (clj->js
-    {:maxZoom 15
-     :minZoom 3
-     :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
-
-(def icon {"users"  (js/L.divIcon. (clj->js {:className "location-icon-user" :iconSize [36 36] :html "<i class=\"fa fa-user-circle fa-3x\"></i>"}))
-           "badges" (js/L.Icon.Default.)})
+            [salava.core.i18n :refer [t translate-text]]
+            [salava.location.ui.util :as lu]
+            ))
 
 
-(defn- get-markers [kind my-map layer-group ]
+(def icon {"users"  lu/user-icon
+           "badges" lu/badge-icon})
+
+
+(defn- get-markers [kind my-map layer-group opt]
   (let [bounds (.getBounds my-map)
         click-cb (case kind
                    "users"
@@ -32,15 +24,16 @@
                    (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))]
     (ajax/GET
       (path-for (str "/obpv1/location/explore/" kind) false)
-      {:params {:max_lat (.getNorth bounds) :max_lng (.getEast bounds)
-                :min_lat (.getSouth bounds) :min_lng (.getWest bounds)}
+      {:params (merge opt {:max_lat (.getNorth bounds) :max_lng (.getEast bounds)
+                           :min_lat (.getSouth bounds) :min_lng (.getWest bounds)})
        :handler
        (fn [data]
          (.clearLayers layer-group)
+         (lu/noise-seed)
          (doseq [item (get data (keyword kind))]
            (.addLayer
              layer-group
-             (-> (js/L.latLng. (:lat item) (:lng item))
+             (-> (js/L.latLng. (lu/noise (:lat item)) (lu/noise (:lng item) 4))
                  (js/L.marker. (clj->js {:icon (get icon kind)}))
                  (.on "click" (click-cb item))))))
        })))
@@ -68,6 +61,37 @@
                      :value "badges"}]
             (t :location/ShowBadges)]]]
 
+         [:hr]
+
+         [:div.form-horizontal
+
+          [:div.form-group.users-filter {:style {:display "block"}}
+           [:div.col-md-6
+            [:input.form-control {:name "user_name"
+                                  :type "text"
+                                  :placeholder (t :location/SearchUsers)}]
+            ]]
+
+          [:div.form-group.badges-filter {:style {:display "none"}}
+           [:div.col-md-6
+            [:input.form-control {:name "badge_name"
+                                  :type "text"
+                                  :placeholder (t :location/SearchBadges)}]
+            ]]
+          [:div.form-group.badges-filter {:style {:display "none"}}
+           [:div.col-md-6
+            [:input.form-control {:name "issuer_name"
+                                  :type "text"
+                                  :placeholder (t :location/SearchIssuers)}]
+            ]]
+          [:div.form-group.badges-filter {:style {:display "none"}}
+           [:div.col-md-6
+            [:input.form-control {:name "tag_name"
+                                  :type "text"
+                                  :placeholder (t :location/SearchTags)}]
+            ]]
+          ]
+
          [:div {:id "map-view" :style {:height "700px" :margin "20px 0"}}]]])
 
      :component-did-mount
@@ -75,25 +99,40 @@
        (let [timer (atom 0)
              layer-group (js/L.layerGroup. (clj->js []))
              lat-lng (js/L.latLng. 40 -20)
-             my-map (-> (js/L.map. "map-view" map-opt)
+             my-map (-> (js/L.map. "map-view" lu/map-opt)
                         (.setView lat-lng 3)
-                        (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
+                        (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))
+
+             query-opt (fn []
+                         (case (.val (js/jQuery "input[name=map-type]:checked"))
+                           "users"  {:user_name (.val (js/jQuery "input[name=user_name]"))}
+                           "badges" {:badge_name  (.val (js/jQuery "input[name=badge_name]"))
+                                     :issuer_name (.val (js/jQuery "input[name=issuer_name]"))
+                                     :tag_name    (.val (js/jQuery "input[name=tag_name]"))}))
+
+             redraw-map! (fn []
+                          (js/clearTimeout @timer)
+                          (reset! timer
+                                  (js/setTimeout
+                                    #(get-markers (.val (js/jQuery "input[name=map-type]:checked")) my-map layer-group (query-opt))
+                                    1000)))]
 
          (.addTo layer-group my-map)
 
-         (.on my-map "moveend"
-              (fn []
-                (js/clearTimeout @timer)
-                (reset! timer
-                        (js/setTimeout
-                          #(get-markers (.val (js/jQuery "input[name=map-type]:checked")) my-map layer-group)
-                          1000))))
+         (.on my-map "moveend" redraw-map!)
+
+         (.on (js/jQuery "div.users-filter input, div.badges-filter input") "keyup" redraw-map!)
 
          (.on (js/jQuery "input[name=map-type]") "change"
               (fn [e]
-                (get-markers (.-target.value e) my-map layer-group)))
+                (let [kind (.-target.value e)]
+                  (-> (js/jQuery "div.users-filter input, div.badges-filter input") (.val ""))
+                  (.toggle (js/jQuery "div.users-filter"))
+                  (.toggle (js/jQuery "div.badges-filter"))
+                  (get-markers kind my-map layer-group (query-opt)))))
 
-         (get-markers "users" my-map layer-group)
+
+         (get-markers "users" my-map layer-group {})
          ))
      }))
 

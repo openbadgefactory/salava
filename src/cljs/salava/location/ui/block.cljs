@@ -5,21 +5,11 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.field :as f]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [js-navigate-to path-for private?]]))
+            [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
+            [salava.location.ui.util :as lu]
+            [salava.core.ui.modal :as mo]
+            ))
 
-(def map-opt (clj->js {:maxBounds [[-90 -180] [90 180]]
-                       :worldCopyJump true}))
-
-(def tile-url "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-
-(def tile-opt
-  (clj->js
-    {:maxZoom 15
-     :minZoom 3
-     :attribution "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"}))
-
-(def user-icon  (js/L.divIcon. (clj->js {:className "location-icon-user" :iconSize [36 36] :html "<i class=\"fa fa-user-circle fa-3x\"></i>"})))
-(def badge-icon (js/L.Icon.Default.))
 
 (defn put-handler [data]
   (if-not (:success data)
@@ -50,12 +40,14 @@
              {:handler (fn [data]
                          (if (seq (:badges data))
                            (let [lat-lng (js/L.latLng. (clj->js (midpoint (:badges data))))
-                                 my-map (-> (js/L.map. (str "map-view-badge-" badge-id) map-opt)
+                                 my-map (-> (js/L.map. (str "map-view-badge-" badge-id) lu/map-opt)
                                             (.setView lat-lng 8)
-                                            (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
+                                            (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
+                             (lu/noise-seed)
                              (doseq [b (:badges data)]
-                               (-> (js/L.latLng. (:lat b) (:lng b))
-                                   (js/L.marker. (clj->js {:icon badge-icon}))
+                               (-> (js/L.latLng. (lu/noise (:lat b)) (lu/noise (:lng b) 4))
+                                   (js/L.marker. (clj->js {:icon lu/badge-icon}))
+                                   (.on "click" #(mo/open-modal [:user :profile] {:user-id (:user_id b)}))
                                    (.addTo my-map))))
                            (reset! visible false))
                          )})) 300)
@@ -80,10 +72,10 @@
              {:handler (fn [{:keys [lat lng]}]
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
-                                 my-marker (js/L.marker. lat-lng (clj->js {:icon badge-icon}))
-                                 my-map (-> (js/L.map. "map-view-badge" map-opt)
+                                 my-marker (js/L.marker. lat-lng (clj->js {:icon lu/badge-icon}))
+                                 my-map (-> (js/L.map. "map-view-badge" lu/map-opt)
                                             (.setView lat-lng 5)
-                                            (.addLayer (js/L.TileLayer. tile-url tile-opt))
+                                            (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt))
                                             (.on "click" (fn [e]
                                                            (.setLatLng my-marker (aget e "latlng"))
                                                            (ajax/PUT
@@ -114,20 +106,20 @@
              {:handler (fn [{:keys [lat lng]}]
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
-                                 my-marker (js/L.marker. lat-lng (clj->js {:icon user-icon}))
-                                 my-map (-> (js/L.map. (str "map-view-user-" user-id) map-opt)
+                                 my-marker (js/L.marker. lat-lng (clj->js {:icon lu/user-icon}))
+                                 my-map (-> (js/L.map. (str "map-view-user-" user-id) lu/map-opt)
                                             (.setView lat-lng 8)
-                                            (.addLayer (js/L.TileLayer. tile-url tile-opt)))]
+                                            (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (.addTo my-marker my-map))
                            (reset! visible false)))})) 300)
        )}))
 
 (defn- user-settings-map [{:keys [lat lng]}]
   (let [lat-lng (js/L.latLng. lat lng)
-        my-marker (js/L.marker. lat-lng (clj->js {:icon user-icon}))
-        my-map (-> (js/L.map. "map-view-user" map-opt)
+        my-marker (js/L.marker. lat-lng (clj->js {:icon lu/user-icon}))
+        my-map (-> (js/L.map. "map-view-user" lu/map-opt)
                    (.setView lat-lng 5)
-                   (.addLayer (js/L.TileLayer. tile-url tile-opt))
+                   (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt))
                    (.on "click" (fn [e]
                                   (.setLatLng my-marker (aget e "latlng"))
                                   (ajax/PUT
@@ -157,8 +149,7 @@
                                     (do
                                       (swap! state assoc :enabled false)
                                       (swap! state assoc :public  false)
-                                      (ajax/PUT (path-for "/obpv1/location/self/public") {:params {:public false} :handler put-handler})
-                                      (ajax/PUT (path-for "/obpv1/location/self") {:params {:lat nil :lng nil} :handler put-handler}))))
+                                      (ajax/PUT (path-for "/obpv1/location/self/reset") {:handler put-handler}))))
                      :checked (:enabled @state)}]
             (t :location/LocationEnabled)]
           [:p.help-block (t :location/LocationEnabledInfo)]]
