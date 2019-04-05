@@ -51,17 +51,16 @@
 
 
 (defn explore-badge [ctx badge-id]
-  {:badges (->> (select-explore-badge {:badge badge-id} (u/get-db ctx)) 
-                (map (fn [b]
-                       (assoc b :badge_url (str (u/get-full-path ctx) "/badge/info/" (:id b)))
-                       )))})
+  {:badges (select-explore-badge {:badge badge-id} (u/get-db ctx))})
 
 
-(defn explore-filters [ctx]
-  {:tag_name    (sort (select-explore-taglist    {} (u/get-db-col ctx :tag)))
-   :badge_name  (sort (select-explore-badgelist  {} (u/get-db-col ctx :name)))
-   :issuer_name (sort (select-explore-issuerlist {} (u/get-db-col ctx :name)))
-   })
+(defn explore-filters [ctx logged-in?]
+  (let [opt (if logged-in?
+              {:min_pub 0 :visibility ["public" "internal"]}
+              {:min_pub 1 :visibility ["public"]})]
+    {:tag_name    (sort (select-explore-taglist    opt (u/get-db-col ctx :tag)))
+     :badge_name  (sort (select-explore-badgelist  opt (u/get-db-col ctx :name)))
+     :issuer_name (sort (select-explore-issuerlist opt (u/get-db-col ctx :name)))}))
 
 
 (defn explore-list-users [ctx logged-in? opt]
@@ -114,7 +113,9 @@
     (if (seq filtered-badge-ids)
       {:badges (->> (select-explore-badges {:badge filtered-badge-ids} (u/get-db ctx))
                     (map (fn [b]
-                           (assoc b :badge_url (str (u/get-full-path ctx) "/badge/info/" (:id b)))
+                           (assoc b :badge_url   (str (u/get-full-path ctx) "/badge/info/" (:id b))
+                                    :badge_image (str (u/get-site-url ctx) "/" (:badge_image b))
+                                  )
                            )))}
       {:badges []})))
 

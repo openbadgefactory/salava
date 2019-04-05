@@ -47,17 +47,28 @@
 
 (s/defschema user-location {:id s/Int
                             :user_url s/Str
+                            :first_name s/Str
+                            :last_name s/Str
                             :lat Lat
                             :lng Lng})
 
 (s/defschema badge-location {:id s/Int
                              :user_id s/Int
                              :badge_id s/Str
-                             :badge_url s/Str
                              :lat Lat
                              :lng Lng})
 
-(s/defschema explore-badges {:badges [badge-location]})
+(s/defschema badge-location-ex {:id s/Int
+                                :user_id s/Int
+                                :badge_id s/Str
+                                :badge_url s/Str
+                                :badge_name s/Str
+                                :badge_image s/Str
+                                :issuer_name s/Str
+                                :lat Lat
+                                :lng Lng})
+
+(s/defschema explore-badges {:badges [badge-location-ex]})
 
 (s/defschema explore-users  {:users  [user-location]})
 

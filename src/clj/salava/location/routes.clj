@@ -100,5 +100,6 @@
              (GET "/explore/filters" []
                   :summary "Get list of tags, badge and issuer names available for public badges."
                   :return ls/explore-filters
-                  (ok (l/explore-filters ctx)))
+                  :current-user current-user
+                  (ok (l/explore-filters ctx (pos? (:id current-user)))))
              )))

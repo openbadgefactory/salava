@@ -58,7 +58,8 @@ SELECT id FROM user
 WHERE id IN (:user) AND CONCAT(first_name, ' ', last_name) LIKE :name;
 
 --name: select-explore-users
-SELECT id, location_lat AS lat, location_lng AS lng
+SELECT id, first_name, last_name,
+    location_lat AS lat, location_lng AS lng
 FROM user
 WHERE id IN (:user)
 ORDER BY mtime DESC
@@ -100,10 +101,16 @@ WHERE ub.id IN (:badge) AND c.name LIKE :issuer;
 
 --name: select-explore-badges
 SELECT ub.id, ub.user_id, ub.badge_id,
+    c.name AS badge_name, c.image_file AS badge_image, i.name AS issuer_name,
     COALESCE(ub.location_lat, u.location_lat) AS lat,
     COALESCE(ub.location_lng, u.location_lng) AS lng
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
+INNER JOIN badge b ON ub.badge_id = b.id
+INNER JOIN badge_badge_content bc ON b.id = bc.badge_id
+INNER JOIN badge_content c ON (bc.badge_content_id = c.id AND c.language_code = b.default_language_code)
+INNER JOIN badge_issuer_content ic ON b.id = ic.badge_id
+INNER JOIN issuer_content i ON (ic.issuer_content_id = i.id AND i.language_code = b.default_language_code)
 WHERE ub.id IN (:badge) AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
 ORDER BY ub.mtime DESC
 LIMIT 250;
@@ -114,7 +121,7 @@ SELECT DISTINCT t.tag FROM badge_content_tag t
 INNER JOIN badge_badge_content bc ON bc.badge_content_id = t.badge_content_id
 INNER JOIN user_badge ub ON bc.badge_id = ub.badge_id
 INNER JOIN user u ON ub.user_id = u.id
-WHERE u.location_public = 1 AND ub.deleted = 0 AND ub.visibility = 'public' AND ub.status = 'accepted'
+WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:visibility) AND ub.status = 'accepted'
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
 LIMIT 1000;
@@ -124,7 +131,7 @@ SELECT DISTINCT c.name FROM badge_content c
 INNER JOIN badge_badge_content bc ON bc.badge_content_id = c.id
 INNER JOIN user_badge ub ON bc.badge_id = ub.badge_id
 INNER JOIN user u ON ub.user_id = u.id
-WHERE u.location_public = 1 AND ub.deleted = 0 AND ub.visibility = 'public' AND ub.status = 'accepted'
+WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:visibility) AND ub.status = 'accepted'
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
 LIMIT 1000;
@@ -134,7 +141,7 @@ SELECT DISTINCT c.name FROM issuer_content c
 INNER JOIN badge_issuer_content bc ON bc.issuer_content_id = c.id
 INNER JOIN user_badge ub ON bc.badge_id = ub.badge_id
 INNER JOIN user u ON ub.user_id = u.id
-WHERE u.location_public = 1 AND ub.deleted = 0 AND ub.visibility = 'public' AND ub.status = 'accepted'
+WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:visibility) AND ub.status = 'accepted'
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
 LIMIT 1000;
