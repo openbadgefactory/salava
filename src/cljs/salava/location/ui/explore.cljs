@@ -3,13 +3,13 @@
             [reagent.session :as session]
             [reagent-modals.modals :as m]
             [ajax.core :as ajax]
+            [komponentit.autocomplete :as autocomplete]
             [salava.core.ui.modal :as mo]
             [salava.core.ui.helper :refer [js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.location.ui.util :as lu]
             ))
-
 
 (def icon {"users"  lu/user-icon
            "badges" lu/badge-icon})
@@ -38,7 +38,23 @@
                  (.on "click" (click-cb item))))))
        })))
 
-(defn map-view []
+(defn tag-autocomplete [state]
+  (let [tag (cursor state [:tag])]
+    (fn []
+      [autocomplete/autocomplete
+       {:value (:value @tag)
+        :cb    (fn [item]
+                 (swap! tag assoc :value (:key item))
+                 (.trigger (js/jQuery "div.badges-filter .tag-filter input") "change"))
+        :search-fields   [:value]
+        :items           (:autocomplete @tag)
+        :no-results-text (t :location/Notfound)
+        :placeholder     (t :location/Keyword)
+        :control-class   "form-control tag-filter"
+        :max-results     100
+        }])))
+
+(defn map-view [state]
   (create-class
     {:reagent-render
      (fn []
@@ -84,12 +100,11 @@
                                   :type "text"
                                   :placeholder (t :location/SearchIssuers)}]
             ]]
+
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
-            [:input.form-control {:name "tag_name"
-                                  :type "text"
-                                  :placeholder (t :location/SearchTags)}]
-            ]]
+            [tag-autocomplete state]]]
+
           ]
 
          [:div {:id "map-view" :style {:height "700px" :margin "20px 0"}}]]])
@@ -108,7 +123,7 @@
                            "users"  {:user_name (.val (js/jQuery "input[name=user_name]"))}
                            "badges" {:badge_name  (.val (js/jQuery "input[name=badge_name]"))
                                      :issuer_name (.val (js/jQuery "input[name=issuer_name]"))
-                                     :tag_name    (.val (js/jQuery "input[name=tag_name]"))}))
+                                     :tag_name    (.val (js/jQuery ".tag-filter input"))}))
 
              redraw-map! (fn []
                           (js/clearTimeout @timer)
@@ -121,7 +136,7 @@
 
          (.on my-map "moveend" redraw-map!)
 
-         (.on (js/jQuery "div.users-filter input, div.badges-filter input") "keyup" redraw-map!)
+         (.on (js/jQuery "div.users-filter input, div.badges-filter input") "keyup change" redraw-map!)
 
          (.on (js/jQuery "input[name=map-type]") "change"
               (fn [e]
@@ -137,6 +152,11 @@
      }))
 
 (defn handler [site-navi]
-  (let [visible (atom "users")]
+  (let [state (atom {:tag {:value "" :autocomplete {}}})]
+    (ajax/GET
+      (path-for "/obpv1/location/explore/filters" false)
+      {:handler
+       (fn [data]
+         (swap! state assoc-in [:tag    :autocomplete] (reduce (fn [coll v] (assoc coll v v)) {} (:tag_name    data))))})
     (fn []
-      (layout/default site-navi [map-view]))))
+      (layout/default site-navi [map-view state]))))
