@@ -2,12 +2,21 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.pprint :refer [pprint]]
+            [clojure.java.jdbc :as jdbc]
             [yesql.core :refer [defqueries]]
             [salava.core.util :as u]
             [salava.location.country :as c]
             ))
 
 (defqueries "sql/location/queries.sql")
+
+(defn set-location-reset [ctx user-id]
+  (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+    {:success (and
+                (boolean (update-user-location-public! {:user user-id :pub 0} {:connection tx}))
+                (boolean (update-user-location! {:user user-id :lat nil :lng nil} {:connection tx}))
+                (boolean (reset-user-badge-location! {:user user-id} {:connection tx})))
+     }))
 
 (defn set-location-public [ctx user-id public?]
   {:success (boolean (update-user-location-public! {:user user-id :pub (if public? 1 0)} (u/get-db ctx)))})
@@ -42,30 +51,70 @@
 
 
 (defn explore-badge [ctx badge-id]
-  {:badges (select-explore-badge {:badge badge-id} (u/get-db ctx))})
+  {:badges (->> (select-explore-badge {:badge badge-id} (u/get-db ctx)) 
+                (map (fn [b]
+                       (assoc b :badge_url (str (u/get-full-path ctx) "/badge/info/" (:id b)))
+                       )))})
 
-(defn explore-taglist [ctx]
-  {:taglist (map :tag (select-explore-taglist {} (u/get-db ctx)))})
+
+(defn explore-filters [ctx]
+  {:tag_name    (sort (select-explore-taglist    {} (u/get-db-col ctx :tag)))
+   :badge_name  (sort (select-explore-badgelist  {} (u/get-db-col ctx :name)))
+   :issuer_name (sort (select-explore-issuerlist {} (u/get-db-col ctx :name)))
+   })
 
 
-(defmulti explore-list (fn [kind logged-in? & rest]
-                          (case kind
-                            :users  (if logged-in? :users  :users-public)
-                            :badges (if logged-in? :badges :badges-public)
-                            )))
+(defn explore-list-users [ctx logged-in? opt]
+  (let [;; Get all user ids in provided map box
+        user-ids
+        (select-explore-user-ids-latlng (select-keys opt [:max_lat :max_lng :min_lat :min_lng]) (u/get-db-col ctx :id))
+        ;; Build a list of filter functions from query parameters
+        filters
+        (cond-> []
+          (not logged-in?)
+          (conj (fn [ids] (select-explore-user-ids-public {:user ids} (u/get-db-col ctx :id))))
 
-(defmethod explore-list :users [_ _ ctx opt]
-  {:users (map (fn [u] (assoc u :user_url (str (u/get-full-path ctx) "/user/profile/" (:id u))))
-               (select-explore-users (select-keys opt [:max_lat :max_lng :min_lat :min_lng]) (u/get-db ctx)))})
+          (not (string/blank? (:user_name opt)))
+          (conj (fn [ids] (select-explore-user-ids-name {:user ids :name (str "%" (:user_name opt) "%")} (u/get-db-col ctx :id))))
+          )
+        ;; Get final filtered user id list
+        filtered-user-ids
+        (reduce (fn [coll f] (if (seq coll) (f coll) [])) user-ids filters)
+        ]
 
-(defmethod explore-list :users-public [_ _ ctx opt]
-  {:users []}
-  )
+    (if (seq filtered-user-ids)
+      {:users (map (fn [u] (assoc u :user_url (str (u/get-full-path ctx) "/user/profile/" (:id u))))
+                   (select-explore-users {:user filtered-user-ids} (u/get-db ctx)))}
+      {:users []})))
 
-(defmethod explore-list :badges [_ _ ctx opt]
-  {:badges (map (fn [b] (assoc b :badge_url (str (u/get-full-path ctx) "/badge/info/" (:id b))))
-                (select-explore-badges (select-keys opt [:max_lat :max_lng :min_lat :min_lng]) (u/get-db ctx)))})
 
-(defmethod explore-list :badges-public [_ _ ctx opt]
-  {:badges []}
-  )
+(defn explore-list-badges [ctx logged-in? opt]
+  (let [;; Get all user_badge ids in provided map box
+        badge-ids
+        (select-explore-badge-ids-latlng (select-keys opt [:max_lat :max_lng :min_lat :min_lng]) (u/get-db-col ctx :id))
+        ;; Build a list of filter functions from query parameters
+        filters
+        (cond-> []
+          (not logged-in?)
+          (conj (fn [ids] (select-explore-badge-ids-public {:badge ids} (u/get-db-col ctx :id))))
+
+          (not (string/blank? (:tag_name opt)))
+          (conj (fn [ids] (select-explore-badge-ids-tag {:badge ids :tag (:tag_name opt)} (u/get-db-col ctx :id))))
+
+          (not (string/blank? (:badge_name opt)))
+          (conj (fn [ids] (select-explore-badge-ids-name {:badge ids :name (str "%" (:badge_name opt) "%")} (u/get-db-col ctx :id))))
+
+          (not (string/blank? (:issuer_name opt)))
+          (conj (fn [ids] (select-explore-badge-ids-issuer {:badge ids :issuer (str "%" (:issuer_name opt) "%")} (u/get-db-col ctx :id))))
+          )
+        ;; Get final filtered user_badge id list
+        filtered-badge-ids
+        (reduce (fn [coll f] (if (seq coll) (f coll) [])) badge-ids filters)]
+
+    (if (seq filtered-badge-ids)
+      {:badges (->> (select-explore-badges {:badge filtered-badge-ids} (u/get-db ctx))
+                    (map (fn [b]
+                           (assoc b :badge_url (str (u/get-full-path ctx) "/badge/info/" (:id b)))
+                           )))}
+      {:badges []})))
+

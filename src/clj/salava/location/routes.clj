@@ -36,6 +36,13 @@
                   :current-user current-user
                   (ok (l/set-location-public ctx (:id current-user) public)))
 
+             (PUT "/self/reset" []
+                  :summary "Remove locations from current user's profile and all badges. Requires authenticated user."
+                  :return ls/success
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (l/set-location-reset ctx (:id current-user))))
+
              (PUT "/user_badge/:badge" []
                   :summary "Set location for a single badge. Requires authenticated user."
                   :return ls/success
@@ -79,20 +86,19 @@
              (GET "/explore/users" []
                   :summary "Get public user locations for gallery"
                   :return ls/explore-users
-                  :query [params ls/explore-query]
+                  :query [params ls/explore-user-query]
                   :current-user current-user
-                  (ok (l/explore-list :users (pos? (:id current-user)) ctx params)))
+                  (ok (l/explore-list-users ctx (pos? (:id current-user)) params)))
 
              (GET "/explore/badges" []
                   :summary "Get public badge locations for gallery"
                   :return ls/explore-badges
-                  :query [params ls/explore-query]
+                  :query [params ls/explore-badge-query]
                   :current-user current-user
-                  (ok (l/explore-list :badges (pos? (:id current-user)) ctx params)))
+                  (ok (l/explore-list-badges ctx (pos? (:id current-user)) params)))
 
-             (GET "/explore/taglist" []
-                  :summary "Get list of tags available for public badges."
-                  :return ls/explore-taglist
-                  :current-user current-user
-                  (ok (l/explore-taglist ctx)))
+             (GET "/explore/filters" []
+                  :summary "Get list of tags, badge and issuer names available for public badges."
+                  :return ls/explore-filters
+                  (ok (l/explore-filters ctx)))
              )))
