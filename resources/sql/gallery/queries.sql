@@ -1,11 +1,14 @@
 -- name: select-users-public-badges
-SELECT ub.id, badge.id AS badge_id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url
+SELECT ub.id, badge.id AS badge_id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.expires_on, ub.visibility, ub.mtime, ub.badge_id, ub.assertion_url, ic.name AS issuer_content_name, ic.url AS issuer_content_url,
+COUNT(ube.id) AS user_endorsements_count, COUNT(DISTINCT bec.endorsement_content_id) AS endorsement_count
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = ub.badge_id)
+LEFT JOIN user_badge_endorsement AS ube ON (ube.user_badge_id = ub.id) AND ube.status = 'accepted'
 WHERE (ub.visibility = 'public' OR ub.visibility = :visibility) AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > unix_timestamp()) AND ub.user_id = :user_id
 GROUP BY ub.id
 ORDER BY ub.ctime DESC
@@ -27,7 +30,7 @@ SELECT country FROM user AS u
 
 --name: select-profile-countries
 SELECT country FROM user AS u
-               WHERE profile_visibility = 'public'
+               WHERE profile_visibility = 'public' OR profile_visibility = 'internal' AND activated = 1
                GROUP BY country
                ORDER BY country
 
@@ -253,3 +256,25 @@ WHERE bct.tag IN (SELECT tag FROM badge_content_tag AS bct
       	      	 WHERE bbc.badge_id IN  (:badge_ids))
 AND bbc.badge_id IN (SELECT DISTINCT badge_id FROM badge WHERE published = 1 and recipient_count > 0)
 GROUP BY bct.tag
+
+--name: gallery-badges-count
+SELECT COUNT(DISTINCT id) AS badges_count FROM badge WHERE published = 1 AND recipient_count > 0
+
+--name: gallery-pages-count
+SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibility = 'internal') AND deleted = 0
+
+--name: gallery-profiles-count
+SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1
+
+--name: gallery-badges-count-since-last-login
+SELECT COUNT(se.id) AS badges_count FROM social_event AS se
+JOIN user_badge AS ub ON se.object = ub.id
+WHERE se.verb = 'publish' AND se.type = 'badge' AND se.mtime > :last_login AND ub.deleted = 0 AND ub.revoked = 0 AND subject != :user_id
+
+--name: gallery-pages-count-since-last-login
+SELECT COUNT(se.id) AS pages_count FROM social_event AS se
+JOIN page AS p ON se.object = p.id
+WHERE se.verb = 'publish' AND se.type = 'page' AND se.mtime > :last_login AND p.deleted = 0 AND subject != :user_id
+
+--name: gallery-profiles-count-since-last-login
+SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND ctime > :last_login

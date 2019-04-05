@@ -15,7 +15,9 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :refer [pending-badge-content]]
             [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
-            [salava.badge.ui.modal :as bm]))
+            [salava.badge.ui.modal :as bm]
+            [salava.badge.ui.endorsement :refer [pending-endorsements]]
+            [salava.admin.ui.helper :refer [admin?]]))
 
 
 (defn init-data [state]
@@ -25,7 +27,7 @@
                 (swap! state assoc :events (:events data)
                                    :initial false
                                    :tips (:tips data)))})
-  (ajax/GET
+  #_(ajax/GET
     (path-for "/obpv1/social/pending_badges" true)
     {:handler (fn [data]
                 (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
@@ -47,7 +49,7 @@
     (into [:div] (for [ item (clojure.string/split-lines message)]
                    [:p item]))]])
 
-(defn update-status [id new-status state]
+#_(defn update-status [id new-status state]
   (ajax/POST
      (path-for (str "/obpv1/badge/set_status/" id))
      {:response-format :json
@@ -57,7 +59,7 @@
                  (init-data state) )
       :error-handler (fn [{:keys [status status-text]}])}))
 
-(defn badge-alert [state]
+#_(defn badge-alert [state]
   (if (:badge-alert @state)
     [:div {:class "alert alert-success"}
      (case (:badge-alert @state)
@@ -65,10 +67,10 @@
        "declined" (t :badge/Badgedeclined)
        "")]))
 
-(defn badge-pending [badge state]
+#_(defn badge-pending [badge state]
   [:div.row {:key (:id badge)}
    [:div.col-md-12
-    [:div.badge-container-pending
+    [:div.badge-container-pending.thumbnail
      [pending-badge-content badge]
      [:div {:class "row button-row"}
       [:div.col-md-12
@@ -85,7 +87,7 @@
                               (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
         (t :badge/Declinebadge)]]]]]])
 
-(defn badges-pending [state]
+#_(defn badges-pending [state]
   (if (:spinner @state)
     [:div.ajax-message
      [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -414,17 +416,18 @@
   (let [events (:events @state)
         tips (:tips @state)
         initial (:initial @state)
-        admin-events (or (:admin-events @state) nil)
+        admin-events (or (filter #(= "ticket" (:verb %)) events) #_(:admin-events @state) nil)
         reload-fn (fn [] (init-data state))]
     [:div {:class "my-badges pages"}
 
      [m/modal-window]
-     [badge-alert state]
+     #_[badge-alert state]
      [pending-connections reload-fn]
-     [badges-pending state]
+     [pending-endorsements]
+     #_[badges-pending state]
      (if (not-activated?)
        (not-activated-banner))
-     (if admin-events
+     (if (and (admin?) admin-events)
        [:div.row
         (tip-event (report-ticket-tip admin-events) state)]
        )
@@ -455,7 +458,7 @@
 
     (init-data state)
     (fn []
-      (layout/default site-navi [content state]))))
+      (layout/default-no-sidebar site-navi [content state]))))
 
 
 

@@ -15,6 +15,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.db :as u]
             [salava.badge.verify :as v]
+            [salava.badge.endorsement :as e]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -28,7 +29,8 @@
              (layout/main ctx "/import")
              #_(layout/main ctx "/export")
              (layout/main ctx "/receive/:id")
-             (layout/main ctx "/application"))
+             (layout/main ctx "/application")
+             (layout/main ctx "/user/endorsements"))
 
     (context "/obpv1/badge" []
              :tags  ["badge"]
@@ -121,13 +123,13 @@
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
-                   :body-params [visibility :- (s/enum "private" "public")]
+                   :body-params [visibility :- (s/enum "private" "public" "internal")]
                    :summary "Set badge visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (if (:private current-user)
                      (forbidden)
-                     (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user))))))
+                     (ok (b/set-visibility! ctx badgeid visibility (:id current-user)))))
 
              (POST "/set_status/:user-badge-id" []
                    :path-params [user-badge-id :- Long]
@@ -295,4 +297,65 @@
                    :summary "Set evidence visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user)))))))
+                   (ok (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user))))
+
+             (POST "/endorsement/:user-badge-id" []
+                   :return {:id s/Int :status (s/enum "success" "error")}
+                   :path-params [user-badge-id :- Long]
+                   :body-params [content :- s/Str]
+                   :summary "Endorse user badge"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
+
+             (GET "/user/endorsement/:user-badge-id" []
+                  :return schemas/UserEndorsement
+                  :path-params [user-badge-id :- Long]
+                  :summary "Get user badge endorsements"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (e/user-badge-endorsements ctx user-badge-id true)))
+
+             (DELETE "/endorsement/:user-badge-id/:endorsement-id" []
+                     :return {:status (s/enum "success" "error")}
+                     :path-params [user-badge-id :- Long
+                                   endorsement-id :- Long]
+                     :summary "Delete endorsement"
+                     :auth-rules access/authenticated
+                     :current-user current-user
+                     (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user) ))
+                     )
+             (POST "/endorsement/update_status/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")
+                                 user_badge_id :- s/Int]
+                   :summary "Update endorsement status"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
+
+             (POST "/endorsement/edit/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [content :- s/Str
+                                 user_badge_id :- s/Int]
+                   :summary "Edit endorsement"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
+
+             (GET "/user/pending_endorsement" []
+                  :auth-rules access/authenticated
+                  :summary "Get pending badge endorsments"
+                  :current-user current-user
+                  (ok (e/received-pending-endorsements ctx (:id current-user)))
+                  )
+
+             (GET "/user/endorsements" []
+                  :auth-rules access/signed
+                  :summary "Get all user's endorsements"
+                  :current-user current-user
+                  (ok (e/all-user-endorsements ctx (:id current-user)))
+                  )
+             )))

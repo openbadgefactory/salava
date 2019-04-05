@@ -1,4 +1,4 @@
-(defproject salava "2.9.2"
+(defproject salava "3.0.2"
   :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
@@ -67,6 +67,9 @@
                  [metosin/komponentit "0.2.2"]
                  [com.cemerick/url "0.1.1"]
                  [cljsjs/clipboard "1.6.1-1"]
+                 [cljsjs/simplemde "1.11.2-0"]
+                 [prismatic/dommy "1.1.0"]
+
 
                  [org.webjars/jquery "2.2.4"]
                  [org.webjars/bootstrap "3.3.6"]

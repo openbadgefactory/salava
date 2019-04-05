@@ -70,4 +70,9 @@
                    :auth-rules access/signed
                    :current-user current-user
                    (ok {:users     (g/public-profiles ctx search-params (:id current-user))
-                        :countries (g/profile-countries ctx (:id current-user))})))))
+                        :countries (g/profile-countries ctx (:id current-user))}))
+             (GET "/stats" []
+                  :summary "Get gallery stats"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (g/gallery-stats ctx (:last-visited current-user) (:id current-user)))))))

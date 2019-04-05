@@ -10,7 +10,8 @@
             [clojure.string :refer [ends-with? blank?]]
             [salava.user.db :as ud]
             [ring.util.io :as io]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [salava.badge.endorsement :refer [user-badge-endorsements]]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -33,7 +34,9 @@
         badges (map #(-> %1
                          (dissoc :content)
                          (assoc :qr_code (str->qr-base64 (badge-url ctx (:id %1)))
-                           :endorsements (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
+                           :endorsements (->> [(vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
+                                               (user-badge-endorsements ctx (:id %1))]
+                                              flatten) #_(->> (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx))))
                            :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (badge-evidences ctx (:id %1) user-id))
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
@@ -51,8 +54,8 @@
 (defn process-markdown-helper [markdown id context]
   (let [file (java.io.File/createTempFile "markdown" ".pdf")]
     (try
-      (pdf/pdf [{} (markdown->clj-pdf {;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
-                                       :wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
+      (pdf/pdf [{} (markdown->clj-pdf {:wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
+
       true
       (catch Exception e
         (log/error (str "Markdown Error in Badge id:  "id " in " context))
@@ -63,8 +66,8 @@
   (if (== 1 (count markdown))
     markdown
     (if-let [p (process-markdown-helper markdown id context)]
-      (markdown->clj-pdf {:image {:x 10 :y 10}
-                          ;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
+      (markdown->clj-pdf {:image {:x 10 :y 10} ;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
+
                           :wrap {:global-wrapper :paragraph}} markdown)
       ""
       )))
@@ -148,16 +151,16 @@
                                                                                      [:spacer 2]])
                                                                             ) [:list {:numbered true :indent 0}] $evidences)])
 
-                                                               (when-not (empty? $endorsements)
+                                                               (when (seq $endorsements)
                                                                  [:paragraph.generic
                                                                   [:spacer 0]
                                                                   [:phrase {:size 12 :style :bold} (t :badge/BadgeEndorsedBy ul)]
                                                                   [:spacer 0]
                                                                   (into [:paragraph {:indent 0} ] (for [e $endorsements]
                                                                                                     [:paragraph
-                                                                                                     (:issuer_name e) "\n"
+                                                                                                     (if (or (= "-" (:issuer_name e)) (blank? (:issuer_name e))) (str (:first_name e) " " (:last_name e))(:issuer_name e)) "\n"
                                                                                                      [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (or (:issuer_url e) "-")] "\n"
-                                                                                                     [:chunk (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
+                                                                                                     [:chunk (if (number? (or (:issued_on e) (:mtime e))) (date-from-unix-time (long (* 1000 (or (:issued_on e) (:mtime e))))) (or (:issued_on e) (:mtime e)))] "\n"
                                                                                                      (process-markdown (:content e) $id "Endorsements")]))])
 
                                                                [:line {:dotted true}]

@@ -5,14 +5,15 @@
             [salava.core.ui.helper :refer [path-for current-path not-activated?]]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.i18n :refer [t]]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [salava.core.ui.popover :refer [info]]))
 
 (def followed?
   (atom nil))
 
 
 (defn follow-button-badge [badge-id followed?]
-  [:button {:class    "btn btn-primary follow "
+  [:div [:button {:class    "btn btn-primary follow "
             :disabled (if (not-activated?) "disabled" "")
             :on-click #(ajax/POST
                         (path-for (str "/obpv1/social/create_connection_badge/" badge-id))
@@ -24,7 +25,7 @@
                          :error-handler   (fn [{:keys [status status-text]}]
                                             (.log js/console (str status " " status-text))
                                             )})}
-   (str " " (t :social/Follow)) ])
+   (str " " (t :social/Follow)) ] [info {:content (t :social/Badgenotificationsinfo) :placement "left" :style {:vertical-align "super"}}]])
 
 (defn unfollow-ajax-post [badge-id]
   (ajax/POST

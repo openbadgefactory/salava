@@ -158,7 +158,6 @@
       (log/error (.toString ex))
       {:status "error" :message "badge/Errorwhileuploading" :reason (.getMessage ex)})))
 
-;;TODO Update recipient count and also make user badge connection
 (defn upload-badge-via-assertion [ctx assertion user]
   (let [user-id (:id user)]
     (log/info "assertion-badge-upload: got new upload from user id " user-id)

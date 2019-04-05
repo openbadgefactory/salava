@@ -11,20 +11,30 @@
             [reagent.session :as session]
             [clojure.string :refer [upper-case replace blank? starts-with?]]
             [salava.core.ui.rate-it :as r]
-            [salava.badge.ui.my :as my]
+            ;[salava.badge.ui.my :as my]
             [salava.core.ui.modal :as mo]
-            [salava.badge.ui.evidence :as evidence]))
+            [salava.badge.ui.evidence :as evidence]
+            [salava.badge.ui.endorsement :as endorsement]))
 
 
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
 
+(defn init-badges
+  ([state]
+   (ajax/GET
+     (path-for "/obpv1/badge" true)
+     {:handler (fn [data]
+                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                        :pending () ;(filter #(= "pending" (:status %)) data)
+                        :initializing false))})))
+
 (defn delete-badge [state]
   (ajax/DELETE
     (path-for (str "/obpv1/badge/" (:id @state)))
     {:handler  (fn []
-                 (my/init-data state)
-                 (navigate-to "/badge"))}))
+                 #_(init-badges state)
+                 #_(navigate-to "/badge"))}))
 
 (defn export-to-pdf [state]
   (let [lang-option "all"
@@ -341,7 +351,7 @@
                  (if (and (blank? properties) (not added-by-user?))
                    (evidence/toggle-show-evidence! id data state init-data show_evidence))
                  (conj r
-                       (when-not (blank? url)
+                       (when (and (not (blank? url)) (url? url))
                          [:div.panel.panel-default
                           [:div.panel-heading {:id (str "heading" id)
                                                :role "tab"}
@@ -505,15 +515,9 @@
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "evidence"}
                                                      (t :badge/Evidences)]]
-                                                   #_(when-not (empty? @(cursor state [:badge-settings :evidences]))
-                                                       [:div.form-group[:fieldset {:class "col-md-9 checkbox"}
-                                                                        [:div.col-md-12 [:label {:for "show-evidence"}
-                                                                                         [:input {:type      "checkbox"
-                                                                                                  :id        "show-evidence"
-                                                                                                  :on-change #(toggle-evidence state)
-                                                                                                  :checked   (get-in @state [:badge-settings :show_evidence])}]
-                                                                                         (t :badge/Evidencevisibility)]]]])
                                                    [:div [evidenceblock data state init-data]]
+
+                                                   [:div [endorsement/endorsement-list (:id @state)]]
 
                                                    (into [:div]
                                                          (for [f (plugin-fun (session/get :plugins) "block" "badge_settings")]

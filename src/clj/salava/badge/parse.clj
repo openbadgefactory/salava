@@ -84,6 +84,17 @@
                        :ctime s/Int
                        :mtime s/Int})
 
+(s/defschema UserEndorsement [{:id (s/maybe s/Int)
+                            :issuer_id (s/maybe s/Int)
+                            :issuer_name (s/maybe s/Str)
+                            :issuer_url (s/maybe s/Str)
+                            :user_badge_id (s/maybe s/Int)
+                            :external_id (s/maybe s/Str)
+                            :content s/Str
+                            :mtime s/Int
+                            :ctime s/Int
+                            }])
+
 
 (s/defschema UserBadge {:id (s/maybe s/Int)
                         :badge Badge
@@ -106,7 +117,8 @@
                         :issuer_verified (s/enum 0 1)
                         :show_evidence   (s/enum 0 1)
                         :last_checked (s/maybe s/Int)
-                        :old_id (s/maybe s/Int)})
+                        :old_id (s/maybe s/Int)
+                        :endorsement (s/maybe UserEndorsement)})
 
 
 (def valid-badge (s/validator UserBadge))
@@ -134,10 +146,10 @@
 
 (defn- email-variations [emails]
   (remove nil? (mapcat #(list %
-                 (string/upper-case %)
-                 (string/lower-case %)
-                 (string/capitalize %)
-                 (capitalize-name %)) emails)))
+                              (string/upper-case %)
+                              (string/lower-case %)
+                              (string/capitalize %)
+                              (capitalize-name %)) emails)))
 
 ;;;
 
@@ -163,72 +175,74 @@
         evidence_url (q-url (:evidence assertion))]
 
     (assoc initial
-           :badge {:id ""
-                   :remote_url nil
-                   :remote_id nil
-                   :remote_issuer_id nil
-                   :issuer_verified 0
-                   :default_language_code ""
-                   :content [{:id ""
-                              :language_code ""
-                              :name (:name badge)
-                              :image_file (q-url (:image badge))
-                              :description (:description badge)
-                              :alignment []
-                              :tags (get badge :tags [])}]
-                   :criteria [{:id ""
-                               :language_code ""
-                               :url (q-url (:criteria badge))
-                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
-                   :issuer [{:id ""
-                             :language_code ""
-                             :name (str (:name issuer) ": " (:org issuer))
-                             :description (:description issuer)
-                             :url (q-url (:origin issuer))
-                             :email (:contact issuer)
-                             :endorsement []
-                             :image_file nil
-                             :revocation_list_url nil}]
-                   :creator nil
-                   :endorsement []
-                   :published 0
-                   :last_received 0
-                   :recipient_count 0}
-           :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
-           :expires_on (u/str->epoch (:expires assertion))
-           :evidence [(when-not (nil? evidence_url)
-                       {:id nil
-                         :user_badge_id nil
-                         :url evidence_url
-                         :narrative nil
-                         :name nil
-                         :description nil
-                         :genre nil
-                         :audience nil
-                         :ctime now
-                         :mtime now})])))
+      :badge {:id ""
+              :remote_url nil
+              :remote_id nil
+              :remote_issuer_id nil
+              :issuer_verified 0
+              :default_language_code ""
+              :content [{:id ""
+                         :language_code ""
+                         :name (:name badge)
+                         :image_file (q-url (:image badge))
+                         :description (:description badge)
+                         :alignment []
+                         :tags (get badge :tags [])}]
+              :criteria [{:id ""
+                          :language_code ""
+                          :url (q-url (:criteria badge))
+                          :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
+              :issuer [{:id ""
+                        :language_code ""
+                        :name (str (:name issuer) ": " (:org issuer))
+                        :description (:description issuer)
+                        :url (q-url (:origin issuer))
+                        :email (:contact issuer)
+                        :endorsement []
+                        :image_file nil
+                        :revocation_list_url nil}]
+              :creator nil
+              :endorsement []
+              :published 0
+              :last_received 0
+              :recipient_count 0}
+      :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
+      :expires_on (u/str->epoch (:expires assertion))
+      :evidence [(when-not (nil? evidence_url)
+                   {:id nil
+                    :user_badge_id nil
+                    :url evidence_url
+                    :narrative nil
+                    :name nil
+                    :description nil
+                    :genre nil
+                    :audience nil
+                    :ctime now
+                    :mtime now})]
+      :endorsement []
+      )))
 
 
 ; old v0.5.0 badge content
 #_{:badge_url    nil
-  :issuer_url   nil
-  :criteria_url (q-url (:criteria badge))
-  :creator_url  nil
-  :badge_content {}
-  :issuer_content {:id ""
-                   :name (str (:name issuer) ": " (:org issuer))
-                   :description (:description issuer)
-                   :url (q-url (:origin issuer))
-                   :email (:contact issuer)
-                   :image_file nil
-                   :revocation_list_url nil}
-  :criteria_content {:id ""
-                     :html_content criteria
-                     :markdown_text (http/alternate-get "text/x-markdown" criteria)}
-  :creator_content  nil
-  :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
-  :expires_on (u/str->epoch (:expires assertion))
-  :evidence_url (q-url (:evidence assertion))}
+   :issuer_url   nil
+   :criteria_url (q-url (:criteria badge))
+   :creator_url  nil
+   :badge_content {}
+   :issuer_content {:id ""
+                    :name (str (:name issuer) ": " (:org issuer))
+                    :description (:description issuer)
+                    :url (q-url (:origin issuer))
+                    :email (:contact issuer)
+                    :image_file nil
+                    :revocation_list_url nil}
+   :criteria_content {:id ""
+                      :html_content criteria
+                      :markdown_text (http/alternate-get "text/x-markdown" criteria)}
+   :creator_content  nil
+   :issued_on  (u/str->epoch (or (:issued_on assertion) (:issuedOn assertion)))
+   :expires_on (u/str->epoch (:expires assertion))
+   :evidence_url (q-url (:evidence assertion))}
 
 ;;
 
@@ -246,15 +260,15 @@
                       :content (get-in e [:claim :endorsementComment] "")
                       :issued_on (u/str->epoch (:issuedOn e))
                       :issuer (as-> (:issuer e) $
-                                (if (map? $) $ (http/json-get $))
-                                {:id (:id $)
-                                 :language_code ""
-                                 :name (:name $)
-                                 :description (:description $)
-                                 :url (:url $)
-                                 :email (:email $)
-                                 :image_file (:image $)
-                                 :revocation_list_url nil})}
+                                    (if (map? $) $ (http/json-get $))
+                                    {:id (:id $)
+                                     :language_code ""
+                                     :name (:name $)
+                                     :description (:description $)
+                                     :url (:url $)
+                                     :email (:email $)
+                                     :image_file (:image $)
+                                     :revocation_list_url nil})}
                      nil)))
             (remove nil?)
             (map (fn [e]
@@ -264,6 +278,32 @@
                                    http/json-get
                                    (get-endorsement (dec depth))))
                      (assoc-in e [:issuer :endorsement] [])))))))))
+
+(defn- get-assertion-endorsement [assertion]
+  (let [endorsement (:endorsement assertion)]
+    (if (empty? endorsement)
+      []
+      (->> endorsement
+           (map #(if (map? %) {:id nil
+                               :external_id (:id %)
+                               :user_badge_id nil
+                               :issuer_id nil
+                               :issuer_name (get-in % [:issuer :name] nil)
+                               :issuer_url (get-in % [:issuer :id] nil)
+                               :content (get-in % [:claim :endorsementComment])
+                               :ctime (u/str->epoch (:issuedOn %))
+                               :mtime (u/str->epoch (:issuedOn %))}
+
+                   (http/json-get %)))
+           (map (fn [e] {:id nil
+                         :external_id (:id e)
+                         :user_badge_id nil
+                         :issuer_id nil
+                         :issuer_name (get-in e [:issuer :name] nil)
+                         :issuer_url (get-in e [:issuer :id] nil)
+                         :content (get-in e [:claim :endorsementComment])
+                         :ctime (u/str->epoch (:issuedOn e))
+                         :mtime (u/str->epoch (:issuedOn e))}))))))
 
 (defn- get-alignment [badge]
   (map (fn [a]
@@ -355,39 +395,41 @@
                    ;; list of evidences
                    (coll? (:evidence assertion)) (mapv (fn [e]
                                                          {:id nil
-                                                            :user_badge_id nil
-                                                            :url (:id e)
-                                                            :narrative (:narrative e)
-                                                            :name (:name e)
-                                                            :description (:description e)
-                                                            :genre (:genre e)
-                                                            :audience (:audience e)
-                                                            :ctime now
-                                                            :mtime now}) (:evidence assertion))
+                                                          :user_badge_id nil
+                                                          :url (:id e)
+                                                          :narrative (:narrative e)
+                                                          :name (:name e)
+                                                          :description (:description e)
+                                                          :genre (:genre e)
+                                                          :audience (:audience e)
+                                                          :ctime now
+                                                          :mtime now}) (:evidence assertion))
                    :else [])
 
         badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
         related (->> (get badge :related [])
                      (map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
-        default-language (get badge (keyword "@language") "")]
+        default-language (get badge (keyword "@language") "")
+        endorsement (get-assertion-endorsement assertion)]
 
     (assoc initial
-           :badge (merge {:id ""
-                          :remote_url nil
-                          :remote_id nil
-                          :remote_issuer_id nil
-                          :issuer_verified 0
-                          :default_language_code default-language
-                          :published 0
-                          :last_received 0
-                          :recipient_count 0
-                          }
-                          (apply merge-with (cons concat (map parser (cons badge related)))))
-           :issued_on  (u/str->epoch (:issuedOn assertion))
-           :expires_on (u/str->epoch (:expires assertion))
-           :evidence evidence
-           )))
+      :badge (merge {:id ""
+                     :remote_url nil
+                     :remote_id nil
+                     :remote_issuer_id nil
+                     :issuer_verified 0
+                     :default_language_code default-language
+                     :published 0
+                     :last_received 0
+                     :recipient_count 0
+                     }
+                    (apply merge-with (cons concat (map parser (cons badge related)))))
+      :issued_on  (u/str->epoch (:issuedOn assertion))
+      :expires_on (u/str->epoch (:expires assertion))
+      :evidence evidence
+      :endorsement endorsement
+      )))
 ;;;
 
 (defmethod badge-content :default [initial assertion]
@@ -410,76 +452,78 @@
                       :json_url creator-url}]))]
 
     (assoc initial
-           :badge {:id ""
-                   :remote_url nil
-                   :remote_id nil
-                   :remote_issuer_id nil
-                   :issuer_verified 0
-                   :default_language_code ""
-                   :content [{:id ""
-                              :language_code ""
-                              :name (:name badge)
-                              :image_file (:image badge)
-                              :description (:description badge)
-                              :alignment (get badge :alignment [])
-                              :tags (get badge :tags [])}]
-                   :criteria [{:id ""
-                               :language_code ""
-                               :url (:criteria badge)
-                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
-                   :issuer [{:id ""
-                             :language_code ""
-                             :name (:name issuer)
-                             :description (:description issuer)
-                             :url (:url issuer)
-                             :email (:email issuer)
-                             :image_file nil
-                             :endorsement []
-                             :revocation_list_url (:revocationList issuer)}]
-                   :creator creator
-                   :endorsement []
-                   :published 0
-                   :last_received 0
-                   :recipient_count 0}
-           :issued_on  (u/str->epoch (:issuedOn assertion))
-           :expires_on (u/str->epoch (:expires assertion))
-           :evidence [(when-not (nil? evidence_url)
-                        {:id nil
-                         :user_badge_id nil
-                         :url evidence_url
-                         :narrative nil
-                         :name nil
-                         :description nil
-                         :genre nil
-                         :audience nil
-                         :ctime now
-                         :mtime now})])))
+      :badge {:id ""
+              :remote_url nil
+              :remote_id nil
+              :remote_issuer_id nil
+              :issuer_verified 0
+              :default_language_code ""
+              :content [{:id ""
+                         :language_code ""
+                         :name (:name badge)
+                         :image_file (:image badge)
+                         :description (:description badge)
+                         :alignment (get badge :alignment [])
+                         :tags (get badge :tags [])}]
+              :criteria [{:id ""
+                          :language_code ""
+                          :url (:criteria badge)
+                          :markdown_text (http/alternate-get "text/x-markdown" criteria)}]
+              :issuer [{:id ""
+                        :language_code ""
+                        :name (:name issuer)
+                        :description (:description issuer)
+                        :url (:url issuer)
+                        :email (:email issuer)
+                        :image_file nil
+                        :endorsement []
+                        :revocation_list_url (:revocationList issuer)}]
+              :creator creator
+              :endorsement []
+              :published 0
+              :last_received 0
+              :recipient_count 0}
+      :issued_on  (u/str->epoch (:issuedOn assertion))
+      :expires_on (u/str->epoch (:expires assertion))
+      :evidence [(when-not (nil? evidence_url)
+                   {:id nil
+                    :user_badge_id nil
+                    :url evidence_url
+                    :narrative nil
+                    :name nil
+                    :description nil
+                    :genre nil
+                    :audience nil
+                    :ctime now
+                    :mtime now})]
+      :endorsement []
+      )))
 
 ; old v1.0/v1.1 badge content
 #_{:badge_url    (:badge assertion)
-            :issuer_url   (:issuer badge)
-            :criteria_url (:criteria badge)
-            :creator_url  creator-url
-            :badge_content {:id ""
-                            :name (:name badge)
-                            :image_file (:image badge)
-                            :description (:description badge)
-                            :alignment (get badge :alignment [])
-                            :tags (get badge :tags [])}
-            :issuer_content {:id ""
-                             :name (:name issuer)
-                             :description (:description issuer)
-                             :url (:url issuer)
-                             :email (:email issuer)
-                             :image_file (:image issuer)
-                             :revocation_list_url (:revocationList issuer)}
-            :criteria_content {:id ""
-                               :html_content criteria
-                               :markdown_text (http/alternate-get "text/x-markdown" criteria)}
-            :creator_content  creator
-            :issued_on  (u/str->epoch (:issuedOn assertion))
-            :expires_on (u/str->epoch (:expires assertion))
-            :evidence_url (:evidence assertion)}
+   :issuer_url   (:issuer badge)
+   :criteria_url (:criteria badge)
+   :creator_url  creator-url
+   :badge_content {:id ""
+                   :name (:name badge)
+                   :image_file (:image badge)
+                   :description (:description badge)
+                   :alignment (get badge :alignment [])
+                   :tags (get badge :tags [])}
+   :issuer_content {:id ""
+                    :name (:name issuer)
+                    :description (:description issuer)
+                    :url (:url issuer)
+                    :email (:email issuer)
+                    :image_file (:image issuer)
+                    :revocation_list_url (:revocationList issuer)}
+   :criteria_content {:id ""
+                      :html_content criteria
+                      :markdown_text (http/alternate-get "text/x-markdown" criteria)}
+   :creator_content  creator
+   :issued_on  (u/str->epoch (:issuedOn assertion))
+   :expires_on (u/str->epoch (:expires assertion))
+   :evidence_url (:evidence assertion)}
 ;;;
 
 (defmulti recipient (fn [_ asr] (class (:recipient asr))))
@@ -538,20 +582,20 @@
      (clj-http/with-connection-pool {:timeout 10 :threads 4 :insecure? false :default-per-route 10}
        (-> initial
            (assoc :id nil
-                  :user_id (:id user)
-                  :email   (recipient (:emails user) assertion)
-                  :status "pending"
-                  :visibility "private"
-                  :show_recipient_name 0
-                  :rating nil
-                  :ctime now
-                  :mtime now
-                  :deleted 0
-                  :revoked 0
-                  :issuer_verified 0
-                  :show_evidence 0
-                  :last_checked nil
-                  :old_id nil)
+             :user_id (:id user)
+             :email   (recipient (:emails user) assertion)
+             :status "pending"
+             :visibility "private"
+             :show_recipient_name 0
+             :rating nil
+             :ctime now
+             :mtime now
+             :deleted 0
+             :revoked 0
+             :issuer_verified 0
+             :show_evidence 0
+             :last_checked nil
+             :old_id nil)
            (badge-content assertion)
            valid-badge)))))
 
@@ -565,7 +609,7 @@
                          (and (string? input) (re-find #".+\..+\..+" input)) :jws)))
 
 (defmethod str->badge :json [user input]
-  (let [content (json/read-str input :key-fn keyword)
+  (let [content (-> (json/read-str input :key-fn keyword) (dissoc :endorsement))
         kind (get-in content [:verify :type] (get-in content [:verification :type]))]
     (if (or (= kind "hosted") (= kind "HostedBadge"))
       (str->badge user (get-in content [:verify :url] (:id content))))))

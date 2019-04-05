@@ -13,28 +13,32 @@
             [salava.user.ui.helper :as u]
             [salava.core.ui.modal :as mo]
             [salava.admin.ui.admintool :refer [admintool-gallery-page]]
-           ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
+            [salava.core.ui.page-grid :refer [page-grid-element]]
+            ; [salava.gallery.ui.badge-content :refer [badge-content-modal]]
             ))
 
 (defn open-modal [page-id]
   (ajax/GET
-     (path-for (str "/obpv1/page/view/" page-id))
-     {:handler (fn [data]
-                 (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
+    (path-for (str "/obpv1/page/view/" page-id))
+    {:handler (fn [data]
+                (m/modal! [view-page-modal (:page data)] {:size :lg}))}))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
 
 (defn init-data [state user-id]
+  (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
   (ajax/POST
     (path-for (str "/obpv1/gallery/pages/" user-id))
-    {:params {:country ""
+    {:params {:country (session/get-in [:filter-options :country] "")
               :owner ""}
      :handler (fn [data]
                 (let [{:keys [pages countries user-country]} data]
                   (swap! state assoc :pages pages
                          :countries countries
-                         :country-selected user-country)))}))
+                         :country-selected (session/get-in [:filter-options :country] user-country))))
+     :finally (fn []
+                (ajax-stop (cursor state [:ajax-message])))}))
 
 (defn fetch-pages [state]
   (let [{:keys [user-id country-selected owner-name]} @state
@@ -68,8 +72,8 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                              (reset! search-atom (.-target.value %))
-                              (search-timer state))}]]]))
+                               (reset! search-atom (.-target.value %))
+                               (search-timer state))}]]]))
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
@@ -81,8 +85,8 @@
                 :name      "country"
                 :value     @country-atom
                 :on-change #(do
-                             (reset! country-atom (.-target.value %))
-                             (fetch-pages state))}
+                              (reset! country-atom (.-target.value %))
+                              (fetch-pages state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
@@ -101,41 +105,42 @@
       [text-field :owner-name (t :gallery/Pageowner) (t :gallery/Searchbypageowner) state]])
    [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state]])
 
-(defn page-gallery-grid-element [element-data state]
-  (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data
-        badges (take 4 badges)]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:href "#" :on-click #(mo/open-modal [:page :view] {:page-id id})}
-          name]]
+#_(defn page-gallery-grid-element [element-data state]
+    (let [{:keys [id name user_id first_name last_name profile_picture badges mtime]} element-data
+          badges (take 4 badges)]
+      [:div {:class "col-xs-12 col-sm-6 col-md-4"
+             :key id}
+       [:div {:class "media grid-container"}
         [:div.media-content
-         [:div.page-owner
-          [:a {:href (path-for (str "/user/profile/" user_id))} first_name " " last_name]]
-         [:div.page-create-date.no-flip
-          (date-from-unix-time (* 1000 mtime) "minutes")]
-         (into [:div.page-badges]
-               (for [badge badges]
-                 [:img {:title (:name badge)
-                        :alt (:name badge)
-                        :src (str "/" (:image_file badge))}]))]]
-       [:div {:class "media-right"}
-        [:img {:src (u/profile-picture profile_picture)}]]]
-      (admintool-gallery-page id "page" state init-data user_id)]]))
+         [:div.media-body
+          [:div.media-heading
+           [:a.heading-link {:href "#" :on-click #(mo/open-modal [:page :view] {:page-id id})}
+            name]]
+          [:div.media-content
+           [:div.page-owner
+            [:a {:href (path-for (str "/user/profile/" user_id))} first_name " " last_name]]
+           [:div.page-create-date.no-flip
+            (date-from-unix-time (* 1000 mtime) "minutes")]
+           (into [:div.page-badges]
+                 (for [badge badges]
+                   [:img {:title (:name badge)
+                          :alt (:name badge)
+                          :src (str "/" (:image_file badge))}]))]]
+         [:div {:class "media-right"}
+          [:img {:src (u/profile-picture profile_picture)}]]]
+        (admintool-gallery-page id "page" state init-data user_id)]]))
 
 (defn page-gallery-grid [state]
   (let [pages (:pages @state)
         order (keyword (:order @state))
         pages (if (= order :mtime)
-                 (sort-by order > pages)
-                 (sort-by order pages))]
+                (sort-by order > pages)
+                (sort-by order pages))]
     (into [:div {:class "row wrap-grid"
                  :id    "grid"}]
           (for [element-data pages]
-            (page-gallery-grid-element element-data state)))))
+            (page-grid-element element-data {:state state :init-data init-data :type "gallery"})
+            #_(page-gallery-grid-element element-data state)))))
 
 (defn content [state]
   [:div
@@ -155,7 +160,7 @@
         state (atom {:user-id user-id
                      :pages []
                      :countries []
-                     :country-selected "Finland"
+                     :country-selected (session/get-in [:filter-options :country] "Finland")
                      :owner-name ""
                      :order "mtime"
                      :timer nil

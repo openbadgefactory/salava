@@ -122,8 +122,8 @@
         [multiple-autocomplete
          {:value     @value
           :cb        (fn [item]  (do
-                                    (swap! value conj (:key item))
-                                    (taghandler state @value)))
+                                   (swap! value conj (:key item))
+                                   (taghandler state @value)))
           :remove-cb (fn [x] (do
                                (swap! value disj x)
                                (taghandler state @value)))
@@ -135,18 +135,22 @@
 
 
 (defn init-data [state init-params]
+  (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
   (ajax/GET
-   (path-for "/obpv1/gallery/badges")
-   {:params  init-params
-    :handler (fn [data]
-               (let [{:keys [badges countries user-country tags badge_count]} data]
-                 (value-helper state tags)
-                 (swap! state assoc
-                        :page_count (inc (:page_count @state))
-                        :badges badges
-                        :badge_count badge_count
-                        :countries countries
-                        :country-selected user-country)))}))
+    (path-for "/obpv1/gallery/badges")
+    {:params  init-params
+     :handler (fn [data]
+                (let [{:keys [badges countries user-country tags badge_count]} data]
+                  (value-helper state tags)
+                  ;(prn init-params)
+                  (swap! state assoc
+                         :page_count (inc (:page_count @state))
+                         :badges badges
+                         :badge_count badge_count
+                         :countries countries
+                         :country-selected (session/get-in [:filter-options :country] user-country))))
+     :finally (fn []
+                (ajax-stop (cursor state [:ajax-message])))}))
 
 
 (defn search-timer [state]
@@ -168,8 +172,8 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                              (reset! search-atom (.-target.value %))
-                              (search-timer state))}]]]))
+                               (reset! search-atom (.-target.value %))
+                               (search-timer state))}]]]))
 
 
 (defn country-selector [state]
@@ -218,14 +222,14 @@
                         :value        @text}
                        input-opts)]
         (let [items-matched (filter #(and
-                                      (not-empty @text)
-                                      (re-find (re-pattern (.toLowerCase (str @text))) (.toLowerCase (str (val %))))) items)]
+                                       (not-empty @text)
+                                       (re-find (re-pattern (.toLowerCase (str @text))) (.toLowerCase (str (val %))))) items)]
           (if (not-empty items-matched)
             (into [:div#autocomplete-items]
                   (for [[item-key item-value] items-matched]
                     [:div.autocomplete-item {:on-click #(do (reset! text "")
-                                                            ;(pick-fn {:key item-key :value item-value})
-                                                            )}
+                                                          ;(pick-fn {:key item-key :value item-value})
+                                                          )}
                      item-value]))))]))))
 
 
@@ -269,25 +273,25 @@
 
 (defn gallery-grid [state]
   (let [badges (:badges @state)]
-    [:div (into [:div {:class "row wrap-grid"
-                       :id    "grid"}]
-                (for [element-data badges]
-                  (badge-grid-element element-data state "gallery" fetch-badges)))
+    [:div#badges (into [:div {:class "row wrap-grid"
+                              :id    "grid"}]
+                       (for [element-data badges]
+                         (badge-grid-element element-data state "gallery" fetch-badges)))
      (load-more state)]))
 
 
 
 (defn content [state badge_id]
-(create-class {:reagent-render (fn []
-                                 [:div {:id "badge-gallery"}
-                                  [m/modal-window]
-                                  [gallery-grid-form state]
-                                  (if (:ajax-message @state)
-                                    [:div.ajax-message
-                                     [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                                     [:span (:ajax-message @state)]]
-                                    [gallery-grid state]
-                                    )])
+  (create-class {:reagent-render (fn []
+                                   [:div {:id "badge-gallery"}
+                                    [m/modal-window]
+                                    [gallery-grid-form state]
+                                    (if (:ajax-message @state)
+                                      [:div.ajax-message
+                                       [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                       [:span (:ajax-message @state)]]
+                                      [gallery-grid state]
+                                      )])
                  :component-did-mount (fn []
                                         (if badge_id
                                           (mo/open-modal [:gallery :badges] {:badge-id badge_id})))}))
@@ -296,7 +300,8 @@
 (defn init-values
   "take url params"[]
   (let [{:keys [country issuer-name order id badge-name recipient-name]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
-        query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
+        query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
+        country (session/get-in [:filter-options :country] country)]
     (-> query-params
         (assoc :country (if id "all" (or country (session/get-in [:user :country]) "all")))
         (assoc :page_count 0))))
@@ -311,7 +316,7 @@
                                 :page_count             0
                                 :badges                 []
                                 :countries              []
-                                :country-selected       "FI"
+                                :country-selected       (:country init-values) ;"FI"
                                 :tags                   ()
                                 :tags-badge-ids ()
                                 :full-tags              ()

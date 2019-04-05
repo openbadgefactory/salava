@@ -10,7 +10,8 @@
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [salava.core.time :refer [date-from-unix-time]]))
+            [salava.core.time :refer [date-from-unix-time]]
+            [salava.core.helper :refer [dump]]))
 
 (defn ajax-stop [ajax-message-atom]
   (reset! ajax-message-atom nil))
@@ -46,21 +47,22 @@
                :placeholder placeholder
                :value       @search-atom
                :on-change   #(do
-                              (reset! search-atom (.-target.value %))
-                              (search-timer state))}]]]))
+                               (reset! search-atom (.-target.value %))
+                               (search-timer state))}]]]))
 
 (defn country-selector [state]
   (let [country-atom (cursor state [:country-selected])]
+
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":")]
+     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ": ")]
      [:div.col-sm-10
       [:select {:class     "form-control"
                 :id        "country-selector"
                 :name      "country"
                 :value     @country-atom
                 :on-change #(do
-                             (reset! country-atom (.-target.value %))
-                             (fetch-users state))}
+                              (reset! country-atom (.-target.value %))
+                              (fetch-users state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
@@ -75,8 +77,8 @@
         [:input {:type "checkbox"
                  :checked @common-badges-atom
                  :on-change #(do
-                              (reset! common-badges-atom (not @common-badges-atom))
-                              (fetch-users state))}](str (t :gallery/Hideuserswithnocommonbadges))]]]]))
+                               (reset! common-badges-atom (not @common-badges-atom))
+                               (fetch-users state))}](str (t :gallery/Hideuserswithnocommonbadges))]]]]))
 
 (defn order-buttons [state]
   (let [order-atom (cursor state [:order_by])]
@@ -89,8 +91,8 @@
                 :type "radio"
                 :checked (= @order-atom "ctime")
                 :on-change #(do
-                             (reset! order-atom "ctime")
-                             (fetch-users state))}]
+                              (reset! order-atom "ctime")
+                              (fetch-users state))}]
        (t :core/bydatejoined)]
       [:label.radio-inline {:for "radio-name"}
        [:input {:id "radio-name"
@@ -98,8 +100,8 @@
                 :type "radio"
                 :checked (= @order-atom "name")
                 :on-change #(do
-                             (reset! order-atom "name")
-                             (fetch-users state))}]
+                              (reset! order-atom "name")
+                              (fetch-users state))}]
        (t :core/byname)]
       [:label.radio-inline {:for "radio-count"}
        [:input {:id "radio-count"
@@ -107,8 +109,8 @@
                 :type "radio"
                 :checked (= @order-atom "common_badge_count")
                 :on-change #(do
-                             (reset! order-atom "common_badge_count")
-                             (fetch-users state))}]
+                              (reset! order-atom "common_badge_count")
+                              (fetch-users state))}]
        (t :core/bycommonbadges)]]]))
 
 (defn profile-gallery-grid-form [state]
@@ -126,21 +128,22 @@
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
-      [:div.media-content
-       [:div.media-left
-        [:img {:src (profile-picture profile_picture)
-               :alt (str first_name " " last_name)}]]
-       [:div.media-body
-        [:div {:class "media-heading profile-heading"}
-         [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})} first_name " " last_name]]
-        [:div.media-profile
-         [:div.join-date
-          (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
-      [:div.common-badges
-       (if (= id current-user)
-         (t :gallery/ownprofile)
-         [:span common_badge_count " " (if (= common_badge_count 1)
-                                         (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]))
+      [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id}) :style {:text-decoration "none"}}
+       [:div.media-content
+        [:div.media-left
+         [:img {:src (profile-picture profile_picture)
+                :alt (str first_name " " last_name)}]]
+        [:div.media-body
+         [:div {:class "media-heading profile-heading"}
+          first_name " " last_name]
+         [:div.media-profile
+          [:div.join-date
+           (t :gallery/Joined) ": " (date-from-unix-time (* 1000 ctime))]]]]
+       [:div.common-badges
+        (if (= id current-user)
+          (t :gallery/ownprofile)
+          [:span common_badge_count " " (if (= common_badge_count 1)
+                                          (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]))
 
 (defn profile-gallery-grid [state]
   (let [users (:users @state)]
@@ -161,27 +164,34 @@
       [profile-gallery-grid state])]])
 
 (defn init-data [state]
-  (let [country (session/get-in [:user :country] "all")]
+  (let [country (session/get-in [:user :country] "all")
+        filter-options (session/get :filter-options nil)
+        common-badges? (if filter-options (:common-badges filter-options) true)
+        ajax-message-atom (cursor state [:ajax-message])]
+    (reset! ajax-message-atom (str (t :core/Loading) "..."))
     (ajax/POST
       (path-for (str "/obpv1/gallery/profiles/"))
-      {:params {:country country
+      {:params {:country (session/get-in [:filter-options :country] country)
                 :name ""
-                :common_badges true
+                :common_badges common-badges?
                 :order_by "ctime"}
        :handler (fn [{:keys [users countries]} data]
                   (swap! state assoc :users users
                          :countries countries
-                         :country-selected country))})))
+                         :country-selected (session/get-in [:filter-options :country] country)))
+       :finally (fn []
+                  (ajax-stop ajax-message-atom))})))
 
 (defn handler [site-navi]
-  (let [state (atom {:users []
-                     :countries []
-                     :country-selected "all"
-                     :name ""
-                     :order_by "ctime"
-                     :timer nil
-                     :ajax-message nil
-                     :common-badges? true})]
+  (let [ filter-options (session/get :filter-options nil)
+         state (atom {:users []
+                      :countries []
+                      :country-selected "all"
+                      :name ""
+                      :order_by "ctime"
+                      :timer nil
+                      :ajax-message nil
+                      :common-badges? (if filter-options (:common-badges filter-options) true)})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
