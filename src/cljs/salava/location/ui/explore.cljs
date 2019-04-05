@@ -21,7 +21,11 @@
                    "users"
                    (fn [u] #(mo/open-modal [:user :profile] {:user-id (:id u)}))
                    "badges"
-                   (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))]
+                   (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))
+        item-name (case kind
+                   "users"
+                   (fn [u] (str (:first_name u) " " (:last_name u)))
+                   "badges" :badge_name)]
     (ajax/GET
       (path-for (str "/obpv1/location/explore/" kind) false)
       {:params (merge opt {:max_lat (.getNorth bounds) :max_lng (.getEast bounds)
@@ -34,7 +38,7 @@
            (.addLayer
              layer-group
              (-> (js/L.latLng. (lu/noise (:lat item)) (lu/noise (:lng item) 4))
-                 (js/L.marker. (clj->js {:icon (get icon kind)}))
+                 (js/L.marker. (clj->js {:icon (get icon kind) :title (item-name item)}))
                  (.on "click" (click-cb item))))))
        })))
 
