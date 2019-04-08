@@ -1,4 +1,4 @@
-(defproject salava "3.0.2"
+(defproject salava "3.1.0-SNAPSHOT"
   :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
@@ -76,6 +76,7 @@
                  [org.webjars/font-awesome "4.7.0"]
                  [org.webjars/es5-shim "4.5.9"]
                  [org.webjars/es6-shim "0.20.2"]
+                 [org.webjars/leaflet "1.4.0"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
                  [org.clojure/tools.logging "0.3.1"]

@@ -91,6 +91,11 @@
              [:div (t :user/Emailnotificationsdeactivetip)])
            ]])
        (user-connect-config)
+
+       (into [:div]
+         (for [f (plugin-fun (session/get :plugins) "block" "user_edit")]
+           [f]))
+
        [:div.row
         [:div.col-xs-12
          [:button {:class "btn btn-primary"

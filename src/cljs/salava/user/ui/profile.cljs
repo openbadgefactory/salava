@@ -194,6 +194,11 @@
          [page-grid pages profile_picture @page-small-view]
          (if (< 6 (count pages))
            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
+
+       (into [:div]
+         (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
+           [f user-id]))
+
       (reporttool1 user-id fullname "user")
       ]]))
 

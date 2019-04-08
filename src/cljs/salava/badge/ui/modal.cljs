@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url?]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url? plugin-fun]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -280,7 +280,12 @@
                                               (hyperlink url))
                                      (hyperlink url))]]
                                  ]))))
-                  [:div ] evidences)]])]]))
+                  [:div ] evidences)]])
+
+         (into [:div]
+               (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
+                 [f id]))
+      ]]))
 
 (defn modal-navi [state]
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
