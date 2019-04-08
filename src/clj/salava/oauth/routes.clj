@@ -80,6 +80,7 @@
                         {:keys [status user-id message]} r
                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                    (prn status)
 
                     (if (= status "success")
 
@@ -93,7 +94,7 @@
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
                           ;(u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)
-                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id (get-in req [:session :pending :user-badge-id]) false)))
+                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)

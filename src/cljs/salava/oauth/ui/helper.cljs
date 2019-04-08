@@ -12,7 +12,7 @@
          redirect-path (if deauthorize? "/oauth/facebook/deauthorize" "/oauth/facebook")
          redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for redirect-path)))
          facebook-url (str "https://www.facebook.com/dialog/oauth?client_id=" fb-app-id "&redirect_uri=" redirect-uri "&scope=email")]
-     
+
      (if fb-app-id
        [:a {:class "btn btn-oauth btn-facebook" :href facebook-url :rel "nofollow"}
         [:i {:class "fa fa-facebook"}]
@@ -25,7 +25,7 @@
 (defn linkedin-login-link [linkedin-app-id]
   (let [redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for "/oauth/linkedin")))
         random-state (-> (make-random-uuid) (uuid-string))
-        linkedin-url (str "https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_basicprofile%20r_emailaddress")]
+        linkedin-url (str "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_liteprofile%20r_emailaddress%20w_member_social") #_(str "https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_basicprofile%20r_emailaddress")]
     [:a {:class "btn btn-oauth btn-linkedin" :href linkedin-url :rel "nofollow"}
      [:i {:class "fa fa-linkedin"}]
      (t :oauth/LoginwithLinkedin)]))
@@ -33,7 +33,7 @@
 (defn linkedin-register-link [linkedin-app-id]
   (let [redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for "/oauth/linkedin")))
         random-state (-> (make-random-uuid) (uuid-string))
-        linkedin-url (str "https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_basicprofile%20r_emailaddress")]
+        linkedin-url (str "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_liteprofile%20r_emailaddress%20w_member_social") #_(str "https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_basicprofile%20r_emailaddress")]
     [:a {:class "btn btn-oauth btn-linkedin" :href linkedin-url :rel "nofollow"}
      [:i {:class "fa fa-linkedin"}]
      (t :oauth/RegisterwithLinkedin)]))
