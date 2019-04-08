@@ -44,7 +44,7 @@
 (defn filter-autocomplete [kind state]
   (let [filter (cursor state [kind])
         class-name (str (name kind) "-filter")
-        placeholder (keyword "location" (str kind "FilterField"))]
+        placeholder (keyword "location" (str (name kind) "FilterField"))]
     (fn []
       [autocomplete/autocomplete
        {:value (:value @filter)
