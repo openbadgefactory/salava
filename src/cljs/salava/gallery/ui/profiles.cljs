@@ -166,7 +166,9 @@
 (defn init-data [state]
   (let [country (session/get-in [:user :country] "all")
         filter-options (session/get :filter-options nil)
-        common-badges? (if filter-options (:common-badges filter-options) true)]
+        common-badges? (if filter-options (:common-badges filter-options) true)
+        ajax-message-atom (cursor state [:ajax-message])]
+    (reset! ajax-message-atom (str (t :core/Loading) "..."))
     (ajax/POST
       (path-for (str "/obpv1/gallery/profiles/"))
       {:params {:country (session/get-in [:filter-options :country] country)
@@ -176,7 +178,9 @@
        :handler (fn [{:keys [users countries]} data]
                   (swap! state assoc :users users
                          :countries countries
-                         :country-selected (session/get-in [:filter-options :country] country)))})))
+                         :country-selected (session/get-in [:filter-options :country] country)))
+       :finally (fn []
+                  (ajax-stop ajax-message-atom))})))
 
 (defn handler [site-navi]
   (let [ filter-options (session/get :filter-options nil)

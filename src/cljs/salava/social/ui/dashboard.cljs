@@ -181,7 +181,8 @@
        [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
          [:a {:href "social/stream"} [:span.title (t :social/Stream)]] [:span.badge (count (:events @state))]
-         [:i.fa.fa-angle-right.icon.small]]
+         [:span.icon.small]
+         #_[:i.fa.fa-angle-right.icon.small]]
         (if (not-activated?)
           [:div.content
            [:div {:style {:font-size "initial"}}
@@ -226,7 +227,8 @@
           [:div.heading_1
            [:i.fa.fa-certificate.icon]
            [:a {:href (path-for "/badge")} [:span.title (t :badge/Badges)]]
-           [:i.fa.fa-angle-right.icon.small]]
+           [:span.icon.small]
+           #_[:i.fa.fa-angle-right.icon.small]]
           (when-not (not-activated?)  [application-button "button"]); [:button.btn.button "Earn badges"]
           [:div.content
            [:div.stats
@@ -264,9 +266,10 @@
       [:div.heading_1
        [:i.fa.fa-search.icon]
        [:a {:href (path-for "/gallery")} [:span.title (t :gallery/Gallery)]]
-       [:i.fa.fa-angle-right.icon.small]]
+       [:span.icon.small]
+       #_[:i.fa.fa-angle-right.icon.small]]
       [:div.content
-       [:div.row
+       [:div
         [:div.col-sm-4.button-block
          [:div.info-block.badge-connection
           [:a {:href (path-for "/gallery/badges")}
@@ -316,7 +319,8 @@
       [:div
        [:div.heading_1 [:i.fa.fa-group.icon]
         [:a {:href (path-for "/connections")}[:span.title (t :social/Connections)]]
-        [:i.fa.fa-angle-right.icon.small]]
+        [:span.small.icon]
+        #_[:i.fa.fa-angle-right.icon.small]]
        [:div.content;.connections-block;.block-content
         [user-connections-stats]
         [:div.info-block
@@ -364,11 +368,12 @@
          [:i.fa.fa-user.icon]
          [:a {:href (str (path-for "/user/profile/" ) (get-in user [:user :id]))}[:span.title
                                                                                   (t :user/Profile)]]
-         [:i.fa.fa-angle-right.icon.small]]
+         [:span.small.icon]
+         #_[:i.fa.fa-angle-right.icon.small]]
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
 
-         [:div.row
+         [:div
           [:div.media
            [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]]
 
