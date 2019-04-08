@@ -33,11 +33,10 @@
        :handler
        (fn [data]
          (.clearLayers layer-group)
-         (lu/noise-seed)
          (doseq [item (get data (keyword kind))]
            (.addLayer
              layer-group
-             (-> (js/L.latLng. (lu/noise (:lat item)) (lu/noise (:lng item) 4))
+             (-> (js/L.latLng. (:lat item) (:lng item))
                  (js/L.marker. (clj->js {:icon (get icon kind) :title (item-name item)}))
                  (.on "click" (click-cb item))))))
        })))

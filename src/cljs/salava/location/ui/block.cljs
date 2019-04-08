@@ -69,9 +69,8 @@
                                  my-map (-> (js/L.map. (str "map-view-badge-" badge-id) lu/map-opt)
                                             (.setView lat-lng 8)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
-                             (lu/noise-seed)
                              (doseq [b (:badges data)]
-                               (-> (js/L.latLng. (lu/noise (:lat b)) (lu/noise (:lng b) 4))
+                               (-> (js/L.latLng. (:lat b) (:lng b))
                                    (js/L.marker. (clj->js {:icon lu/user-icon}))
                                    (.on "click" #(mo/open-modal [:user :profile] {:user-id (:user_id b)}))
                                    (.addTo my-map))))

@@ -34,13 +34,12 @@ WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL AND deleted = 0;
 
 --name: select-explore-badge
 SELECT ub.id, ub.user_id, ub.badge_id,
-    COALESCE(ub.location_lat, u.location_lat) AS lat,
-    COALESCE(ub.location_lng, u.location_lng) AS lng
+    ub.location_lat  AS badge_lat, u.location_lat AS user_lat,
+    ub.location_lng  AS badge_lng, u.location_lng AS user_lng
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.badge_id = :badge AND ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted' AND ub.deleted = 0
     AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
-HAVING lat IS NOT NULL AND lng IS NOT NULL
 ORDER BY ub.mtime DESC
 LIMIT 250;
 
@@ -102,8 +101,8 @@ WHERE ub.id IN (:badge) AND c.name LIKE :issuer;
 --name: select-explore-badges
 SELECT ub.id, ub.user_id, ub.badge_id,
     c.name AS badge_name, c.image_file AS badge_image, i.name AS issuer_name,
-    COALESCE(ub.location_lat, u.location_lat) AS lat,
-    COALESCE(ub.location_lng, u.location_lng) AS lng
+    ub.location_lat  AS badge_lat, u.location_lat AS user_lat,
+    ub.location_lng  AS badge_lng, u.location_lng AS user_lng
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
 INNER JOIN badge b ON ub.badge_id = b.id

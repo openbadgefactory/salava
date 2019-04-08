@@ -10,6 +10,16 @@
 
 (defqueries "sql/location/queries.sql")
 
+(defn- fake-rand [seed]
+  (let [x (* (Math/sin seed) 10000)]
+    (- x (Math/floor x))))
+
+(defn- noise
+  ([seed v] (noise (inc seed) v 1))
+  ([seed v multip]
+   (let [op (if (even? seed) - +)]
+     (op v (* (fake-rand seed) 0.0019 multip)))))
+
 (defn set-location-reset [ctx user-id]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
     {:success (and
@@ -51,7 +61,12 @@
 
 
 (defn explore-badge [ctx badge-id]
-  {:badges (select-explore-badge {:badge badge-id} (u/get-db ctx))})
+  {:badges (->> (select-explore-badge {:badge badge-id} (u/get-db ctx))
+                (map (fn [b]
+                       (-> b
+                           (assoc :lat (or (:badge_lat b) (noise (:id b) (:user_lat b)))
+                                  :lng (or (:badge_lng b) (noise (:id b) (:user_lng b) 3)))
+                           (dissoc :user_lat :badge_lat :user_lng :badge_lng)))))})
 
 
 (defn explore-filters [ctx logged-in?]
@@ -113,9 +128,13 @@
     (if (seq filtered-badge-ids)
       {:badges (->> (select-explore-badges {:badge filtered-badge-ids} (u/get-db ctx))
                     (map (fn [b]
-                           (assoc b :badge_url   (str (u/get-full-path ctx) "/badge/info/" (:id b))
-                                    :badge_image (str (u/get-site-url ctx) "/" (:badge_image b))
-                                  )
+                           (-> b
+                               (assoc :badge_url   (str (u/get-full-path ctx) "/badge/info/" (:id b))
+                                      :badge_image (str (u/get-site-url ctx) "/" (:badge_image b))
+                                      :lat (or (:badge_lat b) (noise (:id b) (:user_lat b)))
+                                      :lng (or (:badge_lng b) (noise (:id b) (:user_lng b) 3)))
+                               (dissoc :user_lat :badge_lat :user_lng :badge_lng))
+
                            )))}
       {:badges []})))
 

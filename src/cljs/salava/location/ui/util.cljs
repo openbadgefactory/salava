@@ -19,17 +19,3 @@
 (def badge-icon (js/L.Icon.Default.))
 
 (def badge-icon-ro (js/L.Icon.Default. (clj->js {:className "location-icon-readonly"})))
-
-(def seed (atom 3))
-
-(defn- fake-rand []
-  (let [x (* (js/Math.sin (swap! seed inc)) 10000)]
-    (- x (js/Math.floor x))))
-
-(defn noise
-  ([v] (noise v 1))
-  ([v m]
-   (-> v (+ (* (fake-rand) 0.003 m)) (- (* (fake-rand) 0.003 m)))))
-
-(defn noise-seed []
-  (reset! seed 3))
