@@ -23,6 +23,32 @@
        :lng (/ (apply + (map :lng items)) c)})))
 
 
+(defn badge-info-content [user-badge-id visible]
+  (create-class
+    {:reagent-render
+     (fn []
+       [:div.row {:style {:display (if @visible "block" "none")}}
+        [:div.col-md-12
+         [:h2.uppercase-header (t :location/Location)]
+         [:div {:id "map-view-badge" :style {:height "400px" :margin "20px 0"}}]]])
+
+     :component-did-mount
+     (fn []
+       (js/window.setTimeout
+         (fn []
+           (ajax/GET
+             (path-for (str "/obpv1/location/user_badge/" user-badge-id) true)
+             {:handler (fn [{:keys [lat lng]}]
+                         (if (and lat lng)
+                           (let [lat-lng (js/L.latLng. lat lng)
+                                 my-marker (js/L.marker. lat-lng (clj->js {:icon lu/badge-icon-ro}))
+                                 my-map (-> (js/L.map. "map-view-badge" lu/map-opt)
+                                            (.setView lat-lng 5)
+                                            (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
+                             (.addTo my-marker my-map))
+                           (reset! visible false)))})) 300)
+       )}))
+
 (defn gallery-badge-content [badge-id visible]
   (create-class
     {:reagent-render
@@ -46,7 +72,7 @@
                              (lu/noise-seed)
                              (doseq [b (:badges data)]
                                (-> (js/L.latLng. (lu/noise (:lat b)) (lu/noise (:lng b) 4))
-                                   (js/L.marker. (clj->js {:icon lu/badge-icon}))
+                                   (js/L.marker. (clj->js {:icon lu/user-icon}))
                                    (.on "click" #(mo/open-modal [:user :profile] {:user-id (:user_id b)}))
                                    (.addTo my-map))))
                            (reset! visible false))
@@ -106,7 +132,7 @@
              {:handler (fn [{:keys [lat lng]}]
                          (if (and lat lng)
                            (let [lat-lng (js/L.latLng. lat lng)
-                                 my-marker (js/L.marker. lat-lng (clj->js {:icon lu/user-icon}))
+                                 my-marker (js/L.marker. lat-lng (clj->js {:icon lu/user-icon-ro}))
                                  my-map (-> (js/L.map. (str "map-view-user-" user-id) lu/map-opt)
                                             (.setView lat-lng 8)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
@@ -187,6 +213,10 @@
                        (swap! state assoc :enabled false)))
           })
        )}))
+
+(defn ^:export badge_info [badge-id]
+  (let [visible (atom true)]
+    [badge-info-content badge-id visible]))
 
 (defn ^:export gallery_badge [badge-id]
   (let [visible (atom true)]
