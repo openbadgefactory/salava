@@ -42,19 +42,21 @@
                  (.on "click" (click-cb item))))))
        })))
 
-(defn tag-autocomplete [state]
-  (let [tag (cursor state [:tag])]
+(defn filter-autocomplete [kind state]
+  (let [filter (cursor state [kind])
+        class-name (str (name kind) "-filter")
+        placeholder (keyword "location" (str kind "FilterField"))]
     (fn []
       [autocomplete/autocomplete
-       {:value (:value @tag)
+       {:value (:value @filter)
         :cb    (fn [item]
-                 (swap! tag assoc :value (:key item))
-                 (.trigger (js/jQuery "div.badges-filter .tag-filter input") "change"))
+                 (swap! filter assoc :value (:key item))
+                 (.trigger (js/jQuery (str "div.badges-filter ."class-name " input")) "change"))
         :search-fields   [:value]
-        :items           (:autocomplete @tag)
-        :no-results-text (t :location/Notfound)
-        :placeholder     (t :location/Keyword)
-        :control-class   "form-control tag-filter"
+        :items           (:autocomplete @filter)
+        :no-results-text " "
+        :placeholder     (t placeholder)
+        :control-class   (str "form-control " class-name)
         :max-results     100
         }])))
 
@@ -94,20 +96,15 @@
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
-            [:input.form-control {:name "badge_name"
-                                  :type "text"
-                                  :placeholder (t :location/SearchBadges)}]
-            ]]
-          [:div.form-group.badges-filter {:style {:display "none"}}
-           [:div.col-md-6
-            [:input.form-control {:name "issuer_name"
-                                  :type "text"
-                                  :placeholder (t :location/SearchIssuers)}]
-            ]]
+            [filter-autocomplete :badge state]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
-            [tag-autocomplete state]]]
+            [filter-autocomplete :issuer state]]]
+
+          [:div.form-group.badges-filter {:style {:display "none"}}
+           [:div.col-md-6
+            [filter-autocomplete :tag state]]]
 
           ]
 
@@ -125,8 +122,8 @@
              query-opt (fn []
                          (case (.val (js/jQuery "input[name=map-type]:checked"))
                            "users"  {:user_name (.val (js/jQuery "input[name=user_name]"))}
-                           "badges" {:badge_name  (.val (js/jQuery "input[name=badge_name]"))
-                                     :issuer_name (.val (js/jQuery "input[name=issuer_name]"))
+                           "badges" {:badge_name  (.val (js/jQuery ".badge-filter input"))
+                                     :issuer_name (.val (js/jQuery ".issuer-filter input"))
                                      :tag_name    (.val (js/jQuery ".tag-filter input"))}))
 
              redraw-map! (fn []
@@ -140,7 +137,11 @@
 
          (.on my-map "moveend" redraw-map!)
 
-         (.on (js/jQuery "div.users-filter input, div.badges-filter input") "keyup change" redraw-map!)
+         (.on (js/jQuery "div.users-filter input, div.badges-filter input") "keyup change"
+              (fn [e]
+                (let [len (-> e .-target.value count)]
+                (when (or (= len 0) (>= len 3))
+                  (redraw-map!)))))
 
          (.on (js/jQuery "input[name=map-type]") "change"
               (fn [e]
@@ -156,11 +157,17 @@
      }))
 
 (defn handler [site-navi]
-  (let [state (atom {:tag {:value "" :autocomplete {}}})]
+  (let [state (atom {:tag    {:value "" :autocomplete {}}
+                     :badge  {:value "" :autocomplete {}}
+                     :issuer {:value "" :autocomplete {}}
+                     })]
     (ajax/GET
       (path-for "/obpv1/location/explore/filters" false)
       {:handler
        (fn [data]
-         (swap! state assoc-in [:tag    :autocomplete] (reduce (fn [coll v] (assoc coll v v)) {} (:tag_name    data))))})
+         (swap! state assoc-in [:tag    :autocomplete] (reduce (fn [coll v] (assoc coll v v)) {} (:tag_name    data)))
+         (swap! state assoc-in [:badge  :autocomplete] (reduce (fn [coll v] (assoc coll v v)) {} (:badge_name  data)))
+         (swap! state assoc-in [:issuer :autocomplete] (reduce (fn [coll v] (assoc coll v v)) {} (:issuer_name data)))
+         )})
     (fn []
       (layout/default site-navi [map-view state]))))
