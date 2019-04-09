@@ -48,7 +48,7 @@
 
 
 (defn badge-grid-element [element-data state badge-type init-data]
-  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsements_count]} element-data
+  (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsements_count otherids]} element-data
         expired? (bh/badge-expired? expires_on)
         obf_url (session/get :factory-url)
         metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge_icon"))]

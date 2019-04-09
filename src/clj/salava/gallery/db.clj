@@ -91,7 +91,6 @@
         (select-gallery-badges-order-by-ctime {:badge_ids badge_ids :limit limit :offset offset} (get-db ctx))))))
 
 
-
 (defn db-connect [ctx query params]
   (jdbc/with-db-connection
     [conn (:connection (get-db ctx))]
@@ -141,11 +140,17 @@
              nil)
            )) badges))
 
+
+(defn process-badge-versions [ctx badges]
+  (map (fn [b]
+         (let [other-badge-ids (->> (get-badge-ids ctx "all" nil (:name b) (:issuer_content_name b) nil nil nil) (remove #(= (:badge_id b) %)))]
+           (if (empty? other-badge-ids) b (assoc b :otherids other-badge-ids)))) badges))
+
 (defn get-gallery-badges
   "Get badge-ids"
   [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
   (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)
-        badges (remove nil? (badge-checker (select-badges ctx badge-ids order page_count)))]
+        badges (some->> (select-badges ctx badge-ids order page_count) (process-badge-versions ctx) (badge-checker) (remove nil?)) #_(remove nil? (badge-checker (select-badges ctx badge-ids order page_count)))]
     {:badges badges
      :tags (select-tags ctx badge-ids)
      :badge_count (badge-count (if-not (= (count badge-ids) (count badges)) badge-ids badges) page_count) }))
@@ -236,31 +241,76 @@
         (seq))))
 
 
-(defn public-multilanguage-badge-content
-  "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
-  [ctx badge-id user-id]
-  (let [badge-content (map (fn [content]
-                             (-> content
-                                 (update :criteria_content md->html)
-                                 (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
-                                 (dissoc :badge_content_id)))
-                           (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
-        {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
+#_(defn public-multilanguage-badge-content
+    "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
+    [ctx badge-id user-id]
+     (let [badge-content (map (fn [content]
+                                (-> content
+                                    (update :criteria_content md->html)
+                                    (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
+                                    (dissoc :badge_content_id)))
+                              (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
+           {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
 
-        rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
-        {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
-        ;recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
-        recipients (if user-id (select-badge-recipients-fix {:issuer_content_name issuer_content_name :description description :name name} (get-db ctx)))
-        badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating ;(update badge-data :criteria_content md->html)  ;badge-message-count ;followed?
-                     )]
-    (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
-              :public_users (->> recipients
-                                 (filter #(not= (:visibility %) "private"))
-                                 (map #(dissoc % :visibility))
-                                 distinct)
-              :private_user_count (->> recipients
-                                       (filter #(= (:visibility %) "private"))
-                                       count))))
+           rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
+           {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
+           ;recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
+           recipients (if user-id (select-badge-recipients-fix {:issuer_content_name issuer_content_name :description description :name name} (get-db ctx)))
+           badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating ;(update badge-data :criteria_content md->html)  ;badge-message-count ;followed?
+                        )]
+       (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
+                 :public_users (->> recipients
+                                    (filter #(not= (:visibility %) "private"))
+                                    (map #(dissoc % :visibility))
+                                    distinct)
+                 :private_user_count (->> recipients
+                                          (filter #(= (:visibility %) "private"))
+                                          count))))
+
+(defn aggregate-ratings [coll]
+  (let [rating (->> coll (map :average_rating) (remove #(nil? %)) (map double) (reduce + 0))
+        rating_count (->> coll (map :rating_count) (reduce + 0))]
+    {:average_rating (if (pos? rating_count) (/ rating rating_count) rating) :rating_count rating_count} ))
+
+(defn process-recipients [coll]
+  (->> coll
+       (group-by :id)
+       (reduce-kv
+         (fn [r k v]
+           (conj r (if (empty? (rest v))
+                     (first v) (if (some #(= (:visibility %) "public") v)
+                                 (->> v (filter #(= "public" (:visibility %))) first)
+                                 (first v))) )) [])))
+
+(defn public-multilanguage-badge-content "gallery badge fix"
+  ([ctx badge-id]
+   (map (fn [content]
+          (-> content
+              (update :criteria_content md->html)
+              (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
+              (dissoc :badge_content_id)))
+        (select-multi-language-badge-content {:id badge-id} (get-db ctx))))
+
+  ([ctx badge-id user-id]
+   (let [badge-content (public-multilanguage-badge-content ctx badge-id)
+         {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
+         {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
+         other-badge-ids (->> (get-badge-ids ctx "all" nil name issuer_content_name nil nil nil ) (remove #(= badge-id %)))
+         all-badge-ids (cons badge-id other-badge-ids)
+         rating (if (empty? other-badge-ids) (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
+                  (some->> (map #(select-common-badge-rating {:badge_id %} (into {:result-set-fn first} (get-db ctx))) all-badge-ids) (aggregate-ratings)))
+         recipients (if user-id (some->> (select-badge-recipients-fix-2 {:issuer_content_name issuer_content_name :name name} (get-db ctx)) (process-recipients)))
+         most-recent-content (if (empty? other-badge-ids) badge-content (->> (map #(public-multilanguage-badge-content ctx %) all-badge-ids) (sort-by #(:last_received (first %)) >) first))
+         badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content most-recent-content} rating)]
+     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
+               :public_users (->> recipients
+                                  (filter #(not= (:visibility %) "private"))
+                                  (map #(dissoc % :visibility))
+                                  distinct)
+               :private_user_count (->> recipients
+                                        (filter #(= (:visibility %) "private"))
+                                        count)
+               :otherids other-badge-ids))))
 
 
 (defn public-badge-content
