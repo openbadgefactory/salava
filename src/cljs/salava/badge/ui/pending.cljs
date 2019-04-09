@@ -185,6 +185,11 @@
                                 [:i {:class "fa fa-lock" }]
                                 [:label {:for "visibility-private"}
                                  (t :badge/Private)]]]]]]
+
+                           (into [:div]
+                                 (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
+                                   [f (:id badge)]))
+
                            [:hr.border]
                            [:button.btn.btn-primary {:on-click #(do
                                                                   (.preventDefault %)
