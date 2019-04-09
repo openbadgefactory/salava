@@ -1410,4 +1410,43 @@
     }
   }
 
+  #step-button {
+    background-color: $button-color;
+    position: relative;
+    margin-right: 20px;
+    border-radius: 3px;
+    display: inline-block;
+    padding: 6px 12px;
+
+    &:after {
+
+      width: 0;
+      height: inherit;
+      border-top: 17px solid transparent;
+      border-bottom: 19px inset transparent;
+      border-left: 17px solid #587ab3;
+      position: absolute;
+      content: "";
+      top: 0;
+      right: -16px;
+      z-index: 2;
+    }
+  }
+
+
+  #step-button > a {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    color: #fff;
+  }
+
+  #step-button:hover {
+    background-color: $button-hover;
+  }
+
+  #step-button:hover:after {
+    border-left-color: $button-hover;
+  }
+
 }

@@ -423,8 +423,8 @@
                                             (.preventDefault %)
                                             (ph/delete-page (get-in @state [:page :id])))}
        (t :core/Delete)]
-      #_[:div.wizard.pull-right
-         [:button  "Next"]
+      [:div.pull-right {:id "step-button"}
+         [:a  "Next"]
          ]]]
     ]])
 
