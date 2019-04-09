@@ -117,7 +117,7 @@
 
     (fn []
       [:div.form-group
-       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
+       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :gallery/Keywords) ":")]
        [:div.col-sm-10
         [multiple-autocomplete
          {:value     @value
@@ -129,7 +129,7 @@
                                (taghandler state @value)))
           :search-fields   [:value]
           :items           @autocomplete-items
-          :no-results-text (t :extra-application/Notfound)
+          :no-results-text (t :gallery/Notfound)
           :control-class   "form-control"
           }]]])))
 
