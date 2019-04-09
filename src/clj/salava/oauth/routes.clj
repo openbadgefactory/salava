@@ -32,7 +32,7 @@
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/social/stream"))[:session :identity] {:id user-id :role role :private private} ))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social"))[:session :identity] {:id user-id :role role :private private} ))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
@@ -56,7 +56,7 @@
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
                           ;(u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)
-                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id (get-in req [:session :pending :user-badge-id]) false)))
+                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
@@ -80,7 +80,6 @@
                         {:keys [status user-id message]} r
                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
                         accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
-                    (prn status)
 
                     (if (= status "success")
 
