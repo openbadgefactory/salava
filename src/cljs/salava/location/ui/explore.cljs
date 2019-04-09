@@ -69,6 +69,7 @@
 
          [:div.row
           [:div.col-md-12
+           [:p.help-block (t :location/exploreEnableHelp)]
            [:label.radio-inline
             [:input {:name "map-type"
                      :type "radio"

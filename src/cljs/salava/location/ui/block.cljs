@@ -180,7 +180,8 @@
                                         (ajax/PUT (path-for "/obpv1/location/self/reset") {:handler put-handler}))))
                        :checked (:enabled @state)}]
               (t :location/LocationEnabled)]
-             [:p.help-block (t :location/LocationEnabledInfo)]]
+             [:p.help-block (t :location/LocationEnabledInfo)]
+             [:p.help-block {:style {:display (if (:enabled @state) "block" "none")}} (t :location/LocationEnabledInfo2)]]
 
             [:div.checkbox {:style {:display (if (:enabled @state) "block" "none")}}
              [:label
