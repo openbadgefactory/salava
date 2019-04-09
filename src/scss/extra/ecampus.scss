@@ -350,6 +350,9 @@ select.form-control::-ms-expand {
     }
 
     .content {
+      .badges {
+        color: $text-color;
+      }
       .badge-connection {
         background-color: $button-color !important;
       }
