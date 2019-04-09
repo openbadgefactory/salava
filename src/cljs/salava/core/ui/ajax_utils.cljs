@@ -35,6 +35,13 @@
    (ajax/POST url
              (merge params {:response-format :json :keywords? true} (error-handler error-fn)))))
 
+(defn PUT
+  ([url params]
+   (PUT url params (fn [])))
+  ([url params error-fn]
+   (ajax/PUT url
+             (merge params {:response-format :json :keywords? true} (error-handler error-fn)))))
+
 (defn DELETE
   ([url params]
    (DELETE url params (fn [])))

@@ -18,12 +18,15 @@
   ["/assets/bootstrap/css/bootstrap.min.css"
    "/assets/bootstrap/css/bootstrap-theme.min.css"
    "/assets/font-awesome/css/font-awesome.min.css"
+   "/assets/leaflet/leaflet.css"
    "/css/rateit/rateit.css"
    "/css/simplemde.min.css"])
+
 
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
+   "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
 

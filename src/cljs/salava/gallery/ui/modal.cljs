@@ -13,7 +13,7 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
-            [salava.core.ui.helper :refer [path-for private?]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
             ;[salava.badge.ui.endorsement :refer [endorsement-modal-link]]
@@ -107,6 +107,10 @@
                  (if (> (count public_users) 0)
                    [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
+
+        (into [:div]
+              (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
+                [f badge_id]))
         ]]
       (if (and badge_id name)
         [reporttool1 badge_id name "badges"])]]
