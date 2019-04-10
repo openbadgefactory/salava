@@ -12,7 +12,16 @@ SELECT * FROM user WHERE id = :user;
 --name: select-user-badge-location
 SELECT COALESCE(ub.location_lat, u.location_lat) AS lat, COALESCE(ub.location_lng, u.location_lng) AS lng FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.id = :badge AND ub.user_id = :user AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
+WHERE (ub.user_id = :user OR ub.visibility != 'private')
+    AND ub.id = :badge AND ub.deleted = 0 AND ub.status = 'accepted'
+    AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
+
+--name: select-user-badge-location-public
+SELECT COALESCE(ub.location_lat, u.location_lat) AS lat, COALESCE(ub.location_lng, u.location_lng) AS lng FROM user_badge ub
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.id = :badge
+    AND u.location_public = 1 AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.visibility = 'public'
+    AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
 
 --name: update-user-location!
 UPDATE user SET location_lat = :lat, location_lng = :lng, mtime = UNIX_TIMESTAMP() WHERE id = :user;
