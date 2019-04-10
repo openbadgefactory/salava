@@ -18,13 +18,16 @@
                 :visibility visibility
                 :password password}
        :handler (fn [data]
+                  (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
+
+                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 5000)
                   (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
-                    (swap! state assoc :message (keyword (:message data))
+                    (swap! state assoc ;:message (keyword (:message data))
                            :page {:id id
                                   :tags tags
                                   :password password
                                   :visibility "public"})
-                    (navigate-to next-url)
+                    #_(navigate-to next-url)
                     )
                   )})))
 
@@ -94,14 +97,15 @@
                   :type "text"
                   :value @password-atom
                   :on-change #(reset! password-atom (.-target.value %))}]])
-      [:div.form-group
-       [:button {:class    "btn btn-primary"
-                 :on-click #(do
-                              (.preventDefault %)
-                              (save-settings state (str "/profile/page/preview/" id)))
-                 :disabled (and (empty? @password-atom)
-                                (= @visibility-atom "password"))}
-        (t :page/Save)]]]]))
+      #_[:div.form-group
+         [:button {:class    "btn btn-primary"
+                   :on-click #(do
+                                (.preventDefault %)
+                                (save-settings state (str "/profile/page/preview/" id)))
+                   :disabled (and (empty? @password-atom)
+                                  (= @visibility-atom "password"))}
+          (t :page/Save)]]]
+     [ph/manage-page-buttons (fn [] (save-settings state (str "/profile/page/preview/" id))) state (str "/profile/page/preview/" id) (str "/profile/page/edit_theme/" id) false]]))
 
 (defn init-data [state id]
   (ajax/GET
@@ -111,7 +115,7 @@
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
-        state (atom {:page {}
+        state (atom {:page {:id id}
                      :message nil})]
     (init-data state id)
     (fn []

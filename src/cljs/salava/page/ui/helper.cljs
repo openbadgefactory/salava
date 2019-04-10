@@ -212,30 +212,133 @@
     [:h1 header]]])
 
 (defn edit-page-buttons [id target save-function]
+  [:div {:class "row flip"
+         :id "buttons"}
+   [:div.col-xs-8.wizard
+    [:a {:class (if (= target :content) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/edit/" id)))}
+     [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
+     (t :page/Content)]
+    [:a {:class (if (= target :theme) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/edit_theme/" id)))}
+     [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
+     (t :page/Theme)]
+    [:a {:class (if (= target :settings) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/settings/" id)))}
+     [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
+     (t :page/Settings)]
+    [:a {:class (if (= target :preview) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/preview/" id)))}
+     [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
+     (t  :page/Preview)]]
+   [:div {:class "col-xs-4"
+          :id "buttons-right"}
+    #_[:a {:class "delete-link"
+           :title (t :page/Delete)
+           :on-click #(m/modal! (delete-page-modal id))}
+       [:i {:class "fa fa-trash"}]
+       (t :page/Delete)]
+    [:a {:class "btn btn-primary view-btn"
+         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
+         :href "#"}
+     (t :page/View)]]
+   [m/modal-window]])
+
+#_(defn next-page-btn [next-url]
+    [:div.pull-right {:id "step-button"}
+     [:a {:href "#" :on-click #(do
+                                 (.preventDefault %)
+                                 (navigate-to next-url))}  (t :core/Next)]])
+
+(defn block-specific-values [{:keys [type content badge tag format sort files]}]
+  (case type
+    "heading" {:type "heading" :size "h1" :content content}
+    "sub-heading" {:type "heading" :size "h2":content content}
+    "badge" {:format (or format "short") :badge_id (:id badge 0)}
+    "html" {:content content}
+    "file" {:files (map :id files)}
+    "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
+    nil))
+
+(defn prepare-blocks-to-save [blocks]
+  (for [block blocks]
+    (-> block
+        (select-keys [:id :type])
+        (merge (block-specific-values block)))))
+
+(defn save-page [{:keys [id name description blocks]} next-url]
+  (ajax/POST
+    (path-for (str "/obpv1/page/save_content/" id))
+    {:params {:name name
+              :description description
+              :blocks (prepare-blocks-to-save blocks)}
+     :handler (fn [] (navigate-to next-url))}))
+
+(defn manage-page-buttons [save-function state next-url previous-url preview?]
+  (create-class {:reagent-render   (fn []
+                                     [:div
+                                      [:div.row {:id "page-edit"
+                                                 :style {:margin-top "10px" :margin-bottom "10px"}}
+                                       [:div.col-md-12
+                                        (when previous-url [:div {:id "step-button-previous"}
+                                                             [:a {:href "#" :on-click #(do
+                                                                                         (.preventDefault %)
+                                                                                         (navigate-to previous-url))}  (t :core/Previous)]])
+                                        [:button {:class    "btn btn-primary"
+                                                  :on-click #(do
+                                                               (.preventDefault %)
+                                                               (save-function))}
+                                         (t :page/Save)]
+                                        [:button.btn.btn-warning {:on-click #(do
+                                                                               (.preventDefault %)
+                                                                               (navigate-to  "/profile/page"))}
+                                         (t :core/Cancel)]
+
+                                        [:button.btn.btn-danger {:on-click #(do
+                                                                              (.preventDefault %)
+                                                                              (delete-page (get-in @state [:page :id])))}
+                                         (t :core/Delete)]
+                                        (when-not preview?  [:div.pull-right {:id "step-button"}
+                                                             [:a {:href "#" :on-click #(do
+                                                                                         (.preventDefault %)
+                                                                                         (navigate-to next-url))}  (t :core/Next)]])]]
+
+                                      (when (:alert @state)
+                                        [:div.row
+                                         [:div.col-md-12
+                                          [:div {:class (str "alert " (case (get-in @state [:alert :status])
+                                                                        "success" "alert-success"
+                                                                        "error" "alert-warning"))
+                                                 :style {:display "block" :margin-bottom "20px"}}
+                                           (get-in @state [:alert :message] nil)]
+                                          ]])
+                                      ])}))
+
+#_(defn edit-page-buttons [id target save-function]
     [:div {:class "row flip"
            :id "buttons"}
-     [:div.col-xs-12.wizard
-      [:a {:class (if (= target :content) "current")
+     [:div.col-xs-8
+      [:a {:class (str "btn" (if (= target :content) " btn-active"))
            :href "#"
            :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit/" id)))}
-       [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
-       (t :page/Content)]
-      [:a {:class (if (= target :theme) "current")
+       (t "1." :page/Content)]
+      [:a {:class (str "btn" (if (= target :theme) " btn-active"))
            :href "#"
            :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit_theme/" id)))}
-       [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
-       (t :page/Theme)]
-      [:a {:class (if (= target :settings) "current")
+       (t "2." :page/Theme)]
+      [:a {:class (str "btn" (if (= target :settings) " btn-active"))
            :href "#"
            :on-click #(do (.preventDefault %) (save-function (str "/profile/page/settings/" id)))}
-       [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
-       (t :page/Settings)]
-      [:a {:class (if (= target :preview) "current")
+       (t "3." :page/Settings)]
+      [:a {:class (str "btn" (if (= target :preview) " btn-active"))
            :href "#"
            :on-click #(do (.preventDefault %) (save-function (str "/profile/page/preview/" id)))}
-       [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
-       (t  :page/Preview)]]
-     #_[:div {:class "col-xs-4"
+       (t "4." :page/Preview)]]
+     [:div {:class "col-xs-4"
             :id "buttons-right"}
       [:a {:class "delete-link"
            :title (t :page/Delete)
@@ -247,36 +350,3 @@
            :href "#"}
        (t :page/View)]]
      [m/modal-window]])
-
-#_(defn edit-page-buttons [id target save-function]
-  [:div {:class "row flip"
-         :id "buttons"}
-   [:div.col-xs-8
-    [:a {:class (str "btn" (if (= target :content) " btn-active"))
-         :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit/" id)))}
-     (t "1." :page/Content)]
-    [:a {:class (str "btn" (if (= target :theme) " btn-active"))
-         :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit_theme/" id)))}
-     (t "2." :page/Theme)]
-    [:a {:class (str "btn" (if (= target :settings) " btn-active"))
-         :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/settings/" id)))}
-     (t "3." :page/Settings)]
-    [:a {:class (str "btn" (if (= target :preview) " btn-active"))
-         :href "#"
-         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/preview/" id)))}
-     (t "4." :page/Preview)]]
-   [:div {:class "col-xs-4"
-          :id "buttons-right"}
-    [:a {:class "delete-link"
-         :title (t :page/Delete)
-         :on-click #(m/modal! (delete-page-modal id))}
-     [:i {:class "fa fa-trash"}]
-     (t :page/Delete)]
-    [:a {:class "btn btn-primary view-btn"
-         :on-click #(do (.preventDefault %) (save-function (str "/profile/page/view/" id)))
-         :href "#"}
-     (t :page/View)]]
-   [m/modal-window]])

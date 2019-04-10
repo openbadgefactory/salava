@@ -11,7 +11,8 @@
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]
             [salava.file.ui.my :as file]
-            [salava.file.icons :refer [file-icon]]))
+            [salava.file.icons :refer [file-icon]]
+            [clojure.string :refer [capitalize]]))
 
 (defn random-key []
   (-> (make-random-uuid)
@@ -33,13 +34,16 @@
         (select-keys [:id :type])
         (merge (block-specific-values block)))))
 
-(defn save-page [{:keys [id name description blocks]} next-url]
+(defn save-page [{:keys [id name description blocks]} state next-url]
   (ajax/POST
     (path-for (str "/obpv1/page/save_content/" id))
     {:params {:name name
               :description description
               :blocks (prepare-blocks-to-save blocks)}
-     :handler (fn [] (navigate-to next-url))}))
+     :handler (fn [data]
+                (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
+                (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
+                #_(navigate-to next-url))}))
 
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
@@ -247,6 +251,13 @@
    {:icon "fa-file-code-o" :text (t :page/Html) :value "html"}
    {:icon "fa-file" :text (t :page/Files) :value "file"}])
 
+
+#_(defn block-title [type]
+  (case type
+    "heading" [:p (filter #(:icon) block-type-map)]
+    )
+  )
+
 (defn content-type [block-atom index]
   (let [type (:type @block-atom)]
     (fn []
@@ -305,7 +316,8 @@
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [block-type block-atom]]
+         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
+         #_[block-type block-atom]]
         [:div {:class "col-xs-4 field-remove"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
@@ -407,7 +419,8 @@
        [page-description (cursor state [:page :description])]]]]]
    [:div.form-horizontal
     [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
-    [:div.row
+    [ph/manage-page-buttons (fn []  (save-page (:page @state) state  (str "/profile/page/edit_theme/" (get-in @state [:page :id])))) state (str "/profile/page/edit_theme/" (get-in @state [:page :id])) nil false]
+    #_[:div.row
      [:div.col-md-12
       [:button {:class    "btn btn-primary"
                 :on-click #(do
@@ -423,8 +436,11 @@
                                             (.preventDefault %)
                                             (ph/delete-page (get-in @state [:page :id])))}
        (t :core/Delete)]
-      [:div.pull-right {:id "step-button"}
-         [:a  "Next"]
+      [ph/next-page-btn]
+      #_[:div.pull-right {:id "step-button"}
+         [:a {:href "#" :on-click #(do
+                                     (.preventDefault %)
+                                     (navigate-to (case )))}  (:core/Next)]
          ]]]
     ]])
 
@@ -433,7 +449,7 @@
     [:div {:id "page-edit"}
      [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
-     [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) next-url))]
+     [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) state next-url))]
      [page-form state]]))
 
 (defn init-data [state id]

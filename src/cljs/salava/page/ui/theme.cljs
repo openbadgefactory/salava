@@ -50,11 +50,15 @@
       {:params {:theme theme-id
                 :border border-id
                 :padding padding-id}
-       :handler #(navigate-to next-url)})))
+       :handler (fn [data]
+                  (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
+                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
+                  )#_(navigate-to next-url)})))
 
 (defn content [state]
   (let [page (:page @state)
         {:keys [id name]} page]
+
     [:div {:id "page-edit-theme"}
      [ph/edit-page-header (t :page/Choosetheme ": " name)]
      [ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url))]
@@ -75,13 +79,15 @@
          (str (t :page/Selectborder) ":")]
         [:div.col-xs-8
          [border-selection (cursor state [:page :border]) borders]]]
-       [:div.row
-        [:div.col-md-12
-         [:button {:class    "btn btn-primary"
-                   :on-click #(do
-                               (.preventDefault %)
-                               (save-theme state (str "/profile/page/settings/" id)))}
-          (t :page/Save)]]]]]
+       #_[:div.row
+          [:div.col-md-12
+           [:button {:class    "btn btn-primary"
+                     :on-click #(do
+                                  (.preventDefault %)
+                                  (save-theme state (str "/profile/page/settings/" id)))}
+            (t :page/Save)]]]]]
+     [ph/manage-page-buttons (fn [] (save-theme state (str "/profile/page/settings/" id))) state (str "/profile/page/settings/" id) (str "/profile/page/edit/" id) false]
+
      [ph/view-page page]]))
 
 (defn init-data [state id]
@@ -92,7 +98,7 @@
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
-        state (atom {:page {:padding 0}})]
+        state (atom {:page {:id id :padding 0}})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
