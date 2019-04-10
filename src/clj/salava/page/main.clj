@@ -175,7 +175,6 @@
                            (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
                                                                                                                               [:chunk (str $first_name " " $last_name)]]]] content)))]
 
-    (dump page)
     (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
 
     ))

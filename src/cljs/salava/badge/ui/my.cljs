@@ -31,9 +31,9 @@
                         :pending (filter #(= "pending" (:status %)) data)
                         :initializing false))})
    #_(ajax/GET
-     (path-for "/obpv1/social/pending_badges" true)
-     {:handler (fn [data]
-                 (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
+       (path-for "/obpv1/social/pending_badges" true)
+       {:handler (fn [data]
+                   (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -124,6 +124,46 @@
                                                                                               (init-data state))
                                                                                             )}))}))
 
+
+(defn my-badges-modal [param]
+  (let [state (atom {:initializing true
+                     :badges []
+                     :visibility "all"
+                     :order "mtime"
+                     :tags-all true
+                     :tags-selected []})
+        badge-type (:type param)
+        function (:function param)]
+    (init-data state)
+    (fn []
+      (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
+            order (keyword (:order @state))
+            badges (case order
+                     (:mtime) (sort-by order > badges)
+                     (:name :issuer_content_name) (sort-by (comp clojure.string/upper-case str order) badges)
+                     (:expires_on) (->> badges
+                                        (sort-by order)
+                                        (partition-by #(nil? (% order)))
+                                        reverse
+                                        flatten)
+                     badges)]
+        [:div.row {:id "my-badges"}
+         [:div.col-md-12
+          (if (:initializing @state)
+            [:div.ajax-message
+             [:i {:class "fa fa-cog fa-spin fa-2x "}]
+             [:span (str (t :core/Loading) "...")]]
+            [:div
+             [badge-grid-form state]
+             [:div
+              (into [:div#grid {:class "row"}]
+                    (doall
+                      (for [element-data badges]
+                        (when (badge-visible? element-data state)
+                          (swap! state assoc :function function)
+                        (badge-grid-element element-data state badge-type init-data))))
+                    )]])]]))))
+
 (defn content [state]
   (create-class {:reagent-render (fn [] [:div {:id "my-badges"}
                                          [m/modal-window]
@@ -160,3 +200,6 @@
     (init-data state)
     (fn []
       (layout/default site-navi [content state]))))
+
+(def ^:export my-badges-modal []
+  {:my my-badges-modal})

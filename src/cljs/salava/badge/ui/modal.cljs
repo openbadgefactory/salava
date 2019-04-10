@@ -20,7 +20,8 @@
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
             [clojure.string :refer [blank? starts-with? split]]
-            [salava.badge.ui.evidence :refer [evidence-icon]]))
+            [salava.badge.ui.evidence :refer [evidence-icon]]
+            [salava.badge.ui.my :as my]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -361,4 +362,5 @@
            :endorse endr/endorse-badge-content
            :userbadgeendorsement endr/user-badge-endorsement-content
            :userendorsement endr/user-endorsement-content
+
            }})
