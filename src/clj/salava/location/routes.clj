@@ -88,18 +88,18 @@
                   :return ls/explore-users
                   :query [params ls/explore-user-query]
                   :current-user current-user
-                  (ok (l/explore-list-users ctx (pos? (:id current-user)) params)))
+                  (ok (l/explore-list-users ctx (some-> current-user :id pos?) params)))
 
              (GET "/explore/badges" []
                   :summary "Get public badge locations for gallery"
                   :return ls/explore-badges-ex
                   :query [params ls/explore-badge-query]
                   :current-user current-user
-                  (ok (l/explore-list-badges ctx (pos? (:id current-user)) params)))
+                  (ok (l/explore-list-badges ctx (some-> current-user :id pos?) params)))
 
              (GET "/explore/filters" []
                   :summary "Get list of tags, badge and issuer names available for public badges."
                   :return ls/explore-filters
                   :current-user current-user
-                  (ok (l/explore-filters ctx (pos? (:id current-user)))))
+                  (ok (l/explore-filters ctx (some-> current-user :id pos?))))
              )))
