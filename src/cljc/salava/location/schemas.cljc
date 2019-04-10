@@ -1,10 +1,11 @@
 (ns salava.location.schemas
-  (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]
-             [schema.coerce :as c]
-             [compojure.api.sweet :refer [describe]]
-            ))
+  #?(:clj (:require [schema.core :as s]
+                    [schema.coerce :as c]
+                    [compojure.api.sweet :refer [describe]])
+     :cljs (:require [schema.core :as s :include-macros true]
+                     [schema.coerce :as c])))
+
+#?(:cljs (defn describe [v _] v))
 
 (defn between [min max]
   (fn [n]
