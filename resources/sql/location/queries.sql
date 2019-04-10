@@ -4,7 +4,8 @@ WHERE id = :user AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
 
 --name: select-user-location-public
 SELECT location_lat AS lat, location_lng AS lng FROM user
-WHERE id = :user AND location_public = 1 AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
+WHERE id = :user AND location_public = 1 AND profile_visibility = 'public'
+    AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
 
 --name: select-user
 SELECT * FROM user WHERE id = :user;
@@ -37,10 +38,6 @@ WHERE id = :badge AND user_id = :user AND deleted = 0;
 UPDATE user_badge SET location_lat = NULL, location_lng = NULL, mtime = UNIX_TIMESTAMP()
 WHERE user_id = :user AND location_lat IS NOT NULL AND location_lng IS NOT NULL AND deleted = 0;
 
---name: select-explore-users
-SELECT id, location_lat AS lat, location_lng AS lng FROM user
-WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL AND deleted = 0;
-
 --name: select-explore-badge
 SELECT ub.id, ub.user_id, ub.badge_id,
     ub.location_lat  AS badge_lat, u.location_lat AS user_lat,
@@ -59,7 +56,7 @@ WHERE location_lat > :min_lat AND location_lat <= :max_lat
 
 --name: select-explore-user-ids-public
 SELECT id FROM user
-WHERE id IN (:user) AND location_public = 1;
+WHERE id IN (:user) AND location_public = 1 AND profile_visibility = 'public';
 
 --name: select-explore-user-ids-name
 SELECT id FROM user
