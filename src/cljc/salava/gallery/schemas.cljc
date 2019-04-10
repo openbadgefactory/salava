@@ -39,6 +39,16 @@
                                             :tag            s/Str}]
                             :user-country s/Str})
 
+(s/defschema BadgeQuery {:country s/Str
+                         :tags s/Str
+                         :badge-name s/Str
+                         :issuer-name s/Str
+                         :order s/Str
+                         :recipient-name s/Str
+                         :tags-ids s/Str
+                         :page_count s/Str
+                         })
+
 
 (s/defschema MultilanguageContent {:default_language_code s/Str
                                    :language_code         s/Str

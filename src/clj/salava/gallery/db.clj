@@ -147,13 +147,14 @@
            (if (empty? other-badge-ids) b (assoc b :otherids other-badge-ids)))) badges))
 
 (defn get-gallery-badges
-  "Get badge-ids"
-  [ctx country tags badge-name issuer-name order recipient-name tags-ids page_count]
-  (let [badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)
-        badges (some->> (select-badges ctx badge-ids order page_count) (process-badge-versions ctx) (badge-checker) (remove nil?)) #_(remove nil? (badge-checker (select-badges ctx badge-ids order page_count)))]
+  "Get badges for gallery grid"
+  [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count]}]
+  (let [offset (string->number page_count)
+        badge-ids (get-badge-ids ctx country tags badge-name issuer-name order recipient-name tags-ids)
+        badges (some->> (select-badges ctx badge-ids order offset) (process-badge-versions ctx) (badge-checker) (remove nil?))]
     {:badges badges
      :tags (select-tags ctx badge-ids)
-     :badge_count (badge-count (if-not (= (count badge-ids) (count badges)) badge-ids badges) page_count) }))
+     :badge_count (badge-count (if-not (= (count badge-ids) (count badges)) badge-ids badges) offset) }))
 
 
 

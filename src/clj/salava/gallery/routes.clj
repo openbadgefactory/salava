@@ -24,16 +24,15 @@
 
     (context "/obpv1/gallery" []
              :tags ["gallery"]
-             (GET "/badges" [country tags badge-name issuer-name order recipient-name tags-ids page_count]
+
+             (GET "/badges" []
                   :return schemas/Badgesgallery
                   :summary "Get badges, countries,tags and user-country"
+                  :query [params schemas/BadgeQuery]
                   :current-user current-user
                   :auth-rules access/signed
-                  (let [badges-and-tags (g/get-gallery-badges ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
-                        countries       (g/badge-countries ctx (:id current-user))
-                        current-country (if (empty? country)
-                                          (:user-country countries)
-                                          country)]
+                  (let [badges-and-tags (g/get-gallery-badges ctx params)
+                        countries       (g/badge-countries ctx (:id current-user))]
                     (ok (into badges-and-tags countries))))
 
 
