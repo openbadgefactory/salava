@@ -84,14 +84,14 @@
                   (ok (l/explore-badge ctx badge)))
 
              (GET "/explore/users" []
-                  :summary "Get public user locations for gallery"
+                  :summary "Get public user locations for gallery. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by user name."
                   :return ls/explore-users
                   :query [params ls/explore-user-query]
                   :current-user current-user
                   (ok (l/explore-list-users ctx (some-> current-user :id pos?) params)))
 
              (GET "/explore/badges" []
-                  :summary "Get public badge locations for gallery"
+                  :summary "Get public badge locations for gallery. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by badge or issuer name and tags."
                   :return ls/explore-badges-ex
                   :query [params ls/explore-badge-query]
                   :current-user current-user
