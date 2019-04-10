@@ -54,10 +54,9 @@
 
 
              (GET "/user_badge/:badge" []
-                  :summary "Get location of a single badge. Requires authenticated user."
+                  :summary "Get location of a single badge."
                   :return ls/lat-lng
                   :path-params  [badge :- s/Int]
-                  :auth-rules access/signed
                   :current-user current-user
                   (ok (l/user-badge-location ctx (:id current-user) badge)))
 
