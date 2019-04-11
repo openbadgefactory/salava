@@ -4,7 +4,8 @@ WHERE id = :user AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
 
 --name: select-user-location-public
 SELECT location_lat AS lat, location_lng AS lng FROM user
-WHERE id = :user AND location_public = 1 AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
+WHERE id = :user AND location_public = 1 AND profile_visibility = 'public'
+    AND location_lat IS NOT NULL AND location_lng IS NOT NULL;
 
 --name: select-user
 SELECT * FROM user WHERE id = :user;
@@ -12,7 +13,16 @@ SELECT * FROM user WHERE id = :user;
 --name: select-user-badge-location
 SELECT COALESCE(ub.location_lat, u.location_lat) AS lat, COALESCE(ub.location_lng, u.location_lng) AS lng FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.id = :badge AND ub.user_id = :user AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
+WHERE (ub.user_id = :user OR ub.visibility != 'private')
+    AND ub.id = :badge AND ub.deleted = 0 AND ub.status = 'accepted'
+    AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
+
+--name: select-user-badge-location-public
+SELECT COALESCE(ub.location_lat, u.location_lat) AS lat, COALESCE(ub.location_lng, u.location_lng) AS lng FROM user_badge ub
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.id = :badge
+    AND u.location_public = 1 AND ub.deleted = 0 AND ub.status = 'accepted' AND ub.visibility = 'public'
+    AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
 
 --name: update-user-location!
 UPDATE user SET location_lat = :lat, location_lng = :lng, mtime = UNIX_TIMESTAMP() WHERE id = :user;
@@ -27,10 +37,6 @@ WHERE id = :badge AND user_id = :user AND deleted = 0;
 --name: reset-user-badge-location!
 UPDATE user_badge SET location_lat = NULL, location_lng = NULL, mtime = UNIX_TIMESTAMP()
 WHERE user_id = :user AND location_lat IS NOT NULL AND location_lng IS NOT NULL AND deleted = 0;
-
---name: select-explore-users
-SELECT id, location_lat AS lat, location_lng AS lng FROM user
-WHERE location_lat IS NOT NULL AND location_lng IS NOT NULL AND deleted = 0;
 
 --name: select-explore-badge
 SELECT ub.id, ub.user_id, ub.badge_id,
@@ -50,7 +56,7 @@ WHERE location_lat > :min_lat AND location_lat <= :max_lat
 
 --name: select-explore-user-ids-public
 SELECT id FROM user
-WHERE id IN (:user) AND location_public = 1;
+WHERE id IN (:user) AND location_public = 1 AND profile_visibility = 'public';
 
 --name: select-explore-user-ids-name
 SELECT id FROM user
