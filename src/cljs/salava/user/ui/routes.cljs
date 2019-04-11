@@ -1,7 +1,7 @@
 (ns salava.user.ui.routes
   (:require [salava.core.ui.layout :as layout]
             [salava.core.i18n :as i18n :refer [t]]
-            [salava.core.ui.helper :refer [base-path]]
+            [salava.core.ui.helper :refer [base-path path-for]]
             [salava.user.ui.login :as login]
             [salava.user.ui.activate :as password]
             [salava.user.ui.profile :as profile]
@@ -16,7 +16,8 @@
             [salava.user.ui.modal :as usermodal]
             [salava.user.ui.data :as data]
             [salava.user.ui.terms :as terms]
-            [salava.user.ui.delete-user :as delete-user]))
+            [salava.user.ui.delete-user :as delete-user]
+            [reagent.session :as session]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -53,3 +54,16 @@
    (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}
    (str (base-path context) "/user/data/" (get-in context [:user :id]))     {:weight 50 :title (t :user/Mydata) :site-navi true :breadcrumb (t :user/User " / " :user/Mydata)}})
 
+
+(defn ^:export quicklinks []
+  [{:title [:p (t :social/Iwanttoseeprofile)]
+    :url (str (path-for "/user/profile/") (session/get-in [:user :id]))
+    :weight 2} ;; to be moved to profile plugin
+
+   {:title [:p (t :social/Iwanttoeditprofile)]
+    :url (str (path-for "/user/edit/profile"))
+    :weight 3} ;; to be moved to profile plugin
+
+   {:title [:p (t :social/Iwanttomanagemyaccount)]
+    :url (str (path-for "/user/edit"))
+    :weight 9}])

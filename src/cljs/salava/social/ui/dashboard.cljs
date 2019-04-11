@@ -397,6 +397,14 @@
          [:div.row.small-text ;{:style {:font-size "initial"}}
           (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
 
+(defn quicklinks []
+  (let [blocks (plugin-fun (session/get :plugins) "routes" "quicklinks")
+        quicklinks  (mapcat #(%) blocks)]
+    (reduce (fn [r link]
+              (conj r [:a {:href (:url link)} (:title link)]))
+            [:div.quicklinks]
+            (some->> quicklinks (sort-by :weight <)))))
+
 (defn help-block [state]
   [:div {:class "box col-md-3 col-sm-12"}
    [:div#box_3
@@ -407,7 +415,10 @@
        [:span.title.help (t :core/Quicklinks)]]
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
-       [:div.quicklinks [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
+       [quicklinks]
+
+       #_[:div.quicklinks
+        [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
         [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
         [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
         [application-button "link"]
