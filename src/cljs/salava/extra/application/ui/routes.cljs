@@ -1,7 +1,7 @@
 (ns salava.extra.application.ui.routes
    (:require [salava.core.ui.layout :as layout]
              [salava.core.i18n :as i18n :refer [t]]
-             [salava.core.ui.helper :refer [base-path]]
+             [salava.core.ui.helper :refer [base-path path-for]]
              [salava.extra.application.ui.application :as a]
              [salava.extra.application.ui.modal :as advertmodal]))
 
@@ -15,3 +15,7 @@
 (defn ^:export navi [context]
   {(str (base-path context) "/badge/application") {:weight 45 :title (t :extra-application/Application)  :site-navi true :breadcrumb (t :badge/Badges " / " :extra-application/Application)}})
 
+(defn ^:export quicklinks []
+  [{:title [:p (t :social/Iwanttoearnnewbadges)]
+    :url (str (path-for "/badge/application"))
+    :weight 5}])
