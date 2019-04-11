@@ -4,7 +4,7 @@
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for collect-plugin-modal-routes]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
@@ -13,9 +13,7 @@
             [reagent.session :as session]
             [salava.core.ui.error :as err]
             [salava.core.ui.modal :refer [set-new-view]]
-            [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]
-            [salava.page.ui.edit :as edit]
-            ))
+            [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]))
 
 
 
@@ -69,15 +67,15 @@
 
 (defn init-data [page-id state]
   (ajax/GET
-     (path-for (str "/obpv1/page/view/" page-id) true)
-     {:handler (fn [data]
+    (path-for (str "/obpv1/page/view/" page-id) true)
+    {:handler (fn [data]
 
-                 (reset! state (assoc data
-                                      :page-id page-id
-                                      :show-link-or-embed-code nil
-                                      :permission "success"
-                                      :badge-small-view false)))}
-     (fn [] (swap! state assoc :permission "error"))))
+                (reset! state (assoc data
+                                :page-id page-id
+                                :show-link-or-embed-code nil
+                                :permission "success"
+                                :badge-small-view false)))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 
 (defn handler [params]
@@ -101,5 +99,5 @@
     ))
 
 (def ^:export modalroutes
-  {:page {:view handler
-          :block-type edit/contenttype}})
+  {:page (merge {:view handler}
+                (collect-plugin-modal-routes [:page ] ["edit"]))})
