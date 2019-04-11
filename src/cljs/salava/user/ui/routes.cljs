@@ -66,4 +66,4 @@
 
    {:title [:p (t :social/Iwanttomanagemyaccount)]
     :url (str (path-for "/user/edit"))
-    :weight 9}])
+    :weight 8}])

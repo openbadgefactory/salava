@@ -45,8 +45,8 @@
 (defn ^:export quicklinks []
   [{:title [:p (t :social/Iwanttofindbadges)]
     :url (str (path-for "/gallery/badges"))
-    :weight 7}
+    :weight 6}
 
    {:title  [:p (t :social/Iwanttofindotherusers)]
     :url (str (path-for "/gallery/profiles"))
-    :weight 8}])
+    :weight 7}])
