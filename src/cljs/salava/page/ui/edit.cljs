@@ -268,12 +268,13 @@
           (conj r
                 [:a {:on-click #(do
                                   (.preventDefault %)
-                                  (if (= (:value v) "badge") (open-modal [:badge :my] nil))
+                                  ;(if (= (:value v) "badge") (open-modal [:badge :my] nil))
                                   (case (:value v)
-                                    "badge" (open-modal [:badge :my] {:type "pickable" :function (fn [] (if index
+                                    "badge" (open-modal [:badge :my] {:atom block-atom :type "pickable" :function (fn []
+                                                                                                   (if index
                                                                                                      (f/add-field block-atom {:type (:value v)} index)
                                                                                                      (f/add-field block-atom {:type (:value v)})))} )
-                                    "tag" (open-modal [:badge :my] {:badge :my} {:type "selectable"})
+                                    "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
                                     (if index
                                       (f/add-field block-atom {:type (:value v)} index)
                                       (f/add-field block-atom {:type (:value v)}))))

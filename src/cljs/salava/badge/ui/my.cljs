@@ -133,7 +133,8 @@
                      :tags-all true
                      :tags-selected []})
         badge-type (:type param)
-        function (:function param)]
+        function (:function param)
+        ]
     (init-data state)
     (fn []
       (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
@@ -201,5 +202,5 @@
     (fn []
       (layout/default site-navi [content state]))))
 
-(def ^:export my-badges-modal []
+(defn ^:export mybadgesmodal []
   {:my my-badges-modal})

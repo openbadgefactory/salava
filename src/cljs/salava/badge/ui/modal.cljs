@@ -21,7 +21,7 @@
             [salava.core.ui.tag :as tag]
             [clojure.string :refer [blank? starts-with? split]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
-            [salava.badge.ui.my :as my]))
+            #_[salava.badge.ui.my :as my]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -350,17 +350,20 @@
         :else (content state) ))
     ))
 
+(defn extra-routes [] ;;refactor
+  (let [block (first (plugin-fun (session/get :plugins) "my" "mybadgesmodal"))]
+    (if block (block) {})))
+
 
 (def ^:export modalroutes
-  {:badge {:info handler
-           :metadata a/assertion-content
-           :endorsement endr/badge-endorsement-content
-           :issuer issuer/content
-           :creator issuer/creator-content
-           :linkedin1 s/linkedin-modal1
-           :linkedin2 s/content-modal-render
-           :endorse endr/endorse-badge-content
-           :userbadgeendorsement endr/user-badge-endorsement-content
-           :userendorsement endr/user-endorsement-content
-
-           }})
+  {:badge (merge {:info handler
+                  :metadata a/assertion-content
+                  :endorsement endr/badge-endorsement-content
+                  :issuer issuer/content
+                  :creator issuer/creator-content
+                  :linkedin1 s/linkedin-modal1
+                  :linkedin2 s/content-modal-render
+                  :endorse endr/endorse-badge-content
+                  :userbadgeendorsement endr/user-badge-endorsement-content
+                  :userendorsement endr/user-endorsement-content}
+                 (extra-routes))})
