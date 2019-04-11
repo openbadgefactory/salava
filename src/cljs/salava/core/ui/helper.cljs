@@ -15,6 +15,15 @@
          (map fun)
          (filter #(not (nil? %))))))
 
+(defn collect-plugin-modal-routes
+  "A workaround for circular dependencies.
+  This function negates the need to require all namespaces where modals are used.
+  Modal function is exported from own namespace e.g (defn ^:export modalroute [] {:key fname})"
+  [plugins namespaces]
+  (reduce (fn [r n]
+            (let [func (first (plugin-fun plugins n "modalroute") )]
+              (merge r (func)))) {} namespaces))
+
 (defn unique-values [key data]
   (->> data
        (map (keyword key))
