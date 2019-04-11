@@ -268,7 +268,6 @@
           (conj r
                 [:a {:on-click #(do
                                   (.preventDefault %)
-                                  ;(if (= (:value v) "badge") (open-modal [:badge :my] nil))
                                   (case (:value v)
                                     "badge" (open-modal [:badge :my] {:atom block-atom :type "pickable" :function (fn []
                                                                                                    (if index
@@ -278,7 +277,9 @@
                                     (if index
                                       (f/add-field block-atom {:type (:value v)} index)
                                       (f/add-field block-atom {:type (:value v)}))))
-                     ;:data-dismiss "modal"
+                     :data-dismiss (case (:value v)
+                                     ("badge" "tag") nil
+                                     "modal")
                      }
                  [:div.row
 
@@ -481,3 +482,5 @@
     (fn []
       (layout/default site-navi (content state)))))
 
+(defn ^:export modalroute []
+  {:block-type contenttype})
