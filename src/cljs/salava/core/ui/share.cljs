@@ -284,4 +284,6 @@
                                         ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
                                              (.getScript (js* "$") "https://apis.google.com/js/platform.js")))})))
 
-
+(defn ^:export modalroute []
+  {:linkedin1 linkedin-modal1
+   :linkedin2 content-modal-render})

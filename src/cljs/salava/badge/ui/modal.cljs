@@ -4,23 +4,24 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.badge.ui.helper :as bh]
-            [salava.badge.ui.assertion :as a]
+            ;[salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
-            [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url?]]
+            ;[salava.core.ui.share :as s]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url? collect-plugin-modal-routes]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
             [salava.core.ui.modal :as mo]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.badge.ui.endorsement :as endr]
-            [salava.badge.ui.issuer :as issuer]
+            ;#_[salava.badge.ui.issuer :as issuer]
             [salava.social.ui.badge-message-modal :refer [badge-message-link]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.core.ui.tag :as tag]
             [clojure.string :refer [blank? starts-with? split]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
+            ;[salava.core.helper :refer [dump]]
             #_[salava.badge.ui.my :as my]))
 
 
@@ -176,9 +177,6 @@
      ;endorsements
      [:div.row (badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]
 
-     ;;user endorsements
-     ;[:div.row (endr/user-badge-endorsement-modal-link id user_endorsement_count)]
-
      ]))
 
 (defn badge-content [state]
@@ -331,6 +329,8 @@
      (if (and owner? (session/get :user)) "" [reporttool1 id  (:name data) "badge"])]))
 
 
+
+
 (defn handler [params]
 
   (let [id (:badge-id params)
@@ -350,20 +350,18 @@
         :else (content state) ))
     ))
 
-(defn extra-routes [] ;;refactor
-  (let [block (first (plugin-fun (session/get :plugins) "my" "mybadgesmodal"))]
-    (if block (block) {})))
-
 
 (def ^:export modalroutes
-  {:badge (merge {:info handler
-                  :metadata a/assertion-content
-                  :endorsement endr/badge-endorsement-content
-                  :issuer issuer/content
-                  :creator issuer/creator-content
-                  :linkedin1 s/linkedin-modal1
-                  :linkedin2 s/content-modal-render
-                  :endorse endr/endorse-badge-content
-                  :userbadgeendorsement endr/user-badge-endorsement-content
-                  :userendorsement endr/user-endorsement-content}
-                 (extra-routes))})
+  {:badge (merge {:info handler}
+                 (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))})
+
+
+;:metadata a/assertion-content
+;:endorsement endr/badge-endorsement-content
+;:issuer issuer/content
+;:creator issuer/creator-content
+;:linkedin1 s/linkedin-modal1
+;:linkedin2 s/content-modal-render
+;:endorse endr/endorse-badge-content
+;:userbadgeendorsement endr/user-badge-endorsement-content
+;:userendorsement endr/user-endorsement-content

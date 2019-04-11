@@ -202,5 +202,5 @@
     (fn []
       (layout/default site-navi [content state]))))
 
-(defn ^:export mybadgesmodal []
+(defn ^:export modalroute []
   {:my my-badges-modal})

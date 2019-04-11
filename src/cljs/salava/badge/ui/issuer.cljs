@@ -134,3 +134,7 @@
               (into [:div]
                     (for [endorsement (:endorsement @state)]
                       (endr/endorsement-row endorsement)))]])]]))))
+
+(defn ^:export modalroute []
+  {:issuer content
+   :creator creator-content})
