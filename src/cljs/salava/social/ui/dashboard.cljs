@@ -415,16 +415,7 @@
        [:span.title.help (t :core/Quicklinks)]]
       [:div.content
        [:p  {:style {:font-size "20px" :color "black"} } (t :social/Iwantto)]
-       [quicklinks]
-
-       #_[:div.quicklinks
-        [:a {:href (str (path-for "/user/profile/") (session/get-in [:user :id]))}[:p (t :social/Iwanttoseeprofile)]]
-        [:a {:href (str (path-for "/user/edit/profile"))}[:p (t :social/Iwanttoeditprofile)]]
-        [:a {:href (str (path-for "/badge"))}[:p (t :social/Iwanttoseemysbadges)]]
-        [application-button "link"]
-        [:a {:href (str (path-for "/gallery/badges"))} [:p (t :social/Iwanttofindbadges)]]
-        [:a {:href (str (path-for "/gallery/profiles"))} [:p (t :social/Iwanttofindotherusers)]]
-        [:a {:href (str (path-for "/user/edit"))} [:p (t :social/Iwanttomanagemyaccount)]]]]]]]])
+       [quicklinks]]]]]])
 
 (defn content [state]
   [:div#dashboard-container
