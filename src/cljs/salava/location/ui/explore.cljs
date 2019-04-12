@@ -96,16 +96,36 @@
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
-            [filter-autocomplete :badge state]]]
+            [filter-autocomplete :badge state]
+            ]
+           [:div.col-md-1 {:style {:padding-left 0}}
+            [:button.btn.btn-link
+             {:style {:padding-left 0 :font-weight "bold"}
+              :on-click #(do (swap! state assoc-in [:badge :value] "")
+                             (.trigger (js/jQuery (str "div.badges-filter .badge-filter input")) "change"))}
+             "X"]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
-            [filter-autocomplete :issuer state]]]
+            [filter-autocomplete :issuer state]
+            ]
+           [:div.col-md-1 {:style {:padding-left 0}}
+            [:button.btn.btn-link
+             {:style {:padding-left 0 :font-weight "bold"}
+              :on-click #(do (swap! state assoc-in [:issuer :value] "")
+                             (.trigger (js/jQuery (str "div.badges-filter .issuer-filter input")) "change"))}
+             "X"]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
-            [filter-autocomplete :tag state]]]
-
+            [filter-autocomplete :tag state]
+            ]
+           [:div.col-md-1 {:style {:padding-left 0}}
+            [:button.btn.btn-link
+             {:style {:padding-left 0 :font-weight "bold"}
+              :on-click #(do (swap! state assoc-in [:tag :value] "")
+                             (.trigger (js/jQuery (str "div.badges-filter .tag-filter input")) "change"))}
+             "X"]]]
           ]
 
          [:div {:id "map-view" :style {:height "700px" :margin "20px 0"}}]]])
