@@ -20,6 +20,7 @@
    (let [op (if (even? seed) - +)]
      (op v (* (fake-rand seed) 0.0019 multip)))))
 
+
 (defn set-location-reset [ctx user-id]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
     {:success (and
@@ -51,10 +52,22 @@
     (or (select-user-location-public {:user user-id} (u/get-db-1 ctx)) {:lat nil :lng nil})))
 
 
+(defn- country-latlng
+  "Get default location from user's country.
+  Add small amount of random noise so that multiple users have different coordinates."
+  [country]
+  (let [ll (get c/lat-lng (keyword country))
+        move (fn [v] (if (> (rand) 0.5)
+                       (+ v (rand 0.75))
+                       (- v (rand 0.75))))]
+    (if ll
+      {:lat (move (:lat ll)) :lng (move (:lng ll))}
+      {:lat nil :lng nil})))
+
 (defn user-location [ctx user-id]
   (if-let [user (select-user {:user user-id} (u/get-db-1 ctx))]
     {:enabled (select-user-location {:user user-id} (u/get-db-1 ctx))
-     :country (get c/lat-lng (keyword (:country user)) {:lat nil :lng nil})
+     :country (country-latlng (:country user))
      :public (pos? (:location_public user))}
     {:enabled nil
      :country {:lat nil :lng nil}
