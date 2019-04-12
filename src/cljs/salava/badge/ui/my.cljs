@@ -149,8 +149,6 @@
                                         flatten)
                      badges)]
         [:div.row {:id "my-badges"}
-             (dump param)
-
          [:div.col-md-12
           (if (:initializing @state)
             [:div.ajax-message
@@ -163,7 +161,7 @@
                     (doall
                       (for [element-data badges]
                         (when (badge-visible? element-data state)
-                          (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom)
+                          (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom :index (:index param))
                         (badge-grid-element element-data state badge-type init-data))))
                     )]])]]))))
 

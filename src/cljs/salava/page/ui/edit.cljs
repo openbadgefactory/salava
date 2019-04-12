@@ -272,7 +272,7 @@
                     [:a {:on-click #(do
                                       (.preventDefault %)
                                       (case (:value v)
-                                        "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom #_{:type (:value v)}  #_:function #_(fn []
+                                        "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
                                                                                                                                  ;(do
                                                                                                                                  (if index
                                                                                                                                    (f/add-field block-atom {:type (:value v)} index :badge [])

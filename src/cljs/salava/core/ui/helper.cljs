@@ -25,6 +25,7 @@
   [plugins namespaces]
   (let [exported-routes (reduce (fn [r route] (conj r (first (plugin-fun plugins route "modalroute")))) [] namespaces)
         modal-routes (into {} (reduce (fn [r mr] (conj r (mr))) [] exported-routes))]
+
     modal-routes))
 
 (defn unique-values [key data]

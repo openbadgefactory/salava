@@ -193,15 +193,9 @@
        (= "pickable" badge-type) [:div
                                   [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
-
-                                                              ;(swap! state assoc :selected element-data)
-                                                              (swap! (cursor state [:new-field-atom]) assoc :badge {:id id :image_file image_file :type "badge"})
-                                                              (f/add-field (cursor state [:block-atom])(:new-field-atom @state))
-                                                             ;(prn (:function @state))
-                                                              #_(if (:function @state) ((:function @state) #_{:id id :image_file image_file}))
-
+                                                              (swap! (:new-field-atom @state) merge {:badge {:id id :image_file image_file :type "badge"}})
+                                                              (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state)))
                                                               (m/close-modal!))
-                                       ;:data-dismiss "modal"
                                        }
                                    [:div.media-content
 
