@@ -1295,7 +1295,8 @@
   }
   a {
     padding: 10px 12px 10px 10px;
-    margin-right: 1px;
+    margin-right: 2px;
+    margin-bottom: 5px;
     background: #b1a1ab;
     position: relative;
     display: inline-block;
@@ -1307,7 +1308,7 @@
       height: 100%;
       border-top: 20px inset transparent;
       border-bottom: 20px inset transparent;
-      border-left: 20px solid #fff;
+      border-left: 20px solid $background-color;
       position: absolute;
       content: "";
       top: 0;
