@@ -86,10 +86,9 @@
   (let [badge-id (get-in @block-atom [:badge :id] (session/get-in! [:badge-block :badge :id] 0))
         image (get-in @block-atom [:badge :image_file])
         format (:format @block-atom)]
-    (dump @block-atom)
     [:div.form-group
      [:div.col-xs-8
-      [:div.badge-select
+      #_[:div.badge-select
        [:select {:class "form-control"
                  :aria-label "select badge group"
                  :value badge-id
