@@ -476,6 +476,19 @@
 }
 
 /* THEMES */
+#theme-container {
+  div {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+
+  .theme-container {
+    width: 80px;
+    height: 80px;
+    float:left;
+    border-radius: 5px;
+  }
+}
 
 #theme-0 {
   .panel-left {
@@ -1355,7 +1368,7 @@
 
 /*WIZARD END*/
 
-#page-edit {
+#page-edit, #page-edit-theme {
   .modal-content {
     border-radius: 5px;
   }

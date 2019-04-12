@@ -8,12 +8,21 @@
             [salava.page.themes :refer [themes borders]]
             [salava.page.ui.helper :as ph]))
 
-(defn theme-selection [theme-atom themes]
+#_(defn theme-selection [theme-atom themes]
   [:select {:class     "form-control"
             :on-change #(reset! theme-atom (js/parseInt (.-target.value %)))
             :value     @theme-atom}
    (for [theme themes]
      [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
+
+(defn theme-selection [theme-atom themes]
+  (reduce (fn [r theme]
+            (conj r [:div {:id (str "theme-" (:id theme))}
+                     [:a {:href "#" :on-click #(do
+                                                 (.preventDefault %)
+                                                 (reset! theme-atom (js/parseInt (:id theme)) ))
+                          :alt (t (:name theme)) :title (t (:name theme))}[:div.panel-left.theme-container " "]]])
+            )[:div {:id "theme-container"}] themes))
 
 (defn padding-selection [padding-atom]
   [:div.row
@@ -62,7 +71,7 @@
     [:div {:id "page-edit-theme"}
      [ph/edit-page-header (t :page/Choosetheme ": " name)]
      [ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url))]
-     [:div {:class "panel page-panel" :id "theme-panel"}
+     [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
       [:form.form-horizontal
        [:div.form-group
         [:label.col-xs-4 {:for "select-theme"}
