@@ -17,10 +17,13 @@
 
 
 (defn midpoint [items]
-  (let [c (count items)]
-    (when (> c 0)
-      {:lat (/ (apply + (map :lat items)) c)
-       :lng (/ (apply + (map :lng items)) c)})))
+  ;;FIXME Averaging works poorly if badges are spread out.
+  #_(let [c (count items)]
+      (when (> c 0)
+        {:lat (/ (apply + (map :lat items)) c)
+         :lng (/ (apply + (map :lng items)) c)}))
+  ;; Just use first item as midpoint for now.
+  {:lat (-> items first :lat) :lng (-> items first :lng)})
 
 
 (defn badge-info-content [user-badge-id visible]
@@ -67,7 +70,7 @@
                          (if (seq (:badges data))
                            (let [lat-lng (js/L.latLng. (clj->js (midpoint (:badges data))))
                                  my-map (-> (js/L.map. (str "map-view-badge-" badge-id) lu/map-opt)
-                                            (.setView lat-lng 8)
+                                            (.setView lat-lng 6)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (doseq [b (:badges data)]
                                (-> (js/L.latLng. (:lat b) (:lng b))
