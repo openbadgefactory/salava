@@ -4,7 +4,8 @@
             [schema.core :as s]
             [pushy.core :as pushy]
             [salava.core.helper :as h]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [salava.core.helper :refer [dump]]))
 
 (defn plugin-fun [plugins nspace name]
   (let [fun (fn [p]
@@ -20,9 +21,14 @@
   This function negates the need to require all namespaces where modals are used.
   Modal function is exported from own namespace e.g (defn ^:export modalroute [] {:key fname})"
   [plugins namespaces]
-  (reduce (fn [r n]
-            (let [func (first (plugin-fun plugins n "modalroute") )]
-              (merge r (func)))) {} namespaces))
+
+  (let [modal-routes (reduce (fn [r n]
+                               (let [blocks (plugin-fun plugins n "modalroute")
+                                     route-map (into {} (map #(%) blocks))]
+                                 route-map
+                                 #_(when route-map
+                                    (into r route-map #_(route-map))))) {} namespaces)]
+    modal-routes))
 
 (defn unique-values [key data]
   (->> data

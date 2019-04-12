@@ -100,4 +100,4 @@
 
 (def ^:export modalroutes
   {:page (merge {:view handler}
-                (collect-plugin-modal-routes [:page ] ["edit"]))})
+                (collect-plugin-modal-routes [:page] ["edit"]))})

@@ -125,7 +125,7 @@
                                                                                             )}))}))
 
 
-(defn my-badges-modal [param]
+(defn mybadgesmodal [param]
   (let [state (atom {:initializing true
                      :badges []
                      :visibility "all"
@@ -133,8 +133,8 @@
                      :tags-all true
                      :tags-selected []})
         badge-type (:type param)
-        function (:function param)
-        ]
+        block-atom (:block-atom param)
+        new-field-atom (:new-field-atom param)]
     (init-data state)
     (fn []
       (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
@@ -149,6 +149,8 @@
                                         flatten)
                      badges)]
         [:div.row {:id "my-badges"}
+             (dump param)
+
          [:div.col-md-12
           (if (:initializing @state)
             [:div.ajax-message
@@ -161,7 +163,7 @@
                     (doall
                       (for [element-data badges]
                         (when (badge-visible? element-data state)
-                          (swap! state assoc :function function)
+                          (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom)
                         (badge-grid-element element-data state badge-type init-data))))
                     )]])]]))))
 
@@ -203,4 +205,4 @@
       (layout/default site-navi [content state]))))
 
 (defn ^:export modalroute []
-  {:my my-badges-modal})
+  {:my mybadgesmodal})

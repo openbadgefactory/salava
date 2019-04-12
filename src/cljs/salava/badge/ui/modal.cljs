@@ -6,7 +6,7 @@
             [salava.badge.ui.helper :as bh]
             ;[salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
-            ;[salava.core.ui.share :as s]
+            [salava.core.ui.share :as s]
             [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url? collect-plugin-modal-routes]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -21,7 +21,7 @@
             [salava.core.ui.tag :as tag]
             [clojure.string :refer [blank? starts-with? split]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
-            ;[salava.core.helper :refer [dump]]
+            [salava.core.helper :refer [dump]]
             #_[salava.badge.ui.my :as my]))
 
 
@@ -328,7 +328,8 @@
      (if tab tab [badge-content state])
      (if (and owner? (session/get :user)) "" [reporttool1 id  (:name data) "badge"])]))
 
-
+(defn modal-routes []
+  (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))
 
 
 (defn handler [params]
@@ -339,6 +340,10 @@
                      :permission "initial"})
         user (session/get :user)]
     (if data (init-data state id nil data) (init-data state id nil))
+    #_(dump   {:badge (merge {:info handler}
+                 (modal-routes))})
+    (dump {:badge {:info handler
+                   :linkedin1 s/linkedin-modal1}})
 
     (fn []
       (cond
@@ -350,10 +355,13 @@
         :else (content state) ))
     ))
 
+#_(defn modal-routes []
+  (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))
 
 (def ^:export modalroutes
   {:badge (merge {:info handler}
-                 (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))})
+                 (modal-routes)
+                 #_(collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" #_"share"]))})
 
 
 ;:metadata a/assertion-content

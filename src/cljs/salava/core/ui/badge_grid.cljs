@@ -9,7 +9,9 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.social.ui.follow :refer [follow-badge]]
             [reagent.session :as session]
-            #_[salava.metabadge.ui.metabadge :as mb]))
+            #_[salava.metabadge.ui.metabadge :as mb]
+            [reagent.core :refer [atom cursor]]
+            [salava.core.ui.field :as f]))
 
 
 (defn num-days-left [timestamp]
@@ -191,8 +193,13 @@
        (= "pickable" badge-type) [:div
                                   [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
-                                                              (swap! state assoc :selected element-data)
-                                                              (if (:function @state) ((:function @state)))
+
+                                                              ;(swap! state assoc :selected element-data)
+                                                              (swap! (cursor state [:new-field-atom]) assoc :badge {:id id :image_file image_file :type "badge"})
+                                                              (f/add-field (cursor state [:block-atom])(:new-field-atom @state))
+                                                             ;(prn (:function @state))
+                                                              #_(if (:function @state) ((:function @state) #_{:id id :image_file image_file}))
+
                                                               (m/close-modal!))
                                        ;:data-dismiss "modal"
                                        }

@@ -83,9 +83,10 @@
   (reset! files-atom (vec (remove #(= % file) @files-atom))))
 
 (defn edit-block-badges [block-atom badges]
-  (let [badge-id (get-in @block-atom [:badge :id] 0)
+  (let [badge-id (get-in @block-atom [:badge :id] (session/get-in! [:badge-block :badge :id] 0))
         image (get-in @block-atom [:badge :image_file])
         format (:format @block-atom)]
+    (dump @block-atom)
     [:div.form-group
      [:div.col-xs-8
       [:div.badge-select
@@ -257,44 +258,48 @@
 
 
 (defn contenttype [{:keys [block-atom index]}]
-  ;(let [type (:type @block-atom)]
-  (fn []
-    [:div#block-modal
-     [:div.modal-body
-      [:p.block-title (t :page/Addblock)]
-      [:p "Select a block to add to your page"]
-      (reduce-kv
-        (fn [r k v]
-          (conj r
-                [:a {:on-click #(do
-                                  (.preventDefault %)
-                                  (case (:value v)
-                                    "badge" (open-modal [:badge :my] {:atom block-atom :type "pickable" :function (fn []
-                                                                                                   (if index
-                                                                                                     (f/add-field block-atom {:type (:value v)} index)
-                                                                                                     (f/add-field block-atom {:type (:value v)})))} )
-                                    "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
-                                    (if index
-                                      (f/add-field block-atom {:type (:value v)} index)
-                                      (f/add-field block-atom {:type (:value v)}))))
-                     :data-dismiss (case (:value v)
-                                     ("badge" "tag") nil
-                                     "modal")
-                     }
-                 [:div.row
+  (let [type (:type @block-atom)
+        ]
+    (fn []
+      [:div#block-modal
+       [:div.modal-body
+        [:p.block-title (t :page/Addblock)]
+        [:p "Select a block to add to your page"]
+        (reduce-kv
+          (fn [r k v]
+            (let [new-field-atom (atom {:type (:value v)})]
+              (conj r
+                    [:a {:on-click #(do
+                                      (.preventDefault %)
+                                      (case (:value v)
+                                        "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom #_{:type (:value v)}  #_:function #_(fn []
+                                                                                                                                 ;(do
+                                                                                                                                 (if index
+                                                                                                                                   (f/add-field block-atom {:type (:value v)} index :badge [])
+                                                                                                                                   (f/add-field block-atom {:type (:value v)} :badge [])));)
+                                                                          } )
+                                        "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
+                                        (if index
+                                          (f/add-field block-atom {:type (:value v)} index )
+                                          (f/add-field block-atom {:type (:value v)} ))))
+                         :data-dismiss (case (:value v)
+                                         ("badge" "tag") nil
+                                         "modal")
+                         }
+                     [:div.row
 
-                  [:i {:class (str "fa icon " (:icon v))}]
-                  [:span (:text v)]]]
-                ))
-        [:div.block-types]
-        block-type-map)]
-     [:div.modal-footer
-      [:button.btn.btn-warning {:on-click #(do
-                                             (.preventDefault %)
-                                             (m/close-modal!)
-                                             )}
-       (t :core/Cancel)]]
-     ]))
+                      [:i {:class (str "fa icon " (:icon v))}]
+                      [:span (:text v)]]]
+                    )))
+          [:div.block-types]
+          block-type-map)]
+       [:div.modal-footer
+        [:button.btn.btn-warning {:on-click #(do
+                                               (.preventDefault %)
+                                               (m/close-modal!)
+                                               )}
+         (t :core/Cancel)]]
+       ])))
 
 #_(defn open-block-modal [block-atom index]
     (create-class {:reagent-render (fn [] (content-type block-atom index))
@@ -309,7 +314,7 @@
       [:button {:class    "btn btn-success"
                 :on-click #(do
                              (.preventDefault %)
-                             (open-modal [:page :block-type] {:block-atom blocks :index index} {:size :md})
+                             (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md})
                              #_(m/modal! [open-block-modal blocks index] {:size :md})
                              #_(f/add-field blocks {:type "heading"} index))}
        (t :page/Addblock)]]
@@ -351,7 +356,7 @@
     [:button {:class    "btn btn-success"
               :on-click #(do
                            (.preventDefault %)
-                           (open-modal [:page :block-type] {:block-atom blocks :index nil} {:size :md})
+                           (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
                            #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
      (t :page/Addblock)]]])
 
@@ -483,4 +488,4 @@
       (layout/default site-navi (content state)))))
 
 (defn ^:export modalroute []
-  {:block-type contenttype})
+  {:blocktype contenttype})
