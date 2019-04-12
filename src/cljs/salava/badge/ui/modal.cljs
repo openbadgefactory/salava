@@ -328,8 +328,6 @@
      (if tab tab [badge-content state])
      (if (and owner? (session/get :user)) "" [reporttool1 id  (:name data) "badge"])]))
 
-(defn modal-routes []
-  (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))
 
 
 (defn handler [params]
@@ -340,10 +338,6 @@
                      :permission "initial"})
         user (session/get :user)]
     (if data (init-data state id nil data) (init-data state id nil))
-    #_(dump   {:badge (merge {:info handler}
-                 (modal-routes))})
-    (dump {:badge {:info handler
-                   :linkedin1 s/linkedin-modal1}})
 
     (fn []
       (cond
@@ -355,13 +349,10 @@
         :else (content state) ))
     ))
 
-#_(defn modal-routes []
-  (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))
 
 (def ^:export modalroutes
   {:badge (merge {:info handler}
-                 (modal-routes)
-                 #_(collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" #_"share"]))})
+                 (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))})
 
 
 ;:metadata a/assertion-content
