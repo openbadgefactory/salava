@@ -16,13 +16,12 @@
      [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
 
 (defn theme-selection [theme-atom themes]
-  (dump @theme-atom)
   (reduce (fn [r theme]
             (conj r [:div {:id (str "theme-" (:id theme))}
                      [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! theme-atom (js/parseInt (:id theme)) ))
-                          :alt (t (:name theme)) :title (t (:name theme))}[:div {:class (str "panel-left theme-container" (if (= @theme-atom (:id theme)) " selected"))} " " ]]])
+                          :alt (t (:name theme)) :title (t (:name theme))}[:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " " ]]])
             )[:div {:id "theme-container"}] themes))
 
 (defn padding-selection [padding-atom]
