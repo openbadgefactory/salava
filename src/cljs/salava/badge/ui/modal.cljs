@@ -106,7 +106,7 @@
    [:div {:class "issuer-links pull-label-left inline"}
     [:a {:href "#"
          :on-click #(do (.preventDefault %)
-                      (mo/open-modal [:badge :issuer] issuer-id))} name]]])
+                      (mo/open-modal [:badge :issuer] issuer-id {}))} name]]])
 
 ;;;TODO creator endorsements
 (defn creator-modal-link [creator-id name]
@@ -352,7 +352,8 @@
 
 (def ^:export modalroutes
   {:badge (merge {:info handler}
-                 (collect-plugin-modal-routes [:badge :core] ["my" "endorsement" "issuer" "share"]))})
+                 (collect-plugin-modal-routes [:badge] ["my" "endorsement" "issuer"])
+                 (collect-plugin-modal-routes [:core] ["share"]))})
 
 
 ;:metadata a/assertion-content
