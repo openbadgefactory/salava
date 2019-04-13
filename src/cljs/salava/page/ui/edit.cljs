@@ -88,7 +88,7 @@
         format (:format @block-atom)]
     [:div.form-group
      [:div.col-xs-8
-      #_[:div.badge-select
+      [:div.badge-select
        [:select {:class "form-control"
                  :aria-label "select badge group"
                  :value badge-id
@@ -108,6 +108,25 @@
      [:div {:class "col-xs-4 badge-image"}
       (if image
         [:img {:src (str "/" image)}])]]))
+
+(defn badge-block [block-atom]
+  (let [badge-id (get-in @block-atom [:badge :id] (session/get-in! [:badge-block :badge :id] 0))
+        image (get-in @block-atom [:badge :image_file])
+        name (get-in @block-atom [:badge :name] "")
+        format (:format @block-atom)
+        description (get-in @block-atom [:badge :description])]
+    [:div.badge-select
+     [:div.row.flip
+      [:div.col-md-3.badge-image
+       [:img.badge-image {:src (str "/" image)}]
+       ]
+      [:div.col-md-9
+       [:h4.media-heading name]
+
+       [:div description]]]]
+
+    )
+  )
 
 (defn edit-block-badge-groups [block-atom tags badges]
   (let [tag (get-in @block-atom [:tag] "")
@@ -333,11 +352,12 @@
          #_[block-type block-atom]]
         [:div {:class "col-xs-4 field-remove"
                :on-click #(f/remove-field blocks index)}
+         [:span.move-block  [:i.fa.fa-arrows]]
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
        (case type
          ("heading" "sub-heading") [edit-block-text block-atom]
-         ("badge") [edit-block-badges block-atom badges]
+         ("badge") [badge-block block-atom]#_[edit-block-badges block-atom badges]
          ("tag") [edit-block-badge-groups block-atom tags badges]
          ("file") [edit-block-files block-atom files]
          ("html") [edit-block-html block-atom]
