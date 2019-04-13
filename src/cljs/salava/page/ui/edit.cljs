@@ -323,20 +323,25 @@
     (create-class {:reagent-render (fn [] (content-type block-atom index))
                    :component-will-unmount (fn []  (m/close-modal!))}))
 
-(defn block [block-atom index blocks badges tags files]
+(defn block [block-atom index blocks badges tags files state]
   (let [{:keys [type]} @block-atom
         first? (= 0 index)
-        last? (= (dec (count @blocks)) index)]
+        last? (= (dec (count @blocks)) index)
+        block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))]
     [:div {:key index}
      [:div.add-field-after
-      [:button {:class    "btn btn-success"
-                :on-click #(do
-                             (.preventDefault %)
-                             (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md})
-                             #_(m/modal! [open-block-modal blocks index] {:size :md})
-                             #_(f/add-field blocks {:type "heading"} index))}
-       (t :page/Addblock)]]
-     [:div.field.thumbnail
+      (if (and (:toggle-move-mode @state) (not (= 0 (:toggled @state))))
+        [:div.placeholder.html-block-content.html-block-content-hover
+         "Click to drop block"
+         ]
+        [:button {:class    "btn btn-success"
+                  :on-click #(do
+                               (.preventDefault %)
+                               (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md})
+                               #_(m/modal! [open-block-modal blocks index] {:size :md})
+                               #_(f/add-field blocks {:type "heading"} index))}
+         (t :page/Addblock)])]
+     [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       [:div.field-move
        [:div.move-arrows
         (if-not first?
@@ -350,9 +355,18 @@
         [:div.col-xs-8
          [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
          #_[block-type block-atom]]
-        [:div {:class "col-xs-4 field-remove"
+        [:div.col-xs-2.field-remove {:on-click #(do
+                                                  (.preventDefault %)
+                                                  (cond
+                                                    (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                                    (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                                    :else (swap! state assoc :toggle-move-mode true :toggled index))
+                                                  #_(if (:toggle-move-mode @state)
+                                                      (swap! state assoc :toggle-move-mode false :toggled nil)
+                                                      (swap! state assoc :toggle-move-mode true :toggled index)))}
+         [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
+        [:div {:class "col-xs-2 field-remove"
                :on-click #(f/remove-field blocks index)}
-         [:span.move-block  [:i.fa.fa-arrows]]
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
        (case type
@@ -366,18 +380,22 @@
 
 
 
-(defn page-blocks [blocks badges tags files]
+(defn page-blocks [blocks badges tags files state]
   [:div {:id "field-editor"}
    (into [:div {:id "page-blocks"}]
          (for [index (range (count @blocks))]
-           (block (cursor blocks [index]) index blocks badges tags files)))
+           (block (cursor blocks [index]) index blocks badges tags files state)))
    [:div.add-field-after
-    [:button {:class    "btn btn-success"
-              :on-click #(do
-                           (.preventDefault %)
-                           (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
-                           #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
-     (t :page/Addblock)]]])
+    (if (:toggle-move-mode @state)
+      [:div.placeholder.html-block-content.html-block-content-hover
+       "Click to drop block"
+       ]
+      [:button {:class    "btn btn-success"
+                :on-click #(do
+                             (.preventDefault %)
+                             (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
+                             #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
+       (t :page/Addblock)])]])
 
 #_(defn page-description [description]
     [:div.form-group
@@ -452,7 +470,7 @@
        [page-title (cursor state [:page :name])]
        [page-description (cursor state [:page :description])]]]]]
    [:div.form-horizontal
-    [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
+    [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]
     [ph/manage-page-buttons (fn []  (save-page (:page @state) state  (str "/profile/page/edit_theme/" (get-in @state [:page :id])))) state (str "/profile/page/edit_theme/" (get-in @state [:page :id])) nil false]
     #_[:div.row
        [:div.col-md-12
@@ -492,7 +510,8 @@
     {:handler (fn [data]
                 (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
                                                                                (get-in data [:page :blocks]))))]
-                  (reset! state data-with-uuids)))}))
+                  (reset! state (assoc data-with-uuids :toggle-move-mode false))
+                  ))}))
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
@@ -501,7 +520,8 @@
                             :description ""
                             :id id}
                      :badges []
-                     :tags []})]
+                     :tags []
+                     :toggle-move-mode false})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
