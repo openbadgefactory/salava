@@ -93,7 +93,7 @@
                                                                     #(= (:type %) "badge") (-> BadgeBlock
                                                                                                (assoc :id s/Int
                                                                                                       :block_order s/Int
-                                                                                                      :badge (select-keys Badge [:id :name :image_file]))
+                                                                                                      :badge (select-keys Badge [:id :name :image_file :description]))
                                                                                                (dissoc :badge_id))
                                                                     #(= (:type %) "html") (assoc HtmlBlock :id s/Int
                                                                                                            :block_order
@@ -104,7 +104,8 @@
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file (s/maybe s/Str)
-                                        :tags       (s/maybe [s/Str])}]
+                                        :tags       (s/maybe [s/Str])
+                                        :description (s/maybe s/Str)}]
                               :tags   (s/maybe [s/Str])
                               :files  [(dissoc PageFile :file_order)]})
 

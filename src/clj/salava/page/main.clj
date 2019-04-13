@@ -85,7 +85,8 @@
                     :format (:format %)
                     :badge {:id (:badge_id %)
                             :name (:name %)
-                            :image_file (:image_file %)}) blocks)))
+                            :image_file (:image_file %)
+                            :description (:description %)}) blocks)))
 
 (defn heading-blocks-for-edit [ctx page-id]
   (let [blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))]
@@ -188,7 +189,7 @@
     (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
           blocks (page-blocks-for-edit ctx page-id)
           owner (:user_id page)
-          badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
+          badges (map #(select-keys % [:id :name :image_file :tags :description]) (b/user-badges-all ctx owner))
           files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
           tags (distinct (flatten (map :tags badges)))]
       {:page (assoc page :blocks blocks) :badges badges :tags tags :files files})))

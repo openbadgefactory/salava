@@ -193,7 +193,7 @@
        (= "pickable" badge-type) [:div
                                   [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
-                                                              (swap! (:new-field-atom @state) merge {:badge {:id id :image_file image_file :type "badge"}})
+                                                              (swap! (:new-field-atom @state) merge {:badge {:id id :image_file image_file :type "badge" :name name :description description}})
                                                               (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state)))
                                                               (m/close-modal!))
                                        }
