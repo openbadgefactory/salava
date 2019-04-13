@@ -470,7 +470,7 @@
 }
 
 .select-border-wrapper.selected {
-  border-color: #66afe9;
+  border-color: $titlebar-color; //#66afe9;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
 }
@@ -480,6 +480,12 @@
   div {
     margin-right: 10px;
     margin-bottom: 10px;
+  }
+
+  div.selected {
+    border: 1px solid $titlebar-color;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+    box-shadow:  inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
   }
 
   .theme-container {
