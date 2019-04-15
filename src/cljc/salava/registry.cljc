@@ -27,5 +27,6 @@
                 [salava.metabadge.ui.routes]
                 [salava.connections.ui.routes]
                 [salava.location.ui.routes]
+                [salava.profile.ui.routes]
 ])))
 

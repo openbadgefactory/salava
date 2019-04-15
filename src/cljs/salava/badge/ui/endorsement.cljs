@@ -637,3 +637,8 @@
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         :else (layout/default site-navi (user-endorsements-content state)))
       )))
+
+
+(defn ^:export modalroute []
+  {:endorsement badge-endorsement-content
+   :userendorsement user-endorsement-content})

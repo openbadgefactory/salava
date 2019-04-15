@@ -119,7 +119,7 @@
         [:div {:id "buttons"
                :class "text-right"}
          [:a {:class "btn btn-primary edit-btn"
-              :href  (path-for (str "/page/edit/" (:id page)))}
+              :href  (path-for (str "/profile/page/edit/" (:id page)))}
           (t :page/Edit)]
          [:button {:class "btn btn-primary print-btn"
                    :on-click #(.print js/window)}

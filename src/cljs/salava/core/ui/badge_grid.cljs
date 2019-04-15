@@ -9,7 +9,9 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.social.ui.follow :refer [follow-badge]]
             [reagent.session :as session]
-            #_[salava.metabadge.ui.metabadge :as mb]))
+            #_[salava.metabadge.ui.metabadge :as mb]
+            [reagent.core :refer [atom cursor]]
+            [salava.core.ui.field :as f]))
 
 
 (defn num-days-left [timestamp]
@@ -117,20 +119,20 @@
 
        (= "profile" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                 [:div.media-content
+                                  [:div.media-content
 
-                                  [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
-                                   [:div.visibility-icon.inline
-                                    ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                    (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+                                   [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
+                                    [:div.visibility-icon.inline
+                                     ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
+                                     (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
 
-                                    ]]
-                                  [:div.media-left
-                                   (if image_file  [:img {:src (str "/" image_file) :alt name}])
-                                   [:div.media-body
-                                    [:div.media-heading name]
-                                    [:div.media-issuer [:p issuer_content_name]]]
-                                   ]]]]
+                                     ]]
+                                   [:div.media-left
+                                    (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                    [:div.media-body
+                                     [:div.media-heading name]
+                                     [:div.media-issuer [:p issuer_content_name]]]
+                                    ]]]]
 
        (= "gallery" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
@@ -154,4 +156,58 @@
                                  [:div.media-bottom
                                   [:div {:class "pull-left"}
                                    ]
-                                  (admin-gallery-badge badge_id "badges" state init-data)]])]))
+                                  (admin-gallery-badge badge_id "badges" state init-data)]]
+       (= "selectable" badge-type)  [:div
+                                     [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
+                                      [:div.media-content
+                                       [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
+                                        [:div.visibility-icon.inline
+                                         ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
+                                         (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+
+                                         ]]
+                                       [:div.media-left
+                                        (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                        [:div.media-body
+                                         [:div.media-heading name]
+                                         [:div.media-issuer [:p issuer_content_name]]]
+                                        ]]]
+                                     [:div {:class "media-bottom"}
+                                      [:div.row
+                                       [:div.col-xs-9
+                                        (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
+                                          [:div.checkbox
+                                           [:label {:for (str "checkbox-" id)}
+                                            [:input {:type "checkbox"
+                                                     :id (str "checkbox-" id)
+                                                     :on-change (fn []
+                                                                  (if checked?
+                                                                    (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
+                                                                    (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
+                                                     :checked checked?}]
+
+                                            (t :badge/Exporttobackpack)]])]
+                                       #_[:div {:class "col-xs-3 text-right"}
+                                          [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
+                                           [:i {:class "fa fa-download"}]]]]]]
+       (= "pickable" badge-type) [:div
+                                  [:a {:href "#" :on-click #(do
+                                                              (.preventDefault %)
+                                                              (swap! (:new-field-atom @state) merge {:badge {:id id :image_file image_file :type "badge" :name name :description description}})
+                                                              (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state)))
+                                                              (m/close-modal!))
+                                       }
+                                   [:div.media-content
+
+                                    [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
+                                     [:div.visibility-icon.inline
+                                      ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
+                                      (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+
+                                      ]]
+                                    [:div.media-left
+                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                     [:div.media-body
+                                      [:div.media-heading name]
+                                      [:div.media-issuer [:p issuer_content_name]]]
+                                     ]]]])]))

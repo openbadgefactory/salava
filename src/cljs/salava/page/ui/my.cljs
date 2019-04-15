@@ -26,7 +26,7 @@
     (path-for "/obpv1/page/create")
     {:params {:userid 1}
      :handler (fn [id]
-                (navigate-to (str "/page/edit/" id)))}))
+                (navigate-to (str "/profile/page/edit/" id)))}))
 
 (defn page-grid-form [state]
   [:div {:id "grid-filter"

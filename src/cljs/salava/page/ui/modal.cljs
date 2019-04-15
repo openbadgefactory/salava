@@ -4,7 +4,7 @@
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for collect-plugin-modal-routes]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
@@ -13,12 +13,11 @@
             [reagent.session :as session]
             [salava.core.ui.error :as err]
             [salava.core.ui.modal :refer [set-new-view]]
-            [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]
-            ))
+            [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]))
 
 
 
-(defn content [state]  
+(defn content [state]
   (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} (:page @state)]
     [:div {:id    (str "theme-" (or theme 0))
            :class "page-content"}
@@ -68,36 +67,37 @@
 
 (defn init-data [page-id state]
   (ajax/GET
-     (path-for (str "/obpv1/page/view/" page-id) true)
-     {:handler (fn [data]
-                 
-                 (reset! state (assoc data
-                                      :page-id page-id
-                                      :show-link-or-embed-code nil
-                                      :permission "success"
-                                      :badge-small-view false)))}
-     (fn [] (swap! state assoc :permission "error"))))
+    (path-for (str "/obpv1/page/view/" page-id) true)
+    {:handler (fn [data]
+
+                (reset! state (assoc data
+                                :page-id page-id
+                                :show-link-or-embed-code nil
+                                :permission "success"
+                                :badge-small-view false)))}
+    (fn [] (swap! state assoc :permission "error"))))
 
 
 (defn handler [params]
-  
+
   (let [page-id (:page-id params)
         state (atom {:page {}
                      :initializing true
                      :permission "initial"})
         user (session/get :user)]
-    
+
     (init-data page-id state)
-    
+
     (fn []
       (cond
         (= "initial" (:permission @state)) [:div ""]
         (and user (= "error" (:permission @state))) (err/error-content)
         (= "error" (:permission @state)) (err/error-content)
-        (= "success" (:permission @state)) (content state) 
-        (and (= "success" (:permission @state)) user) (content state) 
+        (= "success" (:permission @state)) (content state)
+        (and (= "success" (:permission @state)) user) (content state)
         :else (content state) ))
     ))
 
 (def ^:export modalroutes
-  {:page {:view handler}})
+  {:page (merge {:view handler}
+                (collect-plugin-modal-routes [:page] ["edit"]))})

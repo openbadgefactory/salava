@@ -4,7 +4,8 @@
             [schema.core :as s]
             [pushy.core :as pushy]
             [salava.core.helper :as h]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [salava.core.helper :refer [dump]]))
 
 (defn plugin-fun [plugins nspace name]
   (let [fun (fn [p]
@@ -14,6 +15,18 @@
     (->> plugins
          (map fun)
          (filter #(not (nil? %))))))
+
+
+
+(defn collect-plugin-modal-routes
+  "A workaround for circular dependencies.
+  This function negates the need to require all namespaces where modals are used.
+  Modal function is exported from own namespace e.g (defn ^:export modalroute [] {:key fname})"
+  [plugins namespaces]
+  (let [exported-routes (reduce (fn [r route] (conj r (first (plugin-fun plugins route "modalroute")))) [] namespaces)
+        modal-routes (into {} (reduce (fn [r mr] (conj r (mr))) [] (remove nil? exported-routes)))]
+
+    modal-routes))
 
 (defn unique-values [key data]
   (->> data
