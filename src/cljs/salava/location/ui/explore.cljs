@@ -100,10 +100,11 @@
             ]
            [:div.col-md-1 {:style {:padding-left 0}}
             [:button.btn.btn-link
-             {:style {:padding-left 0 :font-weight "bold"}
+             {:title (t :location/clearField)
+              :style {:padding-left 0 :font-weight "bold"}
               :on-click #(do (swap! state assoc-in [:badge :value] "")
                              (.trigger (js/jQuery (str "div.badges-filter .badge-filter input")) "change"))}
-             "X"]]]
+             [:i.fa.fa-refresh]]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
@@ -111,10 +112,11 @@
             ]
            [:div.col-md-1 {:style {:padding-left 0}}
             [:button.btn.btn-link
-             {:style {:padding-left 0 :font-weight "bold"}
+             {:title (t :location/clearField)
+              :style {:padding-left 0 :font-weight "bold"}
               :on-click #(do (swap! state assoc-in [:issuer :value] "")
                              (.trigger (js/jQuery (str "div.badges-filter .issuer-filter input")) "change"))}
-             "X"]]]
+             [:i.fa.fa-refresh]]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
@@ -122,10 +124,11 @@
             ]
            [:div.col-md-1 {:style {:padding-left 0}}
             [:button.btn.btn-link
-             {:style {:padding-left 0 :font-weight "bold"}
+             {:title (t :location/clearField)
+              :style {:padding-left 0 :font-weight "bold"}
               :on-click #(do (swap! state assoc-in [:tag :value] "")
                              (.trigger (js/jQuery (str "div.badges-filter .tag-filter input")) "change"))}
-             "X"]]]
+             [:i.fa.fa-refresh]]]]
           ]
 
          [:div {:id "map-view" :style {:height "700px" :margin "20px 0"}}]]])

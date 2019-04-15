@@ -89,6 +89,7 @@
        [:div.row {:style {:display (if @visible "block" "none")}}
         [:label.col-md-12.sub-heading (t :location/Location)]
         [:div.col-md-12
+         [:label (t :location/setLocationHere)]
          [:div {:id "map-view-badge" :style {:height "400px" :margin "20px 0"}}]]])
 
      :component-did-mount
@@ -199,6 +200,7 @@
               (t :location/LocationPublic)]
              [:p.help-block (t :location/LocationPublicInfo)]]]
 
+           [:label (t :location/setLocationHere)]
            [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]
            ]]
          ]])
