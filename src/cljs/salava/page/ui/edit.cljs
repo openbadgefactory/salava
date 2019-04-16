@@ -276,8 +276,7 @@
 
 
 (defn contenttype [{:keys [block-atom index]}]
-  (let [type (:type @block-atom)
-        ]
+  (let [type (:type @block-atom)]
     (fn []
       [:div#block-modal
        [:div.modal-body
@@ -319,9 +318,6 @@
          (t :core/Cancel)]]
        ])))
 
-#_(defn open-block-modal [block-atom index]
-    (create-class {:reagent-render (fn [] (content-type block-atom index))
-                   :component-will-unmount (fn []  (m/close-modal!))}))
 
 (defn field-after [blocks state index initial?]
   (let [ first? (= 0 index)
@@ -332,33 +328,17 @@
        (cond
          (and (:toggle-move-mode @state) (not (= index (:toggled @state))))         [:a {:href "#" :on-click #(do
 
-                                                                                                                       (if (and (:toggle-move-mode @state) (:toggle @state)(nil? index)) (reset! blocks (conj @blocks (nth @blocks (:toggled @state)))))
                                                                                                                        (f/move-positions blocks (:toggled @state) index)
-                                                                                                                       ;(f/move-field-drop blocks (:toggled @state) index)
                                                                                                                        (swap! state assoc :toggle-move-mode false :toggled nil)
                                                                                                                        )} [:div.placeholder.html-block-content.html-block-content-hover
 
-                                                                                                                           "Click to drop block"]]
+                                                                                                                           (t :page/Clicktodrop)]]
          :else            [:button {:class    "btn btn-success"
                                     :on-click #(do
                                                  (.preventDefault %)
                                                  (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
                            (t :page/Addblock)]
          )
-       #_(if (and (:toggle-move-mode @state) (not (= (inc index) (:toggled @state))) (not initial?) (not (= index (:toggled @state))))
-           [:a {:href "#" :on-click #(do
-                                       (dump index)
-                                       (f/move-field-drop blocks (:toggled @state) index)
-                                       (swap! state assoc :toggle-move-mode false :toggled nil)
-                                       )} [:div.placeholder.html-block-content.html-block-content-hover
-
-                                           "Click to drop block"]]
-           [:button {:class    "btn btn-success"
-                     :on-click #(do
-                                  (.preventDefault %)
-                                  (dump index)
-                                  (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
-            (t :page/Addblock)])
        ]
       )
     ))
@@ -395,7 +375,7 @@
         [:div.col-xs-8
          [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
          #_[block-type block-atom]]
-        #_[:div.col-xs-2.field-remove {:on-click #(do
+        [:div.col-xs-2.field-remove {:on-click #(do
                                                   (.preventDefault %)
                                                   (cond
                                                     (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
@@ -405,7 +385,7 @@
                                                       (swap! state assoc :toggle-move-mode false :toggled nil)
                                                       (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
-        [:div {:class "col-xs-4 field-remove"
+        [:div {:class "col-xs-2 field-remove"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]

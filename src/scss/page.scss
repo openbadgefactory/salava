@@ -1343,7 +1343,7 @@
     padding: 10px 12px 10px 10px;
     margin-right: 2px;
     margin-bottom: 5px;
-    background: #b1a1ab;
+    background: $button-color;
     position: relative;
     display: inline-block;
     color: #fff;
@@ -1365,7 +1365,7 @@
       height: 100%;
       border-top: 20px inset transparent;
       border-bottom: 20px inset transparent;
-      border-left: 20px solid #b1a1ab;
+      border-left: 20px solid $button-color;
       position: absolute;
       content: "";
       top: 0;
@@ -1391,10 +1391,10 @@
     }
   }
   .current {
-    background: #494146;
+    background: $button-hover;
     color: #fff;
     &:after {
-      border-left-color: #494146;
+      border-left-color: $button-hover;
     }
   }
 }
@@ -1402,7 +1402,10 @@
 /*WIZARD END*/
 
 #page-edit, #page-edit-theme {
-
+  .placeholder {
+    font-weight: bold;
+    text-decoration: none;
+  }
   .modal-content {
     border-radius: 5px;
   }
