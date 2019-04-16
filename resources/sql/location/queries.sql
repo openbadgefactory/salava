@@ -14,7 +14,7 @@ SELECT * FROM user WHERE id = :user;
 SELECT COALESCE(ub.location_lat, u.location_lat) AS lat, COALESCE(ub.location_lng, u.location_lng) AS lng FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
 WHERE (ub.user_id = :user OR ub.visibility != 'private')
-    AND ub.id = :badge AND ub.deleted = 0 AND ub.status = 'accepted'
+    AND ub.id = :badge AND ub.deleted = 0 AND ub.status != 'declined'
     AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL;
 
 --name: select-user-badge-location-public
