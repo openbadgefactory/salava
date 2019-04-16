@@ -323,24 +323,63 @@
     (create-class {:reagent-render (fn [] (content-type block-atom index))
                    :component-will-unmount (fn []  (m/close-modal!))}))
 
+(defn field-after [blocks state index initial?]
+  (let [ first? (= 0 index)
+         last? (= (dec (count @blocks)) index)]
+    (fn []
+      [:div.add-field-after
+       (cond
+         (and (:toggle-move-mode @state) (not (= index (:toggled @state))))         [:a {:href "#" :on-click #(do
+                                                                                                                       (dump index)
+                                                                                                                       (f/move-positions blocks (:toggled @state) index)
+                                                                                                                       (f/move-field-drop blocks (:toggled @state) index)
+                                                                                                                       (swap! state assoc :toggle-move-mode false :toggled nil)
+                                                                                                                       )} [:div.placeholder.html-block-content.html-block-content-hover
+
+                                                                                                                           "Click to drop block"]]
+         :else            [:button {:class    "btn btn-success"
+                                    :on-click #(do
+                                                 (.preventDefault %)
+                                                 (dump index)
+                                                 (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
+                           (t :page/Addblock)]
+         )
+       #_(if (and (:toggle-move-mode @state) (not (= (inc index) (:toggled @state))) (not initial?) (not (= index (:toggled @state))))
+           [:a {:href "#" :on-click #(do
+                                       (dump index)
+                                       (f/move-field-drop blocks (:toggled @state) index)
+                                       (swap! state assoc :toggle-move-mode false :toggled nil)
+                                       )} [:div.placeholder.html-block-content.html-block-content-hover
+
+                                           "Click to drop block"]]
+           [:button {:class    "btn btn-success"
+                     :on-click #(do
+                                  (.preventDefault %)
+                                  (dump index)
+                                  (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
+            (t :page/Addblock)])
+       ]
+      )
+    ))
+
 (defn block [block-atom index blocks badges tags files state]
   (let [{:keys [type]} @block-atom
         first? (= 0 index)
         last? (= (dec (count @blocks)) index)
         block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))]
     [:div {:key index}
-     [:div.add-field-after
-      (if (and (:toggle-move-mode @state) (not (= 0 (:toggled @state))))
-        [:div.placeholder.html-block-content.html-block-content-hover
-         "Click to drop block"
-         ]
-        [:button {:class    "btn btn-success"
-                  :on-click #(do
-                               (.preventDefault %)
-                               (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md})
-                               #_(m/modal! [open-block-modal blocks index] {:size :md})
-                               #_(f/add-field blocks {:type "heading"} index))}
-         (t :page/Addblock)])]
+     [field-after blocks state index]
+     ;(when first? [field-after blocks state 0 true])
+     #_[:div.add-field-after
+        (if (and (:toggle-move-mode @state) (not (= 0 (:toggled @state))) (not (= (inc index) (:toggled @state))) (not (= index (:toggled @state))))
+          [:div.placeholder.html-block-content.html-block-content-hover
+           "Click to drop block"
+           ]
+          [:button {:class    "btn btn-success"
+                    :on-click #(do
+                                 (.preventDefault %)
+                                 (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}))}
+           (t :page/Addblock)])]
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       [:div.field-move
        [:div.move-arrows
@@ -376,26 +415,30 @@
          ("file") [edit-block-files block-atom files]
          ("html") [edit-block-html block-atom]
          nil)]]
-     ]))
+     #_[field-after blocks state index]]))
 
 
 
 (defn page-blocks [blocks badges tags files state]
+  (let [block-count (count @blocks)
+         position (if (pos? block-count) (dec block-count) nil)]
   [:div {:id "field-editor"}
    (into [:div {:id "page-blocks"}]
          (for [index (range (count @blocks))]
            (block (cursor blocks [index]) index blocks badges tags files state)))
-   [:div.add-field-after
-    (if (:toggle-move-mode @state)
-      [:div.placeholder.html-block-content.html-block-content-hover
-       "Click to drop block"
-       ]
-      [:button {:class    "btn btn-success"
-                :on-click #(do
-                             (.preventDefault %)
-                             (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
-                             #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
-       (t :page/Addblock)])]])
+   [field-after blocks state position]
+   ;(when (seq @blocks)[field-after blocks state (dec (count @blocks))] [field-after blocks state 0])
+   #_[:div.add-field-after
+      (if (and (:toggle-move-mode @state) #_(not (= (dec index) (:toggled @state))))
+        [:div.placeholder.html-block-content.html-block-content-hover
+         "Click to drop block"
+         ]
+        [:button {:class    "btn btn-success"
+                  :on-click #(do
+                               (.preventDefault %)
+                               (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
+                               #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
+         (t :page/Addblock)])]]))
 
 #_(defn page-description [description]
     [:div.form-group
@@ -525,6 +568,3 @@
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
-
-(defn ^:export modalroute []
-  {:blocktype contenttype})

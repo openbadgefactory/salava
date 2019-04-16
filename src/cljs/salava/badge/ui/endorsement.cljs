@@ -593,9 +593,6 @@
   [:div
    [m/modal-window]
    [:div#badge-stats
-    #_[:h1.uppercase-header (t :badge/Myendorsements)]
-    #_[:div {:style {:margin-bottom "15px"}} (t :badge/Endorsementpageinfo)]
-
     (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given])))
       [:div
        [:div.form-horizontal {:id "grid-filter"}
@@ -638,7 +635,3 @@
         :else (layout/default site-navi (user-endorsements-content state)))
       )))
 
-
-(defn ^:export modalroute []
-  {:endorsement badge-endorsement-content
-   :userendorsement user-endorsement-content})

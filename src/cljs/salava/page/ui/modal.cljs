@@ -4,7 +4,7 @@
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
-            [salava.core.ui.helper :refer [navigate-to path-for collect-plugin-modal-routes]]
+            [salava.core.ui.helper :refer [navigate-to path-for]]
             [salava.badge.ui.helper :as bh]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
@@ -13,6 +13,7 @@
             [reagent.session :as session]
             [salava.core.ui.error :as err]
             [salava.core.ui.modal :refer [set-new-view]]
+            [salava.page.ui.edit :as edit]
             [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]))
 
 
@@ -99,5 +100,5 @@
     ))
 
 (def ^:export modalroutes
-  {:page (merge {:view handler}
-                (collect-plugin-modal-routes [:page] ["edit"]))})
+  {:page  {:view handler
+           :blocktype edit/contenttype}})
