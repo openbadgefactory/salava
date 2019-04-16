@@ -186,7 +186,8 @@
                                                                     (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
                                                      :checked checked?}]
 
-                                            (t :badge/Exporttobackpack)]])]
+                                            "Select"
+                                            #_(t :badge/Exporttobackpack)]])]
                                        #_[:div {:class "col-xs-3 text-right"}
                                           [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
                                            [:i {:class "fa fa-download"}]]]]]]

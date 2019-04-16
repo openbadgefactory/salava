@@ -325,14 +325,16 @@
 
 (defn field-after [blocks state index initial?]
   (let [ first? (= 0 index)
-         last? (= (dec (count @blocks)) index)]
+         last? (= (dec (count @blocks)) index)
+         block-count (count @blocks)]
     (fn []
       [:div.add-field-after
        (cond
          (and (:toggle-move-mode @state) (not (= index (:toggled @state))))         [:a {:href "#" :on-click #(do
-                                                                                                                       (dump index)
+
+                                                                                                                       (if (and (:toggle-move-mode @state) (:toggle @state)(nil? index)) (reset! blocks (conj @blocks (nth @blocks (:toggled @state)))))
                                                                                                                        (f/move-positions blocks (:toggled @state) index)
-                                                                                                                       (f/move-field-drop blocks (:toggled @state) index)
+                                                                                                                       ;(f/move-field-drop blocks (:toggled @state) index)
                                                                                                                        (swap! state assoc :toggle-move-mode false :toggled nil)
                                                                                                                        )} [:div.placeholder.html-block-content.html-block-content-hover
 
@@ -340,7 +342,6 @@
          :else            [:button {:class    "btn btn-success"
                                     :on-click #(do
                                                  (.preventDefault %)
-                                                 (dump index)
                                                  (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
                            (t :page/Addblock)]
          )
@@ -394,7 +395,7 @@
         [:div.col-xs-8
          [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
          #_[block-type block-atom]]
-        [:div.col-xs-2.field-remove {:on-click #(do
+        #_[:div.col-xs-2.field-remove {:on-click #(do
                                                   (.preventDefault %)
                                                   (cond
                                                     (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
@@ -404,7 +405,7 @@
                                                       (swap! state assoc :toggle-move-mode false :toggled nil)
                                                       (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
-        [:div {:class "col-xs-2 field-remove"
+        [:div {:class "col-xs-4 field-remove"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
