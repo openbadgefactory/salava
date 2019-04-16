@@ -510,21 +510,30 @@ button.navbar-toggle {
 }
 
 .btn-success {
-  background-color: $text-color !important;
-  border-color:$text-color !important;
+  background-color: #dcea74 !important; //$text-color !important;
+  border-color:  #dcea74 !important; //$text-color !important;
   font-weight:bold;
-  color:$background-color !important;
+  color: black !important;//$background-color !important;
   &:hover, &:focus, &:active:hover  {
-    background-color: $link-hover !important;
-    border-color: $link-hover !important;
+    background-color: $titlebar-color !important;
+    border-color: $titlebar-color !important;
     /*         box-shadow: 0px 2px $box-shadow; */
   }
 }
 
 .btn-warning {
-  background-color: $orange-color !important;
-  border-color:$orange-color !important;
+  background-color: #c774a0;
+  border-color: #c774a0;
+  color: black;
+  //background-color: $orange-color !important;
+  //border-color:$orange-color !important;
   font-weight:bold;
+  &:hover, &:focus, &:active:hover  {
+    background-color: #e3bad0 !important;
+    border-color: #e3bad0 !important;
+    color: black;
+    /*         box-shadow: 0px 2px $box-shadow; */
+  }
 }
 
 ul#secondary-menu-links li a i.fa {
@@ -635,7 +644,6 @@ a.popup-info {
   }
 
 
-
   #box_1 .notifications-block .notification-div .content-text{
     color: $text-color;
     .date {
@@ -659,4 +667,63 @@ a.popup-info {
 
 #endorsebadge .list-group a {
   text-decoration: none;
+}
+
+
+#page-edit #block-modal .block-types div, #page-edit-theme #block-modal .block-types div {
+  background-color: #dcea74;
+  &:hover, &:focus {
+    background-color: $titlebar-color;
+  }
+
+}
+
+#page-edit .field .field-move .move-arrows{
+  .move-down, .move-up {
+    color: #c774a0;
+  }
+}
+
+
+
+.wizard {
+  .badge {
+    color: black;
+  }
+  a {
+    color: black;
+    background-color: #c774a0;
+    &:before {
+      // border-left: 20px solid #c774a0;
+    }
+
+    &:after {
+      border-left: 20px solid #c774a0;
+    }
+  }
+
+
+  .current {
+    background:#e3bad0;
+    color: black;
+    &:after {
+      border-left-color: #e3bad0;
+    }
+  }
+}
+
+#theme-0 {
+  .panel-left {
+    background-color: $titlebar-color !important;
+  }
+  .panel-right {
+    background-color: $titlebar-color !important;
+  }
+
+  font-family: "GT America", "Arial", sans-serif !important;
+}
+
+ #step-button > a, #step-button-previous > a {
+  font-weight: bold;
+  color: black !important;
 }
