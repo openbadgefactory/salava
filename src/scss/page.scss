@@ -1472,7 +1472,7 @@
       height: inherit;
       border-top: 17px solid transparent;
       border-bottom: 19px inset transparent;
-      border-left: 17px solid #587ab3;
+      border-left: 17px solid $button-color;
       position: absolute;
       content: "";
       top: 0;
@@ -1496,7 +1496,7 @@
       height: inherit;
       border-top: 17px solid transparent;
       border-bottom: 19px inset transparent;
-      border-right: 17px solid #587ab3;
+      border-right: 17px solid $button-color;
       position: absolute;
       content: "";
       top: 0;

@@ -19,7 +19,7 @@
     [clojure.walk :refer [keywordize-keys]]
     [cemerick.url :as url]
     [salava.core.ui.modal :as mo]
-    [salava.badge.ui.pending :refer [badge-pending badges-pending badge-alert]]))
+    #_[salava.badge.ui.pending :refer [badge-pending badges-pending badge-alert]]))
 
 
 (defn init-data
@@ -166,21 +166,25 @@
                     )]])]]))))
 
 (defn content [state]
-  (create-class {:reagent-render (fn [] [:div {:id "my-badges"}
+  (create-class {:reagent-render (fn []
+                                   (let [badges-pending-func (first (plugin-fun (session/get :plugins) "pending" "badges_pending"))
+                                         badge-alert-func (first (plugin-fun (session/get :plugins) "pending" "badge_alert"))]
+                                     [:div {:id "my-badges"}
                                          [m/modal-window]
                                          (if (:initializing @state)
                                            [:div.ajax-message
                                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                             [:span (str (t :core/Loading) "...")]]
                                            [:div
-                                            [badge-alert state]
-                                            (if (seq (:pending @state)) [badges-pending state init-data]
+                                            ;[badge-alert state]
+                                            [badge-alert-func state]
+                                            (if (seq (:pending @state)) [badges-pending-func state init-data] ;[badges-pending state init-data]
                                               [badge-grid-form state])
                                             (cond
                                               (not-activated?) (not-activated-banner)
                                               ;(empty? (:badges @state)) [no-badges-text]
                                               :else (when-not (seq (:pending @state)) [badge-grid state]))]
-                                           )])
+                                           )]))
                  :component-did-mount (fn [] (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
 
@@ -202,5 +206,3 @@
     (fn []
       (layout/default site-navi [content state]))))
 
-(defn ^:export modalroute []
-  {:my mybadgesmodal})
