@@ -70,7 +70,7 @@
 
     [:div {:id "page-edit-theme"}
      [ph/edit-page-header (t :page/Choosetheme ": " name)]
-     [ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url))]
+     [ph/edit-page-buttons id :theme state (fn [next-url] (save-theme state next-url))]
      [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
       [:form.form-horizontal
        [:div.form-group

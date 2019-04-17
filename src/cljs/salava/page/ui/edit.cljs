@@ -525,7 +525,7 @@
     [:div {:id "page-edit"}
      [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
-     [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) state next-url))]
+     [ph/edit-page-buttons id :content state (fn [next-url] (save-page (:page @state) state next-url))]
      [page-form state]]))
 
 (defn init-data [state id]

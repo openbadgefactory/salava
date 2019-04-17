@@ -211,49 +211,6 @@
    [:div.col-sm-12
     [:h1 header]]])
 
-(defn edit-page-buttons [id target save-function]
-  [:div {:class "row flip"
-         :id "buttons"}
-   [:div.col-xs-8.wizard
-    [:a {:class (if (= target :content) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/edit/" id)))}
-     [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
-     (t :page/Content)]
-    [:a {:class (if (= target :theme) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/edit_theme/" id)))}
-     [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
-     (t :page/Theme)]
-    [:a {:class (if (= target :settings) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/settings/" id)))}
-     [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
-     (t :page/Settings)]
-    [:a {:class (if (= target :preview) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/preview/" id)))}
-     [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
-     (t  :page/Preview)]]
-   [:div {:class "col-xs-4"
-          :id "buttons-right"}
-    #_[:a {:class "delete-link"
-           :title (t :page/Delete)
-           :on-click #(m/modal! (delete-page-modal id))}
-       [:i {:class "fa fa-trash"}]
-       (t :page/Delete)]
-    [:a {:class "btn btn-primary view-btn"
-         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
-         :href "#"}
-     (t :page/View)]]
-   [m/modal-window]])
-
-#_(defn next-page-btn [next-url]
-    [:div.pull-right {:id "step-button"}
-     [:a {:href "#" :on-click #(do
-                                 (.preventDefault %)
-                                 (navigate-to next-url))}  (t :core/Next)]])
-
 (defn block-specific-values [{:keys [type content badge tag format sort files]}]
   (case type
     "heading" {:type "heading" :size "h1" :content content}
@@ -276,7 +233,65 @@
     {:params {:name name
               :description description
               :blocks (prepare-blocks-to-save blocks)}
-     :handler (fn [] (navigate-to next-url))}))
+     :handler (fn [] (when next-url (navigate-to next-url)))}))
+
+(defn button-logic [page-id state]
+  {:content {:previous-url nil
+             :next-url (str "/profile/page/edit_theme/" page-id)
+             :save! (save-page (:page @state) nil)
+             :save-and-current! (fn [] (save-page (:page @state) (str "/profile/page/edit/" page-id)))
+             :save-and-next! (fn [] (save-page (:page @state) (str "/profile/page/edit_theme/" page-id)))
+             :save-and-previous! nil}})
+
+(defn edit-page-buttons [id target state save-function]
+  (let [logic (button-logic id state)]
+  [:div {:class "row flip"
+         :id "buttons"}
+   [:div.col-xs-8.wizard
+    [:a {:class (if (= target :content) "current")
+         :href "#"
+         :on-click #(do
+                      (.preventDefault %)
+                      ((get-in logic [target :save-and-current!]))
+
+                      #_(save-function)
+                      #_(navigate-to (str "/profile/page/edit/" id)))}
+     [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
+     (t :page/Content)]
+    [:a {:class (if (= target :theme) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %)
+                      (save-function)
+                      (navigate-to (str "/profile/page/edit_theme/" id)))}
+     [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
+     (t :page/Theme)]
+    [:a {:class (if (= target :settings) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %)
+                      (save-function)
+                      (navigate-to (str "/profile/page/settings/" id)))}
+     [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
+     (t :page/Settings)]
+    [:a {:class (if (= target :preview) "current")
+         :href "#"
+         :on-click #(do (.preventDefault %)
+                      (save-function)
+                      (navigate-to (str "/profile/page/preview/" id)))}
+     [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
+     (t  :page/Preview)]]
+   [:div {:class "col-xs-4"
+          :id "buttons-right"}
+    #_[:a {:class "delete-link"
+           :title (t :page/Delete)
+           :on-click #(m/modal! (delete-page-modal id))}
+       [:i {:class "fa fa-trash"}]
+       (t :page/Delete)]
+    [:a {:class "btn btn-primary view-btn"
+         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
+         :href "#"}
+     (t :page/View)]]
+   [m/modal-window]]))
+
 
 (defn manage-page-buttons [save-function state next-url previous-url preview?]
   (create-class {:reagent-render   (fn []
@@ -305,6 +320,7 @@
                                         (when-not preview?  [:div.pull-right {:id "step-button"}
                                                              [:a {:href "#" :on-click #(do
                                                                                          (.preventDefault %)
+                                                                                         (save-function)
                                                                                          (navigate-to next-url))}  (t :core/Next)]])]]
 
                                       (when (:alert @state)

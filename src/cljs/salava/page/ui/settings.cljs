@@ -40,7 +40,7 @@
     [:div {:id "page-settings"}
 
      [ph/edit-page-header (t :page/Settings ": " name)]
-     [ph/edit-page-buttons id :settings (fn [next-url] (save-settings state next-url))]
+     [ph/edit-page-buttons id :settings state (fn [next-url] (save-settings state next-url))]
      [:div {:class "panel page-panel" :id "settings-panel"}
       (when-not (clojure.string/blank? @(cursor state [:message]))
         [:div.alert.alert-warning (t @(cursor state [:message])) ])
