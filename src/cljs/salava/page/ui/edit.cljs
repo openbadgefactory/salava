@@ -350,19 +350,8 @@
         block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))]
     [:div {:key index}
      [field-after blocks state index]
-     ;(when first? [field-after blocks state 0 true])
-     #_[:div.add-field-after
-        (if (and (:toggle-move-mode @state) (not (= 0 (:toggled @state))) (not (= (inc index) (:toggled @state))) (not (= index (:toggled @state))))
-          [:div.placeholder.html-block-content.html-block-content-hover
-           "Click to drop block"
-           ]
-          [:button {:class    "btn btn-success"
-                    :on-click #(do
-                                 (.preventDefault %)
-                                 (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}))}
-           (t :page/Addblock)])]
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
-      [:div.field-move
+      #_[:div.field-move
        [:div.move-arrows
         (if-not first?
           [:div.move-up {:on-click #(f/move-field :up blocks index)}
@@ -375,7 +364,7 @@
         [:div.col-xs-8
          [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
          #_[block-type block-atom]]
-        [:div.col-xs-2.field-remove {:on-click #(do
+        [:div.move {:on-click #(do
                                                   (.preventDefault %)
                                                   (cond
                                                     (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
@@ -385,7 +374,7 @@
                                                       (swap! state assoc :toggle-move-mode false :toggled nil)
                                                       (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
-        [:div {:class "col-xs-2 field-remove"
+        [:div {:class "close"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
@@ -395,8 +384,7 @@
          ("tag") [edit-block-badge-groups block-atom tags badges]
          ("file") [edit-block-files block-atom files]
          ("html") [edit-block-html block-atom]
-         nil)]]
-     #_[field-after blocks state index]]))
+         nil)]]]))
 
 
 

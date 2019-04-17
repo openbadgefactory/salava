@@ -49,7 +49,7 @@
                             :border-top-color color}}
               ]]))))
 
-(defn save-theme [state next-url]
+#_(defn save-theme [state next-url]
   (let [page-id (get-in @state [:page :id])
         theme-id (get-in @state [:page :theme])
         border-id (get-in @state [:page :border :id])
