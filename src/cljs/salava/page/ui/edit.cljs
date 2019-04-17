@@ -328,11 +328,11 @@
        (cond
          (and (:toggle-move-mode @state) (not (= index (:toggled @state))))         [:a {:href "#" :on-click #(do
 
-                                                                                                                       (f/move-positions blocks (:toggled @state) index)
-                                                                                                                       (swap! state assoc :toggle-move-mode false :toggled nil)
-                                                                                                                       )} [:div.placeholder.html-block-content.html-block-content-hover
+                                                                                                                (f/move-positions blocks (:toggled @state) index)
+                                                                                                                (swap! state assoc :toggle-move-mode false :toggled nil)
+                                                                                                                )} [:div.placeholder.html-block-content.html-block-content-hover
 
-                                                                                                                           (t :page/Clicktodrop)]]
+                                                                                                                    (t :page/Clicktodrop)]]
          :else            [:button {:class    "btn btn-success"
                                     :on-click #(do
                                                  (.preventDefault %)
@@ -352,27 +352,37 @@
      [field-after blocks state index]
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       #_[:div.field-move
-       [:div.move-arrows
-        (if-not first?
-          [:div.move-up {:on-click #(f/move-field :up blocks index)}
-           [:i {:class "fa fa-chevron-up"}]])
-        (if-not last?
-          [:div.move-down {:on-click #(f/move-field :down blocks index)}
-           [:i {:class "fa fa-chevron-down"}]])]]
+         [:div.move-arrows
+          (if-not first?
+            [:div.move-up {:on-click #(f/move-field :up blocks index)}
+             [:i {:class "fa fa-chevron-up"}]])
+          (if-not last?
+            [:div.move-down {:on-click #(f/move-field :down blocks index)}
+             [:i {:class "fa fa-chevron-down"}]])]]
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
          [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
+         (when (= type "badge")
+           [:div.form-group
+             [:select {:class "form-control"
+                       :aria-label "select blocktype"
+                       :value (get-in @block-atom [:badge :format])
+                       :on-change #(update-block-value block-atom :format (.-target.value %))}
+              [:option {:value "short"} (t :page/Short)]
+              [:option {:value "long"} (t :page/Long)]]]
+
+           )
          #_[block-type block-atom]]
         [:div.move {:on-click #(do
-                                                  (.preventDefault %)
-                                                  (cond
-                                                    (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
-                                                    (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
-                                                    :else (swap! state assoc :toggle-move-mode true :toggled index))
-                                                  #_(if (:toggle-move-mode @state)
-                                                      (swap! state assoc :toggle-move-mode false :toggled nil)
-                                                      (swap! state assoc :toggle-move-mode true :toggled index)))}
+                                 (.preventDefault %)
+                                 (cond
+                                   (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                   (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                   :else (swap! state assoc :toggle-move-mode true :toggled index))
+                                 #_(if (:toggle-move-mode @state)
+                                     (swap! state assoc :toggle-move-mode false :toggled nil)
+                                     (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
         [:div {:class "close"
                :on-click #(f/remove-field blocks index)}
@@ -390,24 +400,24 @@
 
 (defn page-blocks [blocks badges tags files state]
   (let [block-count (count @blocks)
-         position (if (pos? block-count) (dec block-count) nil)]
-  [:div {:id "field-editor"}
-   (into [:div {:id "page-blocks"}]
-         (for [index (range (count @blocks))]
-           (block (cursor blocks [index]) index blocks badges tags files state)))
-   [field-after blocks state position]
-   ;(when (seq @blocks)[field-after blocks state (dec (count @blocks))] [field-after blocks state 0])
-   #_[:div.add-field-after
-      (if (and (:toggle-move-mode @state) #_(not (= (dec index) (:toggled @state))))
-        [:div.placeholder.html-block-content.html-block-content-hover
-         "Click to drop block"
-         ]
-        [:button {:class    "btn btn-success"
-                  :on-click #(do
-                               (.preventDefault %)
-                               (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
-                               #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
-         (t :page/Addblock)])]]))
+        position (if (pos? block-count) (dec block-count) nil)]
+    [:div {:id "field-editor"}
+     (into [:div {:id "page-blocks"}]
+           (for [index (range (count @blocks))]
+             (block (cursor blocks [index]) index blocks badges tags files state)))
+     [field-after blocks state position]
+     ;(when (seq @blocks)[field-after blocks state (dec (count @blocks))] [field-after blocks state 0])
+     #_[:div.add-field-after
+        (if (and (:toggle-move-mode @state) #_(not (= (dec index) (:toggled @state))))
+          [:div.placeholder.html-block-content.html-block-content-hover
+           "Click to drop block"
+           ]
+          [:button {:class    "btn btn-success"
+                    :on-click #(do
+                                 (.preventDefault %)
+                                 (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
+                                 #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
+           (t :page/Addblock)])]]))
 
 #_(defn page-description [description]
     [:div.form-group
