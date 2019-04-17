@@ -495,7 +495,8 @@
        [page-description (cursor state [:page :description])]]]]]
    [:div.form-horizontal
     [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]
-    [ph/manage-page-buttons (fn []  (save-page (:page @state) state  (str "/profile/page/edit_theme/" (get-in @state [:page :id])))) state (str "/profile/page/edit_theme/" (get-in @state [:page :id])) nil false]
+    [ph/manage-page-buttons :content (cursor state [:page :id]) state]
+    #_[ph/manage-page-buttons (fn []  (save-page (:page @state) state  (str "/profile/page/edit_theme/" (get-in @state [:page :id])))) state (str "/profile/page/edit_theme/" (get-in @state [:page :id])) nil false]
     #_[:div.row
        [:div.col-md-12
         [:button {:class    "btn btn-primary"
@@ -525,7 +526,8 @@
     [:div {:id "page-edit"}
      [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
-     [ph/edit-page-buttons id :content state (fn [next-url] (save-page (:page @state) state next-url))]
+     [ph/edit-page-buttons id :content state]
+     ;[ph/edit-page-buttons id :content  (fn [next-url] (save-page (:page @state) state next-url)) state]
      [page-form state]]))
 
 (defn init-data [state id]

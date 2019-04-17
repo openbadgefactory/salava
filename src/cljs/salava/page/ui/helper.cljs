@@ -1,5 +1,5 @@
 (ns salava.page.ui.helper
-  (:require [reagent.core :refer [create-class]]
+  (:require [reagent.core :refer [create-class atom cursor]]
             [reagent-modals.modals :as m]
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
@@ -235,134 +235,182 @@
               :blocks (prepare-blocks-to-save blocks)}
      :handler (fn [] (when next-url (navigate-to next-url)))}))
 
-(defn button-logic [page-id state]
-  {:content {:previous-url nil
-             :next-url (str "/profile/page/edit_theme/" page-id)
-             :save! (save-page (:page @state) nil)
-             :save-and-current! (fn [] (save-page (:page @state) (str "/profile/page/edit/" page-id)))
-             :save-and-next! (fn [] (save-page (:page @state) (str "/profile/page/edit_theme/" page-id)))
-             :save-and-previous! nil}})
+(defn save-theme [state next-url]
+  (let [{:keys [id theme border padding]} (:page @state)]
+    (ajax/POST
+      (path-for (str "/obpv1/page/save_theme/" id))
+      {:params {:theme theme
+                :border (:id border)
+                :padding padding}
+       :handler (fn [data]
+                  (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
+                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000))
+       :finally (fn [] (when next-url (navigate-to next-url)))})))
 
-(defn edit-page-buttons [id target state save-function]
-  (let [logic (button-logic id state)]
-  [:div {:class "row flip"
-         :id "buttons"}
-   [:div.col-xs-8.wizard
-    [:a {:class (if (= target :content) "current")
-         :href "#"
-         :on-click #(do
-                      (.preventDefault %)
-                      ((get-in logic [target :save-and-current!]))
+(defn save-settings [state next-url]
+  (let [{:keys [id tags visibility password]} (:page @state)]
+    (reset! (cursor state [:message]) nil)
+    (ajax/POST
+      (path-for (str "/obpv1/page/save_settings/" id))
+      {:params {:tags tags
+                :visibility visibility
+                :password password}
+       :handler (fn [data]
+                  (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
 
-                      #_(save-function)
-                      #_(navigate-to (str "/profile/page/edit/" id)))}
-     [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
-     (t :page/Content)]
-    [:a {:class (if (= target :theme) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %)
-                      (save-function)
-                      (navigate-to (str "/profile/page/edit_theme/" id)))}
-     [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
-     (t :page/Theme)]
-    [:a {:class (if (= target :settings) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %)
-                      (save-function)
-                      (navigate-to (str "/profile/page/settings/" id)))}
-     [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
-     (t :page/Settings)]
-    [:a {:class (if (= target :preview) "current")
-         :href "#"
-         :on-click #(do (.preventDefault %)
-                      (save-function)
-                      (navigate-to (str "/profile/page/preview/" id)))}
-     [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
-     (t  :page/Preview)]]
-   [:div {:class "col-xs-4"
-          :id "buttons-right"}
-    #_[:a {:class "delete-link"
-           :title (t :page/Delete)
-           :on-click #(m/modal! (delete-page-modal id))}
-       [:i {:class "fa fa-trash"}]
-       (t :page/Delete)]
-    [:a {:class "btn btn-primary view-btn"
-         :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
-         :href "#"}
-     (t :page/View)]]
-   [m/modal-window]]))
+                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 5000)
+                  (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
+                    (swap! state assoc ;:message (keyword (:message data))
+                           :page {:id id
+                                  :tags tags
+                                  :password password
+                                  :visibility "public"})))
+       :finally (when next-url (navigate-to next-url))})))
 
 
-(defn manage-page-buttons [save-function state next-url previous-url preview?]
-  (create-class {:reagent-render   (fn []
-                                     [:div
-                                      [:div.row {:id "page-edit"
-                                                 :style {:margin-top "10px" :margin-bottom "10px"}}
-                                       [:div.col-md-12
-                                        (when previous-url [:div {:id "step-button-previous"}
-                                                             [:a {:href "#" :on-click #(do
-                                                                                         (.preventDefault %)
-                                                                                         (navigate-to previous-url))}  (t :core/Previous)]])
-                                        [:button {:class    "btn btn-primary"
-                                                  :on-click #(do
-                                                               (.preventDefault %)
-                                                               (save-function))}
-                                         (t :page/Save)]
-                                        [:button.btn.btn-warning {:on-click #(do
-                                                                               (.preventDefault %)
-                                                                               (navigate-to  "/profile/page"))}
-                                         (t :core/Cancel)]
+(defn button-logic
+  "Use map lookup to manage button actions. editing what a button does happens here"
+  [page-id state]
+  (let [urls {:content {:previous nil
+                        :current (str "/profile/page/edit/" page-id)
+                        :next (str "/profile/page/edit_theme/" page-id)
+                        :save-function (fn [next-url] (save-page (:page @state) next-url))}
+              :theme {:previous (str "/profile/page/edit/" page-id)
+                      :current (str "/profile/page/edit_theme/" page-id)
+                      :next (str "/profile/page/settings/" page-id)
+                      :save-function (fn [next-url] (save-theme state next-url))}
+              :settings {:previous (str "/profile/page/edit_theme/" page-id)
+                         :current (str "/profile/page/settings/" page-id)
+                         :next (str "/profile/page/preview/" page-id)
+                         :save-function (fn [next-url] (save-settings state next-url))
+                         }
+              :preview {:previous (str "/profile/page/settings/" page-id)
+                        :current (str "/profile/page/preview/" page-id)
+                        :next nil}}]
 
-                                        [:button.btn.btn-danger {:on-click #(do
-                                                                              (.preventDefault %)
-                                                                              (delete-page (get-in @state [:page :id])))}
-                                         (t :core/Delete)]
-                                        (when-not preview?  [:div.pull-right {:id "step-button"}
-                                                             [:a {:href "#" :on-click #(do
-                                                                                         (.preventDefault %)
-                                                                                         (save-function)
-                                                                                         (navigate-to next-url))}  (t :core/Next)]])]]
+    {:content {:save! (get-in urls [:content :save-function])
+               :save-and-next! (fn [] (save-page (:page @state) (get-in urls [:content :next])))
+               :url (get-in urls [:content :current])
+               :go! (fn [] (navigate-to (get-in urls [:content :current])))
+               :editable? true
+               :previous false
+               :next true}
+     :theme {:save! (get-in urls [:theme :save-function])
+             :save-and-next! (fn [] (save-theme state (get-in urls [:theme :next])))
+             :save-and-previous! (fn [] (save-theme state (get-in urls [:theme :previous])))
+             :go! (fn [] (navigate-to (get-in urls [:theme :current])))
+             :editable? true
+             :url (get-in urls [:theme :current])
+             :previous true
+             :next true
+             }
+     :settings {:save! (get-in urls [:settings :save-function])
+                :save-and-next! (fn [] (save-settings state (get-in urls [:settings :next])))
+                :save-and-previous! (fn [] (save-settings state (get-in urls [:settings :previous])))
+                :go! (fn [] (navigate-to (get-in urls [:settings :current])))
+                :editable? true
+                :url (get-in urls [:settings :current])
+                :previous true
+                :next true
+                }
+     :preview {:save! #()
+               :go! (fn [] (navigate-to (get-in urls [:preview :current])))
+               :editable? false
+               :url (get-in urls [:preview :current])
+               :previous true
+               :next false}}))
 
-                                      (when (:alert @state)
-                                        [:div.row
-                                         [:div.col-md-12
-                                          [:div {:class (str "alert " (case (get-in @state [:alert :status])
-                                                                        "success" "alert-success"
-                                                                        "error" "alert-warning"))
-                                                 :style {:display "block" :margin-bottom "20px"}}
-                                           (get-in @state [:alert :message] nil)]
-                                          ]])
-                                      ])}))
-
-#_(defn edit-page-buttons [id target save-function]
+(defn edit-page-buttons [id target state]
+  (let [logic (button-logic id state)
+        editable? (get-in logic [target :editable?])]
     [:div {:class "row flip"
            :id "buttons"}
-     [:div.col-xs-8
-      [:a {:class (str "btn" (if (= target :content) " btn-active"))
+     [:div.col-xs-8.wizard
+      [:a {:class (if (= target :content) "current")
            :href "#"
-           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit/" id)))}
-       (t "1." :page/Content)]
-      [:a {:class (str "btn" (if (= target :theme) " btn-active"))
+           :on-click #(do
+                        (.preventDefault %)
+                        (if editable?
+                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:content :url])))
+                          (as-> (get-in logic [:content :go!])  f (f))))}
+       [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
+       (t :page/Content)]
+      [:a {:class (if (= target :theme) "current")
            :href "#"
-           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/edit_theme/" id)))}
-       (t "2." :page/Theme)]
-      [:a {:class (str "btn" (if (= target :settings) " btn-active"))
+           :on-click #(do (.preventDefault %)
+                        (if editable?
+                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:theme :url])))
+                          (as-> (get-in logic [:theme :go!]) f (f))))}
+       [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
+       (t :page/Theme)]
+      [:a {:class (if (= target :settings) "current")
            :href "#"
-           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/settings/" id)))}
-       (t "3." :page/Settings)]
-      [:a {:class (str "btn" (if (= target :preview) " btn-active"))
+           :on-click #(do (.preventDefault %)
+                        (if editable?
+                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:settings :url])))
+                          (as-> (get-in logic [:settings :go!]) f (f))))}
+       [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
+       (t :page/Settings)]
+      [:a {:class (if (= target :preview) "current")
            :href "#"
-           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/preview/" id)))}
-       (t "4." :page/Preview)]]
+           :on-click #(do (.preventDefault %)
+                        (if editable?
+                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:preview :url])))
+                          (as-> (get-in logic [:preview :go!]) f (f)))
+                        )}
+       [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
+       (t  :page/Preview)]]
      [:div {:class "col-xs-4"
             :id "buttons-right"}
-      [:a {:class "delete-link"
-           :title (t :page/Delete)
-           :on-click #(m/modal! (delete-page-modal id))}
-       [:i {:class "fa fa-trash"}]
-       (t :page/Delete)]
       [:a {:class "btn btn-primary view-btn"
-           :on-click #(do (.preventDefault %) (save-function (str "/profile/page/view/" id)))
+           :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
            :href "#"}
        (t :page/View)]]
-     [m/modal-window]])
+     [m/modal-window]]))
+
+(defn manage-page-buttons [current id state]
+  (let [id @id
+        logic (button-logic id state)
+        previous? (get-in logic [current :previous])
+        next?  (get-in logic [current :next])]
+    (create-class {:reagent-render   (fn []
+
+                                       [:div
+                                        [:div.row {:id "page-edit"
+                                                   :style {:margin-top "10px" :margin-bottom "10px"}}
+                                         [:div.col-md-12
+                                          (when previous? [:div {:id "step-button-previous"}
+                                                           [:a {:href "#" :on-click #(do
+                                                                                       (.preventDefault %)
+                                                                                       (as-> (get-in logic [current :save-and-previous!]) f (f))
+                                                                                       )}  (t :core/Previous)]])
+                                          [:button {:class    "btn btn-primary"
+                                                    :on-click #(do
+                                                                 (.preventDefault %)
+                                                                 (as-> (get-in logic [current :save!]) f (f)))}
+                                           (t :page/Save)]
+                                          [:button.btn.btn-warning {:on-click #(do
+                                                                                 (.preventDefault %)
+                                                                                 (navigate-to  "/profile/page"))}
+                                           (t :core/Cancel)]
+
+                                          [:button.btn.btn-danger {:on-click #(do
+                                                                                (.preventDefault %)
+                                                                                (delete-page (get-in @state [:page :id])))}
+                                           (t :core/Delete)]
+                                          (when next?  [:div.pull-right {:id "step-button"}
+                                                        [:a {:href "#" :on-click #(do
+                                                                                    (.preventDefault %)
+                                                                                    (as-> (get-in logic [current :save-and-next!]) f (f)))}
+                                                         (t :core/Next)]])]]
+
+                                        (when (:alert @state)
+                                          [:div.row
+                                           [:div.col-md-12
+                                            [:div {:class (str "alert " (case (get-in @state [:alert :status])
+                                                                          "success" "alert-success"
+                                                                          "error" "alert-warning"))
+                                                   :style {:display "block" :margin-bottom "20px"}}
+                                             (get-in @state [:alert :message] nil)]
+                                            ]])
+                                        ])})))
