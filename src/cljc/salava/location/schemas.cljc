@@ -53,6 +53,7 @@
 
 (s/defschema user-location {:id         (describe s/Int "internal user id")
                             :user_url   (describe s/Str "public user profile url")
+                            :user_image (describe s/Str "User image")
                             :first_name (describe s/Str "user's first name")
                             :last_name  (describe s/Str "user's last name")
                             :lat        (describe Lat   "Latitude coordinate")
