@@ -12,8 +12,11 @@
             [salava.location.ui.util :as lu]
             ))
 
-(def icon {"users"  lu/user-icon
-           "badges" lu/badge-icon})
+(defn icon [kind num]
+  (get (if (= num 1)
+         {"users"  lu/user-icon         "badges" lu/badge-icon}
+         {"users"  lu/user-icon-hotspot "badges" lu/badge-icon-hotspot})
+       kind))
 
 
 (defn- get-markers [kind my-map layer-group opt]
@@ -48,7 +51,7 @@
              (.addLayer
                layer-group
                (-> (js/L.latLng. (:lat item-1) (:lng item-1))
-                   (js/L.marker. (clj->js {:icon (get icon kind) :title (item-name item-1)}))
+                   (js/L.marker. (clj->js {:icon (icon kind (count item)) :title (item-name item-1)}))
                    (.on "click" (click-cb item)))))))
        })))
 

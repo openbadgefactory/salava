@@ -4,6 +4,10 @@ div.location-icon-user i {
     background: white;
 }
 
+div.location-icon-user.hotspot i {
+    color: #ca282c;
+}
+
 .location-icon-readonly {
     cursor: default;
 }
