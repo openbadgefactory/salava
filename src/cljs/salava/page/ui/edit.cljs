@@ -14,7 +14,8 @@
             [salava.file.icons :refer [file-icon]]
             [clojure.string :refer [capitalize]]
             [salava.core.ui.modal :refer [open-modal]]
-            [salava.core.ui.popover :refer [info]]))
+            [salava.core.ui.popover :refer [info]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 (defn random-key []
   (-> (make-random-uuid)
@@ -272,9 +273,27 @@
    {:icon "fa-file-code-o" :text (t :page/Html) :value "html"}
    {:icon "fa-file" :text (t :page/Files) :value "file"}
    {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
-   {:icon "fa-certificate" :text "badge showcase" :value "tag"}])
+   {:icon "fa-certificate" :text (t :page/Badgegroup) :value "tag"}
+   {:icon "fa-certificate" :text (t :page/Badgeshowcase) :value "showcase"}])
 
-
+(defn badge-showcase [state block-atom]
+  (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
+        new-field-atom (atom {:type "showcase" :badges badges })]
+    [:div#badge-showcase
+     [:div#grid {:class "row"}
+      [:p.block-title (or (:title @block-atom) "test title")]
+      (reduce (fn [r b]
+                (conj r
+                      (badge-grid-element b block-atom "showcase" (fn [id badges] (swap! block-atom assoc :badges (into [] (remove #(= id (:id %)) badges))) ))))
+              [:div ]
+              badges)
+      [:div.addbadge
+       [:a {:href "#" :on-click #(do
+                                   (.preventDefault %)
+                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom :function (fn [f] (swap! block-atom merge f))}  #_{:hidden  (fn [] (dump @block-atom))})
+                                   )}
+        [:i.fa.fa-plus.add-icon]
+        ]]]]))
 
 (defn contenttype [{:keys [block-atom index]}]
   (let [type (:type @block-atom)]
@@ -302,27 +321,27 @@
                                             (f/add-field block-atom {:type (:value v)} index )
                                             (f/add-field block-atom {:type (:value v)} ))))
                            :data-dismiss (case (:value v)
-                                           ("badge" "tag") nil
+                                           ("badge" "tag" "showcase") nil
                                            "modal")
                            }]
                     [:div.row.content-type
                      [:a.link {:on-click #(do
-                                       (.preventDefault %)
-                                       (case (:value v)
-                                         "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
+                                            (.preventDefault %)
+                                            (case (:value v)
+                                              "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
                                                                                                                                  ;(do
                                                                                                                                  (if index
                                                                                                                                    (f/add-field block-atom {:type (:value v)} index :badge [])
                                                                                                                                    (f/add-field block-atom {:type (:value v)} :badge [])));)
-                                                                           } )
-                                         "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
-                                         (if index
-                                           (f/add-field block-atom {:type (:value v)} index )
-                                           (f/add-field block-atom {:type (:value v)} ))))
-                          :data-dismiss (case (:value v)
-                                          ("badge" "tag") nil
-                                          "modal")
-                          }
+                                                                                } )
+                                              "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
+                                              (if index
+                                                (f/add-field block-atom {:type (:value v)} index )
+                                                (f/add-field block-atom {:type (:value v)} ))))
+                               :data-dismiss (case (:value v)
+                                               ("badge" "tag") nil
+                                               "modal")
+                               }
                       [:i {:class (str "fa icon " (:icon v))}]
                       [:span (:text v)]]
                      [info {:placement "right" :content (case (:value v)
@@ -332,10 +351,10 @@
                                                           "sub-heading" (t :page/Subheadinginfo)
                                                           "file" (t :page/Filesinfo)
                                                           "html" (t :page/Htmlinfo)
+                                                          ""
                                                           )
                             :style {:font-size "15px"}}]
                      ]
-                    ;]
                     )))
           [:div.block-types]
           block-type-map)]
@@ -429,6 +448,7 @@
          ("tag") [edit-block-badge-groups block-atom tags badges]
          ("file") [edit-block-files block-atom files]
          ("html") [edit-block-html block-atom]
+         ("showcase") [badge-showcase state block-atom]
          nil)]]]))
 
 

@@ -194,9 +194,20 @@
        (= "pickable" badge-type) [:div
                                   [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
-                                                              (swap! (:new-field-atom @state) merge {:badge {:id id :image_file image_file :type "badge" :name name :description description}})
-                                                              (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state)))
-                                                              (m/close-modal!))
+                                                              (let [new-field-atom (:new-field-atom @state)
+                                                                    type (:type @new-field-atom)
+                                                                    badges (:badges @new-field-atom)]
+                                                                (cond
+                                                                  (= "badge" type)(do
+                                                                                    (swap! (:new-field-atom @state) merge {:badge {:id id :image_file image_file :type "badge" :name name :description description}})
+                                                                                    (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state)))
+                                                                                    )
+                                                                  (= "showcase" type) (do
+                                                                                        (when-not  (some (fn [b] (= id (:id b))) badges)
+                                                                                          (swap! new-field-atom assoc :badges (conj badges {:id id :image_file image_file :type "badge" :name name :description description}))
+                                                                                          (as-> (:function @state) f (f @new-field-atom))))
+                                                                  :else nil)
+                                                                (m/close-modal!)))
                                        }
                                    [:div.media-content
 
@@ -211,4 +222,29 @@
                                      [:div.media-body
                                       [:div.media-heading name]
                                       [:div.media-issuer [:p issuer_content_name]]]
-                                     ]]]])]))
+                                     ]]]]
+       (= "showcase" badge-type) [:div
+                                  [:a {:href "#" :on-click #(do
+                                                              (.preventDefault %)
+                                                              (mo/open-modal [:badge :info] {:badge-id id})
+
+                                                              )}
+                                   [:div.media-content
+                                    [:div.media-left
+                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                     [:div.media-body
+                                      [:div.media-heading name]
+                                      ;[:div.media-issuer [:p issuer_content_name]]
+                                      ]
+                                     ]]]
+                                  [:div.delete-button
+                                   [:a {:href "#" :on-click #(do
+                                                               (.preventDefault %)
+                                                               (let [block-atom @state]
+                                                                 (init-data id (:badges block-atom)))
+
+                                                               )}
+                                    [:i.fa.fa-trash]]
+
+                                   ]]
+       )]))

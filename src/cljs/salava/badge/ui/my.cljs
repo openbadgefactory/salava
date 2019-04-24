@@ -134,7 +134,8 @@
                      :tags-selected []})
         badge-type (:type param)
         block-atom (:block-atom param)
-        new-field-atom (:new-field-atom param)]
+        new-field-atom (:new-field-atom param)
+        func (:function param)]
     (init-data state)
     (fn []
       (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
@@ -161,7 +162,7 @@
                     (doall
                       (for [element-data badges]
                         (when (badge-visible? element-data state)
-                          (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom :index (:index param))
+                          (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom :index (:index param) :function func)
                         (badge-grid-element element-data state badge-type init-data))))
                     )]])]]))))
 
