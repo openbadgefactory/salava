@@ -211,7 +211,7 @@
    [:div.col-sm-12
     [:h1 header]]])
 
-(defn block-specific-values [{:keys [type content badge tag format sort files]}]
+(defn block-specific-values [{:keys [type content badge tag format sort files title badges]}]
   (case type
     "heading" {:type "heading" :size "h1" :content content}
     "sub-heading" {:type "heading" :size "h2":content content}
@@ -219,6 +219,8 @@
     "html" {:content content}
     "file" {:files (map :id files)}
     "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
+    "showcase" {:format (or format "short") :title title :badges (map :id badges)}
+
     nil))
 
 (defn prepare-blocks-to-save [blocks]
@@ -387,6 +389,7 @@
                                           [:button {:class    "btn btn-primary"
                                                     :on-click #(do
                                                                  (.preventDefault %)
+                                                                 (dump (:page @state))
                                                                  (as-> (get-in logic [current :save!]) f (f)))}
                                            (t :page/Save)]
                                           [:button.btn.btn-warning {:on-click #(do

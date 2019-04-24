@@ -21,7 +21,7 @@
   (-> (make-random-uuid)
       (uuid-string)))
 
-(defn block-specific-values [{:keys [type content badge tag format sort files]}]
+(defn block-specific-values [{:keys [type content badge tag format sort files badges title]}]
   (case type
     "heading" {:type "heading" :size "h1" :content content}
     "sub-heading" {:type "heading" :size "h2":content content}
@@ -29,6 +29,7 @@
     "html" {:content content}
     "file" {:files (map :id files)}
     "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
+    "showcase" {:format (or format "short") :title title :badges (map :id badges)}
     nil))
 
 (defn prepare-blocks-to-save [blocks]
@@ -278,10 +279,18 @@
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
-        new-field-atom (atom {:type "showcase" :badges badges })]
+        new-field-atom (atom {:type "showcase" :badges badges })
+        title (:title @block-atom)]
     [:div#badge-showcase
      [:div#grid {:class "row"}
-      [:p.block-title (or (:title @block-atom) "test title")]
+      [:div.form-group
+       [:div.col-md-12
+        [:input {:class     "form-control"
+                 :type      "text"
+                 :value     title
+                 :on-change #(update-block-value block-atom :title (.-target.value %))
+                 :placeholder "Enter the name of your badge showcase"}]]]
+      ;[:p.block-title (or (:title @block-atom) "test title")]
       (reduce (fn [r b]
                 (conj r
                       (badge-grid-element b block-atom "showcase" (fn [id badges] (swap! block-atom assoc :badges (into [] (remove #(= id (:id %)) badges))) ))))
@@ -555,6 +564,7 @@
         [:button {:class    "btn btn-primary"
                   :on-click #(do
                                (.preventDefault %)
+                               (dump (:page @state))
                                (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
          (t :page/Save)]
         [:button.btn.btn-warning {:on-click #(do
