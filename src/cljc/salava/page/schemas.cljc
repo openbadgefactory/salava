@@ -49,6 +49,11 @@
                                                                         (<= (count %) 255))))
                        :format      (s/enum "short" "long")
                        :sort        (s/enum "name" "modified")})
+(s/defschema ShowcaseBlock {:type (s/eq "showcase")
+                            :title  (s/maybe s/Str)
+                            :badges [(s/maybe s/Int)]
+                            :format      (s/enum "short" "long")
+                             })
 
 (s/defschema ViewPage (assoc page :user_id s/Int
                                   :first_name s/Str
@@ -100,7 +105,8 @@
                                                                                                            s/Int)
                                                                     #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
                                                                     #(= (:type %) "tag") (assoc TagBlock :id s/Int
-                                                                                                         :block_order s/Int))]}
+                                                                                                         :block_order s/Int)
+                                                                   #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int))]}
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file (s/maybe s/Str)
@@ -117,4 +123,5 @@
                                                            #(= (:type %) "html") (assoc HtmlBlock (s/optional-key :id) s/Int)
                                                            #(= (:type %) "file") (assoc FileBlock (s/optional-key :id) s/Int
                                                                                                   :files (s/maybe [s/Int]))
-                                                           #(= (:type %) "tag") (assoc TagBlock (s/optional-key :id) s/Int))]})
+                                                           #(= (:type %) "tag") (assoc TagBlock (s/optional-key :id) s/Int)
+                                                           #(= (:type %) "showcase") (assoc ShowcaseBlock (s/optional-key :id) s/Int))]})
