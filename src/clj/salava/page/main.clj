@@ -17,6 +17,7 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.zip :as zip]
             [net.cgrand.enlive-html :as enlive]
+            [clojure.data.json :as json]
             ))
 
 
@@ -261,6 +262,11 @@
                               :allow-styling)]
       (html-sanitize policy content))))
 
+(defn save-badge-showcase! [ctx id block]
+  (let [badges (:badges block)
+        badges->json (-> badges (json/write-str))]
+    (dump badges->json)))
+
 
 (defn save-page-content! [ctx page-id page-content user-id]
 
@@ -304,7 +310,11 @@
                        (create-files-block! ctx block)))
             "tag" (if id
                     (update-tag-block! block (get-db ctx))
-                    (insert-tag-block! block (get-db ctx))))))
+                    (insert-tag-block! block (get-db ctx)))
+            "showcase" (save-badge-showcase! ctx id block) #_(if id
+                         (update-badge-showcase ctx block)
+                         (insert-badge-showcase block )
+                         ))))
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
           (delete-block! ctx old-block)))
