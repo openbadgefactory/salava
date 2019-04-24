@@ -13,7 +13,8 @@
             [salava.file.ui.my :as file]
             [salava.file.icons :refer [file-icon]]
             [clojure.string :refer [capitalize]]
-            [salava.core.ui.modal :refer [open-modal]]))
+            [salava.core.ui.modal :refer [open-modal]]
+            [salava.core.ui.popover :refer [info]]))
 
 (defn random-key []
   (-> (make-random-uuid)
@@ -286,27 +287,55 @@
           (fn [r k v]
             (let [new-field-atom (atom {:type (:value v)})]
               (conj r
-                    [:a {:on-click #(do
-                                      (.preventDefault %)
-                                      (case (:value v)
-                                        "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
+                    ;[:div
+                    #_[:a {:on-click #(do
+                                        (.preventDefault %)
+                                        (case (:value v)
+                                          "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
                                                                                                                                  ;(do
                                                                                                                                  (if index
                                                                                                                                    (f/add-field block-atom {:type (:value v)} index :badge [])
                                                                                                                                    (f/add-field block-atom {:type (:value v)} :badge [])));)
-                                                                          } )
-                                        "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
-                                        (if index
-                                          (f/add-field block-atom {:type (:value v)} index )
-                                          (f/add-field block-atom {:type (:value v)} ))))
-                         :data-dismiss (case (:value v)
-                                         ("badge" "tag") nil
-                                         "modal")
-                         }
-                     [:div.row
-
+                                                                            } )
+                                          "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
+                                          (if index
+                                            (f/add-field block-atom {:type (:value v)} index )
+                                            (f/add-field block-atom {:type (:value v)} ))))
+                           :data-dismiss (case (:value v)
+                                           ("badge" "tag") nil
+                                           "modal")
+                           }]
+                    [:div.row.content-type
+                     [:a.link {:on-click #(do
+                                       (.preventDefault %)
+                                       (case (:value v)
+                                         "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
+                                                                                                                                 ;(do
+                                                                                                                                 (if index
+                                                                                                                                   (f/add-field block-atom {:type (:value v)} index :badge [])
+                                                                                                                                   (f/add-field block-atom {:type (:value v)} :badge [])));)
+                                                                           } )
+                                         "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
+                                         (if index
+                                           (f/add-field block-atom {:type (:value v)} index )
+                                           (f/add-field block-atom {:type (:value v)} ))))
+                          :data-dismiss (case (:value v)
+                                          ("badge" "tag") nil
+                                          "modal")
+                          }
                       [:i {:class (str "fa icon " (:icon v))}]
-                      [:span (:text v)]]]
+                      [:span (:text v)]]
+                     [info {:placement "right" :content (case (:value v)
+                                                          "badge" (t :page/Badgeinfo)
+                                                          "tag" (t :page/Badgegroupinfo)
+                                                          "heading" (t :page/Headinginfo)
+                                                          "sub-heading" (t :page/Subheadinginfo)
+                                                          "file" (t :page/Filesinfo)
+                                                          "html" (t :page/Htmlinfo)
+                                                          )
+                            :style {:font-size "15px"}}]
+                     ]
+                    ;]
                     )))
           [:div.block-types]
           block-type-map)]
@@ -364,13 +393,19 @@
         [:div.col-xs-8
          [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
          (when (= type "badge")
-           [:div.form-group
-             [:select {:class "form-control"
-                       :aria-label "select blocktype"
-                       :value (get-in @block-atom [:badge :format])
-                       :on-change #(update-block-value block-atom :format (.-target.value %))}
-              [:option {:value "short"} (t :page/Short)]
-              [:option {:value "long"} (t :page/Long)]]]
+           [:div.row.form-group {:style {:padding-top "10px"}}
+            [:div.col-xs-8 [:select {:class "form-control"
+                                     :aria-label "select blocktype"
+                                     :value (get-in @block-atom [:badge :format])
+                                     :on-change #(update-block-value block-atom :format (.-target.value %))}
+                            [:option {:value "short"} (t :page/Short)]
+                            [:option {:value "long"} (t :page/Long)]]
+
+             ]
+            [:div.col-xs-4
+             [info {:content (t :page/Badgeformatinfo) :placement "left"}]]
+            ]
+
 
            )
          #_[block-type block-atom]]
@@ -384,7 +419,7 @@
                                      (swap! state assoc :toggle-move-mode false :toggled nil)
                                      (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
-        [:div {:class "close"
+        [:div {:class "close-button"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
