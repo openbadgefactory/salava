@@ -26,13 +26,13 @@
                    (update coll [(-> v :lat rounded) (-> v :lng rounded)] conj v)) ; Put items at same lat/lng into a list
         click-cb (case kind
                    "users"
-                   (fn [u]
-                     (if (= 1 (count u))
+                   (fn [u u-count]
+                     (if (= 1 u-count)
                        #(mo/open-modal [:user :profile] {:user-id (-> u first :id)})
                        #(mo/open-modal [:location :userlist] {:users u})))
                    "badges"
-                   (fn [b]
-                     (if (= 1 (count b))
+                   (fn [b b-count]
+                     (if (= 1 b-count)
                        #(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id)})
                        #(mo/open-modal [:location :badgelist] {:badges b}))))
         item-name (case kind
@@ -47,12 +47,18 @@
        (fn [data]
          (.clearLayers layer-group)
          (doseq [item (->> kind keyword (get data) (reduce group-fn {}) vals)]
-           (let [item-1 (first item)]
+           (let [item-1 (first item)
+                 unique-key (case kind
+                              "users"  :id
+                              "badges" :badge_id)
+                 unique-count (->> item (map unique-key) set count)
+                 icon  (icon kind unique-count)
+                 title (if (= unique-count 1) (item-name item-1) "")]
              (.addLayer
                layer-group
                (-> (js/L.latLng. (:lat item-1) (:lng item-1))
-                   (js/L.marker. (clj->js {:icon (icon kind (count item)) :title (item-name item-1)}))
-                   (.on "click" (click-cb item)))))))
+                   (js/L.marker. (clj->js {:icon icon :title title}))
+                   (.on "click" (click-cb item unique-count)))))))
        })))
 
 (defn filter-autocomplete [kind state]
