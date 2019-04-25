@@ -70,7 +70,7 @@
                          (if (seq (:badges data))
                            (let [lat-lng (js/L.latLng. (clj->js (midpoint (:badges data))))
                                  my-map (-> (js/L.map. (str "map-view-badge-" badge-id) lu/map-opt)
-                                            (.setView lat-lng 6)
+                                            (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (doseq [b (:badges data)]
                                (-> (js/L.latLng. (:lat b) (:lng b))
@@ -137,7 +137,7 @@
                            (let [lat-lng (js/L.latLng. lat lng)
                                  my-marker (js/L.marker. lat-lng (clj->js {:icon lu/user-icon-ro}))
                                  my-map (-> (js/L.map. (str "map-view-user-" user-id) lu/map-opt)
-                                            (.setView lat-lng 8)
+                                            (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (.addTo my-marker my-map))
                            (reset! visible false)))})) 300)

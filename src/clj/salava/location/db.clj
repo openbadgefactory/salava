@@ -10,16 +10,6 @@
 
 (defqueries "sql/location/queries.sql")
 
-(defn- fake-rand [seed]
-  (let [x (* (Math/sin seed) 10000)]
-    (- x (Math/floor x))))
-
-(defn- noise
-  ([seed v] (noise (inc seed) v 1))
-  ([seed v multip]
-   (let [op (if (even? seed) - +)]
-     (op v (* (fake-rand seed) 0.0019 multip)))))
-
 
 (defn set-location-reset [ctx user-id]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
@@ -78,8 +68,8 @@
   {:badges (->> (select-explore-badge {:badge badge-id} (u/get-db ctx))
                 (map (fn [b]
                        (-> b
-                           (assoc :lat (or (:badge_lat b) (noise (:id b) (:user_lat b)))
-                                  :lng (or (:badge_lng b) (noise (:id b) (:user_lng b) 3)))
+                           (assoc :lat (or (:badge_lat b) (:user_lat b))
+                                  :lng (or (:badge_lng b) (:user_lng b)))
                            (dissoc :user_lat :badge_lat :user_lng :badge_lng)))))})
 
 
@@ -111,7 +101,13 @@
         ]
 
     (if (seq filtered-user-ids)
-      {:users (map (fn [u] (assoc u :user_url (str (u/get-full-path ctx) "/user/profile/" (:id u))))
+      {:users (map (fn [u]
+                     (-> u
+                         (assoc :user_url (str (u/get-full-path ctx) "/user/profile/" (:id u))
+                                :user_image (if (:profile_picture u)
+                                              (str (u/get-site-url ctx) "/" (:profile_picture u))
+                                              (str (u/get-site-url ctx) "/img/user_default.png")))
+                         (dissoc :profile_picture)))
                    (select-explore-users {:user filtered-user-ids} (u/get-db ctx)))}
       {:users []})))
 
@@ -145,8 +141,8 @@
                            (-> b
                                (assoc :badge_url   (str (u/get-full-path ctx) "/badge/info/" (:id b))
                                       :badge_image (str (u/get-site-url ctx) "/" (:badge_image b))
-                                      :lat (or (:badge_lat b) (noise (:id b) (:user_lat b)))
-                                      :lng (or (:badge_lng b) (noise (:id b) (:user_lng b) 3)))
+                                      :lat (or (:badge_lat b) (:user_lat b))
+                                      :lng (or (:badge_lng b) (:user_lng b)))
                                (dissoc :user_lat :badge_lat :user_lng :badge_lng))
 
                            )))}

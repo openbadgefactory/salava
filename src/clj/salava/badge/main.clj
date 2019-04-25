@@ -152,12 +152,11 @@
   (let [obf-url (get-in ctx [:config :core :obf :url])
         site-url (get-in ctx [:config :core :site-url])]
     (if (string? obf-url)
-      (let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
-        (if (re-find (re-pattern obf-url) (str assertion-url))
-          (try+
-            (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
-            (catch Object _
-              (log/error "send-badge-info-to-obf: " _))))))))
+      (if-let [assertion-url (select-badge-assertion-url {:id user-badge-id :user_id user-id} (into {:result-set-fn first :row-fn :assertion_url} (u/get-db ctx)))]
+        (try+
+          (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
+          (catch Object _
+            (log/error "send-badge-info-to-obf: " _)))))))
 
 ;;EVIDENCE
 

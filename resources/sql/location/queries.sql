@@ -52,7 +52,8 @@ LIMIT 250;
 --name: select-explore-user-ids-latlng
 SELECT id FROM user
 WHERE location_lat > :min_lat AND location_lat <= :max_lat
-    AND location_lng > :min_lng AND location_lng <= :max_lng;
+    AND location_lng > :min_lng AND location_lng <= :max_lng
+LIMIT 5000;
 
 --name: select-explore-user-ids-public
 SELECT id FROM user
@@ -63,7 +64,7 @@ SELECT id FROM user
 WHERE id IN (:user) AND CONCAT(first_name, ' ', last_name) LIKE :name;
 
 --name: select-explore-users
-SELECT id, first_name, last_name,
+SELECT id, first_name, last_name, profile_picture,
     location_lat AS lat, location_lng AS lng
 FROM user
 WHERE id IN (:user)
@@ -79,7 +80,8 @@ WHERE ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted'
         (u.location_lat > :min_lat AND u.location_lat <= :max_lat AND u.location_lng > :min_lng AND u.location_lng <= :max_lng)
         OR
         (ub.location_lat > :min_lat AND ub.location_lat <= :max_lat AND ub.location_lng > :min_lng AND ub.location_lng <= :max_lng)
-    );
+    )
+LIMIT 5000;
 
 --name: select-explore-badge-ids-public
 SELECT DISTINCT ub.id FROM user_badge ub
@@ -118,7 +120,7 @@ INNER JOIN badge_issuer_content ic ON b.id = ic.badge_id
 INNER JOIN issuer_content i ON (ic.issuer_content_id = i.id AND i.language_code = b.default_language_code)
 WHERE ub.id IN (:badge) AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
 ORDER BY ub.mtime DESC
-LIMIT 250;
+LIMIT 500;
 
 
 --name: select-explore-taglist
@@ -129,7 +131,7 @@ INNER JOIN user u ON ub.user_id = u.id
 WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:visibility) AND ub.status = 'accepted'
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
-LIMIT 1000;
+LIMIT 2000;
 
 --name: select-explore-badgelist
 SELECT DISTINCT c.name FROM badge_content c
@@ -139,7 +141,7 @@ INNER JOIN user u ON ub.user_id = u.id
 WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:visibility) AND ub.status = 'accepted'
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
-LIMIT 1000;
+LIMIT 2000;
 
 --name: select-explore-issuerlist
 SELECT DISTINCT c.name FROM issuer_content c
@@ -149,5 +151,5 @@ INNER JOIN user u ON ub.user_id = u.id
 WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:visibility) AND ub.status = 'accepted'
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
-LIMIT 1000;
+LIMIT 2000;
 

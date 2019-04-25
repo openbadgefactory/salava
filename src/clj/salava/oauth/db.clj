@@ -52,8 +52,8 @@
   user-id)
 
 (defn insert-user-terms [ctx user-id status]
-  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))]
-    (when-not gdpr-disabled?
+  (let [show-terms? (get-in ctx [:config :core :show-terms?] false)]
+    (when show-terms?
       (try+
         (do
           (insert-user-terms<! {:user_id user-id :status status} (get-db ctx))

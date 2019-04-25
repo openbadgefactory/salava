@@ -5,23 +5,36 @@
             [ajax.core :as ajax]
             [komponentit.autocomplete :as autocomplete]
             [salava.core.ui.modal :as mo]
+            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.location.ui.util :as lu]
             ))
 
-(def icon {"users"  lu/user-icon
-           "badges" lu/badge-icon})
+(defn icon [kind num]
+  (get (if (= num 1)
+         {"users"  lu/user-icon         "badges" lu/badge-icon}
+         {"users"  lu/user-icon-hotspot "badges" lu/badge-icon-hotspot})
+       kind))
 
 
 (defn- get-markers [kind my-map layer-group opt]
   (let [bounds (.getBounds my-map)
+        round-to (if (> (.getZoom my-map) 6) 2 0)
+        group-fn (fn [coll v]
+                   (update coll [(-> v :lat (.toFixed round-to)) (-> v :lng (.toFixed round-to))] conj v)) ; Put items at same lat/lng into a list
         click-cb (case kind
                    "users"
-                   (fn [u] #(mo/open-modal [:user :profile] {:user-id (:id u)}))
+                   (fn [u]
+                     (if (= 1 (count u))
+                       #(mo/open-modal [:user :profile] {:user-id (-> u first :id)})
+                       #(mo/open-modal [:location :userlist] {:users u})))
                    "badges"
-                   (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))
+                   (fn [b]
+                     (if (= 1 (count b))
+                       #(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id)})
+                       #(mo/open-modal [:location :badgelist] {:badges b}))))
         item-name (case kind
                    "users"
                    (fn [u] (str (:first_name u) " " (:last_name u)))
@@ -33,12 +46,13 @@
        :handler
        (fn [data]
          (.clearLayers layer-group)
-         (doseq [item (get data (keyword kind))]
-           (.addLayer
-             layer-group
-             (-> (js/L.latLng. (:lat item) (:lng item))
-                 (js/L.marker. (clj->js {:icon (get icon kind) :title (item-name item)}))
-                 (.on "click" (click-cb item))))))
+         (doseq [item (->> kind keyword (get data) (reduce group-fn {}) vals)]
+           (let [item-1 (first item)]
+             (.addLayer
+               layer-group
+               (-> (js/L.latLng. (:lat item-1) (:lng item-1))
+                   (js/L.marker. (clj->js {:icon (icon kind (count item)) :title (item-name item-1)}))
+                   (.on "click" (click-cb item)))))))
        })))
 
 (defn filter-autocomplete [kind state]
