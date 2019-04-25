@@ -168,3 +168,32 @@ UPDATE page SET visibility = :visibility, mtime = UNIX_TIMESTAMP() WHERE id = :i
 
 --name: select-user-language
 SELECT language FROM user WHERE id = :id
+
+
+--name: delete-showcase-badges!
+DELETE FROM page_block_showcase_has_badge WHERE block_id = :block_id
+
+--name: delete-showcase-block!
+DELETE FROM page_block_showcase WHERE id = :id
+
+--name: insert-showcase-block<!
+INSERT INTO page_block_showcase (page_id, title, format, block_order) VALUES (:page_id, :title, :format, :block_order)
+
+--name: update-badge-showcase-block!
+UPDATE page_block_showcase SET title = :title, format = :format, block_order = :block_order WHERE id = :id AND page_id = :page_id
+
+--name: insert-showcase-badges!
+INSERT INTO page_block_showcase_has_badge (block_id, badge_id, badge_order) VALUES (:block_id, :badge_id, :badge_order)
+
+--name: select-badge-showcase-blocks
+SELECT id, "showcase" AS type, title, format, block_order FROM page_block_showcase WHERE page_id = :page_id
+
+--name: select-showcase-block-content
+-- get badges in badge showcase
+SELECT ub.id, bc.name, bc.image_file FROM user_badge AS ub
+  JOIN page_block_showcase_has_badge AS pb ON pb.badge_id = ub.id
+  JOIN badge AS badge ON (badge.id = ub.badge_id)
+  JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+  JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+  WHERE pb.block_id = :block_id
+  ORDER BY pb.badge_order
