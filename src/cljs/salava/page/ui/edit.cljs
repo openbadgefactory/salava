@@ -280,29 +280,39 @@
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
         new-field-atom (atom {:type "showcase" :badges badges })
-        title (:title @block-atom)]
+        title (:title @block-atom)
+        format (:format @block-atom)]
     [:div#badge-showcase
      [:div#grid {:class "row"}
       [:div.form-group
        [:div.col-md-12
+        [:label (t :page/Title)]
+
         [:input {:class     "form-control"
                  :type      "text"
                  :value     title
                  :on-change #(update-block-value block-atom :title (.-target.value %))
-                 :placeholder "Enter the name of your badge showcase"}]]]
-      ;[:p.block-title (or (:title @block-atom) "test title")]
+                 :placeholder "Enter the name of your badge showcase"}]]
+       [:div.col-md-12
+        [:label (t :page/Displayinpageas)]
+        [:div.badge-select
+         [:select {:class "form-control"
+                   :aria-label "select badge format"
+                   :value format
+                   :on-change #(update-block-value block-atom :format (.-target.value %))}
+          [:option {:value "short"} (t :core/Imageonly)]
+          [:option {:value "long"} (t :page/Content)]]]]]
       (reduce (fn [r b]
                 (conj r
-                      (badge-grid-element b block-atom "showcase" (fn [id badges] (swap! block-atom assoc :badges (into [] (remove #(= id (:id %)) badges))) ))))
-              [:div ]
+                      (badge-grid-element b block-atom "showcase" (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges)))))))
+              [:div]
               badges)
       [:div.addbadge
        [:a {:href "#" :on-click #(do
                                    (.preventDefault %)
-                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom :function (fn [f] (swap! block-atom merge f))}  #_{:hidden  (fn [] (dump @block-atom))})
-                                   )}
-        [:i.fa.fa-plus.add-icon]
-        ]]]]))
+                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
+                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+        [:i.fa.fa-plus.add-icon]]]]]))
 
 (defn contenttype [{:keys [block-atom index]}]
   (let [type (:type @block-atom)]
@@ -315,24 +325,6 @@
           (fn [r k v]
             (let [new-field-atom (atom {:type (:value v)})]
               (conj r
-                    ;[:div
-                    #_[:a {:on-click #(do
-                                        (.preventDefault %)
-                                        (case (:value v)
-                                          "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
-                                                                                                                                 ;(do
-                                                                                                                                 (if index
-                                                                                                                                   (f/add-field block-atom {:type (:value v)} index :badge [])
-                                                                                                                                   (f/add-field block-atom {:type (:value v)} :badge [])));)
-                                                                            } )
-                                          "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
-                                          (if index
-                                            (f/add-field block-atom {:type (:value v)} index )
-                                            (f/add-field block-atom {:type (:value v)} ))))
-                           :data-dismiss (case (:value v)
-                                           ("badge" "tag" "showcase") nil
-                                           "modal")
-                           }]
                     [:div.row.content-type
                      [:a.link {:on-click #(do
                                             (.preventDefault %)
@@ -343,12 +335,12 @@
                                                                                                                                    (f/add-field block-atom {:type (:value v)} index :badge [])
                                                                                                                                    (f/add-field block-atom {:type (:value v)} :badge [])));)
                                                                                 } )
-                                              "tag" (open-modal [:badge :my] {:type "selectable" :function nil})
+                                              ;"tag" (open-modal [:badge :my] {:type "selectable" :function nil})
                                               (if index
                                                 (f/add-field block-atom {:type (:value v)} index )
                                                 (f/add-field block-atom {:type (:value v)} ))))
                                :data-dismiss (case (:value v)
-                                               ("badge" "tag") nil
+                                               ("badge") nil
                                                "modal")
                                }
                       [:i {:class (str "fa icon " (:icon v))}]
@@ -427,25 +419,16 @@
                                      :value (get-in @block-atom [:badge :format])
                                      :on-change #(update-block-value block-atom :format (.-target.value %))}
                             [:option {:value "short"} (t :page/Short)]
-                            [:option {:value "long"} (t :page/Long)]]
-
-             ]
+                            [:option {:value "long"} (t :page/Long)]]]
             [:div.col-xs-4
-             [info {:content (t :page/Badgeformatinfo) :placement "left"}]]
-            ]
-
-
-           )
+             [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])
          #_[block-type block-atom]]
         [:div.move {:on-click #(do
                                  (.preventDefault %)
                                  (cond
                                    (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
                                    (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
-                                   :else (swap! state assoc :toggle-move-mode true :toggled index))
-                                 #_(if (:toggle-move-mode @state)
-                                     (swap! state assoc :toggle-move-mode false :toggled nil)
-                                     (swap! state assoc :toggle-move-mode true :toggled index)))}
+                                   :else (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
         [:div {:class "close-button"
                :on-click #(f/remove-field blocks index)}
@@ -470,7 +453,6 @@
            (for [index (range (count @blocks))]
              (block (cursor blocks [index]) index blocks badges tags files state)))
      [field-after blocks state position]
-     ;(when (seq @blocks)[field-after blocks state (dec (count @blocks))] [field-after blocks state 0])
      #_[:div.add-field-after
         (if (and (:toggle-move-mode @state) #_(not (= (dec index) (:toggled @state))))
           [:div.placeholder.html-block-content.html-block-content-hover
@@ -558,7 +540,6 @@
    [:div.form-horizontal
     [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]
     [ph/manage-page-buttons :content (cursor state [:page :id]) state]
-    #_[ph/manage-page-buttons (fn []  (save-page (:page @state) state  (str "/profile/page/edit_theme/" (get-in @state [:page :id])))) state (str "/profile/page/edit_theme/" (get-in @state [:page :id])) nil false]
     #_[:div.row
        [:div.col-md-12
         [:button {:class    "btn btn-primary"

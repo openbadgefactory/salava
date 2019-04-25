@@ -49,6 +49,7 @@
                                                                         (<= (count %) 255))))
                        :format      (s/enum "short" "long")
                        :sort        (s/enum "name" "modified")})
+
 (s/defschema ShowcaseBlock {:type (s/eq "showcase")
                             :title  (s/maybe s/Str)
                             :badges [(s/maybe s/Int)]
@@ -83,7 +84,12 @@
                                                                                                :badges [(-> Badge
                                                                                                             (select-keys [:id :name :criteria_content :criteria_url :description
                                                                                                                           :image_file :issued_on :expires_on :visibility :mtime :status :badge_id])
-                                                                                                            (assoc :tag (s/maybe s/Str)))]))]))
+                                                                                                            (assoc :tag (s/maybe s/Str)))])
+                                                          #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int
+                                                                                                         :block_order s/Int
+                                                                                                         :badges [(-> Badge
+                                                                                                                      (select-keys [:id :name :image_file])
+                                                                                                                      )]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int
@@ -106,7 +112,8 @@
                                                                     #(= (:type %) "file") (assoc FileBlock :id s/Int :block_order s/Int)
                                                                     #(= (:type %) "tag") (assoc TagBlock :id s/Int
                                                                                                          :block_order s/Int)
-                                                                   #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int))]}
+                                                                   #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int :badges [(-> Badge
+                                                                                                                                                          (select-keys [:id :name :image_file]))] ))]}
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file (s/maybe s/Str)

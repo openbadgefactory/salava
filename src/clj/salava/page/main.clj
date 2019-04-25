@@ -69,13 +69,18 @@
   (let [blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
     (map #(assoc % :files (select-files-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
 
+(defn showcase-blocks [ctx page-id]
+  (let [blocks (select-badge-showcase-blocks {:page_id page-id} (get-db ctx))]
+    (map #(assoc % :badges (select-showcase-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
+
 (defn page-blocks [ctx page-id]
   (let [badge-blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))
         file-blocks (file-blocks ctx page-id)
         heading-blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
-        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
+        showcase-blocks (showcase-blocks ctx page-id)
+        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks showcase-blocks)]
     (sort-by :block_order blocks)))
 
 (defn badge-blocks-for-edit [ctx page-id]
@@ -104,7 +109,8 @@
         file-blocks (file-blocks ctx page-id)
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (select-pages-tag-blocks {:page_id page-id} (get-db ctx))
-        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
+        badge-showcase-blocks (showcase-blocks ctx page-id)
+        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks)]
     (sort-by :block_order blocks)))
 
 (defn page-with-blocks [ctx page-id]
@@ -203,7 +209,10 @@
     "file" (do
              (delete-files-block! block (get-db ctx))
              (delete-files-block-files! {:block_id (:id block)} (get-db ctx)))
-    "tag" (delete-tag-block! block (get-db ctx))))
+    "tag" (delete-tag-block! block (get-db ctx))
+    "showcase" (do
+                 (delete-showcase-block! {:id (:id block)} (get-db ctx))
+                 (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))))
 
 (defn save-files-block-content [ctx block]
   (delete-files-block-files! {:block_id (:id block)} (get-db ctx))
@@ -218,6 +227,21 @@
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
 
     (save-files-block-content ctx (assoc block :id block-id))))
+
+(defn save-showcase-badges [ctx block]
+  (let [badges (:badges block)]
+    (delete-showcase-badges! {:block_id (:id block)} (get-db ctx))
+    (doseq [b badges
+            :let [index (.indexOf badges b)]]
+      (insert-showcase-badges! {:block_id (:id block) :badge_id b :badge_order index} (get-db ctx)))))
+
+(defn update-showcase-block! [ctx block]
+  (update-badge-showcase-block! block (get-db ctx))
+  (save-showcase-badges ctx block))
+
+(defn create-showcase-block! [ctx block]
+  (let [block-id (:generated_key (insert-showcase-block<! block (get-db ctx)))]
+    (save-showcase-badges ctx (assoc block :id block-id))))
 
 (defn url-checker [ctx]
   (fn [element-name attrs]
@@ -262,12 +286,6 @@
                               :allow-styling)]
       (html-sanitize policy content))))
 
-(defn save-badge-showcase! [ctx id block]
-  (let [badges (:badges block)
-        badges->json (-> badges (json/write-str))]
-    (dump badges->json)))
-
-
 (defn save-page-content! [ctx page-id page-content user-id]
 
   (try+
@@ -278,7 +296,7 @@
           user-files (if (some #(= "file" (:type %)) blocks)
                        (:files (f/user-files-all ctx page-owner-id)))
           file-ids (map :id user-files)
-          user-badges (if (some #(= "badge" (:type %)) blocks)
+          user-badges (if (some #(or (= "badge" (:type %)) (= "showcase" (:type %))) blocks)
                         (b/user-badges-all ctx page-owner-id))
           badge-ids (map :id user-badges)
           page-blocks (page-blocks ctx page-id)]
@@ -311,10 +329,15 @@
             "tag" (if id
                     (update-tag-block! block (get-db ctx))
                     (insert-tag-block! block (get-db ctx)))
-            "showcase" (save-badge-showcase! ctx id block) #_(if id
-                         (update-badge-showcase ctx block)
-                         (insert-badge-showcase block )
-                         ))))
+
+            "showcase" (when (= (->> (:badges block)
+                                  (filter (fn [x] (some #(= x %) badge-ids)))
+                                  count)
+                                (count (:badges block)))
+                         (if id
+                           (update-showcase-block! ctx block)
+                           (create-showcase-block! ctx block)
+                           )))))
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
           (delete-block! ctx old-block)))
