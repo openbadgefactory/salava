@@ -143,6 +143,24 @@
                  :title (:name badge)}]]
          (badge-block (assoc badge :format "long")))))])
 
+(defn showcase-block [{:keys [badges format title]}]
+  [:div.tag-block
+   [:div
+    [:h2 title]
+    (for [badge badges]
+      (if (= format "short")
+        [:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
+                               :key  (:id badge)}
+         [:img {:src (str "/" (:image_file badge))
+                :title (:name badge)}]]
+        (badge-block (assoc badge :format "long"))
+        )
+      )
+
+    ]
+   ]
+  )
+
 (defn view-page [page]
   (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} page]
     [:div {:id    (str "theme-" (or theme 0))
@@ -183,6 +201,7 @@
                       "file" (file-block block)
                       "heading" (heading-block block)
                       "tag" (tag-block block)
+                      "showcase" (showcase-block block)
                       nil)]))]]]])]))
 
 (defn render-page-modal [page]
@@ -219,7 +238,7 @@
     "html" {:content content}
     "file" {:files (map :id files)}
     "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
-    "showcase" {:format (or format "short") :title title :badges (map :id badges)}
+    "showcase" {:format (or format "short") :title (or title (t :page/Untitled)) :badges (map :id badges)}
 
     nil))
 

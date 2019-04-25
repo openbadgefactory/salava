@@ -271,11 +271,11 @@
 (def block-type-map
   [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
    {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
-   {:icon "fa-file-code-o" :text (t :page/Html) :value "html"}
+   {:icon "fa-file-code-o" :text (t :page/Texteditor) :value "html"}
    {:icon "fa-file" :text (t :page/Files) :value "file"}
    {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
-   {:icon "fa-certificate" :text (t :page/Badgegroup) :value "tag"}
-   {:icon "fa-certificate" :text (t :page/Badgeshowcase) :value "showcase"}])
+   {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
+   {:icon "fa-superpowers" :text (t :page/Badgeshowcase) :value "showcase"}])
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
@@ -291,8 +291,9 @@
         [:input {:class     "form-control"
                  :type      "text"
                  :value     title
+                 :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
-                 :placeholder "Enter the name of your badge showcase"}]]
+                 :placeholder (t :page/Untitled)}]]
        [:div.col-md-12
         [:label (t :page/Displayinpageas)]
         [:div.badge-select
@@ -325,17 +326,11 @@
           (fn [r k v]
             (let [new-field-atom (atom {:type (:value v)})]
               (conj r
-                    [:div.row.content-type
+                    [:div
                      [:a.link {:on-click #(do
                                             (.preventDefault %)
                                             (case (:value v)
-                                              "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil) #_:function #_(fn []
-                                                                                                                                 ;(do
-                                                                                                                                 (if index
-                                                                                                                                   (f/add-field block-atom {:type (:value v)} index :badge [])
-                                                                                                                                   (f/add-field block-atom {:type (:value v)} :badge [])));)
-                                                                                } )
-                                              ;"tag" (open-modal [:badge :my] {:type "selectable" :function nil})
+                                              "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
                                               (if index
                                                 (f/add-field block-atom {:type (:value v)} index )
                                                 (f/add-field block-atom {:type (:value v)} ))))
@@ -343,20 +338,22 @@
                                                ("badge") nil
                                                "modal")
                                }
-                      [:i {:class (str "fa icon " (:icon v))}]
-                      [:span (:text v)]]
-                     [info {:placement "right" :content (case (:value v)
-                                                          "badge" (t :page/Badgeinfo)
-                                                          "tag" (t :page/Badgegroupinfo)
-                                                          "heading" (t :page/Headinginfo)
-                                                          "sub-heading" (t :page/Subheadinginfo)
-                                                          "file" (t :page/Filesinfo)
-                                                          "html" (t :page/Htmlinfo)
-                                                          ""
-                                                          )
-                            :style {:font-size "15px"}}]
-                     ]
-                    )))
+                      [:div.row.content-type
+
+                       [:i {:class (str "fa icon " (:icon v))}]
+                       [:span (:text v)]]]
+                     [:span
+                      [info {:placement "right" :content (case (:value v)
+                                                           "badge" (t :page/Badgeinfo)
+                                                           "tag" (t :page/Badgegroupinfo)
+                                                           "heading" (t :page/Headinginfo)
+                                                           "sub-heading" (t :page/Subheadinginfo)
+                                                           "file" (t :page/Filesinfo)
+                                                           "html" (t :page/Htmlinfo)
+                                                           "showcase" (t :page/Badgeshowcaseinfo)
+                                                           )
+                             :style {:font-size "15px"}}]
+                      ]])))
           [:div.block-types]
           block-type-map)]
        [:div.modal-footer
