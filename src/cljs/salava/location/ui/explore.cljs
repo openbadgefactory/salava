@@ -21,9 +21,9 @@
 
 (defn- get-markers [kind my-map layer-group opt]
   (let [bounds (.getBounds my-map)
-        round-to (if (> (.getZoom my-map) 6) 2 0)
+        rounded (if (> (.getZoom my-map) 6) #(.toFixed % 2) #(js/Math.round (+ % 0.5)))
         group-fn (fn [coll v]
-                   (update coll [(-> v :lat (.toFixed round-to)) (-> v :lng (.toFixed round-to))] conj v)) ; Put items at same lat/lng into a list
+                   (update coll [(-> v :lat rounded) (-> v :lng rounded)] conj v)) ; Put items at same lat/lng into a list
         click-cb (case kind
                    "users"
                    (fn [u]
