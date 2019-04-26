@@ -670,7 +670,7 @@ a.popup-info {
 }
 
 
-#page-edit #block-modal .block-types div, #page-edit-theme #block-modal .block-types div {
+#page-edit #block-modal .block-types div.content-type, #page-edit-theme #block-modal .block-types div.content-type{
   background-color: #dcea74;
   &:hover, &:focus {
     background-color: $titlebar-color;
@@ -726,4 +726,20 @@ a.popup-info {
  #step-button > a, #step-button-previous > a {
   font-weight: bold;
   color: black !important;
+}
+
+#page-edit .close-button span.remove-button, #page-edit-theme .close-button span.remove-button {
+  .fa-trash {
+    color: unset !important;
+  }
+}
+
+#page-edit .move span.move-block, #page-edit-theme .move span.move-block {
+  .fa-arrows {
+    color:  #c774a0;
+  }
+}
+
+#field-editor .field .field-content #badge-showcase .addbadge .add-icon {
+  color: #c774a0;
 }
