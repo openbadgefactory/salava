@@ -73,7 +73,12 @@
   (let [blocks (select-badge-showcase-blocks {:page_id page-id} (get-db ctx))]
     (map #(assoc % :badges (if for-edit?
                              (select-showcase-block-content-for-edit {:block_id (:id %)} (get-db ctx))
-                             (map (fn [b] (update b :criteria_content md->html)) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
+                             (map (fn [b]
+                                    (let [evidence-fn (first (plugin-fun (get-plugins ctx) "main" "badge-evidences"))]
+                                       (-> b
+                                           (update :criteria_content md->html)
+                                           (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true) )
+                                           (dissoc :user_id)))) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
 
 (defn page-blocks [ctx page-id]
   (let [badge-blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))
@@ -333,8 +338,8 @@
                     (insert-tag-block! block (get-db ctx)))
 
             "showcase" (when (= (->> (:badges block)
-                                  (filter (fn [x] (some #(= x %) badge-ids)))
-                                  count)
+                                     (filter (fn [x] (some #(= x %) badge-ids)))
+                                     count)
                                 (count (:badges block)))
                          (if id
                            (update-showcase-block! ctx block)
