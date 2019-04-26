@@ -501,14 +501,12 @@
     [ph/manage-page-buttons :content (cursor state [:page :id]) state]]])
 
 (defn content [state]
-  (let [{:keys [id name]} (:page @state)
-        user-info (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
+  (let [{:keys [id name]} (:page @state)]
 
     [:div {:id "page-edit"}
      [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content state]
-     [:div  [user-info]]
      ;[ph/edit-page-buttons id :content  (fn [next-url] (save-page (:page @state) state next-url)) state]
      [page-form state]]))
 

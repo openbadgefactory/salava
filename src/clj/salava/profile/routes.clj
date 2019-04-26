@@ -11,8 +11,7 @@
   (routes
     (context "/profile" []
              (layout/main-meta ctx "/:id" :user)
-             (layout/main-meta ctx "/:id/embed" :user)
-             )
+             (layout/main-meta ctx "/:id/embed" :user))
     (context "/obpv1/profile" []
              :tags ["profile"]
              (GET "/:userid" []
