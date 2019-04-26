@@ -87,8 +87,10 @@
                                                                                                             (assoc :tag (s/maybe s/Str)))])
                                                           #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int
                                                                                                          :block_order s/Int
-                                                                                                         :badges [(-> Badge
-                                                                                                                      (select-keys [:id :name :image_file])
+                                                                                                         :badges [ (-> Badge
+                                                                                                                      (select-keys [:id :name :image_file :criteria_content :criteria_url :description :creator_name :creator_url
+                                                                                                                                    :issuer_content_name :issuer_content_id :issuer_content_url ])
+                                                                                                                       (assoc :creator_content_id (s/maybe s/Int))
                                                                                                                       )]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int

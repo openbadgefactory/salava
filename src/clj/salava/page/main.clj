@@ -69,9 +69,11 @@
   (let [blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
     (map #(assoc % :files (select-files-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
 
-(defn showcase-blocks [ctx page-id]
+(defn showcase-blocks [ctx page-id for-edit?]
   (let [blocks (select-badge-showcase-blocks {:page_id page-id} (get-db ctx))]
-    (map #(assoc % :badges (select-showcase-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
+    (map #(assoc % :badges (if for-edit?
+                             (select-showcase-block-content-for-edit {:block_id (:id %)} (get-db ctx))
+                             (map (fn [b] (update b :criteria_content md->html)) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
 
 (defn page-blocks [ctx page-id]
   (let [badge-blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))
@@ -79,7 +81,7 @@
         heading-blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
-        showcase-blocks (showcase-blocks ctx page-id)
+        showcase-blocks (showcase-blocks ctx page-id false)
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks showcase-blocks)]
     (sort-by :block_order blocks)))
 
@@ -109,7 +111,7 @@
         file-blocks (file-blocks ctx page-id)
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (select-pages-tag-blocks {:page_id page-id} (get-db ctx))
-        badge-showcase-blocks (showcase-blocks ctx page-id)
+        badge-showcase-blocks (showcase-blocks ctx page-id true)
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks)]
     (sort-by :block_order blocks)))
 

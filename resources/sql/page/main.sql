@@ -188,12 +188,33 @@ INSERT INTO page_block_showcase_has_badge (block_id, badge_id, badge_order) VALU
 --name: select-badge-showcase-blocks
 SELECT id, "showcase" AS type, title, format, block_order FROM page_block_showcase WHERE page_id = :page_id
 
---name: select-showcase-block-content
+--name: select-showcase-block-content-for-edit
 -- get badges in badge showcase
 SELECT ub.id, bc.name, bc.image_file FROM user_badge AS ub
   JOIN page_block_showcase_has_badge AS pb ON pb.badge_id = ub.id
   JOIN badge AS badge ON (badge.id = ub.badge_id)
   JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
   JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+  WHERE pb.block_id = :block_id
+  ORDER BY pb.badge_order
+
+--name: select-showcase-block-content
+-- get badges in badge showcase
+SELECT ub.id, bc.name, bc.image_file, bc.description, cc.url AS criteria_url, cc.markdown_text AS criteria_content,
+ic.id AS issuer_content_id,
+ic.name AS issuer_content_name, ic.url AS issuer_content_url,
+crc.id AS creator_content_id, crc.name AS creator_name, crc.url AS creator_url
+FROM user_badge AS ub
+  JOIN page_block_showcase_has_badge AS pb ON pb.badge_id = ub.id
+  JOIN badge AS badge ON (badge.id = ub.badge_id)
+  JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+  JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+  JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+  JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+  JOIN badge_criteria_content AS bcc ON (bcc.badge_id = badge.id)
+  JOIN criteria_content AS cc ON (cc.id = bcc.criteria_content_id) AND cc.language_code = badge.default_language_code
+  LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
+  LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
+  LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
   WHERE pb.block_id = :block_id
   ORDER BY pb.badge_order
