@@ -104,7 +104,10 @@
     {:active (boolean oauth-user-id) :no-password? (empty? password)}))
 
 (defn update-user-last_login [ctx user-id]
-  (update-user-last_login! {:id user-id} (get-db ctx)))
+  (let [last_login  (select-oauth-user-last-login {:id user-id} (into {:result-set-fn first :row-fn :last_login} (get-db ctx)))]
+    (when last_login
+      (store-user-last-visited! {:user_id user-id :value last_login} (get-db ctx)))
+    (update-user-last_login! {:id user-id} (get-db ctx))))
 
 (defn get-user-information [ctx user-id]
   (select-oauth-user-service {:user_id user-id}  (into {:row-fn :service} (get-db ctx))))
