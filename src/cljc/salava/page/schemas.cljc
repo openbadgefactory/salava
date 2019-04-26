@@ -2,7 +2,7 @@
   (:require [schema.core :as s
              :include-macros true ;; cljs only
              ]
-            [salava.badge.schemas :refer [Badge]]
+            [salava.badge.schemas :refer [Badge Evidence]]
             [salava.file.schemas :refer [File]]))
 
 (def page
@@ -91,7 +91,13 @@
                                                                                                                       (select-keys [:id :name :image_file :criteria_content :criteria_url :description :creator_name :creator_url
                                                                                                                                     :issuer_content_name :issuer_content_id :issuer_content_url ])
                                                                                                                        (assoc :creator_content_id (s/maybe s/Str))
-                                                                                                                      )]))]))
+                                                                                                                       (assoc :evidences [(-> Evidence
+                                                                                                                                              (select-keys [:url :id :narrative :name])
+                                                                                                                                              (assoc :ctime (s/maybe s/Int) :description (s/maybe s/Str) :mtime (s/maybe s/Int)
+                                                                                                                                                (s/optional-key :properties) {(s/optional-key :hidden) (s/maybe s/Bool)
+                                                                                                                                                                              (s/optional-key :resource_id) (s/maybe s/Int)
+                                                                                                                                                                               (s/optional-key :resource_type) (s/maybe s/Str)
+                                                                                                                                                                               (s/optional-key :mime_type) (s/maybe s/Str)}))]))]))]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int
