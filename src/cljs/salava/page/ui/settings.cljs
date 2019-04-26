@@ -40,7 +40,8 @@
     [:div {:id "page-settings"}
 
      [ph/edit-page-header (t :page/Settings ": " name)]
-     [ph/edit-page-buttons id :settings (fn [next-url] (save-settings state next-url))]
+     [ph/edit-page-buttons id :settings state]
+     ;[ph/edit-page-buttons id :settings (fn [next-url] (save-settings state next-url)) state]
      [:div {:class "panel page-panel" :id "settings-panel"}
       (when-not (clojure.string/blank? @(cursor state [:message]))
         [:div.alert.alert-warning (t @(cursor state [:message])) ])
@@ -105,7 +106,8 @@
                    :disabled (and (empty? @password-atom)
                                   (= @visibility-atom "password"))}
           (t :page/Save)]]]
-     [ph/manage-page-buttons (fn [] (save-settings state (str "/profile/page/preview/" id))) state (str "/profile/page/preview/" id) (str "/profile/page/edit_theme/" id) false]]))
+     [ph/manage-page-buttons :settings (cursor state [:page :id]) state]
+     #_[ph/manage-page-buttons (fn [] (save-settings state (str "/profile/page/preview/" id))) state (str "/profile/page/preview/" id) (str "/profile/page/edit_theme/" id) false]]))
 
 (defn init-data [state id]
   (ajax/GET

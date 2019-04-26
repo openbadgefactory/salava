@@ -49,7 +49,7 @@
                             :border-top-color color}}
               ]]))))
 
-(defn save-theme [state next-url]
+#_(defn save-theme [state next-url]
   (let [page-id (get-in @state [:page :id])
         theme-id (get-in @state [:page :theme])
         border-id (get-in @state [:page :border :id])
@@ -65,12 +65,13 @@
                   )#_(navigate-to next-url)})))
 
 (defn content [state]
-  (let [page (:page @state)
+  (let [page @(cursor state [:page]) ;(:page @state)
         {:keys [id name]} page]
 
     [:div {:id "page-edit-theme"}
      [ph/edit-page-header (t :page/Choosetheme ": " name)]
-     [ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url))]
+     [ph/edit-page-buttons id :theme state]
+     ;[ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url)) state]
      [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
       [:form.form-horizontal
        [:div.form-group
@@ -95,7 +96,8 @@
                                   (.preventDefault %)
                                   (save-theme state (str "/profile/page/settings/" id)))}
             (t :page/Save)]]]]]
-     [ph/manage-page-buttons (fn [] (save-theme state (str "/profile/page/settings/" id))) state (str "/profile/page/settings/" id) (str "/profile/page/edit/" id) false]
+     [ph/manage-page-buttons :theme (cursor state [:page :id]) state]
+     #_[ph/manage-page-buttons (fn [] (save-theme state (str "/profile/page/settings/" id))) state (str "/profile/page/settings/" id) (str "/profile/page/edit/" id) false]
 
      [ph/view-page page]]))
 
