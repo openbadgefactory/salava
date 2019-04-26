@@ -37,10 +37,9 @@
       (swap! fields-atom assoc old-position (nth @fields-atom new-position)
              new-position (nth @fields-atom old-position)))))
 
-(defn move-positions [fields-atom old-position new-position]
+(defn move-field-drop [fields-atom old-position new-position]
   (let [fields @fields-atom
-        new-position (if-not (nil? new-position) new-position (do #_(assoc fields (inc (count fields)) {})
-                                                                (count fields)))
+        new-position (if-not (nil? new-position) new-position (count fields))
         direction (if (< new-position old-position) :up :down)
         start (subvec fields 0 new-position)
         end (subvec fields new-position (count fields))]
