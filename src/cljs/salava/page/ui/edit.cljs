@@ -5,7 +5,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for plugin-fun]]
             [salava.core.ui.field :as f]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
@@ -403,7 +403,7 @@
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [:span.block-title (if (= type "html") (t :page/Texteditor) (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize)) ]
+         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text capitalize) ]
          (when (= type "badge")
            [:div.row.form-group {:style {:padding-top "10px"}}
             [:div.col-xs-8 [:select {:class "form-control"
@@ -501,11 +501,14 @@
     [ph/manage-page-buttons :content (cursor state [:page :id]) state]]])
 
 (defn content [state]
-  (let [{:keys [id name]} (:page @state)]
+  (let [{:keys [id name]} (:page @state)
+        user-info (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
+
     [:div {:id "page-edit"}
      [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content state]
+     [:div  [user-info]]
      ;[ph/edit-page-buttons id :content  (fn [next-url] (save-page (:page @state) state next-url)) state]
      [page-form state]]))
 

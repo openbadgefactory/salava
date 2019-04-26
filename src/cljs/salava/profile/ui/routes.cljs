@@ -3,7 +3,8 @@
             [salava.core.ui.helper :refer [base-path]]
             [salava.user.ui.profile :as profile]
             [salava.core.i18n :as i18n :refer [t]]
-            [salava.page.ui.my :as page])
+            [salava.page.ui.my :as page]
+            [salava.profile.ui.block])
   )
 
 (defn ^:export routes [context]
