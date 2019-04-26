@@ -11,6 +11,7 @@
             [salava.file.icons :refer [file-icon]]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.core.ui.modal :refer [open-modal]]
             ))
 
 (defn delete-page [id]
@@ -146,20 +147,20 @@
 (defn showcase-block [{:keys [badges format title]}]
   [:div.tag-block
    [:div
-    [:h2 title]
-    (for [badge badges]
-      (if (= format "short")
-        [:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
-                               :key  (:id badge)}
-         [:img {:src (str "/" (:image_file badge))
-                :title (:name badge)}]]
-        (badge-block (assoc badge :format "long"))
-        )
-      )
-
-    ]
-   ]
-  )
+    [:div.heading-block
+     [:h2 title]]
+    (doall (reduce (fn [r badge]
+                     (conj r (if (= format "short")
+                               [:a.small-badge-image {:href "#" #_(path-for (str "/badge/info/" (:id badge)))
+                                                      :key  (:id badge)
+                                                      :on-click #(do
+                                                                   (.preventDefault %)
+                                                                   (open-modal [:badge :info] {:badge-id (:id badge)}))}
+                                [:img {:src (str "/" (:image_file badge))
+                                       :title (:name badge)}]]
+                               (badge-block (assoc badge :format "long"))
+                               ))
+                     )[:div.tag-block] badges))]])
 
 (defn view-page [page]
   (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} page]
@@ -408,7 +409,6 @@
                                           [:button {:class    "btn btn-primary"
                                                     :on-click #(do
                                                                  (.preventDefault %)
-                                                                 (dump (:page @state))
                                                                  (as-> (get-in logic [current :save!]) f (f)))}
                                            (t :page/Save)]
                                           [:button.btn.btn-warning {:on-click #(do

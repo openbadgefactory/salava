@@ -299,7 +299,7 @@
         [:div.badge-select
          [:select {:class "form-control"
                    :aria-label "select badge format"
-                   :value format
+                   :value (or format "short")
                    :on-change #(update-block-value block-atom :format (.-target.value %))}
           [:option {:value "short"} (t :core/Imageonly)]
           [:option {:value "long"} (t :page/Content)]]]]]
@@ -321,13 +321,14 @@
       [:div#block-modal
        [:div.modal-body
         [:p.block-title (t :page/Addblock)]
-        [:p "Select a block to add to your page"]
+        [:p (t :page/Choosecontent)]
         (reduce-kv
           (fn [r k v]
             (let [new-field-atom (atom {:type (:value v)})]
               (conj r
-                    [:div
-                     [:a.link {:on-click #(do
+                    [:div.row
+                     [:div.col-md-12
+                     [:div.content-type {:style {:display "inline-table"}} [:a.link {:on-click #(do
                                             (.preventDefault %)
                                             (case (:value v)
                                               "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
@@ -338,11 +339,11 @@
                                                ("badge") nil
                                                "modal")
                                }
-                      [:div.row.content-type
+                      [:div
 
                        [:i {:class (str "fa icon " (:icon v))}]
-                       [:span (:text v)]]]
-                     [:span
+                       [:span (:text v)]]]]
+                     [:span {:style {:display "inline"}}
                       [info {:placement "right" :content (case (:value v)
                                                            "badge" (t :page/Badgeinfo)
                                                            "tag" (t :page/Badgegroupinfo)
@@ -353,7 +354,7 @@
                                                            "showcase" (t :page/Badgeshowcaseinfo)
                                                            )
                              :style {:font-size "15px"}}]
-                      ]])))
+                      ]]])))
           [:div.block-types]
           block-type-map)]
        [:div.modal-footer
@@ -371,23 +372,17 @@
          block-count (count @blocks)]
     (fn []
       [:div.add-field-after
-       (cond
-         (and (:toggle-move-mode @state) (not (= index (:toggled @state))))         [:a {:href "#" :on-click #(do
-
-                                                                                                                (f/move-positions blocks (:toggled @state) index)
-                                                                                                                (swap! state assoc :toggle-move-mode false :toggled nil)
-                                                                                                                )} [:div.placeholder.html-block-content.html-block-content-hover
-
-                                                                                                                    (t :page/Clicktodrop)]]
-         :else            [:button {:class    "btn btn-success"
-                                    :on-click #(do
-                                                 (.preventDefault %)
-                                                 (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
-                           (t :page/Addblock)]
-         )
-       ]
-      )
-    ))
+       (if (and (:toggle-move-mode @state) (not (= index (:toggled @state))))
+         [:a {:href "#" :on-click #(do
+                                     (f/move-field-drop blocks (:toggled @state) index)
+                                     (swap! state assoc :toggle-move-mode false :toggled nil))}
+          [:div.placeholder.html-block-content.html-block-content-hover
+           (t :page/Clicktodrop)]]
+         [:button {:class    "btn btn-success"
+                   :on-click #(do
+                                (.preventDefault %)
+                                (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
+          (t :page/Addblock)])])))
 
 (defn block [block-atom index blocks badges tags files state]
   (let [{:keys [type]} @block-atom
@@ -408,7 +403,7 @@
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize) ]
+         [:span.block-title (if (= type "html") (t :page/Texteditor) (some-> (filter #(= type (:value %)) block-type-map) first :value capitalize)) ]
          (when (= type "badge")
            [:div.row.form-group {:style {:padding-top "10px"}}
             [:div.col-xs-8 [:select {:class "form-control"
@@ -449,29 +444,8 @@
      (into [:div {:id "page-blocks"}]
            (for [index (range (count @blocks))]
              (block (cursor blocks [index]) index blocks badges tags files state)))
-     [field-after blocks state position]
-     #_[:div.add-field-after
-        (if (and (:toggle-move-mode @state) #_(not (= (dec index) (:toggled @state))))
-          [:div.placeholder.html-block-content.html-block-content-hover
-           "Click to drop block"
-           ]
-          [:button {:class    "btn btn-success"
-                    :on-click #(do
-                                 (.preventDefault %)
-                                 (open-modal [:page :blocktype] {:block-atom blocks :index nil} {:size :md})
-                                 #_(m/modal! [open-block-modal blocks nil] {:size :md}))}
-           (t :page/Addblock)])]]))
+     [field-after blocks state position]]))
 
-#_(defn page-description [description]
-    [:div.form-group
-     [:label {:class "col-md-2"
-              :for "page-description"}
-      (t :page/Description)]
-     [:div.col-md-10
-      [:textarea {:id "page-description"
-                  :class "form-control"
-                  :value @description
-                  :on-change #(reset! description (.-target.value %))}]]])
 
 (defn page-description [description]
   [:div.col-md-12
@@ -484,18 +458,6 @@
                  :class "form-control"
                  :value @description
                  :on-change #(reset! description (.-target.value %))}]]]])
-
-#_(defn page-title [name]
-    [:div.form-group
-     [:label {:class "col-md-2"
-              :for "page-name"}
-      (t :page/Title)]
-     [:div.col-md-10
-      [:input {:id "page-name"
-               :class "form-control"
-               :type "text"
-               :value @name
-               :on-change #(reset! name (.-target.value %))}]]])
 
 (defn page-title [name]
   [:div.col-md-12
@@ -536,31 +498,7 @@
        [page-description (cursor state [:page :description])]]]]]
    [:div.form-horizontal
     [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]
-    [ph/manage-page-buttons :content (cursor state [:page :id]) state]
-    #_[:div.row
-       [:div.col-md-12
-        [:button {:class    "btn btn-primary"
-                  :on-click #(do
-                               (.preventDefault %)
-                               (dump (:page @state))
-                               (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
-         (t :page/Save)]
-        [:button.btn.btn-warning {:on-click #(do
-                                               (.preventDefault %)
-                                               (navigate-to  "/profile/page"))}
-         (t :core/Cancel)]
-
-        [:button.btn.btn-danger {:on-click #(do
-                                              (.preventDefault %)
-                                              (ph/delete-page (get-in @state [:page :id])))}
-         (t :core/Delete)]
-        [ph/next-page-btn]
-        #_[:div.pull-right {:id "step-button"}
-           [:a {:href "#" :on-click #(do
-                                       (.preventDefault %)
-                                       (navigate-to (case )))}  (:core/Next)]
-           ]]]
-    ]])
+    [ph/manage-page-buttons :content (cursor state [:page :id]) state]]])
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
