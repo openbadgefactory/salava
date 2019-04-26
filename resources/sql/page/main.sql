@@ -190,7 +190,7 @@ SELECT id, "showcase" AS type, title, format, block_order FROM page_block_showca
 
 --name: select-showcase-block-content-for-edit
 -- get badges in badge showcase
-SELECT ub.id, bc.name, bc.image_file FROM user_badge AS ub
+SELECT DISTINCT ub.id, bc.name, bc.image_file FROM user_badge AS ub
   JOIN page_block_showcase_has_badge AS pb ON pb.badge_id = ub.id
   JOIN badge AS badge ON (badge.id = ub.badge_id)
   JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
@@ -200,7 +200,7 @@ SELECT ub.id, bc.name, bc.image_file FROM user_badge AS ub
 
 --name: select-showcase-block-content
 -- get badges in badge showcase
-SELECT ub.id, bc.name, bc.image_file, bc.description, cc.url AS criteria_url, cc.markdown_text AS criteria_content,
+SELECT DISTINCT ub.id, ub.user_id, bc.name, bc.image_file, bc.description, cc.url AS criteria_url, cc.markdown_text AS criteria_content,
 ic.id AS issuer_content_id,
 ic.name AS issuer_content_name, ic.url AS issuer_content_url,
 crc.id AS creator_content_id, crc.name AS creator_name, crc.url AS creator_url
