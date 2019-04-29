@@ -24,7 +24,7 @@
     (fn []
       (let [{:keys [user profile]} @state
             {:keys [role first_name last_name about profile_picture]} user]
-        [:div {:id "profile"}
+        [:div {:id "profile" :style {:margin "10px auto"}}
          [:div.row
           [:div {:class "col-md-3 col-sm-3 col-xs-12"}
            [:div.profile-picture-wrapper
