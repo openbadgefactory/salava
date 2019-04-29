@@ -1,0 +1,23 @@
+@import 'variables';
+
+#profile {
+.profile-navi  {
+  margin-bottom: 15px;
+  .fa-plus-square {
+    color: $titlebar-color;
+    font-size: 25px;
+    margin: 10px;
+  }
+
+  .nav-item {
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .active {
+    //background-color: darken($background-color, 40%)
+  }
+  .nav-tabs>li>a {
+    color: $text-color;
+  }
+}
+}
