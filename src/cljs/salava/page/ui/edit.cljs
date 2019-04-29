@@ -318,7 +318,7 @@
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
-    (if block [block] [:div ""])))
+    (if block [block nil] [:div ""])))
 
 (defn contenttype [{:keys [block-atom index]}]
   (let [block-type-map (if (some #(= "profile" (:type %)) @block-atom)
