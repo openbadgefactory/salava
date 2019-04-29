@@ -73,6 +73,10 @@ SELECT f.id, f.name, f.path, f.size, f.mime_type, pb.file_order FROM user_file A
        WHERE pb.block_id = :block_id
        ORDER BY pb.file_order
 
+--name: select-profile-block
+--select page's profile block
+SELECT id, 'profile' As type, block_order FROM page_block_profile WHERE page_id = :page_id
+
 --name: update-page-name-description!
 --update name and description of the page
 UPDATE page SET name = :name, description = :description WHERE id = :id
@@ -110,6 +114,9 @@ DELETE FROM page_block_tag WHERE id = :id
 --name: delete-files-block-files!
 DELETE FROM page_block_files_has_file WHERE block_id = :block_id
 
+--name: delete-profile-block!
+DELETE FROM page_block_profile WHERE id = :id
+
 --name: update-heading-block!
 UPDATE page_block_heading SET size = :size, content = :content, block_order = :block_order WHERE id = :id AND page_id = :page_id
 
@@ -142,6 +149,12 @@ UPDATE page_block_tag SET tag = :tag, format = :format, sort = :sort, block_orde
 
 --name: insert-tag-block!
 INSERT INTO page_block_tag (page_id, tag, format, sort, block_order) VALUES (:page_id, :tag, :format, :sort, :block_order)
+
+--name: update-profile-block!
+UPDATE page_block_profile SET block_order = :block_order WHERE id = :id AND page_id = :page_id
+
+--name: insert-profile-block!
+INSERT INTO page_block_profile (page_id, block_order) VALUES (:page_id, :block_order)
 
 --name: update-page-theme!
 UPDATE page SET theme = :theme, border = :border, padding = :padding WHERE id = :id

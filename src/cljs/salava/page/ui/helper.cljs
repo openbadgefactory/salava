@@ -194,6 +194,10 @@
                                ))
                      )[:div.tag-block] badges))]])
 
+(defn profile-block [block-atom]
+  (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
+    (when block [block] #_[:div {:style {:margin "10px 0px"}} [block]])))
+
 (defn view-page [page]
   (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} page]
     [:div {:id    (str "theme-" (or theme 0))
@@ -235,6 +239,7 @@
                       "heading" (heading-block block)
                       "tag" (tag-block block)
                       "showcase" (showcase-block block)
+                      "profile" (profile-block block)
                       nil)]))]]]])]))
 
 (defn render-page-modal [page]

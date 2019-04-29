@@ -97,7 +97,8 @@
                                                                                                                                                 (s/optional-key :properties) {(s/optional-key :hidden) (s/maybe s/Bool)
                                                                                                                                                                               (s/optional-key :resource_id) (s/maybe s/Int)
                                                                                                                                                                                (s/optional-key :resource_type) (s/maybe s/Str)
-                                                                                                                                                                               (s/optional-key :mime_type) (s/maybe s/Str)}))]))]))]))
+                                                                                                                                                                               (s/optional-key :mime_type) (s/maybe s/Str)}))]))])
+                                                          #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile")})]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int
@@ -121,7 +122,8 @@
                                                                     #(= (:type %) "tag") (assoc TagBlock :id s/Int
                                                                                                          :block_order s/Int)
                                                                    #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int :badges [(-> Badge
-                                                                                                                                                          (select-keys [:id :name :image_file]))] ))]}
+                                                                                                                                                          (select-keys [:id :name :image_file]))] )
+                                                                    #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile")})]}
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file (s/maybe s/Str)
@@ -139,4 +141,5 @@
                                                            #(= (:type %) "file") (assoc FileBlock (s/optional-key :id) s/Int
                                                                                                   :files (s/maybe [s/Int]))
                                                            #(= (:type %) "tag") (assoc TagBlock (s/optional-key :id) s/Int)
-                                                           #(= (:type %) "showcase") (assoc ShowcaseBlock (s/optional-key :id) s/Int))]})
+                                                           #(= (:type %) "showcase") (assoc ShowcaseBlock (s/optional-key :id) s/Int)
+                                                           #(= (:type %) "profile") {:type (s/eq "profile") (s/optional-key :id) s/Int})]})

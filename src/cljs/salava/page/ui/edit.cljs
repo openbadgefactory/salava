@@ -275,7 +275,8 @@
    {:icon "fa-file" :text (t :page/Files) :value "file"}
    {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
    {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
-   {:icon "fa-superpowers" :text (t :page/Badgeshowcase) :value "showcase"}])
+   {:icon "fa-superpowers" :text (t :page/Badgeshowcase) :value "showcase"}
+   {:icon "fa-user" :text "Profile information" :value "profile"}])
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
@@ -315,8 +316,13 @@
                                                              :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
         [:i.fa.fa-plus.add-icon]]]]]))
 
+(defn profile-block [block-atom]
+  (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
+    (if block [block] [:div ""])))
+
 (defn contenttype [{:keys [block-atom index]}]
-  (let [type (:type @block-atom)]
+  (let [block-type-map (if (some #(= "profile" (:type %)) @block-atom)
+                         (into []  (remove #(= "profile" (:value %)) block-type-map)) block-type-map)]
     (fn []
       [:div#block-modal
        [:div.modal-body
@@ -328,35 +334,35 @@
               (conj r
                     [:div.row
                      [:div.col-md-12
-                     [:div.content-type {:style {:display "inline-table"}} [:a.link {:on-click #(do
-                                            (.preventDefault %)
-                                            (case (:value v)
-                                              "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
-                                              (if index
-                                                (f/add-field block-atom {:type (:value v)} index )
-                                                (f/add-field block-atom {:type (:value v)} ))))
-                               :data-dismiss (case (:value v)
-                                               ("badge") nil
-                                               "modal")
-                               }
-                      [:div
+                      [:div.content-type {:style {:display "inline-table"}} [:a.link {:on-click #(do
+                                                                                                   (.preventDefault %)
+                                                                                                   (case (:value v)
+                                                                                                     "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
+                                                                                                     (if index
+                                                                                                       (f/add-field block-atom {:type (:value v)} index )
+                                                                                                       (f/add-field block-atom {:type (:value v)} ))))
+                                                                                      :data-dismiss (case (:value v)
+                                                                                                      ("badge") nil
+                                                                                                      "modal")
+                                                                                      }
+                                                                             [:div
 
-                       [:i {:class (str "fa icon " (:icon v))}]
-                       [:span (:text v)]]]]
-                     [:span {:style {:display "inline"}}
-                      [info {:placement "right" :content (case (:value v)
-                                                           "badge" (t :page/Badgeinfo)
-                                                           "tag" (t :page/Badgegroupinfo)
-                                                           "heading" (t :page/Headinginfo)
-                                                           "sub-heading" (t :page/Subheadinginfo)
-                                                           "file" (t :page/Filesinfo)
-                                                           "html" (t :page/Htmlinfo)
-                                                           "showcase" (t :page/Badgeshowcaseinfo)
-                                                           )
-                             :style {:font-size "15px"}}]
-                      ]]])))
-          [:div.block-types]
-          block-type-map)]
+                                                                              [:i {:class (str "fa icon " (:icon v))}]
+                                                                              [:span (:text v)]]]]
+                      [:span {:style {:display "inline"}}
+                       [info {:placement "right" :content (case (:value v)
+                                                            "badge" (t :page/Badgeinfo)
+                                                            "tag" (t :page/Badgegroupinfo)
+                                                            "heading" (t :page/Headinginfo)
+                                                            "sub-heading" (t :page/Subheadinginfo)
+                                                            "file" (t :page/Filesinfo)
+                                                            "html" (t :page/Htmlinfo)
+                                                            "showcase" (t :page/Badgeshowcaseinfo)
+                                                            "profile" (t :profile/Addprofileinfo)
+                                                            )
+                              :style {:font-size "15px"}}]
+                       ]]])))
+          [:div.block-types] block-type-map)]
        [:div.modal-footer
         [:button.btn.btn-warning {:on-click #(do
                                                (.preventDefault %)
@@ -433,6 +439,7 @@
          ("file") [edit-block-files block-atom files]
          ("html") [edit-block-html block-atom]
          ("showcase") [badge-showcase state block-atom]
+         ("profile") [profile-block block-atom]
          nil)]]]))
 
 
