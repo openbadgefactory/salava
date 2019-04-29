@@ -17,10 +17,10 @@
   (let [picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))]
     (when picture-fn (picture-fn path) )))
 
-(defn ^:export userprofileinfo []
-  (let [state (atom {})
+(defn ^:export userprofileinfo [data]
+  (let [state (if data data (atom {}))
         id (session/get-in [:user :id])]
-    (init-user-profile id state)
+    (when-not data (init-user-profile id state))
     (fn []
       (let [{:keys [user profile]} @state
             {:keys [role first_name last_name about profile_picture]} user]
