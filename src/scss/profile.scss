@@ -20,4 +20,21 @@
     color: $text-color;
   }
 }
+  .manage-buttons {
+    //width: 90%;
+     .share{
+      float: left;
+      margin: 0px 10px;
+    }
+
+    .visibility {
+      float: left;
+      margin: 10px;
+    }
+
+    .edit-btn{
+      float: right;
+      margin: 0px 10px;
+    }
+  }
 }

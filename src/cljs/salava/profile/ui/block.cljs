@@ -41,8 +41,7 @@
                [:div.col-xs-12
                 [:label (t :user/Aboutme)]
                 [:div about]])
-             (when profile
-               (if (not-empty profile)
+             (when (seq profile)
                  [:div.row
                   [:div.col-xs-12 [:b (t :profile/Additionalinformation)]]
                   [:div.col-xs-12
@@ -66,4 +65,4 @@
                                       (and  (empty? (re-find #" " (str value))) (= "pinterest" field)) [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
                                       (and  (empty? (re-find #" " (str value))) (= "instagram" field)) [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
                                       (= "blog" field) (hyperlink value)
-                                      :else (t value))]])))]]]))]]]]]))))
+                                      :else (t value))]])))]]])]]]]]))))

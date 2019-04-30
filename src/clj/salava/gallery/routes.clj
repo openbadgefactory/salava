@@ -77,11 +77,18 @@
                   :current-user current-user
                   (ok (g/gallery-stats ctx (:last-visited current-user) (:id current-user))))
 
-             (GET "/recent" []
-                  :body-params [visibility :- s/Str
-                                user-id :- s/Int
-                                type :- s/Str]
+             (GET "/recent" [userid kind]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (g/public-by-user ctx kind userid (:id current-user)))
+                  )
+
+             #_(GET "/recent" []
+                  :body-params [visibility :- (s/maybe s/Str)
+                                user_id :- (s/maybe s/Int)
+                                type :- (s/maybe s/Str)]
                   :auth-rules access/signed
                   :summary "Get user's recent badges or pages"
+                  :current-user current-user
                   (ok {} #_(g/public-by-user ctx user-id visibility type))
                   ))))
