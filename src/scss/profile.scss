@@ -1,0 +1,40 @@
+@import 'variables';
+
+#profile {
+.profile-navi  {
+  margin-bottom: 15px;
+  .fa-plus-square {
+    color: $titlebar-color;
+    font-size: 25px;
+    margin: 10px;
+  }
+
+  .nav-item {
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .active {
+    //background-color: darken($background-color, 40%)
+  }
+  .nav-tabs>li>a {
+    color: $text-color;
+  }
+}
+  .manage-buttons {
+    //width: 90%;
+     .share{
+      float: left;
+      margin: 0px 10px;
+    }
+
+    .visibility {
+      float: left;
+      margin: 10px;
+    }
+
+    .edit-btn{
+      float: right;
+      margin: 0px 10px;
+    }
+  }
+}

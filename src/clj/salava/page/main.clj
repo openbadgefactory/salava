@@ -87,7 +87,8 @@
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
         showcase-blocks (showcase-blocks ctx page-id false)
-        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks showcase-blocks)]
+        profile-block (select-profile-block {:page_id page-id} (get-db ctx))
+        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks showcase-blocks profile-block)]
     (sort-by :block_order blocks)))
 
 (defn badge-blocks-for-edit [ctx page-id]
@@ -117,7 +118,8 @@
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (select-pages-tag-blocks {:page_id page-id} (get-db ctx))
         badge-showcase-blocks (showcase-blocks ctx page-id true)
-        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks)]
+        profile-block (select-profile-block {:page_id page-id} (get-db ctx))
+        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks profile-block)]
     (sort-by :block_order blocks)))
 
 (defn page-with-blocks [ctx page-id]
@@ -219,7 +221,8 @@
     "tag" (delete-tag-block! block (get-db ctx))
     "showcase" (do
                  (delete-showcase-block! {:id (:id block)} (get-db ctx))
-                 (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))))
+                 (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))
+    "profile" (delete-profile-block! block (get-db ctx))))
 
 (defn save-files-block-content [ctx block]
   (delete-files-block-files! {:block_id (:id block)} (get-db ctx))
@@ -249,6 +252,7 @@
 (defn create-showcase-block! [ctx block]
   (let [block-id (:generated_key (insert-showcase-block<! block (get-db ctx)))]
     (save-showcase-badges ctx (assoc block :id block-id))))
+
 
 (defn url-checker [ctx]
   (fn [element-name attrs]
@@ -344,7 +348,11 @@
                          (if id
                            (update-showcase-block! ctx block)
                            (create-showcase-block! ctx block)
-                           )))))
+                           ))
+            "profile" (if id
+                        (update-profile-block! block (get-db ctx))
+                        (insert-profile-block! block (get-db ctx))
+                        ))))
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
           (delete-block! ctx old-block)))

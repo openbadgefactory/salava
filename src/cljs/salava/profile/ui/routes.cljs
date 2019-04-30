@@ -4,11 +4,13 @@
             [salava.user.ui.profile :as profile]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.page.ui.my :as page]
-            [salava.profile.ui.block])
+            [salava.profile.ui.block :as block]
+            [salava.profile.ui.profile :as p]
+            )
   )
 
 (defn ^:export routes [context]
-  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] profile/handler]]
+  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] p/handler #_profile/handler]]
    (str (base-path context) "/page") [[["/mypages" page/handler]]]
    })
 
