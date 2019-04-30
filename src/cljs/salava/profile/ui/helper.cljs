@@ -58,10 +58,18 @@
   (let [block (first (plugin-fun (session/get :plugins) "block" "recentpages"))]
     (if block [block state] [:div ""])))
 
-(defn block [block-atom state type index]
-  (let [block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))]
+(defn update-block-value [block-atom key value]
+  (swap! block-atom assoc key value))
+
+(defn block-for-edit [block-atom state index]
+  (let [block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))
+        type (:type @block-atom)
+        blocks (cursor state [:blocks])
+        visibility-atom (cursor block-atom [:hidden])
+        first? (= 0 index)
+         last? (= (dec (count @blocks)) index)]
     [:div {:key index}
-     [field-after (atom []) state index]
+     [field-after blocks state index]
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       [:div.field-content
        [:div.form-group
@@ -75,24 +83,25 @@
                                      ;:on-change #(update-block-value block-atom :format (.-target.value %))
                                      }
                             [:option {:value "short"} (t :page/Short)]
-                            [:option {:value "long"} (t :page/Long)]]]
-            [:div.col-xs-4
-          #_ [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])
+                            [:option {:value "long"} (t :page/Long)]]]])
          #_[block-type block-atom]]
         [:div.checkbox
-         [:label [:input {:type "checkbox" :value ""}] "Hide in profile"]
-
-         ]
+         [:label [:input {:type "checkbox" :value (if (= "true" @visibility-atom) "false" "true")
+                          ;:value (not @(cursor block-atom [hidden]))
+                          :on-change #(do
+                                        (.preventDefault %)
+                                        (update-block-value block-atom :hidden (.-target.value %)))
+                          :checked (= "true" @visibility-atom)}] (t :profile/Hideinprofile)]]
         [:div.move {:on-click #(do
                                  (.preventDefault %)
                                  (cond
-                                   ;(and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                   (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
                                    (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
                                    :else (swap! state assoc :toggle-move-mode true :toggled index)))}
          [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
        (case type
         ("showcase") [:div {:class "close-button"
-               :on-click #(f/remove-field [] #_blocks index)}
+               :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]
          nil)]
@@ -100,16 +109,14 @@
          ("badges") [recent-badges state]
          ("pages") [recent-pages state]
          ("showcase") []
-         ;("heading" "sub-heading") [edit-block-text block-atom]
-         ;("badge") [badge-block block-atom]#_[edit-block-badges block-atom badges]
-         ;("tag") [edit-block-badge-groups block-atom tags badges]
-         ;("file") [edit-block-files block-atom files]
-         ;("html") [edit-block-html block-atom]
-         ;("showcase") [badge-showcase state block-atom]
-         ;("profile") [profile-block block-atom]
-         nil)]]]
-    )
-  )
+         nil)]]]))
+
+(defn block [block-atom state index]
+  (let [type (:type @block-atom)]
+   [:div {:key index} (case type
+      ("badges") [recent-badges state]
+      ("pages") [recent-pages state]
+      nil)]))
 
 
 

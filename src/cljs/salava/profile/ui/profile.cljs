@@ -12,24 +12,6 @@
 
 (defn tabs [state])
 
-#_(defn toggle-visibility [visibility-atom]
-    (ajax/POST
-      (path-for "/obpv1/user/profile/set_visibility")
-      {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
-       :handler (fn [new-value]
-                  (reset! visibility-atom new-value)
-                  )}))
-
-#_(defn profile-visibility-input [visibility-atom]
-    [:div.col-xs-12
-     [:div.checkbox
-      [:label
-       [:input {:name      "visibility"
-                :type      "checkbox"
-                :on-change #(toggle-visibility visibility-atom)
-                :checked   (= "public" @visibility-atom)}]
-       (t :user/Publishandshare)]]])
-
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
     (if connectuser
@@ -45,6 +27,18 @@
                                 (swap! state assoc :active-index 0))} (t :user/Myprofile)]]
     (when (:edit-mode @state) [:i.fa.fa-plus-square])]])
 
+(defn profile-blocks [state]
+  (let [blocks (cursor state [:blocks])
+        block-count (count @blocks)
+        position (if (pos? block-count) (dec block-count) nil)]
+    [:div {:id "field-editor"}
+     (into [:div {:id "page-blocks"}]
+           (for [index (range (count @blocks))]
+             (ph/block-for-edit (cursor blocks [index]) state index))
+           )
+     [ph/field-after blocks state position]
+     ]))
+
 (defn edit-profile [state]
   (let [profile-info-block (pb/userprofileinfo state)]
     [:div#page-edit
@@ -53,13 +47,11 @@
        [:h3 (t :profile/Personalinformation)]]
       [:div.panel-body
        [profile-info-block]]]
-     [ph/block (atom {}) state "badges" 0]
-     [ph/block (atom {}) state "pages" 1]]
-    )
-  )
+     [profile-blocks state]]))
 
 (defn view-profile [state]
-  (let [profile-info-block (pb/userprofileinfo state)]
+  (let [profile-info-block (pb/userprofileinfo state)
+        blocks (cursor state [:blocks])]
     [:div
      ; [m/modal-window]
      ; [profile-navi state]
@@ -69,8 +61,9 @@
        [:h3 (t :profile/Personalinformation)]]
       [:div.panel-body
        [profile-info-block]
-       [ph/recent-badges state]
-       [ph/recent-pages state]]]]))
+       (into [:div]
+          (for [index (range (count @blocks))]
+             (ph/block (cursor blocks [index]) state index)))]]]))
 
 (defn content [state]
   [:div
@@ -80,10 +73,7 @@
    [ph/manage-buttons state]]
    (if @(cursor state [:edit-mode])
      [edit-profile state]
-     [view-profile state]
-     )
-   ]
-  )
+     [view-profile state])])
 
 
 
@@ -104,7 +94,7 @@
                      :active-index 0
                      :edit-mode false
                      :toggle-move-mode false
-                     :toggled nil})
+                     :blocks []})
         user (session/get :user)]
     (init-data user-id state)
 

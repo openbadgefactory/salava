@@ -17,12 +17,16 @@
   [ctx user-id]
   (select-user-profile-fields {:user_id user-id} (get-db ctx)))
 
+(defn profile-blocks [ctx user-id]
+  )
+
 (defn user-information-and-profile
   "Get user informatin, profile, public badges and pages"
   [ctx user-id current-user-id]
   (let [user          (user-information ctx user-id)
         user-profile  (user-profile ctx user-id)
         visibility    (if current-user-id "internal" "public")
+        blocks (or (profile-blocks ctx user-id) [ {:hidden "false" :block_order 0 :type "badges"}  {:hidden "false" :block_order 1 :type "pages"}])
         ;recent-badges (g/public-badges-by-user ctx user-id visibility)
         ;recent-pages  (g/public-pages-by-user ctx user-id visibility)
         ]
@@ -31,4 +35,5 @@
      :visibility visibility
      ;:badges  recent-badges
      ;:pages   recent-pages
+     :blocks blocks
      :owner?  (= user-id current-user-id)}))
