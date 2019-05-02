@@ -17,10 +17,13 @@
 
 
 (defn midpoint [items]
-  (let [c (count items)]
-    (when (> c 0)
-      {:lat (/ (apply + (map :lat items)) c)
-       :lng (/ (apply + (map :lng items)) c)})))
+  ;;FIXME Averaging works poorly if badges are spread out.
+  #_(let [c (count items)]
+      (when (> c 0)
+        {:lat (/ (apply + (map :lat items)) c)
+         :lng (/ (apply + (map :lng items)) c)}))
+  ;; Just use first item as midpoint for now.
+  {:lat (-> items first :lat) :lng (-> items first :lng)})
 
 
 (defn badge-info-content [user-badge-id visible]
@@ -67,7 +70,7 @@
                          (if (seq (:badges data))
                            (let [lat-lng (js/L.latLng. (clj->js (midpoint (:badges data))))
                                  my-map (-> (js/L.map. (str "map-view-badge-" badge-id) lu/map-opt)
-                                            (.setView lat-lng 8)
+                                            (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (doseq [b (:badges data)]
                                (-> (js/L.latLng. (:lat b) (:lng b))
@@ -86,6 +89,7 @@
        [:div.row {:style {:display (if @visible "block" "none")}}
         [:label.col-md-12.sub-heading (t :location/Location)]
         [:div.col-md-12
+         [:label {:style {:display (if @visible "block" "none")}} (t :location/setLocationHere)]
          [:div {:id "map-view-badge" :style {:height "400px" :margin "20px 0"}}]]])
 
      :component-did-mount
@@ -133,7 +137,7 @@
                            (let [lat-lng (js/L.latLng. lat lng)
                                  my-marker (js/L.marker. lat-lng (clj->js {:icon lu/user-icon-ro}))
                                  my-map (-> (js/L.map. (str "map-view-user-" user-id) lu/map-opt)
-                                            (.setView lat-lng 8)
+                                            (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (.addTo my-marker my-map))
                            (reset! visible false)))})) 300)
@@ -196,6 +200,7 @@
               (t :location/LocationPublic)]
              [:p.help-block (t :location/LocationPublicInfo)]]]
 
+           [:label {:style {:display (if (:enabled @state) "block" "none")}} (t :location/setLocationHere)]
            [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]
            ]]
          ]])

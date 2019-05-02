@@ -10,15 +10,6 @@
 
 (defqueries "sql/location/queries.sql")
 
-(defn- fake-rand [seed]
-  (let [x (* (Math/sin seed) 10000)]
-    (- x (Math/floor x))))
-
-(defn- noise
-  ([seed v] (noise (inc seed) v 1))
-  ([seed v multip]
-   (let [op (if (even? seed) - +)]
-     (op v (* (fake-rand seed) 0.0019 multip)))))
 
 (defn set-location-reset [ctx user-id]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
@@ -36,9 +27,10 @@
 
 
 (defn user-badge-location [ctx user-id user-badge-id]
-  (if-let [loc (select-user-badge-location {:user user-id :badge user-badge-id} (u/get-db-1 ctx))]
-    loc
-    {:lat nil :lng nil}))
+  (let [loc (if user-id
+              (select-user-badge-location {:user user-id :badge user-badge-id} (u/get-db-1 ctx))
+              (select-user-badge-location-public {:badge user-badge-id} (u/get-db-1 ctx)))]
+    (or loc {:lat nil :lng nil})))
 
 (defn set-user-location [ctx user-id lat lng]
   {:success (boolean (update-user-location! {:user user-id :lat lat :lng lng} (u/get-db ctx)))})
@@ -50,10 +42,22 @@
     (or (select-user-location-public {:user user-id} (u/get-db-1 ctx)) {:lat nil :lng nil})))
 
 
+(defn- country-latlng
+  "Get default location from user's country.
+  Add small amount of random noise so that multiple users have different coordinates."
+  [country]
+  (let [ll (get c/lat-lng (keyword country))
+        move (fn [v] (if (> (rand) 0.5)
+                       (+ v (rand 0.75))
+                       (- v (rand 0.75))))]
+    (if ll
+      {:lat (move (:lat ll)) :lng (move (:lng ll))}
+      {:lat nil :lng nil})))
+
 (defn user-location [ctx user-id]
   (if-let [user (select-user {:user user-id} (u/get-db-1 ctx))]
     {:enabled (select-user-location {:user user-id} (u/get-db-1 ctx))
-     :country (get c/lat-lng (keyword (:country user)) {:lat nil :lng nil})
+     :country (country-latlng (:country user))
      :public (pos? (:location_public user))}
     {:enabled nil
      :country {:lat nil :lng nil}
@@ -64,8 +68,8 @@
   {:badges (->> (select-explore-badge {:badge badge-id} (u/get-db ctx))
                 (map (fn [b]
                        (-> b
-                           (assoc :lat (or (:badge_lat b) (noise (:id b) (:user_lat b)))
-                                  :lng (or (:badge_lng b) (noise (:id b) (:user_lng b) 3)))
+                           (assoc :lat (or (:badge_lat b) (:user_lat b))
+                                  :lng (or (:badge_lng b) (:user_lng b)))
                            (dissoc :user_lat :badge_lat :user_lng :badge_lng)))))})
 
 
@@ -97,7 +101,13 @@
         ]
 
     (if (seq filtered-user-ids)
-      {:users (map (fn [u] (assoc u :user_url (str (u/get-full-path ctx) "/user/profile/" (:id u))))
+      {:users (map (fn [u]
+                     (-> u
+                         (assoc :user_url (str (u/get-full-path ctx) "/user/profile/" (:id u))
+                                :user_image (if (:profile_picture u)
+                                              (str (u/get-site-url ctx) "/" (:profile_picture u))
+                                              (str (u/get-site-url ctx) "/img/user_default.png")))
+                         (dissoc :profile_picture)))
                    (select-explore-users {:user filtered-user-ids} (u/get-db ctx)))}
       {:users []})))
 
@@ -131,8 +141,8 @@
                            (-> b
                                (assoc :badge_url   (str (u/get-full-path ctx) "/badge/info/" (:id b))
                                       :badge_image (str (u/get-site-url ctx) "/" (:badge_image b))
-                                      :lat (or (:badge_lat b) (noise (:id b) (:user_lat b)))
-                                      :lng (or (:badge_lng b) (noise (:id b) (:user_lng b) 3)))
+                                      :lat (or (:badge_lat b) (:user_lat b))
+                                      :lng (or (:badge_lng b) (:user_lng b)))
                                (dissoc :user_lat :badge_lat :user_lng :badge_lng))
 
                            )))}

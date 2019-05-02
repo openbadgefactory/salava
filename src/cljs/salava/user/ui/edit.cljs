@@ -97,7 +97,7 @@
            [f]))
 
        [:div.row
-        [:div.col-xs-12
+        [:div.col-xs-9.col-xs-offset-3
          [:button {:class "btn btn-primary"
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)

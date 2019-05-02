@@ -44,6 +44,7 @@ L.map = function() {};
 L.map.prototype.setView  = function() {};
 L.map.prototype.addLayer = function() {};
 L.map.prototype.on = function() {};
+L.map.prototype.getZoom = function() {};
 
 /**
  * @return {L.LatLngBounds}

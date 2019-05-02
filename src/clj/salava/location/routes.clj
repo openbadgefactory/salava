@@ -54,10 +54,9 @@
 
 
              (GET "/user_badge/:badge" []
-                  :summary "Get location of a single badge. Requires authenticated user."
+                  :summary "Get location of a single badge."
                   :return ls/lat-lng
                   :path-params  [badge :- s/Int]
-                  :auth-rules access/signed
                   :current-user current-user
                   (ok (l/user-badge-location ctx (:id current-user) badge)))
 
@@ -84,22 +83,22 @@
                   (ok (l/explore-badge ctx badge)))
 
              (GET "/explore/users" []
-                  :summary "Get public user locations for gallery"
+                  :summary "Get public user locations for gallery. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by user name."
                   :return ls/explore-users
                   :query [params ls/explore-user-query]
                   :current-user current-user
-                  (ok (l/explore-list-users ctx (pos? (:id current-user)) params)))
+                  (ok (l/explore-list-users ctx (some-> current-user :id pos?) params)))
 
              (GET "/explore/badges" []
-                  :summary "Get public badge locations for gallery"
+                  :summary "Get public badge locations for gallery. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by badge or issuer name and tags."
                   :return ls/explore-badges-ex
                   :query [params ls/explore-badge-query]
                   :current-user current-user
-                  (ok (l/explore-list-badges ctx (pos? (:id current-user)) params)))
+                  (ok (l/explore-list-badges ctx (some-> current-user :id pos?) params)))
 
              (GET "/explore/filters" []
                   :summary "Get list of tags, badge and issuer names available for public badges."
                   :return ls/explore-filters
                   :current-user current-user
-                  (ok (l/explore-filters ctx (pos? (:id current-user)))))
+                  (ok (l/explore-filters ctx (some-> current-user :id pos?))))
              )))
