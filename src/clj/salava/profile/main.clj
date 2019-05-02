@@ -1,6 +1,6 @@
 (ns salava.profile.main
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db]]))
+            [salava.core.util :refer [get-db get-plugins plugin-fun]]))
 
 (defqueries "sql/profile/main.sql")
 
@@ -27,13 +27,21 @@
         user-profile  (user-profile ctx user-id)
         visibility    (if current-user-id "internal" "public")
         blocks (or (profile-blocks ctx user-id) [ {:hidden "false" :block_order 0 :type "badges"}  {:hidden "false" :block_order 1 :type "pages"}])
-        ;recent-badges (g/public-badges-by-user ctx user-id visibility)
-        ;recent-pages  (g/public-pages-by-user ctx user-id visibility)
         ]
     {:user    user
      :profile user-profile
      :visibility visibility
-     ;:badges  recent-badges
-     ;:pages   recent-pages
      :blocks blocks
      :owner?  (= user-id current-user-id)}))
+
+(defn user-profile-for-edit
+  "Get user profile visibility, profile picture, about text and profile fields for editing"
+  [ctx user-id]
+  (let [user (user-information ctx user-id)
+        user-profile (user-profile ctx user-id)
+        picture-files (as-> (first (plugin-fun (get-plugins ctx) "db" "user-image-files")) f (if f (f ctx user-id) []))]
+    {:user (select-keys user [:about :profile_picture :profile_visibility])
+     :profile user-profile
+     :user_id user-id
+     :picture_files picture-files
+     }))

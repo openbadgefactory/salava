@@ -379,6 +379,7 @@
          block-count (count @blocks)]
     (fn []
       [:div.add-field-after
+
        (if (and (:toggle-move-mode @state) (not (= index (:toggled @state))))
          [:a {:href "#" :on-click #(do
                                      (f/move-field-drop blocks (:toggled @state) index)
@@ -448,6 +449,7 @@
 (defn page-blocks [blocks badges tags files state]
   (let [block-count (count @blocks)
         position (if (pos? block-count) (dec block-count) nil)]
+
     [:div {:id "field-editor"}
      (into [:div {:id "page-blocks"}]
            (for [index (range (count @blocks))]
