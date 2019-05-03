@@ -11,7 +11,7 @@
             [reagent-modals.modals :as m]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.profile.ui.edit :as pe]
-             [salava.page.themes :refer [themes borders]]))
+            [salava.page.themes :refer [themes borders]]))
 
 
 (defn random-key []
@@ -52,8 +52,10 @@
     [:div.panel-heading
      [:h3 (t :profile/Personalinformation)]]
     [:div.panel-body
-     [pe/edit-profile]]]
-   [profile-blocks state]])
+     [pe/edit-profile state]]]
+
+   [profile-blocks state]
+   [pe/action-buttons state]])
 
 (defn view-profile [state]
   (let [profile-info-block (pb/userprofileinfo state)
@@ -61,20 +63,20 @@
     [:div#page-view
      [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
             :class "page-content"}
-     ; [m/modal-window]
-     ; [profile-navi state]
-     ;[ph/manage-buttons state]
-     [:div.panel
-      [:div.panel-left
-       [:div.panel-right
-        [:div.panel-content
-      [:div.panel-heading
-       [:h3 (t :profile/Personalinformation)]]
-      [:div.panel-body
-       [profile-info-block]
-       (into [:div]
-             (for [index (range (count @blocks))]
-               (ph/block (cursor blocks [index]) state index)))]]]]]]]))
+      ; [m/modal-window]
+      ; [profile-navi state]
+      ;[ph/manage-buttons state]
+      [:div.panel
+       [:div.panel-left
+        [:div.panel-right
+         [:div.panel-content
+          [:div.panel-heading
+           [:h3 (t :profile/Personalinformation)]]
+          [:div.panel-body
+           [profile-info-block]
+           (into [:div]
+                 (for [index (range (count @blocks))]
+                   (ph/block (cursor blocks [index]) state index)))]]]]]]]))
 
 (defn theme-selection [theme-atom themes]
   (reduce (fn [r theme]
@@ -86,85 +88,53 @@
             )[:div {:id "theme-container"}] themes))
 
 (defn edit-theme [state]
-      [:div {:id "page-edit-theme"}
-     ;[ph/edit-page-header (t :page/Choosetheme ": " name)]
-     #_[ph/edit-page-buttons id :theme state]
-     ;[ph/edit-page-buttons id :theme (fn [next-url] (save-theme state next-url)) state]
-     [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
-      [:div.panel-heading
-       [:h3 (t :page/Selecttheme)]]
-      [:div.panel-body
-        [theme-selection (cursor state [:theme]) themes]]
-      #_[:form.form-horizontal
-       [:div.form-group
-        [:label.col-xs-4 {:for "select-theme"}
-         (str (t :page/Selecttheme) ":")]
-        [:div.col-xs-8
-         [theme-selection (cursor state [:theme]) themes]]]
-       #_[:div.form-group
-        [:label.col-xs-4 {:for "select-padding"}
-         (str (t :page/Selectpadding) ":")]
-        [:div.col-xs-8
-         [padding-selection (cursor state [:page :padding])]]]
-       #_[:div.form-group
-        [:label.col-xs-4 {:for "select-border"}
-         (str (t :page/Selectborder) ":")]
-        #_[:div.col-xs-8
-         [border-selection (cursor state [:page :border]) borders]]]
-       #_[:div.row
-          [:div.col-md-12
-           [:button {:class    "btn btn-primary"
-                     :on-click #(do
-                                  (.preventDefault %)
-                                  (save-theme state (str "/profile/page/settings/" id)))}
-            (t :page/Save)]]]]]
-     #_[ph/manage-page-buttons :theme (cursor state [:page :id]) state]
-     #_[ph/manage-page-buttons (fn [] (save-theme state (str "/profile/page/settings/" id))) state (str "/profile/page/settings/" id) (str "/profile/page/edit/" id) false]
+  [:div {:id "page-edit-theme"}
+   [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
+    [:div.panel-heading
+     [:h3 (t :page/Selecttheme)]]
+    [:div.panel-body
+     [theme-selection (cursor state [:theme]) themes]]]
+   [pe/action-buttons state]
+   [view-profile state]
+   [pe/action-buttons state]])
 
-     [view-profile state]]
-  )
+(defn edit-settings [state]
+  (let [visibility-atom (cursor state [:user :profile_visibility])]
+    [:div#page-edit
+     [:div.panel.thumbnail
+      [:div.panel-heading
+       [:h3 (t :page/Settings)]]
+      [:div.panel-body
+       (if-not (private?)
+         [:div
+          [:div.row [:label.col-xs-12 (t :user/Profilevisibility)]]
+          [:div.radio {:id "visibility-radio-internal"}
+           [:label [:input {:name      "visibility"
+                            :value     "internal"
+                            :type      "radio"
+                            :checked   (= "internal" @visibility-atom)
+                            :on-change #(reset! visibility-atom (.-target.value %))}]
+            (t :user/Visibleonlytoregistered)]]
+          [:div.radio
+           [:label [:input {:name      "visibility"
+                            :value     "public"
+                            :type      "radio"
+                            :checked   (= "public" @visibility-atom)
+                            :on-change #(reset! visibility-atom (.-target.value %))}                               ]
+            (t :core/Public)]]])
+       ]]
+     [pe/action-buttons state]]))
 
 (defn edit-profile [state]
   (let [profile-info-block (pb/userprofileinfo state)
         content @(cursor state [:edit :active-tab])]
     [:div
 
-    (case content
-      :content [edit-profile-content state]
-      :theme [edit-theme state]
-      nil)]
-
-    #_[:div#page-edit
-     [:div.panel.thumbnail
-      [:div.panel-heading
-       [:h3 (t :profile/Personalinformation)]]
-      [:div.panel-body
-
-       [pe/edit-profile]
-       #_[profile-info-block]]]
-     [profile-blocks state]]))
-
-#_(defn view-profile [state]
-  (let [profile-info-block (pb/userprofileinfo state)
-        blocks (cursor state [:blocks])]
-    [:div#page-view
-     [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
-            :class "page-content"}
-     ; [m/modal-window]
-     ; [profile-navi state]
-     ;[ph/manage-buttons state]
-     [:div.panel.thumbnail
-      [:div.panel-left
-       [:div.panel-right
-        [:div.panel-content
-      [:div.panel-heading
-       [:h3 (t :profile/Personalinformation)]]
-      [:div.panel-body
-       [profile-info-block]
-       (into [:div]
-             (for [index (range (count @blocks))]
-               (ph/block (cursor blocks [index]) state index)))]]
-     [:div.col-md-1 ""]]]]]]))
+     (case content
+       :content [edit-profile-content state]
+       :theme [edit-theme state]
+       :settings [edit-settings state]
+       nil)]))
 
 (defn content [state]
   [:div
@@ -184,7 +154,7 @@
     {:handler (fn [data]
                 (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (random-key))
                                                                     (get data :blocks))))]
-                  (swap! state assoc :permission "success")
+                  (swap! state assoc :permission "success" :edit {:active-tab :content})
                   (swap! state merge data-with-uuids)))}))
 
 (defn handler [site-navi params]
