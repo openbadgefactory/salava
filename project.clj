@@ -15,11 +15,11 @@
                  [com.google.guava/guava "21.0"]
 
                  ; Database
-                 [org.clojure/java.jdbc "0.6.2-alpha3"]
+                 [org.clojure/java.jdbc "0.7.8"]
                  [hikari-cp "1.7.5"]
                  [mysql/mysql-connector-java "5.1.40"]
                  [yesql "0.5.3"]
-                 [migratus "0.8.32"]
+                 [migratus "1.2.3" :exclusions [org.clojure/clojure]]
 
                  ; Server side
                  [http-kit "2.2.0"]
@@ -79,7 +79,7 @@
                  [org.webjars/leaflet "1.4.0"]
 
                  ; Logging: use logback with slf4j, redirect JUL, JCL and Log4J:
-                 [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/tools.logging "0.4.1"]
                  [ch.qos.logback/logback-classic "1.1.10"]
                  [org.slf4j/slf4j-api "1.7.22"]
                  [org.slf4j/jul-to-slf4j "1.7.22"]        ; JUL to SLF4J
