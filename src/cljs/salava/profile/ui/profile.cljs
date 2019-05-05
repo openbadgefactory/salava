@@ -9,14 +9,9 @@
             [salava.core.i18n :refer [t]]
             [salava.profile.ui.helper :as ph]
             [reagent-modals.modals :as m]
-            [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.profile.ui.edit :as pe]
             [salava.page.themes :refer [themes borders]]))
 
-
-(defn random-key []
-  (-> (make-random-uuid)
-      (uuid-string)))
 
 (defn tabs [state])
 
@@ -31,7 +26,7 @@
    [:ul.nav.nav-tabs
     [:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
      [:a.nav-link {:on-click #(do
-                                (.prevent-default %)
+                                (.preventDefault %)
                                 (swap! state assoc :active-index 0))} (t :user/Myprofile)]]
     (when (:edit-mode @state) [:i.fa.fa-plus-square])]])
 
@@ -43,19 +38,19 @@
      (into [:div {:id "page-blocks"}]
            (for [index (range (count @blocks))]
              (ph/block-for-edit (cursor blocks [index]) state index)))
-     [ph/field-after blocks state nil]
-     ]))
+     [ph/field-after blocks state nil]]))
+
 
 (defn edit-profile-content [state]
   [:div#page-edit
+   [pe/action-buttons state]
    [:div.panel.thumbnail
     [:div.panel-heading
      [:h3 (t :profile/Personalinformation)]]
     [:div.panel-body
      [pe/edit-profile state]]]
+   [profile-blocks state]])
 
-   [profile-blocks state]
-   [pe/action-buttons state]])
 
 (defn view-profile [state]
   (let [profile-info-block (pb/userprofileinfo state)
@@ -63,9 +58,6 @@
     [:div#page-view
      [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
             :class "page-content"}
-      ; [m/modal-window]
-      ; [profile-navi state]
-      ;[ph/manage-buttons state]
       [:div.panel
        [:div.panel-left
         [:div.panel-right
@@ -74,7 +66,7 @@
            [:h3 (t :profile/Personalinformation)]]
           [:div.panel-body
            [profile-info-block]
-           (into [:div]
+           (into [:div#profile]
                  (for [index (range (count @blocks))]
                    (ph/block (cursor blocks [index]) state index)))]]]]]]]))
 
@@ -83,9 +75,9 @@
             (conj r [:div {:id (str "theme-" (:id theme))}
                      [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
-                                                 (reset! theme-atom (js/parseInt (:id theme)) ))
-                          :alt (t (:name theme)) :title (t (:name theme))}[:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " " ]]])
-            )[:div {:id "theme-container"}] themes))
+                                                 (reset! theme-atom (js/parseInt (:id theme))))
+                          :alt (t (:name theme)) :title (t (:name theme))}[:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " "]]]))
+          [:div {:id "theme-container"}] themes))
 
 (defn edit-theme [state]
   [:div {:id "page-edit-theme"}
@@ -95,11 +87,10 @@
     [:div.panel-body
      [theme-selection (cursor state [:theme]) themes]]]
    [pe/action-buttons state]
-   [view-profile state]
-   [pe/action-buttons state]])
+   [view-profile state]])
 
 (defn edit-settings [state]
-  (let [visibility-atom (cursor state [:user :profile_visibility])]
+  (let [visibility-atom (cursor state [:edit-profile :user :profile_visibility])]
     [:div#page-edit
      [:div.panel.thumbnail
       [:div.panel-heading
@@ -120,9 +111,9 @@
                             :value     "public"
                             :type      "radio"
                             :checked   (= "public" @visibility-atom)
-                            :on-change #(reset! visibility-atom (.-target.value %))}                               ]
-            (t :core/Public)]]])
-       ]]
+                            :on-change #(reset! visibility-atom (.-target.value %))}]
+            (t :core/Public)]]])]]
+
      [pe/action-buttons state]]))
 
 (defn edit-profile [state]
@@ -134,6 +125,7 @@
        :content [edit-profile-content state]
        :theme [edit-theme state]
        :settings [edit-settings state]
+      :preview [view-profile state]
        nil)]))
 
 (defn content [state]
@@ -148,11 +140,13 @@
 
 
 
+
+
 (defn init-data [user-id state]
   (ajax/GET
     (path-for (str "/obpv1/profile/" user-id) true)
     {:handler (fn [data]
-                (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (random-key))
+                (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (pe/random-key))
                                                                     (get data :blocks))))]
                   (swap! state assoc :permission "success" :edit {:active-tab :content})
                   (swap! state merge data-with-uuids)))}))
@@ -168,7 +162,8 @@
                      :toggle-move-mode false
                      :blocks []
                      :edit {:active-tab :content}
-                     :theme 0})
+                     :theme 0
+                     :alert nil})
         user (session/get :user)]
     (init-data user-id state)
 

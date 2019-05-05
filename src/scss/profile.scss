@@ -65,4 +65,22 @@
     margin: 5px 0;
     .btn {}
   }
+
+  #user-badges .grid-container {
+    margin-right: 15px !important;
+
+  }
 }
+.action-bar {
+    z-index: 100;
+    background-color: darken($background-color, 2%);
+    position: sticky;
+    position: -webkit-sticky;
+    border-radius: 4px;
+    opacity: 0.7;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px;
+    top: 0;
+
+  }

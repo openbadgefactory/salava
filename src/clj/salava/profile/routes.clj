@@ -34,7 +34,8 @@
                   (ok (p/user-profile-for-edit ctx (:id current-user))))
 
              (POST "/user/edit" []
-                   ;:return {:status (s/enum "success" "error") :message s/Str}
+                   :return {:status (s/enum "success" "error") :message s/Str}
+
                    :body-params [profile_visibility :- (:profile_visibility schemas/User)
                                  profile_picture :- (:profile_picture schemas/User)
                                  about :- (:about schemas/User)
@@ -44,5 +45,4 @@
                    :summary "Save user profile"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (p/save-user-profile ctx profile_visibility profile_picture about fields blocks theme (:id current-user))))
-                   ))))
+                   (ok (p/save-user-profile ctx profile_visibility profile_picture about fields blocks theme (:id current-user)))))))

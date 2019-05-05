@@ -19,8 +19,8 @@
     (path-for "/obpv1/user/profile/set_visibility")
     {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
      :handler (fn [new-value]
-                (reset! visibility-atom new-value)
-                )}))
+                (reset! visibility-atom new-value))}))
+
 
 (defn profile-visibility-input [visibility-atom state]
   (if @(cursor state [:edit-mode]) [:div.col-xs-12
@@ -41,9 +41,9 @@
       ; {:icon "fa-file" :text (t :page/Files) :value "file"}
       ;{:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
       ;{:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
-      {:icon "fa-superpowers" :text (t :page/Badgeshowcase) :value "showcase"}
+      {:icon "fa-superpowers" :text (t :page/Badgeshowcase) :value "showcase"}])
       ;{:icon "fa-user" :text "Profile information" :value "profile"}
-      ])
+
 
 #_(defn contenttype [{:keys [block-atom index]}]
     (let [block-type-map (if (some #(= "profile" (:type %)) @block-atom)
@@ -65,12 +65,12 @@
                                                                                                       (case (:value v)
                                                                                                         "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
                                                                                                         (if index
-                                                                                                          (f/add-field block-atom {:type (:value v)} index )
-                                                                                                          (f/add-field block-atom {:type (:value v)} ))))
+                                                                                                          (f/add-field block-atom {:type (:value v)} index)
+                                                                                                          (f/add-field block-atom {:type (:value v)}))))
                                                                                          :data-dismiss (case (:value v)
                                                                                                          ("badge") nil
-                                                                                                         "modal")
-                                                                                         }
+                                                                                                         "modal")}
+
                                                                                 [:div
 
                                                                                  [:i {:class (str "fa icon " (:icon v))}]
@@ -84,18 +84,18 @@
                                                                "file" (t :page/Filesinfo)
                                                                "html" (t :page/Htmlinfo)
                                                                "showcase" (t :page/Badgeshowcaseinfo)
-                                                               "profile" (t :profile/Addprofileinfo)
-                                                               )
-                                 :style {:font-size "15px"}}]
-                          ]]])))
+                                                               "profile" (t :profile/Addprofileinfo))
+
+                                 :style {:font-size "15px"}}]]]])))
+
              [:div.block-types] block-type-map)]
           [:div.modal-footer
            [:button.btn.btn-warning {:on-click #(do
                                                   (.preventDefault %)
-                                                  (m/close-modal!)
-                                                  )}
-            (t :core/Cancel)]]
-          ]])))
+                                                  (m/close-modal!))}
+
+            (t :core/Cancel)]]]])))
+
 
 
 (defn field-after [blocks state index initial?]
@@ -129,7 +129,7 @@
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
-        new-field-atom (atom {:type "showcase" :badges badges })
+        new-field-atom (atom {:type "showcase" :badges badges})
         title (:title @block-atom)
         format (:format @block-atom)]
     [:div#badge-showcase
@@ -207,12 +207,11 @@
 
 (defn block [block-atom state index]
   (let [type (:type @block-atom)]
-    (prn @block-atom)
     (when-not (:hidden @block-atom)
-    [:div {:key index} (case type
-                         ("badges") [recent-badges state]
-                         ("pages") [recent-pages state]
-                         nil)])))
+     [:div {:key index} (case type
+                          ("badges") [recent-badges state]
+                          ("pages") [recent-pages state]
+                          nil)])))
 
 
 
@@ -249,61 +248,54 @@
 
 
 (defn edit-page-navi [target state]
-  (let [logic (button-logic state)
-        editable? (get-in logic [target :editable?])
-        user-id (:user-id @state)
-        active-tab-atom (cursor state [:edit :active-tab])]
+  (let [active-tab-atom (cursor state [:edit :active-tab])
+        user-id (:user-id @state)]
+
+
     [:div {:class "row flip"
            :id "buttons"}
      [:div.col-xs-12
-     [:div.col-xs-8.wizard
-      [:a {:class (if (= target :content) "current")
-           :href "#"
-           :on-click #(do
+      [:div.col-xs-8.wizard
+       [:a {:class (if (= target :content) "current")
+            :href "#"
+            :on-click #(do
+                         (.preventDefault %)
+                         (reset! active-tab-atom :content))}
+        [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
+        (t :page/Content)]
+       [:a {:class (if (= target :theme) "current")
+            :href "#"
+            :on-click #(do
                         (.preventDefault %)
-                        (reset! active-tab-atom :content)
-                        #_(if editable?
-                            (as-> (get-in logic [target :save!]) f (f (get-in logic [:content :url])))
-                            (as-> (get-in logic [:content :go!])  f (f))))}
-       [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
-       (t :page/Content)]
-      [:a {:class (if (= target :theme) "current")
-           :href "#"
-           :on-click #(do (.preventDefault %)
-                          (reset! active-tab-atom :theme)
-                        #_(if editable?
-                            (as-> (get-in logic [target :save!]) f (f (get-in logic [:theme :url])))
-                            (as-> (get-in logic [:theme :go!]) f (f))))}
-       [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
-       (t :page/Theme)]
-      (when-not (private?)
-        [:a {:class (if (= target :settings) "current")
-           :href "#"
-           :on-click #(do (.preventDefault %)
-                        (if editable?
-                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:settings :url])))
-                          (as-> (get-in logic [:settings :go!]) f (f))))}
-       [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
-       (t :page/Settings)])
-      [:a {:class (if (= target :preview) "current")
-           :href "#"
-           :on-click #(do (.preventDefault %)
-                        #_(if editable?
-                            (as-> (get-in logic [target :save!]) f (f (get-in logic [:preview :url])))
-                            (as-> (get-in logic [:preview :go!]) f (f)))
-                        )}
-       [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
-       (t  :page/Preview)]]
-     [:div {:class "col-xs-4"
-            :id "buttons-right"}
-      [:a.btn.btn-primary {:href "#"
-                           :on-click #(do
-                                        (navigate-to (str "/profile/" user-id))
-                                        (.preventDefault %)
-                                        (reset! (cursor state [:edit-mode]) false)
-                                        )
-                           } (t :user/Viewprofile)]]
-     [m/modal-window]]]))
+                        (reset! active-tab-atom :theme))}
+
+        [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
+        (t :page/Theme)]
+       (when-not (private?)
+         [:a {:class (if (= target :settings) "current")
+              :href "#"
+              :on-click #(do
+                          (.preventDefault %)
+                          (reset! active-tab-atom :settings))}
+          [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
+          (t :page/Settings)])
+       [:a {:class (if (= target :preview) "current")
+            :href "#"
+            :on-click #(do (.preventDefault %)
+                         (reset! active-tab-atom :preview))}
+
+        [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
+        (t  :page/Preview)]]
+      [:div {:class "col-xs-4"
+             :id "buttons-right"}
+       [:a.btn.btn-primary {:href "#"
+                            :on-click #(do
+                                         (navigate-to (str "/profile/" user-id))
+                                         (.preventDefault %)
+                                         (reset! (cursor state [:edit-mode]) false))}
+
+                           (t :user/Viewprofile)]]
+      [m/modal-window]]]))
 
 (defn manage-buttons [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
@@ -326,69 +318,22 @@
                [:a.btn.btn-primary {:href "#" #_(path-for "/user/edit/profile")
                                     :on-click #(do
                                                  (.preventDefault %)
-                                                 (reset! (cursor state [:edit-mode]) true)
+                                                 (reset! (cursor state [:edit-mode]) true))}
 
-                                                 )
-                                    } (t :user/Editprofile)])
+
+                                   (t :user/Editprofile)])
              [:a.btn.btn-primary {:href "#"
                                   :on-click #(do
                                                (navigate-to (str "/profile/" user-id))
                                                (.preventDefault %)
-                                               (reset! (cursor state [:edit-mode]) false)
-                                               )
-                                  } (t :user/Viewprofile)])]]
-         [edit-page-navi @(cursor state [:edit :active-tab]) state]
-         )]
+                                               (reset! (cursor state [:edit-mode]) false))}
+
+                                 (t :user/Viewprofile)])]]
+         [edit-page-navi @(cursor state [:edit :active-tab]) state])]
+
       [:div
        (connect-user user-id)
        (admintool user-id "user")])))
-
-#_(defn action-buttons [state]
-  (let [logic (button-logic state)
-        current (cursor state [:edit :active-tab])
-        previous? (get-in logic [@current :previous])
-        next?  (get-in logic [@current :next])]
-      (create-class {:reagent-render   (fn []
-
-                                       [:div
-                                        [:div.row {:id "page-edit"
-                                                   :style {:margin-top "10px" :margin-bottom "10px"}}
-                                         [:div.col-md-12
-                                          (when previous? [:div {:id "step-button-previous"}
-                                                           [:a {:href "#" :on-click #(do
-                                                                                       (.preventDefault %)
-                                                                                       #_(as-> (get-in logic [current :save-and-previous!]) f (f))
-                                                                                       )}  (t :core/Previous)]])
-                                          [:button {:class    "btn btn-primary"
-                                                    :on-click #(do
-                                                                 (.preventDefault %)
-                                                                 #_(as-> (get-in logic [current :save!]) f (f)))}
-                                           (t :page/Save)]
-                                          [:button.btn.btn-warning {:on-click #(do
-                                                                                 (.preventDefault %)
-                                                                                 (navigate-to  "/profile/page"))}
-                                           (t :core/Cancel)]
-
-                                          #_[:button.btn.btn-danger {:on-click #(do
-                                                                                (.preventDefault %)
-                                                                                #_(delete-page (get-in @state [:page :id])))}
-                                           (t :core/Delete)]
-                                          (when next?  [:div.pull-right {:id "step-button"}
-                                                        [:a {:href "#" :on-click #(do
-                                                                                    (.preventDefault %)
-                                                                                    #_(as-> (get-in logic [current :save-and-next!]) f (f)))}
-                                                         (t :core/Next)]])]]
-
-                                        (when (:alert @state)
-                                          [:div.row
-                                           [:div.col-md-12
-                                            [:div {:class (str "alert " (case (get-in @state [:alert :status])
-                                                                          "success" "alert-success"
-                                                                          "error" "alert-warning"))
-                                                   :style {:display "block" :margin-bottom "20px"}}
-                                             (get-in @state [:alert :message] nil)]
-                                            ]])
-                                        ])})))
 
 (def additional-fields
   [{:type "email" :key :user/Emailaddress}
