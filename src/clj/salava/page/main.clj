@@ -17,8 +17,8 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.zip :as zip]
             [net.cgrand.enlive-html :as enlive]
-            [clojure.data.json :as json]
-            ))
+            [clojure.data.json :as json]))
+
 
 
 (defqueries "sql/page/main.sql")
@@ -77,7 +77,7 @@
                                     (let [evidence-fn (first (plugin-fun (get-plugins ctx) "main" "badge-evidences"))]
                                        (-> b
                                            (update :criteria_content md->html)
-                                           (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true) )
+                                           (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true))
                                            (dissoc :user_id)))) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
 
 (defn page-blocks [ctx page-id]
@@ -150,14 +150,14 @@
                                                                  "h2" [:paragraph {:align :center}
                                                                        [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
                                                              (if (= "badge" (:type %))
-                                                               [:pdf-table {:width-percent 100 :cell-border false }
+                                                               [:pdf-table {:width-percent 100 :cell-border false}
                                                                 [25 75]
                                                                 [[:pdf-cell {:align :right}
                                                                   (if (contains? % :image_file)
                                                                     [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
                                                                   [:spacer 2]]
                                                                  [:pdf-cell
-                                                                  (if (contains? % :name )
+                                                                  (if (contains? % :name)
                                                                     [:heading (:name %)] " ")
                                                                   [:spacer]
                                                                   #_(if (contains? % :type)
@@ -174,27 +174,27 @@
                                                                      [:spacer 0]
                                                                      [:paragraph
                                                                       [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                      [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
-                                                                ] " ")
+                                                                      [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]]
+                                                               " ")
                                                              (if (= "html" (:type %))
                                                                [:paragraph {:align :center}
                                                                 (:content %)] "")
                                                              (if (= "tag" (:type %))
                                                                [:paragraph
-                                                                [:chunk ]
-                                                                ]
-                                                               )
+                                                                [:chunk]])
+
+
 
                                                              [:spacer 0]])
 
-                               content (map template $blocks)
-                               ]
+                               content (map template $blocks)]
+
                            (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
                                                                                                                               [:chunk (str $first_name " " $last_name)]]]] content)))]
 
-    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
+    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")))
 
-    ))
+
 
 (defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
@@ -306,7 +306,7 @@
           page-owner-id (page-owner ctx page-id)
           user-files (if (some #(= "file" (:type %)) blocks)
                        (:files (f/user-files-all ctx page-owner-id)))
-          file-ids (map :id user-files)
+          file-ids (map :id user-files)badge-ids
           user-badges (if (some #(or (= "badge" (:type %)) (= "showcase" (:type %))) blocks)
                         (b/user-badges-all ctx page-owner-id))
           badge-ids (map :id user-badges)
@@ -347,12 +347,12 @@
                                 (count (:badges block)))
                          (if id
                            (update-showcase-block! ctx block)
-                           (create-showcase-block! ctx block)
-                           ))
+                           (create-showcase-block! ctx block)))
+
             "profile" (if id
                         (update-profile-block! block (get-db ctx))
-                        (insert-profile-block! block (get-db ctx))
-                        ))))
+                        (insert-profile-block! block (get-db ctx))))))
+
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
           (delete-block! ctx old-block)))
@@ -399,7 +399,7 @@
             evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
             page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
         (if (and (private? ctx) (= "public" visibility))
-          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
+          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
         (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
         (save-page-tags! ctx page-id tags)
         (if (or (= "internal" visibility) (= "public" visibility))

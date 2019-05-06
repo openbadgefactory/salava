@@ -121,15 +121,15 @@
     [:div.badge-select
      [:div.row.flip
       [:div.col-md-3.badge-image
-       [:img.badge-image {:src (str "/" image)}]
-       ]
+       [:img.badge-image {:src (str "/" image)}]]
+
       [:div.col-md-9
        [:h4.media-heading name]
 
-       [:div description]]]]
+       [:div description]]]]))
 
-    )
-  )
+
+
 
 (defn edit-block-badge-groups [block-atom tags badges]
   (let [tag (get-in @block-atom [:tag] "")
@@ -152,8 +152,8 @@
                  :aria-label "select badge format"
                  :value format
                  :on-change #(update-block-value block-atom :format (.-target.value %))}
-        [:option {:value "short"} (t :page/Short)]
-        [:option {:value "long"} (t :page/Long)]]]
+        [:option {:value "short"} (t :page/ImageandName)]
+        [:option {:value "long"} (t :page/Content)]]]
       [:div.badge-select
        [:select {:class "form-control"
                  :aria-label "select sorting"
@@ -252,8 +252,8 @@
          [:div.embed-responsive.embed-responsive-16by9
           {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]
          [:div
-          {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]
-         ))]]])
+          {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]))]]])
+
 
 (defn block-type [block-atom]
   (let [type (:type @block-atom)]
@@ -280,7 +280,7 @@
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
-        new-field-atom (atom {:type "showcase" :badges badges })
+        new-field-atom (atom {:type "showcase" :badges badges})
         title (:title @block-atom)
         format (:format @block-atom)]
     [:div#badge-showcase
@@ -302,7 +302,7 @@
                    :aria-label "select badge format"
                    :value (or format "short")
                    :on-change #(update-block-value block-atom :format (.-target.value %))}
-          [:option {:value "short"} (t :core/Imageonly)]
+          [:option {:value "short"} (t :page/ImageandName)]
           [:option {:value "long"} (t :page/Content)]]]]]
       (reduce (fn [r b]
                 (conj r
@@ -340,12 +340,12 @@
                                                                                                     (case (:value v)
                                                                                                       "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
                                                                                                       (if index
-                                                                                                        (f/add-field block-atom {:type (:value v)} index )
-                                                                                                        (f/add-field block-atom {:type (:value v)} ))))
+                                                                                                        (f/add-field block-atom {:type (:value v)} index)
+                                                                                                        (f/add-field block-atom {:type (:value v)}))))
                                                                                        :data-dismiss (case (:value v)
                                                                                                        ("badge") nil
-                                                                                                       "modal")
-                                                                                       }
+                                                                                                       "modal")}
+
                                                                               [:div
 
                                                                                [:i {:class (str "fa icon " (:icon v))}]
@@ -359,18 +359,18 @@
                                                              "file" (t :page/Filesinfo)
                                                              "html" (t :page/Htmlinfo)
                                                              "showcase" (t :page/Badgeshowcaseinfo)
-                                                             "profile" (t :profile/Addprofileinfo)
-                                                             )
-                               :style {:font-size "15px"}}]
-                        ]]])))
+                                                             "profile" (t :profile/Addprofileinfo))
+
+                               :style {:font-size "15px"}}]]]])))
+
            [:div.block-types] block-type-map)]
         [:div.modal-footer
          [:button.btn.btn-warning {:on-click #(do
                                                 (.preventDefault %)
-                                                (m/close-modal!)
-                                                )}
-          (t :core/Cancel)]]
-        ]])))
+                                                (m/close-modal!))}
+
+          (t :core/Cancel)]]]])))
+
 
 
 (defn field-after [blocks state index initial?]
@@ -411,17 +411,18 @@
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text capitalize) ]
+         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text capitalize)]
+
          (when (= type "badge")
-           [:div.row.form-group {:style {:padding-top "10px"}}
-            [:div.col-xs-8 [:select {:class "form-control"
-                                     :aria-label "select blocktype"
-                                     :value (get-in @block-atom [:badge :format])
-                                     :on-change #(update-block-value block-atom :format (.-target.value %))}
-                            [:option {:value "short"} (t :page/Short)]
-                            [:option {:value "long"} (t :page/Long)]]]
-            [:div.col-xs-4
-             [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])
+          [:div.row.form-group {:style {:padding-top "10px"}}
+           [:div.col-xs-8 [:select {:class "form-control"
+                                    :aria-label "select blocktype"
+                                    :value (:format @block-atom)
+                                    :on-change #(update-block-value block-atom :format (.-target.value %))}
+                           [:option {:value "short"} (t :page/Short)]
+                           [:option {:value "long"} (t :page/Long)]]]
+           [:div.col-xs-4
+            [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])
          #_[block-type block-atom]]
         [:div.move {:on-click #(do
                                  (.preventDefault %)
@@ -506,9 +507,10 @@
 
        [page-title (cursor state [:page :name])]
        [page-description (cursor state [:page :description])]]]]]
+   [ph/manage-page-buttons :content (cursor state [:page :id]) state]
    [:div.form-horizontal
-    [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]
-    [ph/manage-page-buttons :content (cursor state [:page :id]) state]]])
+    [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]]])
+
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
@@ -526,8 +528,8 @@
     {:handler (fn [data]
                 (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
                                                                                (get-in data [:page :blocks]))))]
-                  (reset! state (assoc data-with-uuids :toggle-move-mode false))
-                  ))}))
+                  (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
+
 
 (defn handler [site-navi params]
   (let [id (:page-id params)

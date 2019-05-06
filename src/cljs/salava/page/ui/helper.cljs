@@ -14,7 +14,9 @@
             [salava.core.ui.modal :refer [open-modal]]
             [clojure.string :refer [blank? starts-with?]]
             [reagent.session :as session]
-            ))
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
+
+
 
 (defn delete-page [id]
   (ajax/DELETE
@@ -62,8 +64,8 @@
     [:div.row
      [:div.col-md-12
       (bm/issuer-modal-link issuer_content_id issuer_content_name)
-      (bm/creator-modal-link creator_content_id creator_name)
-      ]]
+      (bm/creator-modal-link creator_content_id creator_name)]]
+
 
     [:div.row
      [:div {:class "col-md-12 description"} description]]
@@ -93,9 +95,9 @@
                         desc (cond
                                (not (blank? narrative)) narrative
                                (not added-by-user?) description ;;todo use regex to match description
-                               :else nil
-                               )
-                        icon-fn (first (plugin-fun (session/get :plugins) "evidence" "evidence_icon")) ]
+                               :else nil)
+
+                        icon-fn (first (plugin-fun (session/get :plugins) "evidence" "evidence_icon"))]
                     (conj r (when (and (not hidden) (url? url))
                               [:div.modal-evidence
                                (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
@@ -113,8 +115,8 @@
                                                               (.preventDefault %)
                                                               (open-modal [:page :view] {:page-id resource_id}))} url]
                                             (hyperlink url))
-                                   (hyperlink url))]]
-                               ]))))
+                                   (hyperlink url))]]]))))
+
                 [:div ] evidences)]])
 
     #_(if (and (pos? show_evidence) evidence_url)
@@ -129,8 +131,8 @@
      [:div.embed-responsive.embed-responsive-16by9
       {:dangerouslySetInnerHTML {:__html (md->html content)}}]
      [:div
-      {:dangerouslySetInnerHTML {:__html (md->html content)}}]
-     )])
+      {:dangerouslySetInnerHTML {:__html (md->html content)}}])])
+
 
 
 (defn file-block [{:keys [files]}]
@@ -160,39 +162,38 @@
      "h2" [:h2 content]
      nil)])
 
-(defn tag-block [{:keys [tag badges format sort]}]
-  [:div.tag-block
+(defn tag-block [block-atom]
+ (let [{:keys [tag badges format sort]} block-atom]
+  [:div#user-badges
    [:div
     [:label (t :page/Tag ":")] (str " " tag)]
-   (let [sorted-badges (case sort
-                         "name" (sort-by :name < badges)
-                         "modified" (sort-by :mtime > badges)
-                         badges)]
-     (for [badge sorted-badges]
-       (if (= format "short")
-         [:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
-                                :key  (:id badge)}
-          [:img {:src (str "/" (:image_file badge))
-                 :title (:name badge)}]]
-         (badge-block (assoc badge :format "long")))))])
+   [:div#grid {:class "row"}
+     (let [sorted-badges (case sort
+                           "name" (sort-by :name < badges)
+                           "modified" (sort-by :mtime > badges)
+                           badges)]
+      (into [:div.tag-block]
+       (for [badge sorted-badges]
+         (if (= format "short")
+          (badge-grid-element badge nil "profile" nil)
+          #_[:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
+                                   :key  (:id badge)}
+             [:img {:src (str "/" (:image_file badge))
+                    :title (:name badge)}]]
+           (badge-block (assoc badge :format "long"))))))]]))
 
-(defn showcase-block [{:keys [badges format title]}]
-  [:div.tag-block
+(defn showcase-block [block-atom]
+ (let [{:keys [badges format title]} block-atom]
    [:div
     [:div.heading-block
      [:h2 title]]
-    (doall (reduce (fn [r badge]
-                     (conj r (if (= format "short")
-                               [:a.small-badge-image {:href "#" #_(path-for (str "/badge/info/" (:id badge)))
-                                                      :key  (:id badge)
-                                                      :on-click #(do
-                                                                   (.preventDefault %)
-                                                                   (open-modal [:badge :info] {:badge-id (:id badge)}))}
-                                [:img {:src (str "/" (:image_file badge))
-                                       :title (:name badge)}]]
-                               (badge-block (assoc badge :format "long"))
-                               ))
-                     )[:div.tag-block] badges))]])
+    [:div#user-badges
+     [:div#grid {:class "row"}
+      (doall (reduce (fn [r badge]
+                       (conj r (if (= format "short")
+                                   (badge-grid-element badge nil "profile" nil)
+                                   (badge-block (assoc badge :format "long")))))
+                     [:div.tag-block] badges))]]]))
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
@@ -255,9 +256,9 @@
                :dangerouslySetInnerHTML {:__html "&times;"}}]]]]]
    [view-page page]
    [:div {:class "modal-footer page-content"}
-    (reporttool1 (:id page) (:name page) "page")
-    ]
-   ])
+    (reporttool1 (:id page) (:name page) "page")]])
+
+
 
 (defn view-page-modal [page]
   (create-class {:reagent-render (fn [] (render-page-modal page))
@@ -286,13 +287,16 @@
         (select-keys [:id :type])
         (merge (block-specific-values block)))))
 
-(defn save-page [{:keys [id name description blocks]} next-url]
-  (ajax/POST
-    (path-for (str "/obpv1/page/save_content/" id))
-    {:params {:name name
-              :description description
-              :blocks (prepare-blocks-to-save blocks)}
-     :handler (fn [] (when next-url (navigate-to next-url)))}))
+(defn save-page [state next-url]
+  (let [{:keys [id name description blocks]} (:page @state)]
+    (ajax/POST
+      (path-for (str "/obpv1/page/save_content/" id))
+      {:params {:name name
+                :description description
+                :blocks (prepare-blocks-to-save blocks)}
+       :handler (fn [data]
+                  (swap! state assoc :spinner false)
+                 (when next-url (navigate-to next-url)))})))
 
 (defn save-theme [state next-url]
   (let [{:keys [id theme border padding]} (:page @state)]
@@ -304,7 +308,7 @@
        :handler (fn [data]
                   (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
                   (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000))
-       :finally (fn [] (when next-url (navigate-to next-url)))})))
+       :finally (fn [] (swap! state assoc :spinner false)(when next-url (navigate-to next-url)))})))
 
 (defn save-settings [state next-url]
   (let [{:keys [id tags visibility password]} (:page @state)]
@@ -316,15 +320,14 @@
                 :password password}
        :handler (fn [data]
                   (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
-
-                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 5000)
+                  (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
                   (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
                     (swap! state assoc ;:message (keyword (:message data))
                            :page {:id id
                                   :tags tags
                                   :password password
                                   :visibility "public"})))
-       :finally (when next-url (navigate-to next-url))})))
+       :finally (fn [] (swap! state assoc :spinner false)(when next-url (navigate-to next-url)))})))
 
 
 (defn button-logic
@@ -333,7 +336,7 @@
   (let [urls {:content {:previous nil
                         :current (str "/profile/page/edit/" page-id)
                         :next (str "/profile/page/edit_theme/" page-id)
-                        :save-function (fn [next-url] (save-page (:page @state) next-url))}
+                        :save-function (fn [next-url] (save-page state next-url))}
               :theme {:previous (str "/profile/page/edit/" page-id)
                       :current (str "/profile/page/edit_theme/" page-id)
                       :next (str "/profile/page/settings/" page-id)
@@ -341,14 +344,14 @@
               :settings {:previous (str "/profile/page/edit_theme/" page-id)
                          :current (str "/profile/page/settings/" page-id)
                          :next (str "/profile/page/preview/" page-id)
-                         :save-function (fn [next-url] (save-settings state next-url))
-                         }
+                         :save-function (fn [next-url] (save-settings state next-url))}
+
               :preview {:previous (str "/profile/page/settings/" page-id)
                         :current (str "/profile/page/preview/" page-id)
                         :next nil}}]
 
     {:content {:save! (get-in urls [:content :save-function])
-               :save-and-next! (fn [] (save-page (:page @state) (get-in urls [:content :next])))
+               :save-and-next! (fn [] (save-page state (get-in urls [:content :next])))
                :url (get-in urls [:content :current])
                :go! (fn [] (navigate-to (get-in urls [:content :current])))
                :editable? true
@@ -361,8 +364,8 @@
              :editable? true
              :url (get-in urls [:theme :current])
              :previous true
-             :next true
-             }
+             :next true}
+
      :settings {:save! (get-in urls [:settings :save-function])
                 :save-and-next! (fn [] (save-settings state (get-in urls [:settings :next])))
                 :save-and-previous! (fn [] (save-settings state (get-in urls [:settings :previous])))
@@ -370,8 +373,8 @@
                 :editable? true
                 :url (get-in urls [:settings :current])
                 :previous true
-                :next true
-                }
+                :next true}
+
      :preview {:save! #()
                :go! (fn [] (navigate-to (get-in urls [:preview :current])))
                :editable? false
@@ -415,8 +418,8 @@
            :on-click #(do (.preventDefault %)
                         (if editable?
                           (as-> (get-in logic [target :save!]) f (f (get-in logic [:preview :url])))
-                          (as-> (get-in logic [:preview :go!]) f (f)))
-                        )}
+                          (as-> (get-in logic [:preview :go!]) f (f))))}
+
        [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
        (t  :page/Preview)]]
      [:div {:class "col-xs-4"
@@ -433,21 +436,25 @@
         previous? (get-in logic [current :previous])
         next?  (get-in logic [current :next])]
     (create-class {:reagent-render   (fn []
-
-                                       [:div
-                                        [:div.row {:id "page-edit"
-                                                   :style {:margin-top "10px" :margin-bottom "10px"}}
+                                       [:div.action-bar {:id "page-edit"}
+                                        [:div.row
                                          [:div.col-md-12
                                           (when previous? [:div {:id "step-button-previous"}
                                                            [:a {:href "#" :on-click #(do
                                                                                        (.preventDefault %)
-                                                                                       (as-> (get-in logic [current :save-and-previous!]) f (f))
-                                                                                       )}  (t :core/Previous)]])
+                                                                                       (as-> (get-in logic [current :save-and-previous!]) f (f)))}
+                                                               (t :core/Previous)]])
                                           [:button {:class    "btn btn-primary"
                                                     :on-click #(do
                                                                  (.preventDefault %)
-                                                                 (as-> (get-in logic [current :save!]) f (f)))}
-                                           (t :page/Save)]
+                                                                 (swap! state assoc :spinner true)
+                                                                 (js/setTimeout (fn [] (as-> (get-in logic [current :save!]) f (f))) 2000))}
+
+                                           (when (:spinner @state) [:i.fa.fa.lg.fa-spinner {:style {:padding "2px"}}]) (t :page/Save)]
+                                          [:button.btn.btn-primary {:on-click #(do
+                                                                                (.preventDefault %)
+                                                                                (navigate-to (str "/profile/page/view/" id)))}
+                                           [:i.fa.fa-eye.fa-lg {:style {:margin-right "10px"}}](t :page/View)]
                                           [:button.btn.btn-warning {:on-click #(do
                                                                                  (.preventDefault %)
                                                                                  (navigate-to  "/profile/page"))}
@@ -463,13 +470,11 @@
                                                                                     (as-> (get-in logic [current :save-and-next!]) f (f)))}
                                                          (t :core/Next)]])]]
 
-                                        (when (:alert @state)
+                                        (when (= "error" (get-in state [:alert :status](:alert @state)))
                                           [:div.row
                                            [:div.col-md-12
                                             [:div {:class (str "alert " (case (get-in @state [:alert :status])
                                                                           "success" "alert-success"
                                                                           "error" "alert-warning"))
                                                    :style {:display "block" :margin-bottom "20px"}}
-                                             (get-in @state [:alert :message] nil)]
-                                            ]])
-                                        ])})))
+                                             (get-in @state [:alert :message] nil)]]])])})))
