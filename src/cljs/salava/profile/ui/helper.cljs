@@ -127,6 +127,15 @@
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
 
+(defn showcase-grid [state block-atom]
+ [:div#user-badges
+  [:h3 (or (:title @block-atom) (t :page/Untitled))]
+  [:div#grid {:class "row"}
+   (reduce (fn [r b]
+            (conj r (badge-grid-element b state "profile" nil))) [:div] (:badges @block-atom))]])
+
+
+
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
         new-field-atom (atom {:type "showcase" :badges badges})
@@ -134,8 +143,9 @@
         format (:format @block-atom)]
     [:div#badge-showcase
      [:div#grid {:class "row"}
+      [:h3 {:style {:padding-bottom "10px"}} (t :page/Badgeshowcase)]
       [:div.form-group
-       [:div.col-md-12
+       [:div
         [:label (t :page/Title)]
 
         [:input {:class     "form-control"
@@ -144,7 +154,7 @@
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
                  :placeholder (t :page/Untitled)}]]
-       [:div.col-md-12
+       [:div
         [:label (t :page/Displayinpageas)]
         [:div.badge-select
          [:select {:class "form-control"
@@ -178,13 +188,15 @@
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       [:div.field-content
        [:div.form-group
-        [:div.checkbox
-         [:label [:input {:type "checkbox"
-                          :value (if (= "true" @visibility-atom) "false" "true")
-                          :on-change #(do
-                                        (.preventDefault %)
-                                        (update-block-value block-atom :hidden (.-target.value %)))
-                          :checked (= "true" @visibility-atom)}] (t :profile/Hideinprofile)]]
+        (case type
+         ("badges" "pages")[:div.checkbox
+                             [:label [:input {:type "checkbox"
+                                              :value @visibility-atom;(if (= "true" @visibility-atom) "false" "true")
+                                              :on-change #(do
+                                                            (.preventDefault %)
+                                                            (update-block-value block-atom :hidden (not @visibility-atom)))
+                                              :checked (= "true" (str @visibility-atom))}] (t :profile/Hideinprofile)]]
+         nil)
         [:div.move {:on-click #(do
                                  (.preventDefault %)
 
@@ -211,6 +223,8 @@
      [:div {:key index} (case type
                           ("badges") [recent-badges state]
                           ("pages") [recent-pages state]
+                          ("showcase") [showcase-grid state block-atom]
+
                           nil)])))
 
 
@@ -221,37 +235,9 @@
       [connectuser user-id]
       [:div ""])))
 
-
-(defn save-profile [state f]
-  (let [{:keys [profile_visibility about profile_picture]} (:user @state)
-        profile-fields (->> (:profile @state)
-                            (filter #(not-empty (:field %)))
-                            (map #(select-keys % [:field :value])))
-        blocks (:blocks @state)]
-    (ajax/POST
-      (path-for "/obpv1/user/profile")
-      {:params  {:profile_visibility profile_visibility
-                 :about              about
-                 :profile_picture    profile_picture
-                 :fields             profile-fields
-                 :blocks blocks}
-       :handler (fn [] (when f (f)) #_(js-navigate-to (str "/user/profile/" (:user_id @state))))})))
-
-(defn button-logic [state]
-  {:content {:previous nil
-             :current :content
-             :next :theme}
-   :theme {:previous :content
-           :current :theme
-           :next :settings}})
-
-
-
 (defn edit-page-navi [target state]
   (let [active-tab-atom (cursor state [:edit :active-tab])
         user-id (:user-id @state)]
-
-
     [:div {:class "row flip"
            :id "buttons"}
      [:div.col-xs-12
@@ -334,17 +320,3 @@
       [:div
        (connect-user user-id)
        (admintool user-id "user")])))
-
-(def additional-fields
-  [{:type "email" :key :user/Emailaddress}
-   {:type "phone" :key :user/Phonenumber}
-   {:type "address" :key :user/Address}
-   {:type "city" :key :user/City}
-   {:type "state" :key :user/State}
-   {:type "country" :key :user/Country}
-   {:type "facebook" :key :user/Facebookaccount}
-   {:type "linkedin" :key :user/LinkedInaccount}
-   {:type "twitter" :key :user/Twitteraccount}
-   {:type "pinterest" :key :user/Pinterestaccount}
-   {:type "instagram" :key :user/Instagramaccount}
-   {:type "blog" :key :user/Blog}])

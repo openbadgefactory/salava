@@ -39,8 +39,8 @@
                    :body-params [profile_visibility :- (:profile_visibility schemas/User)
                                  profile_picture :- (:profile_picture schemas/User)
                                  about :- (:about schemas/User)
-                                 fields :- [{:field (apply s/enum (map :type schemas/contact-fields)) :value (s/maybe s/Str)}]
-                                 blocks :- [(s/maybe (:block schemas/Block))]
+                                 fields :- [{:field (apply s/enum (map :type schemas/additional-fields)) :value (s/maybe s/Str)}]
+                                 blocks :- [(s/maybe (:block schemas/BlockForEdit))]
                                  theme :- s/Int]
                    :summary "Save user profile"
                    :auth-rules access/authenticated
