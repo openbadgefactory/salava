@@ -10,12 +10,12 @@
 (defn init-user-profile [user-id state]
   (ajax/GET
     (path-for (str "/obpv1/profile/" user-id) true)
-    {:handler (fn [data] (reset! state data))}
-    ))
+    {:handler (fn [data] (reset! state data))}))
+
 
 (defn profile-picture [path]
   (let [picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))]
-    (when picture-fn (picture-fn path) )))
+    (when picture-fn (picture-fn path))))
 
 (defn ^:export userprofileinfo [data]
   (let [state (if data data (atom {}))
@@ -28,15 +28,15 @@
          [:div.row
           [:div {:class "col-md-3 col-sm-3 col-xs-12"}
            [:div.profile-picture-wrapper
-            [:img.profile-picture {:src (profile-picture profile_picture)}]]
-           ]
+            [:img.profile-picture {:src (profile-picture profile_picture)}]]]
+
           [:div.col-md-9
            [:div.col-xs-12
             [:div.row
               [:div {:style {:margin "10px 0"}}
                [:label (t :admin/Name)]
-               [:div (str first_name " " last_name)]
-               ]
+               [:div (str first_name " " last_name)]]
+
              (when-not (blank? about)
                [:div.col-xs-12
                 [:label (t :user/Aboutme)]

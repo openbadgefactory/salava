@@ -43,8 +43,8 @@
                                      :content-language (init-content-language (:content data))
                                      :tab-no tab-no
                                      :permission "success"
-                                     :evidence {:url nil}
-                                     ))
+                                     :evidence {:url nil}))
+
                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
 
@@ -55,8 +55,8 @@
                        :content-language (init-content-language (:content data))
                        :tab-no tab-no
                        :permission "success"))
-     (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))
-   ))
+     (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))))
+
 
 (defn show-settings-dialog [badge-id state init-data context]
   (ajax/GET
@@ -97,8 +97,8 @@
                           (mo/open-modal [:badge :endorsement] params))}
          (if (== endorsement-count 1)
            (str  endorsement-count " " (t :badge/endorsement))
-           (str  endorsement-count " " (t :badge/endorsements)))]]
-       ))))
+           (str  endorsement-count " " (t :badge/endorsements)))]]))))
+
 
 (defn issuer-modal-link [issuer-id name]
   [:div {:class "issuer-data clearfix"}
@@ -175,9 +175,9 @@
           [badge-message-link message_count  badge_id]]))
 
      ;endorsements
-     [:div.row (badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]
+     [:div.row (badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]]))
 
-     ]))
+
 
 (defn badge-content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issuer_image issued_on expires_on revoked issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_description first_name last_name description criteria_url criteria_content user-logged-in? congratulated? congratulations view_count evidence_url issued_by_obf verified_by_obf obf_url recipient_count assertion creator_content_id creator_name creator_image creator_url creator_email creator_description  qr_code owner message_count issuer-endorsements content endorsement_count endorsements evidences]} @state
@@ -227,8 +227,8 @@
         (check-badge id)
 
         ;;Endorse-badge
-        (when-not owner? [endr/endorse-badge id])
-        ]]
+        (when-not owner? [endr/endorse-badge id])]]
+
 
       (when-not (empty? alignment)
         [:div.row
@@ -250,7 +250,7 @@
       (when (seq evidences)
         [:div.row {:id "badge-settings"}
          [:div.col-md-12
-          [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
+          [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")"))]
           (reduce (fn [r evidence]
                     (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                           added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
@@ -258,8 +258,8 @@
                           desc (cond
                                  (not (blank? narrative)) narrative
                                  (not added-by-user?) description ;;todo use regex to match description
-                                 :else nil
-                                 )]
+                                 :else nil)]
+
                       (conj r (when (and (not hidden) (url? url))
                                 [:div.modal-evidence
                                  (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
@@ -277,14 +277,9 @@
                                                                 (.preventDefault %)
                                                                 (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                               (hyperlink url))
-                                     (hyperlink url))]]
-                                 ]))))
-                  [:div ] evidences)]])
+                                     (hyperlink url))]]]))))
 
-         (into [:div]
-               (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
-                 [f id]))
-      ]]))
+                  [:div ] evidences)]])]]))
 
 (defn modal-navi [state]
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
@@ -295,23 +290,23 @@
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
-       [:a.nav-link {:href "#" :on-click #(do (init-data state (:id @state) 1) #_(swap! state assoc :tab [badge-content state] :tab-no 1 ))}
-        [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)  ]]]
+       [:a.nav-link {:href "#" :on-click #(do (init-data state (:id @state) 1) #_(swap! state assoc :tab [badge-content state] :tab-no 1))}
+        [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)]]]
       [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}
-        [:div  [:i.nav-icon {:class "fa fa-cogs fa-lg"}] (t :page/Settings)  ]]]
+        [:div  [:i.nav-icon {:class "fa fa-cogs fa-lg"}] (t :page/Settings)]]]
       [:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
-        [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)  ]]]
+        [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)]]]
       [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
                                                                                                                     :obf_url (:obf_url @state)) state] :tab-no 4)}
-        [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)  ]]]
+        [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)]]]
       [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
        [:a.nav-link.delete-button {:href "#" :on-click #(do
                                                           (swap! state assoc-in [:badge-settings :confirm-delete?] true)
                                                           (swap! state assoc :tab [se/delete-tab-content data state] :tab-no 5))}
-        [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete) ]]]]))
+        [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]))
 
 
 (defn modal-top-bar [state]
@@ -351,8 +346,8 @@
         (= "error" (:permission @state)) (err/error-content)
         (and (= "success" (:permission @state)) (:owner? @state) user) (content state)
         (and (= "success" (:permission @state)) user) (content state)
-        :else (content state) ))
-    ))
+        :else (content state)))))
+
 
 
 (def ^:export modalroutes
@@ -367,4 +362,3 @@
            :userbadgeendorsement endr/user-badge-endorsement-content
            :userendorsement endr/user-endorsement-content
            :my my/mybadgesmodal}})
-

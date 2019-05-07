@@ -76,8 +76,8 @@
                                    [:div.media-heading
                                     [:p.heading-link name]]
                                    [:div.media-issuer
-                                    [:p issuer_content_name]]]
-                                  ]]
+                                    [:p issuer_content_name]]]]]
+
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
                                  [:a {:href "#" :on-click #(do
                                                              (.preventDefault %)
@@ -87,8 +87,8 @@
                                                                                                                        (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
                                                                                                                          (.replaceState js/history {} "Badge modal" (path-for "/badge"))
                                                                                                                          (navigate-to (current-route-path)))
-                                                                                                                       (init-data state)))
-                                                                                                           }))}
+                                                                                                                       (init-data state)))}))}
+
                                   [:div.icons
                                    [:div.visibility-icon.inline
                                     (case visibility
@@ -114,8 +114,8 @@
                                    [:div.media-heading
                                     [:p.heading-link name]]
                                    [:div.media-issuer
-                                    [:p issuer_content_name]]]
-                                  ]])
+                                    [:p issuer_content_name]]]]])
+
 
        (= "profile" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
@@ -124,15 +124,15 @@
                                    [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
                                     [:div.visibility-icon.inline
                                      ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                     (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+                                     (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]]
 
-                                     ]]
+
                                    [:div.media-left
                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                     [:div.media-body
                                      [:div.media-heading name]
-                                     [:div.media-issuer [:p issuer_content_name]]]
-                                    ]]]]
+                                     [:div.media-issuer [:p issuer_content_name]]]]]]]
+
 
        (= "gallery" badge-type) [:div
                                  [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})
@@ -154,8 +154,8 @@
                                                         (t :gallery/recipients))])
                                     [:div.media-description description]]]]
                                  [:div.media-bottom
-                                  [:div {:class "pull-left"}
-                                   ]
+                                  [:div {:class "pull-left"}]
+
                                   (admin-gallery-badge badge_id "badges" state init-data)]]
        (= "selectable" badge-type)  [:div
                                      [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
@@ -163,15 +163,15 @@
                                        [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
                                         [:div.visibility-icon.inline
                                          ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                         (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+                                         (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]]
 
-                                         ]]
+
                                        [:div.media-left
                                         (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                         [:div.media-body
                                          [:div.media-heading name]
-                                         [:div.media-issuer [:p issuer_content_name]]]
-                                        ]]]
+                                         [:div.media-issuer [:p issuer_content_name]]]]]]
+
                                      [:div {:class "media-bottom"}
                                       [:div.row
                                        [:div.col-xs-9
@@ -200,51 +200,48 @@
                                                                 (cond
                                                                   (= "badge" type)(do
                                                                                     (swap! new-field-atom merge {:badge {:id id :image_file image_file :type "badge" :name name :description description}})
-                                                                                    (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state)))
-                                                                                    )
+                                                                                    (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state))))
+
                                                                   (= "showcase" type) (do
                                                                                         (when-not  (some (fn [b] (= id (:id b))) badges)
                                                                                           ;(swap! new-field-atom assoc :badges (conj badges {:id id :image_file image_file :type "badge" :name name :description description}))
                                                                                           (as-> (:function @state) f (f {:id id :image_file image_file :type "badge" :name name :description description}) #_(f @new-field-atom))))
                                                                   :else nil)
-                                                                (m/close-modal!)))
-                                       }
+                                                                (m/close-modal!)))}
+
                                    [:div.media-content
 
                                     [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
                                      [:div.visibility-icon.inline
                                       ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                      (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])
+                                      (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]]
 
-                                      ]]
+
                                     [:div.media-left
                                      (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                      [:div.media-body
                                       [:div.media-heading name]
-                                      [:div.media-issuer [:p issuer_content_name]]]
-                                     ]]]]
+                                      [:div.media-issuer [:p issuer_content_name]]]]]]]
+
        (= "showcase" badge-type) [:div
                                   [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
-                                                              (mo/open-modal [:badge :info] {:badge-id id})
+                                                              (mo/open-modal [:badge :info] {:badge-id id}))}
 
-                                                              )}
+
                                    [:div.media-content
                                     [:div.media-left
                                      (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                      [:div.media-body
-                                      [:div.media-heading name]
+                                      [:div.media-heading name]]]]]
                                       ;[:div.media-issuer [:p issuer_content_name]]
-                                      ]
-                                     ]]]
+
+
                                   [:div.delete-button
                                    [:a {:href "#" :on-click #(do
                                                                (.preventDefault %)
                                                                (let [block-atom @state]
-                                                                 (init-data id (:badges block-atom)))
+                                                                 (init-data id (:badges block-atom))))}
 
-                                                               )}
-                                    [:i.fa.fa-trash]]
 
-                                   ]]
-       )]))
+                                    [:i.fa.fa-trash]]]])]))

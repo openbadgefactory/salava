@@ -6,6 +6,7 @@
             [salava.page.ui.my :as page]
             [salava.profile.ui.block :as block]
             [salava.profile.ui.profile :as p]
+            [salava.profile.ui.edit :as pe]
             )
   )
 
