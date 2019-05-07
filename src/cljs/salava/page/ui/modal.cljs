@@ -14,7 +14,8 @@
             [salava.core.ui.error :as err]
             [salava.core.ui.modal :refer [set-new-view]]
             [salava.page.ui.edit :as edit]
-            [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]))
+            [salava.page.ui.helper :refer [badge-block html-block file-block heading-block tag-block]]
+            [salava.page.ui.my :refer [mypagesmodal]]))
 
 
 
@@ -96,9 +97,10 @@
         (= "error" (:permission @state)) (err/error-content)
         (= "success" (:permission @state)) (content state)
         (and (= "success" (:permission @state)) user) (content state)
-        :else (content state) ))
-    ))
+        :else (content state)))))
+
 
 (def ^:export modalroutes
   {:page  {:view handler
-           :blocktype edit/contenttype}})
+           :blocktype edit/contenttype
+           :my mypagesmodal}})

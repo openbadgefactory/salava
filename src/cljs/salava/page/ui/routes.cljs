@@ -9,7 +9,9 @@
             [salava.page.ui.theme :as theme]
             [salava.page.ui.settings :as settings]
             [salava.page.ui.preview :as preview]
-            [salava.page.ui.modal :as pagemodel]))
+            [salava.page.ui.modal :as pagemodel]
+            [salava.page.ui.block]))
+
 
 (defn ^:export routes [context]
   {(str (base-path context) "/profile/page") [["" my/handler]
@@ -29,4 +31,3 @@
    (str (base-path context) "/profile/page/edit_theme/\\d+") {:breadcrumb (t :page/Pages " / " :page/Choosetheme)}
    (str (base-path context) "/profile/page/settings/\\d+")   {:breadcrumb (t :page/Pages " / " :page/Settings)}
    (str (base-path context) "/profile/page/preview/\\d+")    {:breadcrumb (t :page/Pages " / " :page/Viewpage)}})
-

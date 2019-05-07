@@ -10,7 +10,8 @@
             [salava.profile.ui.helper :as ph]
             [reagent-modals.modals :as m]
             [salava.profile.ui.edit :as pe]
-            [salava.page.themes :refer [themes borders]]))
+            [salava.page.themes :refer [themes borders]]
+            [salava.core.ui.modal :as mo]))
 
 
 (defn tabs [state])
@@ -21,14 +22,44 @@
       [connectuser user-id]
       [:div ""])))
 
+(defn add-page [state]
+   (when (:edit-mode @state) [:span.dropdown [:a.dropdown-toggle {:data-toggle "dropdown"} [:i.fa.fa-plus-square]]
+                                [:ul.dropdown-menu
+                                 [:li [:a {:href "#" :on-click #(do
+                                                                 (.preventDefault %)
+                                                                 (mo/open-modal [:page :my] {:tab-atom (cursor state [:tabs])} {:hidden (fn [] (prn @(cursor state [:tabs])))}))}
+
+                                          (t :profile/Addexistingpage)]]
+                                 [:li [:a {:href "#" :on-click #(do
+                                                                 (.preventDefault %)
+                                                                 (as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]]))
+
+
+
 (defn profile-navi [state]
   [:div.profile-navi
-   [:ul.nav.nav-tabs
-    [:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
-     [:a.nav-link {:on-click #(do
-                                (.preventDefault %)
-                                (swap! state assoc :active-index 0))} (t :user/Myprofile)]]
-    (when (:edit-mode @state) [:i.fa.fa-plus-square])]])
+
+    (conj (reduce (fn [r tab]
+                   (conj r [:li.nav-item {:key (:id tab) :class (if (= (:id tab) (:active-index @state)) "active")}
+                            [:a.nav-link {:href "#" :on-click #(do
+                                                                ;(.preventDefault %)
+                                                                (swap! state assoc :active-index (:id tab) :show-manage-buttons false))}
+                                         (:name tab)]]))
+           [:ul.nav.nav-tabs
+            [:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
+                          [:a.nav-link {:on-click #(swap! state assoc :active-index 0 :show-manage-buttons true)}
+                                       (t :user/Myprofile)]]]
+           @(cursor state [:tabs])) [add-page state])
+    #_(when (:edit-mode @state) [:div.dropdown [:a.dropdown-toggle {:data-toggle "dropdown"} [:i.fa.fa-plus-square]]]
+                               [:ul.dropdown-menu
+                                [:li [:a {:href "#" :on-click #(do
+                                                                (.preventDefault %)
+                                                                (mo/open-modal [:page :my] {:tab-atom (cursor state [:tabs])} {:hidden (fn [] (prn @(cursor state [:tabs])))}))}
+
+                                         (t :profile/Addexistingpage)]]
+                                [:li [:a {:href "#" :on-click #(do
+                                                                (.preventDefault %)
+                                                                (as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]])])
 
 (defn profile-blocks [state]
   (let [blocks (cursor state [:blocks])
@@ -40,16 +71,24 @@
              (ph/block-for-edit (cursor blocks [index]) state index)))
      [ph/field-after blocks state nil]]))
 
+(defn get-page [state]
+ (let [block (first (plugin-fun (session/get :plugins) "block" "page"))]
+  (if block [block @(cursor state [:active-index]) [:div ""]])))
+
+
 
 (defn edit-profile-content [state]
-  [:div#page-edit
-   [pe/action-buttons state]
-   [:div.panel.thumbnail
-    [:div.panel-heading
-     [:h3 (t :profile/Personalinformation)]]
-    [:div.panel-body
-     [pe/edit-profile state]]]
-   [profile-blocks state]])
+   (if (= 0 @(cursor state [:active-index]))
+       [:div#page-edit
+         [pe/action-buttons state]
+         [:div.panel.thumbnail
+          [:div.panel-heading
+           [:h3 (t :profile/Personalinformation)]]
+          [:div.panel-body
+           [pe/edit-profile state]]]
+         [profile-blocks state]]
+    [get-page state]))
+    ;(into [:div] (as-> (first (plugin-fun (session/get :plugins) "block" "page")) f (when f (f @(cursor state [:active-index])))))))
 
 
 (defn view-profile [state]
@@ -133,7 +172,7 @@
    [m/modal-window]
    [:div#profile
     [profile-navi state]
-    [ph/manage-buttons state]]
+    (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])]
    (if @(cursor state [:edit-mode])
      [edit-profile state]
      [view-profile state])])
@@ -163,7 +202,9 @@
                      :blocks []
                      :edit {:active-tab :content}
                      :theme 0
-                     :alert nil})
+                     :alert nil
+                     :tabs []
+                     :show-manage-buttons true})
         user (session/get :user)]
     (init-data user-id state)
 

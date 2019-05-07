@@ -19,6 +19,15 @@
   .nav-tabs>li>a {
     color: $text-color;
   }
+  .nav .open>a {
+    background-color: unset;
+  }
+  .dropdown-menu {
+    border-radius: 4px;
+    li {
+      padding: 5px 0px;
+    }
+  }
 }
   .manage-buttons {
     //width: 90%;
@@ -70,6 +79,7 @@
     margin-right: 15px !important;
 
   }
+
 }
 .action-bar {
     z-index: 100;

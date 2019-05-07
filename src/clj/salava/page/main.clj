@@ -298,7 +298,6 @@
       (html-sanitize policy content))))
 
 (defn save-page-content! [ctx page-id page-content user-id]
-
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
@@ -306,7 +305,7 @@
           page-owner-id (page-owner ctx page-id)
           user-files (if (some #(= "file" (:type %)) blocks)
                        (:files (f/user-files-all ctx page-owner-id)))
-          file-ids (map :id user-files)badge-ids
+          file-ids (map :id user-files)
           user-badges (if (some #(or (= "badge" (:type %)) (= "showcase" (:type %))) blocks)
                         (b/user-badges-all ctx page-owner-id))
           badge-ids (map :id user-badges)
