@@ -41,6 +41,7 @@
                                               INNER JOIN badge_issuer_content ic ON badge.id = ic.badge_id
                                               INNER JOIN issuer_content i ON ic.issuer_content_id = i.id
                                               WHERE b.language_code = badge.default_language_code AND i.language_code = badge.default_language_code
+                                                AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
                                               ORDER BY ub.ctime
                                               LIMIT ? OFFSET ?" limit offset])]
         (gallery-insert! config row)))))

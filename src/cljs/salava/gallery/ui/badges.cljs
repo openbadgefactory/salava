@@ -294,19 +294,26 @@
 
 (defn init-data [params state]
   (reset! (cursor state [:ajax-message]) (str (t :core/Loading) "..."))
+
+  (ajax/GET
+    (path-for "/obpv1/gallery/badge_countries")
+    {:handler (fn [data] (swap! state assoc :countries (:countries data)))})
+
+  (ajax/GET
+    (path-for "/obpv1/gallery/badge_tags")
+    {:handler (fn [data]
+                (swap! state assoc :tags (:tags data)))})
+
   (ajax/GET
     (path-for "/obpv1/gallery/badges")
     {:params  params
      :handler (fn [data]
-                (let [{:keys [badges countries user-country tags badge_count]} data]
-                  (value-helper state tags)
-                  ;(prn init-params)
+                (let [{:keys [badges badge_count]} data]
+                  ;(value-helper state tags)
                   (swap! state assoc
                          :page_count (inc (:page_count @state))
                          :badges badges
-                         :badge_count badge_count
-                         :countries countries
-                         :country-selected (session/get-in [:filter-options :country] user-country))))
+                         :badge_count badge_count)))
      :finally (fn []
                 (ajax-stop (cursor state [:ajax-message])))}))
 
@@ -327,7 +334,7 @@
                       ;:page_count             0
                       :badges                 []
                       :countries              []
-                      ;:country-selected       "all"
+                      :country-selected       (session/get-in [:filter-options :country] "all")
                       ;:tags                   ()
                       :tags-badge-ids ()
                       :full-tags              ()

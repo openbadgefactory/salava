@@ -117,20 +117,21 @@
     ))
 
 
-(defn init-data [badge-id state]
+(defn init-data [gallery-id badge-id state]
   (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
+    (path-for (str "/obpv1/gallery/public_badge_content/" gallery-id "/" badge-id) true)
     {:handler (fn [data]
                 (reset! state (assoc data
                                 :permission "success"
                                 :reload-fn (:reload-fn @state)
-                                :otherids (:otherids @state)
+                                ;:otherids (:otherids @state)
                                 :content-language (init-content-language  (get-in data [:badge :content])))))}
     (fn [] (swap! state assoc :permission "error")))
   )
 
 (defn handler [params]
   (let [badge-id (:badge-id params)
+        gallery-id (:gallery-id params)
         other-ids (:otherids params)
         state (atom {:permission "initial"
                      :badge {:badge_id badge-id}
@@ -142,7 +143,7 @@
                      :otherids (or other-ids nil)})
         user (session/get :user)
         show-messages (atom (or (:show-messages params) false))]
-    (init-data badge-id state)
+    (init-data gallery-id badge-id state)
     (fn []
       (content state show-messages))))
 

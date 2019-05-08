@@ -22,7 +22,8 @@
                                                   (some #(= (first c) %) (keys all-countries))
                                                   (some #(= (second c) %) (vals all-countries))))))
 
-(s/defschema GalleryBadges {:badge_id            s/Str
+(s/defschema GalleryBadges {:gallery_id          s/Int
+                            :badge_id            s/Str
                             :ctime               s/Int
                             :image_file          s/Str
                             :issuer_content_name s/Str
@@ -31,13 +32,21 @@
                             (s/optional-key :otherids) [s/Str]})
 
 
-(s/defschema Badgesgallery {:badge_count s/Int
+#_(s/defschema Badgesgallery {:badge_count s/Int
                             :badges       [GalleryBadges]
                             :countries    [Countries]
                             :tags         [{:badge_id_count s/Int
                                             :badge_ids      s/Str
                                             :tag            s/Str}]
                             :user-country s/Str})
+
+(s/defschema Badgesgallery {:badge_count s/Int
+                            :badges       [GalleryBadges]})
+
+(s/defschema BadgesgalleryTags {:tags [s/Str]})
+
+(s/defschema BadgesgalleryCountries {:countries [Countries]})
+
 
 (s/defschema BadgeQuery {:country s/Str
                          :tags s/Str
