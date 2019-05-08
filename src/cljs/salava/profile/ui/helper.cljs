@@ -215,9 +215,11 @@
          ("badges") [recent-badges state]
          ("pages") [recent-pages state]
          ("showcase") [badge-showcase state block-atom]
-         ("location") (into [:div]
-                            (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
-                              [f (:user-id @state)]))
+         ("location") [:div
+                        [:h3 {:style {:padding-bottom "10px"}} (t :location/Location)]
+                       (into [:div {:style {:margin-top "15px" :padding-top "15px"}}]
+                             (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
+                               [f (:user-id @state)]))]
          nil)]]]))
 
 (defn block [block-atom state index]
@@ -227,9 +229,9 @@
                           ("badges") [recent-badges state]
                           ("pages") [recent-pages state]
                           ("showcase") [showcase-grid state block-atom]
-                         ("location")   (into [:div]
-                                              (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
-                                                [f (:user-id @state)]))
+                          ("location") (into [:div]
+                                        (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
+                                          [f (:user-id @state)]))
 
                          nil)])))
 

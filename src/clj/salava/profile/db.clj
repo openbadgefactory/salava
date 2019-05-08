@@ -27,9 +27,9 @@
   (select-user-profile-fields {:user_id user-id} (get-db ctx)))
 
 (def default-profile-blocks
- [{:id 0 :hidden false :block_order 0 :type "badges"}
-  {:id 1 :hidden false :block_order 1 :type "pages"}
-  {:id 2 :hidden false :block_order 2 :type "location"}])
+ [{:hidden false :block_order 1 :type "badges"}
+  {:hidden false :block_order 2 :type "pages"}
+  {:hidden false :block_order 0 :type "location"}])
 
 (defn profile-properties [ctx user-id]
  (some-> (select-user-profile-properties {:user_id user-id} (into {:result-set-fn first :row-fn :value} (get-db ctx)))
@@ -96,7 +96,7 @@
                  (delete-showcase-block! {:id (:id block)} (get-db ctx))
                  (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))))
 
-(defn save-profile-properties [ctx blocks theme user-id]
+(defn save-profile-blocks [ctx blocks theme tabs user-id]
   (let [profile-blocks (profile-blocks ctx user-id)
         badge-ids (map :id (user-badges ctx user-id))
         properties (atom [])]
@@ -116,7 +116,7 @@
                              (create-showcase-block! ctx (assoc block :user_id user-id))))
         ("badges" "pages" "location")  (swap! properties conj block)
         nil)))
-   (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties :theme theme)):user_id user-id} (get-db ctx))
+   (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties :theme theme :tabs tabs)):user_id user-id} (get-db ctx))
    (doseq [old-block profile-blocks]
      (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
        (delete-block! ctx old-block)))))
@@ -125,7 +125,7 @@
 
 (defn save-user-profile
   "Save user's profile"
-  [ctx visibility picture about fields blocks theme user-id]
+  [ctx visibility picture about fields blocks theme tabs user-id]
   (try+
     (if (and (private? ctx) (= "public" visibility))
       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
@@ -134,7 +134,7 @@
             :let [{:keys [field value]} (get fields index)]]
       (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
     (update-user-visibility-picture-about! {:profile_visibility visibility :profile_picture picture :about about :id user-id} (get-db ctx))
-    (save-profile-properties ctx blocks theme user-id)
+    (save-profile-blocks ctx blocks theme tabs user-id)
     {:status "success" :message "profile/Profilesuccesfullyupdated"}
     (catch Object _
       (log/error _)

@@ -16,8 +16,8 @@
             [salava.core.ui.modal :refer [set-new-view]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.core.ui.badge-grid :refer [badge-grid-element]]
-            [salava.core.ui.page-grid :refer [page-grid-element]]
-            ))
+            [salava.core.ui.page-grid :refer [page-grid-element]]))
+
 
 
 (defn toggle-visibility [visibility-atom]
@@ -25,8 +25,8 @@
     (path-for "/obpv1/user/profile/set_visibility")
     {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
      :handler (fn [new-value]
-                (reset! visibility-atom new-value)
-                )}))
+                (reset! visibility-atom new-value))}))
+
 
 (defn profile-visibility-input [visibility-atom]
   [:div.col-xs-12
@@ -55,43 +55,43 @@
                             :on-click #(set-new-view [:badge :info] {:badge-id id})}
            name]]
          [:div.media-issuer
-          [:p issuer_content_name]]]]]
+          [:p issuer_content_name]]]]]))
       ;]
-      ))
+
 
 #_(defn page-grid-element [element-data profile_picture]
-  (let [{:keys [id name first_name last_name badges mtime]} element-data
-        badges (take 4 badges)]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:href "#";(path-for (str "/page/view/" id))
-                           :on-click #(set-new-view [:page :view] {:page-id id})
-                           } name]]
-        [:div.media-content
-         [:div.page-owner
-          [:a {:href "#"} first_name " " last_name]]
-         [:div.page-create-date.no-flip
-          (date-from-unix-time (* 1000 mtime) "minutes")]
-         (into [:div.page-badges]
-               (for [badge badges]
-                 [:img {:title (:name badge)
-                        :alt (:name badge)
-                        :src (str "/" (:image_file badge))}]))]]
-       [:div {:class "media-right"}
-        [:img {:src (profile-picture profile_picture)
-               :alt (str first_name " " last_name)}]]]]]))
+   (let [{:keys [id name first_name last_name badges mtime]} element-data
+         badges (take 4 badges)]
+     [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
+      [:div {:class "media grid-container"}
+       [:div.media-content
+        [:div.media-body
+         [:div.media-heading
+          [:a.heading-link {:href "#";(path-for (str "/page/view/" id))
+                            :on-click #(set-new-view [:page :view] {:page-id id})}
+                           name]]
+         [:div.media-content
+          [:div.page-owner
+           [:a {:href "#"} first_name " " last_name]]
+          [:div.page-create-date.no-flip
+           (date-from-unix-time (* 1000 mtime) "minutes")]
+          (into [:div.page-badges]
+                (for [badge badges]
+                  [:img {:title (:name badge)
+                         :alt (:name badge)
+                         :src (str "/" (:image_file badge))}]))]]
+        [:div {:class "media-right"}
+         [:img {:src (profile-picture profile_picture)
+                :alt (str first_name " " last_name)}]]]]]))
 
 (defn badge-grid [badges badge-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
-          (badge-grid-element element-data nil "profile" nil ))))
+          (badge-grid-element element-data nil "profile" nil))))
 
 (defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
-        (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
+        (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages)))]
           [page-grid-element (assoc element-data :profile_picture profile_picture) {:type "profile"}])))
 
 (defn connect-user [user-id]
@@ -111,8 +111,8 @@
     [:div
      (if-not owner?
        [:div.col-xs-12[:div.pull-right
-                       (connect-user user-id)]]
-       )
+                       (connect-user user-id)]])
+
 
      [:div {:id "profile"}
       [:div.col-xs-12
@@ -150,8 +150,8 @@
                               (and  (empty? (re-find #" " (str value))) (= "pinterest" field))                                          [:a {:href (str "https://www.pinterest.com/" value) :target "_blank" } (t value)]
                               (and  (empty? (re-find #" " (str value))) (= "instagram" field))                                          [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
                               (= "blog" field)                                                                                          (hyperlink value)
-                              :else                                                                                                     (t value))]]))]]]
-           )]]
+                              :else                                                                                                     (t value))]]))]]])]]
+
        (if (not-empty badges)
          [:div {:id "user-badges"}
           [:h2 {:class "uppercase-header user-profile-header"} (t :user/Recentbadges)]
@@ -164,13 +164,8 @@
           [page-grid pages profile_picture @page-small-view]
           (if (< 6 (count pages))
             [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
+       [reporttool1 user-id fullname "user"]]]]))
 
-       (into [:div]
-             (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
-               [f user-id]))
-
-       [reporttool1 user-id fullname "user"]
-       ]]]))
 
 (defn init-data [user-id state]
   (ajax/GET
@@ -204,5 +199,4 @@
 
 
 (def ^:export modalroutes
-  {:user {:profile handler}}
-  )
+  {:user {:profile handler}})

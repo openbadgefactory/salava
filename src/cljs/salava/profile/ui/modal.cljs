@@ -11,6 +11,7 @@
   [salava.profile.ui.helper :as ph]
   [salava.admin.ui.reporttool :refer [reporttool1]]))
 
+(defn userinfoblock [])
 (defn view-profile [state]
  (let [blocks (cursor state [:blocks])
        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
@@ -27,7 +28,7 @@
                [:div.panel-content
                  [:div.panel-body
                   [:div.col-xs-12
-                   [:h1.uppercase-header fullname]
+                   [:h1.uppercase-header {:style {:text-align "center"}} fullname]
                    [:div.row.flip
                     [:div {:class "col-md-3 col-sm-3 col-xs-12"}
                      [:div.profile-picture-wrapper
@@ -66,12 +67,15 @@
                           (for [index (range (count @blocks))]
                             [:div.row
                              [:div.col-xs-12 (ph/block (cursor blocks [index]) state index)]]))]]]]]]]]
+
     [:div.col-xs-12 {:style {:margin-top "10px"}} [reporttool1 user-id fullname "user"]]]))
 
 
 
 (defn content [state]
-  [view-profile state])
+  [:div#profile
+   [p/profile-navi state]
+   [view-profile state]])
 
 (defn init-data [id state]
  (ajax/GET

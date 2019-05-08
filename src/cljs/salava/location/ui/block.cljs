@@ -7,8 +7,8 @@
             [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
             [salava.location.ui.util :as lu]
-            [salava.core.ui.modal :as mo]
-            ))
+            [salava.core.ui.modal :as mo]))
+
 
 
 (defn put-handler [data]
@@ -49,8 +49,8 @@
                                             (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (.addTo my-marker my-map))
-                           (reset! visible false)))})) 300)
-       )}))
+                           (reset! visible false)))})) 300))}))
+
 
 (defn gallery-badge-content [badge-id visible]
   (create-class
@@ -77,9 +77,9 @@
                                    (js/L.marker. (clj->js {:icon lu/user-icon}))
                                    (.on "click" #(mo/open-modal [:user :profile] {:user-id (:user_id b)}))
                                    (.addTo my-map))))
-                           (reset! visible false))
-                         )})) 300)
-       )}))
+                           (reset! visible false)))}))
+         300))}))
+
 
 
 (defn badge-share-content [user-badge-id visible]
@@ -110,12 +110,12 @@
                                                            (ajax/PUT
                                                              (path-for (str "/obpv1/location/user_badge/" user-badge-id))
                                                              {:params (aget e "latlng")
-                                                              :handler put-handler})))
-                                            )
-                                 ]
+                                                              :handler put-handler}))))]
+
+
                              (.addTo my-marker my-map))
-                           (reset! visible false)))})) 300)
-       )}))
+                           (reset! visible false)))})) 300))}))
+
 
 
 (defn user-profile-content [user-id visible]
@@ -140,8 +140,8 @@
                                             (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (.addTo my-marker my-map))
-                           (reset! visible false)))})) 300)
-       )}))
+                           (reset! visible false)))})) 300))}))
+
 
 (defn- user-settings-map [{:keys [lat lng]}]
   (let [lat-lng (js/L.latLng. lat lng)
@@ -201,9 +201,9 @@
              [:p.help-block (t :location/LocationPublicInfo)]]]
 
            [:label {:style {:display (if (:enabled @state) "block" "none")}} (t :location/setLocationHere)]
-           [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]
-           ]]
-         ]])
+           [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]]]]])
+
+
 
 
      :component-did-mount
@@ -215,9 +215,9 @@
                      (swap! state assoc :public (:public data))
                      (swap! state assoc :default (or (:enabled data) (:country data)))
                      (when-not (:enabled data)
-                       (swap! state assoc :enabled false)))
-          })
-       )}))
+                       (swap! state assoc :enabled false)))}))}))
+
+
 
 (defn ^:export badge_info [badge-id]
   (let [visible (atom true)]

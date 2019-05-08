@@ -48,7 +48,8 @@
                             (filter #(not-empty (:field %)))
                             (map #(select-keys % [:field :value])))
         blocks (prepare-blocks (:blocks @state))
-        theme (:theme @state)
+        theme (or (:theme @state) 0)
+        tabs @(cursor state [:tabs])
         alert-atom (cursor state [:alert])]
    (ajax/POST
      (path-for "/obpv1/profile/user/edit")
@@ -57,7 +58,8 @@
                 :profile_picture    profile_picture
                 :fields             profile-fields
                 :blocks blocks
-                :theme theme}
+                :theme theme
+                :tabs (mapv :id tabs)}
       :handler (fn [data]
                  (init-data state)
                  (when show-alert? (reset! alert-atom data))
@@ -106,8 +108,14 @@
                                           (when (:spinner @state) [:i.fa.fa.lg.fa-spinner {:style {:padding "2px"}}])(t :page/Save)]
                                          [:button.btn.btn-warning {:on-click #(do
                                                                                 (.preventDefault %)
-                                                                                (navigate-to  "/profile/page"))}
+                                                                                (navigate-to (str "/profile/"(:user-id @state))))}
                                           (t :core/Cancel)]
+                                         [:button.btn.btn-primary {:href "#"
+                                                                   :on-click #(do
+                                                                                (navigate-to (str "/profile/"(:user-id @state)))
+                                                                                (.preventDefault %)
+                                                                                (reset! (cursor state [:edit-mode]) false))}
+                                                            [:i.fa.fa-eye.fa-lg {:style {:margin-right "10px"}}](t :user/Viewprofile)]
 
                                          (when next?  [:div.pull-right {:id "step-button"}
                                                        [:a {:href "#" :on-click #(do

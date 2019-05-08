@@ -37,7 +37,7 @@
         [:span {:class "back-arrow" :aria-hidden "true"}]]])]
    [:div.modal-body
     [:div (last @views)]]
-   [:div.modal-footer ]])
+   [:div.modal-footer]])
 
 (defn modal-init [view]
   (create-class {:component-will-mount   (fn [] (reset! views [view]))
@@ -55,5 +55,4 @@
   ([route params opts]
    (if (empty? @views)
      (m/modal! [modal-init [((get-in (modal-navi) route) params)]] (merge opts {:size :lg}))
-     (set-new-view route params))
-   ))
+     (set-new-view route params))))

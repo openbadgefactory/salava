@@ -74,18 +74,29 @@
     margin: 5px 0;
     .btn {}
   }
-
-  #user-badges .grid-container {
-    margin-right: 15px !important;
+  #page-view {
+    .panel-left {
+      padding-left:  85px;
+    }
+    .panel-right {
+      padding-right: 85px;
+    }
   }
 
   .panel-content {
     padding: unset;
-
+  }
+    @media(max-width: 768px){
+  .page-content .panel-right{
+    padding-right: 20px;
+  }
+  .page-content .panel-left {
+    padding-left:20px;
   }
 }
+}
 .action-bar {
-    z-index: 100;
+    z-index: 500;
     background-color: darken($background-color, 2%);
     position: sticky;
     position: -webkit-sticky;
@@ -102,3 +113,8 @@
         word-break: break-word;
       }
     }
+.panel-content #user-badges .grid-container  {
+    margin-right: 10px !important;
+    max-width: 180px !important;
+    min-width: 180px !important;
+}
