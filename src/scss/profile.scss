@@ -77,9 +77,12 @@
 
   #user-badges .grid-container {
     margin-right: 15px !important;
-
   }
 
+  .panel-content {
+    padding: unset;
+
+  }
 }
 .action-bar {
     z-index: 100;
@@ -94,3 +97,8 @@
     top: 0;
 
   }
+    .table {
+      .field-value {
+        word-break: break-word;
+      }
+    }

@@ -26,7 +26,10 @@
   [ctx user-id]
   (select-user-profile-fields {:user_id user-id} (get-db ctx)))
 
-(def default-profile-blocks [{:id 0 :hidden false :block_order 0 :type "badges"}  {:id 1 :hidden false :block_order 1 :type "pages"}])
+(def default-profile-blocks
+ [{:id 0 :hidden false :block_order 0 :type "badges"}
+  {:id 1 :hidden false :block_order 1 :type "pages"}
+  {:id 2 :hidden false :block_order 2 :type "location"}])
 
 (defn profile-properties [ctx user-id]
  (some-> (select-user-profile-properties {:user_id user-id} (into {:result-set-fn first :row-fn :value} (get-db ctx)))
@@ -96,7 +99,7 @@
 (defn save-profile-properties [ctx blocks theme user-id]
   (let [profile-blocks (profile-blocks ctx user-id)
         badge-ids (map :id (user-badges ctx user-id))
-        properties (atom [])#_(into [](filter #(or (= "badges" (:type %)) (= "pages" (:type %))) blocks))]
+        properties (atom [])]
    (doseq [block-index (range (count blocks))]
       (let [block (-> (nth blocks block-index)
                       (assoc :block_order block-index))
@@ -111,7 +114,7 @@
                            (if id
                              (update-showcase-block! ctx (assoc block :user_id user-id))
                              (create-showcase-block! ctx (assoc block :user_id user-id))))
-        ("badges" "pages")  (swap! properties conj block)
+        ("badges" "pages" "location")  (swap! properties conj block)
         nil)))
    (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties :theme theme)):user_id user-id} (get-db ctx))
    (doseq [old-block profile-blocks]

@@ -163,37 +163,39 @@
      nil)])
 
 (defn tag-block [block-atom]
- (let [{:keys [tag badges format sort]} block-atom]
+ (let [{:keys [tag badges format sort]} block-atom
+       container (case format
+                  "short" [:div#grid {:class "row"}]
+                  "long" [:div.tag-block])]
+
   [:div#user-badges
+   [:div [:label (t :page/Tag ":")] (str " " tag)]
    [:div
-    [:label (t :page/Tag ":")] (str " " tag)]
-   [:div#grid {:class "row"}
      (let [sorted-badges (case sort
                            "name" (sort-by :name < badges)
                            "modified" (sort-by :mtime > badges)
                            badges)]
-      (into [:div.tag-block]
+      (into container
        (for [badge sorted-badges]
          (if (= format "short")
           (badge-grid-element badge nil "profile" nil)
-          #_[:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
-                                   :key  (:id badge)}
-             [:img {:src (str "/" (:image_file badge))
-                    :title (:name badge)}]]
-           (badge-block (assoc badge :format "long"))))))]]))
+          (badge-block (assoc badge :format "long"))))))]]))
 
 (defn showcase-block [block-atom]
- (let [{:keys [badges format title]} block-atom]
+ (let [{:keys [badges format title]} block-atom
+        container (case format
+                    "short" [:div#grid {:class "row"}]
+                    "long" [:div.tag-block])]
    [:div
     [:div.heading-block
      [:h2 title]]
     [:div#user-badges
-     [:div#grid {:class "row"}
+     [:div
       (doall (reduce (fn [r badge]
                        (conj r (if (= format "short")
                                    (badge-grid-element badge nil "profile" nil)
                                    (badge-block (assoc badge :format "long")))))
-                     [:div.tag-block] badges))]]]))
+                     container badges))]]]))
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
