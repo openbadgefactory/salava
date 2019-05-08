@@ -185,6 +185,10 @@
          :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
          :datefrom issued_on
          :dateto   expires_on}]]
+
+      (into [:div]
+            (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
+              [f id]))
       ]]))
 
 (declare settings-tab-content)
@@ -517,7 +521,13 @@
                                                      (t :badge/Evidences)]]
                                                    [:div [evidenceblock data state init-data]]
 
-                                                   [:div [endorsement/endorsement-list (:id @state)]]]]
+                                                   [:div [endorsement/endorsement-list (:id @state)]]
+
+                                                   (into [:div]
+                                                         (for [f (plugin-fun (session/get :plugins) "block" "badge_settings")]
+                                                           [f id]))
+
+                                                   ]]
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]

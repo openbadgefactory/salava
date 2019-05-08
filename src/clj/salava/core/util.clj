@@ -29,6 +29,10 @@
   {:connection {:datasource (:db ctx)}
    :result-set-fn first})
 
+(defn get-db-col [ctx kw]
+  {:connection {:datasource (:db ctx)}
+   :row-fn kw})
+
 (defn get-data-dir [ctx]
   (get-in ctx [:config :core :data-dir]))
 

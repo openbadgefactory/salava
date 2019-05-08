@@ -31,7 +31,7 @@
 (session/put! :private (:private ctx))
 (session/put! :footer (:footer ctx))
 (session/put! :factory-url (:factory-url ctx))
-(session/put! :gdpr-disabled? (:gdpr-disabled? ctx))
+(session/put! :show-terms? (:show-terms? ctx))
 (session/put! :filter-options (:filter-options ctx))
 ;;;
 

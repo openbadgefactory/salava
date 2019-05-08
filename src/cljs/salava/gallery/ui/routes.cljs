@@ -1,7 +1,7 @@
 (ns salava.gallery.ui.routes
    (:require [salava.core.ui.layout :as layout]
              [salava.core.i18n :as i18n :refer [t]]
-             [salava.core.ui.helper :refer [base-path]]
+             [salava.core.ui.helper :refer [base-path path-for]]
              [salava.gallery.ui.badges :as b]
              ;[salava.gallery.ui.badge-view :as bv]
              [salava.gallery.ui.pages :as p]
@@ -43,3 +43,11 @@
    ;(str (base-path context) "/gallery/badgeview/\\w+") {:breadcrumb (t :gallery/Gallery " / " :gallery/Viewbadge)}
    })
 
+(defn ^:export quicklinks []
+  [{:title [:p (t :social/Iwanttofindbadges)]
+    :url (str (path-for "/gallery/badges"))
+    :weight 6}
+
+   {:title  [:p (t :social/Iwanttofindotherusers)]
+    :url (str (path-for "/gallery/profiles"))
+    :weight 7}])

@@ -1,6 +1,6 @@
 (ns salava.badge.ui.routes
   (:require [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [base-path private? plugin-fun]]
+            [salava.core.ui.helper :refer [base-path private? plugin-fun path-for]]
             [salava.badge.ui.my :as my]
             [salava.badge.ui.info :as info]
             [salava.badge.ui.embed :as embed]
@@ -39,3 +39,7 @@
    ;(str (base-path context) "/badge/user/endorsements") {:weight 50 :title (t :badge/Myendorsements) :breadcrumb (t :badge/Badges " / " :badge/Myendorsements) :site-navi true}
    })
 
+(defn ^:export quicklinks []
+  [{:title [:p (t :social/Iwanttoseemysbadges)]
+    :url (str (path-for "/badge"))
+    :weight 4}])

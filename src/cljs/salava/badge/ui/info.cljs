@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? hyperlink url?]]
+            [salava.core.ui.helper :refer [path-for private? hyperlink url? plugin-fun]]
             [salava.core.time :refer [date-from-unix-time unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -324,6 +324,10 @@
                    (for [congratulation congratulations
                          :let           [{:keys [id first_name last_name profile_picture]} congratulation]]
                      (uh/profile-link-inline id first_name last_name profile_picture)))]])
+
+         (into [:div]
+               (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
+                 [f id]))
          ]]
        (if owner? "" (reporttool1 id name "badge"))]]]
     ))

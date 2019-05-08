@@ -18,12 +18,15 @@
   ["/assets/bootstrap/css/bootstrap.min.css"
    "/assets/bootstrap/css/bootstrap-theme.min.css"
    "/assets/font-awesome/css/font-awesome.min.css"
+   "/assets/leaflet/leaflet.css"
    "/css/rateit/rateit.css"
    "/css/simplemde.min.css"])
+
 
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
+   "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
 
@@ -71,7 +74,7 @@
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
                    :factory-url     (get-in ctx [:config :factory :url])
-                   :gdpr-disabled?  (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                   :show-terms?     (get-in ctx [:config :core :show-terms?] false)
                    :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))

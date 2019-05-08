@@ -1,0 +1,13 @@
+div.location-icon-user i {
+    color: #348acc;
+    border-radius: 50%;
+    background: white;
+}
+
+div.location-icon-user.hotspot i {
+    color: #ca282c;
+}
+
+.location-icon-readonly {
+    cursor: default;
+}
