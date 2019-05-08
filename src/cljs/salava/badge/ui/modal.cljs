@@ -277,20 +277,14 @@
                                                                 (.preventDefault %)
                                                                 (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                               (hyperlink url))
-<<<<<<< HEAD
                                      (hyperlink url))]]]))))
 
-                  [:div ] evidences)]])]]))
-=======
-                                     (hyperlink url))]]
-                                 ]))))
                   [:div ] evidences)]])
 
-         (into [:div]
-               (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
-                 [f id]))
-      ]]))
->>>>>>> ab91318e415e79a98c85ffca3f0d635e247ece1c
+      (into [:div]
+            (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
+              [f id]))]]))
+
 
 (defn modal-navi [state]
   (let [invalid? (or (bh/badge-expired? (:expires_on @state)) (pos? (:revoked @state)))
