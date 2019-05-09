@@ -313,15 +313,18 @@
         rating_count (->> coll (map :rating_count) (reduce + 0))]
     {:average_rating (if (pos? rating_count) (/ rating rating_count) rating) :rating_count rating_count} ))
 
-(defn process-recipients [coll]
+(defn process-recipients
+  "Remove duplicates from recipient list, prioritize published."
+  [coll]
   (->> coll
        (group-by :id)
        (reduce-kv
          (fn [r k v]
            (conj r (if (empty? (rest v))
-                     (first v) (if (some #(= (:visibility %) "public") v)
-                                 (->> v (filter #(= "public" (:visibility %))) first)
-                                 (first v))) )) [])))
+                     (first v)
+                     (if (some #(= (:visibility %) "public") v)
+                       (->> v (filter #(= "public" (:visibility %))) first)
+                       (first v))) )) [])))
 
 (defn public-multilanguage-badge-content "gallery badge fix"
   ([ctx badge-id]
@@ -372,7 +375,7 @@
         rating (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx))
         recipients (when user-id
                      (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))
-        badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating)]
+        badge (merge {:badge_id badge_id :gallery_id gallery-id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating)]
     (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
               :public_users (->> recipients
                                  (filter #(not= (:visibility %) "private"))

@@ -180,7 +180,7 @@ SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibilit
 -- name: select-badge-recipients-g
 SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user u
 INNER JOIN user_badge AS ub ON ub.user_id = u.id
-WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
     AND ub.gallery_id = :gallery_id
 
 -- name: select-common-badge-counts

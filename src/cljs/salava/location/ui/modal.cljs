@@ -21,14 +21,14 @@
     [:table.table
      (->> params
           :badges
-          (reduce (fn [coll v] (assoc coll (:badge_id v) v)) {})
+          (reduce (fn [coll v] (assoc coll (:gallery_id v) v)) {})
           vals
           (sort-by :badge_name)
-          (map (fn [{:keys [badge_id badge_image badge_name]}]
+          (map (fn [{:keys [badge_id gallery_id badge_image badge_name]}]
                  [:tr
                   [:td {:width 50} [:img {:src badge_image :width 40 :height 40}]]
                   [:td  [:p {:style {:padding-top "10px"}}
-                         [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id})} badge_name]]]]))
+                         [:a {:href "#" :on-click #(mo/open-modal [:gallery :badges] {:badge-id badge_id :gallery-id gallery_id})} badge_name]]]]))
           (into [:tbody]))
       ]))
 

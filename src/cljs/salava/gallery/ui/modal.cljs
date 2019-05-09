@@ -29,7 +29,7 @@
 
 (defn content [state show-messages]
   (let [{:keys [badge public_users private_user_count reload-fn otherids]} @state
-        {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
+        {:keys [badge_id gallery_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
@@ -110,7 +110,7 @@
 
         (into [:div]
               (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
-                [f badge_id]))
+                [f gallery_id badge_id]))
         ]]
       (if (and badge_id name)
         [reporttool1 badge_id name "badges"])]]
@@ -134,7 +134,7 @@
         gallery-id (:gallery-id params)
         other-ids (:otherids params)
         state (atom {:permission "initial"
-                     :badge {:badge_id badge-id}
+                     :badge {:badge_id badge-id :gallery_id gallery-id}
                      :public_users []
                      :private_user_count 0
                      :badge-small-view false

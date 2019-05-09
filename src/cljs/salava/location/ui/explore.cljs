@@ -33,7 +33,7 @@
                    "badges"
                    (fn [b b-count]
                      (if (= 1 b-count)
-                       #(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id)})
+                       #(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id) :gallery-id (-> b first :gallery_id)})
                        #(mo/open-modal [:location :badgelist] {:badges b}))))
         item-name (case kind
                    "users"
@@ -50,7 +50,7 @@
            (let [item-1 (first item)
                  unique-key (case kind
                               "users"  :id
-                              "badges" :badge_id)
+                              "badges" :gallery_id)
                  unique-count (->> item (map unique-key) set count)
                  icon  (icon kind unique-count)
                  title (if (= unique-count 1) (item-name item-1) "")]
