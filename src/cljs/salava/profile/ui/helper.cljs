@@ -9,8 +9,10 @@
             [reagent.core :refer [cursor atom create-class]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.core.ui.field :as f]
-            [salava.core.ui.modal :refer [open-modal]]
-            [reagent-modals.modals :as m]))
+            [salava.core.ui.modal :as mo :refer [open-modal]]
+            [reagent-modals.modals :as m]
+            [salava.profile.ui.edit :as pe]
+            [salava.page.ui.helper :refer [view-page]]))
 
 
 
@@ -328,3 +330,122 @@
       [:div
        (connect-user user-id)
        (admintool user-id "user")])))
+
+(defn add-page [state]
+   (when (:edit-mode @state) [:li.nav-item.dropdown [:a.dropdown-toggle {:data-toggle "dropdown"} [:i.fa.fa-plus-square]]
+                                [:ul.dropdown-menu
+                                 [:li [:a {:href "#" :on-click #(do
+                                                                 (.preventDefault %)
+                                                                 (mo/open-modal [:page :my] {:tab-atom (cursor state [:tabs])} {:hidden (fn [] (pe/save-profile state nil false) #_(prn @(cursor state [:tabs])))}))}
+
+                                       (t :profile/Addexistingpage)]]
+                                 [:li [:a {:href "#" :on-click #(do
+                                                                 (.preventDefault %)
+                                                                 (as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]]))
+
+(def placeholder
+  (doto (. js/document (createElement "li"))
+    (set! -className "placeholder")))
+
+(defn split-after [pred coll]
+  (let [[l r] (split-with pred coll)]
+    [(concat l [(first r)]) (rest r)]))
+
+(defn move-before [coll placement item target]
+  (let [split (partial (if (= placement :before)
+                         split-with
+                         split-after)
+                       #(not= target %))
+        join #(apply conj (first %) item (last %))]
+    (->> coll
+         (remove #(= item %))
+         split
+         (map vec)
+         join)))
+
+(defn get-page [page-id state]
+ (ajax/GET
+      (path-for (str "/obpv1/page/view/" page-id) true)
+      {:handler (fn [data]
+                 (swap! state assoc :show-manage-buttons false :tab-content [view-page (:page data)]))}
+
+      (fn [] (swap! state assoc :permission "error"))))
+
+(defn list-component [state]
+  (let [tabs (cursor state [:tabs])
+        dragged (atom nil)
+        over (atom nil)
+        node-placement (atom nil)
+        content (atom nil)
+
+        start-drag (fn [e]
+                     (println "start dragging")
+                     (reset! dragged (.-currentTarget e))
+                     (set! (.. e -dataTransfer -effectAllowed) "move")
+                     (. (.-dataTransfer e) (setData "text/html" (.-currentTarget e))))
+
+        end-drag (fn [e]
+                   (println "stop dragging")
+                   (set! (.. @dragged -style -display) "block")
+                   ;(. (.. @dragged -parentNode) (removeChild placeholder))
+                   (swap! tabs
+                          move-before @node-placement (.. @dragged -dataset -id) (.. @over -dataset -id)))
+
+        drag-over (fn [e]
+                    (println "dragging over")
+                    (.preventDefault e)
+                    (set! (.. @dragged -style -display) "none")
+                    (when-not (= (.. e -target -className) "placeholder")
+                      (reset! over (.-target e))
+                      (let [rel-y (- (.-clientY e) (.-offsetTop @over))
+                            height (/ (.-offsetHeight @over) 2)
+                            parent (.. e -target -parentNode)]
+                        (if (> rel-y height)
+                          (do
+                            (reset! node-placement :after)
+                            (.insertBefore parent placeholder (.. e -target -nextElementSibling)))
+                          (do
+                            (reset! node-placement :before)
+                            (.insertBefore parent placeholder (.. e -target)))))))]
+
+    (fn []
+     [:div.profile-navi
+      [:ul.nav.nav-tabs {:on-drag-over drag-over}
+           [:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
+                         [:a.nav-link {:on-click #(swap! state assoc :active-index 0 :show-manage-buttons true)}
+                                      (t :user/Myprofile)]]
+       (doall (for [tab @tabs
+                    :let [index (.indexOf @tabs tab)
+                          next-tab (some-> (nthnext @tabs (inc index)) first)
+                          previous-tab (when (pos? index) (nth @tabs (dec index)))]]
+
+               ^{:key (:id tab)} [:li.nav-item {:data-id (:id tab)
+                                                :draggable true
+                                                :on-drag-start start-drag
+                                                :on-drag-end end-drag
+                                                :class (if (= (:id tab) (:active-index @state)) "active")}
+                                  (when @(cursor state [:edit-mode]) [:span.close {:href "#" :on-click #(do
+                                                                                                         (f/remove-field tabs index)
+                                                                                                         (cond
+                                                                                                          (seq next-tab) (when-not (= 0 @(cursor state [:active-index]))
+                                                                                                                          (get-page (:id next-tab) state)
+                                                                                                                          (swap! state assoc :active-index (:id next-tab)))
+                                                                                                          (seq previous-tab) (when-not (= 0 @(cursor state [:active-index]))
+                                                                                                                              (get-page (:id previous-tab) state)
+                                                                                                                              (swap! state assoc :active-index (:id previous-tab)))
+                                                                                                          :else (swap! state assoc :active-index 0)))}
+
+                                                                      [:i.fa.fa-remove]])
+                                  [:a.nav-link.page-tab {:href "#" :on-click #(do
+                                                                               (get-page (:id tab) state)
+                                                                               (.preventDefault %)
+                                                                               (swap! state assoc :active-index (:id tab)))}
+
+
+
+                                              (:name tab)]]))
+       [add-page state]]])))
+
+(defn profile-navi [state]
+ [list-component state]
+ )

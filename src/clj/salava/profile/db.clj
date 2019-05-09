@@ -52,14 +52,19 @@
   (let [user          (user-information ctx user-id)
         user-profile  (user-profile ctx user-id)
         visibility    (if current-user-id "internal" "public")
-        blocks (profile-blocks ctx user-id)]
+        blocks (profile-blocks ctx user-id)
+        profile-properties (profile-properties ctx user-id)
+        tabs (some->> (mapv #(select-page {:id %} (into {:result-set-fn first} (get-db ctx))) (:tabs profile-properties))
+              (filter (fn [t] (seq t))))]
 
     {:user    user
      :profile user-profile
      :visibility visibility
      :blocks blocks
      :owner?  (= user-id current-user-id)
-     :theme (-> (profile-properties ctx user-id) :theme)}))
+     :theme (-> profile-properties :theme)
+     :tabs tabs}))
+
 
 (defn user-profile-for-edit
   "Get user profile visibility, profile picture, about text and profile fields for editing"
