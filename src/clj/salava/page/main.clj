@@ -388,23 +388,25 @@
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
-    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
-      {:status "error" :message "page/Evidenceerror"}
-      (let [password (if (= visibility "password") (trim pword) "")
-            page-visibility (if (and (= visibility "password")
-                                     (empty? password))
-                              "private"
-                              visibility)
-            evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
-            page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
-        (if (and (private? ctx) (= "public" visibility))
-          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
-        (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
-        (save-page-tags! ctx page-id tags)
-        (if (or (= "internal" visibility) (= "public" visibility))
-          (u/event ctx user-id "publish" page-id "page")
-          (u/event ctx user-id "unpublish" page-id "page"))
-        {:status "success" :message "page/Pagesavedsuccessfully"}))
+    (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
+     {:status "error" :message "profile/Profiletaberror"}
+     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+       {:status "error" :message "page/Evidenceerror"}
+       (let [password (if (= visibility "password") (trim pword) "")
+             page-visibility (if (and (= visibility "password")
+                                      (empty? password))
+                               "private"
+                               visibility)
+             evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
+             page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
+         (if (and (private? ctx) (= "public" visibility))
+           (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+         (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
+         (save-page-tags! ctx page-id tags)
+         (if (or (= "internal" visibility) (= "public" visibility))
+           (u/event ctx user-id "publish" page-id "page")
+           (u/event ctx user-id "unpublish" page-id "page"))
+         {:status "success" :message "page/Pagesavedsuccessfully"})))
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
       {:status "error" :message "page/Errorwhilesavingpage"})))
@@ -435,14 +437,16 @@
 
 (defn toggle-visibility! [ctx page-id visibility user-id]
   (if (page-owner? ctx page-id user-id)
-    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
-      {:status "error" :message "page/Evidenceerror"}
-      (do
-        (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
-        (if (or (= "internal" visibility) (= "public" visibility))
-          (u/event ctx user-id "publish" page-id "page")
-          (u/event ctx user-id "unpublish" page-id "page"))
-        visibility))
+    (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
+     {:status "error" :message "profile/Profiletaberror"}
+     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+         {:status "error" :message "page/Evidenceerror"}
+         (do
+           (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
+           (if (or (= "internal" visibility) (= "public" visibility))
+             (u/event ctx user-id "publish" page-id "page")
+             (u/event ctx user-id "unpublish" page-id "page"))
+           visibility)))
 
     (if (= visibility "public") "private" "public")))
 

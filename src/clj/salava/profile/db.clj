@@ -77,6 +77,11 @@
      :user_id user-id
      :picture_files picture-files}))
 
+(defn is-profile-tab?
+ "Check is page is a profile tab"
+ [ctx user-id page-id]
+ (if-let [check (some #(= % page-id) (some-> (profile-properties ctx user-id) :tabs))] true false))
+
 
 (defn save-showcase-badges [ctx block]
   (let [badges (:badges block)]
@@ -101,6 +106,16 @@
                  (delete-showcase-block! {:id (:id block)} (get-db ctx))
                  (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))))
 
+(defn publish-profile-tabs
+ "Set profile tab page's visibility to public"
+ [ctx user-id tabs]
+ (doseq [page tabs
+         :let [{:keys [id visibility]} page]]
+  (when-not (= "public" visibility)
+   (prn "called")
+   (as-> (first (plugin-fun (get-plugins ctx) "main" "toggle-visibility!")) f (f ctx id "public" user-id)))))
+
+
 (defn save-profile-blocks [ctx blocks theme tabs user-id]
   (let [profile-blocks (profile-blocks ctx user-id)
         badge-ids (map :id (user-badges ctx user-id))
@@ -121,11 +136,14 @@
                              (create-showcase-block! ctx (assoc block :user_id user-id))))
         ("badges" "pages" "location")  (swap! properties conj block)
         nil)))
-   (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties :theme theme :tabs tabs)):user_id user-id} (get-db ctx))
+   (publish-profile-tabs ctx user-id tabs)
+   (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties
+                                                             :theme theme
+                                                             :tabs (mapv :id tabs)))
+                                     :user_id user-id} (get-db ctx))
    (doseq [old-block profile-blocks]
      (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
        (delete-block! ctx old-block)))))
-
 
 
 (defn save-user-profile

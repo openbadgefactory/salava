@@ -35,14 +35,13 @@
 
              (POST "/user/edit" []
                    :return {:status (s/enum "success" "error") :message s/Str}
-
                    :body-params [profile_visibility :- (:profile_visibility schemas/User)
                                  profile_picture :- (:profile_picture schemas/User)
                                  about :- (:about schemas/User)
                                  fields :- [{:field (apply s/enum (map :type schemas/additional-fields)) :value (s/maybe s/Str)}]
                                  blocks :- [(s/maybe (:block schemas/BlockForEdit))]
                                  theme :- s/Int
-                                 tabs :- [(s/maybe s/Int)]]
+                                 tabs :- [(s/maybe {:id s/Int :name s/Str :visibility s/Str})]] ;;refactor to schemas page...
 
                    :summary "Save user profile"
                    :auth-rules access/authenticated

@@ -51,4 +51,4 @@ SELECT DISTINCT ub.id, bc.name, bc.image_file FROM user_badge AS ub
 
   --name: select-page
   --get profile page tab
-  SELECT id, name FROM page WHERE id = :id AND deleted != 1;
+  SELECT id, name, visibility FROM page WHERE id = :id AND deleted != 1;
