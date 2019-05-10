@@ -110,4 +110,5 @@
         :else (content state)))))
 
 (def ^:export modalroutes
- {:profile {:view handler}})
+ {:profile {:view handler
+            :blocktype ph/contenttype}})

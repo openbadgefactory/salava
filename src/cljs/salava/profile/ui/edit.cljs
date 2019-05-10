@@ -59,7 +59,7 @@
                 :fields             profile-fields
                 :blocks blocks
                 :theme theme
-                :tabs (mapv :id tabs)}
+                :tabs tabs}
       :handler (fn [data]
                  (init-data state)
                  (when show-alert? (reset! alert-atom data))
@@ -105,7 +105,7 @@
                                                                 (.preventDefault %)
                                                                 (swap! state assoc :spinner true)
                                                                 (js/setTimeout (fn [] (save-profile state (fn [] (swap! state assoc :spinner false)) true)) 2000))}
-                                          (when (:spinner @state) [:i.fa.fa.lg.fa-spinner {:style {:padding "2px"}}])(t :page/Save)]
+                                          (when (:spinner @state) [:i.fa.fa-spinner.fa-pulse.fa-fw #_{:style {:padding "2px"}}])(t :page/Save)]
                                          [:button.btn.btn-warning {:on-click #(do
                                                                                 (.preventDefault %)
                                                                                 (navigate-to (str "/profile/"(:user-id @state))))}
@@ -115,7 +115,7 @@
                                                                                 (navigate-to (str "/profile/"(:user-id @state)))
                                                                                 (.preventDefault %)
                                                                                 (reset! (cursor state [:edit-mode]) false))}
-                                                            [:i.fa.fa-eye.fa-lg {:style {:margin-right "10px"}}](t :user/Viewprofile)]
+                                                            [:i.fa.fa-eye.fa-lg.fa-fw #_{:style {:margin-right "10px"}}](t :user/Viewprofile)]
 
                                          (when next?  [:div.pull-right {:id "step-button"}
                                                        [:a {:href "#" :on-click #(do

@@ -3,15 +3,20 @@
 #profile {
 .profile-navi  {
   margin-bottom: 15px;
+  li.addnew {
+    border: none;
+  }
   .fa-plus-square {
     color: $titlebar-color;
-    font-size: 25px;
+    font-size: 20px;
     //margin: 10px;
   }
 
   .nav-item {
     cursor: pointer;
     font-weight: bold;
+    border: 1px solid #e4e4e4;
+    border-radius: 3px;
     .nav-link.page-tab {
       min-width: 120px;
       max-width: 120px;
@@ -23,7 +28,11 @@
       }
     }
   }
-  .active {
+  .nav-tabs>li.active {
+    border:none;
+    a {
+      color: $titlebar-color;
+    }
     //background-color: darken($background-color, 40%)
   }
   .nav-tabs>li>a {
@@ -52,6 +61,16 @@
     padding: 5px;
     color: black;
     opacity: 0.4;
+  }
+  span.move-tab-right {
+        font-size: 12px;
+        position: absolute;
+        bottom: 0;
+        right: 5px;
+        z-index: 1;
+        //padding: 5px;
+        color: black;
+      //  opacity: 0.4;
   }
 }
   .manage-buttons {
@@ -100,22 +119,21 @@
     margin: 5px 0;
     .btn {}
   }
-  #page-view {
-    .panel-left {
-      padding-left:  85px;
-    }
-    .panel-right {
-      padding-right: 85px;
-    }
-  }
 
   .panel-content {
-    padding: unset;
-    #user-badges .row .col-md-12 {
-      padding-right: unset;
-    }
+      padding: 10px;
+      #user-badges .row .col-md-12 {
+        padding-right: unset;
+      }
 
-  }
+          .panel-left {
+            padding-left:  85px;
+          }
+          .panel-right {
+            padding-right: 85px;
+          }
+
+    }
     @media(max-width: 768px){
   .page-content .panel-right{
     padding-right: 20px !important;
