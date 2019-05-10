@@ -48,7 +48,7 @@
                     (swap! state assoc :status "form")
                     (m/modal! (upload-modal data)
                               (if (= (:status data) "success")
-                                {:hide #(navigate-to "/badge")}))))})))
+                                {:hidden #(navigate-to "/badge")}))))})))
 (defn import-badge [state]
   (let [assertion-url (:assertion-url @state)]
     (ajax/POST
@@ -59,7 +59,7 @@
                     (swap! state assoc :status "form")
                     (m/modal! (upload-modal data)
                               (if (= (:status data) "success")
-                                {:hide #(navigate-to "/badge")}))))})))
+                                {:hidden #(navigate-to "/badge")}))))})))
 
 (defn upload-info []
   [:div
