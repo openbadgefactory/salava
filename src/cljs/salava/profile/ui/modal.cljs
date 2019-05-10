@@ -99,7 +99,6 @@
                      :active-index 0})
         user (session/get :user)]
     (init-data user-id state)
-
     (fn []
       (cond
         (= "initial" (:permission @state)) [:div ""]

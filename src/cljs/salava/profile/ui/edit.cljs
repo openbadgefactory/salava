@@ -13,7 +13,6 @@
   (-> (make-random-uuid)
       (uuid-string)))
 
-
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/profile/user/edit")
@@ -31,11 +30,6 @@
 (defn prepare-blocks [blocks]
   (mapv (fn [b]
           (case (:type b)
-            ("pages" "badges") (let [hidden (case (:hidden b)
-                                              "true" true
-                                              "false" false
-                                              nil)]
-                                 (-> b (dissoc :key)))
             ("showcase") (-> b
                            (dissoc :key)
                            (select-keys [:id :type])
@@ -65,7 +59,6 @@
                  (when show-alert? (reset! alert-atom data))
                  (refresh-profile state)
                  (when (and f (= "success" (:status data)) (f))))
-
       :finally (fn [] (js/setTimeout (fn [] (reset! alert-atom nil)) 3000))})))
 
 (defn button-logic [state]
@@ -83,7 +76,6 @@
    :preview {:previous :settings
              :next :nil
              :save-and-previous! (fn [] (save-profile state (fn [] (reset! (cursor state [:edit :active-tab]) :settings)) false))}})
-
 
 
 (defn action-buttons [state]
@@ -105,7 +97,7 @@
                                                                 (.preventDefault %)
                                                                 (swap! state assoc :spinner true)
                                                                 (js/setTimeout (fn [] (save-profile state (fn [] (swap! state assoc :spinner false)) true)) 2000))}
-                                          (when (:spinner @state) [:i.fa.fa-spinner.fa-pulse.fa-fw #_{:style {:padding "2px"}}])(t :page/Save)]
+                                          (when (:spinner @state) [:i.fa.fa-spinner.fa-pulse.fa-fw])(t :page/Save)]
                                          [:button.btn.btn-warning {:on-click #(do
                                                                                 (.preventDefault %)
                                                                                 (navigate-to (str "/profile/"(:user-id @state))))}
@@ -115,14 +107,13 @@
                                                                                 (navigate-to (str "/profile/"(:user-id @state)))
                                                                                 (.preventDefault %)
                                                                                 (reset! (cursor state [:edit-mode]) false))}
-                                                            [:i.fa.fa-eye.fa-lg.fa-fw #_{:style {:margin-right "10px"}}](t :user/Viewprofile)]
+                                                            [:i.fa.fa-eye.fa-lg.fa-fw ](t :user/Viewprofile)]
 
                                          (when next?  [:div.pull-right {:id "step-button"}
                                                        [:a {:href "#" :on-click #(do
                                                                                    (.preventDefault %)
                                                                                    (as-> (get-in logic [@current :save-and-next!]) f (f)))}
                                                         (t :core/Next)]])]]
-
                                        (when (= "error" (get-in @state [:alert :status]))
                                          [:div.row
                                           [:div.col-md-12
@@ -186,7 +177,6 @@
              :on-change #(send-file pictures-atom profile-picture-atom)
              :accept "image/*"}]]])
 
-
 (defn add-content-modal [profile-fields-atom index]
   (fn []
     [:div {:id "badge-content"}
@@ -202,7 +192,7 @@
        [:div.field-list
         [:h3.block-title (t :user/Addfield)]
         (reduce-kv
-          (fn [r k v]
+          (fn [r _ v]
             (conj r [:a {:on-click #(do
                                       (.preventDefault %)
                                       (if index
@@ -237,10 +227,10 @@
      [:div.field.thumbnail
       [:div.field-move
        [:div.move-arrows
-        (if-not first?
+        (when-not first?
           [:div.move-up {:on-click #(f/move-field :up profile-fields-atom index)}
            [:i {:class "fa fa-chevron-up"}]])
-        (if-not last?
+        (when-not last?
           [:div.move-down {:on-click #(f/move-field :down profile-fields-atom index)}
            [:i {:class "fa fa-chevron-down"}]])]]
       [:div.field-content
@@ -248,8 +238,7 @@
         [:div.col-xs-8
          [:span {:style {:font-size "18px" :font-weight "600"}} (some-> (filter #(= type (:type %)) additional-fields) first :key t)]]
         [:div {:class "col-xs-4 field-remove"
-               :on-click #(do (f/remove-field profile-fields-atom index)
-                            (prn @profile-fields-atom))}
+               :on-click #(do (f/remove-field profile-fields-atom index))}
          [:span {:class "remove-button"}
           [:i {:class "fa fa-close"}]]]]
        [:div.form-group
@@ -260,7 +249,7 @@
                   :on-change #(swap! profile-field-atom assoc :value (.-target.value %))}]]]]]]))
 
 (defn profile-fields [profile-fields-atom]
-  [:div#profile; {:id "field-editor"}
+  [:div#profile
    (into [:form.form-horizontal]
          (for [index (range (count @profile-fields-atom))]
            (profile-field index profile-fields-atom)))

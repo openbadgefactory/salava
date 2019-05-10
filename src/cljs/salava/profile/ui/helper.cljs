@@ -51,32 +51,27 @@
            [:p.block-title (t :page/Addblock)]
            [:p (t :page/Choosecontent)]
            (reduce-kv
-             (fn [r k v]
+             (fn [r _ v]
                (let [new-field-atom (atom {:type (:value v)})]
                  (conj r
                        [:div.row
                         [:div.col-md-12
-                         [:div.content-type {:style {:display "inline-table"}} [:a.link {:on-click #(do
-                                                                                                      (.preventDefault %)
-                                                                                                      (case (:value v)
-                                                                                                        "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
-                                                                                                        (if index
-                                                                                                          (f/add-field block-atom {:type (:value v)} index)
-                                                                                                          (f/add-field block-atom {:type (:value v)}))))
-                                                                                         :data-dismiss (case (:value v)
-                                                                                                         ("badge") nil
-                                                                                                         "modal")}
+                         [:div.content-type {:style {:display "inline-table"}}
+                          [:a.link {:on-click #(do
+                                                  (.preventDefault %)
+                                                  (if index
+                                                    (f/add-field block-atom {:type (:value v)} index)
+                                                    (f/add-field block-atom {:type (:value v)})))
+                                               :data-dismiss "modal"}
 
-                                                                                [:div
-
-                                                                                 [:i {:class (str "fa fa-fw " (:icon v))}]
-                                                                                 (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
-                                                                                 [:span (:text v)]]]]
+                                   [:div
+                                    [:i {:class (str "fa fa-fw " (:icon v))}]
+                                    (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
+                                    [:span (:text v)]]]]
                          [:span {:style {:display "inline"}}
                           [info {:placement "right" :content (case (:value v)
-                                                               "showcase" (t :page/Badgeshowcaseinfo))
-
-
+                                                               "showcase" (t :page/Badgeshowcaseinfo)
+                                                              nil)
                                  :style {:font-size "15px"}}]]]])))
 
              [:div.block-types] block-type-map)]
@@ -84,7 +79,6 @@
            [:button.btn.btn-warning {:on-click #(do
                                                   (.preventDefault %)
                                                   (m/close-modal!))}
-
             (t :core/Cancel)]]]])))
 
 
@@ -104,7 +98,9 @@
          [:button {:class    "btn btn-success"
                    :on-click #(do
                                 (.preventDefault %)
-                                (if index (open-modal [:profile :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:profile :blocktype] {:block-atom blocks :index nil})))}
+                                (if index
+                                 (open-modal [:profile :blocktype] {:block-atom blocks :index index} {:size :md})
+                                 (open-modal [:profile :blocktype] {:block-atom blocks :index nil})))}
           (t :page/Addblock)])])))
 
 (defn recent-badges [state]
@@ -124,8 +120,6 @@
   [:div#grid {:class "row"}
    (reduce (fn [r b]
             (conj r (badge-grid-element b state "profile" nil))) [:div] (:badges @block-atom))]])
-
-
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
@@ -175,7 +169,6 @@
         first? (= 0 index)
         last? (= (dec (count @blocks)) index)]
     [:div {:key index}
-
      [field-after blocks state index]
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       [:div.field-content
@@ -183,7 +176,7 @@
         (case type
          ("badges" "pages")[:div.checkbox
                              [:label [:input {:type "checkbox"
-                                              :value @visibility-atom;(if (= "true" @visibility-atom) "false" "true")
+                                              :value @visibility-atom
                                               :on-change #(do
                                                             (.preventDefault %)
                                                             (update-block-value block-atom :hidden (not @visibility-atom)))
@@ -191,7 +184,6 @@
          nil)
         [:div.move {:on-click #(do
                                  (.preventDefault %)
-
                                  (cond
                                    (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
                                    (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
@@ -361,7 +353,7 @@
 
       (fn [] (swap! state assoc :permission "error"))))
 
-(defn list-component [state]
+(defn profile-tabs [state]
   (let [tabs (cursor state [:tabs])
         dragged (atom nil)
         over (atom nil)
@@ -409,23 +401,21 @@
                           next-tab (some-> (nthnext @tabs (inc index)) first)
                           previous-tab (when (pos? index) (nth @tabs (dec index)))
                           in-edit-mode? @(cursor state [:edit-mode])]]
-
-
                ^{:key (:id tab)} [:li.nav-item {:data-id (:id tab)
                                                 ;:draggable true
                                                 ;:on-drag-start start-drag
                                                 ;:on-drag-end end-drag
                                                 :class (if (= (:id tab) (:active-index @state)) "active")}
                                   (when in-edit-mode? [:span.close {:href "#" :on-click #(do
-                                                                                                         (f/remove-field tabs index)
-                                                                                                         (cond
-                                                                                                          (seq next-tab) (when-not (= 0 @(cursor state [:active-index]))
-                                                                                                                          (get-page (:id next-tab) state)
-                                                                                                                          (swap! state assoc :active-index (:id next-tab)))
-                                                                                                          (seq previous-tab) (when-not (= 0 @(cursor state [:active-index]))
-                                                                                                                              (get-page (:id previous-tab) state)
-                                                                                                                              (swap! state assoc :active-index (:id previous-tab)))
-                                                                                                          :else (swap! state assoc :active-index 0)))}
+                                                                                           (f/remove-field tabs index)
+                                                                                           (cond
+                                                                                            (seq next-tab) (when-not (= 0 @(cursor state [:active-index]))
+                                                                                                            (get-page (:id next-tab) state)
+                                                                                                            (swap! state assoc :active-index (:id next-tab)))
+                                                                                            (seq previous-tab) (when-not (= 0 @(cursor state [:active-index]))
+                                                                                                                (get-page (:id previous-tab) state)
+                                                                                                                (swap! state assoc :active-index (:id previous-tab)))
+                                                                                            :else (swap! state assoc :active-index 0)))}
 
                                                                    [:i.fa.fa-remove]])
                                   #_(when (and in-edit-mode? (seq next-tab)) [:span.move-tab-right {:href "#" :on-click #(f/move-field :down tabs index)} [:i.fa.fa-chevron-right]])
@@ -435,10 +425,8 @@
                                                                                (.preventDefault %)
                                                                                (swap! state assoc :active-index (:id tab)))}
 
-
-
                                               (:name tab)]]))
        [add-page state]]])))
 
 (defn profile-navi [state]
- [list-component state])
+ [profile-tabs state])

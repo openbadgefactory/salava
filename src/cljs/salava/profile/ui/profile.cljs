@@ -16,9 +16,6 @@
 
    #_[cljsjs.react-sortable-hoc]))
 
-
-(defn tabs [state])
-
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
     (if connectuser
@@ -35,12 +32,6 @@
              (ph/block-for-edit (cursor blocks [index]) state index)))
      [ph/field-after blocks state nil]]))
 
-(defn get-page [state]
- (let [block (first (plugin-fun (session/get :plugins) "block" "page"))]
-  (if block [block @(cursor state [:active-index]) [:div ""]])))
-
-
-
 (defn edit-profile-content [state]
  (fn []
   [:div (if (= 0 @(cursor state [:active-index]))
@@ -52,13 +43,10 @@
             [:div.panel-body
              [pe/edit-profile state]]]
            [profile-blocks state]]
-         @(cursor state [:tab-content])
-         #_[:div [ph/get-page state]])]))  ;(into [:div] (as-> (first (plugin-fun (session/get :plugins) "block" "page")) f (when f (f @(cursor state [:active-index])))))))
-
+         @(cursor state [:tab-content]))]))
 
 (defn view-profile [state]
-  (let [;profile-info-block (pb/userprofileinfo state)
-        blocks (cursor state [:blocks])]
+  (let [blocks (cursor state [:blocks])]
     [:div#profile
      (if (= 0 @(cursor state [:active-index]))
       [:div#page-view
@@ -68,8 +56,6 @@
              [:div.panel-left
               [:div.panel-right
                [:div.panel-content
-                #_[:div.panel-heading
-                   [:h3 (t :profile/Personalinformation)]]
                 [:div.panel-body
                  [userinfoblock state]
                  (into [:div#profile]

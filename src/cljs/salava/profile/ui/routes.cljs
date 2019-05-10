@@ -7,15 +7,11 @@
             [salava.profile.ui.block :as block]
             [salava.profile.ui.profile :as p]
             [salava.profile.ui.edit :as pe]
-            [salava.profile.ui.modal :as m])) 
-
-
-
+            [salava.profile.ui.modal :as m]))
 
 (defn ^:export routes [context]
-  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] p/handler #_profile/handler]]
+  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] p/handler]]
    (str (base-path context) "/page") [[["/mypages" page/handler]]]})
-
 
 (defn ^:export navi [context]
   {(str (base-path context) "/profile/\\d+")  {:breadcrumb (t :user/User " / " :user/Profile)}

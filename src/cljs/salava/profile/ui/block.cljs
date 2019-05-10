@@ -44,7 +44,7 @@
              (when (seq profile)
                  [:div.row
                   [:div.col-xs-12 [:b (t :profile/Additionalinformation)]]
-                  [:div.col-xs-12 ;{:style {:overflow-x "auto"}}
+                  [:div.col-xs-12 
                    [:table.table
                     (into [:tbody]
                           (for [profile-field (sort-by :order profile)

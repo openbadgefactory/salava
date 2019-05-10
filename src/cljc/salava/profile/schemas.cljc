@@ -38,17 +38,16 @@
                             :badges [(s/maybe s/Int)]
                             :format (s/enum "short" "medium" "long")})
 
-(s/defschema Block {:block (s/conditional #(= (:type %) "showcase") (assoc ShowcaseBlock (s/optional-key :id) s/Int
-                                                                     (s/optional-key :block_order) s/Int
-                                                                     :badges [(assoc Badge :block_order s/Int :type (s/eq "badge"))])
-
-                                   #(= (:type %) "badges") {(s/optional-key :id) s/Int :block_order s/Int :type (s/eq "badges") :hidden (s/maybe s/Bool)}
-                                   #(= (:type %) "pages") {(s/optional-key :id)  s/Int :block_order s/Int :type (s/eq "pages") :hidden (s/maybe s/Bool)})})
-
-(s/defschema BlockForEdit {:block (s/conditional
+(s/defschema BlockForEdit (s/conditional
                                    #(= (:type %) "showcase") (assoc ShowcaseBlock (s/optional-key :id) s/Int
                                                               (s/optional-key :block_order) s/Int
                                                               :badges [(s/maybe s/Int)])
                                    #(= (:type %) "badges") {:block_order s/Int :type (s/eq "badges") :hidden (s/maybe s/Bool)}
                                    #(= (:type %) "pages") {:block_order s/Int :type (s/eq "pages") :hidden (s/maybe s/Bool)}
-                                   #(= (:type %) "location") {:block_order s/Int :type (s/eq "location") (s/optional-key :hidden) (s/maybe s/Bool)})})
+                                   #(= (:type %) "location") {:block_order s/Int :type (s/eq "location") (s/optional-key :hidden) (s/maybe s/Bool)}))
+
+(s/defschema EditProfile (assoc (-> User (select-keys [:profile_visibility :profile_picture :about]))
+                                :fields [{:field (apply s/enum (map :type additional-fields)) :value (s/maybe s/Str)}]
+                                :blocks [(s/maybe BlockForEdit)]
+                                :theme (s/maybe s/Int)
+                                :tabs  [(s/maybe {:id s/Int :name s/Str :visibility s/Str})]))
