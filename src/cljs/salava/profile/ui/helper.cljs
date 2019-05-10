@@ -233,7 +233,7 @@
     [:div {:class "row flip"
            :id "buttons"}
      [:div.col-xs-12
-      [:div.col-xs-8.wizard
+      [:div.col-xs-12.wizard
        [:a {:class (if (= target :content) "current")
             :href "#"
             :on-click #(do
@@ -264,15 +264,15 @@
 
         [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
         (t  :page/Preview)]]
-      [:div {:class "col-xs-4"
-             :id "buttons-right"}
-       [:a.btn.btn-primary {:href "#"
-                            :on-click #(do
-                                         (navigate-to (str "/profile/" user-id))
-                                         (.preventDefault %)
-                                         (reset! (cursor state [:edit-mode]) false))}
+      #_[:div {:class "col-xs-4"
+               :id "buttons-right"}
+         [:a.btn.btn-primary {:href "#"
+                              :on-click #(do
+                                           (navigate-to (str "/profile/" user-id))
+                                           (.preventDefault %)
+                                           (reset! (cursor state [:edit-mode]) false))}
 
-                           (t :user/Viewprofile)]]
+                             [:i.fa.fa-eye.fa-lg.fa-fw](t :page/View)]]
       [m/modal-window]]]))
 
 (defn manage-buttons [state]
@@ -290,23 +290,15 @@
           [:div.share
            [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
           [:div.edit-btn
-           (if-not @(cursor state [:edit-mode])
-
-             (if-not (not-activated?)
-               [:a.btn.btn-primary {:href "#" #_(path-for "/user/edit/profile")
+            (if-not (not-activated?)
+               [:a.btn.btn-primary {:href "#"
                                     :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! (cursor state [:edit-mode]) true))}
 
 
-                                   (t :user/Editprofile)])
-             [:a.btn.btn-primary {:href "#"
-                                  :on-click #(do
-                                               (navigate-to (str "/profile/" user-id))
-                                               (.preventDefault %)
-                                               (reset! (cursor state [:edit-mode]) false))}
+                                   [:i.fa.fa-pencil-square-o.fa-lg.fa-fw](t :user/Editprofile)])]]
 
-                                 (t :user/Viewprofile)])]]
          [edit-page-navi @(cursor state [:edit :active-tab]) state])]
 
       [:div

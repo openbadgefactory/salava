@@ -223,7 +223,7 @@
              [:h1 name]]]
            [:div.row
             [:div {:class "col-md-12 page-author"}
-             [:a {:href (path-for (str "/user/profile/" user_id))} (str first_name " " last_name)]]]
+             [:a {:href "#" :on-click #(navigate-to (str "/profile/" user_id)) } (str first_name " " last_name)]]]
            [:div.row
             [:div {:class "col-md-12 page-summary"}
              description]]
@@ -453,7 +453,7 @@
                                                                  (swap! state assoc :spinner true)
                                                                  (js/setTimeout (fn [] (as-> (get-in logic [current :save!]) f (f))) 2000))}
 
-                                           (when (:spinner @state) [:i.fa.fa-spinner.fa-pulse.fa-fw #_{:style {:padding "2px"}}]) (t :page/Save)]
+                                           (when (:spinner @state) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :page/Save)]
                                           [:button.btn.btn-primary {:on-click #(do
                                                                                 (.preventDefault %)
                                                                                 (navigate-to (str "/profile/page/view/" id)))}

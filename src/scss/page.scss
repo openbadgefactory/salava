@@ -1748,6 +1748,7 @@
     display: inline-block;
     padding: 6px 12px;
     cursor: pointer;
+    margin-top: 5px;
 
     &:after {
       width: 0;
@@ -1772,6 +1773,7 @@
     display: inline-block;
     padding: 6px 12px;
     cursor: pointer;
+    margin-top: 5px;
 
     &:before {
       width: 0;
@@ -2019,5 +2021,8 @@
 #profile, #page-edit {
   .btn {
     height: 35px;
+  }
+  .fa-fw{
+   text-align: left;
   }
 }

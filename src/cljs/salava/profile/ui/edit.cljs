@@ -97,7 +97,7 @@
                                                                 (.preventDefault %)
                                                                 (swap! state assoc :spinner true)
                                                                 (js/setTimeout (fn [] (save-profile state (fn [] (swap! state assoc :spinner false)) true)) 2000))}
-                                          (when (:spinner @state) [:i.fa.fa-spinner.fa-pulse.fa-fw])(t :page/Save)]
+                                          (when (:spinner @state) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}])(t :page/Save)]
                                          [:button.btn.btn-warning {:on-click #(do
                                                                                 (.preventDefault %)
                                                                                 (navigate-to (str "/profile/"(:user-id @state))))}
@@ -107,7 +107,7 @@
                                                                                 (navigate-to (str "/profile/"(:user-id @state)))
                                                                                 (.preventDefault %)
                                                                                 (reset! (cursor state [:edit-mode]) false))}
-                                                            [:i.fa.fa-eye.fa-lg.fa-fw ](t :user/Viewprofile)]
+                                                            [:i.fa.fa-eye.fa-lg.fa-fw ](t :page/View)]
 
                                          (when next?  [:div.pull-right {:id "step-button"}
                                                        [:a {:href "#" :on-click #(do
