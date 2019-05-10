@@ -54,7 +54,6 @@
                          :issuer-name s/Str
                          :order s/Str
                          :recipient-name s/Str
-                         :tags-ids s/Str
                          :page_count s/Str
                          })
 

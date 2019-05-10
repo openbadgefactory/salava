@@ -68,9 +68,9 @@
     (fn []
       [autocomplete/autocomplete
        {:value (:value @filter)
-        :cb    (fn [item]
-                 (swap! filter assoc :value (:key item))
-                 (.trigger (js/jQuery (str "div.badges-filter ."class-name " input")) "change"))
+        :on-change (fn [item]
+                     (swap! filter assoc :value (:key item))
+                     (.trigger (js/jQuery (str "div.badges-filter ."class-name " input")) "change"))
         :search-fields   [:value]
         :items           (:autocomplete @filter)
         :no-results-text " "

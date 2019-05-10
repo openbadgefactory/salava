@@ -24,7 +24,6 @@
    :issuer-name (get base :issuer-name "")
    :order (get base :order "mtime")
    :recipient-name (get base :recipient-name "")
-   :tags-ids (get base :tags-ids "")
    :page_count 0})
 
 (defn ajax-stop [ajax-message-atom]
@@ -111,19 +110,13 @@
 (defn taghandler
   "set tag with autocomplete value and accomplish searchs"
   [state value]
-  (let [tags (cursor state [:tags])
-        tags-badge-ids (cursor state [:tags-badge-ids])
-        autocomplete-items (cursor state [:autocomplete-items])
-        autocomplete-badge-ids (cursor state [:full-tags])]
-    (reset! tags (vals (select-keys @autocomplete-items value)))
-    (reset! tags-badge-ids (vals (select-keys @autocomplete-badge-ids value)))
-    (fetch-badges state)
-    ))
+  (let [tags (cursor state [:params :tags])]
+    (reset! tags (apply str (interpose "," value)))
+    (fetch-badges state)))
 
 (defn autocomplete [state]
-  (let [tags  (cursor state [:tags])
-        value (cursor state [:value])
-        autocomplete-items (cursor state [:autocomplete-items])]
+  (let [value  (cursor state [:autocomplete :tags :value])
+        autocomplete-items (cursor state [:autocomplete :tags :items])]
 
     (fn []
       [:div.form-group
@@ -131,12 +124,12 @@
        [:div.col-sm-10
         [multiple-autocomplete
          {:value     @value
-          :cb        (fn [item]  (do
-                                   (swap! value conj (:key item))
-                                   (taghandler state @value)))
-          :remove-cb (fn [x] (do
-                               (swap! value disj x)
-                               (taghandler state @value)))
+          :on-change (fn [item]
+                       (swap! value conj (:key item))
+                       (taghandler state @value))
+          :on-remove (fn [x]
+                       (swap! value disj x)
+                       (taghandler state @value))
           :search-fields   [:value]
           :items           @autocomplete-items
           :no-results-text (t :gallery/Notfound)
@@ -267,20 +260,17 @@
 
 
 
-(defn content [state badge_id]
-  (create-class {:reagent-render (fn []
-                                   [:div {:id "badge-gallery"}
-                                    [m/modal-window]
-                                    [gallery-grid-form state]
-                                    (if (:ajax-message @state)
-                                      [:div.ajax-message
-                                       [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                                       [:span (:ajax-message @state)]]
-                                      [gallery-grid state]
-                                      )])
-                 :component-did-mount (fn []
-                                        (if badge_id
-                                          (mo/open-modal [:gallery :badges] {:badge-id badge_id})))}))
+(defn content [state]
+  (fn []
+    [:div {:id "badge-gallery"}
+     [m/modal-window]
+     [gallery-grid-form state]
+     (if (:ajax-message @state)
+       [:div.ajax-message
+        [:i {:class "fa fa-cog fa-spin fa-2x "}]
+        [:span (:ajax-message @state)]]
+       [gallery-grid state]
+       )]))
 
 
 #_(defn init-values
@@ -302,7 +292,10 @@
   (ajax/GET
     (path-for "/obpv1/gallery/badge_tags")
     {:handler (fn [data]
-                (swap! state assoc :tags (:tags data)))})
+                (swap! state
+                       assoc-in
+                       [:autocomplete :tags :items]
+                       (->> data :tags (map (fn [t] [t t])) (into (sorted-map)))))})
 
   (ajax/GET
     (path-for "/obpv1/gallery/badges")
@@ -318,10 +311,7 @@
                 (ajax-stop (cursor state [:ajax-message])))}))
 
 (defn handler [site-navi params]
-  (let [user-id  (:user-id params)  ;TODO remove?
-        badge_id (:badge_id params) ;TODO remove?
-
-        query (as-> (-> js/window .-location .-href url/url :query keywordize-keys ) $
+  (let [query (as-> (-> js/window .-location .-href url/url :query keywordize-keys ) $
                 (if (:country $)
                   $
                   (assoc $ :country (session/get-in [:filter-options :country]
@@ -330,25 +320,15 @@
         params (query-params query)
         state  (atom {:params params
                       :badge_count            0
-                      ;:user-id                user-id
-                      ;:page_count             0
                       :badges                 []
                       :countries              []
                       :country-selected       (session/get-in [:filter-options :country] "all")
-                      ;:tags                   ()
-                      :tags-badge-ids ()
-                      :full-tags              ()
-                      :value                  #{}
-                      :autocomplete-items     #{}
+                      :autocomplete           {:tags {:value #{} :items #{}}}
                       :advanced-search        false
-                      ;:badge-name             ""
-                      ;:recipient-name         ""
-                      ;:issuer-name            ""
-                      ;:order                  "mtime"
                       :timer                  nil
                       :ajax-message           nil})]
     (init-data params state)
     (fn []
       (if (session/get :user)
-        (layout/default site-navi [content state badge_id])
-        (layout/landing-page site-navi [content state badge_id])))))
+        (layout/default site-navi [content state])
+        (layout/landing-page site-navi [content state])))))

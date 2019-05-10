@@ -157,9 +157,9 @@
             (conj (fn [id-set]
                     (clojure.set/intersection id-set (set (select-gallery-ids-issuer {:issuer (str "%" issuer-name "%")} (get-db-col ctx :gallery_id))))))
 
-            (seq tags)
+            (not (string/blank? tags))
             (conj (fn [id-set]
-                    (clojure.set/intersection id-set (set (select-gallery-ids-tags {:tags tags} (get-db-col ctx :gallery_id)))))))]
+                    (clojure.set/intersection id-set (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id)))))))]
       ;; Get final filtered gallery_id list
       (when (seq gallery-ids)
         (into [] (reduce (fn [coll f] (if (seq coll) (f coll) #{})) (set gallery-ids) filters)))))

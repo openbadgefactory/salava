@@ -273,7 +273,7 @@ LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-recipients
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
-    MAX(ub.ctime) AS ctime, CAST(COUNT(ub.user_id) AS UNSIGNED) AS recipients
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
@@ -284,7 +284,7 @@ LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-ic-name
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
-    MAX(ub.ctime) AS ctime, CAST(COUNT(ub.user_id) AS UNSIGNED) AS recipients
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
@@ -295,7 +295,7 @@ LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-name
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
-    MAX(ub.ctime) AS ctime, CAST(COUNT(ub.user_id) AS UNSIGNED) AS recipients
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
@@ -306,7 +306,7 @@ LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-ctime
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
-    MAX(ub.ctime) AS ctime, CAST(COUNT(ub.user_id) AS UNSIGNED) AS recipients
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
