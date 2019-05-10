@@ -313,7 +313,7 @@
        :finally (fn [] (swap! state assoc :spinner false)(when next-url (navigate-to next-url)))})))
 
 (defn save-settings [state next-url]
-  (let [{:keys [id tags visibility password]} (:page @state)]
+  (let [{:keys [id tags visibility password name]} (:page @state)]
     (reset! (cursor state [:message]) nil)
     (ajax/POST
       (path-for (str "/obpv1/page/save_settings/" id))
@@ -323,12 +323,13 @@
        :handler (fn [data]
                   (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
                   (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
-                  (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
+                  (if (and (= "error" (:status data)) (or (= (:message data) "profile/Profiletaberror") (= (:message data) "page/Evidenceerror")))
                     (swap! state assoc ;:message (keyword (:message data))
                            :page {:id id
                                   :tags tags
                                   :password password
-                                  :visibility "public"})))
+                                  :visibility "public"
+                                  :name name})))
        :finally (fn [] (swap! state assoc :spinner false)(when next-url (navigate-to next-url)))})))
 
 
@@ -426,10 +427,10 @@
        (t  :page/Preview)]]
      [:div {:class "col-xs-4"
             :id "buttons-right"}
-      [:a {:class "btn btn-primary view-btn"
+      [:a {:class "btn btn-primary"
            :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
            :href "#"}
-       (t :page/View)]]
+       [:i.fa.fa-eye.fa-fw.fa-lg] (t :page/View)]]
      [m/modal-window]]))
 
 (defn manage-page-buttons [current id state]
@@ -452,11 +453,11 @@
                                                                  (swap! state assoc :spinner true)
                                                                  (js/setTimeout (fn [] (as-> (get-in logic [current :save!]) f (f))) 2000))}
 
-                                           (when (:spinner @state) [:i.fa.fa.lg.fa-spinner {:style {:padding "2px"}}]) (t :page/Save)]
+                                           (when (:spinner @state) [:i.fa.fa-spinner.fa-pulse.fa-fw #_{:style {:padding "2px"}}]) (t :page/Save)]
                                           [:button.btn.btn-primary {:on-click #(do
                                                                                 (.preventDefault %)
                                                                                 (navigate-to (str "/profile/page/view/" id)))}
-                                           [:i.fa.fa-eye.fa-lg {:style {:margin-right "10px"}}](t :page/View)]
+                                           [:i.fa.fa-eye.fa-fw.fa-lg #_{:style {:margin-right "10px"}}](t :page/View)]
                                           [:button.btn.btn-warning {:on-click #(do
                                                                                  (.preventDefault %)
                                                                                  (navigate-to  "/profile/page"))}
@@ -472,7 +473,7 @@
                                                                                     (as-> (get-in logic [current :save-and-next!]) f (f)))}
                                                          (t :core/Next)]])]]
 
-                                        (when (= "error" (get-in state [:alert :status](:alert @state)))
+                                        (when (and (= "error" (get-in @state [:alert :status])) (not= current :settings))
                                           [:div.row
                                            [:div.col-md-12
                                             [:div {:class (str "alert " (case (get-in @state [:alert :status])
