@@ -43,7 +43,7 @@
 
                  [clj-http "3.10.0"]
                  [enlive "1.1.6"  :exclusions [org.jsoup/jsoup]]
-                 [markdown-clj "1.0.8"]
+                 [markdown-clj "1.10.0"]
                  [ar.com.hjg/pngj "2.1.0"]
                  [com.novemberain/pantomime "2.11.0" :exclusions [javax.activation/activation]]
                  [com.github.kyleburton/clj-xpath "1.4.11"]
@@ -73,7 +73,7 @@
 
 
                  [org.webjars/jquery "2.2.4"]
-                 [org.webjars/bootstrap "3.3.6"]
+                 [org.webjars/bootstrap "3.3.7"]
                  [org.webjars/font-awesome "4.7.0"]
                  [org.webjars/es5-shim "4.5.9"]
                  [org.webjars/es6-shim "0.20.2"]
