@@ -84,13 +84,19 @@
       "pickable" [:div.media.grid-container
                   [:a {:href "#" :on-click #(do
                                               (.preventDefault %)
-                                              (reset! (:atom element-data) (conj @(:atom element-data) {:name name :id id}))) :style {:text-decoration "none"}
+                                              (reset! (:atom element-data) (conj @(:atom element-data) {:name name :id id :visibility visibility}))) :style {:text-decoration "none"}
                        :data-dismiss "modal"}
-                     #_(prn @(:atom element-data))
                    [:div.media-content
                     [:div.media-body
                      [:div.media-heading
                       [:p.heading-link name]]
+                     [:div.visibility-icon {:style {:font-size "20px"}}
+                      (case visibility
+                        "private" [:i {:class "fa fa-lock" :title (t :page/Private)}]
+                        "password" [:i {:class "fa fa-lock" :title (t :page/Passwordprotected)}]
+                        "internal" [:i {:class "fa fa-group" :title (t :page/Forregistered)}]
+                        "public" [:i {:class "fa fa-globe" :title (t :page/Public)}]
+                        nil)]
                      [:div.media-content
                       [:div.page-owner
                        [:p (str first_name " " last_name)]]
