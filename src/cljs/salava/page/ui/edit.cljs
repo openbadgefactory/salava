@@ -519,9 +519,10 @@
   (ajax/GET
     (path-for (str "/obpv1/page/edit/" id) true)
     {:handler (fn [data]
-                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
-                                                                               (get-in data [:page :blocks]))))]
-                  (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
+               (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
+                                                                              (get-in data [:page :blocks]))))]
+                 (reset! state (assoc data-with-uuids :toggle-move-mode false))
+                ))}))
 
 
 (defn handler [site-navi params]
@@ -532,7 +533,8 @@
                             :id id}
                      :badges []
                      :tags []
-                     :toggle-move-mode false})]
+                     :toggle-move-mode false
+                     :profile-tab? nil})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
