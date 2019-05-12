@@ -468,10 +468,13 @@ a.popup-info {
   border-radius: 6px;
  }
  .fa-plus-square {
-  color: #314755;
+  color: $button-hover;
  }
 }
 #profile .profile-navi {
+  .nav .open > a {
+      border-color: $button-color;
+  }
   .close {
    opacity:0.8;
    color: #314755;
@@ -520,7 +523,24 @@ a.popup-info {
       background: linear-gradient(to top, #26a0da, #314755); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
  }
 }
+#page-edit #block-modal .block-types div.content-type,
+#page-edit-theme #block-modal .block-types div.content-type {
+ background-color: #314755;
+ color: #fff;
 
+ &:focus,
+ &:hover {
+  background-color: $button-color
+ }
+}
+.wizard {
+ .current {
+  background: #314755;
+   &:after {
+    border-left-color: #314755;
+   }
+ }
+}
 /*
 a#login-button {
 height: 36px;
