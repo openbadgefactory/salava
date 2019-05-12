@@ -3,13 +3,18 @@
   [reagent.core :refer [atom cursor]]
   [reagent.session :as session]
   [salava.core.ui.error :as err]
-  [salava.core.ui.helper :refer [path-for hyperlink]]
+  [salava.core.ui.helper :refer [path-for hyperlink plugin-fun]]
   [salava.profile.ui.block :as b]
   [salava.core.i18n :refer [t]]
   [salava.profile.schemas :refer [additional-fields]]
   [salava.profile.ui.helper :as ph]
   [salava.admin.ui.reporttool :refer [reporttool1]]))
 
+(defn connect-user [user-id]
+  (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
+    (if connectuser
+      [connectuser user-id]
+      [:div ""])))
 
 (defn userinfoblock [state]
  (let [{badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
@@ -57,9 +62,6 @@
        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
        fullname (str first_name " " last_name)]
    [:div {:id "profile"}
-    (if-not owner?
-      [:div.col-xs-12 [:div.pull-right
-                       (ph/connect-user user-id)]])
     [:div#page-view
        [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
               :class "page-content"}
@@ -77,10 +79,17 @@
 
 
 (defn content [state]
- (let [tab @(cursor state [:tab-content])]
-  [:div#profile
-   [ph/profile-navi state]
-   (if (= (:active-index @state) 0) [view-profile state] tab)]))
+ (let [tab @(cursor state [:tab-content])
+       owner? @(cursor state [:owner?])]
+
+  [:div
+   (if-not owner?
+        [:div.col-xs-12
+         [:div.pull-right
+          (ph/connect-user @(cursor state [:user-id]))]])
+   [:div#profile
+    [ph/profile-navi state]
+    (if (= (:active-index @state) 0) [view-profile state] tab)]]))
 
 (defn init-data [id state]
  (ajax/GET
