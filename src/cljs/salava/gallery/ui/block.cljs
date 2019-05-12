@@ -29,14 +29,15 @@
         {:keys [edit-mode? user-id user]} data]
     (init-grid "badges" data)
     (fn []
-      [:div#user-badges
-       [:div.row
-        [:div.col-md-12
-         [:h3 {:class ""} (t :user/Recentbadges)]
-         [badge-grid (:badges @data) @badge-small-view]
+     (when (seq (:badges @data))
+           [:div#user-badges
+            [:div.row
+             [:div.col-md-12
+              [:h3 {:class ""} (t :user/Recentbadges)]
+              [badge-grid (:badges @data) @badge-small-view]
 
-         (when (< 6 (count @(cursor data [:badges])))
-          [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]])))
+              (when (< 6 (count @(cursor data [:badges])))
+               [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
 
 
 
@@ -45,11 +46,12 @@
         {:keys [edit-mode? user-id user]} data]
     (init-grid "pages" data)
     (fn []
-      [:div#user-pages
-       [:div.row
-        [:div.col-md-12
-         [:h3 {:class ""} (t :user/Recentpages)]
-         [page-grid (:pages @data) (:profile_picture user) @page-small-view]
+      (when (seq (:pages @data))
+       [:div#user-pages
+        [:div.row
+         [:div.col-md-12
+          [:h3 {:class ""} (t :user/Recentpages)]
+          [page-grid (:pages @data) (:profile_picture user) @page-small-view]
 
-         (when (< 6 (count @(cursor data [:pages])))
-          [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]])))
+          (when (< 6 (count @(cursor data [:pages])))
+           [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
