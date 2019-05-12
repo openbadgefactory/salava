@@ -14,6 +14,7 @@
 @import 'application';
 @import '../rtl';
 @import '../metabadge';
+@import '../profile';
 
 /* LINKS */
 a, #badge-info a {
@@ -131,11 +132,11 @@ button.navbar-toggle {
   font-weight: 600;
 }
 .btn-success {
-  background-color:$orange-color;
-  border-color:  $orange-hover;
+  background-color: #304a5a; //$orange-color;
+  border-color:  $button-color;
   &:active, &:hover, &:focus, &:active:focus{
-    background-color: $orange-hover;
-    border-color:  $orange-hover;
+    background-color: $button-color;
+    border-color:  $button-hover;
   }
 }
 #page-edit .field .field-move .move-arrows{
@@ -459,6 +460,66 @@ a.popup-info {
   color: $title-color;
 }
 
+#page-edit .thumbnail, #page-edit-theme .thumbnail {
+    border: 1px solid $button-color;
+ }
+ #profile .profile-navi{
+  .nav-item {
+  border-radius: 6px;
+ }
+ .fa-plus-square {
+  color: #314755;
+ }
+}
+#profile .profile-navi {
+  .close {
+   opacity:0.8;
+   color: #314755;
+   &:hover {
+    opacity: 1;
+   }
+  }
+  .nav-tabs {
+  border-bottom: 1px solid $button-color;
+  >li {
+   margin-bottom: 0;
+  }
+  >li a {
+   margin-right: 0;
+   text-decoration: none;
+  }
+  > li.active a {
+    color: $button-hover;
+    border: 1px solid $button-color;
+    border-bottom-color: transparent;
+  }
+ }
+}
+#field-editor .field .field-content #badge-showcase{
+  .addbadge {
+   border: 3px dashed #314755;
+ }
+ #grid .grid-container{
+  .move-left i, .move-right i {
+   color: #314755;
+   padding: 3px;
+   font-size: 16px;
+  }
+ }
+}
+#page-edit, #profile, #page-edit-theme, #page-settings {
+ .action-bar {
+  &:hover {
+   opacity: 1;
+  }
+ }
+}
+#theme-0 {
+ .panel-right, .panel-left {
+      background-: -webkit-linear-gradient(to top, #26a0da, #314755);  /* Chrome 10-25, Safari 5.1-6 */
+      background: linear-gradient(to top, #26a0da, #314755); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+ }
+}
 
 /*
 a#login-button {
