@@ -796,15 +796,8 @@ a.popup-info {
 }
 
 #theme-0 {
- .panel-left {
-  //background-color: $titlebar-color !important;
+ .panel-left, .panel-right{
   background-image: linear-gradient(to bottom, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
-
- }
-
- .panel-right {
-    background-image: linear-gradient(to bottom, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
-  //background-color: $titlebar-color !important;
  }
  font-family: "GT America", "Arial", sans-serif !important;
 }
@@ -842,7 +835,11 @@ a.popup-info {
 }
 #profile .profile-navi .nav-tabs {
  border-bottom: 1px solid $titlebar-color;
+  >li {
+   margin-bottom: 0;
+  }
  >li a {
+  margin-right: 0;
   text-decoration: none;
  }
  > li.active a {
