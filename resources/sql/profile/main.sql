@@ -48,3 +48,7 @@ SELECT DISTINCT ub.id, bc.name, bc.image_file FROM user_badge AS ub
   JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
   WHERE pb.block_id = :block_id
   ORDER BY pb.badge_order
+
+  --name: select-page
+  --get profile page tab
+  SELECT id, name, visibility FROM page WHERE id = :id AND deleted != 1;

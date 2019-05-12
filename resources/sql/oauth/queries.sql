@@ -35,3 +35,9 @@ SELECT service from oauth_user where user_id = :user_id
 
 --name: insert-user-terms<!
 INSERT INTO user_terms (user_id, status, ctime) VALUES (:user_id, :status, UNIX_TIMESTAMP());
+
+--name: store-user-last-visited!
+REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'last_visited', :value );
+
+--name: select-oauth-user-last-login
+SELECT last_login FROM user WHERE id = :id

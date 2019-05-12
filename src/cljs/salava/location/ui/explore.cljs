@@ -5,23 +5,36 @@
             [ajax.core :as ajax]
             [komponentit.autocomplete :as autocomplete]
             [salava.core.ui.modal :as mo]
+            [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
             [salava.location.ui.util :as lu]
             ))
 
-(def icon {"users"  lu/user-icon
-           "badges" lu/badge-icon})
+(defn icon [kind num]
+  (get (if (= num 1)
+         {"users"  lu/user-icon         "badges" lu/badge-icon}
+         {"users"  lu/user-icon-hotspot "badges" lu/badge-icon-hotspot})
+       kind))
 
 
 (defn- get-markers [kind my-map layer-group opt]
   (let [bounds (.getBounds my-map)
+        rounded (if (> (.getZoom my-map) 6) #(.toFixed % 2) #(js/Math.round (+ % 0.5)))
+        group-fn (fn [coll v]
+                   (update coll [(-> v :lat rounded) (-> v :lng rounded)] conj v)) ; Put items at same lat/lng into a list
         click-cb (case kind
                    "users"
-                   (fn [u] #(mo/open-modal [:user :profile] {:user-id (:id u)}))
+                   (fn [u u-count]
+                     (if (= 1 u-count)
+                       #(mo/open-modal [:user :profile] {:user-id (-> u first :id)})
+                       #(mo/open-modal [:location :userlist] {:users u})))
                    "badges"
-                   (fn [b] #(mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})))
+                   (fn [b b-count]
+                     (if (= 1 b-count)
+                       #(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id)})
+                       #(mo/open-modal [:location :badgelist] {:badges b}))))
         item-name (case kind
                    "users"
                    (fn [u] (str (:first_name u) " " (:last_name u)))
@@ -33,12 +46,19 @@
        :handler
        (fn [data]
          (.clearLayers layer-group)
-         (doseq [item (get data (keyword kind))]
-           (.addLayer
-             layer-group
-             (-> (js/L.latLng. (:lat item) (:lng item))
-                 (js/L.marker. (clj->js {:icon (get icon kind) :title (item-name item)}))
-                 (.on "click" (click-cb item))))))
+         (doseq [item (->> kind keyword (get data) (reduce group-fn {}) vals)]
+           (let [item-1 (first item)
+                 unique-key (case kind
+                              "users"  :id
+                              "badges" :badge_id)
+                 unique-count (->> item (map unique-key) set count)
+                 icon  (icon kind unique-count)
+                 title (if (= unique-count 1) (item-name item-1) "")]
+             (.addLayer
+               layer-group
+               (-> (js/L.latLng. (:lat item-1) (:lng item-1))
+                   (js/L.marker. (clj->js {:icon icon :title title}))
+                   (.on "click" (click-cb item unique-count)))))))
        })))
 
 (defn filter-autocomplete [kind state]
@@ -100,10 +120,11 @@
             ]
            [:div.col-md-1 {:style {:padding-left 0}}
             [:button.btn.btn-link
-             {:style {:padding-left 0 :font-weight "bold"}
+             {:title (t :location/clearField)
+              :style {:padding-left 0 :font-weight "bold"}
               :on-click #(do (swap! state assoc-in [:badge :value] "")
                              (.trigger (js/jQuery (str "div.badges-filter .badge-filter input")) "change"))}
-             "X"]]]
+             [:i.fa.fa-refresh]]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
@@ -111,10 +132,11 @@
             ]
            [:div.col-md-1 {:style {:padding-left 0}}
             [:button.btn.btn-link
-             {:style {:padding-left 0 :font-weight "bold"}
+             {:title (t :location/clearField)
+              :style {:padding-left 0 :font-weight "bold"}
               :on-click #(do (swap! state assoc-in [:issuer :value] "")
                              (.trigger (js/jQuery (str "div.badges-filter .issuer-filter input")) "change"))}
-             "X"]]]
+             [:i.fa.fa-refresh]]]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}
            [:div.col-md-6
@@ -122,10 +144,11 @@
             ]
            [:div.col-md-1 {:style {:padding-left 0}}
             [:button.btn.btn-link
-             {:style {:padding-left 0 :font-weight "bold"}
+             {:title (t :location/clearField)
+              :style {:padding-left 0 :font-weight "bold"}
               :on-click #(do (swap! state assoc-in [:tag :value] "")
                              (.trigger (js/jQuery (str "div.badges-filter .tag-filter input")) "change"))}
-             "X"]]]
+             [:i.fa.fa-refresh]]]]
           ]
 
          [:div {:id "map-view" :style {:height "700px" :margin "20px 0"}}]]])

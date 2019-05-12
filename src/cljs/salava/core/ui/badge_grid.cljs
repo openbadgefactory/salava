@@ -157,57 +157,26 @@
                                   [:div {:class "pull-left"}]
 
                                   (admin-gallery-badge badge_id "badges" state init-data)]]
-       (= "selectable" badge-type)  [:div
-                                     [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id id})}
-                                      [:div.media-content
-                                       [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
-                                        [:div.visibility-icon.inline
-                                         ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                         (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]]
-
-
-                                       [:div.media-left
-                                        (if image_file  [:img {:src (str "/" image_file) :alt name}])
-                                        [:div.media-body
-                                         [:div.media-heading name]
-                                         [:div.media-issuer [:p issuer_content_name]]]]]]
-
-                                     [:div {:class "media-bottom"}
-                                      [:div.row
-                                       [:div.col-xs-9
-                                        (let [checked? (boolean (some #(= id %) (:badges-selected @state)))]
-                                          [:div.checkbox
-                                           [:label {:for (str "checkbox-" id)}
-                                            [:input {:type "checkbox"
-                                                     :id (str "checkbox-" id)
-                                                     :on-change (fn []
-                                                                  (if checked?
-                                                                    (swap! state assoc :badges-selected (remove #(= % id) (:badges-selected @state)))
-                                                                    (swap! state assoc :badges-selected (conj (:badges-selected @state) id))))
-                                                     :checked checked?}]
-
-                                            "Select"
-                                            #_(t :badge/Exporttobackpack)]])]
-                                       #_[:div {:class "col-xs-3 text-right"}
-                                          [:a {:href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url)) :class "badge-download"}
-                                           [:i {:class "fa fa-download"}]]]]]]
        (= "pickable" badge-type) [:div
                                   [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
                                                               (let [new-field-atom (:new-field-atom @state)
-                                                                    type (:type @new-field-atom)
-                                                                    badges (:badges @new-field-atom)]
+                                                                    {:keys [type badges index function]} @new-field-atom
+                                                                    badge {:id id :image_file image_file :type "badge" :name name :description description}]
                                                                 (cond
                                                                   (= "badge" type)(do
-                                                                                    (swap! new-field-atom merge {:badge {:id id :image_file image_file :type "badge" :name name :description description}})
-                                                                                    (if (:index @state)(f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state)) (f/add-field-atomic (:block-atom @state)(:new-field-atom @state))))
+                                                                                    (swap! new-field-atom merge {:badge badge})
+                                                                                    (if (:index @state)
+                                                                                     (f/add-field-atomic (:block-atom @state) (:new-field-atom @state) (:index @state))
+                                                                                     (f/add-field-atomic (:block-atom @state)(:new-field-atom @state))))
 
-                                                                  (= "showcase" type) (do
-                                                                                        (when-not  (some (fn [b] (= id (:id b))) badges)
-                                                                                          ;(swap! new-field-atom assoc :badges (conj badges {:id id :image_file image_file :type "badge" :name name :description description}))
-                                                                                          (as-> (:function @state) f (f {:id id :image_file image_file :type "badge" :name name :description description}) #_(f @new-field-atom))))
-                                                                  :else nil)
-                                                                (m/close-modal!)))}
+                                                                  (= "showcase" type) (when-not  (some (fn [b] (= id (:id b))) badges)
+                                                                                          (as-> (:function @state) f (f badge)))
+                                                                  (= "swap" type) (when-not (some (fn [b] (= id (:id b))) badges)
+                                                                                   (function index badge badges))
+                                                                 :else nil)
+                                                                #_(m/close-modal!)))
+                                       :data-dismiss "modal"}
 
                                    [:div.media-content
 
@@ -228,20 +197,36 @@
                                                               (.preventDefault %)
                                                               (mo/open-modal [:badge :info] {:badge-id id}))}
 
-
                                    [:div.media-content
                                     [:div.media-left
                                      (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                      [:div.media-body
                                       [:div.media-heading name]]]]]
                                       ;[:div.media-issuer [:p issuer_content_name]]
+                                  [:div.swap-button {:title "Change to another badge"}
+                                   [:a {:href "#" :on-click (fn []
+                                                             (let [index (.indexOf (mapv :id (:badges @state)) id)
+                                                                   new-field (atom {:type "swap" :index index :badges (:badges @state) :function (:swap! init-data)})]
+                                                              (mo/open-modal [:badge :my] {:type "pickable" :block-atom state :new-field-atom new-field})))}
+                                    [:i.fa.fa-exchange]]]
+                                  (when-not (= id (last (mapv :id (:badges @state))))
+                                   [:div.move-right {:title "move badge"}
+                                                    [:a {:href "#" :on-click (fn []
+                                                                              (let [index (.indexOf (mapv :id (:badges @state)) id)]
+                                                                               (f/move-field :down (cursor state [:badges]) index)))}
+                                                        [:i.fa.fa-chevron-right]]])
+                                  (when-not (= id (first (mapv :id (:badges @state))))
+                                   [:div.move-left {:title "move badge"}
+                                               [:a {:href "#" :on-click (fn []
+                                                                         (let [index (.indexOf (mapv :id (:badges @state)) id)]
+                                                                          (f/move-field :up (cursor state [:badges]) index)))}
+                                                   [:i.fa.fa-chevron-left]]])
 
-
-                                  [:div.delete-button
+                                  [:div.delete-button {:title "Delete badge"}
                                    [:a {:href "#" :on-click #(do
                                                                (.preventDefault %)
                                                                (let [block-atom @state]
-                                                                 (init-data id (:badges block-atom))))}
+                                                                ((:delete! init-data) id (:badges block-atom))))}
 
 
                                     [:i.fa.fa-trash]]]])]))

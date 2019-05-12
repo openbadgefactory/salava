@@ -306,7 +306,8 @@
           [:option {:value "long"} (t :page/Content)]]]]]
       (reduce (fn [r b]
                 (conj r
-                      (badge-grid-element b block-atom "showcase" (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges)))))))
+                      (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
+                                                                   :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
               [:div]
               badges)
       [:div.addbadge
@@ -400,14 +401,6 @@
     [:div {:key index}
      [field-after blocks state index]
      [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
-      #_[:div.field-move
-         [:div.move-arrows
-          (if-not first?
-            [:div.move-up {:on-click #(f/move-field :up blocks index)}
-             [:i {:class "fa fa-chevron-up"}]])
-          (if-not last?
-            [:div.move-down {:on-click #(f/move-field :down blocks index)}
-             [:i {:class "fa fa-chevron-down"}]])]]
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
@@ -423,7 +416,7 @@
                            [:option {:value "long"} (t :page/Long)]]]
            [:div.col-xs-4
             [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])
-         #_[block-type block-atom]]
+         ]
         [:div.move {:on-click #(do
                                  (.preventDefault %)
                                  (cond
@@ -526,9 +519,10 @@
   (ajax/GET
     (path-for (str "/obpv1/page/edit/" id) true)
     {:handler (fn [data]
-                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
-                                                                               (get-in data [:page :blocks]))))]
-                  (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
+               (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
+                                                                              (get-in data [:page :blocks]))))]
+                 (reset! state (assoc data-with-uuids :toggle-move-mode false))
+                ))}))
 
 
 (defn handler [site-navi params]
@@ -539,7 +533,8 @@
                             :id id}
                      :badges []
                      :tags []
-                     :toggle-move-mode false})]
+                     :toggle-move-mode false
+                     :profile-tab? nil})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))

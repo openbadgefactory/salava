@@ -27,7 +27,6 @@
                       (ok profile)
                       (unauthorized))))
              (GET "/user/edit" []
-                  ;:return
                   :summary "Get user information and profile fields for editing"
                   :auth-rules access/signed
                   :current-user current-user
@@ -35,14 +34,8 @@
 
              (POST "/user/edit" []
                    :return {:status (s/enum "success" "error") :message s/Str}
-
-                   :body-params [profile_visibility :- (:profile_visibility schemas/User)
-                                 profile_picture :- (:profile_picture schemas/User)
-                                 about :- (:about schemas/User)
-                                 fields :- [{:field (apply s/enum (map :type schemas/additional-fields)) :value (s/maybe s/Str)}]
-                                 blocks :- [(s/maybe (:block schemas/BlockForEdit))]
-                                 theme :- s/Int]
+                   :body [profile schemas/EditProfile]
                    :summary "Save user profile"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (p/save-user-profile ctx profile_visibility profile_picture about fields blocks theme (:id current-user)))))))
+                   (ok (p/save-user-profile ctx profile (:id current-user)))))))

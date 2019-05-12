@@ -24,6 +24,9 @@
  ;; Private site. Badges cannot be shared or imported/exported. New account registration is restricted.
  :private false
 
+ ;; If true, show terms and conditions document to users when registering new accounts.
+ :show-terms? true
+
  ;; Database configuration
  :datasource {:adapter "mysql"
               :username "salava"

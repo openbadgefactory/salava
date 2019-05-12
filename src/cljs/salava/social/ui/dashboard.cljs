@@ -42,18 +42,18 @@
                        (.preventDefault %))
           :style {:text-decoration "none"}}
       [:div.media-left
-       [:img {:src (str "/" image_file)} ]]
+       [:img {:src (str "/" image_file)}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading
          (t :social/Youstartedfollowbadge)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]
-        ]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+
 
 (defn message-event [event state]
-  (let [{:keys [subject verb image_file message ctime event_id name object]}  event
+  (let [{:keys [subject verb image_file message ctime event_id name object]}  event]
         ;reload-fn (fn [] (init-data state))
-        ]
+
     [:div {:class "media"}
      [:a {:href "#"
           :on-click #(do
@@ -62,14 +62,14 @@
                        (mo/open-modal [:gallery :badges] {:badge-id object
                                                           :show-messages true
                                                           :reload-fn nil})
-                       (.preventDefault %) )
+                       (.preventDefault %))
           :style {:text-decoration "none"}}
       [:div.media-left
-       [:img {:src (str "/" image_file)} ]]
+       [:img {:src (str "/" image_file)}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (:message message)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
 
 (defn publish-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event]
@@ -79,14 +79,14 @@
           :on-click #(do
                        (mo/open-modal [:badge :info] {:badge-id object})
 
-                       (.preventDefault %) )}
+                       (.preventDefault %))}
       [:div.media-left
-       [:img {:src (str "/" image_file)} ]]
+       [:img {:src (str "/" image_file)}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedbadge) " " name)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]
-        ]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+
 
 (defn publish-event-page [event state]
   (let [{:keys [subject verb profile_picture message ctime event_id name object first_name last_name]}  event]
@@ -95,13 +95,13 @@
           :on-click #(do
                        (mo/open-modal [:page :view] {:page-id object})
 
-                       (.preventDefault %) )}
+                       (.preventDefault %))}
       [:div.media-left
-       [:img {:src (profile-picture profile_picture) } ]]
+       [:img {:src (profile-picture profile_picture)}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedpage) " " name)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
 
 (defn follow-event-user [event state]
   (let [{:keys [subject verb ctime event_id object s_first_name s_last_name o_first_name o_last_name o_id s_id owner o_profile_picture s_profile_picture]}  event
@@ -112,16 +112,16 @@
                        (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
                                                                    o_id
                                                                    s_id)})
-                       (.preventDefault %) )}
+                       (.preventDefault %))}
       [:div.media-left
        [:img {:src (profile-picture (if (= owner s_id)
                                       o_profile_picture
-                                      s_profile_picture)) } ]]
+                                      s_profile_picture))}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (if (= owner s_id)
                               (str (t :social/Youstartedfollowing) " " o_first_name " " o_last_name)
-                              (str  s_first_name " " s_last_name " " (t :social/Followsyou)  ))]
+                              (str  s_first_name " " s_last_name " " (t :social/Followsyou)))]
         [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
 
 (defn badge-advert-event [event state]
@@ -133,11 +133,11 @@
                        (.preventDefault %)
                        (mo/open-modal [:application :badge] {:id subject :state state}))}
       [:div.media-left
-       [:img {:src (str "/" image_file)} ]]
+       [:img {:src (str "/" image_file)}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (str issuer_content_name " " (t :social/Publishedbadge) " " name)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days") ]]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
 
 (defn welcome-block-body [lang]
   (let [language (if-not (blank? lang) lang "en")
@@ -161,20 +161,20 @@
                                                                                                                                 (.preventDefault %)
                                                                                                                                 (if (= "true" (dommy/attr (sel1 :#hidden) :aria-expanded))
                                                                                                                                   (reset! arrow-class "fa-angle-up")
-                                                                                                                                  (reset! arrow-class "fa-angle-down")
-                                                                                                                                  ))}
+                                                                                                                                  (reset! arrow-class "fa-angle-down")))}
+
          [:div.content
           [:div.row.welcome-message
            [:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]
            (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]
-          [:div.collapse.hidden-content {:id "hidden" }
-           [:p message]]]
-         ])]]))
+          [:div.collapse.hidden-content {:id "hidden"}
+           [:p message]]]])]]))
+
 
 (defn notifications-block [state]
   (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
         tips (:tips @state)]
-    [:div {:class "box col-md-4" }
+    [:div {:class "box col-md-4"}
      [:div#box_1
       [:div.col-md-12.block
        ;(prn @state)
@@ -202,9 +202,9 @@
                                (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
                                (= "advert" (:type event)) (badge-advert-event event state)
                                (= "message" (:verb event)) [message-event event state]
-                               :else "")
-                             ])
-                    )[:div.content] events))]]]]))
+                               :else "")]))
+
+                  [:div.content] events))]]]]))
 
 (defn latest-earnable-badges []
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
@@ -218,7 +218,7 @@
 
 (defn badges-block [state]
   (fn []
-    (let [badges (:badges @state )
+    (let [badges (:badges @state)
           welcome-tip (get-in @state [:tips :welcome-tip])]
       [:div {:class "box col-md-5 "}
        [:div#box_2
@@ -244,9 +244,9 @@
                                                  [:p.header (t :badge/Pendingbadges)]
                                                  (if (seq (:pending-badges @state))
                                                    (reduce (fn [r badge]
-                                                             (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
-                                                             ) [:div] (take 5 (:pending-badges @state)))
-                                                   )])
+                                                             (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
+                                                           [:div] (take 5 (:pending-badges @state))))])
+
            (if welcome-tip
              [:div.pending [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]]
              [:div.badges
@@ -254,8 +254,8 @@
               (reduce (fn [r badge]
                         (conj r [:a {:href "#" :on-click #(do
                                                             (.preventDefault %)
-                                                            (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]])
-                        ) [:div] badges)])
+                                                            (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
+                      [:div] badges)])
            [latest-earnable-badges]]]]]])))
 
 (defn explore-block [state]
@@ -301,8 +301,8 @@
               [:p.num (get-in @state [:gallery :profiles :all] 0)]
               [:p.desc (t :gallery/Sharedprofiles)]]]]]]
          (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
-        ]]]]]])
+           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]]]]]]])
+
 
 
 (defn user-connections-stats []
@@ -326,8 +326,8 @@
         [:div.info-block
          [:a {:href (str (path-for "/connections/badge")) :on-click #(do
                                                                        (.preventDefault %)
-                                                                       (session/put! :visible-area :badges)
-                                                                       )}
+                                                                       (session/put! :visible-area :badges))}
+
           [:div.info
            [:div.text
             [:p.num (get-in @state [:connections :badges])]
@@ -335,8 +335,8 @@
         [:div.info-block
          [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
                                                                              (.preventDefault %)
-                                                                             (session/put! :visible-area "given")
-                                                                             )}
+                                                                             (session/put! :visible-area "given"))}
+
           [:div.info
            [:div.text
             [:p.num (:endorsing @state)]
@@ -345,14 +345,14 @@
         [:div.info-block
          [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
                                                                              (.preventDefault %)
-                                                                             (session/put! :visible-area "received")
-                                                                             )}
+                                                                             (session/put! :visible-area "received"))}
+
           [:div.info
            (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
            [:div.text
             [:p.num (:endorsers @state)]
-            [:p.desc (t :badge/Endorsers)]
-            ]]]]]]]]]])
+            [:p.desc (t :badge/Endorsers)]]]]]]]]]]])
+
 
 (defn profile-block [state]
   (let [user (:user-profile @state)
@@ -390,9 +390,9 @@
                (case (get-in user [:user :profile_visibility])
                  "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
                  "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
-                 nil)]
-              ]
-             ]]]]
+                 nil)]]]]]]
+
+
          [:br]
          [:div.row.small-text ;{:style {:font-size "initial"}}
           (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
@@ -444,4 +444,3 @@
                      :arrow-class "fa-angle-down"})]
     (init-dashboard state)
     (fn [] (layout/dashboard site-navi [content state]))))
-

@@ -4,6 +4,7 @@
             [salava.core.ui.helper :refer [base-path path-for]]
             [salava.location.ui.explore :as explore]
             [salava.location.ui.block]
+            [salava.location.ui.modal]
             ))
 
 (defn ^:export routes [context]

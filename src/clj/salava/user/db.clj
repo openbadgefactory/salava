@@ -105,18 +105,18 @@
   (select-user-by-email-address {:email email} (into {:result-set-fn first} (get-db ctx))))
 
 (defn accepted-terms? [ctx email]
-  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+  (let [show-terms? (get-in ctx [:config :core :show-terms?] false)
         user-accepted-terms? (select-user-terms {:email email} (into {:result-set-fn first} (get-db ctx)))]
-    (if gdpr-disabled? false (:status user-accepted-terms?))))
+    (if show-terms? (:status user-accepted-terms?) false)))
 
 (defn get-accepted-terms-by-id [ctx user-id]
-  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+  (let [show-terms? (get-in ctx [:config :core :show-terms?] false)
         user-accepted-terms? (select-user-terms-with-userid {:user_id user-id} (into {:result-set-fn first} (get-db ctx)))]
-    (if gdpr-disabled? false (:status user-accepted-terms?))))
+    (if show-terms? (:status user-accepted-terms?) false)))
 
 (defn insert-user-terms [ctx user-id status]
-  (let [gdpr-disabled? (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))]
-    (if gdpr-disabled?
+  (let [show-terms? (get-in ctx [:config :core :show-terms?] false)]
+    (if-not show-terms?
       {:status "success" :input "disabled"}
       (try+
         (do

@@ -129,73 +129,6 @@
       :border (border-attributes (:border page))
       :qr_code (str->qr-base64 (page-url ctx page-id)))))
 
-
-(defn generate-pdf [ctx page-id]
-  (let [ blocks (page-blocks ctx page-id)
-         badge-block-with-markdown (:criteria_content (select-pages-badge-blocks {:page_id page-id} (into {:result-set-fn first} (get-db ctx))))
-         page (conj () (-> (select-page {:id page-id} (get-db ctx))
-                           first
-                           (assoc :blocks blocks)))
-         data-dir (get-in ctx [:config :core :data-dir])
-         page-template (pdf/template
-                         (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
-                                                             #_[:paragraph {:align :center}
-                                                                [:chunk (str $first_name " " $last_name)]][:spacer 1]
-                                                             [:line {:dotted true}]
-                                                             [:spacer 2]
-                                                             (if (= "heading"  (:type %))
-                                                               (case (:size %)
-                                                                 "h1" [:paragraph {:align :center}
-                                                                       [:heading (:content %)]]
-                                                                 "h2" [:paragraph {:align :center}
-                                                                       [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
-                                                             (if (= "badge" (:type %))
-                                                               [:pdf-table {:width-percent 100 :cell-border false}
-                                                                [25 75]
-                                                                [[:pdf-cell {:align :right}
-                                                                  (if (contains? % :image_file)
-                                                                    [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
-                                                                  [:spacer 2]]
-                                                                 [:pdf-cell
-                                                                  (if (contains? % :name)
-                                                                    [:heading (:name %)] " ")
-                                                                  [:spacer]
-                                                                  #_(if (contains? % :type)
-                                                                      [:paragraph
-                                                                       [:heading (:content %)]] " ")
-                                                                  (if (or
-                                                                        (contains? % :issuer_content_name) (contains? % :issued_on) (contains? % :description) (contains? % :criteria_url))
-                                                                    [:paragraph
-                                                                     [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
-                                                                     [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
-                                                                     [:spacer 1]
-                                                                     (:description %) "\n"
-                                                                     ;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
-                                                                     [:spacer 0]
-                                                                     [:paragraph
-                                                                      [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                      [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]]
-                                                               " ")
-                                                             (if (= "html" (:type %))
-                                                               [:paragraph {:align :center}
-                                                                (:content %)] "")
-                                                             (if (= "tag" (:type %))
-                                                               [:paragraph
-                                                                [:chunk]])
-
-
-
-                                                             [:spacer 0]])
-
-                               content (map template $blocks)]
-
-                           (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
-                                                                                                                              [:chunk (str $first_name " " $last_name)]]]] content)))]
-
-    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")))
-
-
-
 (defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
     (page-with-blocks ctx page-id)))
@@ -207,8 +140,9 @@
           owner (:user_id page)
           badges (map #(select-keys % [:id :name :image_file :tags :description]) (b/user-badges-all ctx owner))
           files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
-          tags (distinct (flatten (map :tags badges)))]
-      {:page (assoc page :blocks blocks) :badges badges :tags tags :files files})))
+          tags (distinct (flatten (map :tags badges)))
+          is-profile-tab? (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx (:user_id page) page-id))]
+      {:page (assoc page :blocks blocks) :badges badges :tags tags :files files :profile-tab? is-profile-tab?})))
 
 (defn delete-block! [ctx block]
   (case (:type block)
@@ -388,23 +322,25 @@
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
-    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
-      {:status "error" :message "page/Evidenceerror"}
-      (let [password (if (= visibility "password") (trim pword) "")
-            page-visibility (if (and (= visibility "password")
-                                     (empty? password))
-                              "private"
-                              visibility)
-            evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
-            page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
-        (if (and (private? ctx) (= "public" visibility))
-          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
-        (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
-        (save-page-tags! ctx page-id tags)
-        (if (or (= "internal" visibility) (= "public" visibility))
-          (u/event ctx user-id "publish" page-id "page")
-          (u/event ctx user-id "unpublish" page-id "page"))
-        {:status "success" :message "page/Pagesavedsuccessfully"}))
+    (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
+     {:status "error" :message "profile/Profiletaberror"}
+     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+       {:status "error" :message "page/Evidenceerror"}
+       (let [password (if (= visibility "password") (trim pword) "")
+             page-visibility (if (and (= visibility "password")
+                                      (empty? password))
+                               "private"
+                               visibility)
+             evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
+             page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
+         (if (and (private? ctx) (= "public" visibility))
+           (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+         (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
+         (save-page-tags! ctx page-id tags)
+         (if (or (= "internal" visibility) (= "public" visibility))
+           (u/event ctx user-id "publish" page-id "page")
+           (u/event ctx user-id "unpublish" page-id "page"))
+         {:status "success" :message "page/Pagesavedsuccessfully"})))
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
       {:status "error" :message "page/Errorwhilesavingpage"})))
@@ -435,14 +371,16 @@
 
 (defn toggle-visibility! [ctx page-id visibility user-id]
   (if (page-owner? ctx page-id user-id)
-    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
-      {:status "error" :message "page/Evidenceerror"}
-      (do
-        (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
-        (if (or (= "internal" visibility) (= "public" visibility))
-          (u/event ctx user-id "publish" page-id "page")
-          (u/event ctx user-id "unpublish" page-id "page"))
-        visibility))
+    (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
+     {:status "error" :message "profile/Profiletaberror"}
+     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+         {:status "error" :message "page/Evidenceerror"}
+         (do
+           (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
+           (if (or (= "internal" visibility) (= "public" visibility))
+             (u/event ctx user-id "publish" page-id "page")
+             (u/event ctx user-id "unpublish" page-id "page"))
+           visibility)))
 
     (if (= visibility "public") "private" "public")))
 

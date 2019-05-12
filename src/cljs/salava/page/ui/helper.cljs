@@ -25,7 +25,7 @@
                        (m/close-modal!)
                        (navigate-to "/profile/page")))}))
 
-(defn delete-page-modal [page-id]
+(defn delete-page-modal [page-id state]
   [:div
    [:div.modal-header
     [:button {:type "button"
@@ -36,7 +36,9 @@
              :dangerouslySetInnerHTML {:__html "&times;"}}]]]
    [:div.modal-body
     [:div {:class (str "alert alert-warning")}
-     (t :page/Deleteconfirm)]]
+     (if @(cursor state [:profile-tab?])
+      (t :page/Profiletabwarning)
+      (t :page/Deleteconfirm))]]
    [:div.modal-footer
     [:button {:type "button"
               :class "btn btn-primary"
@@ -46,9 +48,6 @@
               :class "btn btn-warning"
               :on-click #(delete-page page-id)}
      (t :page/Delete)]]])
-
-
-
 
 (defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]}]
   [:div {:class "row badge-block badge-info flip"}
@@ -163,37 +162,39 @@
      nil)])
 
 (defn tag-block [block-atom]
- (let [{:keys [tag badges format sort]} block-atom]
+ (let [{:keys [tag badges format sort]} block-atom
+       container (case format
+                  "short" [:div#grid {:class "row"}]
+                  "long" [:div.tag-block])]
+
   [:div#user-badges
+   [:div [:label (t :page/Tag ":")] (str " " tag)]
    [:div
-    [:label (t :page/Tag ":")] (str " " tag)]
-   [:div#grid {:class "row"}
      (let [sorted-badges (case sort
                            "name" (sort-by :name < badges)
                            "modified" (sort-by :mtime > badges)
                            badges)]
-      (into [:div.tag-block]
+      (into container
        (for [badge sorted-badges]
          (if (= format "short")
           (badge-grid-element badge nil "profile" nil)
-          #_[:a.small-badge-image {:href (path-for (str "/badge/info/" (:id badge)))
-                                   :key  (:id badge)}
-             [:img {:src (str "/" (:image_file badge))
-                    :title (:name badge)}]]
-           (badge-block (assoc badge :format "long"))))))]]))
+          (badge-block (assoc badge :format "long"))))))]]))
 
 (defn showcase-block [block-atom]
- (let [{:keys [badges format title]} block-atom]
+ (let [{:keys [badges format title]} block-atom
+        container (case format
+                    "short" [:div#grid {:class "row"}]
+                    "long" [:div.tag-block])]
    [:div
     [:div.heading-block
      [:h2 title]]
     [:div#user-badges
-     [:div#grid {:class "row"}
+     [:div
       (doall (reduce (fn [r badge]
                        (conj r (if (= format "short")
                                    (badge-grid-element badge nil "profile" nil)
                                    (badge-block (assoc badge :format "long")))))
-                     [:div.tag-block] badges))]]]))
+                     container badges))]]]))
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
@@ -221,7 +222,7 @@
              [:h1 name]]]
            [:div.row
             [:div {:class "col-md-12 page-author"}
-             [:a {:href (path-for (str "/user/profile/" user_id))} (str first_name " " last_name)]]]
+             [:a {:href "#" :on-click #(navigate-to (str "/profile/" user_id)) } (str first_name " " last_name)]]]
            [:div.row
             [:div {:class "col-md-12 page-summary"}
              description]]
@@ -278,7 +279,6 @@
     "file" {:files (map :id files)}
     "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
     "showcase" {:format (or format "short") :title (or title (t :page/Untitled)) :badges (map :id badges)}
-
     nil))
 
 (defn prepare-blocks-to-save [blocks]
@@ -311,7 +311,7 @@
        :finally (fn [] (swap! state assoc :spinner false)(when next-url (navigate-to next-url)))})))
 
 (defn save-settings [state next-url]
-  (let [{:keys [id tags visibility password]} (:page @state)]
+  (let [{:keys [id tags visibility password name]} (:page @state)]
     (reset! (cursor state [:message]) nil)
     (ajax/POST
       (path-for (str "/obpv1/page/save_settings/" id))
@@ -321,12 +321,13 @@
        :handler (fn [data]
                   (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
                   (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
-                  (if (and (= "error" (:status data)) (= (:message data) "page/Evidenceerror"))
+                  (if (and (= "error" (:status data)) (or (= (:message data) "profile/Profiletaberror") (= (:message data) "page/Evidenceerror")))
                     (swap! state assoc ;:message (keyword (:message data))
                            :page {:id id
                                   :tags tags
                                   :password password
-                                  :visibility "public"})))
+                                  :visibility "public"
+                                  :name name})))
        :finally (fn [] (swap! state assoc :spinner false)(when next-url (navigate-to next-url)))})))
 
 
@@ -424,10 +425,10 @@
        (t  :page/Preview)]]
      [:div {:class "col-xs-4"
             :id "buttons-right"}
-      [:a {:class "btn btn-primary view-btn"
+      [:a {:class "btn btn-primary"
            :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
            :href "#"}
-       (t :page/View)]]
+       [:i.fa.fa-eye.fa-fw.fa-lg] (t :page/View)]]
      [m/modal-window]]))
 
 (defn manage-page-buttons [current id state]
@@ -435,46 +436,47 @@
         logic (button-logic id state)
         previous? (get-in logic [current :previous])
         next?  (get-in logic [current :next])]
-    (create-class {:reagent-render   (fn []
-                                       [:div.action-bar {:id "page-edit"}
-                                        [:div.row
-                                         [:div.col-md-12
-                                          (when previous? [:div {:id "step-button-previous"}
-                                                           [:a {:href "#" :on-click #(do
-                                                                                       (.preventDefault %)
-                                                                                       (as-> (get-in logic [current :save-and-previous!]) f (f)))}
-                                                               (t :core/Previous)]])
-                                          [:button {:class    "btn btn-primary"
-                                                    :on-click #(do
-                                                                 (.preventDefault %)
-                                                                 (swap! state assoc :spinner true)
-                                                                 (js/setTimeout (fn [] (as-> (get-in logic [current :save!]) f (f))) 2000))}
 
-                                           (when (:spinner @state) [:i.fa.fa.lg.fa-spinner {:style {:padding "2px"}}]) (t :page/Save)]
-                                          [:button.btn.btn-primary {:on-click #(do
+   (create-class {:reagent-render   (fn []
+                                      [:div.action-bar {:id "page-edit"}
+                                       [:div.row
+                                        [:div.col-md-12
+                                         (when previous? [:div {:id "step-button-previous"}
+                                                          [:a {:href "#" :on-click #(do
+                                                                                      (.preventDefault %)
+                                                                                      (as-> (get-in logic [current :save-and-previous!]) f (f)))}
+                                                              (t :core/Previous)]])
+                                         [:button {:class    "btn btn-primary"
+                                                   :on-click #(do
+                                                                (.preventDefault %)
+                                                                (swap! state assoc :spinner true)
+                                                                (js/setTimeout (fn [] (as-> (get-in logic [current :save!]) f (f))) 2000))}
+
+                                          (when (:spinner @state) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :page/Save)]
+                                         [:button.btn.btn-primary {:on-click #(do
+                                                                               (.preventDefault %)
+                                                                               (navigate-to (str "/profile/page/view/" id)))}
+                                          [:i.fa.fa-eye.fa-fw.fa-lg](t :page/View)]
+                                         [:button.btn.btn-warning {:on-click #(do
                                                                                 (.preventDefault %)
-                                                                                (navigate-to (str "/profile/page/view/" id)))}
-                                           [:i.fa.fa-eye.fa-lg {:style {:margin-right "10px"}}](t :page/View)]
-                                          [:button.btn.btn-warning {:on-click #(do
-                                                                                 (.preventDefault %)
-                                                                                 (navigate-to  "/profile/page"))}
-                                           (t :core/Cancel)]
+                                                                                (navigate-to  "/profile/page"))}
+                                          (t :core/Cancel)]
 
-                                          [:button.btn.btn-danger {:on-click #(do
-                                                                                (.preventDefault %)
-                                                                                (delete-page (get-in @state [:page :id])))}
-                                           (t :core/Delete)]
-                                          (when next?  [:div.pull-right {:id "step-button"}
-                                                        [:a {:href "#" :on-click #(do
-                                                                                    (.preventDefault %)
-                                                                                    (as-> (get-in logic [current :save-and-next!]) f (f)))}
-                                                         (t :core/Next)]])]]
+                                         [:button.btn.btn-danger {:on-click #(do
+                                                                              (.preventDefault %)
+                                                                              (m/modal! (delete-page-modal id state)))}
+                                          (t :core/Delete)]
+                                         (when next?  [:div.pull-right {:id "step-button"}
+                                                       [:a {:href "#" :on-click #(do
+                                                                                   (.preventDefault %)
+                                                                                   (as-> (get-in logic [current :save-and-next!]) f (f)))}
+                                                        (t :core/Next)]])]]
 
-                                        (when (= "error" (get-in state [:alert :status](:alert @state)))
-                                          [:div.row
-                                           [:div.col-md-12
-                                            [:div {:class (str "alert " (case (get-in @state [:alert :status])
-                                                                          "success" "alert-success"
-                                                                          "error" "alert-warning"))
-                                                   :style {:display "block" :margin-bottom "20px"}}
-                                             (get-in @state [:alert :message] nil)]]])])})))
+                                       (when (and (= "error" (get-in @state [:alert :status])) (not= current :settings))
+                                         [:div.row
+                                          [:div.col-md-12
+                                           [:div {:class (str "alert " (case (get-in @state [:alert :status])
+                                                                         "success" "alert-success"
+                                                                         "error" "alert-warning"))
+                                                  :style {:display "block" :margin-bottom "20px"}}
+                                            (get-in @state [:alert :message] nil)]]])])})))

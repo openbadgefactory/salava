@@ -1,7 +1,7 @@
 (ns salava.page.schemas
   (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]
+             :include-macros true] ;; cljs only
+
             [salava.badge.schemas :refer [Badge Evidence]]
             [salava.file.schemas :refer [File]]))
 
@@ -53,8 +53,8 @@
 (s/defschema ShowcaseBlock {:type (s/eq "showcase")
                             :title  (s/maybe s/Str)
                             :badges [(s/maybe s/Int)]
-                            :format      (s/enum "short" "long")
-                             })
+                            :format      (s/enum "short" "long")})
+
 
 (s/defschema ViewPage (assoc page :user_id s/Int
                                   :first_name s/Str
@@ -89,15 +89,15 @@
                                                                                                          :block_order s/Int
                                                                                                          :badges [ (-> Badge
                                                                                                                       (select-keys [:id :name :image_file :criteria_content :criteria_url :description :creator_name :creator_url
-                                                                                                                                    :issuer_content_name :issuer_content_id :issuer_content_url ])
-                                                                                                                       (assoc :creator_content_id (s/maybe s/Str))
-                                                                                                                       (assoc :evidences [(-> Evidence
-                                                                                                                                              (select-keys [:url :id :narrative :name])
-                                                                                                                                              (assoc :ctime (s/maybe s/Int) :description (s/maybe s/Str) :mtime (s/maybe s/Int)
-                                                                                                                                                (s/optional-key :properties) {(s/optional-key :hidden) (s/maybe s/Bool)
-                                                                                                                                                                              (s/optional-key :resource_id) (s/maybe s/Int)
-                                                                                                                                                                               (s/optional-key :resource_type) (s/maybe s/Str)
-                                                                                                                                                                               (s/optional-key :mime_type) (s/maybe s/Str)}))]))])
+                                                                                                                                    :issuer_content_name :issuer_content_id :issuer_content_url])
+                                                                                                                      (assoc :creator_content_id (s/maybe s/Str))
+                                                                                                                      (assoc :evidences [(-> Evidence
+                                                                                                                                             (select-keys [:url :id :narrative :name])
+                                                                                                                                             (assoc :ctime (s/maybe s/Int) :description (s/maybe s/Str) :mtime (s/maybe s/Int)
+                                                                                                                                               (s/optional-key :properties) {(s/optional-key :hidden) (s/maybe s/Bool)
+                                                                                                                                                                             (s/optional-key :resource_id) (s/maybe s/Int)
+                                                                                                                                                                              (s/optional-key :resource_type) (s/maybe s/Str)
+                                                                                                                                                                              (s/optional-key :mime_type) (s/maybe s/Str)}))]))])
                                                           #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile")})]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
@@ -122,7 +122,7 @@
                                                                     #(= (:type %) "tag") (assoc TagBlock :id s/Int
                                                                                                          :block_order s/Int)
                                                                    #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int :badges [(-> Badge
-                                                                                                                                                          (select-keys [:id :name :image_file]))] )
+                                                                                                                                                          (select-keys [:id :name :image_file]))])
                                                                     #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile")})]}
                               :badges [{:id         s/Int
                                         :name       s/Str
@@ -130,7 +130,8 @@
                                         :tags       (s/maybe [s/Str])
                                         :description (s/maybe s/Str)}]
                               :tags   (s/maybe [s/Str])
-                              :files  [(dissoc PageFile :file_order)]})
+                              :files  [(dissoc PageFile :file_order)]
+                              :profile-tab? s/Bool})
 
 (s/defschema SavePageContent {:name        (s/constrained s/Str #(and (>= (count %) 1)
                                                                       (<= (count %) 255)))
