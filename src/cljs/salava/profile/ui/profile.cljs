@@ -130,10 +130,6 @@
      [edit-profile state]
      [view-profile state])])
 
-
-
-
-
 (defn init-data [user-id state]
   (ajax/GET
     (path-for (str "/obpv1/profile/" user-id) true)

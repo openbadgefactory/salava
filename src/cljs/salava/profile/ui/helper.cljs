@@ -288,7 +288,7 @@
           (if-not (or (not-activated?) (private?))
             (profile-visibility-input visibility-atom state))
           [:div.share
-           [s/share-buttons (str (session/get :site-url) (path-for "/user/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
+           [s/share-buttons (str (session/get :site-url) (path-for "/profile/") user-id) fullname (= "public" @visibility-atom) false link-or-embed-atom]]
           [:div.edit-btn
             (if-not (not-activated?)
                [:a.btn.btn-primary {:href "#"
@@ -317,107 +317,58 @@
                                                                  (.preventDefault %)
                                                                  (as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]]))
 
-(def placeholder
-  (doto (. js/document (createElement "li"))
-    (set! -className "placeholder")))
+(defn page-content [page-id page state]
+ (let [index (.indexOf (map :id @(cursor state [:tabs])) page-id)]
+  [:div#profile
+   [:div {:style {:text-align "center" :margin "15px 0"}}
+    (when @(cursor state [:edit-mode])
+     [:div
+      (when-not (= page-id (some->> @(cursor state [:tabs])  first :id)) [:span.move-tab {:href "#" :on-click #(f/move-field :up (cursor state [:tabs])  index)} [:i.fa.fa-chevron-left.fa-fw.fa-lg] "move left"])
+      (when-not (= page-id (some->> @(cursor state [:tabs])  last :id))[:span.move-tab {:href "#" :on-click #(f/move-field :down (cursor state [:tabs]) index)} "move right"[:i.fa.fa-chevron-right.fa-fw.fa-lg]])])]
+   [view-page page]]))
 
-(defn split-after [pred coll]
-  (let [[l r] (split-with pred coll)]
-    [(concat l [(first r)]) (rest r)]))
-
-(defn move-before [coll placement item target]
-  (let [split (partial (if (= placement :before)
-                         split-with
-                         split-after)
-                       #(not= target %))
-        join #(apply conj (first %) item (last %))]
-    (->> coll
-         (remove #(= item %))
-         split
-         (map vec)
-         join)))
 
 (defn get-page [page-id state]
  (ajax/GET
       (path-for (str "/obpv1/page/view/" page-id) true)
       {:handler (fn [data]
-                 (swap! state assoc :show-manage-buttons false :tab-content [view-page (:page data)]))}
-
+                 (swap! state assoc :show-manage-buttons false :tab-content [page-content page-id (:page data) state]))}
       (fn [] (swap! state assoc :permission "error"))))
 
 (defn profile-tabs [state]
-  (let [tabs (cursor state [:tabs])
-        dragged (atom nil)
-        over (atom nil)
-        node-placement (atom nil)
-        content (atom nil)
-
-        start-drag (fn [e]
-                     (println "start dragging")
-                     (reset! dragged (.-currentTarget e))
-                     (set! (.. e -dataTransfer -effectAllowed) "move")
-                     (. (.-dataTransfer e) (setData "text/html" (.-currentTarget e))))
-
-        end-drag (fn [e]
-                   (println "stop dragging")
-                   (set! (.. @dragged -style -display) "block")
-                   ;(. (.. @dragged -parentNode) (removeChild placeholder))
-                   (swap! tabs
-                          move-before @node-placement (.. @dragged -dataset -id) (.. @over -dataset -id)))
-
-        drag-over (fn [e]
-                    (println "dragging over")
-                    (.preventDefault e)
-                    (set! (.. @dragged -style -display) "none")
-                    (when-not (= (.. e -target -className) "placeholder")
-                      (reset! over (.-target e))
-                      (let [rel-y (- (.-clientY e) (.-offsetTop @over))
-                            height (/ (.-offsetHeight @over) 2)
-                            parent (.. e -target -parentNode)]
-                        (if (> rel-y height)
-                          (do
-                            (reset! node-placement :after)
-                            (.insertBefore parent placeholder (.. e -target -nextElementSibling)))
-                          (do
-                            (reset! node-placement :before)
-                            (.insertBefore parent placeholder (.. e -target)))))))]
-
-    (fn []
+  (let [tabs (cursor state [:tabs])]
+   (fn []
      [:div.profile-navi
-      [:ul.nav.nav-tabs ;{:on-drag-over drag-over}
-           [:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
+      [:ul.nav.nav-tabs
+           ^{:key 0}[:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
                          [:a.nav-link {:on-click #(swap! state assoc :active-index 0 :show-manage-buttons true)}
                                       (t :user/Myprofile)]]
        (doall (for [tab @tabs
-                    :let [index (.indexOf @tabs tab)
+                    :let [index (.indexOf (mapv :id @tabs) (:id tab))
                           next-tab (some-> (nthnext @tabs (inc index)) first)
                           previous-tab (when (pos? index) (nth @tabs (dec index)))
                           in-edit-mode? @(cursor state [:edit-mode])]]
-               ^{:key (:id tab)} [:li.nav-item {:data-id (:id tab)
-                                                ;:draggable true
-                                                ;:on-drag-start start-drag
-                                                ;:on-drag-end end-drag
-                                                :class (if (= (:id tab) (:active-index @state)) "active")}
-                                  (when in-edit-mode? [:span.close {:href "#" :on-click #(do
-                                                                                           (f/remove-field tabs index)
-                                                                                           (cond
-                                                                                            (seq next-tab) (when-not (= 0 @(cursor state [:active-index]))
-                                                                                                            (get-page (:id next-tab) state)
-                                                                                                            (swap! state assoc :active-index (:id next-tab)))
-                                                                                            (seq previous-tab) (when-not (= 0 @(cursor state [:active-index]))
-                                                                                                                (get-page (:id previous-tab) state)
-                                                                                                                (swap! state assoc :active-index (:id previous-tab)))
-                                                                                            :else (swap! state assoc :active-index 0)))}
 
-                                                                   [:i.fa.fa-remove]])
-                                  #_(when (and in-edit-mode? (seq next-tab)) [:span.move-tab-right {:href "#" :on-click #(f/move-field :down tabs index)} [:i.fa.fa-chevron-right]])
+               ^{:key (str index "->" (:id tab))} [:li.nav-item {:data-id (:id tab)
+                                                                 :class (if (= (:id tab) (:active-index @state)) "active")}
+                                                   (when in-edit-mode? [:span.close {:href "#" :on-click #(do
+                                                                                                            (f/remove-field tabs index)
+                                                                                                            (cond
+                                                                                                             (seq next-tab) (when-not (= 0 @(cursor state [:active-index]))
+                                                                                                                             (get-page (:id next-tab) state)
+                                                                                                                             (swap! state assoc :active-index (:id next-tab)))
+                                                                                                             (seq previous-tab) (when-not (= 0 @(cursor state [:active-index]))
+                                                                                                                                 (get-page (:id previous-tab) state)
+                                                                                                                                 (swap! state assoc :active-index (:id previous-tab)))
+                                                                                                             :else (swap! state assoc :active-index 0)))}
 
-                                  [:a.nav-link.page-tab {:href "#" :on-click #(do
-                                                                               (get-page (:id tab) state)
-                                                                               (.preventDefault %)
-                                                                               (swap! state assoc :active-index (:id tab)))}
+                                                                                    [:i.fa.fa-remove]])
+                                                   [:a.nav-link.page-tab {:href "#" :on-click #(do
+                                                                                                (get-page (:id tab) state)
+                                                                                                (.preventDefault %)
+                                                                                                (swap! state assoc :active-index (:id tab)))}
 
-                                              (:name tab)]]))
+                                                               (:name tab)]]))
        [add-page state]]])))
 
 (defn profile-navi [state]
