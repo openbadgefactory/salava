@@ -6,11 +6,15 @@
             [salava.page.ui.my :as page]
             [salava.profile.ui.block :as block]
             [salava.profile.ui.profile :as p]
+            [salava.profile.ui.embed :as embed]
             [salava.profile.ui.edit :as pe]
             [salava.profile.ui.modal :as m]))
 
+
+
 (defn ^:export routes [context]
-  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] p/handler]]
+  {(str (base-path context) "/profile") [[["/" [#"\d+" :user-id]] p/handler]
+                                         [["/" [#"\d+" :user-id] "/embed"] embed/handler]]
    (str (base-path context) "/page") [[["/mypages" page/handler]]]})
 
 (defn ^:export navi [context]
