@@ -24,7 +24,8 @@
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
           (badge-grid-element element-data nil "profile" nil))))
 
-(defn ^:export recentbadges [data]
+(defn ^:export recentbadges
+ ([data]
   (let [badge-small-view (cursor data [:badge-small-view])
         {:keys [edit-mode? user-id user]} data]
     (init-grid "badges" data)
@@ -38,10 +39,26 @@
 
               (when (< 6 (count @(cursor data [:badges])))
                [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
+ ([data badge-type]
+  (init-grid "badges" data)
+  (case badge-type
+     "embed" (fn []
+              (when (seq (:badges @data))
+               [:div#user-badges
+                [:div.row
+                 [:div.col-md-12
+                  [:h3 (t :user/Recentbadges)]
+                  [:div
+                   (into [:div.row.wrap-grid {:id "grid"}]
+                    (for [element-data (:badges @data)]
+                     (badge-grid-element element-data nil "embed" nil)))
+                   #_[:div [:a {:target "_blank" :href (path-for (str "/gallery/badges/" (:user-id @data)))} (t :user/Showmore)]]]]]]))
+   (recentbadges data))))
 
 
 
-(defn ^:export recentpages [data]
+(defn ^:export recentpages
+ ([data]
   (let [page-small-view (cursor data [:page-small-view])
         {:keys [edit-mode? user-id user]} data]
     (init-grid "pages" data)
@@ -55,3 +72,18 @@
 
           (when (< 6 (count @(cursor data [:pages])))
            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
+ ([data page-type]
+  (init-grid "pages" data)
+  (case page-type
+   "embed" (fn []
+            (when (seq (:pages @data))
+             [:div#user-pages
+              [:div.row
+               [:div.col-md-12
+                [:h3 (t :user/Recentbadges)]
+                [:div
+                 (into [:div.row.wrap-grid {:id "grid"}]
+                  (for [element-data (:pages @data)]
+                   (page-grid-element element-data {:type page-type})))
+                 #_[:div [:a {:target "_blank" :href (path-for (str "/gallery/pages/" (:user-id @data)))} (t :user/Showmore)]]]]]]))
+   (recentpages data))))

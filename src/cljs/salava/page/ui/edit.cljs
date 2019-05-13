@@ -415,8 +415,8 @@
                            [:option {:value "short"} (t :page/Short)]
                            [:option {:value "long"} (t :page/Long)]]]
            [:div.col-xs-4
-            [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])
-         ]
+            [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])]
+
         [:div.move {:on-click #(do
                                  (.preventDefault %)
                                  (cond
@@ -521,8 +521,8 @@
     {:handler (fn [data]
                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
                                                                               (get-in data [:page :blocks]))))]
-                 (reset! state (assoc data-with-uuids :toggle-move-mode false))
-                ))}))
+                 (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
+
 
 
 (defn handler [site-navi params]
