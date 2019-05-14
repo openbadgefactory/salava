@@ -21,16 +21,18 @@
   (-> (make-random-uuid)
       (uuid-string)))
 
-(defn block-specific-values [{:keys [type content badge tag format sort files badges title]}]
-  (case type
-    "heading" {:type "heading" :size "h1" :content content}
-    "sub-heading" {:type "heading" :size "h2":content content}
-    "badge" {:format (or format "short") :badge_id (:id badge 0)}
-    "html" {:content content}
-    "file" {:files (map :id files)}
-    "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
-    "showcase" {:format (or format "short") :title title :badges (map :id badges)}
-    nil))
+(defn block-specific-values [{:keys [type content badge tag format sort files badges title fields]}]
+ (prn fields)
+ (case type
+   "heading" {:type "heading" :size "h1" :content content}
+   "sub-heading" {:type "heading" :size "h2":content content}
+   "badge" {:format (or format "short") :badge_id (:id badge 0)}
+   "html" {:content content}
+   "file" {:files (map :id files)}
+   "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
+   "showcase" {:format (or format "short") :title title :badges (map :id badges)}
+  "profile" {:fields fields}
+   nil))
 
 (defn prepare-blocks-to-save [blocks]
   (for [block blocks]
@@ -318,8 +320,8 @@
         [:i.fa.fa-plus.add-icon]]]]]))
 
 (defn profile-block [block-atom]
-  (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
-    (if block [block nil] [:div ""])))
+  (let [block (first (plugin-fun (session/get :plugins) "block" "editprofileinfo"))]
+    (if block [block block-atom] [:div ""])))
 
 (defn contenttype [{:keys [block-atom index]}]
   (let [block-type-map (if (some #(= "profile" (:type %)) @block-atom)

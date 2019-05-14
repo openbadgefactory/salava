@@ -4,7 +4,8 @@
             [salava.core.helper :refer [dump private?]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [clojure.string :refer [blank?]]))
 
 (defqueries "sql/profile/main.sql")
 
@@ -156,3 +157,23 @@
      (catch Object _
        (log/error _)
        {:status "error" :message ""}))))
+
+(defn profile-metrics [ctx user-id]
+ (let [user-profile (user-information-and-profile ctx user-id nil)
+       {:keys [user profile tabs]} user-profile
+       {:keys [about profile_picture ]} user
+       {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
+       complete-profile (and (not (blank? profile_picture)) (not (blank? about)))
+       weights {:about 50 :profile-picture 50 :location 25}]
+  {:tips {:profile-picture-tip (blank? profile_picture)
+          :aboutme-tip (blank? about)
+          :location-tip (empty?  enabled #_(seq enabled))
+          :tabs-tip (empty? tabs)}
+   :completion_percentage (cond
+                           (and complete-profile (true? enabled)) 100
+                           complete-profile (reduce + (vals (select-keys weights [:about :profile-picture])))
+                           ;(and (not (blank? about)) (blank? profile_picture) #_(true? enabled)) (+ (:about weights) (:location weights))
+                           (and (not (blank? about)) (blank? profile_picture) #_(false? enabled)) (:about weights)
+                           ;(and (not (blank? profile_picture)) (blank? about) #_(true? enabled)) (+ (:profile-picture weights) (:location weights))
+                           (and (not (blank? profile_picture)) (blank? about) #_(false? enabled)) (:profile-picture weights)
+                           :else 5)}))

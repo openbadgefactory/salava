@@ -353,6 +353,9 @@
             [:p.num (:endorsers @state)]
             [:p.desc (t :badge/Endorsers)]]]]]]]]]]])
 
+(defn profile-tips-block []
+ (let [block (first (plugin-fun (session/get :plugins) "block" "profiletips"))]
+  (when block [block])))
 
 (defn profile-block [state]
   (let [user (:user-profile @state)
@@ -390,12 +393,14 @@
                (case (get-in user [:user :profile_visibility])
                  "public" [:div [:i.fa.fa-eye.icon] [:span.text (t :core/Public)]]
                  "internal" [:div [:i.fa.fa-eye-slash.icon ] [:span.text (t :core/Internal)]]
-                 nil)]]]]]]
+                 nil)]]]]
+           [:div.row
+            [profile-tips-block]]]]
 
 
          [:br]
-         [:div.row.small-text ;{:style {:font-size "initial"}}
-          (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
+         #_[:div.row.small-text ;{:style {:font-size "initial"}}
+            (when profile-picture-tip  [:p (str (t :social/Profilepicturebody) ".")])]]]]]]))
 
 (defn quicklinks []
   (let [blocks (plugin-fun (session/get :plugins) "routes" "quicklinks")

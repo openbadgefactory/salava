@@ -123,7 +123,7 @@
                                                                                                          :block_order s/Int)
                                                                    #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int :badges [(-> Badge
                                                                                                                                                           (select-keys [:id :name :image_file]))])
-                                                                    #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile")})]}
+                                                                    #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile") :fields [(s/maybe s/Str)]})]}
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file (s/maybe s/Str)

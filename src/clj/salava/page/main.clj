@@ -111,6 +111,12 @@
                     :content (:content %)
                     :block_order (:block_order %)) blocks)))
 
+(defn enabled-profile-blocks [ctx page-id]
+ (let [profile-block (some->> (select-profile-block {:page_id page-id} (get-db ctx)) first)
+       fields (select-enabled-profile-fields {:page_id page-id} (get-db ctx))]
+  (vector (assoc profile-block :fields fields))))
+
+
 (defn page-blocks-for-edit [ctx page-id]
   (let [badge-blocks (badge-blocks-for-edit ctx page-id)
         heading-blocks (heading-blocks-for-edit ctx page-id)
@@ -118,9 +124,10 @@
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (select-pages-tag-blocks {:page_id page-id} (get-db ctx))
         badge-showcase-blocks (showcase-blocks ctx page-id true)
-        profile-block (select-profile-block {:page_id page-id} (get-db ctx))
+        profile-block (enabled-profile-blocks ctx page-id) #_(select-profile-block {:page_id page-id} (get-db ctx))
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks profile-block)]
-    (sort-by :block_order blocks)))
+   (prn profile-block)
+   (sort-by :block_order blocks)))
 
 (defn page-with-blocks [ctx page-id]
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
@@ -179,6 +186,11 @@
             :let [index (.indexOf badges b)]]
       (insert-showcase-badges! {:block_id (:id block) :badge_id b :badge_order index} (get-db ctx)))))
 
+(defn save-profile-fields [ctx page-id block]
+ (delete-page-profile-fields! {:page_id page-id} (get-db ctx))
+ (doseq [f (:fields block)]
+  (insert-page-profile-field {:page_id page-id :field f} (get-db ctx))))
+
 (defn update-showcase-block! [ctx block]
   (update-badge-showcase-block! block (get-db ctx))
   (save-showcase-badges ctx block))
@@ -187,6 +199,14 @@
   (let [block-id (:generated_key (insert-showcase-block<! block (get-db ctx)))]
     (save-showcase-badges ctx (assoc block :id block-id))))
 
+(defn update-profile-block [ctx page-id block]
+ (prn block)
+ (update-profile-block! block (get-db ctx))
+ (save-profile-fields ctx page-id block))
+
+(defn create-profile-block [ctx page-id block]
+ (insert-profile-block! block (get-db ctx))
+ (save-profile-fields ctx block))
 
 (defn url-checker [ctx]
   (fn [element-name attrs]
@@ -283,8 +303,10 @@
                            (create-showcase-block! ctx block)))
 
             "profile" (if id
-                        (update-profile-block! block (get-db ctx))
-                        (insert-profile-block! block (get-db ctx))))))
+                        ;(update-profile-block! block (get-db ctx))
+                       (update-profile-block ctx page-id block)
+                       (create-profile-block ctx page-id block)))))
+
 
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
