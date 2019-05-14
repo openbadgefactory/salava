@@ -38,4 +38,10 @@
                    :summary "Save user profile"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (p/save-user-profile ctx profile (:id current-user)))))))
+                   (ok (p/save-user-profile ctx profile (:id current-user))))
+
+             (GET "/user/tips" []
+                  :summary "Calculate profile completion and get tips"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (p/profile-metrics ctx (:id current-user)))))))

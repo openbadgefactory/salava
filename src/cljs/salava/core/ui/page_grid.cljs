@@ -107,4 +107,23 @@
                                                            :src (str "/" (:image_file badge))}] ) )[:div.page-badges] (take 4 badges))]]
 
 
-                    [:div {:class "media-right"}]]]])]))
+                    [:div {:class "media-right"}]]]]
+      "embed" [:div.media.grid-container
+                 [:a {:target "_blank" :href (path-for (str "/page/view/" id)) :style {:text-decoration "none"}}
+                  [:div.media-content
+                   [:div.media-body
+                    [:div.media-heading
+                     [:p.heading-link name]]
+                    [:div.media-content
+                     [:div.page-owner
+                      [:p (str first_name " " last_name)]]
+                     [:div.page-create-date.no-flip
+                      (date-from-unix-time (* 1000 mtime) "minutes")]
+                     (reduce (fn [r badge] (conj r [:img {:title (:name badge)
+                                                          :alt (:name badge)
+                                                          :src (str "/" (:image_file badge))}] ) )[:div.page-badges] (take 4 badges))]]
+
+
+                   [:div {:class "media-right"}
+                    [:img {:src (profile-picture profile_picture)
+                           :alt (str first_name " " last_name)}]]]]])]))

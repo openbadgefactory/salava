@@ -78,7 +78,6 @@
                   (ok (g/gallery-stats ctx (:last-visited current-user) (:id current-user))))
 
              (GET "/recent" [userid kind]
-                  :auth-rules access/signed
+                  :summary "get user's recent badges or pages"
                   :current-user current-user
-                  (ok (g/public-by-user ctx kind userid (:id current-user)))
-                  ))))
+                  (ok (g/public-by-user ctx kind userid (:id current-user)))))))

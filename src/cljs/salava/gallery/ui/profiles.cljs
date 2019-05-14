@@ -128,7 +128,7 @@
     [:div {:class "col-xs-12 col-sm-6 col-md-4"
            :key id}
      [:div {:class "media grid-container"}
-      [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id}) :style {:text-decoration "none"}}
+      [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id id}) :style {:text-decoration "none"}}
        [:div.media-content
         [:div.media-left
          [:img {:src (profile-picture profile_picture)

@@ -229,4 +229,17 @@
                                                                 ((:delete! init-data) id (:badges block-atom))))}
 
 
-                                    [:i.fa.fa-trash]]]])]))
+                                    [:i.fa.fa-trash]]]]
+      (= "embed" badge-type)    [:div #_{:class "col-xs-12 col-sm-6 col-md-4"
+                                         :key id}
+                                  [:a.heading-link {:target "_blank" :href (path-for (str "/badge/info/" id))}
+                                   ;[:div {:class "media grid-container"}
+                                    [:div.media-content
+                                     (if image_file
+                                      [:div.media-left
+                                       [:img {:src (str "/" image_file)}]])
+                                     [:div.media-body
+                                      [:div.media-heading
+                                       [:p.heading-link
+                                        name]]
+                                      [:div.media-description description]]]]])]))

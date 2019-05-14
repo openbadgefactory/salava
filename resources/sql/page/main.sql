@@ -75,7 +75,7 @@ SELECT f.id, f.name, f.path, f.size, f.mime_type, pb.file_order FROM user_file A
 
 --name: select-profile-block
 --select page's profile block
-SELECT id, 'profile' As type, block_order FROM page_block_profile WHERE page_id = :page_id
+SELECT id, 'profile' AS type, block_order FROM page_block_profile WHERE page_id = :page_id
 
 --name: update-page-name-description!
 --update name and description of the page
@@ -231,3 +231,12 @@ FROM user_badge AS ub
   LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
   WHERE pb.block_id = :block_id
   ORDER BY pb.badge_order
+
+--name: delete-page-profile-fields!
+DELETE FROM page_block_profile_fields WHERE page_id = :page_id
+
+--name: insert-page-profile-field
+INSERT INTO page_block_profile_fields (page_id, field) VALUES (:page_id, :field)
+
+--name: select-enabled-profile-fields
+SELECT field FROM page_block_profile_fields WHERE page_id = :page_id

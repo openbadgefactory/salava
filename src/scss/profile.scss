@@ -1,6 +1,18 @@
 @import 'variables';
 
 #profile {
+  span.move-tab {
+    margin: 10px;
+    color: $button-color;
+    cursor: pointer;
+    font-size: 15px;
+    .fa-fw {
+      text-align: center;
+    }
+    &:hover, &:active, &:focus {
+      color: $button-hover;
+    }
+  }
 .profile-navi  {
   margin-bottom: 15px;
   li.addnew {

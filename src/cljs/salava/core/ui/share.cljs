@@ -85,22 +85,22 @@
   (let [user-lng (session/get-in [:user :language])
         btn-lngs '("de" "en" "es" "fr" "sv")
         use-lng (if (some #(= % user-lng) btn-lngs) user-lng "en")]
-    [:img {:src (str "/img/linkedin-addprofile/" use-lng ".png") :alt "LinkedIn Add to Profile button"}]) )
+    [:img {:src (str "/img/linkedin-addprofile/" use-lng ".png") :alt "LinkedIn Add to Profile button"}]))
 
 (defn tutorial-video []
   (let [user-lng (session/get-in [:user :language])]
     [:div.col-md-6.image-view
-     [:label {:class " sub-heading"} (t :core/Tutorialvideo) ]
+     [:label {:class " sub-heading"} (t :core/Tutorialvideo)]
      [:div.embed-responsive.embed-responsive-16by9
-      {:dangerouslySetInnerHTML {:__html (md->html (if (= "fi" user-lng) video-link-fi video-link-en))}}]])
-  )
+      {:dangerouslySetInnerHTML {:__html (md->html (if (= "fi" user-lng) video-link-fi video-link-en))}}]]))
+
 
 (defn certificate-badge-helper [{:keys [name authory licence url datefrom dateto] :as certification} view-atom]
   (create-class {:reagent-render
                  (fn [] [:div.col-xs-12.certification
                          [:div.row
                           [:div.guide-text.margin-bottom
-                           [:h3 (t :core/Sharelinkedinaddcredit) ]
+                           [:h3 (t :core/Sharelinkedinaddcredit)]
                            [:p (str (t :core/Sharelinkedincopytip) ".")]
                            [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
                                   (add-to-profile-image)]
@@ -114,8 +114,8 @@
                             [input-button (t :core/Licensenumber) "licence" licence]
                             [input-date datefrom dateto]
                             [input-button (t :core/Certificationurl) "url" url]]]
-                          (tutorial-video)
-                          ]])
+                          (tutorial-video)]])
+
                  :component-will-unmount (fn []
                                            (reset! view-atom :start))}))
 
@@ -131,7 +131,7 @@
         [:div.col-xs-12.certification
          [:div.row.flip
           [:div.guide-text.margin-bottom
-           [:h3 (t :core/Sharelinkedinaddcredit) ]
+           [:h3 (t :core/Sharelinkedinaddcredit)]
            [:p (str (t :core/Sharelinkedincopytip) ".")]
            [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
                   (add-to-profile-image)]
@@ -144,11 +144,11 @@
             [input-button (t :core/Licensenumber) "licence" licence]
             [input-date datefrom dateto]
             [input-button (t :core/Certificationurl) "url" url]]]
-          (tutorial-video)
-          ]]]])))
+          (tutorial-video)]]]])))
 
 
-(defn linkedin-modal1 [{:keys [url title certification] }]
+
+(defn linkedin-modal1 [{:keys [url title certification]}]
   (let [site-name (session/get-in [:share :site-name])
         hashtag (session/get-in [:share :hashtag])]
     (fn []
@@ -158,7 +158,7 @@
          [:div.guide-text
           [:h3  (t :core/Shareonlinkedin)]
           [:div (str (t :core/Sharelinkedintip) "! "
-                     (t :core/Sharelinkedinprofile) ":") ]]
+                     (t :core/Sharelinkedinprofile) ":")]]
          [:div
           [:a {:class    "btn btn-oauth btn-linkedin text-center"
                :href     "#"
@@ -167,12 +167,12 @@
                             (mo/open-modal [:badge :linkedin2] {:url url :title title :certification certification}))}
            [:i {:class "fa fa-linkedin"}]
            (t :core/Addtoprofile)]]
-         [:div (str (t :core/Sharelinkedinupdate) ":") ]
+         [:div (str (t :core/Sharelinkedinupdate) ":")]
          [:div
           [:a {:class "btn btn-oauth btn-linkedin" :href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :rel "nofollow" :target "_blank"}
            [:i {:class "fa fa-linkedin"}]
-           (t :badge/Share)]
-          ]]]])))
+           (t :badge/Share)]]]]])))
+
 
 
 
@@ -180,20 +180,20 @@
   (create-class
     {:reagent-render (fn [url]
                        [:a {:href (str "https://plus.google.com/share?url=" url) :target "_blank" :data-action "share" :data-href url :data-annotation "none"}
-                       [:i {:class "fa fa-google-plus-square"}]
-                       ])
+                        [:i {:class "fa fa-google-plus-square"}]])
+
      :should-component-update (fn [] false)}))
 
 (defn wordpress-embed [badge_name image_file url issuer]
   (let [site-url (session/get :site-url)]
-    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><a href="url"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src="(str site-url"/"image_file)" /></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">"badge_name"</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">"issuer"</div></div></div></a></div>"
-         )))
+    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><a href="url"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src="(str site-url"/"image_file)" /></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">"badge_name"</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">"issuer"</div></div></div></a></div>")))
+
 
 
 (defn share-buttons-element [url title public? is-badge? link-or-embed-atom image-file certification]
   (let [site-name (session/get-in [:share :site-name])
-        hashtag   (session/get-in [:share :hashtag])
-        ]
+        hashtag   (session/get-in [:share :hashtag])]
+
     [:div {:id "share"}
      [:div {:id "share-buttons" :class (if-not public? " share-disabled")}
       [:div.share-button
@@ -207,16 +207,16 @@
        (if is-badge?
          [:a {:href "#" :on-click #(mo/open-modal [:badge :linkedin1] {:url url :title title :certification certification})}
           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]
-         #_[:a {:href (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html" )
+         #_[:a {:href (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html")
                 :target "_blank"}
             [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
           [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
-           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
-         )
-       ]
+           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]])]
+
+
       #_[:div.share-button
-       [google-plus url]]
+         [google-plus url]]
       [:div.share-button
        [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank"} [:i {:class "fa fa-facebook-square"}]]]
 
@@ -225,8 +225,8 @@
          [:a {:href            (str "https://www.pinterest.com/pin/create/button/?url=" url "&media=" (base-url) "/" image-file "&description=" title)
               :data-pin-do     "buttonPin"
               :data-pin-custom "true"
-              :target "_blank"
-              }
+              :target "_blank"}
+
           [:i {:class "fa fa-pinterest-square"}]])]
 
       ;;Wordpress embed
@@ -241,8 +241,8 @@
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
      (if (and public? (= "wordpress" @link-or-embed-atom))
        [:div.copy-boxes
-        [input-button nil "url" (wordpress-embed (:name certification) image-file url (:authory certification))]
-        ])
+        [input-button nil "url" (wordpress-embed (:name certification) image-file url (:authory certification))]])
+
      (if (and public? (= "link" @link-or-embed-atom))
        [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value url}]])
      (if (and public? (= "embed" @link-or-embed-atom))
@@ -250,16 +250,16 @@
          [:div.form-horizontal
           [:div.form-group
            [:label.col-xs-3 (t :core/Imageonly) ":"]
-           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/embed\" width=\"200\" height=\"270\"></iframe>")}]]]
-          ]
-         [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))]
-    ))
+           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
+
+         [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))]))
+
 
 
 
 (defn share-buttons [url title public? is-badge? link-or-embed-atom image-file]
    (if (private?)
-     [:div ]
+     [:div]
      (create-class {:reagent-render      (fn [url title public? is-badge?]
                                            (share-buttons-element url title public? is-badge? link-or-embed-atom image-file nil))
                     :component-did-mount (fn []
@@ -273,7 +273,7 @@
 
 (defn share-buttons-badge [url title public? is-badge? link-or-embed-atom image-file certification]
    (if (private?)
-     [:div ]
+     [:div]
      (create-class {:reagent-render      (fn [url title public? is-badge?]
                                            [share-buttons-element url title public? is-badge? link-or-embed-atom image-file certification])
                     :component-did-mount (fn []
