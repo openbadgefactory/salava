@@ -6,6 +6,7 @@
             [salava.core.i18n :refer [t]]
             [reagent-modals.modals :as m]
             [salava.core.ui.field :as f]
+            [salava.core.helper :refer [dump]]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.profile.schemas :as schema :refer [additional-fields]]))
 
@@ -28,38 +29,38 @@
                 (swap! state merge data-with-uuids)))}))
 
 (defn prepare-blocks [blocks]
-  (mapv (fn [b]
-          (case (:type b)
-            ("showcase") (-> b
-                           (dissoc :key)
-                           (select-keys [:id :type])
-                           (merge {:format (or (:format b) "short") :title (:title b) :badges (map :id (:badges b))}))
-            (-> b (dissoc :key)))) blocks))
+ (mapv (fn [b]
+         (case (:type b)
+           ("showcase") (-> b
+                          (dissoc :key)
+                          (select-keys [:id :type])
+                          (merge {:format (or (:format b) "short") :title (:title b) :badges (map #(select-keys % [:id :visibility]) (:badges b))}))
+           (-> b (dissoc :key)))) blocks))
 
 (defn save-profile [state f show-alert?]
-  (let [{:keys [profile_visibility about profile_picture]} (get-in @state [:edit-profile :user])
-        profile-fields (->> (get-in @state [:edit-profile :profile])
-                            (filter #(not-empty (:field %)))
-                            (map #(select-keys % [:field :value])))
-        blocks (prepare-blocks (:blocks @state))
-        theme (or (:theme @state) 0)
-        tabs @(cursor state [:tabs])
-        alert-atom (cursor state [:alert])]
-   (ajax/POST
-     (path-for "/obpv1/profile/user/edit")
-     {:params  {:profile_visibility profile_visibility
-                :about              about
-                :profile_picture    profile_picture
-                :fields             profile-fields
-                :blocks blocks
-                :theme theme
-                :tabs tabs}
-      :handler (fn [data]
-                 (init-data state)
-                 (when show-alert? (reset! alert-atom data))
-                 (refresh-profile state)
-                 (when (and f (= "success" (:status data)) (f))))
-      :finally (fn [] (js/setTimeout (fn [] (reset! alert-atom nil)) 3000))})))
+ (let [{:keys [profile_visibility about profile_picture]} (get-in @state [:edit-profile :user])
+       profile-fields (->> (get-in @state [:edit-profile :profile])
+                           (filter #(not-empty (:field %)))
+                           (map #(select-keys % [:field :value])))
+       blocks (prepare-blocks (:blocks @state))
+       theme (or (:theme @state) 0)
+       tabs @(cursor state [:tabs])
+       alert-atom (cursor state [:alert])]
+  (ajax/POST
+    (path-for "/obpv1/profile/user/edit")
+    {:params  {:profile_visibility profile_visibility
+               :about              about
+               :profile_picture    profile_picture
+               :fields             profile-fields
+               :blocks blocks
+               :theme theme
+               :tabs tabs}
+     :handler (fn [data]
+                (init-data state)
+                (when show-alert? (reset! alert-atom data))
+                (refresh-profile state)
+                (when (and f (= "success" (:status data)) (f))))
+     :finally (fn [] (js/setTimeout (fn [] (reset! alert-atom nil)) 3000))})))
 
 (defn button-logic [state]
   {:content {:previous nil
@@ -106,7 +107,7 @@
                                                                                                             (swap! state assoc :spinner false)
                                                                                                             (navigate-to (str "/profile/"(:user-id @state))))) true))}
 
-                                          (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) "Save and close!" #_(t :page/View)]
+                                          (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :profile/Saveandclose) #_(t :page/View)]
                                          (when next?  [:div.pull-right {:id "step-button"}
                                                        [:a {:href "#" :on-click #(do
                                                                                    (.preventDefault %)

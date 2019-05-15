@@ -83,11 +83,14 @@
 
 
 (defn save-showcase-badges [ctx block]
-  (let [badges (:badges block)]
+  (let [badges (:badges block)
+        user-id (:user_id block)]
     (delete-showcase-badges! {:block_id (:id block)} (get-db ctx))
     (doseq [b badges
-            :let [index (.indexOf badges b)]]
-      (insert-showcase-badges! {:block_id (:id block) :badge_id b :badge_order index} (get-db ctx)))))
+            :let [index (.indexOf badges b)
+                  {:keys [id visibility]} b]]
+     (when-not (= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "main" "set-visibility!")) f (f ctx id "public" user-id)))
+     (insert-showcase-badges! {:block_id (:id block) :badge_id id :badge_order index} (get-db ctx)))))
 
 (defn update-showcase-block! [ctx block]
   (update-badge-showcase-block! block (get-db ctx))
@@ -123,7 +126,7 @@
 
        (case (:type block)
         ("showcase") (when (= (->> (:badges block)
-                                   (filter (fn [x] (some #(= x %) badge-ids)))
+                                   (filter (fn [x] (some #(= (:id x) %) badge-ids)))
                                    count)
                               (count (:badges block)))
                            (if id

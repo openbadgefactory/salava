@@ -125,7 +125,6 @@
         badge-showcase-blocks (showcase-blocks ctx page-id true)
         profile-block (enabled-profile-blocks ctx page-id) #_(select-profile-block {:page_id page-id} (get-db ctx))
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks profile-block)]
-   (prn profile-block)
    (sort-by :block_order blocks)))
 
 (defn page-with-blocks [ctx page-id]
@@ -180,25 +179,27 @@
 
     (save-files-block-content ctx (assoc block :id block-id))))
 
-(defn save-showcase-badges [ctx block]
-  (let [badges (:badges block)]
-    (delete-showcase-badges! {:block_id (:id block)} (get-db ctx))
-    (doseq [b badges
-            :let [index (.indexOf badges b)]]
-      (insert-showcase-badges! {:block_id (:id block) :badge_id b :badge_order index} (get-db ctx)))))
+(defn save-showcase-badges [ctx block user-id]
+ (let [badges (:badges block)]
+   (delete-showcase-badges! {:block_id (:id block)} (get-db ctx))
+   (doseq [b badges
+           :let [index (.indexOf badges b)
+                 {:keys [id visibility]} b]]
+    (when-not (= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "main" "set-visibility!")) f (f ctx id "public" user-id)))
+    (insert-showcase-badges! {:block_id (:id block) :badge_id id :badge_order index} (get-db ctx)))))
 
 (defn save-profile-fields [ctx page-id block]
  (delete-page-profile-fields! {:page_id page-id} (get-db ctx))
  (doseq [f (:fields block)]
   (replace-page-profile-field! {:page_id page-id :field f} (get-db ctx))))
 
-(defn update-showcase-block! [ctx block]
+(defn update-showcase-block! [ctx block user-id]
   (update-badge-showcase-block! block (get-db ctx))
-  (save-showcase-badges ctx block))
+  (save-showcase-badges ctx block user-id))
 
-(defn create-showcase-block! [ctx block]
+(defn create-showcase-block! [ctx block user-id]
   (let [block-id (:generated_key (insert-showcase-block<! block (get-db ctx)))]
-    (save-showcase-badges ctx (assoc block :id block-id))))
+    (save-showcase-badges ctx (assoc block :id block-id) user-id)))
 
 (defn update-profile-block [ctx page-id block]
  (update-profile-block! block (get-db ctx))
@@ -299,12 +300,12 @@
                    (insert-tag-block! block (get-db ctx)))
 
            "showcase" (when (= (->> (:badges block)
-                                    (filter (fn [x] (some #(= x %) badge-ids)))
-                                    count)
+                                (filter (fn [x] (some #(= (:id x) %) badge-ids)))
+                                count)
                                (count (:badges block)))
                         (if id
-                          (update-showcase-block! ctx block)
-                          (create-showcase-block! ctx block)))
+                          (update-showcase-block! ctx block user-id)
+                          (create-showcase-block! ctx block user-id)))
 
            "profile" (when (= (->> (:fields block)
                                    (filter (fn [x] (some #(= x %) profile-fields)))

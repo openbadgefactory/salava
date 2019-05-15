@@ -275,7 +275,6 @@
     [:h1 header]]])
 
 (defn block-specific-values [{:keys [type content badge tag format sort files title badges fields]}]
- (prn badges)
  (case type
    "heading" {:type "heading" :size "h1" :content content}
    "sub-heading" {:type "heading" :size "h2":content content}
