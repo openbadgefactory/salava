@@ -166,17 +166,19 @@
 
 (defn profile-metrics [ctx user-id]
  (let [user-profile (user-information-and-profile ctx user-id nil)
-       {:keys [user profile tabs]} user-profile
+       {:keys [user profile tabs blocks]} user-profile
        {:keys [about profile_picture ]} user
        {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
        complete-profile (and (not (blank? profile_picture)) (not (blank? about)))
        weights {:about 25 :profile-picture 50 :location 25}
-       enabled-location (not (empty? enabled))]
+       enabled-location (not (empty? enabled))
+       has-showcase (some #(= "showcase" (:type %)) blocks)]
 
   {:tips {:profile-picture-tip (blank? profile_picture)
           :aboutme-tip (blank? about)
           :location-tip (not enabled-location)
-          :tabs-tip (empty? tabs)}
+          :tabs-tip (empty? tabs)
+          :showcase-tip (nil? has-showcase)}
    :completion_percentage (cond
                            (and complete-profile enabled-location) 100
                            complete-profile (reduce + (vals (select-keys weights [:about :profile-picture])))

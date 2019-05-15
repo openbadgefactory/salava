@@ -157,7 +157,7 @@
   (get-profile-tips state)
   (fn []
    (let [{:keys [tips completion_percentage]} @state]
-    [:div
+    [:div#profiletips
      ;(when (some #(true? %) (vals (dissoc tips :tabs-tip))) [:div.col-xs-12.pending {:style {:margin "10px 2px"}} "Your profile is not complete"])
      [:div.progress.col-xs-12 {:style {:margin-bottom "10px"}}
       [:div.progress-bar.progress-bar-success
@@ -167,20 +167,23 @@
         :aria-valuemin "0"
         :aria-valuemax "100"}
        (str completion_percentage "% complete")]]
-     (when (some #(true? %) (vals (dissoc tips :tabs-tip))) [:div.col-xs-12 {:style {:margin "5px 2px" :font-size "14px" :font-weight "bold"}} (t :profile/Tipstoimproveprofile)])
+     (when (some #(true? %) (vals (dissoc tips :tabs-tip :showcase-tip))) [:div.col-xs-12 {:style {:margin "5px 2px" :font-size "14px" :font-weight "bold"}} (t :profile/Tipstoimproveprofile)])
 
      (reduce-kv (fn [r k v]
                  (conj r (when (true? v)
-                          [:div.col-xs-12.tip {:style {:margin "10px 0" :font-size "14px"}}
-                           [:i.fa.fa-fw.fa-lightbulb-o.icon](case k
-                                                             :profile-picture-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
-                                                                                                                                                                   (.preventDefault %)
-                                                                                                                                                                   (session/put! :edit-mode true))} (t :profile/Profilepicturetip)]
-                                                             :aboutme-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
-                                                                                                                                                           (.preventDefault %)
-                                                                                                                                                           (session/put! :edit-mode true))} (t :profile/Aboutmetip)]
-                                                             :location-tip [:a {:href (path-for "/user/edit")}(t :profile/Locationtip)]
-                                                             :tabs-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
-                                                                                                                                                           (.preventDefault %)
-                                                                                                                                                           (session/put! :edit-mode true))} (t :profile/Tabstip)])])))
+                          [:div.col-xs-12.tip ;{:style {:margin "10px 0" :font-size "14px"}}
+                           [:i.fa.fa-fw.fa-lightbulb-o.tipicon](case k
+                                                                  :profile-picture-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                                        (.preventDefault %)
+                                                                                                                                                                        (session/put! :edit-mode true))} (t :profile/Profilepicturetip)]
+                                                                  :aboutme-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                                (.preventDefault %)
+                                                                                                                                                                (session/put! :edit-mode true))} (t :profile/Aboutmetip)]
+                                                                  :location-tip [:a {:href (path-for "/user/edit")}(t :profile/Locationtip)]
+                                                                  :tabs-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                                (.preventDefault %)
+                                                                                                                                                                (session/put! :edit-mode true))} (t :profile/Tabstip)]
+                                                                  :showcase-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                                 (.preventDefault %)
+                                                                                                                                                                 (session/put! :edit-mode true))} (t :profile/Showcasetip)])])))
                 [:div] tips)]))))
