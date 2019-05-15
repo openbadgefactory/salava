@@ -374,7 +374,10 @@
          [:span.small.icon]
          #_[:i.fa.fa-angle-right.icon.small]]
         [:div.content
-         (when-not (not-activated?) [:a.btn.button {:href (path-for "/user/edit/profile")} (t :page/Edit)])
+         (when-not (not-activated?) [:a.btn.button {:href (path-for (str "/profile/" (session/get-in [:user :id])))
+                                                    :on-click #(do
+                                                                (.preventDefault %)
+                                                                (session/put! :edit-mode true))} (t :page/Edit)])
 
          [:div
           [:div.media
