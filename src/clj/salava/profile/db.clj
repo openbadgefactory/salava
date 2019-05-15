@@ -41,9 +41,12 @@
 
 (defn profile-blocks [ctx user-id]
   (let [profile-properties (-> (profile-properties ctx user-id) :blocks)
-        basic-blocks (if (seq profile-properties) profile-properties default-profile-blocks)
+        {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
+        tmp (if (seq profile-properties) profile-properties default-profile-blocks)
+        basic-blocks (if (empty? enabled) (remove #(= "location" (:type %)) tmp) tmp)
         showcase-blocks (showcase-blocks ctx user-id)
         blocks (vec (concat basic-blocks showcase-blocks))]
+
    (sort-by :block_order blocks)))
 
 (defn user-information-and-profile
@@ -167,16 +170,18 @@
        {:keys [about profile_picture ]} user
        {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
        complete-profile (and (not (blank? profile_picture)) (not (blank? about)))
-       weights {:about 50 :profile-picture 50 :location 25}]
+       weights {:about 25 :profile-picture 50 :location 25}
+       enabled-location (not (empty? enabled))]
+
   {:tips {:profile-picture-tip (blank? profile_picture)
           :aboutme-tip (blank? about)
-          :location-tip (empty?  enabled #_(seq enabled))
+          :location-tip (not enabled-location)
           :tabs-tip (empty? tabs)}
    :completion_percentage (cond
-                           (and complete-profile (true? enabled)) 100
+                           (and complete-profile enabled-location) 100
                            complete-profile (reduce + (vals (select-keys weights [:about :profile-picture])))
-                           ;(and (not (blank? about)) (blank? profile_picture) #_(true? enabled)) (+ (:about weights) (:location weights))
-                           (and (not (blank? about)) (blank? profile_picture) #_(false? enabled)) (:about weights)
-                           ;(and (not (blank? profile_picture)) (blank? about) #_(true? enabled)) (+ (:profile-picture weights) (:location weights))
-                           (and (not (blank? profile_picture)) (blank? about) #_(false? enabled)) (:profile-picture weights)
+                           (and (not (blank? about)) (blank? profile_picture) enabled-location) (+ (:about weights) (:location weights))
+                           (and (not (blank? about)) (blank? profile_picture) (not enabled-location)) (:about weights)
+                           (and (not (blank? profile_picture)) (blank? about) enabled-location) (+ (:profile-picture weights) (:location weights))
+                           (and (not (blank? profile_picture)) (blank? about) (not enabled-location)) (:profile-picture weights)
                            :else 5)}))

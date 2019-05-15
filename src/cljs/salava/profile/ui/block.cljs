@@ -6,7 +6,8 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.user.schemas :refer [contact-fields]]
             [clojure.string :refer [blank?]]
-   [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [reagent.session :as session]))
 
 (defn update-block-value [block-atom key value]
  (swap! block-atom assoc key value))
@@ -157,8 +158,8 @@
   (fn []
    (let [{:keys [tips completion_percentage]} @state]
     [:div
-     (when (some #(true? %) (vals (dissoc tips :tabs-tip))) [:div.col-xs-12.pending {:style {:margin "10px 2px"}} "Your profile is not complete"])
-     [:div.progress.col-xs-12
+     ;(when (some #(true? %) (vals (dissoc tips :tabs-tip))) [:div.col-xs-12.pending {:style {:margin "10px 2px"}} "Your profile is not complete"])
+     [:div.progress.col-xs-12 {:style {:margin-bottom "10px"}}
       [:div.progress-bar.progress-bar-success
        {:role "progressbar"
         :aria-valuenow (str completion_percentage)
@@ -166,11 +167,20 @@
         :aria-valuemin "0"
         :aria-valuemax "100"}
        (str completion_percentage "% complete")]]
+     (when (some #(true? %) (vals (dissoc tips :tabs-tip))) [:div.col-xs-12 {:style {:margin "5px 2px" :font-size "14px" :font-weight "bold"}} (t :profile/Tipstoimproveprofile)])
 
      (reduce-kv (fn [r k v]
-                 (conj r (when (true? v) [:div.col-xs-12.tip {:style {:margin "10px 0" :font-size "16px"}} [:i.fa.fa-fw-fa-lg.fa-lightbulb-o.icon](case k
-                                                                                                                                                   :profile-picture-tip "Upload a profile picture to complete your profile"
-                                                                                                                                                   :aboutme-tip "Tell us something about yourself to complete your profile"
-                                                                                                                                                   :location-tip "Why don't you put yourself on the map"
-                                                                                                                                                   :tabs-tip "Did you know you can enrich your profile by add pages as tabs")])))
+                 (conj r (when (true? v)
+                          [:div.col-xs-12.tip {:style {:margin "10px 0" :font-size "14px"}}
+                           [:i.fa.fa-fw.fa-lightbulb-o.icon](case k
+                                                             :profile-picture-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                                   (.preventDefault %)
+                                                                                                                                                                   (session/put! :edit-mode true))} (t :profile/Profilepicturetip)]
+                                                             :aboutme-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                           (.preventDefault %)
+                                                                                                                                                           (session/put! :edit-mode true))} (t :profile/Aboutmetip)]
+                                                             :location-tip [:a {:href (path-for "/user/edit")}(t :profile/Locationtip)]
+                                                             :tabs-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
+                                                                                                                                                           (.preventDefault %)
+                                                                                                                                                           (session/put! :edit-mode true))} (t :profile/Tabstip)])])))
                 [:div] tips)]))))

@@ -133,10 +133,11 @@
   (ajax/GET
     (path-for (str "/obpv1/profile/" user-id) true)
     {:handler (fn [data]
-                (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (pe/random-key))
-                                                                    (get data :blocks))))]
-                  (swap! state assoc :permission "success" :edit {:active-tab :content})
-                  (swap! state merge data-with-uuids)))}))
+               (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (pe/random-key))
+                                                                   (get data :blocks))))]
+                 (swap! state assoc :permission "success" :edit {:active-tab :content} :edit-mode (session/get! :edit-mode false))
+                 (swap! state merge data-with-uuids)
+                (prn (session/get :user))))}))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
@@ -145,7 +146,7 @@
                      :badge-small-view false
                      :pages-small-view true
                      :active-index 0
-                     :edit-mode false
+                     :edit-mode nil
                      :toggle-move-mode false
                      :blocks []
                      :edit {:active-tab :content}
@@ -155,7 +156,6 @@
                      :show-manage-buttons true})
         user (session/get :user)]
     (init-data user-id state)
-
     (fn []
       (cond
         (= "initial" (:permission @state)) (layout/default site-navi [:div])
