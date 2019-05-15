@@ -38,7 +38,7 @@
      [:label (t :user/Profilevisibility) ": " @visibility-atom]]))
 
 (def block-type-map
- [{:icon "fa-certificate" :icon-2 "fa-ban" :text (t :page/Badgeshowcase) :value "showcase"}])
+ [{:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}])
 
 
 (defn contenttype [{:keys [block-atom index]}]
@@ -323,8 +323,8 @@
    [:div {:style {:text-align "center" :margin "15px 0"}}
     (when @(cursor state [:edit-mode])
      [:div
-      (when-not (= page-id (some->> @(cursor state [:tabs])  first :id)) [:span.move-tab {:href "#" :on-click #(f/move-field :up (cursor state [:tabs])  index)} [:i.fa.fa-chevron-left.fa-fw.fa-lg] (t :profile/Moveleft)])
-      (when-not (= page-id (some->> @(cursor state [:tabs])  last :id))[:span.move-tab {:href "#" :on-click #(f/move-field :down (cursor state [:tabs]) index)} (t :profile/Moveright)[:i.fa.fa-chevron-right.fa-fw.fa-lg]])])]
+      (when-not (= page-id (some->> @(cursor state [:tabs])  first :id)) [:span.move-tab {:href "#" :on-click #(f/move-field :up (cursor state [:tabs])  index)} [:i.fa.fa-chevron-left.fa-fw.fa-lg] (t :profile/Movetableft)])
+      (when-not (= page-id (some->> @(cursor state [:tabs])  last :id))[:span.move-tab {:href "#" :on-click #(f/move-field :down (cursor state [:tabs]) index)} (t :profile/Movetabright)[:i.fa.fa-chevron-right.fa-fw.fa-lg]])])]
    [view-page page]]))
 
 

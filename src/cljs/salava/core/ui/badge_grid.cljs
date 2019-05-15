@@ -162,7 +162,7 @@
                                                               (.preventDefault %)
                                                               (let [new-field-atom (:new-field-atom @state)
                                                                     {:keys [type badges index function]} @new-field-atom
-                                                                    badge {:id id :image_file image_file :type "badge" :name name :description description}]
+                                                                    badge {:id id :image_file image_file :type "badge" :name name :description description :visibility visibility}]
                                                                 (cond
                                                                   (= "badge" type)(do
                                                                                     (swap! new-field-atom merge {:badge badge})
@@ -203,26 +203,26 @@
                                      [:div.media-body
                                       [:div.media-heading name]]]]]
                                       ;[:div.media-issuer [:p issuer_content_name]]
-                                  [:div.swap-button {:title "Change to another badge"}
+                                  [:div.swap-button {:title (t :page/Replacebadge)}
                                    [:a {:href "#" :on-click (fn []
                                                              (let [index (.indexOf (mapv :id (:badges @state)) id)
                                                                    new-field (atom {:type "swap" :index index :badges (:badges @state) :function (:swap! init-data)})]
                                                               (mo/open-modal [:badge :my] {:type "pickable" :block-atom state :new-field-atom new-field})))}
                                     [:i.fa.fa-exchange]]]
                                   (when-not (= id (last (mapv :id (:badges @state))))
-                                   [:div.move-right {:title "move badge"}
+                                   [:div.move-right {:title (t :page/Moveright)}
                                                     [:a {:href "#" :on-click (fn []
                                                                               (let [index (.indexOf (mapv :id (:badges @state)) id)]
                                                                                (f/move-field :down (cursor state [:badges]) index)))}
                                                         [:i.fa.fa-chevron-right]]])
                                   (when-not (= id (first (mapv :id (:badges @state))))
-                                   [:div.move-left {:title "move badge"}
+                                   [:div.move-left {:title (t :page/Moveleft)}
                                                [:a {:href "#" :on-click (fn []
                                                                          (let [index (.indexOf (mapv :id (:badges @state)) id)]
                                                                           (f/move-field :up (cursor state [:badges]) index)))}
                                                    [:i.fa.fa-chevron-left]]])
 
-                                  [:div.delete-button {:title "Delete badge"}
+                                  [:div.delete-button {:title (t :badge/Delete)}
                                    [:a {:href "#" :on-click #(do
                                                                (.preventDefault %)
                                                                (let [block-atom @state]

@@ -14,9 +14,13 @@
             [salava.core.ui.modal :refer [open-modal]]
             [clojure.string :refer [blank? starts-with?]]
             [reagent.session :as session]
-            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]
+            [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]))
 
 
+(defn random-key []
+  (-> (make-random-uuid)
+      (uuid-string)))
 
 (defn delete-page [id]
   (ajax/DELETE
@@ -196,9 +200,9 @@
                                    (badge-block (assoc badge :format "long")))))
                      container badges))]]]))
 
-(defn profile-block [block-atom]
-  (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
-    (when block [block] #_[:div {:style {:margin "10px 0px"}} [block]])))
+(defn profile-block [user_id block-atom]
+ (let [block (first (plugin-fun (session/get :plugins) "block" "userprofileinfo"))]
+   (when block [block user_id block-atom] #_[:div {:style {:margin "10px 0px"}} [block]])))
 
 (defn view-page [page]
   (let [{:keys [id name description mtime user_id first_name last_name blocks theme border padding visibility qr_code]} page]
@@ -241,7 +245,7 @@
                       "heading" (heading-block block)
                       "tag" (tag-block block)
                       "showcase" (showcase-block block)
-                      "profile" (profile-block block)
+                      "profile" (profile-block user_id (atom block))
                       nil)]))]]]])]))
 
 (defn render-page-modal [page]
@@ -270,22 +274,41 @@
    [:div.col-sm-12
     [:h1 header]]])
 
-(defn block-specific-values [{:keys [type content badge tag format sort files title badges]}]
-  (case type
-    "heading" {:type "heading" :size "h1" :content content}
-    "sub-heading" {:type "heading" :size "h2":content content}
-    "badge" {:format (or format "short") :badge_id (:id badge 0)}
-    "html" {:content content}
-    "file" {:files (map :id files)}
-    "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
-    "showcase" {:format (or format "short") :title (or title (t :page/Untitled)) :badges (map :id badges)}
-    nil))
+(defn block-specific-values [{:keys [type content badge tag format sort files title badges fields]}]
+ (prn badges)
+ (case type
+   "heading" {:type "heading" :size "h1" :content content}
+   "sub-heading" {:type "heading" :size "h2":content content}
+   "badge" {:format (or format "short") :badge_id (:id badge 0)}
+   "html" {:content content}
+   "file" {:files (map :id files)}
+   "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
+   "showcase" {:format (or format "short") :title (or title (t :page/Untitled)) :badges (map #(-> % (select-keys [:id :visibility])) badges)}
+   "profile" {:fields fields}
+   nil))
 
 (defn prepare-blocks-to-save [blocks]
   (for [block blocks]
     (-> block
         (select-keys [:id :type])
         (merge (block-specific-values block)))))
+
+(defn init-data [state id]
+  (ajax/GET
+    (path-for (str "/obpv1/page/edit/" id) true)
+    {:handler (fn [data]
+               (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
+                                                                              (get-in data [:page :blocks]))))]
+                 (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
+
+#_(defn refresh-page [id state]
+   (ajax/GET
+     (path-for (str "/obpv1/page/edit/" id) true)
+     {:handler (fn [data]
+                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
+                                                                               (get-in data [:page :blocks]))))]
+                  (swap! state merge data-with-uuids #_(assoc data-with-uuids :toggle-move-mode false))))}))
+
 
 (defn save-page [state next-url]
   (let [{:keys [id name description blocks]} (:page @state)]
@@ -296,6 +319,7 @@
                 :blocks (prepare-blocks-to-save blocks)}
        :handler (fn [data]
                   (swap! state assoc :spinner false)
+                 ;(refresh-page id state)
                  (when next-url (navigate-to next-url)))})))
 
 (defn save-theme [state next-url]
@@ -425,10 +449,11 @@
        (t  :page/Preview)]]
      [:div {:class "col-xs-4"
             :id "buttons-right"}
-      [:a {:class "btn btn-primary"
-           :on-click #(do (.preventDefault %) (navigate-to (str "/profile/page/view/" id)))
-           :href "#"}
-       [:i.fa.fa-eye.fa-fw.fa-lg] (t :page/View)]]
+      [:button.btn.btn-danger {:on-click #(do
+                                             (.preventDefault %)
+                                             (m/modal! (delete-page-modal id state)))}
+         [:i.fa.fa-trash.fa-fw.fa-lg](t :core/Delete)]]
+
      [m/modal-window]]))
 
 (defn manage-page-buttons [current id state]
@@ -461,11 +486,6 @@
                                                                                 (.preventDefault %)
                                                                                 (navigate-to  "/profile/page"))}
                                           (t :core/Cancel)]
-
-                                         [:button.btn.btn-danger {:on-click #(do
-                                                                              (.preventDefault %)
-                                                                              (m/modal! (delete-page-modal id state)))}
-                                          (t :core/Delete)]
                                          (when next?  [:div.pull-right {:id "step-button"}
                                                        [:a {:href "#" :on-click #(do
                                                                                    (.preventDefault %)

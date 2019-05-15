@@ -21,36 +21,6 @@
   (-> (make-random-uuid)
       (uuid-string)))
 
-(defn block-specific-values [{:keys [type content badge tag format sort files badges title fields]}]
- (prn fields)
- (case type
-   "heading" {:type "heading" :size "h1" :content content}
-   "sub-heading" {:type "heading" :size "h2":content content}
-   "badge" {:format (or format "short") :badge_id (:id badge 0)}
-   "html" {:content content}
-   "file" {:files (map :id files)}
-   "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
-   "showcase" {:format (or format "short") :title title :badges (map :id badges)}
-  "profile" {:fields fields}
-   nil))
-
-(defn prepare-blocks-to-save [blocks]
-  (for [block blocks]
-    (-> block
-        (select-keys [:id :type])
-        (merge (block-specific-values block)))))
-
-(defn save-page [{:keys [id name description blocks]} state next-url]
-  (ajax/POST
-    (path-for (str "/obpv1/page/save_content/" id))
-    {:params {:name name
-              :description description
-              :blocks (prepare-blocks-to-save blocks)}
-     :handler (fn [data]
-                (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
-                (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000)
-                #_(navigate-to next-url))}))
-
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
 
@@ -277,7 +247,7 @@
    {:icon "fa-file" :text (t :page/Files) :value "file"}
    {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
    {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
-   {:icon "fa-superpowers" :text (t :page/Badgeshowcase) :value "showcase"}
+   {:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}
    {:icon "fa-user" :text "Profile information" :value "profile"}])
 
 (defn badge-showcase [state block-atom]
@@ -321,7 +291,7 @@
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "editprofileinfo"))]
-    (if block [block block-atom] [:div ""])))
+    (if block (block block-atom) [:div ""])))
 
 (defn contenttype [{:keys [block-atom index]}]
   (let [block-type-map (if (some #(= "profile" (:type %)) @block-atom)
@@ -351,7 +321,9 @@
 
                                                                               [:div
 
-                                                                               [:i {:class (str "fa icon " (:icon v))}]
+                                                                               [:i.fa.fa-fw {:class (:icon v)}]
+                                                                               (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
+
                                                                                [:span (:text v)]]]]
                        [:span {:style {:display "inline"}}
                         [info {:placement "right" :content (case (:value v)
@@ -478,20 +450,6 @@
               :value @name
               :on-change #(reset! name (.-target.value %))}]]]])
 
-#_(defn page-form [state]
-    [:form.form-horizontal
-     [:div {:id "title-and-description"}
-      [page-title (cursor state [:page :name])]
-      [page-description (cursor state [:page :description])]]
-     [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
-     [:div.row
-      [:div.col-md-12
-       [:button {:class    "btn btn-primary"
-                 :on-click #(do
-                              (.preventDefault %)
-                              (save-page (:page @state) (str "/profile/page/edit_theme/" (get-in @state [:page :id]))))}
-        (t :page/Save)]]]])
-
 (defn page-form [state]
   [:div
    [:div.panel.thumbnail
@@ -514,7 +472,6 @@
      [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content state]
-     ;[ph/edit-page-buttons id :content  (fn [next-url] (save-page (:page @state) state next-url)) state]
      [page-form state]]))
 
 (defn init-data [state id]

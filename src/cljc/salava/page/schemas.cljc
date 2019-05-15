@@ -52,7 +52,7 @@
 
 (s/defschema ShowcaseBlock {:type (s/eq "showcase")
                             :title  (s/maybe s/Str)
-                            :badges [(s/maybe s/Int)]
+                            :badges [{:id (s/maybe s/Int) (s/optional-key :visibility) s/Str}]
                             :format      (s/enum "short" "long")})
 
 
@@ -98,7 +98,7 @@
                                                                                                                                                                              (s/optional-key :resource_id) (s/maybe s/Int)
                                                                                                                                                                               (s/optional-key :resource_type) (s/maybe s/Str)
                                                                                                                                                                               (s/optional-key :mime_type) (s/maybe s/Str)}))]))])
-                                                          #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile")})]))
+                                                          #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile") (s/optional-key :fields) [(s/maybe s/Str)]})]))
 
 (s/defschema EditPageContent {:page   {:id          s/Int
                                        :user_id     s/Int
@@ -123,7 +123,7 @@
                                                                                                          :block_order s/Int)
                                                                    #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int :block_order s/Int :badges [(-> Badge
                                                                                                                                                           (select-keys [:id :name :image_file]))])
-                                                                    #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile") :fields [(s/maybe s/Str)]})]}
+                                                                    #(= (:type %) "profile") {:id s/Int :block_order s/Int :type (s/eq "profile") (s/optional-key :fields) [(s/maybe s/Str)]})]}
                               :badges [{:id         s/Int
                                         :name       s/Str
                                         :image_file (s/maybe s/Str)
@@ -143,4 +143,4 @@
                                                                                                   :files (s/maybe [s/Int]))
                                                            #(= (:type %) "tag") (assoc TagBlock (s/optional-key :id) s/Int)
                                                            #(= (:type %) "showcase") (assoc ShowcaseBlock (s/optional-key :id) s/Int)
-                                                           #(= (:type %) "profile") {:type (s/eq "profile") (s/optional-key :id) s/Int})]})
+                                                           #(= (:type %) "profile") {:type (s/eq "profile") (s/optional-key :id) s/Int (s/optional-key :fields) [(s/maybe s/Str)]})]})
