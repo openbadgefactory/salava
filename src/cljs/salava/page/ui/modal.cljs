@@ -1,5 +1,5 @@
 (ns salava.page.ui.modal
-  (:require [reagent.core :refer [atom create-class]]
+  (:require [reagent.core :refer [atom create-class cursor]]
             [reagent-modals.modals :as m]
             [markdown.core :refer [md->html]]
             [salava.core.ui.ajax-utils :as ajax]
@@ -64,7 +64,7 @@
                             "heading" (heading-block block)
                             "tag" (tag-block block)
                            "showcase" (showcase-block block)
-                           "profile" (profile-block block)
+                           "profile" (profile-block user_id (atom block))
                             nil)]))]]]])]
      [:div.col-xs-12 [reporttool1 id name "page"]]]))
 

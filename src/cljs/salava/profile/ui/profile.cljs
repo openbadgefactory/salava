@@ -110,8 +110,7 @@
      [pe/action-buttons state]]))
 
 (defn edit-profile [state]
-  (let [profile-info-block (pb/userprofileinfo (:user-id @state) state)
-        content @(cursor state [:edit :active-tab])]
+  (let [content @(cursor state [:edit :active-tab])]
     [:div
      (case content
        :content [edit-profile-content state]

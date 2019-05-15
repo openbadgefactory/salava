@@ -235,8 +235,8 @@ FROM user_badge AS ub
 --name: delete-page-profile-fields!
 DELETE FROM page_block_profile_fields WHERE page_id = :page_id
 
---name: insert-page-profile-field
-INSERT INTO page_block_profile_fields (page_id, field) VALUES (:page_id, :field)
+--name: replace-page-profile-field!
+REPLACE INTO page_block_profile_fields (page_id, field) VALUES (:page_id, :field)
 
 --name: select-enabled-profile-fields
 SELECT field FROM page_block_profile_fields WHERE page_id = :page_id

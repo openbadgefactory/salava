@@ -84,7 +84,7 @@
                       "heading" (ph/heading-block block)
                       "tag" (tag-block block)
                       "showcase" (showcase-block block)
-                      "profile" (ph/profile-block block)
+                      "profile" (ph/profile-block user_id (atom block))
                       nil)]))]]]])]))
 
 (defn page-content [page state]

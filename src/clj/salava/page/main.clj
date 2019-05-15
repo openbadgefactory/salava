@@ -17,7 +17,8 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.zip :as zip]
             [net.cgrand.enlive-html :as enlive]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [salava.profile.schemas :refer [additional-fields]]))
 
 
 
@@ -79,6 +80,10 @@
                                            (update :criteria_content md->html)
                                            (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true))
                                            (dissoc :user_id)))) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
+(defn enabled-profile-blocks [ctx page-id]
+ (let [profile-block (some->> (select-profile-block {:page_id page-id} (get-db ctx)) first)
+       fields (select-enabled-profile-fields {:page_id page-id} (into {:row-fn :field}(get-db ctx)))]
+  (when (seq profile-block)(vector (assoc profile-block :fields fields)))))
 
 (defn page-blocks [ctx page-id]
   (let [badge-blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))
@@ -87,7 +92,7 @@
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
         showcase-blocks (showcase-blocks ctx page-id false)
-        profile-block (select-profile-block {:page_id page-id} (get-db ctx))
+        profile-block (enabled-profile-blocks ctx page-id);(select-profile-block {:page_id page-id} (get-db ctx))
         blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks showcase-blocks profile-block)]
     (sort-by :block_order blocks)))
 
@@ -110,12 +115,6 @@
                             "sub-heading")
                     :content (:content %)
                     :block_order (:block_order %)) blocks)))
-
-(defn enabled-profile-blocks [ctx page-id]
- (let [profile-block (some->> (select-profile-block {:page_id page-id} (get-db ctx)) first)
-       fields (select-enabled-profile-fields {:page_id page-id} (get-db ctx))]
-  (vector (assoc profile-block :fields fields))))
-
 
 (defn page-blocks-for-edit [ctx page-id]
   (let [badge-blocks (badge-blocks-for-edit ctx page-id)
@@ -163,7 +162,9 @@
     "showcase" (do
                  (delete-showcase-block! {:id (:id block)} (get-db ctx))
                  (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))
-    "profile" (delete-profile-block! block (get-db ctx))))
+    "profile" (do
+               (delete-profile-block! block (get-db ctx))
+               #_(delete-page-profile-fields! block  (get-db ctx)))))
 
 (defn save-files-block-content [ctx block]
   (delete-files-block-files! {:block_id (:id block)} (get-db ctx))
@@ -189,7 +190,7 @@
 (defn save-profile-fields [ctx page-id block]
  (delete-page-profile-fields! {:page_id page-id} (get-db ctx))
  (doseq [f (:fields block)]
-  (insert-page-profile-field {:page_id page-id :field f} (get-db ctx))))
+  (replace-page-profile-field! {:page_id page-id :field f} (get-db ctx))))
 
 (defn update-showcase-block! [ctx block]
   (update-badge-showcase-block! block (get-db ctx))
@@ -200,13 +201,12 @@
     (save-showcase-badges ctx (assoc block :id block-id))))
 
 (defn update-profile-block [ctx page-id block]
- (prn block)
  (update-profile-block! block (get-db ctx))
  (save-profile-fields ctx page-id block))
 
 (defn create-profile-block [ctx page-id block]
  (insert-profile-block! block (get-db ctx))
- (save-profile-fields ctx block))
+ (save-profile-fields ctx page-id block))
 
 (defn url-checker [ctx]
   (fn [element-name attrs]
@@ -251,6 +251,10 @@
                               :allow-styling)]
       (html-sanitize policy content))))
 
+(def profile-fields (->> additional-fields
+                      (concat [{:type "name"} {:type "about"}])
+                      (mapv :type)))
+
 (defn save-page-content! [ctx page-id page-content user-id]
   (try+
     (if-not (page-owner? ctx page-id user-id)
@@ -271,49 +275,53 @@
                           :block_order block-index))
               id (and (:id block)
                       (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) page-blocks))]
-          (case (:type block)
-            "heading" (if id
-                        (update-heading-block! block (get-db ctx))
-                        (insert-heading-block! block (get-db ctx)))
-            "badge" (when (some #(= % (:badge_id block)) badge-ids)
+         (case (:type block)
+           "heading" (if id
+                       (update-heading-block! block (get-db ctx))
+                       (insert-heading-block! block (get-db ctx)))
+           "badge" (when (some #(= % (:badge_id block)) badge-ids)
+                     (if id
+                       (update-badge-block! block (get-db ctx))
+                       (insert-badge-block! block (get-db ctx))))
+           "html" (let [sanitized-block (update block :content (sanitize-html ctx))]
+                    (if id
+                      (update-html-block! sanitized-block (get-db ctx))
+                      (insert-html-block! sanitized-block (get-db ctx))))
+           "file" (when (= (->> (:files block)
+                                (filter (fn [x] (some #(= x %) file-ids)))
+                                count)
+                           (count (:files block)))
+                    (if id
+                      (update-files-block-and-content! ctx block)
+                      (create-files-block! ctx block)))
+           "tag" (if id
+                   (update-tag-block! block (get-db ctx))
+                   (insert-tag-block! block (get-db ctx)))
+
+           "showcase" (when (= (->> (:badges block)
+                                    (filter (fn [x] (some #(= x %) badge-ids)))
+                                    count)
+                               (count (:badges block)))
+                        (if id
+                          (update-showcase-block! ctx block)
+                          (create-showcase-block! ctx block)))
+
+           "profile" (when (= (->> (:fields block)
+                                   (filter (fn [x] (some #(= x %) profile-fields)))
+                                   count)
+                              (count (:fields block)))
                       (if id
-                        (update-badge-block! block (get-db ctx))
-                        (insert-badge-block! block (get-db ctx))))
-            "html" (let [sanitized-block (update block :content (sanitize-html ctx))]
-                     (if id
-                       (update-html-block! sanitized-block (get-db ctx))
-                       (insert-html-block! sanitized-block (get-db ctx))))
-            "file" (when (= (->> (:files block)
-                                 (filter (fn [x] (some #(= x %) file-ids)))
-                                 count)
-                            (count (:files block)))
-                     (if id
-                       (update-files-block-and-content! ctx block)
-                       (create-files-block! ctx block)))
-            "tag" (if id
-                    (update-tag-block! block (get-db ctx))
-                    (insert-tag-block! block (get-db ctx)))
-
-            "showcase" (when (= (->> (:badges block)
-                                     (filter (fn [x] (some #(= x %) badge-ids)))
-                                     count)
-                                (count (:badges block)))
-                         (if id
-                           (update-showcase-block! ctx block)
-                           (create-showcase-block! ctx block)))
-
-            "profile" (if id
-                        ;(update-profile-block! block (get-db ctx))
                        (update-profile-block ctx page-id block)
-                       (create-profile-block ctx page-id block)))))
+                       (create-profile-block ctx page-id block))))))
 
 
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
-          (delete-block! ctx old-block)))
+          (delete-block! ctx (assoc old-block :page_id page-id))))
       {:status "success" :message "page/Pagesavedsuccessfully"})
     (catch Object _
-      {:status "error" :message "page/Errorwhilesavingpage"})))
+     (log/error _)
+     {:status "error" :message "page/Errorwhilesavingpage"})))
 
 (defn set-theme! [ctx page-id theme-id border-id padding user-id]
   (try+
