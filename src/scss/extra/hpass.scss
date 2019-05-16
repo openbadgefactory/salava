@@ -848,3 +848,10 @@ a.popup-info {
    border-bottom-color: transparent;
  }
 }
+
+#profile span.move-tab {
+  color: $pink;
+  &:hover {
+    color: $pink;
+  }
+}
