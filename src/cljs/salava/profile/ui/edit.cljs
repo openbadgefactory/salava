@@ -8,7 +8,9 @@
             [salava.core.ui.field :as f]
             [salava.core.helper :refer [dump]]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
-            [salava.profile.schemas :as schema :refer [additional-fields]]))
+            [salava.profile.schemas :as schema :refer [additional-fields]]
+            [salava.file.ui.my :as my]
+            [salava.user.ui.helper :as uh]))
 
 (defn random-key []
   (-> (make-random-uuid)
@@ -129,9 +131,11 @@
                  (.item 0))
         form-data (doto
                     (js/FormData.)
-                    (.append "file" file (.-name file)))
-        upload-modal (first (plugin-fun (session/get :plugins) "my" "upload_modal"))]
-    (m/modal! (upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
+                    (.append "file" file (.-name file)))]
+        ;upload-modal (first (plugin-fun (session/get :plugins) "my" "upload_modal"))]
+
+
+    (m/modal! (my/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
       (path-for "/obpv1/file/upload_image")
       {:body    form-data
@@ -139,22 +143,22 @@
                   (when (= status "success")
                     (reset! files-atom (conj @files-atom data))
                     (reset! profile-picture-atom (:path data)))
-                  (m/modal! (upload-modal status message reason)))})))
+                  (m/modal! (my/upload-modal status message reason)))})))
 
 (defn gallery-element [picture-data profile-picture-atom pictures-atom]
   (let [{:keys [path id]} picture-data
-        current-profile-picture (session/get-in  [:user :profile_picture])
-        profile-picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))
-        delete-fn (first (plugin-fun (session/get :plugins) "my" "delete_file_modal"))]
+        current-profile-picture (session/get-in  [:user :profile_picture])]
+        ;profile-picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))
+        ;delete-fn (first (plugin-fun (session/get :plugins) "my" "delete_file_modal"))]
     [:div {:key path
            :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
            :on-click #(reset! profile-picture-atom path)}
-     [:img {:src (profile-picture-fn path)}]
+     [:img {:src (uh/profile-picture path)}]
      (if (and (not (nil? id)) (not (= path current-profile-picture)))
        [:a {:class    "delete-icon"
             :title    (t :file/Delete)
             :on-click (fn []
-                        (m/modal! [delete-fn id pictures-atom]
+                        (m/modal! [my/delete-file-modal id pictures-atom]
                                   {:size :lg}))}
         [:i {:class "fa fa-trash"}]])]))
 
@@ -249,7 +253,7 @@
 
 (defn profile-fields [profile-fields-atom]
   [:div#profile
-   (into [:form.form-horizontal]
+   (into [:div.form-horizontal]
          (for [index (range (count @profile-fields-atom))]
            (profile-field index profile-fields-atom)))
    [add-field-after profile-fields-atom]])

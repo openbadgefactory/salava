@@ -7,7 +7,8 @@
             [salava.user.schemas :refer [contact-fields]]
             [clojure.string :refer [blank?]]
             [salava.core.helper :refer [dump]]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.user.ui.helper :as uh :refer [profile-picture]]))
 
 (defn update-block-value [block-atom key value]
  (swap! block-atom assoc key value))
@@ -22,9 +23,9 @@
                           (swap! state merge data)))}))
 
 
-(defn profile-picture [path]
-  (let [picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))]
-    (when picture-fn (picture-fn path))))
+#_(defn profile-picture [path]
+   (let [picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))]
+      (when picture-fn (picture-fn path))))
 
 (defn enabled-field? [field fields]
  (some #(= % field) fields))

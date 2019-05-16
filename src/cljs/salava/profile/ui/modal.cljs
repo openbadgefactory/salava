@@ -8,7 +8,8 @@
   [salava.core.i18n :refer [t]]
   [salava.profile.schemas :refer [additional-fields]]
   [salava.profile.ui.helper :as ph]
-  [salava.admin.ui.reporttool :refer [reporttool1]]))
+  [salava.admin.ui.reporttool :refer [reporttool1]]
+  [salava.user.ui.helper :refer [profile-picture]]))
 
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
@@ -25,7 +26,7 @@
        [:div.row.flip
         [:div {:class "col-md-3 col-sm-3 col-xs-12"}
          [:div.profile-picture-wrapper
-          [:img.profile-picture {:src (b/profile-picture profile_picture)
+          [:img.profile-picture {:src (profile-picture profile_picture)
                                  :alt fullname}]]]
         [:div {:class "col-md-9 col-sm-9 col-xs-12"}
          (if (not-empty about)
