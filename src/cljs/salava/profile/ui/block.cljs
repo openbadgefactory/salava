@@ -44,7 +44,7 @@
          {:keys [role first_name last_name about profile_picture]} user]
     [:div {:id "profile" :style {:margin "10px auto"}}
      [:div.row {:style {:padding "15px 0"}}
-      [:div.col-xs-12 [:b "Select the profile fields you want to display in this page. Your profile picture is added by default"]]]
+      [:div.col-xs-12 [:b (t :profile/Profileblockfieldsinstruction)]]]
      [:div.row
       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
        [:div.profile-picture-wrapper
@@ -175,7 +175,7 @@
                            [:i.fa.fa-fw.fa-lightbulb-o.tipicon](case k
                                                                   :profile-picture-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
                                                                                                                                                                         (.preventDefault %)
-                                                                                                                                                                        (session/put! :edit-mode true))} (t :profile/Profilepicturetip)]
+                                                                                                                                                                        (session/put! :edit-mode true))} [:p (t :profile/Profilepicturetip)]]
                                                                   :aboutme-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
                                                                                                                                                                 (.preventDefault %)
                                                                                                                                                                 (session/put! :edit-mode true))} (t :profile/Aboutmetip)]

@@ -102,7 +102,7 @@
           (t :user/Logout)]])
     ]
    [:div.userpic
-    [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
+    [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))}
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
             :alt "profile picture"}]]]])
 

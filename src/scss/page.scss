@@ -2004,15 +2004,12 @@
     }
 
     .addbadge {
-      width: 80px;
-      height: 80px;
+      width: 200px;
+      height: 240px;
       border: 2px dashed $titlebar-color;
       float: left;
-      margin: 50px 0;
-
       .add-icon {
-        margin: 20px;
-        font-size: 40px;
+        margin: 65px;
       }
     }
   }

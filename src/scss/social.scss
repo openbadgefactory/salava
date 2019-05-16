@@ -986,7 +986,7 @@ background-color:#756A70;
   }
 
   .connections{
-    min-width: 45%;
+  //  min-width: 45%;
   }
 
   .explore {
@@ -1067,8 +1067,14 @@ background-color:#756A70;
       margin-right: 5px;
     }
 
-    .visibility {
-      font-size: 16px;
+    .profile-visibility {
+      font-size: 14px;
+      a {
+        color: #DC5C10;
+      }
+      .icon {
+        vertical-align: bottom;
+      }
     }
     .name {
       word-wrap:break-word;
@@ -1077,6 +1083,7 @@ background-color:#756A70;
       margin-bottom: 10px;
       text-decoration: none;
       cursor: auto;
+      font-weight: 500;
     }
     .stats {
 
@@ -1288,4 +1295,3 @@ background-color:#756A70;
     }
   }
 }
-

@@ -118,17 +118,14 @@
        [:div {:id "page-buttons-share"}
         [:div {:id "buttons"
                :class "text-right"}
-         [:a {:class "btn btn-primary edit-btn"
-              :href  (path-for (str "/profile/page/edit/" (:id page)))}
-          (t :page/Edit)]
-         [:button {:class "btn btn-primary print-btn"
-                   :on-click #(.print js/window)}
-          (t :core/Print)]
+         [:a.btn.btn-primary {:href (path-for (str "/profile/page/edit/" (:id page))) :style {:text-decoration "none"}}
+          [:i.fa.fa-pencil-square-o.fa-fw.fa-lg](t :page/Edit)]
+         [:a.btn.btn-primary {:href "#" :on-click #(.print js/window) :style {:text-decoration "none"}} [:i.fa.fa-print.fa-fw.fa-lg](t :core/Print)]
          [:button {:class "btn btn-primary"
                    :on-click #(do (.preventDefault %)
                                   (swap! state assoc :pdf-header "false")
                                   (m/modal![export-to-pdf-modal state] {:size :lg}))}
-          (t :badge/Exporttopdf)]]
+          [:i.fa.fa-file-pdf-o.fa-fw.fa-lg] (t :badge/Exporttopdf)]]
         (if-not (private?)
           [:div {:class (str "checkbox " @visibility-atom)}
            [:label

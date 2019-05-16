@@ -451,6 +451,9 @@
                     (filter #(= "accepted" (:status %)))
                     (sort-by :mtime >)
                     (take 5))
+        public-badges-count (->> (b/user-badges-all ctx user-id)
+                                 (filter #(= "public" (:visibility %)))
+                                 count)
         pending-badges (b/user-badges-pending ctx user-id)
         stats (b/badge-stats ctx user-id)
         events (so/get-all-events-add-viewed ctx user-id)
@@ -458,16 +461,12 @@
         user-profile (-> (user-information-and-profile ctx user-id nil)
                          (dissoc :badges :pages :owner?))]
   {:badges badges
-   ;:pending-badges (->> pending-badges (take 5))
    :stats stats
    :endorsing (->> (end/endorsements-given ctx user-id) count)
    :endorsers (->> (end/endorsements-received ctx user-id) count)
    :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
    :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
-   ;:events (->> events (take 5))
-   ;:events_count (count events)
    :pages_count (->> (p/user-pages-all ctx user-id) count)
    :files_count (->> (f/user-files-all ctx user-id) :files count)
-   ;:gallery (g/gallery-stats ctx)
-   :user-profile user-profile }))
-
+   :user-profile user-profile
+   :published_badges_count public-badges-count}))

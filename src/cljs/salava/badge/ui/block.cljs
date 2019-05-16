@@ -32,8 +32,8 @@
 
 
 (defn badge-grid-form [state]
-  [:div {:id "grid-filter"
-         :class "form-horizontal"}
+  [:form {:id "grid-filter"
+          :class "form-horizontal"}
    [g/grid-search-field (t :core/Search ":")  "badgesearch" (t :core/Searchbyname) :search state]
    [g/grid-select (t :core/Show ":")  "select-visibility" :visibility (visibility-select-values) state]
    [g/grid-buttons (t :core/Tags ":")  (unique-values :tags (:badges @state)) :tags-selected :tags-all state]

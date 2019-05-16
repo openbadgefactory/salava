@@ -84,7 +84,8 @@
       "pickable" [:div.media.grid-container
                   [:a {:href "#" :on-click #(do
                                               (.preventDefault %)
-                                              (reset! (:atom element-data) (conj @(:atom element-data) {:name name :id id :visibility visibility}))) :style {:text-decoration "none"}
+                                              (when-not (some (fn [page] (= id (:id page))) @(:atom element-data))
+                                               (reset! (:atom element-data) (conj @(:atom element-data) {:name name :id id :visibility visibility})))) :style {:text-decoration "none"}
                        :data-dismiss "modal"}
                    [:div.media-content
                     [:div.media-body
