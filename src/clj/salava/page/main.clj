@@ -17,7 +17,9 @@
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
             [clojure.zip :as zip]
             [net.cgrand.enlive-html :as enlive]
-            ))
+            [clojure.data.json :as json]
+            [salava.profile.schemas :refer [additional-fields]]))
+
 
 
 (defqueries "sql/page/main.sql")
@@ -68,13 +70,30 @@
   (let [blocks (select-pages-files-blocks {:page_id page-id} (get-db ctx))]
     (map #(assoc % :files (select-files-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
 
+(defn showcase-blocks [ctx page-id for-edit?]
+  (let [blocks (select-badge-showcase-blocks {:page_id page-id} (get-db ctx))]
+    (map #(assoc % :badges (if for-edit?
+                             (select-showcase-block-content-for-edit {:block_id (:id %)} (get-db ctx))
+                             (map (fn [b]
+                                    (let [evidence-fn (first (plugin-fun (get-plugins ctx) "main" "badge-evidences"))]
+                                       (-> b
+                                           (update :criteria_content md->html)
+                                           (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true))
+                                           (dissoc :user_id)))) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
+(defn enabled-profile-blocks [ctx page-id]
+ (let [profile-block (some->> (select-profile-block {:page_id page-id} (get-db ctx)) first)
+       fields (select-enabled-profile-fields {:page_id page-id} (into {:row-fn :field}(get-db ctx)))]
+  (when (seq profile-block)(vector (assoc profile-block :fields fields)))))
+
 (defn page-blocks [ctx page-id]
   (let [badge-blocks (map #(update % :criteria_content md->html) (select-pages-badge-blocks {:page_id page-id} (get-db ctx)))
         file-blocks (file-blocks ctx page-id)
         heading-blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (tag-blocks ctx page-id)
-        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
+        showcase-blocks (showcase-blocks ctx page-id false)
+        profile-block (enabled-profile-blocks ctx page-id);(select-profile-block {:page_id page-id} (get-db ctx))
+        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks showcase-blocks profile-block)]
     (sort-by :block_order blocks)))
 
 (defn badge-blocks-for-edit [ctx page-id]
@@ -85,7 +104,8 @@
                     :format (:format %)
                     :badge {:id (:badge_id %)
                             :name (:name %)
-                            :image_file (:image_file %)}) blocks)))
+                            :image_file (:image_file %)
+                            :description (:description %)}) blocks)))
 
 (defn heading-blocks-for-edit [ctx page-id]
   (let [blocks (select-pages-heading-blocks {:page_id page-id} (get-db ctx))]
@@ -102,8 +122,10 @@
         file-blocks (file-blocks ctx page-id)
         html-blocks (select-pages-html-blocks {:page_id page-id} (get-db ctx))
         tag-blocks (select-pages-tag-blocks {:page_id page-id} (get-db ctx))
-        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks)]
-    (sort-by :block_order blocks)))
+        badge-showcase-blocks (showcase-blocks ctx page-id true)
+        profile-block (enabled-profile-blocks ctx page-id) #_(select-profile-block {:page_id page-id} (get-db ctx))
+        blocks (concat badge-blocks file-blocks heading-blocks html-blocks tag-blocks badge-showcase-blocks profile-block)]
+   (sort-by :block_order blocks)))
 
 (defn page-with-blocks [ctx page-id]
   (let [page (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx)))
@@ -111,74 +133,6 @@
     (assoc page :blocks blocks
       :border (border-attributes (:border page))
       :qr_code (str->qr-base64 (page-url ctx page-id)))))
-
-
-(defn generate-pdf [ctx page-id]
-  (let [ blocks (page-blocks ctx page-id)
-         badge-block-with-markdown (:criteria_content (select-pages-badge-blocks {:page_id page-id} (into {:result-set-fn first} (get-db ctx))))
-         page (conj () (-> (select-page {:id page-id} (get-db ctx))
-                           first
-                           (assoc :blocks blocks)))
-         data-dir (get-in ctx [:config :core :data-dir])
-         page-template (pdf/template
-                         (let [template #(cons [:paragraph] [#_[:heading {:size :15 :align :center} $name] [:spacer 0]
-                                                             #_[:paragraph {:align :center}
-                                                                [:chunk (str $first_name " " $last_name)]][:spacer 1]
-                                                             [:line {:dotted true}]
-                                                             [:spacer 2]
-                                                             (if (= "heading"  (:type %))
-                                                               (case (:size %)
-                                                                 "h1" [:paragraph {:align :center}
-                                                                       [:heading (:content %)]]
-                                                                 "h2" [:paragraph {:align :center}
-                                                                       [:heading {:style {:size 10 :align :center}}  (:content %)]] )" ")
-                                                             (if (= "badge" (:type %))
-                                                               [:pdf-table {:width-percent 100 :cell-border false }
-                                                                [25 75]
-                                                                [[:pdf-cell {:align :right}
-                                                                  (if (contains? % :image_file)
-                                                                    [:image {:align :center :width 100 :height 100} (str data-dir (:image_file %))] " ")
-                                                                  [:spacer 2]]
-                                                                 [:pdf-cell
-                                                                  (if (contains? % :name )
-                                                                    [:heading (:name %)] " ")
-                                                                  [:spacer]
-                                                                  #_(if (contains? % :type)
-                                                                      [:paragraph
-                                                                       [:heading (:content %)]] " ")
-                                                                  (if (or
-                                                                        (contains? % :issuer_content_name) (contains? % :issued_on) (contains? % :description) (contains? % :criteria_url))
-                                                                    [:paragraph
-                                                                     [:chunk (str (t :badge/Issuedby) ": ")] [:chunk (:issuer_content_name %)] "\n"
-                                                                     [:chunk (str (t :badge/Issuedon)": ")] [:chunk (date-from-unix-time (long (* 1000 (:issued_on %))) "date")]
-                                                                     [:spacer 1]
-                                                                     (:description %) "\n"
-                                                                     ;;                                                                  [:chunk (str (t :badge/CriteriaUrl)": " )] [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]
-                                                                     [:spacer 0]
-                                                                     [:paragraph
-                                                                      [:phrase (str (t :badge/Criteria)": ")] [:spacer 0]
-                                                                      [:anchor {:target (:criteria_url %) :style{:family :times-roman :color [66 100 162]}} (:criteria_url %)]]] " ")]]
-                                                                ] " ")
-                                                             (if (= "html" (:type %))
-                                                               [:paragraph {:align :center}
-                                                                (:content %)] "")
-                                                             (if (= "tag" (:type %))
-                                                               [:paragraph
-                                                                [:chunk ]
-                                                                ]
-                                                               )
-
-                                                             [:spacer 0]])
-
-                               content (map template $blocks)
-                               ]
-                           (reduce into [[:paragraph {:align :center} [:heading {:size :15 :align :center} $name][:spacer 0] [:paragraph {:align :center}
-                                                                                                                              [:chunk (str $first_name " " $last_name)]]]] content)))]
-
-    (dump page)
-    (pdf/pdf (into [{:right-margin 50 :left-margin 50 }] (page-template page)) "out")
-
-    ))
 
 (defn page-with-blocks-for-owner [ctx page-id user-id]
   (if (page-owner? ctx page-id user-id)
@@ -189,10 +143,11 @@
     (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
           blocks (page-blocks-for-edit ctx page-id)
           owner (:user_id page)
-          badges (map #(select-keys % [:id :name :image_file :tags]) (b/user-badges-all ctx owner))
+          badges (map #(select-keys % [:id :name :image_file :tags :description]) (b/user-badges-all ctx owner))
           files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
-          tags (distinct (flatten (map :tags badges)))]
-      {:page (assoc page :blocks blocks) :badges badges :tags tags :files files})))
+          tags (distinct (flatten (map :tags badges)))
+          is-profile-tab? (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx (:user_id page) page-id))]
+      {:page (assoc page :blocks blocks) :badges badges :tags tags :files files :profile-tab? is-profile-tab?})))
 
 (defn delete-block! [ctx block]
   (case (:type block)
@@ -202,7 +157,13 @@
     "file" (do
              (delete-files-block! block (get-db ctx))
              (delete-files-block-files! {:block_id (:id block)} (get-db ctx)))
-    "tag" (delete-tag-block! block (get-db ctx))))
+    "tag" (delete-tag-block! block (get-db ctx))
+    "showcase" (do
+                 (delete-showcase-block! {:id (:id block)} (get-db ctx))
+                 (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))
+    "profile" (do
+               (delete-profile-block! block (get-db ctx))
+               #_(delete-page-profile-fields! block  (get-db ctx)))))
 
 (defn save-files-block-content [ctx block]
   (delete-files-block-files! {:block_id (:id block)} (get-db ctx))
@@ -217,6 +178,36 @@
   (let [block-id (:generated_key (insert-files-block<! block (get-db ctx)))]
 
     (save-files-block-content ctx (assoc block :id block-id))))
+
+(defn save-showcase-badges [ctx block user-id]
+ (let [badges (:badges block)]
+   (delete-showcase-badges! {:block_id (:id block)} (get-db ctx))
+   (doseq [b badges
+           :let [index (.indexOf badges b)
+                 {:keys [id visibility]} b]]
+    (when-not (= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "main" "set-visibility!")) f (f ctx id "public" user-id)))
+    (insert-showcase-badges! {:block_id (:id block) :badge_id id :badge_order index} (get-db ctx)))))
+
+(defn save-profile-fields [ctx page-id block]
+ (delete-page-profile-fields! {:page_id page-id} (get-db ctx))
+ (doseq [f (:fields block)]
+  (replace-page-profile-field! {:page_id page-id :field f} (get-db ctx))))
+
+(defn update-showcase-block! [ctx block user-id]
+  (update-badge-showcase-block! block (get-db ctx))
+  (save-showcase-badges ctx block user-id))
+
+(defn create-showcase-block! [ctx block user-id]
+  (let [block-id (:generated_key (insert-showcase-block<! block (get-db ctx)))]
+    (save-showcase-badges ctx (assoc block :id block-id) user-id)))
+
+(defn update-profile-block [ctx page-id block]
+ (update-profile-block! block (get-db ctx))
+ (save-profile-fields ctx page-id block))
+
+(defn create-profile-block [ctx page-id block]
+ (insert-profile-block! block (get-db ctx))
+ (save-profile-fields ctx page-id block))
 
 (defn url-checker [ctx]
   (fn [element-name attrs]
@@ -261,9 +252,11 @@
                               :allow-styling)]
       (html-sanitize policy content))))
 
+(def profile-fields (->> additional-fields
+                      (concat [{:type "name"} {:type "about"}])
+                      (mapv :type)))
 
 (defn save-page-content! [ctx page-id page-content user-id]
-
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
@@ -272,7 +265,7 @@
           user-files (if (some #(= "file" (:type %)) blocks)
                        (:files (f/user-files-all ctx page-owner-id)))
           file-ids (map :id user-files)
-          user-badges (if (some #(= "badge" (:type %)) blocks)
+          user-badges (if (some #(or (= "badge" (:type %)) (= "showcase" (:type %))) blocks)
                         (b/user-badges-all ctx page-owner-id))
           badge-ids (map :id user-badges)
           page-blocks (page-blocks ctx page-id)]
@@ -283,34 +276,53 @@
                           :block_order block-index))
               id (and (:id block)
                       (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) page-blocks))]
-          (case (:type block)
-            "heading" (if id
-                        (update-heading-block! block (get-db ctx))
-                        (insert-heading-block! block (get-db ctx)))
-            "badge" (when (some #(= % (:badge_id block)) badge-ids)
+         (case (:type block)
+           "heading" (if id
+                       (update-heading-block! block (get-db ctx))
+                       (insert-heading-block! block (get-db ctx)))
+           "badge" (when (some #(= % (:badge_id block)) badge-ids)
+                     (if id
+                       (update-badge-block! block (get-db ctx))
+                       (insert-badge-block! block (get-db ctx))))
+           "html" (let [sanitized-block (update block :content (sanitize-html ctx))]
+                    (if id
+                      (update-html-block! sanitized-block (get-db ctx))
+                      (insert-html-block! sanitized-block (get-db ctx))))
+           "file" (when (= (->> (:files block)
+                                (filter (fn [x] (some #(= x %) file-ids)))
+                                count)
+                           (count (:files block)))
+                    (if id
+                      (update-files-block-and-content! ctx block)
+                      (create-files-block! ctx block)))
+           "tag" (if id
+                   (update-tag-block! block (get-db ctx))
+                   (insert-tag-block! block (get-db ctx)))
+
+           "showcase" (when (= (->> (:badges block)
+                                (filter (fn [x] (some #(= (:id x) %) badge-ids)))
+                                count)
+                               (count (:badges block)))
+                        (if id
+                          (update-showcase-block! ctx block user-id)
+                          (create-showcase-block! ctx block user-id)))
+
+           "profile" (when (= (->> (:fields block)
+                                   (filter (fn [x] (some #(= x %) profile-fields)))
+                                   count)
+                              (count (:fields block)))
                       (if id
-                        (update-badge-block! block (get-db ctx))
-                        (insert-badge-block! block (get-db ctx))))
-            "html" (let [sanitized-block (update block :content (sanitize-html ctx))]
-                     (if id
-                       (update-html-block! sanitized-block (get-db ctx))
-                       (insert-html-block! sanitized-block (get-db ctx))))
-            "file" (when (= (->> (:files block)
-                                 (filter (fn [x] (some #(= x %) file-ids)))
-                                 count)
-                            (count (:files block)))
-                     (if id
-                       (update-files-block-and-content! ctx block)
-                       (create-files-block! ctx block)))
-            "tag" (if id
-                    (update-tag-block! block (get-db ctx))
-                    (insert-tag-block! block (get-db ctx))))))
+                       (update-profile-block ctx page-id block)
+                       (create-profile-block ctx page-id block))))))
+
+
       (doseq [old-block page-blocks]
         (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
-          (delete-block! ctx old-block)))
+          (delete-block! ctx (assoc old-block :page_id page-id))))
       {:status "success" :message "page/Pagesavedsuccessfully"})
     (catch Object _
-      {:status "error" :message "page/Errorwhilesavingpage"})))
+     (log/error _)
+     {:status "error" :message "page/Errorwhilesavingpage"})))
 
 (defn set-theme! [ctx page-id theme-id border-id padding user-id]
   (try+
@@ -341,23 +353,25 @@
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
-    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
-      {:status "error" :message "page/Evidenceerror"}
-      (let [password (if (= visibility "password") (trim pword) "")
-            page-visibility (if (and (= visibility "password")
-                                     (empty? password))
-                              "private"
-                              visibility)
-            evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
-            page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
-        (if (and (private? ctx) (= "public" visibility))
-          (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}) )
-        (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
-        (save-page-tags! ctx page-id tags)
-        (if (or (= "internal" visibility) (= "public" visibility))
-          (u/event ctx user-id "publish" page-id "page")
-          (u/event ctx user-id "unpublish" page-id "page"))
-        {:status "success" :message "page/Pagesavedsuccessfully"}))
+    (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
+     {:status "error" :message "profile/Profiletaberror"}
+     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+       {:status "error" :message "page/Evidenceerror"}
+       (let [password (if (= visibility "password") (trim pword) "")
+             page-visibility (if (and (= visibility "password")
+                                      (empty? password))
+                               "private"
+                               visibility)
+             evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
+             page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
+         (if (and (private? ctx) (= "public" visibility))
+           (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+         (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
+         (save-page-tags! ctx page-id tags)
+         (if (or (= "internal" visibility) (= "public" visibility))
+           (u/event ctx user-id "publish" page-id "page")
+           (u/event ctx user-id "unpublish" page-id "page"))
+         {:status "success" :message "page/Pagesavedsuccessfully"})))
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
       {:status "error" :message "page/Errorwhilesavingpage"})))
@@ -388,14 +402,16 @@
 
 (defn toggle-visibility! [ctx page-id visibility user-id]
   (if (page-owner? ctx page-id user-id)
-    (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
-      {:status "error" :message "page/Evidenceerror"}
-      (do
-        (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
-        (if (or (= "internal" visibility) (= "public" visibility))
-          (u/event ctx user-id "publish" page-id "page")
-          (u/event ctx user-id "unpublish" page-id "page"))
-        visibility))
+    (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
+     {:status "error" :message "profile/Profiletaberror"}
+     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+         {:status "error" :message "page/Evidenceerror"}
+         (do
+           (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))
+           (if (or (= "internal" visibility) (= "public" visibility))
+             (u/event ctx user-id "publish" page-id "page")
+             (u/event ctx user-id "unpublish" page-id "page"))
+           visibility)))
 
     (if (= visibility "public") "private" "public")))
 

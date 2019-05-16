@@ -19,7 +19,7 @@
     [clojure.walk :refer [keywordize-keys]]
     [cemerick.url :as url]
     [salava.core.ui.modal :as mo]
-    [salava.badge.ui.pending :refer [badge-pending badges-pending badge-alert]]))
+    #_[salava.badge.ui.pending :refer [badge-pending badges-pending badge-alert]]))
 
 
 (defn init-data
@@ -31,9 +31,9 @@
                         :pending (filter #(= "pending" (:status %)) data)
                         :initializing false))})
    #_(ajax/GET
-     (path-for "/obpv1/social/pending_badges" true)
-     {:handler (fn [data]
-                 (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
+       (path-for "/obpv1/social/pending_badges" true)
+       {:handler (fn [data]
+                   (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}
@@ -94,7 +94,7 @@
     (into [:div#grid {:class "row wrap-grid"}
            (when-not (private?)
              [:div#import-badge {:key   "new-badge" :style {:position "relative"}}
-              [:a.add-element-link {:href  (path-for "/badge/import") }
+              [:a.add-element-link {:href  (path-for "/badge/import")}
                [:div {:class "media grid-container"}
                 [:div.media-content
                  [:div.media-body
@@ -111,7 +111,7 @@
 
 (defn no-badges-text []
   [:div
-   #_(if (application-plugin?)  [:div (t :badge/Youhavenobadgesyet) (str ". ") (t :social/Getyourfirstbadge) [:a {:href (path-for "/gallery/application") } (str " ") (t :badge/Gohere)] (str ".")] [:div (t :badge/Youhavenobadgesyet) (str ".")]) ] )
+   #_(if (application-plugin?)  [:div (t :badge/Youhavenobadgesyet) (str ". ") (t :social/Getyourfirstbadge) [:a {:href (path-for "/gallery/application") } (str " ") (t :badge/Gohere)] (str ".")] [:div (t :badge/Youhavenobadgesyet) (str ".")])])
 
 (defn open-modal [id state]
   (ajax/GET
@@ -121,25 +121,73 @@
                                                                                               (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
                                                                                                 (.replaceState js/history {} "Badge modal" (path-for "/badge"))
                                                                                                 (navigate-to (current-route-path)))
-                                                                                              (init-data state))
-                                                                                            )}))}))
+                                                                                              (init-data state)))}))}))
+
+
+
+(defn mybadgesmodal [param]
+  (let [state (atom {:initializing true
+                     :badges []
+                     :visibility "all"
+                     :order "mtime"
+                     :tags-all true
+                     :tags-selected []})
+        badge-type (:type param)
+        block-atom (:block-atom param)
+        new-field-atom (:new-field-atom param)
+        func (:function param)]
+    (create-class {:reagent-render (fn []
+                                    (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
+                                          order (keyword (:order @state))
+                                          badges (case order
+                                                   (:mtime) (sort-by order > badges)
+                                                   (:name :issuer_content_name) (sort-by (comp clojure.string/upper-case str order) badges)
+                                                   (:expires_on) (->> badges
+                                                                      (sort-by order)
+                                                                      (partition-by #(nil? (% order)))
+                                                                      reverse
+                                                                      flatten)
+                                                   badges)]
+                                      [:div.row {:id "my-badges"}
+                                       [:div.col-md-12
+                                        (if (:initializing @state)
+                                          [:div.ajax-message
+                                           [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                           [:span (str (t :core/Loading) "...")]]
+                                          [:div
+                                           [badge-grid-form state]
+                                           [:div
+                                            (into [:div#grid {:class "row"}]
+                                                  (doall
+                                                    (for [element-data badges]
+                                                      (when (badge-visible? element-data state)
+                                                        (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom :index (:index param) :function func)
+                                                       (badge-grid-element element-data state badge-type init-data)))))]])]]))
+                   :component-will-mount (fn [] (init-data state))})))
+
+
+
 
 (defn content [state]
-  (create-class {:reagent-render (fn [] [:div {:id "my-badges"}
+  (create-class {:reagent-render (fn []
+                                   (let [badges-pending-func (first (plugin-fun (session/get :plugins) "pending" "badges_pending"))
+                                         badge-alert-func (first (plugin-fun (session/get :plugins) "pending" "badge_alert"))]
+                                     [:div {:id "my-badges"}
                                          [m/modal-window]
                                          (if (:initializing @state)
                                            [:div.ajax-message
                                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                             [:span (str (t :core/Loading) "...")]]
                                            [:div
-                                            [badge-alert state]
-                                            (if (seq (:pending @state)) [badges-pending state init-data]
+                                            ;[badge-alert state]
+                                            [badge-alert-func state]
+                                            (if (seq (:pending @state)) [badges-pending-func state init-data] ;[badges-pending state init-data]
                                               [badge-grid-form state])
                                             (cond
                                               (not-activated?) (not-activated-banner)
                                               ;(empty? (:badges @state)) [no-badges-text]
-                                              :else (when-not (seq (:pending @state)) [badge-grid state]))]
-                                           )])
+                                              :else (when-not (seq (:pending @state)) [badge-grid state]))])]))
+
                  :component-did-mount (fn [] (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
 

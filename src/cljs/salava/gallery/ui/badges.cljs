@@ -93,8 +93,8 @@
                          :badges (into (:badges @state) (:badges data))
                          :page_count (inc (:page_count @state))
                          :badge_count (:badge_count data)))
-       :finally (fn []
-                  )})))
+       :finally (fn [])})))
+
 
 
 
@@ -107,8 +107,8 @@
         autocomplete-badge-ids (cursor state [:full-tags])]
     (reset! tags (vals (select-keys @autocomplete-items value)))
     (reset! tags-badge-ids (vals (select-keys @autocomplete-badge-ids value)))
-    (fetch-badges state)
-    ))
+    (fetch-badges state)))
+
 
 (defn autocomplete [state]
   (let [tags  (cursor state [:tags])
@@ -130,8 +130,8 @@
           :search-fields   [:value]
           :items           @autocomplete-items
           :no-results-text (t :extra-application/Notfound)
-          :control-class   "form-control"
-          }]]])))
+          :control-class   "form-control"}]]])))
+
 
 
 (defn init-data [state init-params]
@@ -227,9 +227,9 @@
           (if (not-empty items-matched)
             (into [:div#autocomplete-items]
                   (for [[item-key item-value] items-matched]
-                    [:div.autocomplete-item {:on-click #(do (reset! text "")
+                    [:div.autocomplete-item {:on-click #(do (reset! text ""))}
                                                           ;(pick-fn {:key item-key :value item-value})
-                                                          )}
+
                      item-value]))))]))))
 
 
@@ -267,8 +267,8 @@
                   :on-click #(do
                                (get-more-badges state)
                                ;(init-data state)
-                               (.preventDefault %)
-                               )}
+                               (.preventDefault %))}
+
               (str (t :social/Loadmore) " (" (:badge_count @state) " " (t :gallery/Badgesleft) ")")]]]]))
 
 (defn gallery-grid [state]
@@ -290,8 +290,8 @@
                                       [:div.ajax-message
                                        [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                        [:span (:ajax-message @state)]]
-                                      [gallery-grid state]
-                                      )])
+                                      [gallery-grid state])])
+
                  :component-did-mount (fn []
                                         (if badge_id
                                           (mo/open-modal [:gallery :badges] {:badge-id badge_id})))}))

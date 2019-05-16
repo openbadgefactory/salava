@@ -6,7 +6,8 @@
              ;[salava.gallery.ui.badge-view :as bv]
              [salava.gallery.ui.pages :as p]
              [salava.gallery.ui.profiles :as u]
-             [salava.gallery.ui.modal :as modal]))
+             [salava.gallery.ui.modal :as modal]
+             [salava.gallery.ui.block :as block]))
 
 (defn placeholder [content]
   (fn [site-navi params]

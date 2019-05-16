@@ -11,8 +11,9 @@
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
     [:div {:id "page-preview"}
-     [ph/edit-page-header (t :page/Preview ": " name) ]
-     [ph/edit-page-buttons id :preview (fn [next-url] (navigate-to next-url))]
+     [ph/edit-page-header (t :page/Preview ": " name)]
+     [ph/edit-page-buttons id :preview state]
+     ;[ph/edit-page-buttons id :preview (fn [next-url] (navigate-to next-url)) state]
      [ph/view-page (:page @state)]]))
 
 (defn init-data [state id]

@@ -1,7 +1,7 @@
 (ns salava.user.schemas
   (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]
+             :include-macros true] ;; cljs only
+
             [salava.core.schema-helper :as h]
             [salava.core.countries :refer [all-countries]]))
 

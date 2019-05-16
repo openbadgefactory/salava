@@ -1,4 +1,4 @@
-(defproject salava "3.1.2"
+(defproject salava "3.2.0"
   :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
@@ -90,9 +90,9 @@
                  [midje "1.8.3"]
 
                  ; Auth
-                 [buddy "1.3.0"]
+                 [buddy "1.3.0"]]
 
-                 ]
+
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :java-source-paths ["src/java"]

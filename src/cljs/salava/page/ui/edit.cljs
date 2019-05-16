@@ -5,41 +5,21 @@
             [salava.core.ui.ajax-utils :as ajax]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.layout :as layout]
-            [salava.core.ui.helper :refer [navigate-to path-for]]
+            [salava.core.ui.helper :refer [navigate-to path-for plugin-fun]]
             [salava.core.ui.field :as f]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.page.ui.helper :as ph]
             [salava.file.ui.my :as file]
-            [salava.file.icons :refer [file-icon]]))
+            [salava.file.icons :refer [file-icon]]
+            [clojure.string :refer [capitalize]]
+            [salava.core.ui.modal :refer [open-modal]]
+            [salava.core.ui.popover :refer [info]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 (defn random-key []
   (-> (make-random-uuid)
       (uuid-string)))
-
-(defn block-specific-values [{:keys [type content badge tag format sort files]}]
-  (case type
-    "heading" {:type "heading" :size "h1" :content content}
-    "sub-heading" {:type "heading" :size "h2":content content}
-    "badge" {:format (or format "short") :badge_id (:id badge 0)}
-    "html" {:content content}
-    "file" {:files (map :id files)}
-    "tag" {:tag tag :format (or format "short") :sort (or sort "name")}
-    nil))
-
-(defn prepare-blocks-to-save [blocks]
-  (for [block blocks]
-    (-> block
-        (select-keys [:id :type])
-        (merge (block-specific-values block)))))
-
-(defn save-page [{:keys [id name description blocks]} next-url]
-  (ajax/POST
-    (path-for (str "/obpv1/page/save_content/" id))
-    {:params {:name name
-              :description description
-              :blocks (prepare-blocks-to-save blocks)}
-     :handler (fn [] (navigate-to next-url))}))
 
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
@@ -78,7 +58,7 @@
   (reset! files-atom (vec (remove #(= % file) @files-atom))))
 
 (defn edit-block-badges [block-atom badges]
-  (let [badge-id (get-in @block-atom [:badge :id] 0)
+  (let [badge-id (get-in @block-atom [:badge :id] (session/get-in! [:badge-block :badge :id] 0))
         image (get-in @block-atom [:badge :image_file])
         format (:format @block-atom)]
     [:div.form-group
@@ -104,6 +84,25 @@
       (if image
         [:img {:src (str "/" image)}])]]))
 
+(defn badge-block [block-atom]
+  (let [badge-id (get-in @block-atom [:badge :id] (session/get-in! [:badge-block :badge :id] 0))
+        image (get-in @block-atom [:badge :image_file])
+        name (get-in @block-atom [:badge :name] "")
+        format (:format @block-atom)
+        description (get-in @block-atom [:badge :description])]
+    [:div.badge-select
+     [:div.row.flip
+      [:div.col-md-3.badge-image
+       [:img.badge-image {:src (str "/" image)}]]
+
+      [:div.col-md-9
+       [:h4.media-heading name]
+
+       [:div description]]]]))
+
+
+
+
 (defn edit-block-badge-groups [block-atom tags badges]
   (let [tag (get-in @block-atom [:tag] "")
         format (get-in @block-atom [:format] "short")
@@ -125,8 +124,8 @@
                  :aria-label "select badge format"
                  :value format
                  :on-change #(update-block-value block-atom :format (.-target.value %))}
-        [:option {:value "short"} (t :page/Short)]
-        [:option {:value "long"} (t :page/Long)]]]
+        [:option {:value "short"} (t :page/ImageandName)]
+        [:option {:value "long"} (t :page/Content)]]]
       [:div.badge-select
        [:select {:class "form-control"
                  :aria-label "select sorting"
@@ -180,9 +179,9 @@
     [:div.form-group
      [:div.col-md-12
       [:input {:class     "form-control"
-              :type      "text"
-              :value     content
-              :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
+               :type      "text"
+               :value     content
+               :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
 
 (defn save-editor-content [block-atom]
   (if-let [editor (aget js/CKEDITOR "instances" "ckeditor")]
@@ -225,8 +224,8 @@
          [:div.embed-responsive.embed-responsive-16by9
           {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]
          [:div
-          {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]
-         ))]]])
+          {:dangerouslySetInnerHTML {:__html (:content @block-atom)}}]))]]])
+
 
 (defn block-type [block-atom]
   (let [type (:type @block-atom)]
@@ -241,106 +240,249 @@
       [:option {:value "html"} (t :page/Html)]
       [:option {:value "file"} (t :page/Files)]]]))
 
-(defn block [block-atom index blocks badges tags files]
+(def block-type-map
+  [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
+   {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
+   {:icon "fa-file-code-o" :text (t :page/Texteditor) :value "html"}
+   {:icon "fa-file" :text (t :page/Files) :value "file"}
+   {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
+   {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
+   {:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}
+   {:icon "fa-user" :text "Profile information" :value "profile"}])
+
+(defn badge-showcase [state block-atom]
+  (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
+        new-field-atom (atom {:type "showcase" :badges badges})
+        title (:title @block-atom)
+        format (:format @block-atom)]
+    [:div#badge-showcase
+     [:div#grid {:class "row"}
+      [:div.form-group
+       [:div.col-md-12
+        [:label (t :page/Title)]
+
+        [:input {:class     "form-control"
+                 :type      "text"
+                 :value     title
+                 :default-value (t :page/Untitled)
+                 :on-change #(update-block-value block-atom :title (.-target.value %))
+                 :placeholder (t :page/Untitled)}]]
+       [:div.col-md-12
+        [:label (t :page/Displayinpageas)]
+        [:div.badge-select
+         [:select {:class "form-control"
+                   :aria-label "select badge format"
+                   :value (or format "short")
+                   :on-change #(update-block-value block-atom :format (.-target.value %))}
+          [:option {:value "short"} (t :page/ImageandName)]
+          [:option {:value "long"} (t :page/Content)]]]]]
+      (reduce (fn [r b]
+                (conj r
+                      (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
+                                                                   :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
+              [:div]
+              badges)
+      [:div.addbadge
+       [:a {:href "#" :on-click #(do
+                                   (.preventDefault %)
+                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
+                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+        [:i.fa.fa-plus.add-icon]]]]]))
+
+(defn profile-block [block-atom]
+  (let [block (first (plugin-fun (session/get :plugins) "block" "editprofileinfo"))]
+    (if block (block block-atom) [:div ""])))
+
+(defn contenttype [{:keys [block-atom index]}]
+  (let [block-type-map (if (some #(= "profile" (:type %)) @block-atom)
+                         (into []  (remove #(= "profile" (:value %)) block-type-map)) block-type-map)]
+    (fn []
+      [:div#page-edit
+       [:div#block-modal
+        [:div.modal-body
+         [:p.block-title (t :page/Addblock)]
+         [:p (t :page/Choosecontent)]
+         (reduce-kv
+           (fn [r k v]
+             (let [new-field-atom (atom {:type (:value v)})]
+               (conj r
+                     [:div.row
+                      [:div.col-md-12
+                       [:div.content-type {:style {:display "inline-table"}} [:a.link {:on-click #(do
+                                                                                                    (.preventDefault %)
+                                                                                                    (case (:value v)
+                                                                                                      "badge" (open-modal [:badge :my] {:type "pickable" :new-field-atom new-field-atom  :block-atom block-atom  :index (or index nil)})
+                                                                                                      (if index
+                                                                                                        (f/add-field block-atom {:type (:value v)} index)
+                                                                                                        (f/add-field block-atom {:type (:value v)}))))
+                                                                                       :data-dismiss (case (:value v)
+                                                                                                       ("badge") nil
+                                                                                                       "modal")}
+
+                                                                              [:div
+
+                                                                               [:i.fa.fa-fw {:class (:icon v)}]
+                                                                               (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
+
+                                                                               [:span (:text v)]]]]
+                       [:span {:style {:display "inline"}}
+                        [info {:placement "right" :content (case (:value v)
+                                                             "badge" (t :page/Badgeinfo)
+                                                             "tag" (t :page/Badgegroupinfo)
+                                                             "heading" (t :page/Headinginfo)
+                                                             "sub-heading" (t :page/Subheadinginfo)
+                                                             "file" (t :page/Filesinfo)
+                                                             "html" (t :page/Htmlinfo)
+                                                             "showcase" (t :page/Badgeshowcaseinfo)
+                                                             "profile" (t :profile/Addprofileinfo))
+
+                               :style {:font-size "15px"}}]]]])))
+
+           [:div.block-types] block-type-map)]
+        [:div.modal-footer
+         [:button.btn.btn-warning {:on-click #(do
+                                                (.preventDefault %)
+                                                (m/close-modal!))}
+
+          (t :core/Cancel)]]]])))
+
+
+
+(defn field-after [blocks state index initial?]
+  (let [ first? (= 0 index)
+         last? (= (dec (count @blocks)) index)
+         block-count (count @blocks)]
+    (fn []
+      [:div.add-field-after
+
+       (if (and (:toggle-move-mode @state) (not (= index (:toggled @state))))
+         [:a {:href "#" :on-click #(do
+                                     (f/move-field-drop blocks (:toggled @state) index)
+                                     (swap! state assoc :toggle-move-mode false :toggled nil))}
+          [:div.placeholder.html-block-content.html-block-content-hover
+           (t :page/Clicktodrop)]]
+         [:button {:class    "btn btn-success"
+                   :on-click #(do
+                                (.preventDefault %)
+                                (if index (open-modal [:page :blocktype] {:block-atom blocks :index index} {:size :md}) (open-modal [:page :blocktype] {:block-atom blocks :index nil})))}
+          (t :page/Addblock)])])))
+
+(defn block [block-atom index blocks badges tags files state]
   (let [{:keys [type]} @block-atom
         first? (= 0 index)
-        last? (= (dec (count @blocks)) index)]
+        last? (= (dec (count @blocks)) index)
+        block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))]
     [:div {:key index}
-     [:div.add-field-after
-      [:button {:class    "btn btn-success"
-                :on-click #(do
-                            (.preventDefault %)
-                            (f/add-field blocks {:type "heading"} index))}
-       (t :page/Addblock)]]
-     [:div.field
-      [:div.field-move
-       [:div.move-arrows
-        (if-not first?
-          [:div.move-up {:on-click #(f/move-field :up blocks index)}
-           [:i {:class "fa fa-chevron-up"}]])
-        (if-not last?
-          [:div.move-down {:on-click #(f/move-field :down blocks index)}
-           [:i {:class "fa fa-chevron-down"}]])]]
+     [field-after blocks state index]
+     [:div.field.thumbnail {:class (when block-toggled? " block-to-move")}
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [block-type block-atom]]
-        [:div {:class "col-xs-4 field-remove"
+         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text capitalize)]
+
+         (when (= type "badge")
+          [:div.row.form-group {:style {:padding-top "10px"}}
+           [:div.col-xs-8 [:select {:class "form-control"
+                                    :aria-label "select blocktype"
+                                    :value (:format @block-atom)
+                                    :on-change #(update-block-value block-atom :format (.-target.value %))}
+                           [:option {:value "short"} (t :page/Short)]
+                           [:option {:value "long"} (t :page/Long)]]]
+           [:div.col-xs-4
+            [info {:content (t :page/Badgeformatinfo) :placement "left"}]]])]
+
+        [:div.move {:on-click #(do
+                                 (.preventDefault %)
+                                 (cond
+                                   (and first? last?) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                   (:toggle-move-mode @state) (swap! state assoc :toggle-move-mode false :toggled nil)
+                                   :else (swap! state assoc :toggle-move-mode true :toggled index)))}
+         [:span.move-block {:class (when block-toggled? " block-to-move")}  [:i.fa.fa-arrows]]]
+        [:div {:class "close-button"
                :on-click #(f/remove-field blocks index)}
          [:span {:class "remove-button" :title (t :page/Delete)}
           [:i {:class "fa fa-trash"}]]]]
        (case type
          ("heading" "sub-heading") [edit-block-text block-atom]
-         ("badge") [edit-block-badges block-atom badges]
+         ("badge") [badge-block block-atom]#_[edit-block-badges block-atom badges]
          ("tag") [edit-block-badge-groups block-atom tags badges]
          ("file") [edit-block-files block-atom files]
          ("html") [edit-block-html block-atom]
-         nil)]]
-     ]))
+         ("showcase") [badge-showcase state block-atom]
+         ("profile") [profile-block block-atom]
+         nil)]]]))
 
-(defn page-blocks [blocks badges tags files]
-  [:div {:id "field-editor"}
-   (into [:div {:id "page-blocks"}]
-         (for [index (range (count @blocks))]
-           (block (cursor blocks [index]) index blocks badges tags files)))
-   [:div.add-field-after
-    [:button {:class    "btn btn-success"
-              :on-click #(do
-                          (.preventDefault %)
-                          (f/add-field blocks {:type "heading"}))}
-     (t :page/Addblock)]]])
+
+
+(defn page-blocks [blocks badges tags files state]
+  (let [block-count (count @blocks)
+        position (if (pos? block-count) (dec block-count) nil)]
+
+    [:div {:id "field-editor"}
+     (into [:div {:id "page-blocks"}]
+           (for [index (range (count @blocks))]
+             (block (cursor blocks [index]) index blocks badges tags files state)))
+     [field-after blocks state position]]))
+
 
 (defn page-description [description]
-  [:div.form-group
-   [:label {:class "col-md-2"
-            :for "page-description"}
-    (t :page/Description)]
-   [:div.col-md-10
-    [:textarea {:id "page-description"
-                :class "form-control"
-                :value @description
-                :on-change #(reset! description (.-target.value %))}]]])
+  [:div.col-md-12
+   [:div.form-group
+    [:label {;:class "col-md-2"
+              :for "page-description"}
+     (t :page/Description)]
+    [:div;.col-md-10
+     [:textarea {:id "page-description"
+                 :class "form-control"
+                 :value @description
+                 :on-change #(reset! description (.-target.value %))}]]]])
 
 (defn page-title [name]
-  [:div.form-group
-   [:label {:class "col-md-2"
-            :for "page-name"}
+  [:div.col-md-12
+   [:div.form-group
+    [:label {;:class "col-md-2"
+              :for "page-name"}
      (t :page/Title)]
-   [:div.col-md-10
-    [:input {:id "page-name"
-             :class "form-control"
-             :type "text"
-             :value @name
-             :on-change #(reset! name (.-target.value %))}]]])
+    [:div;.col-md-10
+     [:input {:id "page-name"
+              :class "form-control"
+              :type "text"
+              :value @name
+              :on-change #(reset! name (.-target.value %))}]]]])
 
 (defn page-form [state]
-  [:form.form-horizontal
-   [:div {:id "title-and-description"}
-    [page-title (cursor state [:page :name])]
-    [page-description (cursor state [:page :description])]]
-   [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files])]
-   [:div.row
-    [:div.col-md-12
-     [:button {:class    "btn btn-primary"
-               :on-click #(do
-                           (.preventDefault %)
-                           (save-page (:page @state) (str "/page/edit_theme/" (get-in @state [:page :id]))))}
-      (t :page/Save)]]]])
+  [:div
+   [:div.panel.thumbnail
+    [:div.panel-heading [:p.block-title "Page Information"]]
+    [:div.panel-body
+     [:form.form-horizontal
+      [:div {:id "title-and-description"}
+
+       [page-title (cursor state [:page :name])]
+       [page-description (cursor state [:page :description])]]]]]
+   [ph/manage-page-buttons :content (cursor state [:page :id]) state]
+   [:div.form-horizontal
+    [page-blocks (cursor state [:page :blocks]) (cursor state [:badges]) (cursor state [:tags]) (cursor state [:files]) state]]])
+
 
 (defn content [state]
   (let [{:keys [id name]} (:page @state)]
+
     [:div {:id "page-edit"}
+     [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
-     [ph/edit-page-buttons id :content (fn [next-url] (save-page (:page @state) next-url))]
+     [ph/edit-page-buttons id :content state]
      [page-form state]]))
 
 (defn init-data [state id]
   (ajax/GET
     (path-for (str "/obpv1/page/edit/" id) true)
     {:handler (fn [data]
-                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
-                                                                               (get-in data [:page :blocks]))))]
-                  (reset! state data-with-uuids)))}))
+               (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
+                                                                              (get-in data [:page :blocks]))))]
+                 (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
+
+
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
@@ -349,8 +491,9 @@
                             :description ""
                             :id id}
                      :badges []
-                     :tags []})]
+                     :tags []
+                     :toggle-move-mode false
+                     :profile-tab? nil})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))
-
