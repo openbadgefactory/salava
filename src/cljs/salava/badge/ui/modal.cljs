@@ -22,7 +22,7 @@
             [clojure.string :refer [blank? starts-with? split]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
             [salava.core.helper :refer [dump]]
-            [salava.badge.ui.my :as my]))
+            [salava.badge.ui.block :as block]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -366,4 +366,4 @@
            :endorse endr/endorse-badge-content
            :userbadgeendorsement endr/user-badge-endorsement-content
            :userendorsement endr/user-endorsement-content
-           :my my/mybadgesmodal}})
+           :my block/mybadgesmodal}})
