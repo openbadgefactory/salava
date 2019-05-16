@@ -160,7 +160,7 @@ plugin-fun
                                    (.preventDefault %)
                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
-        [:i.fa.fa-plus.add-icon]]]]]))
+        [:i.fa.fa-plus.add-icon.fa-5x]]]]]))
 
 (defn block-for-edit [block-atom state index]
   (let [block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))

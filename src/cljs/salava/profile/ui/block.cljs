@@ -175,7 +175,7 @@
                            [:i.fa.fa-fw.fa-lightbulb-o.tipicon](case k
                                                                   :profile-picture-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
                                                                                                                                                                         (.preventDefault %)
-                                                                                                                                                                        (session/put! :edit-mode true))} (t :profile/Profilepicturetip)]
+                                                                                                                                                                        (session/put! :edit-mode true))} [:p (t :profile/Profilepicturetip)]]
                                                                   :aboutme-tip [:a {:href (path-for (str "/profile/" (session/get-in [:user :id]))) :on-click #(do
                                                                                                                                                                 (.preventDefault %)
                                                                                                                                                                 (session/put! :edit-mode true))} (t :profile/Aboutmetip)]
