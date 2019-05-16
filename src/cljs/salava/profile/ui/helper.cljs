@@ -13,7 +13,8 @@
             [reagent-modals.modals :as m]
             [salava.profile.ui.edit :as pe]
             [salava.page.ui.helper :refer [view-page]]
-            [salava.core.ui.popover :refer [info]]))
+            [salava.core.ui.popover :refer [info]]
+            [salava.page.ui.my :refer [create-page]]))
 
 
 
@@ -113,7 +114,7 @@
 
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
-
+plugin-fun
 (defn showcase-grid [state block-atom]
  [:div#user-badges
   [:h3 (or (:title @block-atom) (t :page/Untitled))]
@@ -315,7 +316,8 @@
                                        (t :profile/Addexistingpage)]]
                                  [:li [:a {:href "#" :on-click #(do
                                                                  (.preventDefault %)
-                                                                 (as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]]))
+                                                                 (create-page)
+                                                                 #_(as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]]))
 
 (defn page-content [page-id page state]
  (let [index (.indexOf (map :id @(cursor state [:tabs])) page-id)]

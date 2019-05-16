@@ -137,7 +137,7 @@
                                                                    (get data :blocks))))]
                  (swap! state assoc :permission "success" :edit {:active-tab :content} :edit-mode (session/get! :edit-mode false))
                  (swap! state merge data-with-uuids)
-                (prn (session/get :user))))}))
+                ))}))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)
