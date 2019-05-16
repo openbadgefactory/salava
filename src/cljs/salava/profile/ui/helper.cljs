@@ -321,7 +321,7 @@
  (let [index (.indexOf (map :id @(cursor state [:tabs])) page-id)]
   [:div#profile
    [:div {:style {:text-align "center" :margin "15px 0"}}
-    (when @(cursor state [:edit-mode])
+    (when (and @(cursor state [:edit-mode]) (= :content @(cursor state [:edit :active-tab])))
      [:div
       (when-not (= page-id (some->> @(cursor state [:tabs])  first :id)) [:span.move-tab {:href "#" :on-click #(f/move-field :up (cursor state [:tabs])  index)} [:i.fa.fa-chevron-left.fa-fw.fa-lg] (t :profile/Movetableft)])
       (when-not (= page-id (some->> @(cursor state [:tabs])  last :id))[:span.move-tab {:href "#" :on-click #(f/move-field :down (cursor state [:tabs]) index)} (t :profile/Movetabright)[:i.fa.fa-chevron-right.fa-fw.fa-lg]])])]
