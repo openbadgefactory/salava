@@ -42,109 +42,117 @@
 (defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
         modal-message (str "messages")]
-    [:div {:class "media"}
+    [:div {:style {:height "100%"}}
      [:a {:href "#"
-          :on-click #(do
-                       (mo/open-modal [:gallery :badges] {:badge-id object})
-                       (.preventDefault %))
-          :style {:text-decoration "none"}}
-      [:div.media-left
-       [:img {:src (str "/" image_file)}]]
-      [:div.media-body
-       [:div.content-text
-        [:p.content-heading
-         (t :social/Youstartedfollowbadge)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+                         :on-click #(do
+                                      (mo/open-modal [:gallery :badges] {:badge-id object})
+                                      (.preventDefault %))
+                         :style {:text-decoration "none"}}
+         [:div {:class "media"}
+
+          [:div.media-left
+           [:img {:src (str "/" image_file)}]]
+          [:div.media-body
+           [:div.content-text
+            [:p.content-heading
+             (t :social/Youstartedfollowbadge)]
+            [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+     (stream/hide-event event_id state)]))
 
 
 (defn message-event [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event]
-        ;reload-fn (fn [] (init-data state))
-
-    [:div {:class "media"}
-     [:a {:href "#"
-          :on-click #(do
-                       ;(b/open-modal object true init-data state)
-                       ;(init-data state)
-                       (mo/open-modal [:gallery :badges] {:badge-id object
-                                                          :show-messages true
-                                                          :reload-fn nil})
-                       (.preventDefault %))
-          :style {:text-decoration "none"}}
+   [:div {:style {:height "100%"}}
+    [:a {:href "#"
+         :on-click #(do
+                      (mo/open-modal [:gallery :badges] {:badge-id object
+                                                         :show-messages true
+                                                         :reload-fn nil})
+                      (.preventDefault %))
+         :style {:text-decoration "none"}}
+     [:div {:class "media"}
       [:div.media-left
        [:img {:src (str "/" image_file)}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (:message message)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+    (stream/hide-event event_id state)]))
 
 (defn publish-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object first_name last_name]}  event]
-    [:div {:class "media"}
-     ;(hide-event event_id state)
-     [:a {:href "#"
-          :on-click #(do
-                       (mo/open-modal [:badge :info] {:badge-id object})
-
-                       (.preventDefault %))}
-      [:div.media-left
-       [:img {:src (str "/" image_file)}]]
-      [:div.media-body
-       [:div.content-text
-        [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedbadge) " " name)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+      [:div {:style {:height "100%"}}
+       [:a {:href "#"
+            :on-click #(do
+                         (mo/open-modal [:badge :info] {:badge-id object})
+                         (.preventDefault %))}
+           [:div {:class "media"}
+                [:div.media-left
+                 [:img {:src (str "/" image_file)}]]
+                [:div.media-body
+                 [:div.content-text
+                  [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedbadge) " " name)]
+                  [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+       (stream/hide-event event_id state)]))
 
 
 (defn publish-event-page [event state]
   (let [{:keys [subject verb profile_picture message ctime event_id name object first_name last_name]}  event]
-    [:div {:class "media"}
-     [:a {:href "#"
-          :on-click #(do
-                       (mo/open-modal [:page :view] {:page-id object})
+   [:div {:style {:height "100%"}}
+    [:a {:href "#"
+         :on-click #(do
+                      (mo/open-modal [:page :view] {:page-id object})
 
-                       (.preventDefault %))}
-      [:div.media-left
-       [:img {:src (profile-picture profile_picture)}]]
-      [:div.media-body
-       [:div.content-text
-        [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedpage) " " name)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+                      (.preventDefault %))}
+     [:div {:class "media"}
+           [:div.media-left
+            [:img {:src (profile-picture profile_picture)}]]
+           [:div.media-body
+            [:div.content-text
+             [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedpage) " " name)]
+             [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+    (stream/hide-event event_id state)]))
 
 (defn follow-event-user [event state]
   (let [{:keys [subject verb ctime event_id object s_first_name s_last_name o_first_name o_last_name o_id s_id owner o_profile_picture s_profile_picture]}  event
         modal-message (str "messages")]
-    [:div {:class "media"}
-     [:a {:href "#"
-          :on-click #(do
-                       (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
-                                                                   o_id
-                                                                   s_id)})
-                       (.preventDefault %))}
-      [:div.media-left
-       [:img {:src (profile-picture (if (= owner s_id)
-                                      o_profile_picture
-                                      s_profile_picture))}]]
-      [:div.media-body
-       [:div.content-text
-        [:p.content-heading (if (= owner s_id)
-                              (str (t :social/Youstartedfollowing) " " o_first_name " " o_last_name)
-                              (str  s_first_name " " s_last_name " " (t :social/Followsyou)))]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+   [:div {:style {:height "100%"}}
+    [:a {:href "#"
+              :on-click #(do
+                           (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
+                                                                       o_id
+                                                                       s_id)})
+                           (.preventDefault %))}
+        [:div {:class "media"}
+           [:div.media-left
+            [:img {:src (profile-picture (if (= owner s_id)
+                                           o_profile_picture
+                                           s_profile_picture))}]]
+           [:div.media-body
+            [:div.content-text
+             [:p.content-heading (if (= owner s_id)
+                                   (str (t :social/Youstartedfollowing) " " o_first_name " " o_last_name)
+                                   (str  s_first_name " " s_last_name " " (t :social/Followsyou)))]
+             [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+    (stream/hide-event event_id state)]))
 
 (defn badge-advert-event [event state]
   (let [{:keys [subject verb image_file ctime event_id name object issuer_content_id issuer_content_name issuer_image]} event
         visibility (if issuer_image "visible" "hidden")]
-    [:div {:class "media"}
-     [:a {:href "#"
-          :on-click #(do
-                       (.preventDefault %)
-                       (mo/open-modal [:application :badge] {:id subject :state state}))}
-      [:div.media-left
-       [:img {:src (str "/" image_file)}]]
-      [:div.media-body
-       [:div.content-text
-        [:p.content-heading (str issuer_content_name " " (t :social/Publishedbadge) " " name)]
-        [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]))
+   [:div {:style {:height "100%"}}
+    [:a {:href "#"
+              :on-click #(do
+                           (.preventDefault %)
+                           (mo/open-modal [:application :badge] {:id subject :state state}))}
+        [:div {:class "media"}
+
+              [:div.media-left
+               [:img {:src (str "/" image_file)}]]
+              [:div.media-body
+               [:div.content-text
+                [:p.content-heading (str issuer_content_name " " (t :social/Publishedbadge) " " name)]
+                [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+    (stream/hide-event event_id state)]))
 
 (defn welcome-block-body [lang]
   (let [language (if-not (blank? lang) lang "en")
@@ -238,17 +246,24 @@
 
           (when-not (not-activated?)  [application-button "button"])
           [:div.content
-           [:div.stats
-            [:div.total-badges
-             [:p.num (get-in @state [:stats :badge_count] 0)]
-             [:p.desc (t :badge/Badges)]]
-            [:div.total-badges
-             [:p.num (->> (get-in @state [:stats :badge_views])
-                          (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0))]
-             [:p.desc (t :badge/Badgeviews)]]
-            [:div
-             [:p.num (:published_badges_count @state)]
-             [:p.desc (t :gallery/Sharedbadges)]]]
+           [:div.connections-block {:style {:padding-bottom "20px"}}
+            [:div.row {:style {:margin-left "-17px"}}
+             [:div.total-badges.info-block
+              [:div.info
+               [:div.text
+                [:p.num (get-in @state [:stats :badge_count] 0)]
+                [:p.desc (t :badge/Badges)]]]]
+             [:div.total-badges.info-block
+              [:div.info
+               [:div.text
+                [:p.num (->> (get-in @state [:stats :badge_views])
+                             (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0))]
+                [:p.desc (t :badge/Badgeviews)]]]]
+             [:div.info-block
+              [:div.info
+               [:div.text
+                [:p.num (:published_badges_count @state)]
+                [:p.desc (t :gallery/Sharedbadges)]]]]]]
 
            (when (seq (:pending-badges @state)) [:div.pending
                                                  [:p.header (t :badge/Pendingbadges)]
@@ -256,19 +271,21 @@
                                                    (reduce (fn [r badge]
                                                              (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
                                                            [:div] (take 5 (:pending-badges @state))))])
-
-           (if welcome-tip
-             [:div.pending [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]]
-             [:div.badges
-              [:p.header (t :social/Lastestearnedbadges)]
-              (reduce (fn [r badge]
-                        (conj r [:a {:href "#" :on-click #(do
-                                                            (.preventDefault %)
-                                                            (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
-                      [:div] badges)])
-           [latest-earnable-badges]
+           (when welcome-tip
+            [:div.pending {:style {:padding "10px 0"}} [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]])
+           [:div.badge-columns
+             ;[:div.pending [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]]
+             (when (seq badges)
+              [:div.badges
+                [:p.header (t :social/Lastestearnedbadges)]
+                (reduce (fn [r badge]
+                          (conj r [:a {:href "#" :on-click #(do
+                                                              (.preventDefault %)
+                                                              (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
+                        [:div {:style {:padding "5px 0"}}] badges)])
+            [latest-earnable-badges]]
            (when (> (get-in @state [:stats :badge_count] 0) (:published_badges_count @state))
-                 [:div#profiletips {:style {:position "absolute" :bottom "1px" :margin-right "10px"}}
+                 [:div#profiletips {:style {:position "relative" :bottom "1px" :margin-right "10px" :padding-top "20px"}}
                     [:div.tip
                      [:i.fa.fa-fw.fa-lightbulb-o.tipicon] [:span {:style {:margin "5px"}} (t :badge/Visibilityinfo)]]])]]]]])))
 
@@ -324,10 +341,10 @@
             [:div.info
              [:i.fa.fa-map-marker.icon]
              [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
-              [:p.desc (t :location/Map)]]]]]]
-         (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]]]]]]]))
+              (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
+              [:p.desc (if (> (get-in @state [:gallery :map :all] 0) 1)(t :admin/Users) (t :user/User))]]]]]]
+         [:div.since-last-login]]]]]]]]))
+
 
 
 

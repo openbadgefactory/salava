@@ -278,3 +278,6 @@ WHERE se.verb = 'publish' AND se.type = 'page' AND se.mtime > :last_login AND p.
 
 --name: gallery-profiles-count-since-last-login
 SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND ctime > :last_login
+
+--name: all-users-on-map-count
+SELECT COUNT(id) AS users_count FROM user WHERE location_lng IS NOT NULL AND location_lat IS NOT NULL AND deleted = 0
