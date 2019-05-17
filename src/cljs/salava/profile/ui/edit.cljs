@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor create-class]]
             [reagent.session :as session]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [path-for plugin-fun navigate-to]]
+            [salava.core.ui.helper :refer [path-for plugin-fun navigate-to js-navigate-to]]
             [salava.core.i18n :refer [t]]
             [reagent-modals.modals :as m]
             [salava.core.ui.field :as f]
@@ -107,7 +107,7 @@
                                                                                 (swap! state assoc :spinner true :active-button "btn-2")
                                                                                 (save-profile state (fn [] (do
                                                                                                             (swap! state assoc :spinner false)
-                                                                                                            (navigate-to (str "/profile/"(:user-id @state))))) true))}
+                                                                                                            (js-navigate-to (str "/profile/"(:user-id @state))))) true))}
 
                                           (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :profile/Saveandclose) #_(t :page/View)]
                                          (when next?  [:div.pull-right {:id "step-button"}
