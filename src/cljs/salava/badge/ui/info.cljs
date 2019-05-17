@@ -219,7 +219,7 @@
                   (str " " (t :badge/Congratulate) "!")])
                )]]
 
-         [:div#info-page-block (if (session/get :user)
+         [:div#info-page-block #_(if (session/get :user)
                                  [badge-message-link message_count badge_id])
 
           (bm/badge-endorsement-modal-link badge_id endorsement_count)]]

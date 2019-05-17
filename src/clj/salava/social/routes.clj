@@ -23,7 +23,7 @@
 
     (context "/obpv1/social" []
              :tags ["social"]
-             (GET "/messages/:badge_id/:page_count" [other_ids]
+             (GET "/messages/:badge_id/:page_count" []
                   ;:return
                   #_{:messages      [{:id              s/Int
                                       :user_id         s/Int
@@ -40,7 +40,7 @@
                   :auth-rules access/signed
                   :current-user current-user
                   (do
-                    (ok (so/get-badge-messages-limit ctx badge_id page_count (:id current-user) (vals other_ids))
+                    (ok (so/get-badge-messages-limit ctx badge_id page_count (:id current-user))
                         )))
 
              #_(GET "/messages_count/:badge_id" []
@@ -54,7 +54,7 @@
                       (ok (so/get-badge-message-count ctx badge_id (:id current-user))
                           )))
 
-             (GET "/messages_count/:badge_id" [other_ids]
+             (GET "/messages_count/:badge_id" []
                   :return {:new-messages s/Int
                                :all-messages s/Int}
                   :summary "Returns count of not viewed messages and all messages"
@@ -62,9 +62,7 @@
                   ;:body [other_ids :- s/Str]
                   :auth-rules access/signed
                   :current-user current-user
-                  (do
-                    (ok (so/get-badge-message-count ctx badge_id (:id current-user) (vals other_ids))
-                        )))
+                  (ok (so/get-badge-message-count ctx badge_id (:id current-user))))
 
              (POST "/messages/:badge_id" []
                    :return {:status (s/enum "success" "error") :connected? (s/maybe  s/Str)}

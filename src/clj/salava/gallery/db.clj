@@ -386,6 +386,9 @@
                                        count)
               )))
 
+(defn badge-gallery-id [ctx badge_id]
+  (some-> (select-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id))
+
 
 (defn public-badge-content
   "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"

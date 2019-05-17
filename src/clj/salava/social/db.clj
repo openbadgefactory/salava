@@ -62,13 +62,15 @@
 
 
 (defn is-connected? [ctx user_id badge_id]
-  (let [id (select-connection-badge {:user_id user_id :badge_id badge_id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))]
-    (= badge_id id)))
+  (-> (select-connection-badge {:user_id user_id :badge_id badge_id} (get-db ctx))
+      first
+      boolean))
 
 (defn insert-connection-badge! [ctx user_id badge_id]
-  (insert-connect-badge<! {:user_id user_id :badge_id badge_id} (get-db ctx))
-  (util/event ctx user_id "follow" badge_id "badge")
-  (messages-viewed ctx badge_id user_id))
+  (let [gallery-id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
+    (insert-connect-badge<! {:user_id user_id :badge_id badge_id :gallery_id gallery-id} (get-db ctx))
+    (util/event ctx user_id "follow" badge_id "badge")
+    (messages-viewed ctx badge_id user_id)))
 
 (defn create-connection-badge! [ctx user_id  badge_id]
   (try+
@@ -190,9 +192,10 @@
      (if-not (blank? message)
        (let [badge-connection (if (not (is-connected? ctx user_id badge_id))
                                 (:status (create-connection-badge! ctx user_id badge_id))
-                                "connected")]
+                                "connected")
+             gallery_id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
          (do
-           (insert-badge-message<! {:badge_id badge_id :user_id user_id :message message} (get-db ctx))
+           (insert-badge-message<! {:badge_id badge_id :gallery_id gallery_id :user_id user_id :message message} (get-db ctx))
            (util/event ctx user_id "message" badge_id "badge")
            )
          {:connected? badge-connection}
@@ -216,28 +219,12 @@
        :all-messages (count badge-messages-user-id-ctime)}))
 
 (defn get-badge-message-count
-  "message count fix"
-  ([ctx badge_id user-id]
+  [ctx badge_id user-id]
    (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_id badge_id} (get-db ctx))
          last-viewed (select-badge-message-last-view {:badge_id badge_id :user_id user-id} (into {:result-set-fn first :row-fn :mtime} (get-db ctx)))
          new-messages (if last-viewed (filter #(and (not= user-id (:user_id %)) (< last-viewed (:ctime %))) badge-messages-user-id-ctime) ())]
      {:new-messages (count new-messages)
       :all-messages (count badge-messages-user-id-ctime)}))
-
-  ([ctx badge_id user-id other-badge-ids]
-   (if (empty? other-badge-ids)
-     (get-badge-message-count ctx badge_id user-id)
-     (let [badge-ids (cons badge_id other-badge-ids)
-           badge-messages-user-id-ctime (->> (map #(select-badge-messages-count {:badge_id %} (get-db ctx)) badge-ids)
-                                             (remove #(empty? %))
-                                             flatten)
-           last-viewed (->> (map #(select-badge-message-last-view {:badge_id % :user_id user-id} (into {:result-set-fn first :row-fn :mtime} (get-db ctx))) badge-ids)(remove #(nil? %)))
-           new-messages (if-not (empty? last-viewed) (->> (map (fn [l] (filter #(and (not= user-id (:user_id %)) (< l (:ctime %))) badge-messages-user-id-ctime)) last-viewed)
-                                                          (remove #(empty? %))
-                                                          flatten))]
-       {:new-messages (count new-messages)
-        :all-messages (count badge-messages-user-id-ctime)}
-       ))))
 
 
 #_(defn get-badge-messages-limit [ctx badge_id page_count user_id]
@@ -310,13 +297,12 @@
 
 (defn delete-connection-badge! [ctx user_id  badge_id]
   (try+
-    (delete-connect-badge! {:user_id user_id :badge_id badge_id} (get-db ctx))
+    (when-let [gallery-id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
+      (delete-connect-badge! {:user_id user_id :badge_id badge_id :gallery_id gallery-id} (get-db ctx)))
 
     {:status "success" :connected? (is-connected? ctx user_id badge_id)}
     (catch Object _
-
-      {:status "error" :connected? (is-connected? ctx user_id badge_id)}
-      )))
+      {:status "error" :connected? (is-connected? ctx user_id badge_id)})))
 
 
 (defn get-connections-badge [ctx user_id]

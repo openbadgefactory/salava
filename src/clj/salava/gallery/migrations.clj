@@ -4,11 +4,6 @@
             [clojure.data.json :as json]
             [clojure.java.jdbc :as jdbc]))
 
-#_(def debug-conf {:conn {:dbtype "mysql"
-                        :dbname "salava"
-                        :user "salava"
-                        :password "salava"}})
-
 
 (defn- gallery-insert! [config row]
   (jdbc/execute! (:conn config) ["INSERT IGNORE INTO gallery (badge_name, badge_image, issuer_name) VALUES (?,?,?)"
@@ -22,7 +17,10 @@
     (jdbc/execute! (:conn config) ["UPDATE badge_message      SET gallery_id = ? WHERE badge_id = ?" gallery-id (:badge_id row)])
     (jdbc/execute! (:conn config) ["UPDATE badge_message_view SET gallery_id = ? WHERE badge_id = ?" gallery-id (:badge_id row)])
 
+    (jdbc/execute! (:conn config) ["UPDATE social_connections_badge SET gallery_id = ? WHERE badge_id = ?" gallery-id (:badge_id row)])
+
     (jdbc/execute! (:conn config) ["UPDATE gallery SET badge_id = ? WHERE id = ?" (:badge_id row) gallery-id])))
+
 
 (defn gallery-table-insert-up [config]
   (let [total (-> (jdbc/query (:conn config) ["SELECT COUNT(*) AS count FROM user_badge"]) first :count)
@@ -41,7 +39,7 @@
                                               INNER JOIN badge_issuer_content ic ON badge.id = ic.badge_id
                                               INNER JOIN issuer_content i ON ic.issuer_content_id = i.id
                                               WHERE b.language_code = badge.default_language_code AND i.language_code = badge.default_language_code
-                                                AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+                                                AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
                                               ORDER BY ub.ctime
                                               LIMIT ? OFFSET ?" limit offset])]
         (gallery-insert! config row)))))
@@ -51,11 +49,7 @@
   (jdbc/execute! (:conn config) ["UPDATE badge_message      SET gallery_id = NULL"])
   (jdbc/execute! (:conn config) ["UPDATE badge_message_view SET gallery_id = NULL"])
 
+  (jdbc/execute! (:conn config) ["UPDATE social_connections_badge SET gallery_id = NULL"])
+
   (jdbc/execute! (:conn config) ["DELETE FROM gallery"])
   (jdbc/execute! (:conn config) ["ALTER TABLE gallery AUTO_INCREMENT = 1"]))
-
-;;;
-
-#_(gallery-table-insert-up debug-conf)
-
-#_(gallery-table-insert-down debug-conf)

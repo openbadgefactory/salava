@@ -1,5 +1,5 @@
 (ns salava.badge.event
-  (:require[salava.badge.db :as db]))
+  (:require [salava.badge.db :as db]))
 
 
 (defn owners [ctx data]

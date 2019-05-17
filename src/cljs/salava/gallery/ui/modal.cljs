@@ -108,9 +108,10 @@
                    [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
 
-        (into [:div]
-              (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
-                [f gallery_id badge_id]))
+        (when (and gallery_id (not @show-messages))
+          (into [:div]
+                (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
+                  [f gallery_id badge_id])))
         ]]
       (if (and badge_id name)
         [reporttool1 badge_id name "badges"])]]
@@ -119,7 +120,7 @@
 
 (defn init-data [gallery-id badge-id state]
   (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" gallery-id "/" badge-id) true)
+    (path-for (str "/obpv1/gallery/public_badge_content/" (or gallery-id 0) "/" badge-id) true)
     {:handler (fn [data]
                 (reset! state (assoc data
                                 :permission "success"
