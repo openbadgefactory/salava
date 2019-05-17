@@ -341,7 +341,7 @@
              [:i.fa.fa-map-marker.icon]
              [:div.text
               (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
-              [:p.desc (if (> (get-in @state [:gallery :map :all] 0) 1)(t :admin/Users) (t :location/Map))]]]]]]
+              [:p.desc (t :location/Map) ]]]]]]
          [:div.since-last-login]]]]]]]]))
 
 
