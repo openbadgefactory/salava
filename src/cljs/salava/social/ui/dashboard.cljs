@@ -180,8 +180,9 @@
                                                                                                                                             (reset! arrow-class "fa-angle-up")
                                                                                                                                             (reset! arrow-class "fa-angle-down")))}[:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]]
            (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))
-          [:div.collapse.hidden-content {:id "hidden"}
-           [:p message]]]])]]))
+          [:div.collapse {:id "hidden"}
+           [:div.hidden-content
+            [:p message]]]]])]]))
 
 
 (defn notifications-block [state]
@@ -340,7 +341,7 @@
              [:i.fa.fa-map-marker.icon]
              [:div.text
               (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
-              [:p.desc (if (> (get-in @state [:gallery :map :all] 0) 1)(t :admin/Users) (t :user/User))]]]]]]
+              [:p.desc (if (> (get-in @state [:gallery :map :all] 0) 1)(t :admin/Users) (t :location/Map))]]]]]]
          [:div.since-last-login]]]]]]]]))
 
 
