@@ -221,6 +221,7 @@ body {
  a {
   color: $text-color;
   text-decoration: underline;
+  outline: none !important;
  }
 
  #grid a {
@@ -641,6 +642,9 @@ a.popup-info {
     background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
    }
   }
+  .icon {
+    color: $link-color;
+  }
  }
 
  #welcome-block .hidden-content,
@@ -687,8 +691,11 @@ a.popup-info {
   }
  }
 
+.profile-block .profile-visibility a{
+  color:#1c6799;
+}
  .info-block {
-  background-color: rgba(86, 142, 180, 1);
+  background-color: rgba(28, 103, 153, 1); //rgba(86, 142, 180, 1);
  }
 
  .content,
@@ -696,15 +703,15 @@ a.popup-info {
   color: #000000;
 
   .badge-connection {
-   background-color: rgba(77, 148, 139, 1) !important;
+   background-color: rgba(17, 113, 100, 1) !important; //rgba(17, 148, 139, 1) !important;
   }
 
-  .endorsement {
-   // background-color: #00D2CE;
+  .map{
+    background-color: #568EB4;
   }
 
   .page {
-   background-color: rgba(199, 116, 160, 1);
+   background-color:  rgba(181, 70, 129, 1); //rgba(199, 116, 160, 1);
   }
  }
 
@@ -730,6 +737,11 @@ a.popup-info {
   .date {
    color: #117164;
   }
+ }
+
+ .notification-div .close {
+   color: $pink;
+   opacity: 0.8;
  }
 
  .badge {
@@ -853,5 +865,12 @@ a.popup-info {
   color: $pink;
   &:hover {
     color: $pink;
+  }
+}
+
+#profiletips .tip{
+  .tipicon, a {
+    color: #1c6799;
+
   }
 }
