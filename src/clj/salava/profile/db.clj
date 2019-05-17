@@ -9,7 +9,6 @@
 
 (defqueries "sql/profile/main.sql")
 
-
 (defn user-badges [ctx user-id]
  (as-> (first (plugin-fun (get-plugins ctx) "main" "user-badges-all")) f (if f (f ctx user-id) [])))
 
@@ -170,7 +169,7 @@
        {:keys [about profile_picture ]} user
        {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
        complete-profile (and (not (blank? profile_picture)) (not (blank? about)))
-       weights {:about 25 :profile-picture 50 :location 25}
+       weights {:about 30 :profile-picture 30 :location 10 :default 30}
        enabled-location (not (empty? enabled))
        has-showcase (some #(= "showcase" (:type %)) blocks)]
 
@@ -180,10 +179,9 @@
           :tabs-tip (empty? tabs)
           :showcase-tip (nil? has-showcase)}
    :completion_percentage (cond
-                           (and complete-profile enabled-location) 100
-                           complete-profile (reduce + (vals (select-keys weights [:about :profile-picture])))
-                           (and (not (blank? about)) (blank? profile_picture) enabled-location) (+ (:about weights) (:location weights))
-                           (and (not (blank? about)) (blank? profile_picture) (not enabled-location)) (:about weights)
-                           (and (not (blank? profile_picture)) (blank? about) enabled-location) (+ (:profile-picture weights) (:location weights))
-                           (and (not (blank? profile_picture)) (blank? about) (not enabled-location)) (:profile-picture weights)
-                           :else 5)}))
+                           (and complete-profile enabled-location) (reduce + (-> weights vals))
+                           complete-profile (reduce + (-> (select-keys weights [:about :profile-picture :default]) vals))
+                           (and enabled-location (every? blank? (vector profile_picture about))) (reduce + (-> (dissoc weights :about :profile-picture) vals))
+                           (and enabled-location (or (not (blank? about))  (not (blank? profile_picture)) )) (reduce + 30 (-> (dissoc weights :about :profile-picture) vals))
+                           (and (not enabled-location) (or (not (blank? about)) (not (blank? profile_picture)) )) (reduce + 30 (-> (dissoc weights :about :profile-picture :location) vals))
+                           :else (:default weights))}))

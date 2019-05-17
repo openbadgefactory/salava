@@ -268,7 +268,7 @@
                       [:div] badges)])
            [latest-earnable-badges]
            (when (> (get-in @state [:stats :badge_count] 0) (:published_badges_count @state))
-                 [:div#profiletips {:style {:position "absolute" :bottom "1px"}}
+                 [:div#profiletips {:style {:position "absolute" :bottom "1px" :margin-right "10px"}}
                     [:div.tip
                      [:i.fa.fa-fw.fa-lightbulb-o.tipicon] [:span {:style {:margin "5px"}} (t :badge/Visibilityinfo)]]])]]]]])))
 
@@ -316,7 +316,20 @@
               (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
               [:p.desc (t :gallery/Sharedprofiles)]]]]]]
          (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
+           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
+        [:div.col-sm-4.button-block
+         [:div.info-block
+          [:a {:href (path-for "/gallery/map")}
+           [:div
+            [:div.info
+             [:i.fa.fa-map-marker.icon]
+             [:div.text
+              (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
+              [:p.desc (t :location/Map)]]]]]]
+         (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]]]]]]]))
+
+
 
 
 
@@ -384,10 +397,10 @@
        [:div.profile-block.row_1;.block-content
         [:div.heading_1
          [:i.fa.fa-user.icon]
-         [:a {:href (str (path-for "/user/profile/" ) (get-in user [:user :id]))}[:span.title
+         [:a {:href (str (path-for "/profile/" ) (get-in user [:user :id]))}[:span.title
                                                                                   (t :user/Profile)]]
-         [:span.small.icon]
-         #_[:i.fa.fa-angle-right.icon.small]]
+         [:span.small.icon]]
+
         [:div.content
          (when-not (not-activated?) [:a.btn.button {:href (path-for (str "/profile/" (session/get-in [:user :id])))
                                                     :on-click #(do
@@ -429,7 +442,8 @@
   (let [blocks (plugin-fun (session/get :plugins) "routes" "quicklinks")
         quicklinks  (mapcat #(%) blocks)]
     (reduce (fn [r link]
-              (conj r [:a {:href (:url link)} (:title link)]))
+              (conj r [:a {:href (:url link) :on-click #(do (.preventDefault %)
+                                                         (when (:function link) ((:function link))))} (:title link)]))
             [:div.quicklinks]
             (some->> quicklinks (sort-by :weight <)))))
 

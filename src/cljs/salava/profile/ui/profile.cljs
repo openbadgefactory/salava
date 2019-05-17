@@ -12,9 +12,7 @@
             [salava.profile.ui.edit :as pe]
             [salava.page.themes :refer [themes borders]]
             [salava.core.ui.modal :as mo]
-            [salava.profile.ui.modal :refer [userinfoblock]]
-
-   #_[cljsjs.react-sortable-hoc]))
+            [salava.profile.ui.modal :refer [userinfoblock]]))
 
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
@@ -50,7 +48,7 @@
     [:div#profile
      (if (= 0 @(cursor state [:active-index]))
       [:div#page-view
-           [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
+        [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
                   :class "page-content"}
             [:div.panel
              [:div.panel-left

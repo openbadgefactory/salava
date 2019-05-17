@@ -56,14 +56,6 @@
 
 
 (defn ^:export quicklinks []
-  [{:title [:p (t :social/Iwanttoseeprofile)]
-    :url (str (path-for "/user/profile/") (session/get-in [:user :id]))
-    :weight 2} ;; to be moved to profile plugin
-
-   {:title [:p (t :social/Iwanttoeditprofile)]
-    :url (str (path-for "/user/edit/profile"))
-    :weight 3} ;; to be moved to profile plugin
-
-   {:title [:p (t :social/Iwanttomanagemyaccount)]
+  [{:title [:p (t :social/Iwanttomanagemyaccount)]
     :url (str (path-for "/user/edit"))
     :weight 8}])
