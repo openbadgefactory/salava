@@ -300,26 +300,20 @@
                                                                               (get-in data [:page :blocks]))))]
                  (reset! state (assoc data-with-uuids :toggle-move-mode false))))}))
 
-#_(defn refresh-page [id state]
-   (ajax/GET
-     (path-for (str "/obpv1/page/edit/" id) true)
-     {:handler (fn [data]
-                (let [data-with-uuids (assoc-in data [:page :blocks] (vec (map #(assoc % :key (random-key))
-                                                                               (get-in data [:page :blocks]))))]
-                  (swap! state merge data-with-uuids #_(assoc data-with-uuids :toggle-move-mode false))))}))
-
 
 (defn save-page [state next-url]
   (let [{:keys [id name description blocks]} (:page @state)]
+   (if (blank? name)
+    (swap! state assoc :alert {:message (t :badge/Emptynamefield) :status "error"} :spinner false)
     (ajax/POST
       (path-for (str "/obpv1/page/save_content/" id))
       {:params {:name name
                 :description description
                 :blocks (prepare-blocks-to-save blocks)}
        :handler (fn [data]
-                  (swap! state assoc :spinner false)
+                  (swap! state assoc :spinner false :alert nil)
                  ;(refresh-page id state)
-                 (when next-url (navigate-to next-url)))})))
+                 (when next-url (navigate-to next-url)))}))))
 
 (defn save-theme [state next-url]
   (let [{:keys [id theme border padding]} (:page @state)]
