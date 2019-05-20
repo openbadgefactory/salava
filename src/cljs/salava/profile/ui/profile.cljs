@@ -88,7 +88,7 @@
        [:h3 (t :page/Settings)]]
       [:div.panel-body
        (if-not (private?)
-         [:div
+         [:div.col-md-12
           [:div.row [:label.col-xs-12 (t :user/Profilevisibility)]]
           [:div.radio {:id "visibility-radio-internal"}
            [:label [:input {:name      "visibility"
@@ -134,8 +134,8 @@
                (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (pe/random-key))
                                                                    (get data :blocks))))]
                  (swap! state assoc :permission "success" :edit {:active-tab :content} :edit-mode (session/get! :edit-mode false))
-                 (swap! state merge data-with-uuids)
-                ))}))
+                 (swap! state merge data-with-uuids)))}))
+
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)

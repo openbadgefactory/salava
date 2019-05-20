@@ -748,7 +748,6 @@ html[dir="rtl"] #buttons {
 
 }
 html[dir="rtl"] #page-edit {
-
   .field {
     .field-move {
       left:unset;
@@ -1541,4 +1540,121 @@ html[dir="rtl"] #dashboard {
         }
       }
     }
+    .progress-bar {
+     float:right;
+    }
   }
+  html[dir="rtl"] #profile {
+
+    .profile-navi {
+     .close {
+      right: unset;
+      left: 5px;
+     }
+     .nav {
+      padding-right: 0;
+    }
+    .nav-tabs>li {
+     float: right;
+    }
+   }
+
+   .fa-fw{
+    text-align: right;
+   }
+  }
+html[dir="rtl"] #page-edit, #page-edit-theme {
+
+    .fa-fw{
+     text-align: right;
+    }
+
+ #field-editor #page-blocks .field .field-content {
+  border-right: unset;
+  #badge-showcase #grid .grid-container {
+   margin-right: unset;
+   margin-left: 20px;
+  }
+ }
+
+ .move {
+  right: unset;
+  left: 50px;
+ }
+
+ .close-button {
+  right: unset;
+  left: 0;
+ }
+ .action-bar {
+  .pull-right {
+   float:left!important;
+  }
+  #step-button {
+      &:before {
+        width: 0;
+        height: inherit;
+        border-top: 17px solid transparent;
+        border-bottom: 19px inset transparent;
+        border-right: 17px solid $button-color;
+        position: absolute;
+        content: "";
+        top: 0;
+        left: -16px;
+        z-index: 2;
+      }
+      &:after {
+       all:unset;
+      }
+  }
+  #step-button-previous {
+
+   &:before {
+    all:unset;
+   }
+  &:after {
+         width: 0;
+         height: inherit;
+         border-top: 17px solid transparent;
+         border-bottom: 19px inset transparent;
+         border-left: 17px solid $button-color;
+         position: absolute;
+         content: "";
+         top: 0;
+         right: -16px;
+         z-index: 2;
+       }
+  }
+
+    #step-button:hover:before {
+      border-right-color: $button-hover;
+    }
+      #step-button-previous:hover:after {
+        border-left-color: $button-hover;
+      }
+ }
+}
+ html[dir="rtl"] .wizard {
+   a {
+    &:before {
+           width: 0;
+           height: 100%;
+           border-top: 20px solid transparent;
+           border-bottom: 20px inset transparent;
+           border-right: 20px solid $button-color;
+           position: absolute;
+           content: "";
+           top: 0;
+           left: -16px;
+           z-index: 2;
+   }
+    &:after {
+      all:unset;
+    }
+   }
+ }
+html[dir="rtl"] #page-view {
+ .fa-fw {
+  text-align: right;
+ }
+}

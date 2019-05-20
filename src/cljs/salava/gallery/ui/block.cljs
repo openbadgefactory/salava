@@ -32,7 +32,7 @@
    (fn []
     (if (seq (:badges @data))
        [:div#user-badges
-        [:div.row
+        [:div.row.wrap-grid
          [:div.col-md-12
           [:h3 {:class ""} (t :user/Recentbadges)]
           [badge-grid (:badges @data) @badge-small-view]
@@ -47,7 +47,7 @@
      "embed" (fn []
               (when (seq (:badges @data))
                [:div#user-badges
-                [:div.row
+                [:div.row.wrap-grid
                  [:div.col-md-12
                   [:h3 (t :user/Recentbadges)]
                   [:div
@@ -67,7 +67,7 @@
     (fn []
      (if (seq (:pages @data))
       [:div#user-pages
-       [:div.row
+       [:div.row.wrap-grid
         [:div.col-md-12
          [:h3 {:class ""} (t :user/Recentpages)]
          [page-grid (:pages @data) @page-small-view]
@@ -76,7 +76,7 @@
           [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]
       (when @(cursor data [:edit-mode])
          [:div#user-pages
-          [:div.row
+          [:div.row.flip
            [:div.col-md-12
             [:h3 {:class ""} (t :user/Recentpages)]]]])))))
 
@@ -86,7 +86,7 @@
    "embed" (fn []
             (when (seq (:pages @data))
              [:div#user-pages
-              [:div.row
+              [:div.row.wrap-grid
                [:div.col-md-12
                 [:h3 (t :user/Recentbadges)]
                 [:div
