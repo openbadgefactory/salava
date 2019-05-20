@@ -117,6 +117,15 @@ DELETE FROM page_block_files_has_file WHERE block_id = :block_id
 --name: delete-profile-block!
 DELETE FROM page_block_profile WHERE id = :id
 
+--name: delete-page-profile-block!
+DELETE FROM page_block_profile WHERE page_id = :page_id
+
+--name: delete-profile-block-fields!
+DELETE FROM page_block_profile_fields WHERE page_id = :page_id
+
+--name: delete-showcase-blocks!
+DELETE FROM page_block_showcase WHERE page_id = :page_id
+
 --name: update-heading-block!
 UPDATE page_block_heading SET size = :size, content = :content, block_order = :block_order WHERE id = :id AND page_id = :page_id
 
