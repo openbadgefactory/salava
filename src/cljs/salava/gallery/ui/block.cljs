@@ -13,10 +13,10 @@
               :userid (:user-id @state)}
      :handler (fn [data] (swap! state merge data))}))
 
-(defn page-grid [pages profile_picture page-small-view]
+(defn page-grid [pages page-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages)))]
-          (page-grid-element (assoc element-data :profile_picture profile_picture) {:type "profile"}))))
+          (page-grid-element element-data {:type "profile"}))))
 
 
 (defn badge-grid [badges badge-small-view]
@@ -63,15 +63,15 @@
         {:keys [edit-mode? user-id user]} data]
     (init-grid "pages" data)
     (fn []
-      (when (seq (:pages @data))
-       [:div#user-pages
-        [:div.row
-         [:div.col-md-12
-          [:h3 {:class ""} (t :user/Recentpages)]
-          [page-grid (:pages @data) (:profile_picture user) @page-small-view]
+     (when (seq (:pages @data))
+      [:div#user-pages
+       [:div.row
+        [:div.col-md-12
+         [:h3 {:class ""} (t :user/Recentpages)]
+         [page-grid (:pages @data) @page-small-view]
 
-          (when (< 6 (count @(cursor data [:pages])))
-           [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
+         (when (< 6 (count @(cursor data [:pages])))
+          [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
  ([data page-type]
   (init-grid "pages" data)
   (case page-type

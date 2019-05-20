@@ -138,7 +138,7 @@ ORDER By ctime DESC
 LIMIT 1
 
 -- name: select-users-public-pages
-SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
+SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
        JOIN user AS u ON p.user_id = u.id
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        WHERE user_id = :user_id AND p.deleted = 0  AND (visibility = 'public' OR visibility = :visibility)

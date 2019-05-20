@@ -114,7 +114,7 @@
 
 (defn update-block-value [block-atom key value]
   (swap! block-atom assoc key value))
-plugin-fun
+
 (defn showcase-grid [state block-atom]
  [:div#user-badges
   [:h3 (or (:title @block-atom) (t :page/Untitled))]
