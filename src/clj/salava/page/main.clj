@@ -385,8 +385,8 @@
 (defn delete-page-showcase-blocks! [db page-id]
  (let [showcase-blocks (select-badge-showcase-blocks {:page_id page-id} db)]
   (doseq [sb showcase-blocks]
-   (delete-showcase-badges! {:block_id (:id sb)} db)
-   (delete-showcase-blocks! {:page_id page-id} db))))
+   (delete-showcase-badges! {:block_id (:id sb)} db))
+  (delete-showcase-blocks! {:page_id page-id} db)))
 
 (defn delete-profile-block-and-fields! [db page-id]
  (do
