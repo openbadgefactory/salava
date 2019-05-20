@@ -125,12 +125,29 @@
                                             pages (if (= order :mtime)
                                                     (sort-by order > pages)
                                                     (sort-by (comp clojure.string/upper-case order) pages))]
-                                           [:div {:class "my-badges pages" :style {:padding "15px"}}
-                                            [page-grid-form state true]
-                                            [:div {:class "row wrap-grid"
-                                                   :id    "grid"}
-                                                  (doall
-                                                   (for [element-data pages]
-                                                     (if (page-visible? element-data state)
-                                                       (page-grid-element (assoc element-data :atom tab-atom) {:type "pickable"}))))]]))
+
+                                       (if (not-activated?)
+                                         (not-activated-banner)
+                                        [:div {:class "my-badges pages" :style {:padding "15px"}}
+                                              [page-grid-form state true]
+                                              [:div {:class "row wrap-grid"
+                                                     :id    "grid"}
+                                               (when (empty? pages) [:div {:class "col-xs-12 col-sm-6 col-md-4"
+                                                                           :id    "add-element"
+                                                                           :key   "new-page"}
+                                                                     [:div {:class "media grid-container"}
+                                                                      [:a {:class    "add-element-link"
+                                                                           :href     "#"
+                                                                           :on-click #(create-page)}
+                                                                       [:div.media-content
+                                                                        [:div.media-body
+                                                                         [:div {:id "add-element-icon"}
+                                                                          [:i {:class "fa fa-plus" :style {:font-size "70px"}}]]
+                                                                         [:div {:id "add-element-link"}
+                                                                          (t :page/Addpage)]]]]]])
+
+                                               (doall
+                                                (for [element-data pages]
+                                                  (if (page-visible? element-data state)
+                                                    (page-grid-element (assoc element-data :atom tab-atom) {:type "pickable"}))))]])))
                    :component-will-mount (fn [] (init-data state))}))))

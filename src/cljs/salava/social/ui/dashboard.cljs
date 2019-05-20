@@ -341,7 +341,7 @@
              [:i.fa.fa-map-marker.icon]
              [:div.text
               (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
-              [:p.desc (t :location/Map) ]]]]]]
+              [:p.desc (t :location/Map)]]]]]]
          [:div.since-last-login]]]]]]]]))
 
 
@@ -437,20 +437,22 @@
                 [:p.desc (t :file/Files)]]
              [:div.text
               [:div.profile-visibility
-               [:a {:href "#" :on-click #(do
-                                          (.preventDefault %)
-                                          (toggle-visibility (cursor state [:user-profile :user :profile_visibility])))}
-                [:i.fa.icon {:class (case @(cursor state [:user-profile :user :profile_visibility])
-                                     "internal" "fa-eye-slash"
-                                     "public" "fa-eye"
-                                     nil)}]
-                [:span.text (case  @(cursor state [:user-profile :user :profile_visibility])
-                             "public" (t :core/Public)
-                             "internal"  (t :user/Visibleonlytoregistered)
-                             nil)]]]]]]
+               (when-not (not-activated?)
+                [:a {:href "#" :on-click #(do
+                                           (.preventDefault %)
+                                           (toggle-visibility (cursor state [:user-profile :user :profile_visibility])))}
+                    [:i.fa.icon {:class (case @(cursor state [:user-profile :user :profile_visibility])
+                                         "internal" "fa-eye-slash"
+                                         "public" "fa-eye"
+                                         nil)}]
+                    [:span.text (case  @(cursor state [:user-profile :user :profile_visibility])
+                                 "public" (t :core/Public)
+                                 "internal"  (t :user/Visibleonlytoregistered)
+                                 nil)]])]]]]
 
-           [:div.row {:style {:margin-top "10px"}}
-            [profile-tips-block]]]]]]]]]))
+           (when-not (not-activated?)
+            [:div.row {:style {:margin-top "10px"}}
+                      [profile-tips-block]])]]]]]]]))
 
 
 

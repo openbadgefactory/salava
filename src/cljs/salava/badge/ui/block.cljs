@@ -88,11 +88,13 @@
                                            [:span (str (t :core/Loading) "...")]]
                                           [:div
                                            [badge-grid-form state]
-                                           [:div
-                                            (into [:div#grid {:class "row"}]
-                                                  (doall
-                                                    (for [element-data badges]
-                                                      (when (badge-visible? element-data state)
-                                                        (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom :index (:index param) :function func)
-                                                       (badge-grid-element element-data state badge-type init-data)))))]])]]))
+                                           (if-not (empty? badges)
+                                            [:div
+                                               (into [:div#grid {:class "row"}]
+                                                     (doall
+                                                       (for [element-data badges]
+                                                         (when (badge-visible? element-data state)
+                                                           (swap! state assoc  :new-field-atom new-field-atom :block-atom block-atom :index (:index param) :function func)
+                                                          (badge-grid-element element-data state badge-type init-data)))))]
+                                            [:div {:style {:font-size "16px"}} [:p [:b (t :badge/Youhavenobadgesyet)]]])])]]))
                    :component-will-mount (fn [] (init-data state))})))
