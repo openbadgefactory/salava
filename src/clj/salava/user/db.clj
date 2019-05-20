@@ -16,7 +16,8 @@
             [salava.core.time :refer [unix-time]]
             [salava.mail.mail :as m]
             [salava.badge.endorsement :as end]
-            [salava.social.db :as so]))
+            [salava.social.db :as so]
+            [salava.profile.db :as up]))
 
 (defqueries "sql/user/main.sql")
 
@@ -378,6 +379,7 @@
          (delete-all-user-events! {:subject user-id} {:connection tr-cn}) ;remove all user events
          (delete-social-connections-badge! {:user_id user-id} {:connection tr-cn} );remove social-connections-badge
          (delete-user-pages-all! {:user_id user-id} {:connection tr-cn});remove user pages with blocks
+         (up/delete-profile-block-and-properties! {:connection tr-cn} user-id) ;;remove profile badge showcases and profile properties
          #_(update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
          (delete-user-profile! {:user_id user-id} {:connection tr-cn})
 

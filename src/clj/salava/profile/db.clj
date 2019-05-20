@@ -195,3 +195,10 @@
                            (and enabled-location (or (not (blank? about))  (not (blank? profile_picture)) )) (reduce + 30 (-> (dissoc weights :about :profile-picture) vals))
                            (and (not enabled-location) (or (not (blank? about)) (not (blank? profile_picture)) )) (reduce + 30 (-> (dissoc weights :about :profile-picture :location) vals))
                            :else (:default weights))}))
+
+(defn delete-profile-block-and-properties! [db user-id]
+ (let [showcase-blocks (select-badge-showcase-blocks {:user_id user-id} db)]
+  (doseq [sb showcase-blocks]
+        (delete-showcase-badges! {:block_id (:id sb)} db))
+  (delete-showcase-blocks! {:user_id user-id} db)
+  (delete-user-profile-properties! {:user_id user-id} db)))
