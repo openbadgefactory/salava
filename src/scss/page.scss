@@ -1775,6 +1775,7 @@
     cursor: pointer;
     margin-top: 5px;
 
+
     &:before {
       width: 0;
       height: inherit;
@@ -1789,9 +1790,9 @@
     }
   }
 
-  #step-button > a,
-  #step-button-previous > a {
-    display: block;
+  #step-button,
+  #step-button-previous {
+    //display: block;
     text-decoration: none;
     text-align: center;
     color: #fff;

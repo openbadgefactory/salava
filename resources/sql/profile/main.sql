@@ -19,13 +19,19 @@ UPDATE user SET profile_visibility = :profile_visibility, profile_picture = :pro
 REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'profile', :value)
 
 --name: select-user-profile-properties
-SELECT value from user_properties where user_id = :user_id and name = 'profile';
+SELECT value from user_properties where user_id = :user_id and name = 'profile'
+
+--name: delete-user-profile-properties!
+DELETE FROM user_properties WHERE user_id = :user_id AND name = 'profile'
 
 --name: delete-showcase-badges!
 DELETE FROM user_profile_badge_showcase_has_badge WHERE block_id = :block_id
 
 --name: delete-showcase-block!
 DELETE FROM user_profile_badge_showcase WHERE id = :id
+
+--name: delete-showcase-blocks!
+DELETE FROM user_profile_badge_showcase WHERE user_id = :user_id
 
 --name: insert-showcase-block<!
 INSERT INTO user_profile_badge_showcase (user_id, title, format, block_order) VALUES (:user_id, :title, :format, :block_order)

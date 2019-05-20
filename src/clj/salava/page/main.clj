@@ -382,12 +382,25 @@
       (delete-files-block-files! {:block_id (:id file-block)} db))
     (delete-files-blocks! {:page_id page-id} db)))
 
+(defn delete-page-showcase-blocks! [db page-id]
+ (let [showcase-blocks (select-badge-showcase-blocks {:page_id page-id} db)]
+  (doseq [sb showcase-blocks]
+   (delete-showcase-badges! {:block_id (:id sb)} db))
+  (delete-showcase-blocks! {:page_id page-id} db)))
+
+(defn delete-profile-block-and-fields! [db page-id]
+ (do
+  (delete-profile-block-fields! {:page_id page-id} db)
+  (delete-page-profile-block! {:page_id page-id} db)))
+
 (defn delete-blocks! [db page-id]
   (delete-heading-blocks! {:page_id page-id} db)
   (delete-badge-blocks! {:page_id page-id} db)
   (delete-html-blocks! {:page_id page-id} db)
   (remove-files-blocks-and-content! db page-id)
-  (delete-tag-blocks! {:page_id page-id} db))
+  (delete-tag-blocks! {:page_id page-id} db)
+  (delete-page-showcase-blocks! db page-id)
+  (delete-profile-block-and-fields! db page-id))
 
 (defn delete-page-with-db! [db page-id]
   (delete-blocks! db page-id)

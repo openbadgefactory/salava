@@ -12,6 +12,13 @@
 (defn user-badges [ctx user-id]
  (as-> (first (plugin-fun (get-plugins ctx) "main" "user-badges-all")) f (if f (f ctx user-id) [])))
 
+(defn user-published-badges [ctx user-id]
+ (as-> (first (plugin-fun (get-plugins ctx) "db" "public-by-user")) f (if f (-> (f ctx "badges" user-id user-id) :badges) [])))
+
+
+(defn user-published-pages [ctx user-id]
+ (as-> (first (plugin-fun (get-plugins ctx) "db" "public-by-user")) f (if f (-> (f ctx "pages" user-id user-id) :pages) [])))
+
 (defn user-information
   "Get user data by user-id"
   [ctx user-id]
@@ -34,19 +41,22 @@
  (some-> (select-user-profile-properties {:user_id user-id} (into {:result-set-fn first :row-fn :value} (get-db ctx)))
      (json/read-str :key-fn keyword)))
 
+
 (defn showcase-blocks [ctx user-id]
   (let [blocks (select-badge-showcase-blocks {:user_id user-id} (get-db ctx))]
    (map #(assoc % :badges (select-showcase-block-content {:block_id (:id %)} (get-db ctx))) blocks)))
 
 (defn profile-blocks [ctx user-id]
-  (let [profile-properties (-> (profile-properties ctx user-id) :blocks)
-        {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
-        tmp (if (seq profile-properties) profile-properties default-profile-blocks)
-        basic-blocks (if (empty? enabled) (remove #(= "location" (:type %)) tmp) tmp)
-        showcase-blocks (showcase-blocks ctx user-id)
-        blocks (vec (concat basic-blocks showcase-blocks))]
-
-   (sort-by :block_order blocks)))
+ (let [properties (-> (profile-properties ctx user-id) :blocks)
+       {:keys [enabled country public]} (as-> (first (plugin-fun (get-plugins ctx) "db" "user-location")) f (f ctx user-id))
+       tmp (if (seq properties) properties default-profile-blocks)
+       basic-blocks (cond
+                     (empty? enabled) (remove #(= "location" (:type %)) tmp)
+                     (and enabled (nil? (some #(= "location" (:type %)) tmp))) (conj tmp {:hidden false :block_order (count tmp) :type "location"})
+                     :else tmp)
+       showcase-blocks (showcase-blocks ctx user-id)
+       blocks (vec (concat (remove #(nil? %) basic-blocks) showcase-blocks))]
+  (sort-by :block_order blocks)))
 
 (defn user-information-and-profile
   "Get user informatin, profile, public badges and pages"
@@ -185,3 +195,10 @@
                            (and enabled-location (or (not (blank? about))  (not (blank? profile_picture)) )) (reduce + 30 (-> (dissoc weights :about :profile-picture) vals))
                            (and (not enabled-location) (or (not (blank? about)) (not (blank? profile_picture)) )) (reduce + 30 (-> (dissoc weights :about :profile-picture :location) vals))
                            :else (:default weights))}))
+
+(defn delete-profile-block-and-properties! [db user-id]
+ (let [showcase-blocks (select-badge-showcase-blocks {:user_id user-id} db)]
+  (doseq [sb showcase-blocks]
+        (delete-showcase-badges! {:block_id (:id sb)} db))
+  (delete-showcase-blocks! {:user_id user-id} db)
+  (delete-user-profile-properties! {:user_id user-id} db)))
