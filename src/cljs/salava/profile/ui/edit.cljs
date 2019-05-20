@@ -22,13 +22,15 @@
     {:handler (fn [data]
                 (swap! state assoc :edit-profile data))}))
 
-(defn refresh-profile [state]
+(defn refresh-profile [state profile_picture]
  (ajax/GET
   (path-for (str "/obpv1/profile/" (:user-id @state)) true)
   {:handler (fn [data]
               (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (random-key))
                                                                   (get data :blocks))))]
-                (swap! state merge data-with-uuids)))}))
+                (swap! state merge data-with-uuids))
+              (session/assoc-in! [:user :profile_picture] profile_picture)
+              (session/put! :edit-mode true))}))
 
 (defn prepare-blocks [blocks]
  (mapv (fn [b]
@@ -60,8 +62,8 @@
      :handler (fn [data]
                 (init-data state)
                 (when show-alert? (reset! alert-atom data))
-                (refresh-profile state)
-                (when (and f (= "success" (:status data)) (f))))
+                (refresh-profile state profile_picture)
+               (when (and f (= "success" (:status data)) (f))))
      :finally (fn [] (js/setTimeout (fn [] (reset! alert-atom nil)) 3000))})))
 
 (defn button-logic [state]
@@ -90,11 +92,12 @@
                                       [:div.action-bar {:id "page-edit"}
                                        [:div.row
                                         [:div.col-md-12
-                                         (when previous? [:div {:id "step-button-previous"}
-                                                          [:a {:href "#" :on-click #(do
-                                                                                      (.preventDefault %)
-                                                                                      (as-> (get-in logic [@current :save-and-previous!]) f (f)))}
-                                                              (t :core/Previous)]])
+                                         (when previous? [:a {:href "#"
+                                                                    :on-click #(do
+                                                                                (.preventDefault %)
+                                                                                (as-> (get-in logic [@current :save-and-previous!]) f (f)))}
+                                                             [:div {:id "step-button-previous"}
+                                                                   (t :core/Previous)]])
                                          [:button {:class    "btn btn-primary"
                                                    :on-click #(do
                                                                 (.preventDefault %)
@@ -110,11 +113,13 @@
                                                                                                             (js-navigate-to (str "/profile/"(:user-id @state))))) true))}
 
                                           (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :profile/Saveandclose) #_(t :page/View)]
-                                         (when next?  [:div.pull-right {:id "step-button"}
-                                                       [:a {:href "#" :on-click #(do
-                                                                                   (.preventDefault %)
-                                                                                   (as-> (get-in logic [@current :save-and-next!]) f (f)))}
-                                                        (t :core/Next)]])]]
+                                         (when next?  [:a {:href "#"
+                                                           :on-click #(do
+                                                                       (.preventDefault %)
+                                                                       (as-> (get-in logic [@current :save-and-next!]) f (f)))}
+                                                          [:div.pull-right {:id "step-button"}
+
+                                                                           (t :core/Next)]])]]
                                        (when (= "error" (get-in @state [:alert :status]))
                                          [:div.row
                                           [:div.col-md-12

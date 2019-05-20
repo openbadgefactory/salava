@@ -459,11 +459,12 @@
                                       [:div.action-bar {:id "page-edit"}
                                        [:div.row
                                         [:div.col-md-12
-                                         (when previous? [:div {:id "step-button-previous"}
-                                                          [:a {:href "#" :on-click #(do
-                                                                                      (.preventDefault %)
-                                                                                      (as-> (get-in logic [current :save-and-previous!]) f (f)))}
-                                                              (t :core/Previous)]])
+                                         (when previous? [:a {:href "#"
+                                                              :on-click #(do
+                                                                          (.preventDefault %)
+                                                                          (as-> (get-in logic [current :save-and-previous!]) f (f)))}
+                                                          [:div {:id "step-button-previous"}
+                                                                (t :core/Previous)]])
                                          [:button {:class    "btn btn-primary"
                                                    :on-click #(do
                                                                 (.preventDefault %)
@@ -479,11 +480,12 @@
                                                                                 (.preventDefault %)
                                                                                 (navigate-to  "/profile/page"))}
                                           (t :core/Cancel)]
-                                         (when next?  [:div.pull-right {:id "step-button"}
-                                                       [:a {:href "#" :on-click #(do
-                                                                                   (.preventDefault %)
-                                                                                   (as-> (get-in logic [current :save-and-next!]) f (f)))}
-                                                        (t :core/Next)]])]]
+                                         (when next?  [:a {:href "#"
+                                                           :on-click #(do
+                                                                       (.preventDefault %)
+                                                                       (as-> (get-in logic [current :save-and-next!]) f (f)))}
+                                                          [:div.pull-right {:id "step-button"}
+                                                                           (t :core/Next)]])]]
 
                                        (when (and (= "error" (get-in @state [:alert :status])) (not= current :settings))
                                          [:div.row
