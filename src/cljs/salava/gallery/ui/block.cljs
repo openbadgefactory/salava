@@ -27,18 +27,20 @@
 (defn ^:export recentbadges
  ([data]
   (let [badge-small-view (cursor data [:badge-small-view])
-        {:keys [edit-mode? user-id user]} data]
+        {:keys [user-id user]} data]
     (init-grid "badges" data)
-    (fn []
-     (when (seq (:badges @data))
-           [:div#user-badges
-            [:div.row
-             [:div.col-md-12
-              [:h3 {:class ""} (t :user/Recentbadges)]
-              [badge-grid (:badges @data) @badge-small-view]
-
-              (when (< 6 (count @(cursor data [:badges])))
-               [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
+   (fn []
+    (if (seq (:badges @data))
+       [:div#user-badges
+        [:div.row
+         [:div.col-md-12
+          [:h3 {:class ""} (t :user/Recentbadges)]
+          [badge-grid (:badges @data) @badge-small-view]
+          (when (< 6 (count @(cursor data [:badges])))
+           [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]]
+     (when @(cursor data [:edit-mode]) [:div.row
+                                        [:div.col-md-12
+                                         [:h3 {:class ""} (t :user/Recentbadges)]]])))))
  ([data badge-type]
   (init-grid "badges" data)
   (case badge-type
@@ -60,10 +62,10 @@
 (defn ^:export recentpages
  ([data]
   (let [page-small-view (cursor data [:page-small-view])
-        {:keys [edit-mode? user-id user]} data]
+        {:keys [user-id user]} data]
     (init-grid "pages" data)
     (fn []
-     (when (seq (:pages @data))
+     (if (seq (:pages @data))
       [:div#user-pages
        [:div.row
         [:div.col-md-12
@@ -71,7 +73,13 @@
          [page-grid (:pages @data) @page-small-view]
 
          (when (< 6 (count @(cursor data [:pages])))
-          [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]))))
+          [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])]]]
+      (when @(cursor data [:edit-mode])
+         [:div#user-pages
+          [:div.row
+           [:div.col-md-12
+            [:h3 {:class ""} (t :user/Recentpages)]]]])))))
+
  ([data page-type]
   (init-grid "pages" data)
   (case page-type
