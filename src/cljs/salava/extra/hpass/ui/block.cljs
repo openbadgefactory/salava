@@ -25,7 +25,7 @@
   [:footer.footer
    [:div.footer-container
     [:p.text-muted
-     "Copyright © 2018 Humanitarian Leadership Academy | "
+     "Copyright © 2019 Humanitarian Leadership Academy | "
      [:a {:class "bottom-link" :href "mailto:info@hpass.org" }
       "info@hpass.org"]
      " | "
