@@ -135,10 +135,10 @@ button.navbar-toggle {
   font-weight: 600;
 }
 .btn-success {
-  background-color: #304a5a; //$orange-color;
+  background-color: $button-color; //$orange-color;
   border-color:  $button-color;
   &:active, &:hover, &:focus, &:active:focus{
-    background-color: $button-color;
+    background-color: $button-hover;
     border-color:  $button-hover;
   }
 }
@@ -388,6 +388,12 @@ a.popup-info {
 }
 
 #dashboard {
+  .profile-block .profile-visibility a{
+    color:$badge-title;
+    &:active, &:hover, &:focus {
+      color: $button-hover;
+    }
+  }
   #welcome-block {
     .welcome-block {
 
@@ -532,12 +538,12 @@ a.popup-info {
 }
 #page-edit #block-modal .block-types div.content-type,
 #page-edit-theme #block-modal .block-types div.content-type {
- background-color: #314755;
+ background-color: $button-color;
  color: #fff;
 
  &:focus,
  &:hover {
-  background-color: $button-color
+  background-color: $button-hover;
  }
 }
 .wizard {
@@ -547,6 +553,20 @@ a.popup-info {
     border-left-color: #314755;
    }
  }
+    a {
+      &:active, &:hover, &:focus {
+       color: white;
+     }
+   }
+}
+
+#profiletips .tip{
+  .tipicon, a {
+    color: $button-color;
+    &:active, &:hover, &:focus {
+          color: $button-hover;
+        }
+  }
 }
 /*
 a#login-button {
