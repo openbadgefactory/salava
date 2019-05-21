@@ -241,14 +241,14 @@
       [:option {:value "file"} (t :page/Files)]]]))
 
 (def block-type-map
-  [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
-   {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
-   {:icon "fa-file-code-o" :text (t :page/Texteditor) :value "html"}
-   {:icon "fa-file" :text (t :page/Files) :value "file"}
-   {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
-   {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
-   {:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}
-   {:icon "fa-user" :text (t :user/Profile) :value "profile"}])
+  [{:icon "fa-header" :text :page/Heading :value "heading"}
+   {:icon "fa-header" :text :page/Subheading :value "sub-heading"}
+   {:icon "fa-file-code-o" :text :page/Texteditor :value "html"}
+   {:icon "fa-file" :text :page/Files :value "file"}
+   {:icon "fa-certificate" :text :page/Badge :value "badge"}
+   {:icon "fa-tags" :text :page/Badgegroup :value "tag"}
+   {:icon "fa-certificate" :icon-2 "fa-th-large" :text :page/Badgeshowcase :value "showcase"}
+   {:icon "fa-user" :text :user/Profile :value "profile"}])
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
@@ -326,7 +326,7 @@
                                                                                [:i.fa.fa-fw {:class (:icon v)}]
                                                                                (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
 
-                                                                               [:span (:text v)]]]]
+                                                                               [:span (t (:text v))]]]]
                        [:span {:style {:display "inline"}}
                         [info {:placement "right" :content (case (:value v)
                                                              "badge" (t :page/Badgeinfo)
@@ -380,7 +380,7 @@
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text capitalize)]
+         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text t capitalize)]
 
          (when (= type "badge")
           [:div.row.form-group {:style {:padding-top "10px"}}

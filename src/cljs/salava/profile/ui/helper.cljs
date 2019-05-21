@@ -39,7 +39,7 @@
      [:label (t :user/Profilevisibility) ": " @visibility-atom]]))
 
 (def block-type-map
- [{:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}])
+ [{:icon "fa-certificate" :icon-2 "fa-th-large" :text :page/Badgeshowcase :value "showcase"}])
 
 
 (defn contenttype [{:keys [block-atom index]}]
@@ -68,7 +68,7 @@
                                    [:div
                                     [:i {:class (str "fa fa-fw " (:icon v))}]
                                     (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
-                                    [:span (:text v)]]]]
+                                    [:span (t (:text v))]]]]
                          [:span {:style {:display "inline"}}
                           [info {:placement "right" :content (case (:value v)
                                                                "showcase" (t :page/Badgeshowcaseinfo)
