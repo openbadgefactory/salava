@@ -15,29 +15,15 @@
             [salava.core.ui.modal :refer [set-new-view]]
             [salava.core.time :refer [date-from-unix-time]]))
 
-(defn init-data
-  ([state]
-   (ajax/GET
-     (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
-     {:handler (fn [data]
-                 (swap! state assoc
-                        :messages (into (:messages @state) (:messages data))
-                        :message ""
-                        :page_count (inc (:page_count @state))
-                        :messages_left (:messages_left data)))}))
-  ([state other-ids]
-   (ajax/GET
-     (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
-     {:params {:other_ids other-ids}
-      :handler (fn [data]
-                 (swap! state assoc
-                        :messages (into (:messages @state) (:messages data))
-                        :message ""
-                        :page_count (inc (:page_count @state))
-                        :messages_left (:messages_left data)
-                        :other_ids other-ids))}
-     )
-   ))
+(defn init-data [state]
+  (ajax/GET
+    (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
+    {:handler (fn [data]
+                (swap! state assoc
+                       :messages (into (:messages @state) (:messages data))
+                       :message ""
+                       :page_count (inc (:page_count @state))
+                       :messages_left (:messages_left data)))}))
 
 
 (defn save-message [state reload-fn]
@@ -218,35 +204,18 @@
      [message-list messages state]]))
 
 
-(defn badge-message-handler
-  ([badge_id reload-fn]
-   (let [state (atom {:messages []
-                      :user_id (session/get-in [:user :id])
-                      :user_role (session/get-in [:user :role])
-                      :message ""
-                      :badge_id badge_id
-                      :show false
-                      :page_count 0
-                      :messages_left 0
-                      :start-following false})
-         reload-fn (or reload-fn (fn []))]
+(defn badge-message-handler [badge_id reload-fn]
+  (let [state (atom {:messages []
+                     :user_id (session/get-in [:user :id])
+                     :user_role (session/get-in [:user :role])
+                     :message ""
+                     :badge_id badge_id
+                     :show false
+                     :page_count 0
+                     :messages_left 0
+                     :start-following false})
+        reload-fn (or reload-fn (fn []))]
 
-     (init-data state)
-     (fn []
-       (content state reload-fn))))
-  ([badge_id reload-fn other-ids]
-   (let [state (atom {:messages []
-                      :user_id (session/get-in [:user :id])
-                      :user_role (session/get-in [:user :role])
-                      :message ""
-                      :badge_id badge_id
-                      :show false
-                      :page_count 0
-                      :messages_left 0
-                      :start-following false})
-         reload-fn (or reload-fn (fn []))]
-
-     (if (empty? other-ids) (init-data state) (init-data state other-ids))
-     (fn []
-       (content state reload-fn)))
-   ))
+    (init-data state)
+    (fn []
+      (content state reload-fn))))

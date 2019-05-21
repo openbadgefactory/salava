@@ -18,71 +18,14 @@
 
 (defqueries "sql/gallery/queries.sql")
 
-
-(defn contains-tag? [query-tags tags]
-  (subset? (set query-tags) (set tags)))
-
-(defn tag-parser [tags]
-  (if tags
-    (string/split tags #",")))
-
-(defn filter-tags [search tags]
-  (remove (fn [badge] (not (contains-tag? tags  (tag-parser (:tags badge))))) search))
-
-
-(defn map-collection
-  ([where value]
-   (map-collection where value true))
-  ([where value fn]
-   (if (and where value fn)
-     {(str where) value})))
-
-(defn badge-ids-where-params
-  "Create map from search params
-  Example:
-  {' and u.country = ? ', 'fi'}"
-  [country name issuer-name recipient-name]
-  (let [where-params {}]
-    (-> where-params
-        (conj (if-not (string/blank? recipient-name) (map-collection  " AND CONCAT(u.first_name,' ',u.last_name) LIKE ?" (str "%" recipient-name "%") )))
-        (conj (map-collection " and u.country = ? " country (not= country "all")))
-        (conj (if-not (string/blank? name) (map-collection " AND bc.name LIKE ? " (str "%" name "%"))))
-        (conj (if-not (string/blank? issuer-name) (map-collection " AND ic.name LIKE ? " (str "%" issuer-name "%")))))))
-
-
-(defn filter-ids [ids] (reduce (fn [x y] (filter (set x) (set y))) (first ids) (rest ids)))
-
-(defn tags-id-parser [tags]
-  (let [parsed-ids  (filter-ids (map #(tag-parser %) (vec (vals tags))))]
-    parsed-ids))
-
-(def join-badge
-  "INNER JOIN user_badge as ub on b.id = ub.badge_id AND  ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) ")
-
-(def join-user
-  "INNER JOIN user as u on ub.user_id =  u.id ")
-
-(def join-issuer
-  (str
-    "JOIN badge_issuer_content AS bic ON (bic.badge_id = b.id) "
-    "JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = b.default_language_code "
-    ))
-
-(defn select-tags [ctx badge_ids]
-  (if (not-empty badge_ids)
-    (select-gallery-tags {:badge_ids badge_ids} (get-db ctx))))
-
-(defn str-ids [ids]
-  (str "('" (apply str (interpose "','" (map #(string/replace % #"\W" "") ids))) "')"))
-
-(defn badge-count [search page_count]
+(defn- badge-count [search page_count]
   (let [limit 20
         badges-left (- (count search) (* limit (+ page_count 1)))]
     (if (pos? badges-left)
       badges-left
       0)))
 
-(defn select-badges [ctx gallery_ids order page_count]
+(defn- select-badges [ctx gallery_ids order page_count]
   (let [limit 20
         offset (* limit page_count)]
     (if (not-empty gallery_ids)
@@ -92,56 +35,10 @@
         "name"                (select-gallery-badges-order-by-name {:gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
         (select-gallery-badges-order-by-ctime {:gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))))))
 
-(defn db-connect [ctx query params]
-  (jdbc/with-db-connection
-    [conn (:connection (get-db ctx))]
-    (jdbc/query conn (into [query] params) {:row-fn :id})))
-
-
-(defn get-badge-ids
-  "Get badge-ids with search params"
-  [ctx country tags badge-name issuer-name order recipient-name tags-ids]
-  (let [where-params (badge-ids-where-params country badge-name issuer-name recipient-name)
-        where        (apply str (keys where-params))
-        params       (vec (vals where-params))
-        ids          (tags-id-parser tags-ids)
-        in-params (if (not-empty ids)
-                    (str-ids ids)
-                    "(SELECT DISTINCT id FROM badge WHERE published = 1 AND recipient_count > 0)")
-        query (str
-                "SELECT b.id FROM badge as b "
-                "JOIN badge_badge_content AS bbc ON (bbc.badge_id = b.id) "
-                "JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = b.default_language_code "
-                (if (or (not (string/blank? issuer-name))
-                        (not (string/blank? badge-name))
-                        (not (string/blank? country))
-                        (not (string/blank? recipient-name)))
-                  join-badge) ;import badge table to SQL query
-                (if (or (not (string/blank? country))
-                        (not (string/blank? recipient-name)))
-                  join-user) ;import user table to SQL query
-                (if (not (string/blank? issuer-name))
-                  join-issuer)
-                " WHERE b.id IN "
-                in-params
-                " "
-                where
-                "GROUP BY b.id")
-        search (if (and (not-empty ids) (string/blank? issuer-name) (string/blank? badge-name) (string/blank? country))
-                 ids
-                 (db-connect ctx query params))]
-    search))
 
 (defn get-gallery-ids
   "Get gallery-ids with search params"
   [ctx country tags badge-name issuer-name recipient-name]
-  ;(pprint country)
-  ;(pprint tags)
-  ;(pprint badge-name)
-  ;(pprint issuer-name)
-  ;(pprint order)
-  ;(pprint recipient-name)
-
   (let [;; Get all public gallery ids (optionally filtered by country)
           gallery-ids (if (= country "all")
                           (select-gallery-ids {} (get-db-col ctx :gallery_id))
@@ -178,66 +75,14 @@
            )) badges))
 
 
-(defn process-badge-versions [ctx badges]
-  (map (fn [b]
-         (let [other-badge-ids (->> (get-badge-ids ctx "all" nil (:name b) (:issuer_content_name b) nil nil nil) (remove #(= (:badge_id b) %)))]
-           (if (empty? other-badge-ids) b (assoc b :otherids other-badge-ids)))) badges))
-
 (defn gallery-badges
   "Get badges for gallery grid"
   [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count]}]
   (let [offset (string->number page_count)
         gallery-ids (get-gallery-ids ctx country tags badge-name issuer-name recipient-name)
-        badges (some->> (select-badges ctx gallery-ids order offset) #_(process-badge-versions ctx) (badge-checker) (remove nil?))]
+        badges (some->> (select-badges ctx gallery-ids order offset) (badge-checker) (remove nil?))]
     {:badges badges
      :badge_count (badge-count (if-not (= (count gallery-ids) (count badges)) gallery-ids badges) offset) }))
-
-#_(some->> (select-badges nil (get-gallery-ids nil "all" '() "" "" "") "ctime" 0) #_(process-badge-versions ctx) (badge-checker) (remove nil?))
-
-#_(gallery-badges nil {:country "all" :order "ctime" :page_count "0"})
-
-(defn badge-tags
-  "Get list of public badge tags for gallery grid"
-  [ctx]
-  {:tags (select-gallery-tags {} (get-db-col ctx :tag))})
-
-
-(defn tags-where-params [country]
-  (let [where-params {}]
-    (if-not (= country "all")
-      (merge where-params (map-collection " and u.country = ? " country )))))
-
-
-(defn get-tags [ctx country badge_content_ids]
-  (let [where-params (tags-where-params country)
-        ids (tags-id-parser badge_content_ids)
-        where  (apply str (keys where-params))
-        params (vec (vals where-params))
-        query (str "SELECT DISTINCT bct.badge_content_id from badge_content_tag AS bct
-                   JOIN badge_content AS bc ON (bct.badge_content_id = bc.id)
-                   INNER JOIN badge as b on bc.id = b.badge_content_id AND  b.status = 'accepted' AND b.deleted = 0 AND b.revoked = 0 AND (b.expires_on IS NULL OR b.expires_on > UNIX_TIMESTAMP())
-                   INNER JOIN user as u on b.user_id =  u.id
-                   WHERE bct.badge_content_id IN
-                   (SELECT DISTINCT badge_content_id FROM badge WHERE visibility != 'private' AND  status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
-                   "
-                   where
-                   )
-        search (if (not-empty ids)
-                 ids
-                 (time (jdbc/with-db-connection
-                         [conn (:connection (get-db ctx))]
-                         (jdbc/query conn (into [query] params) {:row-fn :badge_content_id})))) ]
-    (if (not-empty search)
-      (select-tags ctx search)
-      search)))
-
-
-
-
-(defn get-autocomplete [ctx name country badge_content_ids]
-  (let [tags (get-tags ctx country badge_content_ids)]
-    {:tags tags}))
-
 
 
 
@@ -253,6 +98,11 @@
   "Return user's country id"
   [ctx user-id]
   (select-user-country {:id user-id} (into {:row-fn :country :result-set-fn first} (get-db ctx))))
+
+(defn badge-tags
+  "Get list of public badge tags for gallery grid"
+  [ctx]
+  {:tags (select-gallery-tags {} (get-db-col ctx :tag))})
 
 (defn badge-countries
   "Return user's country id and list of all countries which users have public badges"
@@ -285,39 +135,7 @@
         (sort-countries)
         (seq))))
 
-
-#_(defn public-multilanguage-badge-content
-    "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
-    [ctx badge-id user-id]
-     (let [badge-content (map (fn [content]
-                                (-> content
-                                    (update :criteria_content md->html)
-                                    (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
-                                    (dissoc :badge_content_id)))
-                              (select-multi-language-badge-content {:id badge-id} (get-db ctx)))
-           {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
-
-           rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
-           {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
-           ;recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
-           recipients (if user-id (select-badge-recipients-fix {:issuer_content_name issuer_content_name :description description :name name} (get-db ctx)))
-           badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating ;(update badge-data :criteria_content md->html)  ;badge-message-count ;followed?
-                        )]
-       (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
-                 :public_users (->> recipients
-                                    (filter #(not= (:visibility %) "private"))
-                                    (map #(dissoc % :visibility))
-                                    distinct)
-                 :private_user_count (->> recipients
-                                          (filter #(= (:visibility %) "private"))
-                                          count))))
-
-(defn aggregate-ratings [coll]
-  (let [rating (->> coll (map :average_rating) (remove #(nil? %)) (map double) (reduce + 0))
-        rating_count (->> coll (map :rating_count) (reduce + 0))]
-    {:average_rating (if (pos? rating_count) (/ rating rating_count) rating) :rating_count rating_count} ))
-
-(defn process-recipients
+(defn- process-recipients
   "Remove duplicates from recipient list, prioritize published."
   [coll]
   (->> coll
@@ -330,7 +148,13 @@
                        (->> v (filter #(= "public" (:visibility %))) first)
                        (first v))) )) [])))
 
-(defn public-multilanguage-badge-content "gallery badge fix"
+
+(defn badge-gallery-id [ctx badge_id]
+  (some-> (select-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id))
+
+(defn public-multilanguage-badge-content
+    "Return data of the public badge by gallery and badge ids. Fetch badge criteria and issuer, uses most recent data.
+    Fetch also average rating of the badge, rating count and recipient count"
   ([ctx badge-id]
    (map (fn [content]
           (-> content
@@ -339,17 +163,16 @@
               (dissoc :badge_content_id)))
         (select-multi-language-badge-content {:id badge-id} (get-db ctx))))
 
-  ([ctx badge-id user-id]
+  ([ctx badge-id user-id] (public-multilanguage-badge-content ctx badge-id user-id (badge-gallery-id ctx badge-id)))
+
+  ([ctx badge-id user-id gallery-id]
    (let [badge-content (public-multilanguage-badge-content ctx badge-id)
          {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
          {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
-         other-badge-ids (->> (get-badge-ids ctx "all" nil name issuer_content_name nil nil nil ) (remove #(= badge-id %)))
-         all-badge-ids (cons badge-id other-badge-ids)
-         rating (if (empty? other-badge-ids) (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
-                  (some->> (map #(select-common-badge-rating {:badge_id %} (into {:result-set-fn first} (get-db ctx))) all-badge-ids) (aggregate-ratings)))
-         recipients (if user-id (some->> (select-badge-recipients-fix-2 {:issuer_content_name issuer_content_name :name name} (get-db ctx)) (process-recipients)))
-         most-recent-content (if (empty? other-badge-ids) badge-content (->> (map #(public-multilanguage-badge-content ctx %) all-badge-ids) (sort-by #(:last_received (first %)) >) first))
-         badge (merge {:badge_id badge_id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content most-recent-content} rating)]
+         rating (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx))
+         recipients (when user-id
+                      (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))
+         badge (merge {:badge_id badge_id :gallery_id gallery-id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating)]
      (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
                :public_users (->> recipients
                                   (filter #(not= (:visibility %) "private"))
@@ -357,44 +180,10 @@
                                   distinct)
                :private_user_count (->> recipients
                                         (filter #(= (:visibility %) "private"))
-                                        count)
-               :otherids other-badge-ids))))
+                                        count)))))
 
 
-(defn multi-language-badge-content [ctx badge-id]
-  (map (fn [content]
-         (-> content
-             (update :criteria_content md->html)
-             (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
-             (dissoc :badge_content_id)))
-       (select-multi-language-badge-content {:id badge-id} (get-db ctx))))
-
-
-(defn gallery-public-multilanguage-badge-content
-    "Return data of the public badge by gallery and badge ids. Fetch badge criteria and issuer, uses most recent data. Fetch also average rating of the badge, rating count and recipient count"
-  [ctx gallery-id badge-id user-id]
-  (let [badge-content (public-multilanguage-badge-content ctx badge-id)
-        {:keys [badge_id remote_url issuer_verified endorsement_count]} (first badge-content)
-        {:keys [issuer_content_name description name]} (first (filter #(= (:language_code %) (:default_language_code %)) badge-content))
-        rating (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx))
-        recipients (when user-id
-                     (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))
-        badge (merge {:badge_id badge_id :gallery_id gallery-id :remote_url remote_url :issuer_verified issuer_verified :endorsement_count endorsement_count} {:content badge-content} rating)]
-    (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
-              :public_users (->> recipients
-                                 (filter #(not= (:visibility %) "private"))
-                                 (map #(dissoc % :visibility))
-                                 distinct)
-              :private_user_count (->> recipients
-                                       (filter #(= (:visibility %) "private"))
-                                       count)
-              )))
-
-(defn badge-gallery-id [ctx badge_id]
-  (some-> (select-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id))
-
-
-(defn public-badge-content
+#_(defn public-badge-content
   "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
   [ctx badge-id user-id]
   (let [badge-content (select-common-badge-content {:id badge-id} (into {:result-set-fn first} (get-db ctx)))

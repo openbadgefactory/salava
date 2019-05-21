@@ -68,18 +68,11 @@
                  (do
                    (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
 
-(defn get-messages
-  ([badge-id data-atom]
-   (ajax/GET
-     (path-for (str "/obpv1/social/messages_count/" badge-id))
-     {:handler (fn [data]
-                 (reset! data-atom data))}))
-  ([badge-id data-atom other-ids]
-   (ajax/GET
-     (path-for (str "/obpv1/social/messages_count/" badge-id))
-     { :params {:other_ids other-ids}
-       :handler (fn [data]
-                  (reset! data-atom data))})))
+(defn get-messages [badge-id data-atom]
+  (ajax/GET
+    (path-for (str "/obpv1/social/messages_count/" badge-id))
+    {:handler (fn [data]
+                (reset! data-atom data))}))
 
 
 (defn badge-message-link [message-count badge-id]
@@ -107,11 +100,11 @@
             "")]]))))
 
 
-(defn gallery-modal-message-info-link [show-messages badge-id other-ids]
+(defn gallery-modal-message-info-link [show-messages badge-id]
   (if (social-plugin?)
     (let [message-count (atom {:new-messages 0
                                :all-messages 0})]
-      (if (empty? other-ids) (get-messages badge-id message-count) (get-messages badge-id message-count other-ids))
+      (get-messages badge-id message-count)
       (fn []
         (let [all-messages (str (t :social/Messages)  " (" (:all-messages @message-count) ") ")
               new-messages (if (pos? (:new-messages @message-count))

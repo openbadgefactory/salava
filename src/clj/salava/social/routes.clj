@@ -56,10 +56,9 @@
 
              (GET "/messages_count/:badge_id" []
                   :return {:new-messages s/Int
-                               :all-messages s/Int}
+                           :all-messages s/Int}
                   :summary "Returns count of not viewed messages and all messages"
                   :path-params [badge_id :- s/Str]
-                  ;:body [other_ids :- s/Str]
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (so/get-badge-message-count ctx badge_id (:id current-user))))

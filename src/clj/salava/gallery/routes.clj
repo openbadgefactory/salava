@@ -61,7 +61,9 @@
                                 badge-id :- s/Str]
                   :summary "Get public gallery badge data"
                   :current-user current-user
-                  (ok (g/gallery-public-multilanguage-badge-content ctx (if (pos? gallery-id) gallery-id (g/badge-gallery-id ctx badge-id)) badge-id (:id current-user))))
+                  (if (pos? gallery-id)
+                    (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user) gallery-id))
+                    (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user)))))
 
              (GET "/badge_gallery_id/:badge-id" []
                   :path-params [badge-id :- s/Str]

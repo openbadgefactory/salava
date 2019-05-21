@@ -211,13 +211,6 @@
        ))))
 
 
-#_(defn get-badge-message-count [ctx badge_id user-id]
-    (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_id badge_id} (get-db ctx))
-          last-viewed (select-badge-message-last-view {:badge_id badge_id :user_id user-id} (into {:result-set-fn first :row-fn :mtime} (get-db ctx)))
-          new-messages (if last-viewed (filter #(and (not= user-id (:user_id %)) (< last-viewed (:ctime %))) badge-messages-user-id-ctime) ())]
-      {:new-messages (count new-messages)
-       :all-messages (count badge-messages-user-id-ctime)}))
-
 (defn get-badge-message-count
   [ctx badge_id user-id]
    (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_id badge_id} (get-db ctx))
@@ -227,19 +220,8 @@
       :all-messages (count badge-messages-user-id-ctime)}))
 
 
-#_(defn get-badge-messages-limit [ctx badge_id page_count user_id]
-    (let [limit 10
-          offset (* limit page_count)
-          badge-messages (select-badge-messages-limit {:badge_id badge_id :limit limit :offset offset} (get-db ctx))
-          messages-left (- (:all-messages (get-badge-message-count ctx badge_id user_id)) (* limit (+ page_count 1)))]
-      (if (= 0  page_count)
-        (messages-viewed ctx badge_id user_id))
-      {:messages badge-messages
-       :messages_left (if (pos? messages-left) messages-left 0)}))
-
 (defn get-badge-messages-limit
-  "get messages fix"
-  ([ctx badge_id page_count user_id]
+  [ctx badge_id page_count user_id]
    (let [limit 10
          offset (* limit page_count)
          badge-messages (select-badge-messages-limit {:badge_id badge_id :limit limit :offset offset} (get-db ctx))
@@ -248,21 +230,6 @@
        (messages-viewed ctx badge_id user_id))
      {:messages badge-messages
       :messages_left (if (pos? messages-left) messages-left 0)}))
-
-  ([ctx badge_id page_count user_id other-badge-ids]
-   (if (empty? other-badge-ids)
-     (get-badge-messages-limit ctx badge_id page_count user_id)
-     (let [ids (cons badge_id other-badge-ids)
-           limit 10
-           offset (* limit page_count)
-           badge-messages (->> (map #(select-badge-messages-limit {:badge_id % :limit limit :offset offset} (get-db ctx)) ids) flatten (sort-by :ctime >))
-           messages-left (- (:all-messages (get-badge-message-count ctx badge_id user_id other-badge-ids)) (* limit (+ page_count 1)))]
-       (if (= 0  page_count)
-         (for [id ids] (messages-viewed ctx id user_id)))
-       {:messages badge-messages
-        :messages_left (if (pos? messages-left) messages-left 0)}
-       ))))
-
 
 
 (defn message-owner? [ctx message_id user_id]

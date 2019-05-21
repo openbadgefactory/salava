@@ -85,7 +85,7 @@ WHERE badge.id = :id
 GROUP BY bc.language_code, cc.language_code, ic.language_code
 
 
--- name: select-common-badge-rating
+-- name: select-common-badge-rating-REMOVE
 SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM user_badge AS ub
        JOIN badge AS badge ON (badge.id = ub.badge_id)
        WHERE ub.visibility = 'public' AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND badge.id = :badge_id AND (rating IS NULL OR rating > 0)
@@ -95,7 +95,7 @@ SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM user_ba
 WHERE ub.visibility = 'public' AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
     AND gallery_id = :gallery_id AND (rating IS NULL OR rating > 0)
 
--- name: select-badge-criteria-issuer-by-recipient
+-- name: select-badge-criteria-issuer-by-recipient-REMOVE
 -- FIXME (badge_url? rename badge -> user_badge, use new badge table)
 SELECT
 issuer_verified, last_received AS ctime,
@@ -119,7 +119,7 @@ WHERE ub.user_id = :user_id AND badge.id = :badge_content_id
 ORDER By ctime DESC
 LIMIT 1
 
--- name: select-badge-criteria-issuer-by-date
+-- name: select-badge-criteria-issuer-by-date-REMOVE
 -- FIXME (badge_url? rename badge -> user_badge, use new badge table)
 SELECT
 issuer_verified, last_received AS ctime,
@@ -151,13 +151,13 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
        ORDER BY p.mtime DESC
        LIMIT 100
 
--- name: select-badge-recipients
+-- name: select-badge-recipients-REMOVE
 SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN user_badge AS ub ON ub.user_id = u.id
        JOIN badge AS badge ON (badge.id = ub.badge_id)
        WHERE badge.id = :badge_id AND status = 'accepted' AND ub.deleted = 0
 
--- name: select-badge-recipients-fix
+-- name: select-badge-recipients-fix-REMOVE
 SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibility FROM user AS u
        JOIN user_badge AS ub ON ub.user_id = u.id
        JOIN badge AS badge ON (badge.id = ub.badge_id)
@@ -167,7 +167,7 @@ SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibilit
        JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
        WHERE bc.name = :name AND ic.name = :issuer_content_name AND bc.description = :description AND status = 'accepted' AND ub.deleted = 0
 
--- name: select-badge-recipients-fix-2
+-- name: select-badge-recipients-fix-2-REMOVE
 SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibility FROM user AS u
        JOIN user_badge AS ub ON ub.user_id = u.id
        JOIN badge AS badge ON (badge.id = ub.badge_id)
@@ -193,13 +193,13 @@ SELECT ub.user_id,
        AND user_id IN (:user_ids)
        GROUP BY user_id
 
--- name: select-badges-recipients
+-- name: select-badges-recipients-REMOVE
 SELECT badge_id, count(distinct user_id) as recipients FROM user_badge
        WHERE badge_id IN (:badge_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp())
        GROUP BY badge_id
 
 
---name: select-gallery-badges-order-by-recipients-old
+--name: select-gallery-badges-order-by-recipients-old-REMOVE
 -- FIXME (content columns)
 SELECT
 badge.id AS badge_id, bc.name, bc.image_file,
@@ -217,7 +217,7 @@ GROUP BY ic.name, bc.name
 ORDER BY recipients DESC
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-ic-name-old
+--name: select-gallery-badges-order-by-ic-name-old-REMOVE
 -- FIXME GROUP BY ic.name, bc.name instead badge.id
 SELECT
 badge.id AS badge_id, bc.name, bc.image_file,
@@ -235,7 +235,7 @@ GROUP BY ic.name, bc.name
 ORDER BY ic.name
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-name-old
+--name: select-gallery-badges-order-by-name-old-REMOVE
 -- FIXME GROUP BY ic.name, bc.name instead badge.id
 SELECT
 badge.id AS badge_id, bc.name, bc.image_file,
@@ -253,7 +253,7 @@ GROUP BY ic.name, bc.name
 ORDER BY bc.name
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-ctime-old
+--name: select-gallery-badges-order-by-ctime-old-REMOVE
 -- FIXME GROUP BY ic.name, bc.name instead badge.id
 SELECT
 badge.id AS badge_id, bc.name, bc.image_file,
@@ -316,7 +316,7 @@ ORDER BY ctime DESC
 LIMIT :limit OFFSET :offset
 
 
---name: select-gallery-tags-old
+--name: select-gallery-tags-old-REMOVE
 SELECT bct.tag, GROUP_CONCAT(bbc.badge_id) AS badge_ids, COUNT(bbc.badge_id) as badge_id_count
 FROM badge_badge_content as bbc
 JOIN badge_content_tag as bct on (bct.badge_content_id = bbc.badge_content_id)
@@ -327,7 +327,8 @@ AND bbc.badge_id IN (SELECT DISTINCT badge_id FROM badge WHERE published = 1 and
 GROUP BY bct.tag
 
 --name: gallery-badges-count
-SELECT COUNT(DISTINCT id) AS badges_count FROM badge WHERE published = 1 AND recipient_count > 0
+SELECT COUNT(DISTINCT ub.gallery_id) AS badges_count FROM user_badge ub
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
 
 --name: gallery-pages-count
 SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibility = 'internal') AND deleted = 0
