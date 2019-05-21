@@ -1,5 +1,6 @@
 --name: select-users-from-connections-badge
-SELECT user_id AS owner from social_connections_badge where badge_id = :badge_id
+SELECT user_id AS owner FROM social_connections_badge
+WHERE badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM social_connections_badge WHERE badge_id = :badge_id);
 
 -- name: select-user-badges-all
 -- get user's badges
