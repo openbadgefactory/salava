@@ -283,12 +283,13 @@
                                                                     :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
                [:div]
                badges)
-       [:div.addbadge
-        [:a {:href "#" :on-click #(do
-                                    (.preventDefault %)
-                                    (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
-                                                              :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
-         [:i.fa.fa-plus.fa-5x.add-icon]]]]]]))
+       [:a {:href "#" :on-click #(do
+                                   (.preventDefault %)
+                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
+                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+        [:div.addbadge
+
+          [:i.fa.fa-plus.fa-5x.add-icon]]]]]]))
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "editprofileinfo"))]
