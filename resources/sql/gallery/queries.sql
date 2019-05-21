@@ -392,6 +392,15 @@ WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
 ORDER BY ub.ctime DESC
 LIMIT 100000;
 
+--name: select-gallery-ids-recipient
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND CONCAT(u.first_name, ' ', u.last_name) LIKE :recipient
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
 --name: select-gallery-ids-tags
 SELECT DISTINCT ub.gallery_id FROM user_badge ub
 INNER JOIN badge_badge_content bc ON ub.badge_id = bc.badge_id

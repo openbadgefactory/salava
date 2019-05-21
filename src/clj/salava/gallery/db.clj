@@ -157,6 +157,10 @@
             (conj (fn [id-set]
                     (clojure.set/intersection id-set (set (select-gallery-ids-issuer {:issuer (str "%" issuer-name "%")} (get-db-col ctx :gallery_id))))))
 
+            (not (string/blank? recipient-name))
+            (conj (fn [id-set]
+                    (clojure.set/intersection id-set (set (select-gallery-ids-recipient {:recipient (str "%" recipient-name "%")} (get-db-col ctx :gallery_id))))))
+
             (not (string/blank? tags))
             (conj (fn [id-set]
                     (clojure.set/intersection id-set (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id)))))))]
