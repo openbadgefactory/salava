@@ -235,7 +235,7 @@
     [:div {:class "row flip"
            :id "buttons"}
      [:div.col-xs-12
-      [:div.col-xs-12.wizard
+      [:div.col-xs-12.wizard.no-flip
        [:a {:class (if (= target :content) "current")
             :href "#"
             :on-click #(do

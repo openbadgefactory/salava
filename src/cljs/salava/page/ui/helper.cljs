@@ -405,7 +405,7 @@
         editable? (get-in logic [target :editable?])]
     [:div {:class "row flip"
            :id "buttons"}
-     [:div.col-xs-8.wizard
+     [:div.col-xs-8.wizard.no-flip
       [:a {:class (if (= target :content) "current")
            :href "#"
            :on-click #(do
