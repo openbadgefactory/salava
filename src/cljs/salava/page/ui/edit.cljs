@@ -256,9 +256,9 @@
         title (:title @block-atom)
         format (:format @block-atom)]
     [:div#badge-showcase
-     [:div#grid {:class "row"}
-      [:div.form-group
-       [:div.col-md-12
+     [:div
+      [:div;.form-group
+       [:div;.col-md-12
         [:label (t :page/Title)]
 
         [:input {:class     "form-control"
@@ -267,7 +267,7 @@
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
                  :placeholder (t :page/Untitled)}]]
-       [:div.col-md-12
+       [:div;.col-md-12
         [:label (t :page/Displayinpageas)]
         [:div.badge-select
          [:select {:class "form-control"
@@ -276,18 +276,19 @@
                    :on-change #(update-block-value block-atom :format (.-target.value %))}
           [:option {:value "short"} (t :page/ImageandName)]
           [:option {:value "long"} (t :page/Content)]]]]]
-      (reduce (fn [r b]
-                (conj r
-                      (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
-                                                                   :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
-              [:div]
-              badges)
-      [:div.addbadge
-       [:a {:href "#" :on-click #(do
-                                   (.preventDefault %)
-                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
-                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
-        [:i.fa.fa-plus.fa-5x.add-icon]]]]]))
+      [:div#grid {:class "row wrap-grid"}
+       (reduce (fn [r b]
+                 (conj r
+                       (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
+                                                                    :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
+               [:div]
+               badges)
+       [:div.addbadge
+        [:a {:href "#" :on-click #(do
+                                    (.preventDefault %)
+                                    (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
+                                                              :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+         [:i.fa.fa-plus.fa-5x.add-icon]]]]]]))
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "editprofileinfo"))]
@@ -426,8 +427,8 @@
 
 
 (defn page-description [description]
-  [:div.col-md-12
-   [:div.form-group
+  [:div;.col-md-12
+   [:div;.form-group
     [:label {;:class "col-md-2"
               :for "page-description"}
      (t :page/Description)]
@@ -438,8 +439,8 @@
                  :on-change #(reset! description (.-target.value %))}]]]])
 
 (defn page-title [name]
-  [:div.col-md-12
-   [:div.form-group
+  [:div;.col-md-12
+   [:div;.form-group
     [:label {;:class "col-md-2"
               :for "page-name"}
      (t :page/Title)]
@@ -455,7 +456,7 @@
    [:div.panel.thumbnail
     [:div.panel-heading [:p.block-title "Page Information"]]
     [:div.panel-body
-     [:form.form-horizontal
+     [:div.form-horizontal
       [:div {:id "title-and-description"}
 
        [page-title (cursor state [:page :name])]

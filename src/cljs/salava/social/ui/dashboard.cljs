@@ -246,7 +246,7 @@
           (when-not (not-activated?)  [application-button "button"])
           [:div.content
            [:div.connections-block {:style {:padding-bottom "20px"}}
-            [:div.row {:style {:margin-left "-17px"}}
+            [:div.row.flip {:style {:margin-left "-17px"}}
              [:div.total-badges.info-block
               [:div.info
                [:div.text

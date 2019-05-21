@@ -118,7 +118,7 @@
 (defn showcase-grid [state block-atom]
  [:div#user-badges
   [:h3 (or (:title @block-atom) (t :page/Untitled))]
-  [:div#grid {:class "row"}
+  [:div#grid {:class "row wrap-grid"}
    (reduce (fn [r b]
             (conj r (badge-grid-element b state "profile" nil))) [:div] (:badges @block-atom))]])
 
@@ -128,9 +128,9 @@
         title (:title @block-atom)
         format (:format @block-atom)]
     [:div#badge-showcase
-     [:div#grid {:class "row"}
+     [:div
       [:h3 {:style {:padding-bottom "10px"}} (t :page/Badgeshowcase)]
-      [:div.form-group
+      [:div
        [:div
         [:label (t :page/Title)]
 
@@ -149,18 +149,19 @@
                    :on-change #(update-block-value block-atom :format (.-target.value %))}
           [:option {:value "short"} (t :core/Imageonly)]
           [:option {:value "long"} (t :page/Content)]]]]]
-      (reduce (fn [r b]
-                (conj r
-                      (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
-                                                                   :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
-              [:div]
-              badges)
-      [:div.addbadge
-       [:a {:href "#" :on-click #(do
-                                   (.preventDefault %)
-                                  (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
-                                                            :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
-        [:i.fa.fa-plus.add-icon.fa-5x]]]]]))
+      [:div#grid {:class "row wrap-grid"}
+       (reduce (fn [r b]
+                 (conj r
+                       (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
+                                                                    :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
+               [:div]
+               badges)
+       [:div.addbadge
+        [:a {:href "#" :on-click #(do
+                                    (.preventDefault %)
+                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
+                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+         [:i.fa.fa-plus.add-icon.fa-5x]]]]]]))
 
 (defn block-for-edit [block-atom state index]
   (let [block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))

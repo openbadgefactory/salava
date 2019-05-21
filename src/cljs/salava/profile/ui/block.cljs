@@ -38,7 +38,7 @@
     [:div {:id "profile" :style {:margin "10px auto"}}
      [:div.row {:style {:padding "15px 0"}}
       [:div.col-xs-12 [:b (t :profile/Profileblockfieldsinstruction)]]]
-     [:div.row
+     [:div.row.flip
       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
        [:div.profile-picture-wrapper
         [:img.profile-picture {:src (profile-picture profile_picture)}]]]
@@ -95,7 +95,7 @@
       (let [{:keys [user profile fields]} @state
             {:keys [role first_name last_name about profile_picture]} user]
         [:div {:id "profile" :style {:margin "10px auto"}}
-         [:div.row
+         [:div.row.flip
           [:div {:class "col-md-3 col-sm-3 col-xs-12"}
            [:div.profile-picture-wrapper
             [:img.profile-picture {:src (profile-picture profile_picture)}]]]
