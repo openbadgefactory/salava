@@ -248,7 +248,7 @@
    {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
    {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
    {:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}
-   {:icon "fa-user" :text "Profile information" :value "profile"}])
+   {:icon "fa-user" :text (t :user/Profile) :value "profile"}])
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
