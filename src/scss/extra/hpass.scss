@@ -762,6 +762,12 @@ a.popup-info {
  text-decoration: none;
 }
 
+#page-edit #buttons #buttons-right, #page-edit-theme #buttons #buttons-right {
+  .fa-trash {
+    color: white !important;
+  }
+}
+
 #page-edit #block-modal .block-types div.content-type,
 #page-edit-theme #block-modal .block-types div.content-type {
  background-color: #dcea74;
@@ -814,8 +820,8 @@ a.popup-info {
  font-family: "GT America", "Arial", sans-serif !important;
 }
 
-#step-button > a,
-#step-button-previous > a {
+#step-button,
+#step-button-previous {
  font-weight: bold;
  color: black !important;
 }
