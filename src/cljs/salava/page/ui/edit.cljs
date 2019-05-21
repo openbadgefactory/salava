@@ -454,7 +454,7 @@
 (defn page-form [state]
   [:div
    [:div.panel.thumbnail
-    [:div.panel-heading [:p.block-title "Page Information"]]
+    ;[:div.panel-heading [:p.block-title "Page Information"]]
     [:div.panel-body
      [:div.form-horizontal
       [:div {:id "title-and-description"}
