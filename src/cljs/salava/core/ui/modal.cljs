@@ -5,9 +5,9 @@
             [salava.core.ui.helper :refer [plugin-fun]]
             [salava.core.common :as common]
             [salava.core.helper :refer [dump]]
-            [clojure.string :as str]
+            [clojure.string :as str]))
             ;[salava.core.ui.dispatch :refer [site-navi]]
-            ))
+
 
 (defn modal-navi []
   (apply merge (plugin-fun (session/get :plugins) "modal" "modalroutes")))
@@ -37,7 +37,7 @@
         [:span {:class "back-arrow" :aria-hidden "true"}]]])]
    [:div.modal-body
     [:div (last @views)]]
-   [:div.modal-footer ]])
+   [:div.modal-footer]])
 
 (defn modal-init [view]
   (create-class {:component-will-mount   (fn [] (reset! views [view]))
@@ -55,5 +55,4 @@
   ([route params opts]
    (if (empty? @views)
      (m/modal! [modal-init [((get-in (modal-navi) route) params)]] (merge opts {:size :lg}))
-     (set-new-view route params))
-   ))
+     (set-new-view route params))))

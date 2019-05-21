@@ -31,7 +31,7 @@
              (layout/main ctx "/edit/email-addresses")
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
-             (layout/main-meta ctx "/profile/:id" :user)
+             ;(layout/main-meta ctx "/profile/:id" :user)
              (layout/main-meta ctx "/profile/:id/embed" :user)
              (layout/main ctx "/edit/profile")
              (layout/main ctx "/cancel")
@@ -129,8 +129,8 @@
                   :summary "Get user information for editing"
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok {:password? (u/has-password? ctx (:id current-user))})
-                  )
+                  (ok {:password? (u/has-password? ctx (:id current-user))}))
+
 
              (POST "/edit/password" []
                    :return {:status (s/enum "success" "error")
@@ -139,8 +139,8 @@
                    :summary "Get user information for editing"
                    :auth-rules access/signed
                    :current-user current-user
-                   (ok (u/edit-user-password ctx user-data (:id current-user)))
-                   )
+                   (ok (u/edit-user-password ctx user-data (:id current-user))))
+
 
              (POST "/edit" []
                    :return {:status (s/enum "success" "error")
@@ -226,8 +226,8 @@
                   (-> (io/piped-input-stream (md/export-data-to-pdf ctx userid (:id current-user)))
                       ok
                       (header  "Content-Disposition" (str "attachment; filename=\" Copy-of-Mydata.pdf\""))
-                      (header "Content-Type" "application/pdf")
-                      ))
+                      (header "Content-Type" "application/pdf")))
+
 
              (GET "/edit/profile" []
                   ;:return
@@ -284,10 +284,10 @@
                   :current-user current-user
                   (if (:private current-user)
                     (forbidden)
-                    (ok {:status "success"}))
-                  )
+                    (ok {:status "success"})))
+
              (GET "/dashboard" []
                   :summary "Get dashboard information"
-                  :auth-rules access/authenticated
+                  :auth-rules access/signed
                   :current-user current-user
                   (ok (u/dashboard-info ctx (:id current-user)))))))

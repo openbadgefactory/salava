@@ -286,5 +286,12 @@
            }
    :badges {:all (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))
             :since-last-visited (gallery-badges-count-since-last-login {:user_id user-id :last_login last-login} (into {:result-set-fn first :row-fn :badges_count} (get-db ctx)))}
+   :map {:all (all-users-on-map-count {} (into {:result-set-fn first :row-fn :users_count} (get-db ctx)))}
    })
 
+(defn public-by-user [ctx kind user-id current-user-id]
+  (let [visibility (if current-user-id "internal" "public")]
+    (case kind
+      "badges" {:badges (public-badges-by-user ctx user-id visibility)}
+      "pages"  {:pages (public-pages-by-user ctx user-id visibility)}
+      {})))

@@ -4,7 +4,8 @@
             [schema.core :as s]
             [pushy.core :as pushy]
             [salava.core.helper :as h]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [salava.core.helper :refer [dump]]))
 
 (defn plugin-fun [plugins nspace name]
   (let [fun (fn [p]

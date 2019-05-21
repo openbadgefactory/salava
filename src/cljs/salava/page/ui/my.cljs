@@ -1,5 +1,5 @@
 (ns salava.page.ui.my
-  (:require [reagent.core :refer [atom]]
+  (:require [reagent.core :refer [atom create-class]]
             [clojure.set :refer [intersection]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :as h :refer [unique-values navigate-to path-for not-activated?]]
@@ -26,56 +26,23 @@
     (path-for "/obpv1/page/create")
     {:params {:userid 1}
      :handler (fn [id]
-                (navigate-to (str "/page/edit/" id)))}))
+                (navigate-to (str "/profile/page/edit/" id)))}))
 
-(defn page-grid-form [state]
+(defn page-grid-form
+ ([state]
   [:div {:id "grid-filter"
          :class "form-horizontal"}
    [g/grid-search-field  (t :core/Search ":") "pagesearch" (t :core/Searchbyname) :search state]
    [g/grid-select        (t :core/Show ":")  "select-visibility" :visibility (visibility-select-values) state]
    [g/grid-buttons       (t :core/Tags ":") (unique-values :tags (:pages @state)) :tags-selected :tags-all state]
    [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]])
-
-#_(defn page-grid-element [element-data state]
-  (let [{:keys [id name visibility mtime badges]} element-data
-        badges (take 4 badges)]
-    [:div {:class "col-xs-12 col-sm-6 col-md-4"
-           :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       [:div.media-body
-        [:div.flip-modal
-        [:div.media-heading
-         [:a.heading-link {:href (path-for (str "/page/view/" id))}
-          name]]
-        [:div.visibility-icon
-         (case visibility
-           "private" [:i {:class "fa fa-lock" :title (t :page/Private)}]
-           "password" [:i {:class "fa fa-lock" :title (t :page/Passwordprotected)}]
-           "internal" [:i {:class "fa fa-group" :title (t :page/Forregistered)}]
-           "public" [:i {:class "fa fa-globe" :title (t :page/Public)}]
-           nil)]]
-        [:div.media-description
-         [:div.page-create-date.no-flip
-          (date-from-unix-time (* 1000 mtime) "minutes")]
-         (into [:div.page-badges]
-               (for [badge badges]
-                 [:img {:title (:name badge)
-                        :alt (:name badge)
-                        :src (str "/" (:image_file badge))}]))]]]
-      [:div {:class "media-bottom flip-modal"}
-       [:a {:class "bottom-link"
-            :title (t :page/Edit)
-            :href  (path-for (str "/page/edit/" id))}
-        [:i {:class "fa fa-pencil"}]
-        ;[:span (t :page/Edit)]
-        ]
-       [:a {:class "bottom-link pull-right"
-            :title (t :page/Settings)
-            :href  (path-for (str "/page/settings/" id))}
-        [:i {:class "fa fa-cog"}]
-        ;[:span ]
-        ]]]]))
+ ([state modal?]
+  [:form {:id "grid-filter"
+          :class "form-horizontal"}
+   [g/grid-search-field  (t :core/Search ":") "pagesearch" (t :core/Searchbyname) :search state]
+   [g/grid-select        (t :core/Show ":")  "select-visibility" :visibility (visibility-select-values) state]
+   [g/grid-buttons       (t :core/Tags ":") (unique-values :tags (:pages @state)) :tags-selected :tags-all state]
+   [g/grid-radio-buttons (t :core/Order ":")  "order" (order-radio-values) :order state]]))
 
 (defn page-visible? [element state]
   (if (and
@@ -121,7 +88,6 @@
        (doall
         (for [element-data pages]
           (if (page-visible? element-data state)
-            #_(page-grid-element element-data state)
             (page-grid-element element-data {:type "basic"}))))])))
 
 (defn content [state]
@@ -144,3 +110,44 @@
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
+
+(defn mypagesmodal [param]
+  (let [state (atom {:pages []
+                     :visibility "all"
+                     :order "mtime"
+                     :tags-all true
+                     :tags-selected []})
+        tab-atom (:tab-atom param)]
+   (fn []
+    (create-class {:reagent-render (fn []
+                                      (let [pages (:pages @state)
+                                            order (keyword (:order @state))
+                                            pages (if (= order :mtime)
+                                                    (sort-by order > pages)
+                                                    (sort-by (comp clojure.string/upper-case order) pages))]
+
+                                       (if (not-activated?)
+                                         (not-activated-banner)
+                                        [:div {:class "my-badges pages" :style {:padding "15px"}}
+                                              [page-grid-form state true]
+                                              [:div {:class "row wrap-grid"
+                                                     :id    "grid"}
+                                               (when (empty? pages) [:div {:class "col-xs-12 col-sm-6 col-md-4"
+                                                                           :id    "add-element"
+                                                                           :key   "new-page"}
+                                                                     [:div {:class "media grid-container"}
+                                                                      [:a {:class    "add-element-link"
+                                                                           :href     "#"
+                                                                           :on-click #(create-page)}
+                                                                       [:div.media-content
+                                                                        [:div.media-body
+                                                                         [:div {:id "add-element-icon"}
+                                                                          [:i {:class "fa fa-plus" :style {:font-size "70px"}}]]
+                                                                         [:div {:id "add-element-link"}
+                                                                          (t :page/Addpage)]]]]]])
+
+                                               (doall
+                                                (for [element-data pages]
+                                                  (if (page-visible? element-data state)
+                                                    (page-grid-element (assoc element-data :atom tab-atom) {:type "pickable"}))))]])))
+                   :component-will-mount (fn [] (init-data state))}))))

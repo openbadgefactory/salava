@@ -201,6 +201,42 @@
                                                                                                                                  (if (ends-with? (:image_file badge) "png") [:chunk [:image {:align :center :width 60 :height 60}(str data-dir "/" (:image_file badge))]] [:chunk [:image {:align :center :width 60 :height 60 :base64 true} (:qr_code (first b))]])
                                                                                                                                  ]])))]]]
                                                                   [[:cell [:line {:dotted true}]]]]))
+                                                         (when (= "showcase" (:type %))
+                                                           (if (= "long" (:format %))
+                                                             (into [:table {:border false :widths [1 3] :keep-together? false}]
+                                                                   (conj  (into [[[:cell {:colspan 2}]]] (for [badge (:badges %)
+                                                                                                               :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
+                                                                                                                     content (-> b first :content first)]]
+                                                                                                           (when-not (empty? b)
+                                                                                                             (conj [[:cell {:align :left} (if (and (not (= "-" (:image_file badge))) (ends-with? (:image_file badge) "png")) [:image {:align :center :width 75 :height 75}(str data-dir "/" (:image_file badge))] [:image {:align :center :width 75 :height 75 :base64 true} (:qr_code (first b))])]]
+                                                                                                                   [:cell
+                                                                                                                    [:paragraph.generic
+                                                                                                                     [:heading (:name badge)]
+                                                                                                                     [:chunk.bold (str (t :badge/Issuedby ul) ": ")] [:chunk (:issuer_content_name content)] "\n"
+                                                                                                                       [:phrase
+                                                                                                                        [:chunk.bold (str (t :badge/Issuedon ul)": ")] [:chunk (if (number? (:issued_on badge)) (date-from-unix-time (long (* 1000 (:issued_on badge))) "date") (:issued_on badge))] "\n"]
+                                                                                                                     (:description badge)"\n"
+                                                                                                                     [:spacer 0]
+                                                                                                                     [:paragraph {:keep-together true}
+                                                                                                                      [:phrase.bold (str (t :badge/Criteria ul)": ")]
+                                                                                                                      [:anchor {:target (:criteria_url badge)} [:chunk.link (t :badge/Opencriteriapage ul)]] "\n"
+                                                                                                                      #_[:paragraph {:style :italic} (:criteria_url badge) ]
+                                                                                                                      (process-markdown (:criteria_content content) (:id badge) "Criteria")
+                                                                                                                      ]
+                                                                                                                     ][:spacer 0]]))))
+                                                                          [[:cell {:colspan 2}[:line {:dotted true}]]]))
+
+                                                             [:table {:no-split-cells? true :width 100 :border false}
+                                                              [[:cell
+                                                                [:table {:align :center :width-percent 100 :border false :num-cols 5}
+                                                                 (into [[:cell {:colspan 5}]] (for [badge (:badges %)
+                                                                                                    :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
+                                                                                                          content (-> b first :content first)]]
+                                                                                                (when-not (empty? b)
+                                                                                                  [:cell {:padding-right 10}[:anchor {:target (str site-url "/app/badge/info/" (:id badge))}
+                                                                                                                             (if (ends-with? (:image_file badge) "png") [:chunk [:image {:align :center :width 60 :height 60}(str data-dir "/" (:image_file badge))]] [:chunk [:image {:align :center :width 60 :height 60 :base64 true} (:qr_code (first b))]])
+                                                                                                                             ]])))]]]
+                                                              [[:cell [:line {:dotted true}]]]]))
                                                              [:spacer 3]])
 
                                content (-> (mapv template $blocks)

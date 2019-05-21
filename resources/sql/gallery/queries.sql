@@ -420,3 +420,6 @@ WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
 ORDER BY ub.ctime DESC
 LIMIT 1;
 
+--name: all-users-on-map-count
+SELECT COUNT(id) AS users_count FROM user WHERE location_lng IS NOT NULL AND location_lat IS NOT NULL AND deleted = 0
+

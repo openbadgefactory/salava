@@ -11,8 +11,8 @@
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
-            [salava.core.helper :refer [dump]]
-            ))
+            [salava.core.helper :refer [dump]]))
+
 
 (defn check-password [password-atom page-id state]
   (ajax/POST
@@ -29,19 +29,19 @@
 
 (defn toggle-visibility [page-id state]
   (let [visibility-atom (cursor state [:page :visibility])]
-  (ajax/POST
-    (path-for (str "/obpv1/page/toggle_visibility/" page-id))
-    {:response-format :json
-     :keywords? true
-     :params {:visibility (if (= "private" @visibility-atom) "public" "private")}
-     :handler (fn [data]
-                (if (string? data)
-                  (reset! visibility-atom data)
-                  (if (= "error" (:status data))
-                    (reset! (cursor state [:error]) (keyword (:message data))))))
-     :error-handler (fn [{:keys [status status-text]}]
-                      (if (= status 401)
-                          (navigate-to "/user/login")))})))
+   (ajax/POST
+     (path-for (str "/obpv1/page/toggle_visibility/" page-id))
+     {:response-format :json
+      :keywords? true
+      :params {:visibility (if (= "private" @visibility-atom) "public" "private")}
+      :handler (fn [data]
+                 (if (string? data)
+                   (reset! visibility-atom data)
+                   (if (= "error" (:status data))
+                     (reset! (cursor state [:error]) (keyword (:message data))))))
+      :error-handler (fn [{:keys [status status-text]}]
+                       (if (= status 401)
+                           (navigate-to "/user/login")))})))
 
 (defn page-password-field [state]
   (let [password-atom (cursor state [:password])]
@@ -71,7 +71,7 @@
 
     (ajax/GET
       (path-for (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))
-       {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
+      {:handler (js-navigate-to (str "obpv1/page/export-to-pdf/" id"/" page-name"/" header))})))
 
 (defn export-to-pdf-modal [state]
    [:div {:id "export-modal"}
@@ -81,31 +81,31 @@
         [:button {:type         "button"
                   :class        "close"
                   :data-dismiss "modal"
-                  :aria-label   "OK"
-                }
+                  :aria-label   "OK"}
+
          [:span {:aria-hidden  "true"
-               :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
+                 :dangerouslySetInnerHTML {:__html "&times;"}}]]]]
       [:div
        [:form {:class "form-horizontal"}
               [:div.form-group
-             [:fieldset {:id "export-pdf" :class "col-md-12 checkbox"}
-              [:div.col-md-12 [:label
-               [:input {:type     "checkbox"
-                        :on-change (fn [e]
-                                     (if (.. e -target -checked)
-                                         (swap! state assoc :pdf-header "true")(swap! state assoc :pdf-header "false")))}]
-               (t :page/EnableHeader)]]]]]]]
+               [:fieldset {:id "export-pdf" :class "col-md-12 checkbox"}
+                [:div.col-md-12 [:label
+                                 [:input {:type     "checkbox"
+                                          :on-change (fn [e]
+                                                       (if (.. e -target -checked)
+                                                           (swap! state assoc :pdf-header "true")(swap! state assoc :pdf-header "false")))}]
+                                 (t :page/EnableHeader)]]]]]]]
     [:div.modal-footer
       [:button {:type         "button"
-              :class        "btn btn-primary"
-              :data-dismiss "modal"}
-     (t :core/Close)]
+                :class        "btn btn-primary"
+                :data-dismiss "modal"}
+       (t :core/Close)]
       [:button {:type         "button"
-              :class        "btn btn-primary"
-              :on-click  #(export-page-to-pdf state)
-              :data-dismiss "modal"
-              }
-     (t :badge/Exporttopdf)]]])
+                :class        "btn btn-primary"
+                :on-click  #(export-page-to-pdf state)
+                :data-dismiss "modal"}
+
+       (t :badge/Exporttopdf)]]])
 
 
 (defn page-content [page state]
@@ -118,17 +118,14 @@
        [:div {:id "page-buttons-share"}
         [:div {:id "buttons"
                :class "text-right"}
-         [:a {:class "btn btn-primary edit-btn"
-              :href  (path-for (str "/page/edit/" (:id page)))}
-          (t :page/Edit)]
-         [:button {:class "btn btn-primary print-btn"
-                   :on-click #(.print js/window)}
-          (t :core/Print)]
+         [:a.btn.btn-primary {:href (path-for (str "/profile/page/edit/" (:id page))) :style {:text-decoration "none"}}
+          [:i.fa.fa-pencil-square-o.fa-fw.fa-lg](t :page/Edit)]
+         [:a.btn.btn-primary {:href "#" :on-click #(.print js/window) :style {:text-decoration "none"}} [:i.fa.fa-print.fa-fw.fa-lg](t :core/Print)]
          [:button {:class "btn btn-primary"
                    :on-click #(do (.preventDefault %)
-                                    (swap! state assoc :pdf-header "false")
-                                     (m/modal![export-to-pdf-modal state] {:size :lg}))}
-          (t :badge/Exporttopdf)]]
+                                  (swap! state assoc :pdf-header "false")
+                                  (m/modal![export-to-pdf-modal state] {:size :lg}))}
+          [:i.fa.fa-file-pdf-o.fa-fw.fa-lg] (t :badge/Exporttopdf)]]
         (if-not (private?)
           [:div {:class (str "checkbox " @visibility-atom)}
            [:label
@@ -143,16 +140,16 @@
         [:div {:class (str "share-wrapper " @visibility-atom) } [s/share-buttons (str (session/get :site-url) (path-for "/page/view/") (:id page)) (:name page) (= "public" (:visibility page)) false show-link-or-embed-atom]]]
        (admintool (:id page) "page"))
      [ph/view-page page]
-     (if (:owner? page) "" (reporttool1 (:id page)  (:name page) "page"))
-     ]))
+     (if (:owner? page) "" (reporttool1 (:id page)  (:name page) "page"))]))
+
 
 (defn content [state]
   (let [page (:page @state)]
     (if (:ask-password @state)
       [page-password-field state]
       [:div {:id "page-container"}
-       [page-content page state]])
-    ))
+       [page-content page state]])))
+
 
 (defn init-data [state id]
   (ajax/GET
@@ -164,8 +161,8 @@
      :error-handler   (fn [{:keys [status status-text]}]
                         (if (= status 401)
                           (navigate-to "/user/login")
-                          (swap! state assoc :permission "error")))}
-    ))
+                          (swap! state assoc :permission "error")))}))
+
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
