@@ -159,7 +159,7 @@
         :style {:width (str completion_percentage "%")}
         :aria-valuemin "0"
         :aria-valuemax "100"}
-       (str completion_percentage "% complete")]]
+       (str completion_percentage "% " (t :profile/Complete))]]
      (when (some #(true? %) (vals tips)) [:div.col-xs-12 {:style {:margin "5px 2px" :font-size "14px" :font-weight "bold"}} (t :profile/Tipstoimproveprofile)])
      (reduce-kv (fn [r k v]
                  (conj r (when (true? v)

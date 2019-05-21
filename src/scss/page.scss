@@ -1741,6 +1741,7 @@
   }
 
   #step-button {
+    float: right;
     background-color: $button-color;
     position: relative;
     margin-right: 15px;
@@ -1765,6 +1766,7 @@
   }
 
   #step-button-previous {
+    float: left;
     background-color: $button-color;
     position: relative;
     margin-left: 15px;
