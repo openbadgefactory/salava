@@ -140,15 +140,15 @@
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
                  :placeholder (t :page/Untitled)}]]
-       [:div
-        [:label (t :page/Displayinpageas)]
-        [:div.badge-select
-         [:select {:class "form-control"
-                   :aria-label "select badge format"
-                   :value (or format "short")
-                   :on-change #(update-block-value block-atom :format (.-target.value %))}
-          [:option {:value "short"} (t :core/Imageonly)]
-          [:option {:value "long"} (t :page/Content)]]]]]
+       #_[:div
+          [:label (t :page/Displayinpageas)]
+          [:div.badge-select
+           [:select {:class "form-control"
+                     :aria-label "select badge format"
+                     :value (or format "short")
+                     :on-change #(update-block-value block-atom :format (.-target.value %))}
+            [:option {:value "short"} (t :core/Imageonly)]
+            [:option {:value "long"} (t :page/Content)]]]]]
       [:div#grid {:class "row wrap-grid"}
        (reduce (fn [r b]
                  (conj r
