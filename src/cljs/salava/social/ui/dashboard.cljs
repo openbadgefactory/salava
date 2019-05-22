@@ -15,7 +15,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :as pb]
             [clojure.string :refer [blank?]]
-            [dommy.core :as dommy :refer [has-class?] :refer-macros [sel sel1]]))
+            [dommy.core :as dommy :refer [has-class?] :refer-macros [sel sel1]]
+            [salava.admin.ui.helper :refer [admin?]]))
 
 (defn toggle-visibility [visibility-atom]
  (ajax/POST
@@ -187,6 +188,7 @@
 
 (defn notifications-block [state]
   (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
+        admin-events (->> (:events @state) (filter #(= (:verb %) "ticket")))
         tips (:tips @state)]
     [:div {:class "box col-md-4"}
      [:div#box_1
@@ -194,8 +196,8 @@
        [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
          [:a {:href "social/stream"} [:span.title (t :social/Stream)]] [:span.badge (count (:events @state))]
-         [:span.icon.small]
-         #_[:i.fa.fa-angle-right.icon.small]]
+         [:span.icon.small]]
+
         (if (not-activated?)
           [:div.content
            [:div {:style {:font-size "initial"}}
@@ -206,18 +208,29 @@
              [:li (t :social/Notactivatedbody4)]
              [:li (t :social/Notactivatedbody5)]
              [:li (t :social/Notactivatedbody6)]]]]
-          (reduce (fn [r event]
-                    (conj r [:div.notification-div.ax_default
-                             (cond
-                               (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
-                               (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
-                               (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
-                               (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
-                               (= "advert" (:type event)) (badge-advert-event event state)
-                               (= "message" (:verb event)) [message-event event state]
-                               :else "")]))
+          [:div.content
+           (when (and (admin?) (seq admin-events)) [:div.notification-div.ax_default {:style {:text-align "left" :margin-bottom "25px" :height "35px"}}
+                                                    [:a {:href (path-for "/admin/tickets") :style {:color "unset"}}
+                                                     [:div {:class "media"}
+                                                           [:div.media-left
+                                                            [:i.fa.fa-fw.fa-lightbulb-o]]
+                                                           [:div.media-body
+                                                            [:div.content-text
+                                                             [:p.content-heading (str (count admin-events) " " (t :social/Emailadmintickets))]]]]]])
 
-                  [:div.content] events))]]]]))
+           (reduce (fn [r event]
+                       (conj r [:div.notification-div.ax_default
+                                (cond
+                                  (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
+                                  (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
+                                  (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
+                                  (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
+                                  (= "advert" (:type event)) (badge-advert-event event state)
+                                  (= "message" (:verb event)) [message-event event state]
+                                  :else "")]))
+
+                   [:div] events)])]]]]))
+
 
 (defn latest-earnable-badges []
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
