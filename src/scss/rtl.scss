@@ -317,6 +317,9 @@ html[dir="rtl"] #badge-stats {
         }
       }
     }
+    table td.name {
+      text-align: right;
+    }
   }
 
   .list-item {
@@ -1182,6 +1185,9 @@ html[dir="rtl"] #edit-profile {
 }
 
 html[dir="rtl"] #edit-user {
+  .col-xs-offset-3 {
+    margin-left: unset;
+  }
   #cancel-button {
     margin-left: unset;
     margin-right: 10px;
