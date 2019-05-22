@@ -276,6 +276,9 @@ html[dir="rtl"] #badge-settings  {
       margin-left: 5px;
     }
   }
+  .settings-content label {
+    margin-right: unset;
+  }
   .settings-content .modal-footer{
     margin-left: unset;
     margin-right:0px;
@@ -1543,6 +1546,15 @@ html[dir="rtl"] #dashboard {
     .progress-bar {
      float:right;
     }
+
+    .explore-block .content {
+       .button-block {
+      float: right;
+    }
+    .info-block .icon {
+      margin-left: unset;
+    }
+  }
   }
   html[dir="rtl"] #profile {
 

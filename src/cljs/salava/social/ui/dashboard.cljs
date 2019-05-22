@@ -300,49 +300,50 @@
        [:span.icon.small]]
 
       [:div.content
-       [:div
-        [:div.col-sm-4.button-block
-         [:div.info-block.badge-connection
-          [:a {:href (path-for "/gallery/badges")}
-           [:div.info
-            [:i.fa.fa-certificate.icon]
-            [:div.text
-             (when-not hidden? [:p.num (get-in @state [:gallery :badges :all] 0)])
-             [:p.desc (t :gallery/Sharedbadges)]]]]]
-         (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
-        [:div.col-sm-4.button-block
-         [:div.info-block.page
-          [:a {:href (path-for "/gallery/pages")}
-           [:div
+       [:div.col-md-12
+        [:div.row
+         [:div.col-sm-4.button-block
+          [:div.info-block.badge-connection
+           [:a {:href (path-for "/gallery/badges")}
             [:div.info
-             [:i.fa.fa-file.icon]
+             [:i.fa.fa-certificate.icon]
              [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :pages :all] 0)])
-              [:p.desc (t :gallery/Sharedpages)]]]]]]
-         (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
-        [:div.col-sm-4.button-block
-         [:div.info-block
-          [:a {:href (path-for "/gallery/profiles")}
-           [:div
-            [:div.info
-             [:i.fa.fa-user.icon]
-             [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
-              [:p.desc (t :gallery/Sharedprofiles)]]]]]]
-         (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
-        [:div.col-sm-4.button-block
-         [:div.info-block.map
-          [:a {:href (path-for "/gallery/map")}
-           [:div
-            [:div.info
-             [:i.fa.fa-map-marker.icon]
-             [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
-              [:p.desc (t :location/Map)]]]]]]
-         [:div.since-last-login]]]]]]]]))
+              (when-not hidden? [:p.num (get-in @state [:gallery :badges :all] 0)])
+              [:p.desc (t :gallery/Sharedbadges)]]]]]
+          (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
+            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
+         [:div.col-sm-4.button-block
+          [:div.info-block.page
+           [:a {:href (path-for "/gallery/pages")}
+            [:div
+             [:div.info
+              [:i.fa.fa-file.icon]
+              [:div.text
+               (when-not hidden? [:p.num (get-in @state [:gallery :pages :all] 0)])
+               [:p.desc (t :gallery/Sharedpages)]]]]]]
+          (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
+            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
+         [:div.col-sm-4.button-block
+          [:div.info-block
+           [:a {:href (path-for "/gallery/profiles")}
+            [:div
+             [:div.info
+              [:i.fa.fa-user.icon]
+              [:div.text
+               (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
+               [:p.desc (t :gallery/Sharedprofiles)]]]]]]
+          (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
+            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
+         [:div.col-sm-4.button-block
+          [:div.info-block.map
+           [:a {:href (path-for "/gallery/map")}
+            [:div
+             [:div.info
+              [:i.fa.fa-map-marker.icon]
+              [:div.text
+               (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
+               [:p.desc (t :location/Map)]]]]]]
+          [:div.since-last-login]]]]]]]]]))
 
 
 
