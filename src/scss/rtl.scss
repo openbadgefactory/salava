@@ -1558,63 +1558,8 @@ html[dir="rtl"] #dashboard {
      float: right;
     }
    }
-
-   .fa-fw{
-    text-align: right;
-   }
   }
 html[dir="rtl"] #page-edit, #page-edit-theme, #page-settings{
-
-     // #page-edit .action-bar {
-     //
-     //  #step-button {
-     //    float: left!important;
-     //    margin-left: 15px;
-     //      &:before {
-     //        width: 0;
-     //        height: inherit;
-     //        border-top: 17px solid transparent;
-     //        border-bottom: 19px inset transparent;
-     //        border-right: 17px solid $button-color;
-     //        position: absolute;
-     //        content: "";
-     //        top: 0;
-     //        left: -16px;
-     //        z-index: 2;
-     //      }
-     //      &:after {
-     //       all:unset;
-     //      }
-     //  }
-     //  #step-button-previous {
-     //    float: right!important;
-     //   &:before {
-     //    all:unset;
-     //   }
-     //  &:after {
-     //         width: 0;
-     //         height: inherit;
-     //         border-top: 17px solid transparent;
-     //         border-bottom: 19px inset transparent;
-     //         border-left: 17px solid $button-color;
-     //         position: absolute;
-     //         content: "";
-     //         top: 0;
-     //         right: -16px;
-     //         z-index: 2;
-     //       }
-     //  }
-     //
-     //    #step-button:hover:before {
-     //      border-right-color: $button-hover;
-     //    }
-     //      #step-button-previous:hover:after {
-     //        border-left-color: $button-hover;
-     //      }
-     // }
-
-  
-
  #field-editor #page-blocks .field .field-content {
   border-right: unset;
   #badge-showcase #grid .grid-container {
@@ -1632,59 +1577,111 @@ html[dir="rtl"] #page-edit, #page-edit-theme, #page-settings{
   right: unset;
   left: 0;
  }
- // .action-bar {
- //  .pull-right {
- //   float:left!important;
- //  }
- //  #step-button {
- //      &:before {
- //        width: 0;
- //        height: inherit;
- //        border-top: 17px solid transparent;
- //        border-bottom: 19px inset transparent;
- //        border-right: 17px solid $button-color;
- //        position: absolute;
- //        content: "";
- //        top: 0;
- //        left: -16px;
- //        z-index: 2;
- //      }
- //      &:after {
- //       all:unset;
- //      }
- //  }
- //  #step-button-previous {
- //
- //   &:before {
- //    all:unset;
- //   }
- //  &:after {
- //         width: 0;
- //         height: inherit;
- //         border-top: 17px solid transparent;
- //         border-bottom: 19px inset transparent;
- //         border-left: 17px solid $button-color;
- //         position: absolute;
- //         content: "";
- //         top: 0;
- //         right: -16px;
- //         z-index: 2;
- //       }
- //  }
- //
- //    #step-button:hover:before {
- //      border-right-color: $button-hover;
- //    }
- //      #step-button-previous:hover:after {
- //        border-left-color: $button-hover;
- //      }
- // }
 }
  html[dir="rtl"] .wizard {
    text-align: right;
+   .badge {
+     margin: 0 18px 0 5px;
+     z-index: 30;
+   }
+   a {
+     //margin-right: unset;
+     margin-left: 1px;
+    &:before {
+            width: 0;
+            height: 100%;
+            border-top: 20px inset transparent;
+            border-bottom: 20px inset transparent;
+            border-right: 20px solid $button-color;
+            position: absolute;
+            border-left: unset;
+            //border-right: 20px solid $background-color;
+            content: "";
+            top: 0;
+            left: -19px;
+            z-index: 10;
+    }
+
+    &:after {
+      //all:unset !important;
+          width: 0;
+          height: 100%;
+          border-top: 20px inset transparent;
+          border-bottom: 20px inset transparent;
+          border-right: 20px solid $background-color;
+          position: absolute;
+          content: "";
+          top: 0;
+          right: 0;
+        //  z-index: 2;
+    }
+    &:first-child {
+        -webkit-border-radius: 0 4px 4px 0;
+        -moz-border-radius: 0 4px 4px 0;
+        border-radius: 0 4px 4px 0;
+      }
+    &:last-child {
+        -webkit-border-radius: 4px 0 0 4px;
+        -moz-border-radius: 4px 0 0 4px;
+         border-radius: 4px 0 0 4px;
+        }
+   &:first-child:after, &:last-child:before {
+      border: none;
+   }
+   }
+   .current:before {
+     border-right-color: $button-hover;
+   }
  }
-html[dir="rtl"] #page-view {
- .fa-fw {
-  text-align: right;
- }
+
+html[dir="rtl"] #step-button {
+      float: left !important;
+      margin-right: unset;
+      margin-left: 15px;
+      &:before {
+        width: 0;
+        height: inherit;
+        border-top: 17px solid transparent;
+        border-bottom: 19px inset transparent;
+        border-right: 17px solid $button-color;
+        position: absolute;
+        content: "";
+        top: 0;
+        left: -16px;
+        z-index: 2;
+
+      }
+      &:after {
+       all:unset !important;
+      }
+  }
+html[dir="rtl"] #step-button-previous {
+    float: right !important;
+    margin-left: 30px !important;
+    margin-right: 15px !important;
+   &:before {
+    all:unset !important;
+   }
+  &:after {
+         width: 0;
+         height: inherit;
+         border-top: 17px solid transparent;
+         border-bottom: 19px inset transparent;
+         border-left: 17px solid $button-color;
+         position: absolute;
+         content: "";
+         top: 0;
+         right: -16px;
+         z-index: 2;
+       }
+  }
+html[dir="rtl"] #step-button:hover:before {
+      border-right-color: $button-hover;
 }
+html[dir="rtl"] #step-button-previous:hover:after {
+        border-left-color: $button-hover;
+}
+
+html[dir="rtl"]  .fa-fw {
+  text-align: right !important;
+ }
