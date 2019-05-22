@@ -394,7 +394,7 @@
   (let [state (atom {})]
     (init-data state {:country "all" :order "mtime" :issuer-name "" :name ""})
     (fn []
-      [:div.badges
+      [:div.badges {:style {:display "inline-block"}}
        [:p.header (t :social/Newestearnablebadges)]
        (reduce (fn [r application]
                  (conj r [:a {:href "#" :on-click #(do
@@ -409,4 +409,3 @@
       "button" [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]
       "link" [:a {:href (str (path-for "/badge/application"))}[:p (t :social/Iwanttoearnnewbadges)]]
       [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]])))
-
