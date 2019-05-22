@@ -28,7 +28,7 @@
                    "users"
                    (fn [u u-count]
                      (if (= 1 u-count)
-                       #(mo/open-modal [:user :profile] {:user-id (-> u first :id)})
+                       #(mo/open-modal [:profile :view] {:user-id (-> u first :id)})
                        #(mo/open-modal [:location :userlist] {:users u})))
                    "badges"
                    (fn [b b-count]

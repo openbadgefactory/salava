@@ -275,7 +275,7 @@
            [:div.badge-columns
              ;[:div.pending [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]]
              (when (seq badges)
-              [:div.badges
+              [:div.badges {:style {:display "inline-block"}}
                 [:p.header (t :social/Lastestearnedbadges)]
                 (reduce (fn [r badge]
                           (conj r [:a {:href "#" :on-click #(do
