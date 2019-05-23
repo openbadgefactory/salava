@@ -106,7 +106,7 @@
        [:div {:class "issuer-data clearfix"}
         [:label.pull-left  (t :admin/Owner) ":"]
         [:div {:class "issuer-links pull-left"}
-         [:a {:target "_blank" :href (path-for (str "/user/profile/" owner_id))} owner]]])]))
+         [:a {:target "_blank" :href (path-for (str "/profile/" owner_id))} owner]]])]))
 
 
 
@@ -148,7 +148,7 @@
   [:div {:class "issuer-data clearfix"}
    [:label.pull-left  (t :admin/Owner) ":"]
    [:div {:class "issuer-links pull-left"}
-    [:a {:target "_blank" :href (path-for (str "/user/profile/" owner_id))} owner]]])
+    [:a {:target "_blank" :href (path-for (str "/profile/" owner_id))} owner]]])
 
 
 (defn info-block [state item_type]

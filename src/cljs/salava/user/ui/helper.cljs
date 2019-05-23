@@ -10,7 +10,7 @@
 
 (defn profile-link-inline [id first_name last_name picture]
   [:li.user-link-inline
-   [:a {:href (path-for (str "/user/profile/" id))}
+   [:a {:href (path-for (str "/profile/" id))}
     [:img {:src (profile-picture picture)}]
     first_name " " last_name]])
 

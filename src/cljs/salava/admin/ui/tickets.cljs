@@ -152,7 +152,7 @@
       [:div.media-descriprtion
        [:div {:class "col-xs-12"  :id (if open? "" "closed")}
         [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description) ]
-        [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/user/profile/" reporter_id))}(str first_name " " last_name)]]]
+        [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/profile/" reporter_id))}(str first_name " " last_name)]]]
        [:button {:class    "btn btn-primary"
                  :disabled (not open?)
                  :on-click #(do
