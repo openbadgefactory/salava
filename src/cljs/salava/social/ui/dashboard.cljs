@@ -209,7 +209,7 @@
              [:li (t :social/Notactivatedbody5)]
              [:li (t :social/Notactivatedbody6)]]]]
           [:div.content
-           (when (and (admin?) (seq admin-events)) [:div.notification-div.ax_default {:style {:text-align "left" :margin-bottom "25px" :height "35px"}}
+           (when (and (admin?) (seq admin-events)) [:div.notification-div.ax_default {:style {:text-align "left" :margin-bottom "20px" :height "35px"}}
                                                     [:a {:href (path-for "/admin/tickets") :style {:color "unset"}}
                                                      [:div {:class "media"}
                                                            [:div.media-left
@@ -218,18 +218,19 @@
                                                             [:div.content-text
                                                              [:p.content-heading (str (count admin-events) " " (t :social/Emailadmintickets))]]]]]])
 
-           (reduce (fn [r event]
-                       (conj r [:div.notification-div.ax_default
-                                (cond
-                                  (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
-                                  (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
-                                  (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
-                                  (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
-                                  (= "advert" (:type event)) (badge-advert-event event state)
-                                  (= "message" (:verb event)) [message-event event state]
-                                  :else "")]))
+           (if (seq (:events @state))(reduce (fn [r event]
+                                              (conj r [:div.notification-div.ax_default
+                                                       (cond
+                                                         (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
+                                                         (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
+                                                         (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
+                                                         (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
+                                                         (= "advert" (:type event)) (badge-advert-event event state)
+                                                         (= "message" (:verb event)) [message-event event state]
+                                                         :else "")]))
 
-                   [:div] events)])]]]]))
+                                      [:div] events)
+            [:div.col-md-12 (t :social/Emptystreamheader)])])]]]]))
 
 
 (defn latest-earnable-badges []
