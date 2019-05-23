@@ -301,7 +301,7 @@
 
 (defn edit-profile-event [{:keys [header body button link]} state]
   (let [site-name (session/get :site-name)
-        ]
+        user-id (session/get-in [:user :id])]
     [:div {:class "media message-item tips"}
      [:div.media-left
       (system-image)]
@@ -310,14 +310,16 @@
       [:i {:class "fa fa-lightbulb-o"}]
         [:div
       [:h3 {:class "media-heading"}
-       [:a {:href (path-for "/user/edit/profile")} (t :social/Profiletipheader)]]
+       [:a {:href (str (path-for "/profile/") user-id) :on-click #(do (.preventDefault %)
+                                                                      (session/put! :edit-mode true))} (t :social/Profiletipheader)]]
       [:div.media-body
        (t :badge/Add) " "  (t :badge/Profilepicture)
        "."  ]]
-      [:a {:href (path-for "/user/edit/profile")} (t :social/Profiletipbutton)]
+      [:a {:href (str (path-for "/profile/") user-id) :on-click #(do (.preventDefault %)
+                                                                     (session/put! :edit-mode true))} (t :social/Profiletipbutton)]
       ]]))
 
-(defn tip-event [{:keys [header body button link]} state]
+(defn tip-event [{:keys [header body button link function]} state]
   (let [site-name (session/get :site-name)
         ]
     [:div {:class "media message-item tips"}
@@ -327,25 +329,29 @@
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:i {:class "fa fa-lightbulb-o"}]
       [:div [:h3 {:class "media-heading"}
-       [:a {:href (if link (path-for link) "#")} (translate-text header)]]
+       [:a {:href (if link (path-for link) "#") :on-click #(do (.preventDefault %)
+                                                               (if function (function)))} (translate-text header)]]
       [:div.media-body
        ;(translate-text body)
        body]
       (if button
-        [:a {:href (if link (path-for link) "#")} (translate-text button) ])
+        [:a {:href (if link (path-for link) "#") :on-click #(do (.preventDefault %)
+                                                                (if function (function)))} (translate-text button) ])
       ]]]))
 
 (defn profile-picture-tip []
   {:header (t :social/Profilepictureheader)
    :body  (str (t :social/Profilepicturebody) ".")
    :button (t :social/Profiletipbutton)
-   :link "/user/edit/profile"} )
+   :link (str "/profile/" (session/get-in [:user :id]))
+   :function (fn [] (session/put! :edit-mode true))} )
 
 (defn profile-description-tip []
   {:header (t :social/Profiledescriptiontipheader)
    :body  (str (t :social/Profiledescriptionbody) ".")
    :button (t :social/Profiletipbutton)
-   :link "/user/edit/profile"} )
+   :link (str "/profile/" (session/get-in [:user :id]))
+   :function (fn [] (session/put! :edit-mode true))} )
 
 
 (defn get-your-first-badge-tip []

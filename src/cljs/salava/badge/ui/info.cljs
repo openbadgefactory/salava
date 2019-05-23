@@ -254,7 +254,7 @@
 
            (if (pos? @show-recipient-name-atom)
              (if (and user-logged-in? (not owner?))
-               [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
+               [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
                [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
 
            #_[:div [metabadge (:assertion_url @state)]]
