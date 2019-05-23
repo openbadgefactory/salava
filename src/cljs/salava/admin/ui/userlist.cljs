@@ -127,7 +127,7 @@
         [:div [:i {:class "fa fa-ban" :aria-hidden "true"}] (str " " first_name " " last_name) ]
         [:a {:href "#"
              :on-click #(do
-                          (mo/open-modal  [:user :profile] {:user-id id})
+                          (mo/open-modal  [:profile :view] {:user-id id})
                           (.preventDefault %)) }  first_name " " last_name])]
      [:td
       (doall
@@ -200,4 +200,3 @@
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))
-
