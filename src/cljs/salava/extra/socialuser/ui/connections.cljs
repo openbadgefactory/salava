@@ -57,7 +57,7 @@
                                               :alt user_id}]]
                   [:td.name [:a {:href     "#"
                                  :on-click #(do
-                                              (mo/open-modal [:user :profile] {:user-id user_id})
+                                              (mo/open-modal [:profile :view] {:user-id user_id})
                                               ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } (str first_name " " last_name)]]
                   [:td.action  (if (= "accepted" status) (deleteconnect user_id state)  (str (t :social/Pending) "..."))]]))]]
@@ -119,7 +119,7 @@
                                               :alt (str first_name last_name)}]]
                   [:td.name [:a {:href     "#"
                                  :on-click #(do
-                                              (mo/open-modal [:user :profile] {:user-id owner_id})
+                                              (mo/open-modal [:profile :view] {:user-id owner_id})
                                               ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } (str first_name " " last_name)]]
                   (if (= "pending" status)

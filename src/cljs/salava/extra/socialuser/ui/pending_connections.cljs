@@ -69,10 +69,10 @@
        [:div.media
         [:div.pull-left
          [:img.badge-image {:src (profile-picture profile_picture)
-                            :on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}]]
+                            :on-click #(mo/open-modal [:profile :view] {:user-id owner_id})}]]
         [:div.media-body
          [:h4.media-heading
-          [:a {:class "pending-a" :on-click #(mo/open-modal [:user :profile] {:user-id owner_id})}
+          [:a {:class "pending-a" :on-click #(mo/open-modal [:profile :view] {:user-id owner_id})}
           (str  first_name " " last_name)]
           (str  " " (t :social/Wantsfollow) )]]]]]
      [:div {:class "row button-row"}
