@@ -44,7 +44,7 @@
     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
    [:div {:class "media-body"}
     [:h4 {:class "media-heading"}
-     [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id user_id})} (str first_name " "last_name)]]
+     [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id user_id})} (str first_name " "last_name)]]
 
     (into [:div] (for [ item (clojure.string/split-lines message)]
                    [:p item]))]])
@@ -229,7 +229,7 @@
      [:div.media-left
       [:a {:href "#"
            :on-click #(do
-                        (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
+                        (mo/open-modal [:profile :view] {:user-id (if (= owner s_id)
                                                                                               o_id
                                                                                               s_id)})
                         ;(b/open-modal object false init-data state)
@@ -243,7 +243,7 @@
       [:div [:h3 {:class "media-heading"}
        [:a {:href "#"
            :on-click #(do
-                        (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
+                        (mo/open-modal [:profile :view] {:user-id (if (= owner s_id)
                                                                                               o_id
                                                                                               s_id)})
                         (.preventDefault %) )} (if (= owner s_id)
@@ -459,7 +459,3 @@
     (init-data state)
     (fn []
       (layout/default-no-sidebar site-navi [content state]))))
-
-
-
-

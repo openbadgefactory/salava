@@ -38,7 +38,7 @@
                  (do
                    (if (= "success" (:connected? data))
                      (do
-                       
+
                        (f/init-data badge_id)
                        (swap! state assoc :start-following true))
                      (swap! state assoc :start-following false))
@@ -55,7 +55,7 @@
   (ajax/POST
    (path-for (str "/obpv1/social/delete_message/" id))
    {:response-format :json
-    :keywords? true 
+    :keywords? true
     :handler (fn [data]
                (let [filtered-messages (filter #(not (= id (:id %))) (:messages @state))]
                  (swap! state assoc :messages filtered-messages)))
@@ -72,7 +72,7 @@
                  :on-click   #(do
                                 (reset! delete-clicked (if (= true @delete-clicked) nil true))
                                 (.preventDefault %))}
-        [:span {:aria-hidden "true"  
+        [:span {:aria-hidden "true"
                 :dangerouslySetInnerHTML {:__html "&times;"}}]]
        (if @delete-clicked
          [:div
@@ -110,10 +110,10 @@
     [:div {:class "media-body"}
      [:h4 {:class "media-heading"}
       [:a {:href "#"
-           :on-click #(set-new-view [:user :profile] {:user-id user_id})} (str first_name " "last_name)]
+           :on-click #(set-new-view [:profile :view] {:user-id user_id})} (str first_name " "last_name)]
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]]
      (into [:div] (for [ item (clojure.string/split-lines message)]
-                    (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item)) 
+                    (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item))
                                      (search-and-replace-www item)
                                      item))))]]
    (if (or (=  user_id (:user_id @state)) (= "admin" (:user_role @state)))
@@ -123,7 +123,7 @@
   (if (pos? (:messages_left @state))
     [:div {:class "media message-item"}
      [:div {:class "media-body"}
-      [:span [:a {:href     "#" 
+      [:span [:a {:href     "#"
                   :id    "loadmore"
                   :on-click #(do
                                (init-data state)
@@ -161,13 +161,13 @@
                 :disabled (if (blank? @message-atom) "disabled" "")
                 :on-click #(do
                              (save-message state reload-fn)
-                             (.preventDefault %))} 
+                             (.preventDefault %))}
       (t :social/Postnew)]]]))
 
 
 (defn refresh-button [state]
-  [:a {:href "#" 
-       :class "pull-right" 
+  [:a {:href "#"
+       :class "pull-right"
        :on-click #(do
                     (init-data state)
                     (.preventDefault %))} "Refresh"])
@@ -205,7 +205,7 @@
 
 
 (defn badge-message-handler [badge_id reload-fn]
-  (let [state (atom {:messages [] 
+  (let [state (atom {:messages []
                      :user_id (session/get-in [:user :id])
                      :user_role (session/get-in [:user :role])
                      :message ""
@@ -215,7 +215,7 @@
                      :messages_left 0
                      :start-following false})
         reload-fn (or reload-fn (fn []))]
-    
+
     (init-data state)
     (fn []
       (content state reload-fn))))

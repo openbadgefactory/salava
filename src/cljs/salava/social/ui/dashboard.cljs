@@ -120,7 +120,7 @@
    [:div {:style {:height "100%"}}
     [:a {:href "#"
               :on-click #(do
-                           (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
+                           (mo/open-modal [:profile :view] {:user-id (if (= owner s_id)
                                                                        o_id
                                                                        s_id)})
                            (.preventDefault %))}

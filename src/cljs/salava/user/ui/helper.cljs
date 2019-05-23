@@ -17,6 +17,6 @@
 (defn profile-link-inline-modal [id first_name last_name picture]
   [:li.user-link-inline
    [:a {:href "#"
-        :on-click #(set-new-view [:user :profile] {:user-id id})}
+        :on-click #(set-new-view [:profile :view] {:user-id id})}
     [:img {:src (profile-picture picture)}]
     first_name " " last_name]])
