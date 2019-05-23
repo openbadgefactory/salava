@@ -122,7 +122,7 @@
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issued_on expires_on
                 revoked first_name last_name user-logged-in? congratulated? congratulations
                 view_count issued_by_obf verified_by_obf obf_url
-                recipient_count assertion  qr_code owner message_count content issuer-endorsements evidences]} @state
+                recipient_count assertion  qr_code owner message_count content issuer-endorsements evidences user_endorsement_count]} @state
         expired?                                                                 (bh/badge-expired? expires_on)
         show-recipient-name-atom                                                 (cursor state [:show_recipient_name])
         revoked                                                                  (pos? revoked)
@@ -221,8 +221,8 @@
 
          [:div#info-page-block (if (session/get :user)
                                  [badge-message-link message_count badge_id])
-
-          (bm/badge-endorsement-modal-link badge_id endorsement_count)]]
+            (bm/badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)
+          #_(bm/badge-endorsement-modal-link badge_id endorsement_count)]]
 
         [:div {:class "col-md-9 badge-info"}
          [:div.row
@@ -350,4 +350,3 @@
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))
-

@@ -403,51 +403,55 @@
 (defn edit-page-buttons [id target state]
   (let [logic (button-logic id state)
         editable? (get-in logic [target :editable?])]
-    [:div {:class "row flip"
-           :id "buttons"}
-     [:div.col-xs-8.wizard.no-flip
-      [:a {:class (if (= target :content) "current")
-           :href "#"
-           :on-click #(do
-                        (.preventDefault %)
-                        (if editable?
-                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:content :url])))
-                          (as-> (get-in logic [:content :go!])  f (f))))}
-       [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
-       (t :page/Content)]
-      [:a {:class (if (= target :theme) "current")
-           :href "#"
-           :on-click #(do (.preventDefault %)
-                        (if editable?
-                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:theme :url])))
-                          (as-> (get-in logic [:theme :go!]) f (f))))}
-       [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
-       (t :page/Theme)]
-      [:a {:class (if (= target :settings) "current")
-           :href "#"
-           :on-click #(do (.preventDefault %)
-                        (if editable?
-                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:settings :url])))
-                          (as-> (get-in logic [:settings :go!]) f (f))))}
-       [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
-       (t :page/Settings)]
-      [:a {:class (if (= target :preview) "current")
-           :href "#"
-           :on-click #(do (.preventDefault %)
-                        (if editable?
-                          (as-> (get-in logic [target :save!]) f (f (get-in logic [:preview :url])))
-                          (as-> (get-in logic [:preview :go!]) f (f))))}
 
-       [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
-       (t  :page/Preview)]]
-     [:div {:class "col-xs-4"
-            :id "buttons-right"}
-      [:button.btn.btn-danger {:on-click #(do
-                                             (.preventDefault %)
-                                             (m/modal! (delete-page-modal id state)))}
-         [:i.fa.fa-trash.fa-fw.fa-lg](t :core/Delete)]]
+     [:div {:class "row flip"
+                               :id "buttons"}
+      [:div.col-md-12 {:style {:width "100%"}}
 
-     [m/modal-window]]))
+                 [:div {;:class "col-md-3 col-sm-3 col-xs-12 col-sm-push-9"
+                        :id "buttons-right"}
+                  [:button.btn.btn-danger {:on-click #(do
+                                                         (.preventDefault %)
+                                                         (m/modal! (delete-page-modal id state)))}
+                     [:i.fa.fa-trash.fa-fw.fa-lg](t :core/Delete)]]
+                 [:div.wizard ;{:style {:width "75%"}};.col-md-9.col-sm-9.col-xs-12.col-sm-pull-3.wizard
+                  [:a {:class (if (= target :content) "current")
+                       :href "#"
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (if editable?
+                                      (as-> (get-in logic [target :save!]) f (f (get-in logic [:content :url])))
+                                      (as-> (get-in logic [:content :go!])  f (f))))}
+                   [:span {:class (str "badge" (if (= target :content) " badge-inverse" ))} "1."]
+                   (t :page/Content)]
+                  [:a {:class (if (= target :theme) "current")
+                       :href "#"
+                       :on-click #(do (.preventDefault %)
+                                    (if editable?
+                                      (as-> (get-in logic [target :save!]) f (f (get-in logic [:theme :url])))
+                                      (as-> (get-in logic [:theme :go!]) f (f))))}
+                   [:span {:class (str "badge" (if (= target :theme) " badge-inverse" ))} "2."]
+                   (t :page/Theme)]
+                  [:a {:class (if (= target :settings) "current")
+                       :href "#"
+                       :on-click #(do (.preventDefault %)
+                                    (if editable?
+                                      (as-> (get-in logic [target :save!]) f (f (get-in logic [:settings :url])))
+                                      (as-> (get-in logic [:settings :go!]) f (f))))}
+                   [:span {:class (str "badge" (if (= target :settings) " badge-inverse" ))} "3."]
+                   (t :page/Settings)]
+                  [:a {:class (if (= target :preview) "current")
+                       :href "#"
+                       :on-click #(do (.preventDefault %)
+                                    (if editable?
+                                      (as-> (get-in logic [target :save!]) f (f (get-in logic [:preview :url])))
+                                      (as-> (get-in logic [:preview :go!]) f (f))))}
+
+                   [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
+                   (t  :page/Preview)]]]
+
+
+      [m/modal-window]]))
 
 (defn manage-page-buttons [current id state]
   (let [id @id
