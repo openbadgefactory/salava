@@ -15,14 +15,14 @@
     margin-bottom: 20px;
     margin-top: 0;
     line-height: 1.4;
-    height: 170px;
+    height: 180px;
     max-width: 280px;
     min-width: 250px;
   }
 
   .media-content {
     padding-right: 0;
-    height: 115px;
+    height: 120px;
 
     .media-body {
       position: relative;
@@ -151,6 +151,14 @@
     span {
       display: none;
     }
+  }
+}
+
+#user-pages #grid .grid-container {
+    margin-right: unset;
+    float:left;
+   .media-content {
+    text-align: left;
   }
 }
 /* SHARE BUTTONS*/
