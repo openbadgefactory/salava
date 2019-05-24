@@ -509,7 +509,7 @@ html[dir="rtl"] #navbar {
  }
 
  .navbar-header {
-  float: right;
+  float: right !important;
   @media (max-width: 767px) {
    float: none;
   }
