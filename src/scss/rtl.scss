@@ -669,6 +669,14 @@ html[dir="rtl"] #user-pages #grid {
  margin-right: -15px;
  margin-left: -15px;
 }
+
+html[dir="rtl"] #user-pages #grid .grid-container {
+    margin-right: unset;
+    float:right;
+   .media-content {
+    text-align: right;
+  }
+}
 /*OAUTH*/
 /* RTL */
 html[dir="rtl"] .btn-oauth {
