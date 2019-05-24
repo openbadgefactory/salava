@@ -1849,3 +1849,19 @@ html[dir="rtl"] #page-preview #buttons {
   }
  }
 }
+html[dir="rtl"] #profile .page-content .panel-right {
+@media(max-width: 768px) {
+ padding-left: 20px !important;
+ padding-right: unset !important;
+
+ }
+}
+
+html[dir="rtl"] #profile .page-content .panel-left{
+@media(max-width: 768px) {
+ padding-right: 20px !important;
+ padding-left: unset !important;
+
+}
+
+}
