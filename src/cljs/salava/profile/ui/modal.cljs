@@ -75,7 +75,7 @@
                         (for [index (range (count @blocks))]
                           [:div.row
                            [:div.col-xs-12 (ph/block (cursor blocks [index]) state index)]]))]]]]]]
-    [:div.col-xs-12 {:style {:margin-top "10px"}} [reporttool1 user-id fullname "user"]]]))
+    (when (session/get :user) [:div.col-xs-12 {:style {:margin-top "10px"}} [reporttool1 user-id fullname "user"]])]))
 
 
 
