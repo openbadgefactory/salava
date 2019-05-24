@@ -813,6 +813,20 @@ a.popup-info {
  }
 }
 
+html[dir="rtl"] .wizard {
+  a {
+   &:before {
+     border-right-color:$pink !important;
+   }
+  }
+
+   .current {
+    &:before{
+     border-right-color: $pink-hover !important;
+    }
+   }
+}
+
 #theme-0 {
  .panel-left, .panel-right{
   background-image: linear-gradient(to bottom, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
