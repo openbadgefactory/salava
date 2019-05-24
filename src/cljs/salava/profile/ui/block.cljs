@@ -108,7 +108,7 @@
                                                               [:div (str first_name " " last_name)]])
 
              (and (when-not (blank? about) (enabled-field? "about" (:fields @state)))
-                [:div {:style {:margin "15px 0"}}
+                [:div {:style {:margin "15px 0" :line-height "1.4"}}
                  [:label (t :user/Aboutme)]
                  [:div about]])
              (when-not (->> profile
