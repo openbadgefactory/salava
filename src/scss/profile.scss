@@ -166,6 +166,12 @@
     padding: 5px;
     top: 0;
 
+      @media (max-width: 425px) {
+       .btn {
+       padding: 6px 8px;
+      }
+     }
+
   }
     .table {
       .field-value {

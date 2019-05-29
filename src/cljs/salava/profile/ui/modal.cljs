@@ -30,9 +30,9 @@
                                  :alt fullname}]]]
         [:div {:class "col-md-9 col-sm-9 col-xs-12"}
          (if (not-empty about)
-           [:div {:class "row about"}
+           [:div {:class "row about" :style {:line-height "1.6"}}
             [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
-            [:div.col-xs-12 about]])
+            [:div.col-xs-12 {:style {:padding "8px 15px"}} about]])
          (if (not-empty profile)
            [:div.row
             [:div.col-xs-12 [:b (t :profile/Additionalinformation) ":"]]
@@ -75,7 +75,7 @@
                         (for [index (range (count @blocks))]
                           [:div.row
                            [:div.col-xs-12 (ph/block (cursor blocks [index]) state index)]]))]]]]]]
-    [:div.col-xs-12 {:style {:margin-top "10px"}} [reporttool1 user-id fullname "user"]]]))
+    (when (session/get :user) [:div.col-xs-12 {:style {:margin-top "10px"}} [reporttool1 user-id fullname "user"]])]))
 
 
 

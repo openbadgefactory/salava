@@ -98,21 +98,21 @@
                                                                                 (as-> (get-in logic [@current :save-and-previous!]) f (f)))}
                                                              [:div {:id "step-button-previous"}
                                                                    (t :core/Previous)]])
-                                         [:button {:class    "btn btn-primary"
-                                                   :on-click #(do
-                                                                (.preventDefault %)
-                                                                (swap! state assoc :spinner true :active-button "btn-1")
-                                                                (js/setTimeout (fn [] (save-profile state (fn [] (swap! state assoc :spinner false)) true)) 2000))}
-                                          (when (and (:spinner @state) (= "btn-1" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}])(t :page/Save)]
-                                         [:button.btn.btn-warning {:href "#"
-                                                                   :on-click #(do
-                                                                                (.preventDefault %)
-                                                                                (swap! state assoc :spinner true :active-button "btn-2")
-                                                                                (save-profile state (fn [] (do
-                                                                                                            (swap! state assoc :spinner false)
-                                                                                                            (js-navigate-to (str "/profile/"(:user-id @state))))) true))}
+                                         [:div {:style {:display "inline-flex"}} [:button {:class    "btn btn-primary"
+                                                                                           :on-click #(do
+                                                                                                        (.preventDefault %)
+                                                                                                        (swap! state assoc :spinner true :active-button "btn-1")
+                                                                                                        (js/setTimeout (fn [] (save-profile state (fn [] (swap! state assoc :spinner false)) true)) 2000))}
+                                                                                  (when (and (:spinner @state) (= "btn-1" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}])(t :page/Save)]
+                                          [:button.btn.btn-warning {:href "#"
+                                                                    :on-click #(do
+                                                                                 (.preventDefault %)
+                                                                                 (swap! state assoc :spinner true :active-button "btn-2")
+                                                                                 (save-profile state (fn [] (do
+                                                                                                             (swap! state assoc :spinner false)
+                                                                                                             (js-navigate-to (str "/profile/"(:user-id @state))))) true))}
 
-                                          (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :profile/Saveandclose) #_(t :page/View)]
+                                           (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :profile/Saveandclose) #_(t :page/View)]]
                                          (when next?  [:a {:href "#"
                                                            :on-click #(do
                                                                        (.preventDefault %)

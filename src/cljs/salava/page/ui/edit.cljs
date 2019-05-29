@@ -241,14 +241,14 @@
       [:option {:value "file"} (t :page/Files)]]]))
 
 (def block-type-map
-  [{:icon "fa-header" :text (t :page/Heading) :value "heading"}
-   {:icon "fa-header" :text (t :page/Subheading) :value "sub-heading"}
-   {:icon "fa-file-code-o" :text (t :page/Texteditor) :value "html"}
-   {:icon "fa-file" :text (t :page/Files) :value "file"}
-   {:icon "fa-certificate" :text (t :page/Badge) :value "badge"}
-   {:icon "fa-tags" :text (t :page/Badgegroup) :value "tag"}
-   {:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}
-   {:icon "fa-user" :text "Profile information" :value "profile"}])
+  [{:icon "fa-header" :text :page/Heading :value "heading"}
+   {:icon "fa-header" :text :page/Subheading :value "sub-heading"}
+   {:icon "fa-file-code-o" :text :page/Texteditor :value "html"}
+   {:icon "fa-file" :text :page/Files :value "file"}
+   {:icon "fa-certificate" :text :page/Badge :value "badge"}
+   {:icon "fa-tags" :text :page/Badgegroup :value "tag"}
+   {:icon "fa-certificate" :icon-2 "fa-th-large" :text :page/Badgeshowcase :value "showcase"}
+   {:icon "fa-user" :text :user/Profile :value "profile"}])
 
 (defn badge-showcase [state block-atom]
   (let [badges (if (seq (:badges @block-atom)) (:badges @block-atom) [])
@@ -256,9 +256,9 @@
         title (:title @block-atom)
         format (:format @block-atom)]
     [:div#badge-showcase
-     [:div#grid {:class "row"}
-      [:div.form-group
-       [:div.col-md-12
+     [:div
+      [:div;.form-group
+       [:div;.col-md-12
         [:label (t :page/Title)]
 
         [:input {:class     "form-control"
@@ -267,7 +267,7 @@
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
                  :placeholder (t :page/Untitled)}]]
-       [:div.col-md-12
+       [:div;.col-md-12
         [:label (t :page/Displayinpageas)]
         [:div.badge-select
          [:select {:class "form-control"
@@ -276,18 +276,20 @@
                    :on-change #(update-block-value block-atom :format (.-target.value %))}
           [:option {:value "short"} (t :page/ImageandName)]
           [:option {:value "long"} (t :page/Content)]]]]]
-      (reduce (fn [r b]
-                (conj r
-                      (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
-                                                                   :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
-              [:div]
-              badges)
-      [:div.addbadge
+      [:div#grid {:class "row wrap-grid"}
+       (reduce (fn [r b]
+                 (conj r
+                       (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
+                                                                    :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
+               [:div]
+               badges)
        [:a {:href "#" :on-click #(do
                                    (.preventDefault %)
                                    (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
                                                              :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
-        [:i.fa.fa-plus.fa-5x.add-icon]]]]]))
+        [:div.addbadge
+
+          [:i.fa.fa-plus.fa-5x.add-icon]]]]]]))
 
 (defn profile-block [block-atom]
   (let [block (first (plugin-fun (session/get :plugins) "block" "editprofileinfo"))]
@@ -324,7 +326,7 @@
                                                                                [:i.fa.fa-fw {:class (:icon v)}]
                                                                                (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
 
-                                                                               [:span (:text v)]]]]
+                                                                               [:span (t (:text v))]]]]
                        [:span {:style {:display "inline"}}
                         [info {:placement "right" :content (case (:value v)
                                                              "badge" (t :page/Badgeinfo)
@@ -378,7 +380,7 @@
       [:div.field-content
        [:div.form-group
         [:div.col-xs-8
-         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text capitalize)]
+         [:span.block-title (some-> (filter #(= type (:value %)) block-type-map) first :text t capitalize)]
 
          (when (= type "badge")
           [:div.row.form-group {:style {:padding-top "10px"}}
@@ -426,8 +428,8 @@
 
 
 (defn page-description [description]
-  [:div.col-md-12
-   [:div.form-group
+  [:div;.col-md-12
+   [:div;.form-group
     [:label {;:class "col-md-2"
               :for "page-description"}
      (t :page/Description)]
@@ -438,8 +440,8 @@
                  :on-change #(reset! description (.-target.value %))}]]]])
 
 (defn page-title [name]
-  [:div.col-md-12
-   [:div.form-group
+  [:div;.col-md-12
+   [:div;.form-group
     [:label {;:class "col-md-2"
               :for "page-name"}
      (t :page/Title)]
@@ -453,9 +455,9 @@
 (defn page-form [state]
   [:div
    [:div.panel.thumbnail
-    [:div.panel-heading [:p.block-title "Page Information"]]
+    ;[:div.panel-heading [:p.block-title "Page Information"]]
     [:div.panel-body
-     [:form.form-horizontal
+     [:div.form-horizontal
       [:div {:id "title-and-description"}
 
        [page-title (cursor state [:page :name])]

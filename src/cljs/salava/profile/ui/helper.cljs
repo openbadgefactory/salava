@@ -39,7 +39,7 @@
      [:label (t :user/Profilevisibility) ": " @visibility-atom]]))
 
 (def block-type-map
- [{:icon "fa-certificate" :icon-2 "fa-th-large" :text (t :page/Badgeshowcase) :value "showcase"}])
+ [{:icon "fa-certificate" :icon-2 "fa-th-large" :text :page/Badgeshowcase :value "showcase"}])
 
 
 (defn contenttype [{:keys [block-atom index]}]
@@ -68,7 +68,7 @@
                                    [:div
                                     [:i {:class (str "fa fa-fw " (:icon v))}]
                                     (when (:icon-2 v) [:i.fa.fa-fw {:class (:icon-2 v)}])
-                                    [:span (:text v)]]]]
+                                    [:span (t (:text v))]]]]
                          [:span {:style {:display "inline"}}
                           [info {:placement "right" :content (case (:value v)
                                                                "showcase" (t :page/Badgeshowcaseinfo)
@@ -118,7 +118,7 @@
 (defn showcase-grid [state block-atom]
  [:div#user-badges
   [:h3 (or (:title @block-atom) (t :page/Untitled))]
-  [:div#grid {:class "row"}
+  [:div#grid {:class "row wrap-grid"}
    (reduce (fn [r b]
             (conj r (badge-grid-element b state "profile" nil))) [:div] (:badges @block-atom))]])
 
@@ -128,9 +128,9 @@
         title (:title @block-atom)
         format (:format @block-atom)]
     [:div#badge-showcase
-     [:div#grid {:class "row"}
+     [:div
       [:h3 {:style {:padding-bottom "10px"}} (t :page/Badgeshowcase)]
-      [:div.form-group
+      [:div
        [:div
         [:label (t :page/Title)]
 
@@ -140,27 +140,28 @@
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
                  :placeholder (t :page/Untitled)}]]
-       [:div
-        [:label (t :page/Displayinpageas)]
-        [:div.badge-select
-         [:select {:class "form-control"
-                   :aria-label "select badge format"
-                   :value (or format "short")
-                   :on-change #(update-block-value block-atom :format (.-target.value %))}
-          [:option {:value "short"} (t :core/Imageonly)]
-          [:option {:value "long"} (t :page/Content)]]]]]
-      (reduce (fn [r b]
-                (conj r
-                      (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
-                                                                   :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
-              [:div]
-              badges)
-      [:div.addbadge
+       #_[:div
+          [:label (t :page/Displayinpageas)]
+          [:div.badge-select
+           [:select {:class "form-control"
+                     :aria-label "select badge format"
+                     :value (or format "short")
+                     :on-change #(update-block-value block-atom :format (.-target.value %))}
+            [:option {:value "short"} (t :core/Imageonly)]
+            [:option {:value "long"} (t :page/Content)]]]]]
+      [:div#grid {:class "row wrap-grid"}
+       (reduce (fn [r b]
+                 (conj r
+                       (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
+                                                                    :swap! (fn [index data badges] (update-block-value block-atom :badges (into [] (assoc badges index data))))})))
+               [:div]
+               badges)
        [:a {:href "#" :on-click #(do
                                    (.preventDefault %)
                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
-        [:i.fa.fa-plus.add-icon.fa-5x]]]]]))
+        [:div.addbadge
+          [:i.fa.fa-plus.add-icon.fa-5x]]]]]]))
 
 (defn block-for-edit [block-atom state index]
   (let [block-toggled? (and (:toggle-move-mode @state) (= (:toggled @state) index))

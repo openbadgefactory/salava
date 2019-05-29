@@ -15,7 +15,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :as pb]
             [clojure.string :refer [blank?]]
-            [dommy.core :as dommy :refer [has-class?] :refer-macros [sel sel1]]))
+            [dommy.core :as dommy :refer [has-class?] :refer-macros [sel sel1]]
+            [salava.admin.ui.helper :refer [admin?]]))
 
 (defn toggle-visibility [visibility-atom]
  (ajax/POST
@@ -119,7 +120,7 @@
    [:div {:style {:height "100%"}}
     [:a {:href "#"
               :on-click #(do
-                           (mo/open-modal [:user :profile] {:user-id (if (= owner s_id)
+                           (mo/open-modal [:profile :view] {:user-id (if (= owner s_id)
                                                                        o_id
                                                                        s_id)})
                            (.preventDefault %))}
@@ -187,6 +188,7 @@
 
 (defn notifications-block [state]
   (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
+        admin-events (->> (:events @state) (filter #(= (:verb %) "ticket")))
         tips (:tips @state)]
     [:div {:class "box col-md-4"}
      [:div#box_1
@@ -194,8 +196,8 @@
        [:div.notifications-block.row_1.notifications;.block-content
         [:div.heading_1 [:i.fa.fa-rss.icon]
          [:a {:href "social/stream"} [:span.title (t :social/Stream)]] [:span.badge (count (:events @state))]
-         [:span.icon.small]
-         #_[:i.fa.fa-angle-right.icon.small]]
+         [:span.icon.small]]
+
         (if (not-activated?)
           [:div.content
            [:div {:style {:font-size "initial"}}
@@ -206,18 +208,30 @@
              [:li (t :social/Notactivatedbody4)]
              [:li (t :social/Notactivatedbody5)]
              [:li (t :social/Notactivatedbody6)]]]]
-          (reduce (fn [r event]
-                    (conj r [:div.notification-div.ax_default
-                             (cond
-                               (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
-                               (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
-                               (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
-                               (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
-                               (= "advert" (:type event)) (badge-advert-event event state)
-                               (= "message" (:verb event)) [message-event event state]
-                               :else "")]))
+          [:div.content
+           (when (and (admin?) (seq admin-events)) [:div.notification-div.ax_default {:style {:text-align "left" :margin-bottom "20px" :height "35px"}}
+                                                    [:a {:href (path-for "/admin/tickets") :style {:color "unset"}}
+                                                     [:div {:class "media"}
+                                                           [:div.media-left
+                                                            [:i.fa.fa-fw.fa-lightbulb-o]]
+                                                           [:div.media-body
+                                                            [:div.content-text
+                                                             [:p.content-heading (str (count admin-events) " " (t :social/Emailadmintickets))]]]]]])
 
-                  [:div.content] events))]]]]))
+           (if (seq (:events @state))(reduce (fn [r event]
+                                              (conj r [:div.notification-div.ax_default
+                                                       (cond
+                                                         (and (= "badge" (:type event)) (= "follow" (:verb event))) (follow-event-badge event state)
+                                                         (and (= "user" (:type event)) (= "follow" (:verb event))) (follow-event-user event state)
+                                                         (and (= "badge" (:type event)) (= "publish" (:verb event))) (publish-event-badge event state)
+                                                         (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
+                                                         (= "advert" (:type event)) (badge-advert-event event state)
+                                                         (= "message" (:verb event)) [message-event event state]
+                                                         :else "")]))
+
+                                      [:div] events)
+            [:div.col-md-12 (t :social/Emptystreamheader)])])]]]]))
+
 
 (defn latest-earnable-badges []
   (let [block (first (plugin-fun (session/get :plugins)  "application" "latestearnablebadges"))]
@@ -246,7 +260,7 @@
           (when-not (not-activated?)  [application-button "button"])
           [:div.content
            [:div.connections-block {:style {:padding-bottom "20px"}}
-            [:div.row {:style {:margin-left "-17px"}}
+            [:div.row.flip {:style {:margin-left "-17px"}}
              [:div.total-badges.info-block
               [:div.info
                [:div.text
@@ -300,49 +314,50 @@
        [:span.icon.small]]
 
       [:div.content
-       [:div
-        [:div.col-sm-4.button-block
-         [:div.info-block.badge-connection
-          [:a {:href (path-for "/gallery/badges")}
-           [:div.info
-            [:i.fa.fa-certificate.icon]
-            [:div.text
-             (when-not hidden? [:p.num (get-in @state [:gallery :badges :all] 0)])
-             [:p.desc (t :gallery/Sharedbadges)]]]]]
-         (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
-        [:div.col-sm-4.button-block
-         [:div.info-block.page
-          [:a {:href (path-for "/gallery/pages")}
-           [:div
+       [:div.col-md-12
+        [:div.row
+         [:div.col-sm-4.button-block
+          [:div.info-block.badge-connection
+           [:a {:href (path-for "/gallery/badges")}
             [:div.info
-             [:i.fa.fa-file.icon]
+             [:i.fa.fa-certificate.icon]
              [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :pages :all] 0)])
-              [:p.desc (t :gallery/Sharedpages)]]]]]]
-         (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
-        [:div.col-sm-4.button-block
-         [:div.info-block
-          [:a {:href (path-for "/gallery/profiles")}
-           [:div
-            [:div.info
-             [:i.fa.fa-user.icon]
-             [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
-              [:p.desc (t :gallery/Sharedprofiles)]]]]]]
-         (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
-           [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
-        [:div.col-sm-4.button-block
-         [:div.info-block.map
-          [:a {:href (path-for "/gallery/map")}
-           [:div
-            [:div.info
-             [:i.fa.fa-map-marker.icon]
-             [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
-              [:p.desc (t :location/Map)]]]]]]
-         [:div.since-last-login]]]]]]]]))
+              (when-not hidden? [:p.num (get-in @state [:gallery :badges :all] 0)])
+              [:p.desc (t :gallery/Sharedbadges)]]]]]
+          (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
+            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
+         [:div.col-sm-4.button-block
+          [:div.info-block.page
+           [:a {:href (path-for "/gallery/pages")}
+            [:div
+             [:div.info
+              [:i.fa.fa-file.icon]
+              [:div.text
+               (when-not hidden? [:p.num (get-in @state [:gallery :pages :all] 0)])
+               [:p.desc (t :gallery/Sharedpages)]]]]]]
+          (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
+            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
+         [:div.col-sm-4.button-block
+          [:div.info-block
+           [:a {:href (path-for "/gallery/profiles")}
+            [:div
+             [:div.info
+              [:i.fa.fa-user.icon]
+              [:div.text
+               (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
+               [:p.desc (t :gallery/Sharedprofiles)]]]]]]
+          (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
+            [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
+         [:div.col-sm-4.button-block
+          [:div.info-block.map
+           [:a {:href (path-for "/gallery/map")}
+            [:div
+             [:div.info
+              [:i.fa.fa-map-marker.icon]
+              [:div.text
+               (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
+               [:p.desc (t :location/Map)]]]]]]
+          [:div.since-last-login]]]]]]]]]))
 
 
 

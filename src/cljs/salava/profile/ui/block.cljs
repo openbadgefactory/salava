@@ -38,7 +38,7 @@
     [:div {:id "profile" :style {:margin "10px auto"}}
      [:div.row {:style {:padding "15px 0"}}
       [:div.col-xs-12 [:b (t :profile/Profileblockfieldsinstruction)]]]
-     [:div.row
+     [:div.row.flip
       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
        [:div.profile-picture-wrapper
         [:img.profile-picture {:src (profile-picture profile_picture)}]]]
@@ -95,7 +95,7 @@
       (let [{:keys [user profile fields]} @state
             {:keys [role first_name last_name about profile_picture]} user]
         [:div {:id "profile" :style {:margin "10px auto"}}
-         [:div.row
+         [:div.row.flip
           [:div {:class "col-md-3 col-sm-3 col-xs-12"}
            [:div.profile-picture-wrapper
             [:img.profile-picture {:src (profile-picture profile_picture)}]]]
@@ -108,7 +108,7 @@
                                                               [:div (str first_name " " last_name)]])
 
              (and (when-not (blank? about) (enabled-field? "about" (:fields @state)))
-                [:div {:style {:margin "15px 0"}}
+                [:div {:style {:margin "15px 0" :line-height "1.4"}}
                  [:label (t :user/Aboutme)]
                  [:div about]])
              (when-not (->> profile
@@ -159,7 +159,7 @@
         :style {:width (str completion_percentage "%")}
         :aria-valuemin "0"
         :aria-valuemax "100"}
-       (str completion_percentage "% complete")]]
+       (str completion_percentage "% " (t :profile/Complete))]]
      (when (some #(true? %) (vals tips)) [:div.col-xs-12 {:style {:margin "5px 2px" :font-size "14px" :font-weight "bold"}} (t :profile/Tipstoimproveprofile)])
      (reduce-kv (fn [r k v]
                  (conj r (when (true? v)

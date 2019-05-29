@@ -312,7 +312,7 @@
                   :return schemas/UserEndorsement
                   :path-params [user-badge-id :- Long]
                   :summary "Get user badge endorsements"
-                  :auth-rules access/authenticated
+                 ; :auth-rules access/authenticated
                   :current-user current-user
                   (ok (e/user-badge-endorsements ctx user-badge-id true)))
 

@@ -12,9 +12,9 @@
                  [:tr
                   [:td {:width 50} [:img {:src user_image :width 40 :height 40}]]
                   [:td  [:p {:style {:padding-top "10px"}}
-                         [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})} first_name " " last_name]]]]))
-          (into [:tbody]))
-      ]))
+                         [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id id})} first_name " " last_name]]]]))
+          (into [:tbody]))]))
+
 
 (defn badge-handler [params]
   (fn []

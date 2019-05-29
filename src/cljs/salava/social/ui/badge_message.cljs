@@ -17,50 +17,50 @@
 
 (defn init-data [state]
   (ajax/GET
-    (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
-    {:handler (fn [data]
-                (swap! state assoc
-                       :messages (into (:messages @state) (:messages data))
-                       :message ""
-                       :page_count (inc (:page_count @state))
-                       :messages_left (:messages_left data)))}))
+   (path-for (str "/obpv1/social/messages/" (:badge_id @state) "/" (:page_count @state)))
+   {:handler (fn [data]
+               (swap! state assoc
+                      :messages (into (:messages @state) (:messages data))
+                      :message ""
+                      :page_count (inc (:page_count @state))
+                      :messages_left (:messages_left data)))}))
 
 
 (defn save-message [state reload-fn]
   (let [{:keys [message user_id badge_id]} @state]
     (ajax/POST
-      (path-for (str "/obpv1/social/messages/" badge_id))
-      {:response-format :json
-       :keywords? true
-       :params {:message message
-                :user_id user_id}
-       :handler (fn [data]
-                  (do
-                    (if (= "success" (:connected? data))
-                      (do
+     (path-for (str "/obpv1/social/messages/" badge_id))
+     {:response-format :json
+      :keywords? true
+      :params {:message message
+               :user_id user_id}
+      :handler (fn [data]
+                 (do
+                   (if (= "success" (:connected? data))
+                     (do
 
-                        (f/init-data badge_id)
-                        (swap! state assoc :start-following true))
-                      (swap! state assoc :start-following false))
-                    (swap! state assoc
-                           :messages []
-                           :page_count 0)
-                    (init-data state)
-                    (reload-fn)
-                    ))
-       :error-handler (fn [{:keys [status status-text]}]
-                        (dump (str status " " status-text)))})))
+                       (f/init-data badge_id)
+                       (swap! state assoc :start-following true))
+                     (swap! state assoc :start-following false))
+                   (swap! state assoc
+                          :messages []
+                          :page_count 0)
+                   (init-data state)
+                   (reload-fn)
+                   ))
+      :error-handler (fn [{:keys [status status-text]}]
+                       (dump (str status " " status-text)))})))
 
 (defn delete-message [id state]
   (ajax/POST
-    (path-for (str "/obpv1/social/delete_message/" id))
-    {:response-format :json
-     :keywords? true
-     :handler (fn [data]
-                (let [filtered-messages (filter #(not (= id (:id %))) (:messages @state))]
-                  (swap! state assoc :messages filtered-messages)))
-     :error-handler (fn [{:keys [status status-text]}]
-                      (dump (str status " " status-text)))}))
+   (path-for (str "/obpv1/social/delete_message/" id))
+   {:response-format :json
+    :keywords? true
+    :handler (fn [data]
+               (let [filtered-messages (filter #(not (= id (:id %))) (:messages @state))]
+                 (swap! state assoc :messages filtered-messages)))
+    :error-handler (fn [{:keys [status status-text]}]
+                    (dump (str status " " status-text)))}))
 
 (defn delete-message-button [id state]
   (let [delete-clicked (atom nil)]
@@ -110,7 +110,7 @@
     [:div {:class "media-body"}
      [:h4 {:class "media-heading"}
       [:a {:href "#"
-           :on-click #(set-new-view [:user :profile] {:user-id user_id})} (str first_name " "last_name)]
+           :on-click #(set-new-view [:profile :view] {:user-id user_id})} (str first_name " "last_name)]
       [:span.date (date-from-unix-time (* 1000 ctime) "minutes")]]
      (into [:div] (for [ item (clojure.string/split-lines message)]
                     (into [:p.msg] (if (or (re-find #"www." item) (re-find #"https?://" item) (re-find #"http?://" item))
@@ -140,8 +140,8 @@
   (create-class {:reagent-render (fn [messages]
                                    [:div {:id ""}
                                     (doall
-                                      (for [item messages]
-                                        (message-list-item item state)))
+                                     (for [item messages]
+                                       (message-list-item item state)))
                                     (message-list-load-more state)])
                  ;:component-did-mount #(scroll-bottom)
                  ;:component-did-update #(scroll-bottom)
@@ -162,7 +162,7 @@
                 :on-click #(do
                              (save-message state reload-fn)
                              (.preventDefault %))}
-       (t :social/Postnew)]]]))
+      (t :social/Postnew)]]]))
 
 
 (defn refresh-button [state]

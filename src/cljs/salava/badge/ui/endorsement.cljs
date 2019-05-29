@@ -52,9 +52,7 @@
       (let [endorsements (filter #(= (:status %) "accepted") (:user-badge-endorsements @state))
             badge-endorsements? (pos? (count @badge-endorsements))]
         (when (seq endorsements)
-          [:div;.row {:id "badge-contents"}
-           ;[:div.col-xs-12
-           ;[:h4 {:style {:margin-bottom "20px"}} (t :badge/BadgeEndorsedBy)]
+          [:div
            (if badge-endorsements? [:hr.line])
            [:h4 {:style {:margin-bottom "20px"}} (t :badge/BadgeEndorsedByIndividuals)]
            (reduce (fn [r endorsement]
@@ -64,7 +62,7 @@
                                 [:h5
                                  [:img {:src (profile-picture profile_picture) :style {:width "55px" :height "auto" :padding "7px"}}]
                                  (if issuer_id [:a {:href "#"
-                                                    :on-click #(do (.preventDefault %) (mo/set-new-view [:user :profile] {:user-id issuer_id}))
+                                                    :on-click #(do (.preventDefault %) (mo/set-new-view [:profile :view] {:user-id issuer_id}))
                                                     } issuer_name] issuer_name)
                                  " "
                                  [:small (date-from-unix-time (* 1000 mtime))]]
@@ -271,7 +269,7 @@
 
 (defn profile-link-inline [id issuer_name picture]
   [:div [:a {:href "#"
-             :on-click #(mo/open-modal [:user :profile] {:user-id id})}
+             :on-click #(mo/open-modal [:profile :view] {:user-id id})}
          [:img {:src (profile-picture picture)}]
          (str issuer_name " ")]  (t :badge/Hasendorsedyou)])
 
@@ -354,7 +352,7 @@
                                   [:div.col-md-9
                                    (if issuer_id
                                      [:a {:href "#"
-                                        :on-click #(mo/open-modal [:user :profile] {:user-id issuer_id})}
+                                        :on-click #(mo/open-modal [:profile :view] {:user-id issuer_id})}
                                     [:img.small-image {:src (profile-picture profile_picture)}]
                                     issuer_name] [:div [:img.small-image {:src (profile-picture profile_picture)}] issuer_name])]]]
 
@@ -399,7 +397,7 @@
         current-user (session/get-in [:user :id])]
     [:div.endorsement-profile.panel-default
      (if id
-       [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id id})}
+       [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id id})}
         [:div.panel-body.flip
          [:div.col-md-4
           [:div.profile-image
@@ -634,4 +632,3 @@
         (= "error" (:permission @state)) (layout/landing-page site-navi (err/error-content))
         :else (layout/default site-navi (user-endorsements-content state)))
       )))
-
