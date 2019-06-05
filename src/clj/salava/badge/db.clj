@@ -28,14 +28,16 @@
   "returns newest message and count new messages"
   [messages]
   (let [message-helper (fn [current item]
-                         (let [key  (:badge_id item)
+                         (let [key  (:gallery_id item)
                                new-messages-count (get-in current [key :new_messages] 0)]
                            (-> current
                                (assoc key item)
                                (assoc-in [key :new_messages] (if (> (:ctime item) (:last_viewed item))
-                                                              (inc new-messages-count)
-                                                              new-messages-count)))))]
-    (reduce message-helper {} (reverse messages))))
+                                                               (inc new-messages-count)
+                                                               new-messages-count)))))]
+    (->> (reverse messages)
+         (reduce message-helper {})
+         )))
 
 
 (defn filter-badge-message-events [events]
@@ -51,8 +53,13 @@
         reduced-events (badge-events-reduce events) ;bundle events together with object and verb
         badge-ids (map #(:object %) reduced-events)
         messages (if (not (empty? badge-ids)) (select-messages-with-badge-id {:badge_ids badge-ids :user_id user_id} (u/get-db ctx)) ())
+        badge-gallery-ids (reduce (fn [coll v] (assoc coll (:badge_id v) (:gallery_id v))) {} messages)
         messages-map (badge-message-map messages)
-        message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
+        message-events (->> (filter-badge-message-events reduced-events)
+                            (map (fn [event] (assoc event :message (get messages-map (get badge-gallery-ids (:object event)))
+                                                          :gallery_id (get badge-gallery-ids (:object event)))) ) ;add messages for nessage event
+                            (reduce (fn [coll v] (assoc coll (:gallery_id v) v)) {})
+                            vals)
         follow-events (filter-own-events reduced-events user_id)
         badge-events (into follow-events message-events)]
     badge-events))

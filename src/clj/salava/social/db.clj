@@ -54,7 +54,8 @@
   "Save information about viewing messages."
   [ctx badge_id user_id]
   (try+
-    (replace-badge-message-view! {:badge_id badge_id :user_id user_id} (get-db ctx))
+    (let [gallery_id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
+      (replace-badge-message-view! {:badge_id badge_id :user_id user_id :gallery_id gallery_id} (get-db ctx)))
     (catch Object _
       "error")))
 

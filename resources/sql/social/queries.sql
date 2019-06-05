@@ -32,8 +32,7 @@ UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :messa
 SELECT user_id FROM badge_message where id = :message_id
 
 --name: replace-badge-message-view!
-REPLACE INTO badge_message_view (user_id, badge_id, mtime)
-       VALUES (:user_id, :badge_id, UNIX_TIMESTAMP())
+REPLACE INTO badge_message_view (user_id, badge_id, gallery_id, mtime) VALUES (:user_id, :badge_id, :gallery_id, UNIX_TIMESTAMP());
 
 --name: select-badge-message-last-view
 SELECT mtime FROM badge_message_view where badge_id = :badge_id AND user_id = :user_id
