@@ -75,7 +75,7 @@
                              (doseq [b (:badges data)]
                                (-> (js/L.latLng. (:lat b) (:lng b))
                                    (js/L.marker. (clj->js {:icon lu/user-icon}))
-                                   (.on "click" #(mo/open-modal [:user :profile] {:user-id (:user_id b)}))
+                                   (.on "click" #(mo/open-modal [:profile :view] {:user-id (:user_id b)}))
                                    (.addTo my-map))))
                            (reset! visible false)))}))
          300))}))
