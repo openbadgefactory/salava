@@ -69,8 +69,8 @@
       (markdown->clj-pdf {:image {:x 10 :y 10} ;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
 
                           :wrap {:global-wrapper :paragraph}} markdown)
-      ""
-      )))
+      "")))
+
 
 
 (defn generatePDF [ctx user-id input lang]
@@ -96,8 +96,8 @@
         pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers true :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right} :register-system-fonts? true})
         badge-template (pdf/template
                          (let [template #(cons [:paragraph]  [ (if (and (not (= "-" (:image_file %)))(ends-with? (:image_file %) "png"))
-                                                                 [:image {:width 100 :height 100 :align :center} (str data-dir "/" (:image_file %))]
-                                                                 [:image {:width 100 :height 100 :align :center :base64 true} $qr_code ])
+                                                                 [:image {:width 85 :height 85 :align :center} (str data-dir "/" (:image_file %))]
+                                                                 [:image {:width 85 :height 85 :align :center :base64 true} $qr_code])
 
                                                                [:heading.heading-name (:name %)]
                                                                [:paragraph {:indent 20 :align :center} [:spacer]]
@@ -129,10 +129,9 @@
                                                                                             [:paragraph
                                                                                              (:name a)"\n"
                                                                                              [:chunk {:style :italic} (:description a)] "\n"
-                                                                                             [:chunk.link (:url a)] [:spacer 0]]) )]))]
+                                                                                             [:chunk.link (:url a)] [:spacer 0]]))]))]
                                                                 [:paragraph
                                                                  [:chunk.chunk (str (t :badge/Criteria ul)": ")] [:anchor {:target (:criteria_url %)} [:chunk.link (t :badge/Opencriteriapage ul)]]"\n"
-                                                                 #_[:paragraph {:style :italic} (:criteria_url %)]
 
                                                                  [:spacer 0]
                                                                  (process-markdown (:criteria_content %) $id "Criteria")]]
@@ -148,13 +147,13 @@
                                                                                      (when (and (not (blank? (:narrative evidence))) (not= "-" (:narrative evidence)))  [:phrase [:chunk (:narrative evidence)] "\n"])
                                                                                      (when (and (not (blank? (:description evidence))) (not= "-" (:description evidence))) [:phrase [:chunk (:description evidence)]"\n"])
                                                                                      [:anchor {:target (:url evidence)} [:chunk.link (str (t :badge/Openevidencepage ul) "...")]]
-                                                                                     [:spacer 2]])
-                                                                            ) [:list {:numbered true :indent 0}] $evidences)])
+                                                                                     [:spacer 2]]))
+                                                                          [:list {:numbered true :indent 0}] $evidences)])
 
                                                                (when (seq $endorsements)
                                                                  [:paragraph.generic
-                                                                  [:spacer 0]
-                                                                  [:phrase {:size 12 :style :bold} (t :badge/BadgeEndorsedBy ul)]
+                                                                  ;[:spacer 0]
+                                                                  [:phrase {:size 12 :style :bold} (t :badge/BadgeEndorsedBy ul)] "\n"
                                                                   [:spacer 0]
                                                                   (into [:paragraph {:indent 0} ] (for [e $endorsements]
                                                                                                     [:paragraph
@@ -168,15 +167,15 @@
                                                                [:heading.heading-name (t :badge/IssuerInfo ul)]
                                                                [:spacer 0]
                                                                [:paragraph.generic
-                                                                [:chunk.chunk (str (t :badge/IssuerDescription ul)": ")] (:issuer_description %) ]
-                                                               [:spacer 1]
+                                                                [:chunk.chunk (str (t :badge/IssuerDescription ul)": ")] (:issuer_description %)]
+                                                               [:spacer 0]
                                                                [:paragraph.generic
                                                                 [:chunk.chunk (str (t :badge/IssuerWebsite ul)": ")]
-                                                                [:anchor {:target (:issuer_content_url %) :style{:family :times-roman :color [66 100 162]}}  (:issuer_content_url %)]]
+                                                                [:anchor {:target (:issuer_content_url %) :style {:family :times-roman :color [66 100 162]}}  (:issuer_content_url %)]]
                                                                [:paragraph.generic
                                                                 [:chunk.chunk (str (t :badge/IssuerContact ul)": ")] (:issuer_contact %)]
 
-                                                               (when-not (= "-" (and (:creator_description %) (:creator_url %) (:creator_email %) ))
+                                                               (when-not (= "-" (and (:creator_description %) (:creator_url %) (:creator_email %)))
                                                                  [:paragraph.generic
                                                                   [:spacer 0]
                                                                   [:paragraph
@@ -191,7 +190,7 @@
                                                                     [:spacer]
                                                                     [:phrase {:size 12 :style :bold} (t :badge/IssuerEndorsedBy ul)]
                                                                     [:spacer 0]
-                                                                    (into [:paragraph {:indent 0} ]
+                                                                    (into [:paragraph {:indent 0}]
                                                                           (for [e issuer-endorsement]
                                                                             [:paragraph {:indent 0}
                                                                              (:issuer_name e) "\n"
@@ -201,31 +200,17 @@
 
                                                                [:pdf-table {:align :right :width-percent 100 :cell-border false}
                                                                 nil
-                                                                [[:pdf-cell [:paragraph {:align :right} [:chunk [:image  {:width 85 :height 85 :base64 true} $qr_code]]"\n"
+                                                                [[:pdf-cell [:paragraph {:align :right} [:chunk [:image  {:width 60 :height 60 :base64 true} $qr_code]]"\n"
                                                                              [:phrase [:chunk.link {:style :italic} (str site-url "/app/badge/info/" $id)]]]]]]
                                                                [:pagebreak]])
 
                                content (if (= lang "all") (map template $content) (map template (filter #(= (:default_language_code %) (:language_code %)) $content)))]
 
-                           (reduce into [] content)))
-        ;files (into [] (for [b badges] (process-pdf-page pdf-settings badge-template (list b) ul)))
-        ]
+                           (reduce into [] content)))]
     (fn [out]
       (try
         (pdf/pdf (into [pdf-settings] (badge-template badges)) out)
         (catch Exception e
           (log/error "PDF not generated")
           (log/error (.getMessage e))
-          (pdf/pdf [{} [:paragraph (t :core/Errorpage ul)]] out)
-          )
-        )
-      )
-    #_(fn [output-stream]
-        (try
-          (apply pdf/collate output-stream
-                 (map #(-> %
-                           (.getAbsolutePath)) files))
-          (catch Exception e
-            (log/error "PDF not generated")
-            )
-          (finally (doseq [f files] (.delete f)))))))
+          (pdf/pdf [{} [:paragraph (t :core/Errorpage ul)]] out))))))

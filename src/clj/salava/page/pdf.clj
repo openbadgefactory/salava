@@ -43,8 +43,6 @@
     :tr [:pdf-cell]
     :td [:phrase]})
 
-
-
 (defn- set-attrs [content {:keys [href src title]}]
   (cond
     href             (conj content {:target href})
@@ -56,7 +54,6 @@
   (-> (or (tag tag-map) [:paragraph])
       (set-attrs attrs)
       (into content)))
-
 
 (defn- strip-html-tags [s]
   (->> s
@@ -79,7 +76,6 @@
   (let [url-pattern #"(?i)^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$"]
     (when-not (clojure.string/blank? s)
       (not (clojure.string/blank? (re-matches url-pattern s))))))
-
 
 (defn generate-pdf [ctx page-id user-id header?]
   (let [page (replace-nils (conj () (page-with-blocks ctx page-id)))
@@ -115,7 +111,6 @@
 
                                                                  "h2" [:paragraph.generic {:align :left}
                                                                        [:heading {:style {:size 12 :align :center}}  (:content %)]]))
-
 
                                                             (when (= "badge" (:type %))
                                                               [:table {:widths [1 3] :border false :keep-together? false}
@@ -159,7 +154,6 @@
                                                                (clojure.walk/postwalk
                                                                   (fn [n] (if (:tag n) (transform-node n) n))(strip-html-tags (trim-newline (:content %))))
                                                                [:line {:dotted true}]])
-
 
                                                             (when (= "file" (:type %))
                                                               [:paragraph.generic
@@ -209,8 +203,6 @@
                                                                                                                   [:chunk [:image {:align :center :width 60 :height 60}(str data-dir "/" (:image_file badge))]]
                                                                                                                   [:chunk [:image {:align :center :width 60 :height 60 :base64 true} (:qr_code (first b))]])]"\n"
                                                                                                       [:paragraph.bold {:color [43 117 154] :leading 40} (:name badge) ] "\n"]])))]]]
-
-
 
                                                                 [[:cell [:line {:dotted true}]]]]))
 
@@ -329,7 +321,7 @@
                                           [:spacer 1]]] content)))]
 
 
-    ;; TODO FIX HTML
+    ;; TODO IMPROVE HTML
     (fn [out]
       (pdf/pdf (into [pdf-settings [:spacer 4]]
                      (page-template page)) out))))
