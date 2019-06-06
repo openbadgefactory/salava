@@ -44,7 +44,7 @@ SELECT ub.id, ub.user_id, ub.badge_id,
     ub.location_lng  AS badge_lng, u.location_lng AS user_lng
 FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.badge_id = :badge AND ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted' AND ub.deleted = 0
+WHERE ub.gallery_id = :gallery AND ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted' AND ub.deleted = 0
     AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
 ORDER BY ub.mtime DESC
 LIMIT 250;
@@ -74,7 +74,7 @@ LIMIT 250;
 --name: select-explore-badge-ids-latlng
 SELECT DISTINCT ub.id FROM user_badge ub
 INNER JOIN user u ON ub.user_id = u.id
-WHERE ub.deleted = 0 AND ub.visibility != 'private' AND ub.status = 'accepted'
+WHERE ub.deleted = 0 AND ub.revoked = 0 AND ub.visibility != 'private' AND ub.status = 'accepted' AND ub.gallery_id IS NOT NULL AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
     AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
     AND (
         (u.location_lat > :min_lat AND u.location_lat <= :max_lat AND u.location_lng > :min_lng AND u.location_lng <= :max_lng)
@@ -107,17 +107,13 @@ INNER JOIN issuer_content c ON bc.issuer_content_id = c.id
 WHERE ub.id IN (:badge) AND c.name LIKE :issuer;
 
 --name: select-explore-badges
-SELECT ub.id, ub.user_id, ub.badge_id,
-    c.name AS badge_name, c.image_file AS badge_image, i.name AS issuer_name,
+SELECT ub.id, ub.user_id, ub.badge_id, ub.gallery_id,
+    g.badge_name, g.badge_image, g.issuer_name,
     ub.location_lat  AS badge_lat, u.location_lat AS user_lat,
     ub.location_lng  AS badge_lng, u.location_lng AS user_lng
 FROM user_badge ub
+INNER JOIN gallery g ON ub.gallery_id = g.id
 INNER JOIN user u ON ub.user_id = u.id
-INNER JOIN badge b ON ub.badge_id = b.id
-INNER JOIN badge_badge_content bc ON b.id = bc.badge_id
-INNER JOIN badge_content c ON (bc.badge_content_id = c.id AND c.language_code = b.default_language_code)
-INNER JOIN badge_issuer_content ic ON b.id = ic.badge_id
-INNER JOIN issuer_content i ON (ic.issuer_content_id = i.id AND i.language_code = b.default_language_code)
 WHERE ub.id IN (:badge) AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
 ORDER BY ub.mtime DESC
 LIMIT 500;

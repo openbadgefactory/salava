@@ -52,24 +52,24 @@
                            (reset! visible false)))})) 300))}))
 
 
-(defn gallery-badge-content [badge-id visible]
+(defn gallery-badge-content [gallery-id visible]
   (create-class
     {:reagent-render
      (fn []
        [:div.row {:style {:display (if @visible "block" "none")}}
         [:div.col-md-12
-         [:div {:id (str "map-view-badge-" badge-id) :style {:height "400px" :margin "20px 0"}}]]])
+         [:div {:id (str "map-view-badge-" gallery-id) :style {:height "400px" :margin "20px 0"}}]]])
 
      :component-did-mount
      (fn []
        (js/window.setTimeout
          (fn []
            (ajax/GET
-             (path-for (str "/obpv1/location/explore/badge/" badge-id) true)
+             (path-for (str "/obpv1/location/explore/badge/" gallery-id) true)
              {:handler (fn [data]
                          (if (seq (:badges data))
                            (let [lat-lng (js/L.latLng. (clj->js (midpoint (:badges data))))
-                                 my-map (-> (js/L.map. (str "map-view-badge-" badge-id) lu/map-opt)
+                                 my-map (-> (js/L.map. (str "map-view-badge-" gallery-id) lu/map-opt)
                                             (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (doseq [b (:badges data)]
@@ -223,9 +223,9 @@
   (let [visible (atom true)]
     [badge-info-content badge-id visible]))
 
-(defn ^:export gallery_badge [badge-id]
+(defn ^:export gallery_badge [gallery-id badge-id]
   (let [visible (atom true)]
-    [gallery-badge-content badge-id visible]))
+    [gallery-badge-content gallery-id visible]))
 
 
 (defn ^:export badge_share [user-badge-id]

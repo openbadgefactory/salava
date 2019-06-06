@@ -92,14 +92,14 @@
                     (do
                       (let [current (conj str1 " ")]
                         (conj current str2))))]
-      (reduce str-space ()  a-seq)))
+    (reduce str-space ()  a-seq)))
 
 (defn search-and-replace-www [text]
   (let [split-words (clojure.string/split text #" ")
         helper (fn [current item]
                  (if (or (re-find #"www." item) (re-find #"^https?://" item) (re-find #"^http?://" item))
-                     (conj current (hyperlink item))
-                     (conj current (str item))))]
+                   (conj current (hyperlink item))
+                   (conj current (str item))))]
     (blank-reduce (reduce helper () split-words))))
 
 (defn message-list-item [{:keys [message first_name last_name ctime id profile_picture user_id]} state]

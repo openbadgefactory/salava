@@ -1,9 +1,10 @@
 (ns salava.core.migrator
   (:require [migratus.core :as migratus]
-            [migratus.database :refer [find-migrations parse-migration-id]]
+            [migratus.migrations :refer [parse-migration-id]]
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
+            [clojure.string :as string]
             [salava.core.helper :refer [dump plugin-str]]
             [salava.core.util :refer [public-path]]))
 
@@ -64,6 +65,8 @@
    :migration-dir        (migration-dir plugin)
    :migration-table-name schema-table})
 
+(defn plugin-migrations [plugin]
+  (->> (migration-dir plugin) io/resource io/file file-seq (filter #(.isFile %)) (map #(string/replace (.getName %) #"^(\d+).+" "$1")) set))
 
 (defn applied-migrations
   ([conf]
@@ -73,7 +76,7 @@
 
   ([conf plugin]
    (let [applied (applied-migrations conf)
-        available (->> (migration-dir plugin) find-migrations keys (map str) set)]
+        available (plugin-migrations plugin)]
     (filter available (map str applied)))))
 
 

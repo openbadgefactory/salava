@@ -169,7 +169,7 @@
             [:i {:class "fa fa-heart"}]
             (str " " (t :badge/Congratulate) "!")]))]]
      ;messages
-     (when-not invalid?
+     #_(when-not invalid?
        (if user-logged-in?
          [:div.row
           [badge-message-link message_count  badge_id]]))

@@ -1,3 +1,5 @@
+(ns salava.gallery.ui.badge-content)
+
 #_(ns salava.gallery.ui.badge-content
   (:require [reagent.core :refer [atom create-class]]
             [reagent-modals.modals :refer [close-modal!]]
