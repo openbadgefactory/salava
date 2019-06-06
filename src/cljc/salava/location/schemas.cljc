@@ -68,6 +68,7 @@
 (s/defschema badge-location-ex {:id          (describe s/Int "internal badge id")
                                 :user_id     (describe s/Int "internal badge earner id")
                                 :badge_id    (describe s/Str "internal badge content id")
+                                :gallery_id  (describe s/Int "internal badge gallery id")
                                 :badge_url   (describe s/Str "public badge url")
                                 :badge_name  (describe s/Str "badge name")
                                 :badge_image (describe s/Str "badge image url")

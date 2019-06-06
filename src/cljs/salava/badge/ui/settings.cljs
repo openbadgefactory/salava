@@ -39,10 +39,7 @@
 (defn export-to-pdf [state]
   (let [lang-option "all"
         badge-url (str "/obpv1/badge/export-to-pdf?badges[0]=" (:id @state) "&lang-option="lang-option)]
-    (ajax/GET
-      (path-for (str "/obpv1/badge/export-to-pdf"))
-      {:params {:badges (list (:id @state)) :lang-option lang-option }
-       :handler (js-navigate-to badge-url)})))
+    (js-navigate-to badge-url)))
 
 (defn update-settings [badge-id state]
   (ajax/GET

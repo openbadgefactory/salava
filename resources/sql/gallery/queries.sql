@@ -52,7 +52,7 @@ GROUP BY badge.id
 --get badge by id
 SELECT
 badge.id as badge_id, badge.remote_url, badge.issuer_verified,
-badge.default_language_code,
+badge.default_language_code, badge.last_received,
 bbc.badge_content_id,
 bc.language_code,
 bc.name, bc.description,
@@ -85,12 +85,17 @@ WHERE badge.id = :id
 GROUP BY bc.language_code, cc.language_code, ic.language_code
 
 
--- name: select-common-badge-rating
+-- name: select-common-badge-rating-REMOVE
 SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM user_badge AS ub
        JOIN badge AS badge ON (badge.id = ub.badge_id)
        WHERE ub.visibility = 'public' AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND badge.id = :badge_id AND (rating IS NULL OR rating > 0)
 
--- name: select-badge-criteria-issuer-by-recipient
+-- name: select-common-badge-rating-g
+SELECT AVG(rating) AS average_rating, COUNT(rating) AS rating_count FROM user_badge ub
+WHERE ub.visibility = 'public' AND ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND gallery_id = :gallery_id AND (rating IS NULL OR rating > 0)
+
+-- name: select-badge-criteria-issuer-by-recipient-REMOVE
 -- FIXME (badge_url? rename badge -> user_badge, use new badge table)
 SELECT
 issuer_verified, last_received AS ctime,
@@ -114,7 +119,7 @@ WHERE ub.user_id = :user_id AND badge.id = :badge_content_id
 ORDER By ctime DESC
 LIMIT 1
 
--- name: select-badge-criteria-issuer-by-date
+-- name: select-badge-criteria-issuer-by-date-REMOVE
 -- FIXME (badge_url? rename badge -> user_badge, use new badge table)
 SELECT
 issuer_verified, last_received AS ctime,
@@ -138,7 +143,7 @@ ORDER By ctime DESC
 LIMIT 1
 
 -- name: select-users-public-pages
-SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, u.profile_picture, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
+SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_name, GROUP_CONCAT(pb.badge_id) AS badges FROM page AS p
        JOIN user AS u ON p.user_id = u.id
        LEFT JOIN page_block_badge AS pb ON pb.page_id = p.id
        WHERE user_id = :user_id AND p.deleted = 0  AND (visibility = 'public' OR visibility = :visibility)
@@ -146,13 +151,13 @@ SELECT p.id, p.ctime, p.mtime, user_id, name, description, u.first_name, u.last_
        ORDER BY p.mtime DESC
        LIMIT 100
 
--- name: select-badge-recipients
+-- name: select-badge-recipients-REMOVE
 SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user AS u
        JOIN user_badge AS ub ON ub.user_id = u.id
        JOIN badge AS badge ON (badge.id = ub.badge_id)
        WHERE badge.id = :badge_id AND status = 'accepted' AND ub.deleted = 0
 
--- name: select-badge-recipients-fix
+-- name: select-badge-recipients-fix-REMOVE
 SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibility FROM user AS u
        JOIN user_badge AS ub ON ub.user_id = u.id
        JOIN badge AS badge ON (badge.id = ub.badge_id)
@@ -161,6 +166,22 @@ SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibilit
        JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
        JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
        WHERE bc.name = :name AND ic.name = :issuer_content_name AND bc.description = :description AND status = 'accepted' AND ub.deleted = 0
+
+-- name: select-badge-recipients-fix-2-REMOVE
+SELECT DISTINCT u.id, u.first_name, u.last_name, u.profile_picture, ub.visibility FROM user AS u
+       JOIN user_badge AS ub ON ub.user_id = u.id
+       JOIN badge AS badge ON (badge.id = ub.badge_id)
+       JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+       JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+       JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+       JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+       WHERE bc.name = :name AND ic.name = :issuer_content_name AND status = 'accepted' AND ub.deleted = 0
+
+-- name: select-badge-recipients-g
+SELECT DISTINCT u.id, first_name, last_name, profile_picture, visibility FROM user u
+INNER JOIN user_badge AS ub ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND ub.gallery_id = :gallery_id
 
 -- name: select-common-badge-counts
 SELECT ub.user_id,
@@ -172,13 +193,13 @@ SELECT ub.user_id,
        AND user_id IN (:user_ids)
        GROUP BY user_id
 
--- name: select-badges-recipients
+-- name: select-badges-recipients-REMOVE
 SELECT badge_id, count(distinct user_id) as recipients FROM user_badge
        WHERE badge_id IN (:badge_ids) AND status = 'accepted' AND deleted = 0 AND revoked = 0 AND (expires_on IS NULL OR expires_on > unix_timestamp())
        GROUP BY badge_id
 
 
---name: select-gallery-badges-order-by-recipients
+--name: select-gallery-badges-order-by-recipients-old-REMOVE
 -- FIXME (content columns)
 SELECT
 badge.id AS badge_id, bc.name, bc.image_file,
@@ -192,62 +213,110 @@ JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
 JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
 WHERE badge.id IN (:badge_ids)
 GROUP BY ic.name, bc.name
+--GROUP BY badge.id
+ORDER BY recipients DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-ic-name-old-REMOVE
+-- FIXME GROUP BY ic.name, bc.name instead badge.id
+SELECT
+badge.id AS badge_id, bc.name, bc.image_file,
+badge.last_received AS ctime,
+CAST(SUM(badge.recipient_count) AS UNSIGNED) AS recipients,
+ic.name AS issuer_content_name
+FROM badge
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+WHERE badge.id IN (:badge_ids)
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
+ORDER BY ic.name
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-name-old-REMOVE
+-- FIXME GROUP BY ic.name, bc.name instead badge.id
+SELECT
+badge.id AS badge_id, bc.name, bc.image_file,
+badge.last_received AS ctime,
+CAST(SUM(badge.recipient_count) AS UNSIGNED) AS recipients,
+ic.name AS issuer_content_name
+FROM badge
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+WHERE badge.id IN (:badge_ids)
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
+ORDER BY bc.name
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-ctime-old-REMOVE
+-- FIXME GROUP BY ic.name, bc.name instead badge.id
+SELECT
+badge.id AS badge_id, bc.name, bc.image_file,
+badge.last_received AS ctime,
+CAST(SUM(badge.recipient_count) AS UNSIGNED) AS recipients,
+ic.name AS issuer_content_name
+FROM badge
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
+JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
+WHERE badge.id IN (:badge_ids)
+GROUP BY ic.name, bc.name
+--GROUP BY badge.id
+ORDER BY ctime DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-recipients
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
 ORDER BY recipients DESC
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-ic-name
--- FIXME GROUP BY ic.name, bc.name instead badge.id
-SELECT
-badge.id AS badge_id, bc.name, bc.image_file,
-badge.last_received AS ctime,
-CAST(SUM(badge.recipient_count) AS UNSIGNED) AS recipients,
-ic.name AS issuer_content_name
-FROM badge
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
-JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
-JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
-WHERE badge.id IN (:badge_ids)
-GROUP BY ic.name, bc.name
-ORDER BY ic.name
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
+ORDER BY issuer_content_name
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-name
--- FIXME GROUP BY ic.name, bc.name instead badge.id
-SELECT
-badge.id AS badge_id, bc.name, bc.image_file,
-badge.last_received AS ctime,
-CAST(SUM(badge.recipient_count) AS UNSIGNED) AS recipients,
-ic.name AS issuer_content_name
-FROM badge
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
-JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
-JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
-WHERE badge.id IN (:badge_ids)
-GROUP BY ic.name, bc.name
-ORDER BY bc.name
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
+ORDER BY badge_name
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-ctime
--- FIXME GROUP BY ic.name, bc.name instead badge.id
-SELECT
-badge.id AS badge_id, bc.name, bc.image_file,
-badge.last_received AS ctime,
-CAST(SUM(badge.recipient_count) AS UNSIGNED) AS recipients,
-ic.name AS issuer_content_name
-FROM badge
-JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
-JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-JOIN badge_issuer_content AS bic ON (bic.badge_id = badge.id)
-JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_code = badge.default_language_code
-WHERE badge.id IN (:badge_ids)
-GROUP BY ic.name, bc.name
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
 ORDER BY ctime DESC
 LIMIT :limit OFFSET :offset
 
 
---name: select-gallery-tags
+--name: select-gallery-tags-old-REMOVE
 SELECT bct.tag, GROUP_CONCAT(bbc.badge_id) AS badge_ids, COUNT(bbc.badge_id) as badge_id_count
 FROM badge_badge_content as bbc
 JOIN badge_content_tag as bct on (bct.badge_content_id = bbc.badge_content_id)
@@ -258,7 +327,8 @@ AND bbc.badge_id IN (SELECT DISTINCT badge_id FROM badge WHERE published = 1 and
 GROUP BY bct.tag
 
 --name: gallery-badges-count
-SELECT COUNT(DISTINCT id) AS badges_count FROM badge WHERE published = 1 AND recipient_count > 0
+SELECT COUNT(DISTINCT ub.gallery_id) AS badges_count FROM user_badge ub
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
 
 --name: gallery-pages-count
 SELECT COUNT(id) AS pages_count FROM page WHERE (visibility = 'public' OR visibility = 'internal') AND deleted = 0
@@ -279,5 +349,77 @@ WHERE se.verb = 'publish' AND se.type = 'page' AND se.mtime > :last_login AND p.
 --name: gallery-profiles-count-since-last-login
 SELECT COUNT(id) AS profiles_count FROM user WHERE (profile_visibility = 'public' OR profile_visibility = 'internal') AND deleted = 0 AND activated = 1 AND ctime > :last_login
 
+
+--name: select-gallery-tags
+SELECT DISTINCT t.tag FROM badge_content_tag t
+INNER JOIN badge_badge_content bc ON bc.badge_content_id = t.badge_content_id
+INNER JOIN user_badge ub ON bc.badge_id = ub.badge_id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+ORDER BY ub.ctime DESC
+LIMIT 10000;
+
+
+--name: select-gallery-ids
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-gallery-ids-country
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND u.country = :country
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-gallery-ids-badge
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN gallery g ON ub.gallery_id = g.id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND g.badge_name LIKE :badge
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-gallery-ids-issuer
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN gallery g ON ub.gallery_id = g.id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND g.issuer_name LIKE :issuer
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-gallery-ids-recipient
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND CONCAT(u.first_name, ' ', u.last_name) LIKE :recipient
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-gallery-ids-tags
+SELECT DISTINCT ub.gallery_id FROM user_badge ub
+INNER JOIN badge_badge_content bc ON ub.badge_id = bc.badge_id
+INNER JOIN badge_content_tag t ON bc.badge_content_id = t.badge_content_id
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND t.tag IN (:tags)
+ORDER BY ub.ctime DESC
+LIMIT 100000;
+
+--name: select-gallery-id
+SELECT ub.gallery_id FROM user_badge ub
+WHERE ub.status = 'accepted' AND ub.visibility != 'private' AND ub.deleted = 0
+    AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP()) AND ub.gallery_id IS NOT NULL
+    AND ub.badge_id = :badge_id
+ORDER BY ub.ctime DESC
+LIMIT 1;
+
 --name: all-users-on-map-count
 SELECT COUNT(id) AS users_count FROM user WHERE location_lng IS NOT NULL AND location_lat IS NOT NULL AND deleted = 0
+

@@ -24,17 +24,28 @@
 
     (context "/obpv1/gallery" []
              :tags ["gallery"]
-             (GET "/badges" [country tags badge-name issuer-name order recipient-name tags-ids page_count]
+
+             (GET "/badges" []
                   :return schemas/Badgesgallery
-                  :summary "Get badges, countries,tags and user-country"
+                  :summary "Get badges, countries and tags"
+                  :query [params schemas/BadgeQuery]
                   :current-user current-user
                   :auth-rules access/signed
-                  (let [badges-and-tags (g/get-gallery-badges ctx country tags badge-name issuer-name order recipient-name tags-ids (string->number page_count))
-                        countries       (g/badge-countries ctx (:id current-user))
-                        current-country (if (empty? country)
-                                          (:user-country countries)
-                                          country)]
-                    (ok (into badges-and-tags countries))))
+                  (ok (g/gallery-badges ctx params)))
+
+             (GET "/badge_tags" []
+                  :return schemas/BadgesgalleryTags
+                  :summary "Get all tags in public badges"
+                  :current-user current-user
+                  :auth-rules access/signed
+                  (ok (g/badge-tags ctx)))
+
+             (GET "/badge_countries" []
+                  :return schemas/BadgesgalleryCountries
+                  :summary "Get public badge countries"
+                  :current-user current-user
+                  :auth-rules access/signed
+                  (ok (g/badge-countries ctx)))
 
 
              (GET "/public_badge_content/:badge-id" []
@@ -43,6 +54,21 @@
                   :summary "Get public badge data"
                   :current-user current-user
                   (ok (g/public-multilanguage-badge-content ctx badge-id (:id current-user))))
+
+             (GET "/public_badge_content/:gallery-id/:badge-id" []
+                  ;;                   :return schemas/BadgeContent
+                  :path-params [gallery-id :- s/Int
+                                badge-id :- s/Str]
+                  :summary "Get public gallery badge data"
+                  :current-user current-user
+                  (if (pos? gallery-id)
+                    (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user) gallery-id))
+                    (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user)))))
+
+             (GET "/badge_gallery_id/:badge-id" []
+                  :path-params [badge-id :- s/Str]
+                  :summary "Get gallery id of a badge"
+                  (ok (g/badge-gallery-id ctx badge-id)))
 
              (POST "/pages" []
                    :body-params [country :- (s/maybe s/Str)

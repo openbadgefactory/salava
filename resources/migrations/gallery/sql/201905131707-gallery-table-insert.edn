@@ -1,0 +1,3 @@
+{:ns salava.gallery.migrations
+ :up-fn gallery-table-insert-up
+ :down-fn gallery-table-insert-down}

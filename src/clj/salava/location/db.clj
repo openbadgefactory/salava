@@ -64,8 +64,8 @@
      :public false}))
 
 
-(defn explore-badge [ctx badge-id]
-  {:badges (->> (select-explore-badge {:badge badge-id} (u/get-db ctx))
+(defn explore-badge [ctx gallery-id]
+  {:badges (->> (select-explore-badge {:gallery gallery-id} (u/get-db ctx))
                 (map (fn [b]
                        (-> b
                            (assoc :lat (or (:badge_lat b) (:user_lat b))

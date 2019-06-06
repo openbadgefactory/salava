@@ -118,7 +118,7 @@
   (cond
     (= item-type "badges") (path-for (str "/gallery/badgeview/" id))
     (= item-type "page") (path-for (str "/page/view/" id))
-    (= item-type "user") (path-for (str "/user/profile/" id))
+    (= item-type "user") (path-for (str "/profile/" id))
     (= item-type "badge") (path-for (str "/badge/info/" id))
     :else (current-path)))
 

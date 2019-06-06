@@ -28,7 +28,7 @@
  :show-terms? true
 
  ;; Database configuration
- :datasource {:adapter "mysql"
+ :datasource {:datasource-class-name "com.mysql.cj.jdbc.MysqlDataSource"
               :username "salava"
               :password "salava"
               :database-name "salava"

@@ -62,7 +62,7 @@
                 (ajax-stop state))
      :handler (fn [data]
                 (m/modal! (import-modal data)
-                          {:hide #(navigate-to "/badge")}))}))
+                          {:hidden #(navigate-to "/badge")}))}))
 
 (defn remove-badge-selection [import-key state]
   (swap! state assoc :badges-selected

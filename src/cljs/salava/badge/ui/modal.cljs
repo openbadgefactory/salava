@@ -169,7 +169,7 @@
             [:i {:class "fa fa-heart"}]
             (str " " (t :badge/Congratulate) "!")]))]]
      ;messages
-     (when-not invalid?
+     #_(when-not invalid?
        (if user-logged-in?
          [:div.row
           [badge-message-link message_count  badge_id]]))
@@ -215,7 +215,7 @@
 
         (if (pos? @show-recipient-name-atom)
           (if (and user-logged-in? (not owner?))
-            [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/user/profile/" owner))} first_name " " last_name]]
+            [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
         ;metabadges
         (if (and owner? metabadge-fn) [:div [metabadge-fn (:assertion_url @state)]])

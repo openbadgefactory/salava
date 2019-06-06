@@ -203,7 +203,7 @@
                             lname (:last_name follower)
                             status (:status follower)]]
                   ^{:key follower}[:div
-                                   [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"} [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) )] ", "[:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]]
+                                   [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"} [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) )] ", "[:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]]
                                    #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]
                                    ])
                 [:br]])
@@ -217,7 +217,7 @@
                             lname (:last_name f)
                             status (:status f)]]
                   ^{:key f}[:div
-                            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"}  [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:user :profile] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status f))))]]
+                            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"}  [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status f))))]]
                             ])]
                )])
 

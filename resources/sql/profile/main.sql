@@ -43,7 +43,7 @@ UPDATE user_profile_badge_showcase SET title = :title, format = :format, block_o
 INSERT INTO user_profile_badge_showcase_has_badge (block_id, badge_id, badge_order) VALUES (:block_id, :badge_id, :badge_order)
 
 --name: select-badge-showcase-blocks
-SELECT id, "showcase" AS type, title, format, block_order FROM user_profile_badge_showcase WHERE user_id = :user_id
+SELECT id, 'showcase' AS type, title, format, block_order FROM user_profile_badge_showcase WHERE user_id = :user_id
 
 --name: select-showcase-block-content
 -- get badges in badge showcase

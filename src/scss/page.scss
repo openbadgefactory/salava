@@ -15,14 +15,14 @@
     margin-bottom: 20px;
     margin-top: 0;
     line-height: 1.4;
-    height: 170px;
+    height: 180px;
     max-width: 280px;
     min-width: 250px;
   }
 
   .media-content {
     padding-right: 0;
-    height: 115px;
+    height: 120px;
 
     .media-body {
       position: relative;
@@ -151,6 +151,14 @@
     span {
       display: none;
     }
+  }
+}
+
+#user-pages #grid .grid-container {
+    margin-right: unset;
+    float:left;
+   .media-content {
+    text-align: left;
   }
 }
 /* SHARE BUTTONS*/
@@ -525,6 +533,8 @@
     text-transform: uppercase;
     color: $title-color;
     font-size: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis
   }
 
   #buttons #buttons-right {
@@ -1576,7 +1586,7 @@
       position: absolute;
       content: "";
       top: 0;
-      right: -20px;
+      right: -19px;
       z-index: 2;
     }
 
@@ -1610,6 +1620,47 @@
       border-left-color: $button-hover;
     }
   }
+
+      @media(max-width: 768px) {
+        a {
+          margin-right: -1px;
+          padding: 8px 2px;
+          text-align: right;
+          font-size: small;
+
+          &:after {
+           right: -18px;
+          }
+        }
+     }
+
+     @media(max-width: 520px) and (max-width: 425px){
+      padding: 10px 15px;
+      a {
+        margin-right: -1px;
+        display: table-cell;
+        padding: 0 4px;
+        text-align: right;
+        font-size: small;
+
+        &:after {
+         right: -18px;
+        }
+      }
+   }
+     //      @media(max-width: 425px) {
+     //       a {
+     //         margin-right: -1px;
+     //         display: table-cell;
+     //         padding: 2px;
+     //         text-align: right;
+     //         font-size: small;
+     //
+     //         &:after {
+     //          right: -18px;
+     //         }
+     //       }
+     //      }
 }
 /*WIZARD END*/
 #page-edit,
@@ -1763,6 +1814,10 @@
       right: -16px;
       z-index: 2;
     }
+
+    @media (max-width: 425px) {
+     padding: 6px;
+    }
   }
 
   #step-button-previous {
@@ -1790,6 +1845,12 @@
       left: -16px;
       z-index: 2;
     }
+
+      @media (max-width: 425px) {
+       padding: 6px;
+       margin-right: 10px;
+       margin-left: unset;
+      }
   }
 
   #step-button,
@@ -2024,5 +2085,50 @@
   }
   .fa-fw{
    text-align: left;
+  }
+}
+
+#page-edit #buttons, #page-edit-theme, #page-settings, #page-preview {
+ .wizard {
+  width:82%;
+  float: left;
+  padding: 0;
+ }
+
+ #buttons-right {
+  width: 18%;
+  float: right;
+ }
+
+   @media (max-width: 920px){
+     .wizard {
+      a {
+       padding: 9px 3px;
+      }
+     }
+    }
+
+ @media (max-width: 550px){
+   .wizard {
+    margin: 10px 0;
+   }
+ }
+
+ @media (max-width: 520px){
+   .wizard {
+    width:100%;
+   }
+
+    #buttons-right {
+     width: 100%;
+    }
+ }
+
+  @media (max-width: 425px){
+    .wizard {
+        a {
+         padding: 0 4px;
+        }
+    }
   }
 }

@@ -1,7 +1,7 @@
 --name: insert-badge-message<!
 --add new badge-message
-INSERT INTO badge_message (badge_id, user_id, message, ctime, mtime)
-                   VALUES (:badge_id, :user_id, :message, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+INSERT INTO badge_message (badge_id, gallery_id, user_id, message, ctime, mtime)
+                   VALUES (:badge_id, :gallery_id, :user_id, :message, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: select-badge-messages
 --get badge's messages
@@ -13,15 +13,17 @@ SELECT bm.id, bm.badge_id, bm.message, bm.ctime, bm.user_id, u.first_name, u.las
 --name: select-badge-messages-limit
 --get badge's messages
 SELECT bm.id, bm.badge_id, bm.message, bm.ctime, bm.user_id, u.first_name, u.last_name, u.profile_picture FROM badge_message bm
-       JOIN user AS u ON (u.id = bm.user_id)
-       WHERE badge_id = :badge_id AND bm.deleted=0
-       ORDER BY bm.ctime DESC
-       LIMIT :limit OFFSET :offset
+INNER JOIN user AS u ON (u.id = bm.user_id)
+WHERE bm.deleted = 0
+    AND (bm.badge_id = :badge_id OR bm.gallery_id = (SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1))
+ORDER BY bm.ctime DESC
+LIMIT :limit OFFSET :offset;
 
 
 --name: select-badge-messages-count
 --get badge's messages
-SELECT ctime, user_id FROM badge_message WHERE badge_id = :badge_id AND deleted=0
+SELECT ctime, user_id FROM badge_message WHERE deleted = 0
+    AND (badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1));
 
 --name: update-badge-message-deleted!
 UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :message_id
@@ -30,26 +32,29 @@ UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :messa
 SELECT user_id FROM badge_message where id = :message_id
 
 --name: replace-badge-message-view!
-REPLACE INTO badge_message_view (user_id, badge_id, mtime)
-       VALUES (:user_id, :badge_id, UNIX_TIMESTAMP())
+REPLACE INTO badge_message_view (user_id, badge_id, gallery_id, mtime) VALUES (:user_id, :badge_id, :gallery_id, UNIX_TIMESTAMP());
 
 --name: select-badge-message-last-view
 SELECT mtime FROM badge_message_view where badge_id = :badge_id AND user_id = :user_id
 
 
+--name: select-badge-gallery-id
+SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1;
+
+
 --name: insert-connect-badge<!
 --add new connect with badge
-INSERT IGNORE INTO social_connections_badge (user_id, badge_id, ctime)
-                   VALUES (:user_id, :badge_id, UNIX_TIMESTAMP())
+INSERT IGNORE INTO social_connections_badge (user_id, badge_id, gallery_id, ctime) VALUES (:user_id, :badge_id, :gallery_id, UNIX_TIMESTAMP())
 
 --name: delete-connect-badge!
-DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_id = :badge_id
+DELETE FROM social_connections_badge WHERE user_id = :user_id AND (badge_id = :badge_id OR gallery_id = :gallery_id);
 
 --name: delete-connect-badge-by-badge-id!
 DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_id =  (SELECT badge_id from user_badge where badge_id = :badge_id AND user_id = :user_id)
 
 --name: select-connection-badge
-SELECT badge_id FROM social_connections_badge WHERE user_id = :user_id AND badge_id = :badge_id
+SELECT 1 FROM social_connections_badge WHERE user_id = :user_id
+    AND (badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1));
 
 -- name: select-user-connections-badge
 -- get users badge connections
