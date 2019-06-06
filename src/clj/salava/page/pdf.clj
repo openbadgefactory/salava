@@ -191,7 +191,7 @@
                                                                [:table {:no-split-cells? true :width 100 :border false :cell-border false :spacing 5}
                                                                 [[:phrase.generic {:style :bold :size 12} (:tag %)]]
                                                                 [[:cell
-                                                                  [:table {:align :center :width-percent 100 :border false :num-cols 4 :padding 2}
+                                                                  [:table {:align :center :width-percent 100 :border false :num-cols 4 :padding 1}
                                                                    (into [[:cell {:colspan 5}]] (for [badge (:badges %)
                                                                                                       :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
                                                                                                             content (-> b first :content first)]]
@@ -230,10 +230,10 @@
 
                                                                                                                       [:spacer 0]]))))
                                                                             [[:cell {:colspan 2}[:line {:dotted true}]]]))
-                                                              [:table {:no-split-cells? true :width 100 :border false :cell-border false :spacing 5}
-                                                               [[:phrase.generic {:style :bold :size 12 :leading 20} (:title %)]]
+                                                              [:table {:no-split-cells? true :width 100 :border false :cell-border false :spacing 3}
+                                                               [[:phrase.generic {:style :bold :size 12} (:title %)]]
                                                                [[:cell
-                                                                 [:table {:align :center :width-percent 100 :border false :num-cols 4 :padding 2}
+                                                                 [:table {:align :center :width-percent 100 :border false :num-cols 4 :padding 1}
                                                                   (into [[:cell {:colspan 5}]] (for [badge (:badges %)
                                                                                                      :let [b (pdf-generator-helper ctx user-id (list (:id badge)))
                                                                                                            content (-> b first :content first)]]
@@ -307,7 +307,7 @@
                                content (-> (mapv template $blocks)
                                            (conj   [[:pdf-table {:align :right :width-percent 100 :cell-border false}
                                                      nil
-                                                     [[:pdf-cell [:paragraph [:chunk [:image {:width 85 :height 85 :base64 true} $qr_code]]"\n"
+                                                     [[:pdf-cell [:paragraph [:chunk [:image {:width 60 :height 60 :base64 true} $qr_code]]"\n"
                                                                   [:phrase [:chunk.link {:style :italic} (str site-url "/app/page/view/" $id)]]]]]]]))]
 
 
