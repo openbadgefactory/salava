@@ -1,3 +1,5 @@
+(ns salava.gallery.ui.badge-view)
+
 #_(ns salava.gallery.ui.badge-view
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]

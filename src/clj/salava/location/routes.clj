@@ -74,13 +74,13 @@
                   :current-user current-user
                   (ok (l/user-location ctx (:id current-user))))
 
-             (GET "/explore/badge/:badge" []
+             (GET "/explore/badge/:gallery-id" []
                   :summary "Get single badge location for gallery. Requires authenticated user."
                   :return ls/explore-badges
-                  :path-params  [badge :- s/Str]
+                  :path-params  [gallery-id :- s/Int]
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (l/explore-badge ctx badge)))
+                  (ok (l/explore-badge ctx gallery-id)))
 
              (GET "/explore/users" []
                   :summary "Get public user locations for gallery. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by user name."

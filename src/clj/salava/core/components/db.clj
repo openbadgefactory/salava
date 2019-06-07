@@ -7,7 +7,10 @@
   component/Lifecycle
 
   (start [component]
-    (let [datasource (make-datasource (get-in config [:config :core :datasource]))]
+    (let [datasource (make-datasource (-> config
+                                          (get-in [:config :core :datasource])
+                                          (dissoc :adapter)
+                                          (assoc :datasource-class-name "com.mysql.cj.jdbc.MysqlDataSource")))]
       (log/info "hikari-cp started")
       (assoc component :datasource datasource)))
 
