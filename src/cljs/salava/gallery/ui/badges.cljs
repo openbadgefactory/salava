@@ -57,7 +57,7 @@
 (defn fetch-badges [state]
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name tags order full-tags tags-badge-ids value]} @state
         ajax-message-atom (cursor state [:ajax-message])
-        page-count-atom (cursor state [:page_count])]
+        page-count-atom (cursor state [:params :page_count])]
     (reset! ajax-message-atom (t :gallery/Searchingbadges))
     (reset! page-count-atom 0)
     (ajax/GET
@@ -73,9 +73,9 @@
                     :page_count     @page-count-atom}
        :handler (fn [data]
                   (value-helper state (get-in data [:tags]))
+                  (swap! page-count-atom inc)
                   (swap! state assoc
                          :badges (:badges data)
-                         :page_count (inc (:page_count @state))
                          :badge_count (:badge_count data)))
        :finally (fn []
                   (ajax-stop ajax-message-atom))})))
@@ -83,8 +83,9 @@
 
 (defn get-more-badges [state]
   (let [{:keys [user-id country-selected badge-name recipient-name issuer-name
-                tags order full-tags tags-badge-ids value page_count]} @state
-        ajax-message-atom (cursor state [:ajax-message])]
+                tags order full-tags tags-badge-ids value]} @state
+        ajax-message-atom (cursor state [:ajax-message])
+        page-count-atom (cursor state [:params :page_count])]
     (ajax/GET
       (path-for (str "/obpv1/gallery/badges"))
       {:params  (:params @state)
@@ -98,9 +99,9 @@
                  :page_count     page_count}
        :handler (fn [data]
                   (value-helper state (get-in data [:tags]))
+                  (swap! page-count-atom inc)
                   (swap! state assoc
                          :badges (into (:badges @state) (:badges data))
-                         :page_count (inc (:page_count @state))
                          :badge_count (:badge_count data)))
        :finally (fn []
                   )})))
@@ -303,8 +304,8 @@
      :handler (fn [data]
                 (let [{:keys [badges badge_count]} data]
                   ;(value-helper state tags)
+                  (reset! (cursor state [:params :page_count]) 1)
                   (swap! state assoc
-                         :page_count (inc (:page_count @state))
                          :badges badges
                          :badge_count badge_count)))
      :finally (fn []
