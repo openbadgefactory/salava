@@ -55,7 +55,7 @@
                  [org.clojure/core.cache "0.7.2"]
 
                  ; Client side
-                 [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations ]]
+                 [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
                  [reagent "0.8.1"]
                  [reagent-utils "0.3.3"]
                  [bidi "2.1.6"]
@@ -90,9 +90,9 @@
                  [midje "1.9.8" :exclusions [org.clojure/tools.namespace clj-time]]
 
                  ; Auth
-                 [buddy "2.0.0"  :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                 [buddy "2.0.0"  :exclusions [org.bouncycastle/bcpkix-jdk15on]]]
 
-                 ]
+
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :java-source-paths ["src/java"]
