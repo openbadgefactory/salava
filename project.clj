@@ -12,7 +12,6 @@
                  [com.google.guava/guava "25.1-jre"] ; Google Core Libraries for Java
                  [commons-logging "1.2"]
                  [commons-codec "1.12"]
-                 [org.apache.xmlgraphics/batik-bridge "1.11"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
 
                  ; Database
@@ -42,7 +41,7 @@
                  [org.clojure/core.async "0.4.490"]
 
                  [clj-http "3.10.0"]
-                 [enlive "1.1.6"  :exclusions [org.jsoup/jsoup]]
+                 [enlive "1.1.6" :exclusions [org.jsoup/jsoup]]
                  [markdown-clj "1.10.0"]
                  [ar.com.hjg/pngj "2.1.0"]
                  [com.novemberain/pantomime "2.11.0" :exclusions [javax.activation/activation]]
@@ -51,12 +50,12 @@
                  [org.clojure/tools.cli "0.4.2"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]
-                 [clj-pdf "2.3.4" :exclusions [org.apache.xmlgraphics/xmlgraphics-commons]]
+                 [clj-pdf "2.2.34"]
                  [clj-pdf-markdown "0.2.1"]
                  [org.clojure/core.cache "0.7.2"]
 
                  ; Client side
-                 [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations ]]
+                 [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
                  [reagent "0.8.1"]
                  [reagent-utils "0.3.3"]
                  [bidi "2.1.6"]
@@ -91,9 +90,9 @@
                  [midje "1.9.8" :exclusions [org.clojure/tools.namespace clj-time]]
 
                  ; Auth
-                 [buddy "2.0.0"  :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                 [buddy "2.0.0"  :exclusions [org.bouncycastle/bcpkix-jdk15on]]]
 
-                 ]
+
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :java-source-paths ["src/java"]
