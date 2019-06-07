@@ -208,7 +208,7 @@ UPDATE page_block_showcase SET title = :title, format = :format, block_order = :
 INSERT INTO page_block_showcase_has_badge (block_id, badge_id, badge_order) VALUES (:block_id, :badge_id, :badge_order)
 
 --name: select-badge-showcase-blocks
-SELECT id, "showcase" AS type, title, format, block_order FROM page_block_showcase WHERE page_id = :page_id
+SELECT id, 'showcase' AS type, title, format, block_order FROM page_block_showcase WHERE page_id = :page_id
 
 --name: select-showcase-block-content-for-edit
 -- get badges in badge showcase
