@@ -41,7 +41,7 @@
       (path-for (str "/obpv1/application/"))
       {:params  {:country  (trim country-selected)
                  :name     (subs-hashtag name)
-                 :tags     (map #(subs-hashtag %) tags)
+                 :tags     (apply str (interpose "," (map #(subs-hashtag %) tags)))
                  :issuer   (trim issuer-name)
                  :order    (trim order)
                  :followed show-followed-only}
