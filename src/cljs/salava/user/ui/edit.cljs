@@ -57,17 +57,17 @@
                  :class "col-md-3"}
          (t :user/Language)]
         [:div.col-md-9
-         [input/radio-button-selector (:languages @state) language-atom]]]
+         [input/radio-button-selector "language" (:languages @state) language-atom]]]
 
        [:div.form-group
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "first-name" :atom first-name-atom}]]]
+         [input/text-field {:name "first_name" :atom first-name-atom}]]]
 
        [:div.form-group
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "last-name" :atom last-name-atom}]]]
+         [input/text-field {:name "last_name" :atom last-name-atom}]]]
 
        [:div.form-group
         [:label {:for "input-country"
@@ -128,7 +128,7 @@
                             :country "EN"
                             :email_notification nil}
                      :message nil
-                     :languages ["en"]
+                     :languages []
                      :email-notifications false})]
     (init-data state)
     (fn []

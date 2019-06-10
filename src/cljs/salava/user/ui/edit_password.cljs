@@ -72,7 +72,7 @@
           [:div {:class "col-md-9"}
            [:input {:class       "form-control"
                     :id          "input-current-password"
-                    :name        name
+                    :name        "current_password"
                     :type        "password"
                     :placeholder (t :user/Enteryourcurrentpassword)
                     :read-only   true
@@ -85,12 +85,12 @@
         [:div.flip
         [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "new-password" :atom new-password-atom :password? true}]]]]
+         [input/text-field {:name "new_password" :atom new-password-atom :password? true}]]]]
 
        [:div.form-group
         [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "new-password-verify" :atom new-password-verify-atom :password? true}]]]
+         [input/text-field {:name "new_password_verify" :atom new-password-verify-atom :password? true}]]]
 
        [:div.row
         [:div.col-xs-12

@@ -29,7 +29,7 @@
              (layout/main ctx "/import")
              #_(layout/main ctx "/export")
              (layout/main ctx "/receive/:id")
-             (layout/main ctx "/application")
+             #_(layout/main ctx "/application")
              (layout/main ctx "/user/endorsements"))
 
     (context "/obpv1/badge" []

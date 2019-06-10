@@ -21,16 +21,16 @@
 
 
 
-(defn radio-button-selector [values atom]
+(defn radio-button-selector [name values atom]
   (into [:div]
-        (for [value values]
-          [:label.radio-inline
-           [:input {:type      "radio"
-                    :name      "value"
-                     :value     value
-                    :default-checked   (= @atom value)
-                    :on-change  #(reset! atom value)}]
-           (t (keyword (str "core/" value)))])))
+        (map (fn [value]
+               [:label.radio-inline
+                [:input {:type      "radio"
+                         :name      name
+                         :value     value
+                         :default-checked (= @atom value)
+                         :on-change  #(reset! atom value)}]
+                (t (keyword (str "core/" value)))]) values)))
 
 
 (defn select-selector [values atom init-text]
