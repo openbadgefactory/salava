@@ -22,9 +22,6 @@
   (let [{:keys [remote_url remote_id remote_issuer_id info application_url issuer_content_id badge_content_id criteria_content_id kind country not_before not_after]} advert]
     (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
 
-
-
-
 (defn contains-tag? [query-tags tags]
   (subset? (set query-tags) (set tags)))
 
@@ -35,15 +32,12 @@
 (defn filter-tags [search tags]
   (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
 
-
 (defn map-collection
   ([where value]
    (map-collection where value true))
   ([where value fn]
    (if (and where value fn)
      {(str where)  value})))
-
-
 
 (defn badge-adverts-where-params [country name issuer-name id]
   (let [where-params {}]
@@ -52,11 +46,7 @@
         ;(conj (map-collection " and ba.id = ? " id ))
         (conj (map-collection " and ba.country = ? " country (not= country "all")))
         (conj (map-collection " AND bc.name LIKE ? " (if name (str "%" name "%"))))
-        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%"))))
-        )))
-
-
-
+        (conj (map-collection " AND ic.name LIKE ? " (if issuer-name (str "%" issuer-name "%")))))))
 
 (defn get-badge-adverts [ctx country tags name issuer-name order id user-id show-followed-only]
   (let [where-params (badge-adverts-where-params country name issuer-name id)
@@ -87,11 +77,6 @@
       (filter-tags search tags)
       search)))
 
-
-
-
-
-
 (defn get-badge-advert [ctx id user_id]
   (let [badge-advert (select-badge-advert {:id id :user_id user_id} (into {:result-set-fn first} (u/get-db ctx)))]
     (update badge-advert :info u/md->html)))
@@ -112,8 +97,6 @@
                              (seq))
               :user-country current-country)))
 
-
-
 (defn tags-where-params [country]
   (let [where-params {}]
     (if-not (= country "all")
@@ -132,15 +115,12 @@
                     LIMIT 1000")
         search (jdbc/with-db-connection
                  [conn (:connection (u/get-db ctx))]
-                 (jdbc/query conn (into [query] params))) ]
+                 (jdbc/query conn (into [query] params)))]
     search))
 
 (defn get-autocomplete [ctx name country]
-  (let [tags (get-tags ctx country)
-        ;names (select-badge-names {} (get-db ctx))
-        ]
+  (let [tags (get-tags ctx country)]
     {:tags tags}))
-
 
 (defn- advert-content [ctx data]
   (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
@@ -169,7 +149,7 @@
                                               (u/file-from-url ctx (:image client)))
                                 :revocation_list_url (:revocationList client)
                                 #_:banner #_(if-not (string/blank? (:remote_issuer_banner data))
-                                          (u/file-from-url ctx (:remote_issuer_banner data)))
+                                             (u/file-from-url ctx (:remote_issuer_banner data)))
                                 #_:tier #_(:remote_issuer_tier data)})
        :criteria_content_id
        (b/save-criteria-content! tx
@@ -216,7 +196,6 @@
       (log/error (.toString ex))
       {:success false})))
 
-
 (defn unpublish-badge [ctx data]
   (try
     (unpublish-badge-advert-by-remote! data (u/get-db ctx))
@@ -236,7 +215,7 @@
 (defn delete-connection-badge-advert! [ctx user_id  badge_advert_id]
   (try+
     (delete-connect-badge-advert! {:user_id user_id :badge_advert_id badge_advert_id} (u/get-db ctx))
-    {:status "success" }
+    {:status "success"}
     (catch Object _
       {:status "error"})))
 
@@ -250,3 +229,6 @@
         countries (badge-adverts-countries ctx user-id)
         current-country (if (empty? country) (:user-country countries) country)]
     (into {:applications applications} countries)))
+
+(defn meta-tags [ctx]
+ {:no-anon true})

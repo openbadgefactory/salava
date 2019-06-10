@@ -7,7 +7,8 @@
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [medley.core :refer [distinct-by]]))
+            [medley.core :refer [distinct-by]]
+            [reagent.session :as session]))
 
 (defn hashtag? [text]
   (re-find #"^#" text))
@@ -27,8 +28,8 @@
   (ajax/GET
     (path-for (str "/obpv1/social/connections_issuer"))
     {:handler (fn [data]
-                (swap! state assoc :favourites (create-favourite-list data (:all-applications @state)))
-                )}))
+                (swap! state assoc :favourites (create-favourite-list data (:all-applications @state))))}))
+
 
 (defn init-issuer-applications [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
@@ -43,7 +44,7 @@
        :handler (fn [data]
                   (swap! state assoc :all-issuer-applications (:applications data)
                          :show-favourite-issuers false)
-                  (get-favourites state))})))
+                  (when (session/get :user) (get-favourites state)))})))
 
 (defn fetch-badge-adverts [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
@@ -62,8 +63,8 @@
   (ajax/GET
     (path-for (str "/obpv1/social/issuer_connected/" issuer-id))
     {:handler (fn [data]
-                (swap! state assoc-in [:issuer-content :connected] data)
-                )}))
+                (swap! state assoc-in [:issuer-content :connected] data))}))
+
 
 (defn add-issuer-to-favourites [issuer-id state]
   (ajax/POST
@@ -125,10 +126,10 @@
                      ^{:key app}[:a { :data-dismiss "modal"
                                       :on-click #(do
                                                    (.preventDefault %)
-                                                   (init-issuer-connection issuer_content_id state)
-                                                   (swap! state assoc :show-issuer-info true
-                                                          :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner})
-                                                   (issuer-applications issuer_content_name state))}
+                                                  (when (session/get :user) (init-issuer-connection issuer_content_id state))
+                                                  (swap! state assoc :show-issuer-info true
+                                                         :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner})
+                                                  (issuer-applications issuer_content_name state))}
 
                                  [:div {:style {:padding "5px"}} (if issuer_image
                                                                    [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
@@ -193,7 +194,7 @@
      [:div.col-sm-10.buttons
       [:button.btn.btn-default {:style {:display display}
                                 :on-click #(do
-                                             (swap! state assoc :show-featured true :show-issuer-info false :issuer-content {:name (t :core/All)} )
+                                             (swap! state assoc :show-featured true :show-issuer-info false :issuer-content {:name (t :core/All)})
                                              (issuer-applications "" state)) }  (t :core/All)]
       [:button.issuer-button {:class (str "btn btn-active")
                               :id "btn-all"
@@ -202,8 +203,8 @@
                                                                                 :shown (fn []  (init-issuer-applications state))
                                                                                 :hide (fn [] (swap! state assoc :issuer ""
                                                                                                     :issuer-search false
-                                                                                                    :search-result []
-                                                                                                    ))}))} (str @issuer-name)]]]))
+                                                                                                    :search-result []))}))}
+                             (str @issuer-name)]]]))
 
 (defn issuer-info-grid [state]
   (let [show-issuer-info-atom (cursor state [:show-issuer-info])
@@ -217,9 +218,9 @@
          (if-not (blank? banner)
            [:div.info-block.col-xs-12
             #_[:h2.uppercase-header.pull-left
-             (issuer-image image)
-             " "
-             name]
+               (issuer-image image)
+               " "
+               name]
             [:img.img-responsive
              {:src (str "/" banner)}]])
          [:div.col-xs-12.info-block
@@ -232,14 +233,8 @@
           [:div.col-xs-12.footer
            [:div.pull-left [:a {:href "#" :on-click #(do
                                                        (.preventDefault %)
-                                                       (mo/open-modal [:badge :issuer] id {:hide (fn [] (init-issuer-connection id state))}))} (t :admin/Showmore)]]
-           [:div.pull-right
-            (if-not connected
-              [:a {:href "#" :on-click #(add-issuer-to-favourites id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]
-              [:a {:href "#" :on-click #(remove-issuer-from-favourites id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))]
-              )]]]]])]))
-
-
-
-
-
+                                                       (mo/open-modal [:badge :issuer] id {:hide (fn [] (when (session/get :user) (init-issuer-connection id state)))}))} (t :admin/Showmore)]]
+           (when (session/get :user) [:div.pull-right
+                                      (if-not connected
+                                        [:a {:href "#" :on-click #(add-issuer-to-favourites id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :extra-application/Addtofavourites))]
+                                        [:a {:href "#" :on-click #(remove-issuer-from-favourites id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Removefromfavourites))])])]]]])]))

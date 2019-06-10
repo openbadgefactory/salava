@@ -11,15 +11,15 @@
 
 (defn route-def [ctx]
   (routes
-    (context "/gallery" []
-             (layout/main ctx "/application"))
+    (context "/badge" []
+             (layout/main-meta+ ctx "/application" :application))
     (context "/obpv1/application" []
              :tags ["application"]
              (GET "/" [country tags name issuer order id followed]
                   :return schemas/BadgeAdverts
                   :summary "Get badge adverts"
                   :current-user current-user
-                  :auth-rules access/signed
+                  ;:auth-rules access/signed
                   (ok (a/get-applications ctx country tags name issuer order id (:id current-user) followed)))
 
              (GET "/public_badge_advert_content/:id" []
@@ -27,14 +27,14 @@
                   :summary "Get badge advert"
                   :current-user current-user
                   :path-params [id :- s/Int]
-                  :auth-rules access/signed
+                  ;:auth-rules access/signed
                   (ok (a/get-badge-advert ctx id (:id current-user))))
 
              (GET "/autocomplete" [country]
                   ;:return [{:iframe s/Str :language s/Str}]
                   :summary "Get autocomplete data"
                   :current-user current-user
-                  :auth-rules access/signed
+                  ;:auth-rules access/signed
                   (ok (a/get-autocomplete ctx "" country)))
 
              (PUT "/publish_badge/:apikey/:remoteid" []

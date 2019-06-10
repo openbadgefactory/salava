@@ -91,8 +91,8 @@
     (if key
       (do
         (swap! state assoc :value #{key})
-        (taghandler state #{key})
-        ))))
+        (taghandler state #{key})))))
+
 
 (defn autocomplete-search [state country]
   (swap! state assoc :value #{}
@@ -196,7 +196,7 @@
     (str (t :core/Show) ":")]
    [:div.col-md-10
     [:div.buttons
-     [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active") )
+     [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active"))
                :id "btn-all"
                :on-click #(do
                             (reset! show-followed-only-atom (if @show-followed-only-atom false true))
@@ -221,7 +221,7 @@
          [autocomplete state]
          [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]]])
 
-     [follow-grid-item show-followed-only-atom state]
+     (when (session/get :user) [follow-grid-item show-followed-only-atom state])
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
      [i/issuer-info-grid state]]))
 
@@ -235,7 +235,7 @@
          [:span.featured {:title (t :extra-application/Featuredbadge)} [:i.fa.fa-star]])
 
      [:div.media-content
-      [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state})) }
+      [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:application :badge] {:id id  :state state}))}
        (if image_file
          [:div.media-left
           [:img {:src (str "/" image_file)
@@ -276,8 +276,8 @@
     [:div
      (when (and (not (empty? badges)) (not @show-issuer-info-atom) @show-featured)
        #_[:div.panel {:class "row wrap-grid"
-                      :id    "grid"
-                      }
+                      :id    "grid"}
+
           [:button.close {:aria-label "OK"
                           :on-click #(do
                                        (.preventDefault %)
@@ -290,8 +290,8 @@
                 (for [element-data featured]
                   (badge-grid-element element-data state)))]
        [:div.panel.featured-gallery {:class "row wrap-grid"
-                                     :id    "grid"
-                                     }
+                                     :id    "grid"}
+
         [:div.close {:style {:opacity 1}};.close-button
          [:a {
                :aria-label "OK"
@@ -309,9 +309,9 @@
                    :dangerouslySetInnerHTML {:__html "&times;"}}]]
         [:h3.panel-heading {:style {:text-align "center"}} (t :extra-application/Featured)]
         [:div
-        (into [:div.adcontainer]
-              (for [element-data featured]
-                (badge-grid-element element-data state)))]])
+         (into [:div.adcontainer]
+               (for [element-data featured]
+                 (badge-grid-element element-data state)))]])
 
 
      [:h3 (str-cat tags)]
