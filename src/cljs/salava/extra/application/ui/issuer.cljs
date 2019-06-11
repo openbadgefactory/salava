@@ -8,7 +8,8 @@
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
             [medley.core :refer [distinct-by]]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.extra.application.ui.helper :refer [url-builder]]))
 
 (defn hashtag? [text]
   (re-find #"^#" text))
@@ -30,7 +31,6 @@
     {:handler (fn [data]
                 (swap! state assoc :favourites (create-favourite-list data (:all-applications @state))))}))
 
-
 (defn init-issuer-applications [state]
   (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
     (ajax/GET
@@ -47,17 +47,24 @@
                   (when (session/get :user) (get-favourites state)))})))
 
 (defn fetch-badge-adverts [state]
-  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state]
+  (let [{:keys [user-id country-selected name recipient-name issuer-name order tags show-followed-only]} @state
+        params {:country  (trim country-selected)
+                   :name     (subs-hashtag name)
+                   :tags     (map #(subs-hashtag %) tags)
+                   :issuer   (trim issuer-name)
+                   :order    (trim order)
+                   :followed show-followed-only}]
     (ajax/GET
       (path-for (str "/obpv1/application/"))
-      {:params  {:country  (trim country-selected)
-                 :name     (subs-hashtag name)
-                 :tags     (map #(subs-hashtag %) tags)
-                 :issuer   (trim issuer-name)
-                 :order    (trim order)
-                 :followed show-followed-only}
+      {:params  params #_{:country  (trim country-selected)
+                          :name     (subs-hashtag name)
+                          :tags     (map #(subs-hashtag %) tags)
+                          :issuer   (trim issuer-name)
+                          :order    (trim order)
+                          :followed show-followed-only}
        :handler (fn [data]
-                  (swap! state assoc :applications (:applications data)))})))
+                  (swap! state assoc :applications (:applications data))
+                 (url-builder params state))})))
 
 (defn init-issuer-connection [issuer-id state]
   (ajax/GET
@@ -139,18 +146,19 @@
 (defn issuer-filter-grid [show-favourites-atom state]
   [:div#grid-filter {:class "form-horizontal" :style {:margin-bottom "10px"}}
    [:div {:class "form-group wishlist-buttons"}
-    [:div.col-md-10
-     [:div.buttons
-      [:button {:class (str "btn btn-default " (if-not @show-favourites-atom "btn-active"))
-                :id "btn-all"
-                :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
-                             (swap! state assoc :issuer-search false :issuer ""))}
-       (t :core/All)]
-      (when (session/get :user) [:button {:class (str "btn btn-default " (if @show-favourites-atom "btn-active"))
-                                          :id "btn-all"
-                                          :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
-                                                       (swap! state assoc :issuer-search false :issuer ""))}
-                                 [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))])]]]
+    (when (session/get :user)
+     [:div.col-md-10
+          [:div.buttons
+           [:button {:class (str "btn btn-default " (if-not @show-favourites-atom "btn-active"))
+                     :id "btn-all"
+                     :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
+                                  (swap! state assoc :issuer-search false :issuer ""))}
+            (t :core/All)]
+           [:button {:class (str "btn btn-default " (if @show-favourites-atom "btn-active"))
+                            :id "btn-all"
+                            :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
+                                         (swap! state assoc :issuer-search false :issuer ""))}
+                    [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]])]
    [:div {:style {:margin-top "5px"}}
     [issuer-search :issuer  nil (t :extra-application/Searchissuer) state]]])
 
