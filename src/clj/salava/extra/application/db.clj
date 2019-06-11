@@ -22,8 +22,6 @@
   (let [{:keys [remote_url remote_id remote_issuer_id info application_url issuer_content_id badge_content_id criteria_content_id kind country not_before not_after]} advert]
     (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
 
-
-
 (defn contains-tag? [query-tags advert-tags]
   (subset? query-tags advert-tags))
 
@@ -231,6 +229,3 @@
         countries (badge-adverts-countries ctx user-id)
         current-country (if (empty? country) (:user-country countries) country)]
     (into {:applications applications} countries)))
-
-(defn meta-tags [ctx]
- {:no-anon true})

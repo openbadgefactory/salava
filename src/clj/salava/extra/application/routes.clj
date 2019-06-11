@@ -12,7 +12,7 @@
 (defn route-def [ctx]
   (routes
     (context "/badge" []
-             (layout/main-meta+ ctx "/application" :application))
+             (layout/main ctx "/application"))
     (context "/obpv1/application" []
              :tags ["application"]
              (GET "/" [country tags name issuer order id followed]
