@@ -146,11 +146,11 @@
                 :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
                              (swap! state assoc :issuer-search false :issuer ""))}
        (t :core/All)]
-      [:button {:class (str "btn btn-default " (if @show-favourites-atom "btn-active"))
-                :id "btn-all"
-                :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
-                             (swap! state assoc :issuer-search false :issuer ""))}
-       [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))]]]]
+      (when (session/get :user) [:button {:class (str "btn btn-default " (if @show-favourites-atom "btn-active"))
+                                          :id "btn-all"
+                                          :on-click #(do (reset! show-favourites-atom (if @show-favourites-atom false true))
+                                                       (swap! state assoc :issuer-search false :issuer ""))}
+                                 [:i {:class "fa fa-bookmark"}] (str " " (t :extra-application/Favourites))])]]]
    [:div {:style {:margin-top "5px"}}
     [issuer-search :issuer  nil (t :extra-application/Searchissuer) state]]])
 
