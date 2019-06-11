@@ -3,7 +3,7 @@
             [clojure.string :as s]
             [ajax.core :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [current-path navigate-to js-navigate-to path-for base-path current-route-path plugin-fun route-path]]
+            [salava.core.ui.helper :refer [current-path navigate-to js-navigate-to path-for base-path current-route-path plugin-fun route-path enable-background-image]]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.ui.footer :refer [base-footer]]
             [salava.social.ui.helper :refer [social-plugin?]]
@@ -143,7 +143,8 @@
       [:div {:id "main-header"
               :class "navbar-header pull-right"}
        (when-not (:no-login site-navi)
-         [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login")}
+         [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login") :on-click #(do (.preventDefault %)
+                                                                                                        (enable-background-image))}
           (t :user/Login)])
        (when (not-empty items)
          [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
