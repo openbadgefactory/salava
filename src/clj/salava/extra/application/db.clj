@@ -22,15 +22,18 @@
   (let [{:keys [remote_url remote_id remote_issuer_id info application_url issuer_content_id badge_content_id criteria_content_id kind country not_before not_after]} advert]
     (insert-badge-advert<! {:remote_url remote_url :remote_id remote_id :remote_issuer_id remote_issuer_id :info info :application_url application_url :issuer_content_id issuer_content_id :badge_content_id badge_content_id :criteria_content_id criteria_content_id :kind kind :country country :not_before not_before :not_after not_after} (u/get-db ctx))))
 
-(defn contains-tag? [query-tags tags]
-  (subset? (set query-tags) (set tags)))
+
+
+(defn contains-tag? [query-tags advert-tags]
+  (subset? query-tags advert-tags))
 
 (defn tag-parser [tags]
   (if tags
-    (string/split tags #",")))
+    (set (string/split tags #","))
+    #{}))
 
 (defn filter-tags [search tags]
-  (remove (fn [advert] (not (contains-tag? tags  (tag-parser (:tags advert))))) search))
+  (remove (fn [advert] (not (contains-tag? tags (tag-parser (:tags advert))))) search))
 
 (defn map-collection
   ([where value]
@@ -53,7 +56,6 @@
         user-id (or user-id "NULL") ;set null if nil
         where   (str (apply str (keys where-params))  (if show-followed-only  " AND scba.user_id IS NOT NULL ")) ;add IS NOT NULL when user want only followed adverts
         params (cons user-id (vec (vals where-params)))  ;add user-id to params
-        tags (vec (vals tags))
         order (cond
                 (= order "mtime") "ORDER BY ba.mtime DESC"
                 (= order "name") "ORDER BY bc.name"
@@ -73,8 +75,8 @@
         search (jdbc/with-db-connection
                  [conn (:connection (u/get-db ctx))]
                  (jdbc/query conn (into [query] params)))]
-    (if (not-empty tags)
-      (filter-tags search tags)
+    (if-not (string/blank? tags)
+      (filter-tags search (tag-parser tags))
       search)))
 
 (defn get-badge-advert [ctx id user_id]
