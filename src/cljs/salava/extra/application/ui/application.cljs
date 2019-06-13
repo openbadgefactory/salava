@@ -12,100 +12,27 @@
             [cemerick.url :as url]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [salava.extra.application.ui.issuer :refer [issuer-info-grid]]
+            [salava.extra.application.ui.issuer :as i :refer [issuer-info-grid all-issuers]]
             [salava.core.ui.popover :refer [info]]
-            [salava.extra.application.ui.helper :refer [url-builder]]))
+            [salava.extra.application.ui.helper :refer [url-builder taghandler fetch-badge-adverts query-params str-cat remove-from-followed add-to-followed]]))
 
-
-(defn hashtag? [text]
-  (re-find #"^#" text))
-
-(defn subs-hashtag [text]
-  (trim text)
-  (if (hashtag? text)
-    (subs text 1)
-    text))
-
-(defn fetch-badge-adverts [state]
-  (let [{:keys [user-id country-selected name issuer-name order tags show-followed-only]} @state]
-    (if (or (not= order "mtime") (not (empty? tags)) show-followed-only (not (blank? name)) (not (blank? issuer-name)))
-      (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
-   (let [params  {:country  (trim country-selected)
-                  :name     (subs-hashtag name)
-                  :tags     (apply str (interpose "," (map #(subs-hashtag %) tags)))
-                  :issuer   (trim issuer-name)
-                  :order    (trim order)
-                  :followed show-followed-only}]
-    (ajax/GET
-      (path-for (str "/obpv1/application/"))
-      {:params  params
-       :handler (fn [data]
-                 (swap! state assoc :applications (:applications data))
-                 (url-builder params state))}))))
-
-(defn add-to-followed
-  "set advert to connections"
-  [badge-advert-id data-atom state]
-  (ajax/POST
-    (path-for (str "/obpv1/application/create_connection_badge_application/" badge-advert-id))
-    {:handler (fn [data]
-                (if (= "success")
-                  (do ;set current data-atom to followed true
-                    (swap! data-atom assoc :followed 1)
-                    (fetch-badge-adverts state))))}))
-
-(defn remove-from-followed
-  "remove advert from connections"
-  ([badge-advert-id state]
-   (remove-from-followed badge-advert-id nil state))
-  ([badge-advert-id data-atom state]
-   (ajax/DELETE
-     (path-for (str "/obpv1/application/delete_connection_badge_application/" badge-advert-id))
-     {:handler (fn [data]
-                 (if (= "success")
-                   (do ;set current data-atom to followed false
-                     (if data-atom
-                       (swap! data-atom assoc :followed 0))
-                     (fetch-badge-adverts state))))})))
-
-(defn taghandler
-  "set tag with autocomplete value and accomplish searchs"
-  [state value]
-  (let [tags (cursor state [:tags])
-        autocomplete-items (cursor state [:autocomplete-items])]
-   (reset! tags (vals (select-keys @autocomplete-items value)))
-   (fetch-badge-adverts state)))
-
-(defn get-items-key [autocomplete-items tag]
- (key (first (filter #(= (str "#" tag ) (val %)) autocomplete-items))))
-
-(defn set-to-autocomplete [state tag]
-  (let [key (get-items-key (:autocomplete-items @state) tag)]
-    (if key
-      (do
-        (swap! state assoc :value #{key})
-        (taghandler state #{key})))))
-
+(def initial-query (atom {}))
 
 (defn autocomplete-search [state country]
-  (swap! state assoc :value #{}
-         :tags ())
+  (swap! state assoc :autocomplete {:tags {:value #{} :items #{}}})
   (ajax/GET
-    (path-for "/obpv1/application/autocomplete")
-    {:params {:country  (trim country)}
-     :handler (fn [data]
-                (let [{:keys [tags names]} data]
-                  (swap! state assoc
-                         :tags  #{} ;todo: katso jos on toisessakin olemassa
-                         :autocomplete-items (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
+   (path-for "/obpv1/application/autocomplete")
+   {:params {:country  country}
+    :handler (fn [data]
+               (let [{:keys [tags names]} data]
+                 (swap! state assoc-in [:autocomplete :tags :items] (into (sorted-map) (map-indexed (fn [i v] [(inc i) (str "#" (:tag v))]) tags)))))}))
 
 (defn open-modal [id state]
   (ajax/GET
-    (path-for (str "/obpv1/application/public_badge_advert_content/" id))
-    {:handler (fn [data]
-                (do
-                  (mo/open-modal [:application :badge] {:id (:init-id @state) :state state :data data})))}))
-
+   (path-for (str "/obpv1/application/public_badge_advert_content/" id))
+   {:handler (fn [data]
+               (do
+                 (mo/open-modal [:application :badge] {:id (:init-id @state) :state state :data data})))}))
 
 (defn search-timer [state]
   (let [timer-atom (cursor state [:timer])]
@@ -115,10 +42,10 @@
                                         (fetch-badge-adverts state)) 500))))
 
 (defn text-field [key label placeholder state]
-  (let [search-atom (cursor state [key])
+  (let [search-atom (cursor state [:params key])
         field-id (str key "-field")]
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
+     (when label [:label {:class "control-label col-sm-2" :for field-id} (str label ":")])
      [:div.col-sm-10
       [:input {:class       (str "form-control")
                :id          field-id
@@ -130,18 +57,18 @@
                                (search-timer state))}]]]))
 
 (defn country-selector [state]
-  (let [country-atom (cursor state [:country-selected])]
+  (let [country (cursor state [:params :country]) #_(cursor state [:country-selected])]
     [:div.form-group
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":") [info {:content (t :extra-application/Filterbycountry) :placement "top"}]]
      [:div.col-sm-10
       [:select {:class     "form-control"
                 :id        "country-selector"
                 :name      "country"
-                :value     @country-atom
+                :value     @country
                 :on-change #(do
-                              (reset! country-atom (.-target.value %))
-                              (autocomplete-search state @country-atom)
-                              (swap! state assoc :grid-badges true)
+                              (reset! country (.-target.value %))
+                              (swap! state assoc :params (query-params {:country @country}))
+                              (autocomplete-search state @country)
                               (fetch-badge-adverts state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
@@ -153,33 +80,26 @@
    {:value "name" :id "radio-name" :label (t :core/byname)}
    {:value "issuer_content_name" :id "radio-issuer-name" :label (t :core/byissuername)}])
 
-(defn simple-items [n]
-  (into (sorted-map)
-        (map (fn [i]
-               [i (str  i " Option "  (rand-int 20))])
-             (range n))))
 
 (defn autocomplete [state]
-  (let [tags  (cursor state [:tags])
-        value (cursor state [:value])
-        autocomplete-items (cursor state [:autocomplete-items])]
-   (fn []
-     [:div.form-group
-      [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
-      [:div.col-sm-10
-       [multiple-autocomplete
-        {:value     @value
-         :on-change        (fn [item] (do
-                                       (swap! value conj (:key item))
-                                       (taghandler state @value)))
-         :on-remove (fn [x] (do
-                              (swap! value disj x)
-                              (taghandler state @value)))
-         :search-fields   [:value]
-         :items           @autocomplete-items
-         :no-results-text (t :extra-application/Notfound)
-         :control-class   "form-control"}]]])))
-
+  (let [value  (cursor state [:autocomplete :tags :value])
+        autocomplete-items (cursor state [:autocomplete :tags :items])]
+    (fn []
+      [:div.form-group
+       [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
+       [:div.col-sm-10
+        [multiple-autocomplete
+         {:value     @value
+          :on-change (fn [item] (do
+                                  (swap! value conj (:key item))
+                                  (taghandler state @value)))
+          :on-remove (fn [x] (do
+                               (swap! value disj x)
+                               (taghandler state @value)))
+          :search-fields   [:value]
+          :items           @autocomplete-items
+          :no-results-text (t :extra-application/Notfound)
+          :control-class   "form-control"}]]])))
 
 (defn follow-grid-item [show-followed-only-atom state]
   [:div {:class "form-group wishlist-buttons"}
@@ -188,7 +108,7 @@
     (str (t :core/Show) ":")]
    [:div.col-md-10
     [:div.buttons
-     [:button {:class (str "btn btn-default btn "(if-not @show-followed-only-atom "btn-active"))
+     [:button {:class (str "btn btn-default btn " (if-not @show-followed-only-atom "btn-active"))
                :id "btn-all"
                :on-click #(do
                             (reset! show-followed-only-atom (if @show-followed-only-atom false true))
@@ -206,16 +126,21 @@
         show-followed-only-atom (cursor state [:show-followed-only])]
     [:div {:id "grid-filter"
            :class "form-horizontal"}
-     (if (not (:user-id @state))
-       [:div
-        [country-selector state]
-        [:div
-         [autocomplete state]
-         [text-field :name  (t :gallery/Badgename) (t :gallery/Searchbybadgename) state]]])
+     [text-field :name  nil #_(t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
+     [:div
+      [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
+           :href "#"}
+       (if @show-advanced-search
+         (t :gallery/Hideadvancedsearch)
+         (t :gallery/Showadvancedsearch))]]
+     (when @show-advanced-search
+      [:div
+       [country-selector state]
+       [autocomplete state]
+       (when (session/get :user) [follow-grid-item show-followed-only-atom state])])
 
-     (when (session/get :user) [follow-grid-item show-followed-only-atom state])
-     [grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) :order state fetch-badge-adverts]
-     [issuer-info-grid state]]))
+     [grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-badge-adverts]
+     (when @show-advanced-search [issuer-info-grid state])]))
 
 (defn badge-grid-element [element-data state]
   (let [{:keys [id image_file name  issuer_content_name issuer_content_url recipients badge_content_id followed issuer_tier]} element-data
@@ -238,22 +163,13 @@
          [:span [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (str " " (t :extra-application/Getthisbadge))]]]]
       [:div.media-bottom]]]))
 
-(defn str-cat [a-seq]
- (if (empty? a-seq)
-   ""
-   (let [a-seq (if (string? a-seq) (split a-seq #",") a-seq)
-         str-space (fn [str1 str2]
-                       (str str1 " " str2))]
-     (reduce str-space a-seq))))
-
-
 (defn shuffle-featured-badges [n state]
   (let [badges (filter #(= (:issuer_tier %) "pro") (:applications @state))]
     (take n (distinct (shuffle badges)))))
 
 (defn gallery-grid [state]
   (let [badges (:applications @state)
-        tags (:tags @state)
+        tags (cursor state [:params :tags])
         show-issuer-info-atom (cursor state [:show-issuer-info])
         show-featured (cursor state [:show-featured])
         featured-badges (shuffle-featured-badges 4 state)
@@ -269,11 +185,10 @@
                                      :id    "grid"}
 
         [:div.close {:style {:opacity 1}};.close-button
-         [:a {
-               :aria-label "OK"
-               :on-click   #(do
-                              (.preventDefault %)
-                              (swap! state assoc :show-featured false))}
+         [:a {:aria-label "OK"
+              :on-click   #(do
+                             (.preventDefault %)
+                             (swap! state assoc :show-featured false))}
           [:i.fa.fa-remove {:title (t :core/Cancel)}]]]
         [:h3.panel-heading {:style {:text-align "center"}} (t :extra-application/Featured)]
         [:div
@@ -281,13 +196,11 @@
                (for [element-data featured]
                  (badge-grid-element element-data state)))]])
 
-     [:h3 (str-cat tags)]
+     [:h3 (str-cat @tags)]
      (into [:div {:class "row wrap-grid"
                   :id    "grid"}]
            (for [element-data grid-badges]
              (badge-grid-element element-data state)))]))
-
-
 
 (defn content [state]
   (create-class {:reagent-render (fn []
@@ -297,83 +210,138 @@
                                     [gallery-grid-form state]
                                     [gallery-grid state]])
                  :component-did-mount (fn []
-                                       (disable-background-image)
-                                       (if (:init-id @state) (open-modal (:init-id @state) state)))}))
+                                        (disable-background-image)
+                                        (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
-(defn init-all-issuers [state init-params]
-  (ajax/GET
-    (path-for "/obpv1/application/")
-    {:params  (assoc init-params :country "all")
-     :handler (fn [data]
-                (swap! state assoc :all-applications (:applications data)))}))
-
-
-(defn- init-autocomplete [tags state]
- (when-not (blank? tags)
-  (swap! state assoc :tags tags)
-  (let [tag-coll (->> (clojure.string/split tags #",")
-                  (mapv #(str "#" %)))
-        autocomplete-items (cursor state [:autocomplete-items])]
-   (-> (clojure.set/map-invert @autocomplete-items) (select-keys tag-coll) (vals) (set)))))
-
-
-(defn init-data [state init-params]
-  (let [country (session/get-in [:filter-options :country] (:country init-params))
-        {:keys [order tags name issuer]} init-params]
-   (ajax/GET
+#_(defn init-all-issuers [state init-params]
+    (ajax/GET
      (path-for "/obpv1/application/")
-     {:params  (assoc init-params :country country)
+     {:params  (assoc init-params :country "all")
       :handler (fn [data]
-                 (let [{:keys [applications countries user-country]} data]
-                  (if (or (not= order "mtime") (not (empty? tags))(not (blank? name)) (not (blank? issuer)))
-                      (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
-                  (swap! state assoc :applications applications
-                         :countries countries :value (or (init-autocomplete tags state) #{}))
-                  (init-all-issuers state init-params)
-                  (url-builder init-params state)))})))
+                 (swap! state assoc :all-applications (:applications data)))}))
 
-(defn init-values
-  "take url params"[]
-  (let [{:keys [country issuer #_issuer-name order id name tags]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
-        query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
-   (-> query-params
-       (assoc :country (if id "all" (or country (session/get-in [:user :country] "all")))))))
+(defn- init-autocomplete
+  "initialize autocomplete when url params include tag(s)"
+  [tags state]
+  (when-not (blank? tags)
+    (swap! state assoc :tags tags)
+    (let [tag-coll (->> (clojure.string/split tags #",")
+                        (mapv #(str "#" %)))
+          autocomplete-items (cursor state [:autocomplete :tags :items])]
+      (-> (clojure.set/map-invert @autocomplete-items) (select-keys tag-coll) vals set))))
+
+#_(defn- init-issuer
+    "initialize issuer information when url param includes issuer, extract issuer information from most recent application"
+    [issuer state]
+    (when-not (blank? issuer)
+      (let [applications @(cursor state [:applications])
+            most-recent-application (-> (sort-by :mtime > applications) first)
+            {:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id issuer_tier issuer_banner]} most-recent-application]
+        (swap! state assoc :show-issuer-info true :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner}))))
+
+#_(defn init-data [state init-params]
+    (let [country (session/get-in [:filter-options :country] (:country init-params))
+          {:keys [order tags name issuer]} init-params]
+      (ajax/GET
+       (path-for "/obpv1/application/")
+       {:params  (assoc init-params :country country)
+        :handler (fn [data]
+                   (let [{:keys [applications countries user-country]} data
+                         {:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id issuer_tier issuer_banner]} (first applications)]
+                     (if (or (not= order "mtime") (not (empty? tags)) (not (blank? name)) (not (blank? issuer)))
+                       (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
+                     (swap! state assoc :applications applications
+                            :countries countries :value (or (init-autocomplete tags state) #{}))
+                     (init-issuer issuer state)
+                     (init-all-issuers state (dissoc init-params :issuer))
+                     #_(url-builder init-params state)))})))
+
+(defn init-data [params state]
+  (let [{:keys [order tags name issuer country]} params]
+    (swap! state assoc :initial-query @initial-query)
+    (all-issuers state (dissoc params :issuer))
+    (autocomplete-search state country)
+    (ajax/GET
+     (path-for "/obpv1/application/")
+     {:params params
+      :handler (fn [{:keys [applications countries user-country]}]
+                 (when (or (not= order "mtime") (not (empty? tags)) (not (blank? name)) (not (blank? issuer)))
+                   (swap! state assoc :show-featured false))
+                 (swap! state assoc :applications applications :countries countries)
+                 (swap! state assoc-in [:autocomplete :tags :value] (or (init-autocomplete tags state) #{})))})))
+
+#_(defn init-values
+    "take url params"
+    []
+    (let [{:keys [country issuer #_issuer-name order id name tags]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
+          query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
+      (-> query-params
+          (assoc :country (if id "all" (or country (session/get-in [:user :country] "all")))))))
 
 (defn handler [site-navi params]
-  (let [user-id          (:user-id params)
-        init-values      (init-values)
-        badge_content_id (:badge_content_id params)
-        state            (atom {:init-id            (:id init-values)
-                                :show-followed-only false
-                                :show-issuer-info false
-                                :tags               (or (:tags init-values) ())
-                                :value              #{}
-                                :user-id            user-id
-                                :badges             []
-                                :countries          []
-                                :country-selected   (session/get-in [:filter-options :country] (:country init-values)) #_(or (:country init-values) (session/get-in [:user :country] "all"))
-                                :advanced-search    false
-                                :name               (or (:name init-values) "")
-                                :issuer-name        (or (:issuer-name init-values) "")
-                                :order              (or (:order init-values) "mtime")
-                                :timer              nil
-                                :autocomplete-items              #{}
-                                :ajax-message       nil
-                                :issuer-content {:name (t :core/All)}
-                                :issuer-search false
-                                :search-result []
-                                :show-featured true})
-        country (session/get-in [:filter-options :country] (:country init-values))]
-    (init-data state init-values)
-    (autocomplete-search state country #_(:country init-values))
+  (let [query (as-> (-> js/window .-location .-href url/url :query keywordize-keys) $
+                    (if (:country $)
+                      $
+                      (assoc $ :country (session/get-in [:filter-options :country]
+                                                        (session/get-in [:user :country] "all")))))
+        {:keys [badge_content_id user-id]} params
+        params (query-params query)
+        state (atom {:params params
+                     :init-id (:id params)
+                     :user-id user-id
+                     :issuer {:issuer-search false :search-result [] :show-issuer-info false :issuer-content {:name (t :core/All)}}
+                     :autocomplete {:tags {:value #{} :items #{}}}
+                     :badges []
+                     :countries []
+                     :country-selected  (session/get-in [:filter-options :country] (:country params))
+                     :show-followed-only false
+                     :show-featured true
+                     :advanced-search false
+                     :timer nil
+                     :ajax-message nil})]
+    (reset! initial-query params)
+    (init-data params state)
     (fn []
       (if (session/get :user)
         (layout/default site-navi [content state badge_content_id])
         (layout/landing-page site-navi [content state badge_content_id])))))
 
+#_(defn handler [site-navi params]
+    (let [user-id          (:user-id params)
+          init-values      (init-values)
+          badge_content_id (:badge_content_id params)
+          state            (atom {:init-id            (:id init-values)
+                                  :show-followed-only false
+                                  :show-issuer-info false
+                                  :tags               (or (:tags init-values) ())
+                                  :value              #{}
+                                  :user-id            user-id
+                                  :badges             []
+                                  :countries          []
+                                  :country-selected   (session/get-in [:filter-options :country] (:country init-values)) #_(or (:country init-values) (session/get-in [:user :country] "all"))
+                                  :advanced-search    false
+                                  :name               (or (:name init-values) "")
+                                  :issuer-name        (or (:issuer init-values) "")
+                                  :order              (or (:order init-values) "mtime")
+                                  :timer              nil
+                                  :autocomplete-items              #{}
+                                  :ajax-message       nil
+                                  :issuer-content {:name (t :core/All)}
+                                  :issuer-search false
+                                  :search-result []
+                                  :show-featured true})
+          country (session/get-in [:filter-options :country] (:country init-values))]
+      (init-data state init-values)
+      (autocomplete-search state country #_(:country init-values))
+      (fn []
+        (if (session/get :user)
+          (layout/default site-navi [content state badge_content_id])
+          (layout/landing-page site-navi [content state badge_content_id])))))
+
 (defn ^:export latestearnablebadges []
-  (let [state (atom {})]
-    (init-data state {:country "all" :order "mtime" :issuer-name "" :name ""})
+  (let [params (query-params {:country "all" :order "mtime" :issuer-name "" :name ""})
+        state (atom {})]
+    (init-data params state #_{:country "all" :order "mtime" :issuer-name "" :name ""})
     (fn []
       [:div.badges {:style {:display "inline-block"}}
        [:p.header (t :social/Newestearnablebadges)]
@@ -388,5 +356,5 @@
   (fn []
     (case opt
       "button" [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]]
-      "link" [:a {:href (str (path-for "/badge/application"))}[:p (t :social/Iwanttoearnnewbadges)]]
+      "link" [:a {:href (str (path-for "/badge/application"))} [:p (t :social/Iwanttoearnnewbadges)]]
       [:div [:a.btn.button {:href (path-for "/badge/application")} (t :extra-application/Application)]])))
