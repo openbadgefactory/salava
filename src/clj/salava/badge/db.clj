@@ -230,8 +230,6 @@
   (let [badge      (save-images ctx (:badge user-badge))
         gallery-id (save-gallery! ctx badge)]
 
-    (println (str "got gallery id " gallery-id))
-
     (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
       (let [now (u/now)
             badge-id (save-badge! tx badge)
