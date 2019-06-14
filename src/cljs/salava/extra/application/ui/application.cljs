@@ -12,7 +12,7 @@
             [cemerick.url :as url]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [salava.extra.application.ui.issuer :as i :refer [issuer-info-grid all-issuers]]
+            [salava.extra.application.ui.issuer :as i :refer [issuer-info-grid all-issuers init-issuer]]
             [salava.core.ui.popover :refer [info]]
             [salava.extra.application.ui.helper :refer [url-builder taghandler fetch-badge-adverts query-params str-cat remove-from-followed add-to-followed]]))
 
@@ -46,7 +46,7 @@
         field-id (str key "-field")]
     [:div.form-group
      (when label [:label {:class "control-label col-sm-2" :for field-id} (str label ":")])
-     [:div.col-sm-10
+     [:div.col-sm-8 ;.col-sm-10
       [:input {:class       (str "form-control")
                :id          field-id
                :type        "text"
@@ -60,7 +60,7 @@
   (let [country (cursor state [:params :country]) #_(cursor state [:country-selected])]
     [:div.form-group
      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ":") [info {:content (t :extra-application/Filterbycountry) :placement "top"}]]
-     [:div.col-sm-10
+     [:div.col-sm-6 ;.col-sm-10
       [:select {:class     "form-control"
                 :id        "country-selector"
                 :name      "country"
@@ -87,7 +87,7 @@
     (fn []
       [:div.form-group
        [:label {:class "control-label col-sm-2" :for "autocomplete"} (str (t :extra-application/Keywords) ":")]
-       [:div.col-sm-10
+       [:div.col-sm-6 ;.col-sm-10
         [multiple-autocomplete
          {:value     @value
           :on-change (fn [item] (do
@@ -127,7 +127,7 @@
     [:div {:id "grid-filter"
            :class "form-horizontal"}
      [text-field :name  nil #_(t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
-     [:div
+     [:div {:style {:margin-bottom "10px"}}
       [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
            :href "#"}
        (if @show-advanced-search
@@ -213,13 +213,6 @@
                                         (disable-background-image)
                                         (if (:init-id @state) (open-modal (:init-id @state) state)))}))
 
-#_(defn init-all-issuers [state init-params]
-    (ajax/GET
-     (path-for "/obpv1/application/")
-     {:params  (assoc init-params :country "all")
-      :handler (fn [data]
-                 (swap! state assoc :all-applications (:applications data)))}))
-
 (defn- init-autocomplete
   "initialize autocomplete when url params include tag(s)"
   [tags state]
@@ -230,53 +223,22 @@
           autocomplete-items (cursor state [:autocomplete :tags :items])]
       (-> (clojure.set/map-invert @autocomplete-items) (select-keys tag-coll) vals set))))
 
-#_(defn- init-issuer
-    "initialize issuer information when url param includes issuer, extract issuer information from most recent application"
-    [issuer state]
-    (when-not (blank? issuer)
-      (let [applications @(cursor state [:applications])
-            most-recent-application (-> (sort-by :mtime > applications) first)
-            {:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id issuer_tier issuer_banner]} most-recent-application]
-        (swap! state assoc :show-issuer-info true :issuer-content {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner}))))
-
-#_(defn init-data [state init-params]
-    (let [country (session/get-in [:filter-options :country] (:country init-params))
-          {:keys [order tags name issuer]} init-params]
-      (ajax/GET
-       (path-for "/obpv1/application/")
-       {:params  (assoc init-params :country country)
-        :handler (fn [data]
-                   (let [{:keys [applications countries user-country]} data
-                         {:keys [issuer_content_name issuer_image issuer_content_url issuer_content_id issuer_tier issuer_banner]} (first applications)]
-                     (if (or (not= order "mtime") (not (empty? tags)) (not (blank? name)) (not (blank? issuer)))
-                       (swap! state assoc :show-featured false) (swap! state assoc :show-featured true))
-                     (swap! state assoc :applications applications
-                            :countries countries :value (or (init-autocomplete tags state) #{}))
-                     (init-issuer issuer state)
-                     (init-all-issuers state (dissoc init-params :issuer))
-                     #_(url-builder init-params state)))})))
-
 (defn init-data [params state]
-  (let [{:keys [order tags name issuer country]} params]
+  (let [{:keys [order tags name issuer country followed]} params]
     (swap! state assoc :initial-query @initial-query)
     (all-issuers state (dissoc params :issuer))
     (autocomplete-search state country)
-    (ajax/GET
-     (path-for "/obpv1/application/")
-     {:params params
-      :handler (fn [{:keys [applications countries user-country]}]
-                 (when (or (not= order "mtime") (not (empty? tags)) (not (blank? name)) (not (blank? issuer)))
-                   (swap! state assoc :show-featured false))
-                 (swap! state assoc :applications applications :countries countries)
-                 (swap! state assoc-in [:autocomplete :tags :value] (or (init-autocomplete tags state) #{})))})))
-
-#_(defn init-values
-    "take url params"
-    []
-    (let [{:keys [country issuer #_issuer-name order id name tags]} (keywordize-keys (:query (url/url (-> js/window .-location .-href))))
-          query-params (keywordize-keys (:query (url/url (-> js/window .-location .-href))))]
-      (-> query-params
-          (assoc :country (if id "all" (or country (session/get-in [:user :country] "all")))))))
+    (when (= true followed)(swap! state assoc :show-followed-only followed))
+   (ajax/GET
+    (path-for "/obpv1/application/")
+    {:params params
+     :handler (fn [{:keys [applications countries user-country]}]
+               (when (or (not= order "mtime") (not (empty? tags)) followed (not (blank? name)) (not (blank? issuer)))
+                 (swap! state assoc :show-featured false))
+               (swap! state assoc :applications applications :countries countries)
+               (init-issuer issuer state)
+               (when (or (not (blank? tags))  (= true followed) (not= "all" country)) (swap! state assoc :advanced-search true))
+               (swap! state assoc-in [:autocomplete :tags :value] (or (init-autocomplete tags state) #{})))})))
 
 (defn handler [site-navi params]
   (let [query (as-> (-> js/window .-location .-href url/url :query keywordize-keys) $
@@ -306,40 +268,8 @@
         (layout/default site-navi [content state badge_content_id])
         (layout/landing-page site-navi [content state badge_content_id])))))
 
-#_(defn handler [site-navi params]
-    (let [user-id          (:user-id params)
-          init-values      (init-values)
-          badge_content_id (:badge_content_id params)
-          state            (atom {:init-id            (:id init-values)
-                                  :show-followed-only false
-                                  :show-issuer-info false
-                                  :tags               (or (:tags init-values) ())
-                                  :value              #{}
-                                  :user-id            user-id
-                                  :badges             []
-                                  :countries          []
-                                  :country-selected   (session/get-in [:filter-options :country] (:country init-values)) #_(or (:country init-values) (session/get-in [:user :country] "all"))
-                                  :advanced-search    false
-                                  :name               (or (:name init-values) "")
-                                  :issuer-name        (or (:issuer init-values) "")
-                                  :order              (or (:order init-values) "mtime")
-                                  :timer              nil
-                                  :autocomplete-items              #{}
-                                  :ajax-message       nil
-                                  :issuer-content {:name (t :core/All)}
-                                  :issuer-search false
-                                  :search-result []
-                                  :show-featured true})
-          country (session/get-in [:filter-options :country] (:country init-values))]
-      (init-data state init-values)
-      (autocomplete-search state country #_(:country init-values))
-      (fn []
-        (if (session/get :user)
-          (layout/default site-navi [content state badge_content_id])
-          (layout/landing-page site-navi [content state badge_content_id])))))
-
 (defn ^:export latestearnablebadges []
-  (let [params (query-params {:country "all" :order "mtime" :issuer-name "" :name ""})
+  (let [params (query-params {:country "all" })
         state (atom {})]
     (init-data params state #_{:country "all" :order "mtime" :issuer-name "" :name ""})
     (fn []

@@ -21,7 +21,7 @@
   {:country (get base :country "")
    :tags (process-tags (get base :tags ""))
    :name (get base :name "")
-   :issuer-name (get base :issuer "")
+   :issuer (get base :issuer "")
    :order (get base :order "mtime")
    :id (get base :id nil)
    :followed (get base :followed false)})
@@ -51,18 +51,18 @@
       (reduce str-space a-seq))))
 
 (defn fetch-badge-adverts [state]
-  (let [{:keys [user-id country-selected name issuer-name order tags show-followed-only]} @state
+  (let [{:keys [user-id country-selected name issuer order tags show-followed-only]} @state
         params (->  (query-params (:params @state)) (assoc :followed show-followed-only))
         initial-params? (= (-> params (dissoc :followed)) (-> (:initial-query @state) (dissoc :followed)))]
-    (if  (and initial-params? (false? show-followed-only))
-      (swap! state assoc :show-featured true)
-      (swap! state assoc :show-featured false))
-    (ajax/GET
-     (path-for (str "/obpv1/application/"))
-     {:params  params
-      :handler (fn [data]
-                 (swap! state assoc :applications (:applications data))
-                 (url-builder params state))})))
+   (if  (and initial-params? (false? show-followed-only) (blank? issuer))
+     (swap! state assoc :show-featured true)
+     (swap! state assoc :show-featured false))
+   (ajax/GET
+    (path-for (str "/obpv1/application/"))
+    {:params  params
+     :handler (fn [data]
+                (swap! state assoc :applications (:applications data))
+                (url-builder params state))})))
 
 (defn taghandler
   "set tag with autocomplete value and accomplish searchs"
@@ -88,10 +88,9 @@
   (ajax/POST
    (path-for (str "/obpv1/application/create_connection_badge_application/" badge-advert-id))
    {:handler (fn [data]
-               (if (= "success")
-                 (do ;set current data-atom to followed true
-                   (swap! data-atom assoc :followed 1)
-                   (fetch-badge-adverts state))))}))
+               (when (= "success" (:status data))
+                (swap! data-atom assoc :followed 1) ;set current data-atom to followed true
+                (fetch-badge-adverts state)))}))
 
 (defn remove-from-followed
   "remove advert from connections"
@@ -101,8 +100,7 @@
    (ajax/DELETE
     (path-for (str "/obpv1/application/delete_connection_badge_application/" badge-advert-id))
     {:handler (fn [data]
-                (if (= "success")
-                  (do ;set current data-atom to followed false
-                    (if data-atom
-                      (swap! data-atom assoc :followed 0))
-                    (fetch-badge-adverts state))))})))
+                (when (= "success" (:status data))
+                  ;set current data-atom to followed false
+                    (when data-atom (swap! data-atom assoc :followed 0))
+                    (fetch-badge-adverts state)))})))
