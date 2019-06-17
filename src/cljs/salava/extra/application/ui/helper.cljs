@@ -115,7 +115,7 @@
    [:div {:class "col-sm-12" :id "sharelinks"}
     [:div#share
      [:div#share-buttons
-      [:div.share-link {:style {:margin-left "unset"}}
+      [:div.share-link ;{:style {:margin-left "unset"}}
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]
       [:div.share-link
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
