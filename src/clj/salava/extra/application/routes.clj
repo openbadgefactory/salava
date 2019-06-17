@@ -12,8 +12,10 @@
 (defn route-def [ctx]
   (routes
     (context "/badge" []
-             (layout/main ctx "/application"))
-    (context "/obpv1/application" []
+             (layout/main ctx "/application")
+             (layout/main-meta ctx "/application/:id/embed" :user))
+
+ (context "/obpv1/application" []
              :tags ["application"]
              (GET "/" [country tags name issuer order id followed]
                   :return schemas/BadgeAdverts
@@ -21,6 +23,13 @@
                   :current-user current-user
                   ;:auth-rules access/signed
                   (ok (a/get-applications ctx country tags name issuer order id (:id current-user) followed)))
+
+             (GET "/:userid/embed" [country tags name issuer order id followed]
+                  :return schemas/BadgeAdverts
+                  :summary "Get badge adverts"
+                  :path-params [userid :- s/Int]
+                  ;:auth-rules access/signed
+                  (ok (a/get-applications ctx country tags name issuer order id userid followed)))
 
              (GET "/public_badge_advert_content/:id" []
                   :return schemas/BadgeAdvertModal

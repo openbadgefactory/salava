@@ -14,9 +14,10 @@
             [salava.core.ui.modal :as mo]
             [salava.extra.application.ui.issuer :as i :refer [issuer-info-grid all-issuers init-issuer]]
             [salava.core.ui.popover :refer [info]]
-            [salava.extra.application.ui.helper :refer [url-builder taghandler fetch-badge-adverts query-params str-cat remove-from-followed add-to-followed]]))
+            [salava.extra.application.ui.helper :refer [share url-builder taghandler fetch-badge-adverts query-params str-cat remove-from-followed add-to-followed]]))
 
-(def initial-query (atom {}))
+
+(def initial-query-params (atom {}))
 
 (defn autocomplete-search [state country]
   (swap! state assoc :autocomplete {:tags {:value #{} :items #{}}})
@@ -123,9 +124,13 @@
 
 (defn gallery-grid-form [state]
   (let [show-advanced-search (cursor state [:advanced-search])
-        show-followed-only-atom (cursor state [:show-followed-only])]
+        show-followed-only-atom (cursor state [:show-followed-only])
+        link-or-embed-atom (cursor state [:show-link-or-embed-code])
+        user (session/get :user)]
     [:div {:id "grid-filter"
            :class "form-horizontal"}
+     (when (= "admin" (:role user))
+           [:div [share link-or-embed-atom (or (:query-param @state)(.-href js/window.location))]])
      [text-field :name  nil #_(t :gallery/Badgename) (t :gallery/Searchbybadgename) state]
      [:div {:style {:margin-bottom "10px"}}
       [:a {:on-click #(reset! show-advanced-search (not @show-advanced-search))
@@ -137,7 +142,7 @@
       [:div
        [country-selector state]
        [autocomplete state]
-       (when (session/get :user) [follow-grid-item show-followed-only-atom state])])
+       (when user [follow-grid-item show-followed-only-atom state])])
 
      [grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-badge-adverts]
      (when @show-advanced-search [issuer-info-grid state])]))
@@ -224,21 +229,24 @@
       (-> (clojure.set/map-invert @autocomplete-items) (select-keys tag-coll) vals set))))
 
 (defn init-data [params state]
-  (let [{:keys [order tags name issuer country followed]} params]
-    (swap! state assoc :initial-query @initial-query)
-    (all-issuers state (dissoc params :issuer))
-    (autocomplete-search state country)
-    (when (= true followed)(swap! state assoc :show-followed-only followed))
-   (ajax/GET
-    (path-for "/obpv1/application/")
-    {:params params
-     :handler (fn [{:keys [applications countries user-country]}]
-               (when (or (not= order "mtime") (not (empty? tags)) followed (not (blank? name)) (not (blank? issuer)))
+ (let [{:keys [order tags name issuer country followed]} params]
+  (all-issuers state params)
+  (autocomplete-search state country)
+  (when (= true followed)(swap! state assoc :show-followed-only followed))
+  (ajax/GET
+   (path-for "/obpv1/application/")
+   {:params params
+    :handler (fn [data]
+              (when (or (not (blank? tags))  (= true followed) (= "true" followed) (not= "all" country)) (swap! state assoc :advanced-search true))
+              (when (or (not= order "mtime") (not (empty? tags)) followed (not (blank? name)) (not (blank? issuer)))
                  (swap! state assoc :show-featured false))
-               (swap! state assoc :applications applications :countries countries)
-               (init-issuer issuer state)
-               (when (or (not (blank? tags))  (= true followed) (not= "all" country)) (swap! state assoc :advanced-search true))
-               (swap! state assoc-in [:autocomplete :tags :value] (or (init-autocomplete tags state) #{})))})))
+              (when (or (not (blank? tags))  (= true followed) (not= "all" country)) (swap! state assoc :advanced-search true))
+              (swap! state assoc :applications (:applications data)
+                                 :countries (:countries data)
+                                 :initial-query @initial-query-params)
+
+              (init-issuer issuer state)
+              (swap! state assoc-in [:autocomplete :tags :value] (or (init-autocomplete tags state) #{})))})))
 
 (defn handler [site-navi params]
   (let [query (as-> (-> js/window .-location .-href url/url :query keywordize-keys) $
@@ -247,29 +255,32 @@
                       (assoc $ :country (session/get-in [:filter-options :country]
                                                         (session/get-in [:user :country] "all")))))
         {:keys [badge_content_id user-id]} params
+
         params (query-params query)
         state (atom {:params params
                      :init-id (:id params)
                      :user-id user-id
                      :issuer {:issuer-search false :search-result [] :show-issuer-info false :issuer-content {:name (t :core/All)}}
                      :autocomplete {:tags {:value #{} :items #{}}}
-                     :badges []
+                     :applications []
                      :countries []
                      :country-selected  (session/get-in [:filter-options :country] (:country params))
                      :show-followed-only false
                      :show-featured true
                      :advanced-search false
                      :timer nil
-                     :ajax-message nil})]
-    (reset! initial-query params)
-    (init-data params state)
-    (fn []
-      (if (session/get :user)
-        (layout/default site-navi [content state badge_content_id])
-        (layout/landing-page site-navi [content state badge_content_id])))))
+                     :ajax-message nil
+                     :initial-query nil
+                     :show-link-or-embed-code nil})]
+   (reset! initial-query-params params)
+   (init-data params state)
+   (fn []
+     (if (session/get :user)
+       (layout/default site-navi [content state badge_content_id])
+       (layout/landing-page site-navi [content state badge_content_id])))))
 
 (defn ^:export latestearnablebadges []
-  (let [params (query-params {:country "all" })
+  (let [params (query-params {:country "all"})
         state (atom {})]
     (init-data params state #_{:country "all" :order "mtime" :issuer-name "" :name ""})
     (fn []
