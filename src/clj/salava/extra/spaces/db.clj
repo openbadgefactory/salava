@@ -1,4 +1,4 @@
-(ns salava.extra.application.db
+(ns salava.extra.spaces.db
  (:require [yesql.core :refer [defqueries]]
            [salava.core.util :as u]
            [clojure.tools.logging :as log]
