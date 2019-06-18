@@ -237,10 +237,9 @@
    (path-for "/obpv1/application/")
    {:params params
     :handler (fn [data]
-              (when (or (not (blank? tags))  (= true followed) (= "true" followed) (not= "all" country)) (swap! state assoc :advanced-search true))
+              (when (or (not (blank? tags))  (= true followed) (= "true" followed) #_(not= "all" country)) (swap! state assoc :advanced-search true))
               (when (or (not= order "mtime") (not (empty? tags)) followed (not (blank? name)) (not (blank? issuer)))
                  (swap! state assoc :show-featured false))
-              (when (or (not (blank? tags))  (= true followed) (not= "all" country)) (swap! state assoc :advanced-search true))
               (swap! state assoc :applications (:applications data)
                                  :countries (:countries data)
                                  :initial-query @initial-query-params)

@@ -213,6 +213,13 @@ ul.navbar-nav li a {
  &.btn-active {}
 }
 
+#grid-filter .copy-boxes .btn {
+  &:hover, &:active{
+    color: black;
+    box-shadow: none;
+  }
+}
+
 body {
  font-family: "GT America", "Arial", sans-serif;
  background-color: $background-color;

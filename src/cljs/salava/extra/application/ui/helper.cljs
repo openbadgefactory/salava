@@ -1,13 +1,14 @@
 (ns salava.extra.application.ui.helper
   (:require
-   [reagent.core :refer [atom cursor create-class]]
+   [reagent.core :refer [atom cursor create-class dom-node]]
    [reagent.session :as session]
    [salava.core.i18n :refer [t]]
    [clojure.string :refer [join blank?]]
    [dommy.core :as dommy :refer-macros [sel sel1]]
    [salava.core.ui.ajax-utils :as ajax]
-   [salava.core.ui.helper :refer [path-for base-url]]
-   [clojure.string :refer [trim split replace]]))
+   [salava.core.ui.helper :refer [path-for base-url private?]]
+   [clojure.string :refer [trim split replace]]
+   [salava.core.ui.share :as s]))
 
 (defn subs-hashtag [text]
   (if (re-find #"^#" text) (subs text 1) text))
@@ -55,15 +56,16 @@
   (let [{:keys [user-id country-selected name issuer order tags show-followed-only]} @state
         params (->  (query-params (:params @state)) (assoc :followed show-followed-only))
         initial-params? (= (-> params (dissoc :followed)) (-> (:initial-query @state) (dissoc :followed)))]
-    (if  (and initial-params? (false? show-followed-only) (blank? issuer))
-      (swap! state assoc :show-featured true)
-      (swap! state assoc :show-featured false))
-    (ajax/GET
-     (path-for (str "/obpv1/application/"))
-     {:params  params
-      :handler (fn [data]
-                 (swap! state assoc :applications (:applications data))
-                 (url-builder params state))})))
+   (swap! state assoc :show-link-or-embed-code nil)
+   (if  (and initial-params? (false? show-followed-only) (blank? issuer))
+     (swap! state assoc :show-featured true)
+     (swap! state assoc :show-featured false))
+   (ajax/GET
+    (path-for (str "/obpv1/application/"))
+    {:params  params
+     :handler (fn [data]
+                (swap! state assoc :applications (:applications data))
+                (url-builder params state))})))
 
 (defn taghandler
   "set tag with autocomplete value and accomplish searchs"
@@ -106,24 +108,82 @@
                   (when data-atom (swap! data-atom assoc :followed 0))
                   (fetch-badge-adverts state)))})))
 
-(defn share-content [link-or-embed-atom url]
- (let [url (case @link-or-embed-atom
-            "embed" (replace (.-href js/window.location) #"/badge/application" (str "/badge/application/" (session/get-in [:user :id]) "/embed"))
-            url)]
-  [:div.form-group
-   ;[:label {:class "control-label col-sm-2"} (str (t :badge/Share) ":")]
-   [:div {:class "col-sm-12" :id "sharelinks"}
-    [:div#share
-     [:div#share-buttons
-      [:div.share-link ;{:style {:margin-left "unset"}}
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]
-      [:div.share-link
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
-     (if  (= "link" @link-or-embed-atom)
-       [:div.linkinput.form-group [:div.col-sm-8 [:input {:class "form-control" :read-only true :type "text" :value url}]]])
-     (if (= "embed" @link-or-embed-atom)
-       [:div.linkinput.form-group [:div.col-sm-8 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\"" url "\" frameborder=\"0\"></iframe>")}]]])]]]))
+;; Refactor code: move share functionality to core
+(defn clipboard-button [target status]
+  (let [clipboard-atom (atom nil)]
+    (create-class
+     {:display-name "clipboard-button"
+      :component-did-mount
+      #(let [clipboard (new js/Clipboard (dom-node %))]
+         (reset! clipboard-atom clipboard))
+      :component-will-unmount
+      #(when-not (nil? @clipboard-atom)
+         (.destroy @clipboard-atom)
+         (reset! clipboard-atom nil))
+      :reagent-render
+      (fn []
+        [:button {:class "btn btn-primary input-btn"
+                  :id "copybutton"
+                  :type "button"
+                  :data-clipboard-target target
+                  :on-click #(.preventDefault %)
+                  :style {:height "34px"}}
+
+         [:i {:class "fa fa-clipboard" :aria-hidden "true"}] (str " " (t :core/Copy))])})))
+
+(defn input-button [name id text]
+  (let [status (atom "")]
+    (fn []
+      [:div {:class "" :key id}
+       [:fieldset
+        (when-not (clojure.string/blank? name) [:label {:class " sub-heading"} name])
+        [:div.input-group
+         [:input {:class       "form-control"
+                  :id          id
+                  :name        "email-text"
+                  :type        "text"
+                  :read-only true
+                  :value       text}]
+         [:span {:class "input-group-btn"}
+          [clipboard-button (str "#" id) status]]]]])))
+
+(defn share-buttons-applications [link-url embed-url link-or-embed-atom]
+ (let [site-name (session/get-in [:share :site-name])
+       hashtag   (session/get-in [:share :hashtag])]
+    (if (private?)
+      [:div]
+      (create-class {:reagent-render  (fn [link-url embed-url link-or-embed-atom]
+
+                                          [:div {:id "share"}
+                                           [:div#share-buttons
+                                            [:div.share-button
+                                             [:a {:class  "twitter"
+                                                           :href   (str "https://twitter.com/intent/tweet?size=medium&count=none&text="
+                                                                        (js/encodeURIComponent (str site-name ": "))
+                                                                        "&url=" (js/encodeURIComponent link-url) "&hashtags=" hashtag)
+                                                           :target "_blank"}
+                                                 [:i {:class "fa fa-twitter-square"}]]]
+                                            [:div.share-button
+                                             [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" link-url "&summary=" (js/encodeURIComponent (str site-name ": ")) "&source=" hashtag) :target "_blank"}
+                                              [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
+                                            [:div.share-link
+                                             [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]
+                                            [:div.share-link
+                                             [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
+                                           (if (= "link" @link-or-embed-atom)
+                                            [:div.copy-boxes
+                                             [input-button nil "url" link-url]])
+                                           (if (= "embed" @link-or-embed-atom)
+                                            [:div.copy-boxes
+                                             [input-button nil "embed" (str "<iframe width=\"90%\" height=\"560\" src=\""embed-url"\" frameborder=\"0\"></iframe>")]])])
+                     :component-did-mount (fn []
+                                            (do
+                                              (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
+                                              (.getScript (js* "$") "//platform.twitter.com/widgets.js")
+                                              (js* "delete IN")
+                                         ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
+                                              (.getScript (js* "$") "https://apis.google.com/js/platform.js")))}))))
 
 (defn share [link-or-embed-atom url]
-  (create-class {:reagent-render (fn [link-or-embed-atom url]
-                                   [share-content link-or-embed-atom url])}))
+   (let [embed-url (replace (.-href js/window.location) #"/badge/application" (str "/badge/application/" (session/get-in [:user :id]) "/embed"))]
+    [:div.form-group {:style {:margin-bottom "unset"}} [:div.col-sm-8 [share-buttons-applications url embed-url link-or-embed-atom]]]))
