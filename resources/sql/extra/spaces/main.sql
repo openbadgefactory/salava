@@ -17,3 +17,15 @@ VALUES
 
 --name: create-pending-space-admin!
 INSERT INTO space_admin_pending (space_id, email, ctime) VALUES (:space_id, :email, UNIX_TIMESTAMP())
+
+--name: select-space-by-id
+SELECT * FROM space WHERE id = :id
+
+--name: select-space-by-uuid
+SELECT * FROM space WHERE uuid = :uuid
+
+--name: select-space-admins
+SELECT * FROM user_space WHERE space_id = :space_id AND role = 'admin'
+
+--name: select-pending-space-admins
+SELECT * FROM space_admin_pending WHERE space_id = :space_id

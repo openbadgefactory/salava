@@ -66,6 +66,7 @@
    :migration-table-name schema-table})
 
 (defn plugin-migrations [plugin]
+(prn plugin)
   (->> (migration-dir plugin) io/resource io/file file-seq (filter #(.isFile %)) (map #(string/replace (.getName %) #"^(\d+).+" "$1")) set))
 
 (defn applied-migrations
