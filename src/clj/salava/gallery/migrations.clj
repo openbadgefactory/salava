@@ -44,12 +44,15 @@
                                               LIMIT ? OFFSET ?" limit offset])]
         (gallery-insert! config row)))))
 
+(defn column-exists? [config table-name column-name]
+ (if (empty? (jdbc/query (:conn config) [(str "SHOW COLUMNS FROM `"table-name"` LIKE '" (str column-name) "'")])) false true))
+
+
 (defn gallery-table-insert-down [config]
-  (jdbc/execute! (:conn config) ["UPDATE user_badge         SET gallery_id = NULL"])
-  (jdbc/execute! (:conn config) ["UPDATE badge_message      SET gallery_id = NULL"])
-  (jdbc/execute! (:conn config) ["UPDATE badge_message_view SET gallery_id = NULL"])
+ (when (column-exists? config "user_badge" "gallery_id")(jdbc/execute! (:conn config) ["UPDATE user_badge         SET gallery_id = NULL"]))
+ (when (column-exists? config "badge_message" "gallery_id")(jdbc/execute! (:conn config) ["UPDATE badge_message      SET gallery_id = NULL"]))
+ (when (column-exists? config "badge_message_view" "gallery_id")(jdbc/execute! (:conn config) ["UPDATE badge_message_view SET gallery_id = NULL"]))
+ (when (column-exists? config "social_connections_badge" "gallery_id") (jdbc/execute! (:conn config) ["UPDATE social_connections_badge SET gallery_id = NULL"]))
 
-  (jdbc/execute! (:conn config) ["UPDATE social_connections_badge SET gallery_id = NULL"])
-
-  (jdbc/execute! (:conn config) ["DELETE FROM gallery"])
-  (jdbc/execute! (:conn config) ["ALTER TABLE gallery AUTO_INCREMENT = 1"]))
+ (jdbc/execute! (:conn config) ["DELETE FROM gallery"])
+ (jdbc/execute! (:conn config) ["ALTER TABLE gallery AUTO_INCREMENT = 1"]))
