@@ -39,7 +39,7 @@ SELECT mtime FROM badge_message_view where badge_id = :badge_id AND user_id = :u
 
 
 --name: select-badge-gallery-id
-SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1;
+SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id AND gallery_id IS NOT NULL ORDER BY ctime DESC LIMIT 1;
 
 
 --name: insert-connect-badge<!
@@ -54,7 +54,7 @@ DELETE FROM social_connections_badge WHERE user_id = :user_id  AND badge_id =  (
 
 --name: select-connection-badge
 SELECT 1 FROM social_connections_badge WHERE user_id = :user_id
-    AND (badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1));
+    AND (badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id AND gallery_id IS NOT NULL ORDER BY ctime DESC LIMIT 1));
 
 -- name: select-user-connections-badge
 -- get users badge connections
