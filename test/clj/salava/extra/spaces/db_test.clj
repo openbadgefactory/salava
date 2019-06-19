@@ -5,7 +5,7 @@
    [salava.core.migrator :as migrator]
    [salava.core.test-utils :as t]))
 
-(def test-data [{:uuid (uuid)
+(def test-data [{:uuid (space/uuid)
                  :name "Hpass"
                  :description ""
                  :status "active"
@@ -13,7 +13,7 @@
                  :logo "https://techcrunch.com/wp-content/uploads/2018/07/logo-2.png?w=300"
                  :banner ""
                  :admin ["isaac.ogunlolu@discendum.com", "isaac.ogunlolu+test100000@discendum.com"]}
-                {:uuid (uuid)
+                {:uuid (space/uuid)
                  :name "msftembo"
                  :status "active"
                  :visibility "open"
@@ -24,4 +24,4 @@
 (t/deftest-ctx main-test [ctx]
  (testing "create new space"
   (let [response (space/create! ctx test-data)]
-   (is (= "sucess" (:status success))))))
+   (is (= "success" (:status response))))))
