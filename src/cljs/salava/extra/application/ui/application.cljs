@@ -68,9 +68,11 @@
                 :value     @country
                 :on-change #(do
                               (reset! country (.-target.value %))
-                              (swap! state assoc :params (query-params {:country @country}))
-                              (autocomplete-search state @country)
-                              (fetch-badge-adverts state))}
+                             (swap! state assoc-in [:issuer :show-issuer-info] false)
+                             (swap! state assoc-in [:issuer :issuer-content] {:name (t :core/All)})
+                             (swap! state assoc :params (query-params {:country @country}))
+                             (autocomplete-search state @country)
+                             (fetch-badge-adverts state))}
        [:option {:value "all" :key "all"} (t :core/All)]
        (for [[country-key country-name] (map identity (:countries @state))]
          [:option {:value country-key
