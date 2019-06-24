@@ -1,6 +1,6 @@
 -- name: create-space<!
 -- create new space
-INSERT INTO spaces
+INSERT INTO space
   (uuid, name, description, logo, banner, status, visibility, ctime, mtime, last_modified_by)
 VALUES
   (:uuid, :name, :description, :logo, :banner, 'active', 'closed', UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
@@ -23,6 +23,9 @@ SELECT * FROM space WHERE id = :id
 
 --name: select-space-by-uuid
 SELECT * FROM space WHERE uuid = :uuid
+
+--name: select-space-by-name
+SELECT * FROM space WHERE name = :name
 
 --name: select-space-admins
 SELECT * FROM user_space WHERE space_id = :space_id AND role = 'admin'
