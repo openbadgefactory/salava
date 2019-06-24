@@ -30,8 +30,9 @@
 
 (defn create! [ctx space-coll]
  (doseq [space space-coll
-         :let [{:keys [name description status visibility logo banner admin]} space
+         :let [{:keys [uuid name description status visibility logo banner admin]} space
                new-space (->Space nil uuid name description status visibility logo banner)]]
+  (prn new-space)
   (db/create-new-space! ctx (assoc new-space :admin admin))))
 
 (defn delete! [space-id])

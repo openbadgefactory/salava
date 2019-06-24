@@ -17,24 +17,37 @@
     (create-pending-space-admin! (->Pending_admin nil space-id email) (u/get-db ctx)))
   (log/info "Space admin " email " created!"))
 
+(defn space-exists?
+ "check if space name already exists"
+ [ctx space]
+ (if-let [check (empty? (select-space-by-name {:name (:name space)} (u/get-db ctx)))] false true))
+
+
 (defn create-new-space! [ctx space]
   (log/info "Creating space" (:name space))
   (try+
-   (if (seq (:admin space))
-     (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
-                               (let [space_id (-> space
-                                                  (dissoc :id :admin)
-                                                  (assoc :logo (save-image! ctx (:logo space)) :banner (save-image! ctx (:banner space)))
-                                                  (create-space<! {:connection tx})
-                                                  :generated_key)]
+   (if (space-exists? ctx space)
+    (if (seq (:admin space))
+      (jdbc/with-db-transaction [tx (:connection (u/get-db ctx))]
+                                (let [space_id (-> space
+                                                   (dissoc :id :admin)
+                                                   (assoc :logo (save-image! ctx (:logo space)) :banner (save-image! ctx (:banner space)))
+                                                   (create-space<! {:connection tx})
+                                                   :generated_key)]
 
-                                 (do (doseq [email (:admin space)]
-                                       (create-space-admin! ctx space_id email))
-                                     (log/info "Finished creating space")
-                                     {:status "success"})))
-     (do
-       (log/error "Error, No space admin defined")
-       {:status "Error"}))
+                                  (do (doseq [email (:admin space)]
+                                        (create-space-admin! ctx space_id email))
+                                      (log/info "Finished creating space")
+                                      {:status "success"})))
+      (do
+        (log/error "Error, No space admin defined")
+        (throw+ {:status "Error" :message (str "Space with name " (:name space) " already exists")})
+        {:status "Error"}))
+    (do
+     (log/error "Error!" (str "Space with name " (:name space) " already exists"))
+     (throw+ {:status "Error" :message (str "Space with name " (:name space) " already exists")})
+     {:status "Error"}))
+
 
    (catch Object _
      (log/error "Create space error!")
