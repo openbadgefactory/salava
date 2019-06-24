@@ -1,1 +1,1 @@
-ALTER TABLE `social_connections_badge` DROP COLUMN `gallery_id`;
+ALTER TABLE `social_connections_badge` DROP COLUMN IF EXISTS `gallery_id`;
