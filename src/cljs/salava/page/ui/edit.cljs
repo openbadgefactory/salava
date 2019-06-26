@@ -386,7 +386,7 @@
           [:div.row.form-group {:style {:padding-top "10px"}}
            [:div.col-xs-8 [:select {:class "form-control"
                                     :aria-label "select blocktype"
-                                    :value (:format @block-atom)
+                                    :value (or (:format @block-atom) "short")
                                     :on-change #(update-block-value block-atom :format (.-target.value %))}
                            [:option {:value "short"} (t :page/Short)]
                            [:option {:value "long"} (t :page/Long)]]]
@@ -471,7 +471,7 @@
   (let [{:keys [id name]} (:page @state)]
 
     [:div {:id "page-edit"}
-     [m/modal-window]
+     ;[m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content state]
      [page-form state]]))
@@ -495,7 +495,8 @@
                      :badges []
                      :tags []
                      :toggle-move-mode false
-                     :profile-tab? nil})]
+                     :profile-tab? nil
+                     :delete-page? false})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))

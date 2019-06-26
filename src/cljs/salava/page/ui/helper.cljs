@@ -25,9 +25,9 @@
 (defn delete-page [id]
   (ajax/DELETE
     (path-for (str "/obpv1/page/" id))
-    {:handler (fn [] (do
-                       (m/close-modal!)
-                       (navigate-to "/profile/page")))}))
+    {:handler (fn [] #_(do
+                        (m/close-modal!)
+                        (navigate-to "/profile/page")))}))
 
 (defn delete-page-modal [page-id state]
   [:div
@@ -50,7 +50,11 @@
      (t :page/Cancel)]
     [:button {:type "button"
               :class "btn btn-warning"
-              :on-click #(delete-page page-id)}
+              :data-dismiss "modal"
+              :on-click #(do
+                          (.preventDefault %)
+                          (swap! state assoc :delete-page? true)
+                          (delete-page page-id))}
      (t :page/Delete)]]])
 
 (defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]}]
@@ -303,6 +307,7 @@
 
 (defn save-page [state next-url]
   (let [{:keys [id name description blocks]} (:page @state)]
+   (swap! state assoc :spinner true)
    (if (blank? name)
     (swap! state assoc :alert {:message (t :badge/Emptynamefield) :status "error"} :spinner false)
     (ajax/POST
@@ -412,7 +417,10 @@
                         :id "buttons-right"}
                   [:button.btn.btn-danger {:on-click #(do
                                                          (.preventDefault %)
-                                                         (m/modal! (delete-page-modal id state)))}
+                                                         (m/modal! (delete-page-modal id state) {:hidden (fn []
+                                                                                                          (when @(cursor state [:delete-page?])
+                                                                                                           (m/close-modal!)
+                                                                                                           (navigate-to "/profile/page")))}))}
                      [:i.fa.fa-trash.fa-fw.fa-lg](t :core/Delete)]]
                  [:div.wizard ;{:style {:width "75%"}};.col-md-9.col-sm-9.col-xs-12.col-sm-pull-3.wizard
                   [:a {:class (if (= target :content) "current")
