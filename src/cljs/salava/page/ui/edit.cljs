@@ -495,7 +495,8 @@
                      :badges []
                      :tags []
                      :toggle-move-mode false
-                     :profile-tab? nil})]
+                     :profile-tab? nil
+                     :delete-page? false})]
     (init-data state id)
     (fn []
       (layout/default site-navi (content state)))))

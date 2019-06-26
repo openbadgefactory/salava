@@ -53,6 +53,7 @@
               :data-dismiss "modal"
               :on-click #(do
                           (.preventDefault %)
+                          (swap! state assoc :delete-page? true)
                           (delete-page page-id))}
      (t :page/Delete)]]])
 
@@ -417,8 +418,9 @@
                   [:button.btn.btn-danger {:on-click #(do
                                                          (.preventDefault %)
                                                          (m/modal! (delete-page-modal id state) {:hidden (fn []
+                                                                                                          (when @(cursor state [:delete-page?])
                                                                                                            (m/close-modal!)
-                                                                                                           (navigate-to "/profile/page"))}))}
+                                                                                                           (navigate-to "/profile/page")))}))}
                      [:i.fa.fa-trash.fa-fw.fa-lg](t :core/Delete)]]
                  [:div.wizard ;{:style {:width "75%"}};.col-md-9.col-sm-9.col-xs-12.col-sm-pull-3.wizard
                   [:a {:class (if (= target :content) "current")
