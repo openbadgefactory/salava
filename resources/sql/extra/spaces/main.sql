@@ -1,9 +1,9 @@
 -- name: create-space<!
 -- create new space
 INSERT INTO space
-  (uuid, name, description, logo, banner, status, visibility, ctime, mtime, last_modified_by)
+  (uuid, name, description, logo, banner, status, visibility, ctime, mtime)
 VALUES
-  (:uuid, :name, :description, :logo, :banner, 'active', 'closed', UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
+  (:uuid, :name, :description, :logo, :banner, :status, :visibility, UNIX_TIMESTAMP(),UNIX_TIMESTAMP())
 
 -- name: select-email-address
 -- check if email address exists
@@ -17,6 +17,12 @@ VALUES
 
 --name: create-pending-space-admin!
 INSERT INTO space_admin_pending (space_id, email, ctime) VALUES (:space_id, :email, UNIX_TIMESTAMP())
+
+--name: select-all-spaces
+SELECT * FROM space
+
+--name: select-all-active-spaces
+SELECT * FROM space WHERE status = 'active'
 
 --name: select-space-by-id
 SELECT * FROM space WHERE id = :id
@@ -32,3 +38,12 @@ SELECT * FROM user_space WHERE space_id = :space_id AND role = 'admin'
 
 --name: select-pending-space-admins
 SELECT * FROM space_admin_pending WHERE space_id = :space_id
+
+--name: delete-space!
+DELETE FROM space WHERE id = :id
+
+--name: delete-space-members!
+DELETE FROM user_space WHERE space_id = :space_id
+
+--name:delete-space-properties!
+DELETE FROM space_properties WHERE space_id = :space_id
