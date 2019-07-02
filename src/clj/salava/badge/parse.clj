@@ -11,7 +11,8 @@
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.core.helper :refer [dump]]
-            [schema.core :as s])
+            [schema.core :as s]
+            [pdfboxing.info :as pdf-info])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
 
@@ -659,6 +660,12 @@
            first
            string/trim
            (str->badge user)))
+
+(defmethod file->badge "application/pdf" [user upload]
+  (some->> (pdf-info/metadata-value (or (:tempfile upload) (:body upload)) "openbadges")
+           string/trim
+           (str->badge user)))
+
 
 (defmethod file->badge :default [_ upload]
   (log/error "file->assertion: unsupported file type:" (:content-type upload))

@@ -54,6 +54,8 @@
                  [clj-pdf-markdown "0.2.1"]
                  [org.clojure/core.cache "0.7.2"]
 
+                 [pdfboxing "0.1.13" :exclusions [org.apache.pdfbox/pdfbox]]
+
                  ; Client side
                  [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
                  [reagent "0.8.1"]
