@@ -1,7 +1,7 @@
 (ns salava.user.ui.routes
   (:require [salava.core.ui.layout :as layout]
             [salava.core.i18n :as i18n :refer [t]]
-            [salava.core.ui.helper :refer [base-path]]
+            [salava.core.ui.helper :refer [base-path path-for]]
             [salava.user.ui.login :as login]
             [salava.user.ui.activate :as password]
             [salava.user.ui.profile :as profile]
@@ -16,7 +16,8 @@
             [salava.user.ui.modal :as usermodal]
             [salava.user.ui.data :as data]
             [salava.user.ui.terms :as terms]
-            [salava.user.ui.delete-user :as delete-user]))
+            [salava.user.ui.delete-user :as delete-user]
+            [reagent.session :as session]))
 
 (defn placeholder [content]
   (fn [site-navi params]
@@ -44,8 +45,8 @@
 
 
 (defn ^:export navi [context]
-  {(str (base-path context) "/user/profile/\\d+")                          {:breadcrumb (t :user/User " / " :user/Profile)}
-   (str (base-path context) "/user/profile/" (get-in context [:user :id])) {:weight 40 :title (t :user/Myprofile) :site-navi true :breadcrumb (str (t :user/User) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
+  {;(str (base-path context) "/user/profile/\\d+")                          {:breadcrumb (t :user/User " / " :user/Profile)}
+   ;(str (base-path context) "/user/profile/" (get-in context [:user :id])) {:weight 40 :title (t :user/Myprofile) :site-navi true :breadcrumb (str (t :user/User) " / " (get-in context [:user :first_name]) " " (get-in context [:user :last_name]))}
    (str (base-path context) "/user/edit/profile")                          {:breadcrumb (t :user/User " / " :user/Editprofile)}
    (str (base-path context) "/user/edit")                                  {:weight 41 :title (t :user/Accountsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Accountsettings)}
    (str (base-path context) "/user/edit/password")                         {:weight 42 :title (t :user/Passwordsettings) :site-navi true :breadcrumb (t :user/User " / " :user/Passwordsettings)}
@@ -53,3 +54,8 @@
    (str (base-path context) "/user/cancel")                                {:weight 49 :title (t :user/Cancelaccount) :site-navi true :breadcrumb (t :user/User " / " :user/Cancelaccount)}
    (str (base-path context) "/user/data/" (get-in context [:user :id]))     {:weight 50 :title (t :user/Mydata) :site-navi true :breadcrumb (t :user/User " / " :user/Mydata)}})
 
+
+(defn ^:export quicklinks []
+  [{:title [:p (t :social/Iwanttomanagemyaccount)]
+    :url (str (path-for "/user/edit"))
+    :weight 8}])

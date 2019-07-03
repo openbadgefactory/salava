@@ -57,17 +57,17 @@
                  :class "col-md-3"}
          (t :user/Language)]
         [:div.col-md-9
-         [input/radio-button-selector (:languages @state) language-atom]]]
+         [input/radio-button-selector "language" (:languages @state) language-atom]]]
 
        [:div.form-group
         [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "first-name" :atom first-name-atom}]]]
+         [input/text-field {:name "first_name" :atom first-name-atom}]]]
 
        [:div.form-group
         [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
-         [input/text-field {:name "last-name" :atom last-name-atom}]]]
+         [input/text-field {:name "last_name" :atom last-name-atom}]]]
 
        [:div.form-group
         [:label {:for "input-country"
@@ -91,8 +91,13 @@
              [:div (t :user/Emailnotificationsdeactivetip)])
            ]])
        (user-connect-config)
+
+       (into [:div]
+         (for [f (plugin-fun (session/get :plugins) "block" "user_edit")]
+           [f]))
+
        [:div.row
-        [:div.col-xs-12
+        [:div.col-xs-9.col-xs-offset-3
          [:button {:class "btn btn-primary"
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
@@ -123,7 +128,7 @@
                             :country "EN"
                             :email_notification nil}
                      :message nil
-                     :languages ["en"]
+                     :languages []
                      :email-notifications false})]
     (init-data state)
     (fn []

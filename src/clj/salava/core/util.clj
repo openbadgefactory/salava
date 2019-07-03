@@ -19,15 +19,26 @@
            (java.net URLEncoder)
            (java.util Base64)))
 
-(defn get-db [ctx]
-  {:connection {:datasource (:db ctx)}})
+(defn get-datasource
+  "Get datasource in context or default db-spec for testing."
+  [ctx]
+  (if (:db ctx)
+    {:datasource (:db ctx)}
+    {:dbtype "mysql"
+     :dbname "salava"
+     :user "salava"
+     :password "salava"}))
 
-(defn get-datasource [ctx]
-  {:datasource (:db ctx)})
+(defn get-db [ctx]
+  {:connection (get-datasource ctx)})
 
 (defn get-db-1 [ctx]
-  {:connection {:datasource (:db ctx)}
+  {:connection (get-datasource ctx)
    :result-set-fn first})
+
+(defn get-db-col [ctx kw]
+  {:connection (get-datasource ctx)
+   :row-fn kw})
 
 (defn get-data-dir [ctx]
   (get-in ctx [:config :core :data-dir]))

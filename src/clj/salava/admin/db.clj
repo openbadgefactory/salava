@@ -233,19 +233,20 @@
 
 (defn get-badge-modal [ctx badgeid]
   (let [badge  (b/get-badge ctx badgeid nil)
-        emails (vec (u/email-addresses ctx (:owner badge)))]
-    (hash-map :name (:name badge)
-              :image_file (:image_file badge)
-              :item_owner_id (:owner badge) 
+        emails (vec (u/email-addresses ctx (:owner badge)))
+        default-content (->> badge :content (filter #(= (:language_code %) (:default_language_code %))) first)]
+    (hash-map :name (:name default-content)
+              :image_file (:image_file default-content)
+              :item_owner_id (:owner badge)
               :item_owner (str (:first_name badge) " " (:last_name badge))
-              :info {:issuer_content_name (:issuer_content_name badge)
-                     :issuer_content_url (:issuer_content_url badge)
-                     :issuer_contact (:issuer_contact badge)
-                     :issuer_image (:issuer_image badge)
-                     :creator_name (:creator_name badge)
-                     :creator_url (:creator_url badge)
-                     :creator_email (:creator_email badge)
-                     :creator_image (:creator_image badge)
+              :info {:issuer_content_name (:issuer_content_name default-content)
+                     :issuer_content_url (:issuer_content_url default-content)
+                     :issuer_contact (:issuer_contact default-content)
+                     :issuer_image (:issuer_image default-content)
+                     :creator_name (:creator_name default-content)
+                     :creator_url (:creator_url default-content)
+                     :creator_email (:creator_email default-content)
+                     :creator_image (:creator_image default-content)
                      :emails emails})))
 
 (defn get-public-badge-content-modal [ctx badge-id user-id]
@@ -322,7 +323,7 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
         profiles (jdbc/with-db-connection
                    [conn (:connection (get-db ctx))]
                    (jdbc/query conn (into [query] params)))]
-    
+
     (->> profiles
          (take 50))))
 

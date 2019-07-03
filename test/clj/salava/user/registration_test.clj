@@ -11,11 +11,13 @@
    :email "test.registration@example.com"
    :first_name "Testing"
    :last_name "Registration"
-   :language "fi"
    :country "FI"
+   :language "fi"
    :password "123456"
    :password_verify "123456"
-   :token "registerationToken"})
+   :token "registerationToken"
+   :accept_terms "accepted"
+    })
 
 (t/deftest-ctx main-test [ctx]
 
@@ -31,7 +33,7 @@
      ))
   (testing "get current state of configs"
     (let [{:keys [status body]} (t/test-api-request ctx :post "/obpv1/user/register" {:params registration-data})]
-        (is (= 200 status))
+      (is (= 200 status))
 ;;         (is (= "success" status))
       ))
   )

@@ -146,10 +146,12 @@
 (defn upload-badge [ctx uploaded-file user-id]
   (log/info "upload-badge: got new upload from user id" user-id)
   (try
-    (db/save-user-badge! ctx
-                         (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-                             (p/file->badge uploaded-file)
-                             (assoc :status "accepted")))
+    (->> (db/save-user-badge! ctx
+                              (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                                  (p/file->badge uploaded-file)
+                                  (assoc :status "accepted")))
+         (b/update-recipient-count-and-connect ctx user-id) ;;update recipient count and create badge connection
+         )
     {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
     (catch Throwable ex
       (log/error "upload-badge: upload failed")
@@ -160,10 +162,12 @@
   (let [user-id (:id user)]
     (log/info "assertion-badge-upload: got new upload from user id " user-id)
     (try
-      (db/save-user-badge! ctx
-                           (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
-                               (p/str->badge assertion)
-                               (assoc :status "accepted")))
+      (->> (db/save-user-badge! ctx
+                                (-> {:id user-id :emails (user/verified-email-addresses ctx user-id)}
+                                    (p/str->badge assertion)
+                                    (assoc :status "accepted")))
+           (b/update-recipient-count-and-connect ctx user-id) ;;update recipient count and create badge connection
+           )
       {:status "success" :message "badge/Badgeuploaded" :reason "badge/Badgeuploaded"}
       (catch Throwable ex
         (log/error "assertion-badge-upload: upload failed")

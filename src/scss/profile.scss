@@ -1,0 +1,195 @@
+@import 'variables';
+
+#profile {
+  span.move-tab {
+    margin: 10px;
+    color: $button-color;
+    cursor: pointer;
+    font-size: 15px;
+    .fa-fw {
+      text-align: center;
+    }
+    &:hover, &:active, &:focus {
+      color: $button-hover;
+    }
+  }
+.profile-navi  {
+  margin-bottom: 15px;
+  li.addnew {
+    border: none;
+  }
+  .fa-plus-square {
+    color: $titlebar-color;
+    font-size: 20px;
+  }
+
+  .nav-item {
+    cursor: pointer;
+    font-weight: bold;
+    border: 1px solid #e4e4e4;
+    border-radius: 3px;
+    .nav-link.page-tab {
+      min-width: 135px;
+      max-width: 135px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      a {
+        padding: 3px;
+      }
+    }
+  }
+  .nav-tabs>li.active {
+    border: 1px solid transparent;
+    a {
+      color: $titlebar-color;
+    }
+  }
+  .nav-tabs>li>a {
+    color: $text-color;
+  }
+  .nav .open>a {
+    background-color: unset;
+    border-color: $titlebar-color;
+  }
+  .dropdown-menu {
+    border-radius: 4px;
+    li {
+      padding: 5px 0px;
+      a {
+        padding: 5px 20px;
+        border-radius: 1px;
+      }
+    }
+  }
+  .close {
+    font-size: 16px;
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    z-index: 1;
+    padding: 5px;
+    color: black;
+    opacity: 0.4;
+  }
+  span.move-tab-right {
+        font-size: 12px;
+        position: absolute;
+        bottom: 0;
+        right: 5px;
+        z-index: 1;
+        //padding: 5px;
+        color: black;
+      //  opacity: 0.4;
+  }
+}
+  .manage-buttons {
+    //width: 90%;
+     .share{
+      float: left;
+      margin: 0px 10px;
+      min-width: 350px;
+    }
+
+    .visibility {
+      float: left;
+      margin: 10px;
+    }
+
+    .edit-btn{
+      float: right;
+      //margin: 0px 10px;
+    }
+  }
+
+    .field-list{
+    padding:5px;
+    .all {
+      text-align: center;
+    }
+    a {
+      cursor: pointer;
+      text-decoration: none;
+      color: $text-color;
+      font-size: 14px;
+      &:hover {
+        div {
+          border: 1px solid $titlebar-color;
+          -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+          box-shadow: 0 1px 2px rgba(0,0,0,.05);
+          border-radius: 2px;
+        }
+
+      }
+
+    }
+  }
+
+  .add-info {
+    margin: 5px 0;
+    .btn {}
+  }
+
+  .panel-content {
+      padding: 10px;
+      #user-badges .row .col-md-12 {
+        padding-right: unset;
+      }
+
+          .panel-left {
+            padding-left:  85px;
+          }
+          .panel-right {
+            padding-right: 85px;
+          }
+
+    }
+    @media(max-width: 768px){
+  .page-content .panel-right{
+    padding-right: 20px !important;
+  }
+  .page-content .panel-left {
+    padding-left:20px !important;
+  }
+}
+
+}
+.action-bar {
+    z-index: 500;
+    background-color: darken($background-color, 2%);
+    position: sticky;
+    position: -webkit-sticky;
+    border-radius: 4px;
+    opacity: 0.7;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px;
+    top: 0;
+
+      @media (max-width: 425px) {
+       .btn {
+       padding: 6px 8px;
+      }
+     }
+
+  }
+    .table {
+      .field-value {
+        word-break: break-word;
+      }
+    }
+.panel-content #user-badges .grid-container  {
+    margin-right: 8px !important;
+    max-width: 180px !important;
+    min-width: 180px !important;
+}
+
+#profiletips {
+ .tip {
+   font-size:14px;
+   margin: 5px 0;
+  .tipicon, a {
+   color: #FF6600;
+  }
+ }
+}

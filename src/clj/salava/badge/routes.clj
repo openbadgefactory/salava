@@ -15,6 +15,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.db :as u]
             [salava.badge.verify :as v]
+            [salava.badge.endorsement :as e]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -28,7 +29,8 @@
              (layout/main ctx "/import")
              #_(layout/main ctx "/export")
              (layout/main ctx "/receive/:id")
-             (layout/main ctx "/application"))
+             (layout/main ctx "/application")
+             (layout/main ctx "/user/endorsements"))
 
     (context "/obpv1/badge" []
              :tags  ["badge"]
@@ -59,7 +61,7 @@
                         (if (and badge (not owner?))
                           (b/badge-viewed ctx badgeid user-id))
                         (ok (assoc badge :owner? owner?
-                                         :user-logged-in? (boolean user-id))))
+                              :user-logged-in? (boolean user-id))))
                       (if (and (not user-id) (= visibility "internal"))
                         (unauthorized)
                         (not-found)))))
@@ -68,16 +70,18 @@
                   :path-params [badgeid :- Long]
                   :summary "verify badge"
                   :current-user current-user
-                (ok (v/verify-badge ctx badgeid)))
+                  (ok (v/verify-badge ctx badgeid)))
 
              (GET "/pending/:badgeid" req
                   :path-params [badgeid :- Long]
                   :summary "Get pending badge content"
                   (if (= badgeid (get-in req [:session :pending :user-badge-id]))
-                    (ok (->> badgeid
-                             (b/fetch-badge ctx)
-                             (b/badge-issued-and-verified-by-obf ctx)))
-                      (not-found)))
+                    (ok (assoc (->> badgeid
+                                    (b/fetch-badge ctx)
+                                    (b/badge-issued-and-verified-by-obf ctx))
+                          :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))
+                          ))
+                    (not-found)))
 
              (GET "/issuer/:issuerid" []
                   :return schemas/IssuerContent
@@ -114,18 +118,18 @@
                         (if badge
                           (b/badge-viewed ctx badgeid user-id))
                         (ok (assoc badge :owner? owner?
-                                   :user-logged-in? (boolean user-id))))
+                              :user-logged-in? (boolean user-id))))
                       (not-found))))
 
              (POST "/set_visibility/:badgeid" []
                    :path-params [badgeid :- Long]
-                   :body-params [visibility :- (s/enum "private" "public")]
+                   :body-params [visibility :- (s/enum "private" "public" "internal")]
                    :summary "Set badge visibility"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (if (:private current-user)
                      (forbidden)
-                     (ok (str (b/set-visibility! ctx badgeid visibility (:id current-user))))))
+                     (ok (b/set-visibility! ctx badgeid visibility (:id current-user)))))
 
              (POST "/set_status/:user-badge-id" []
                    :path-params [user-badge-id :- Long]
@@ -143,13 +147,13 @@
                    :current-user current-user
                    (ok (str (b/toggle-show-recipient-name! ctx badgeid show_recipient_name (:id current-user)))))
 
-             (POST "/toggle_evidence/:badgeid" []
+             (POST "/toggle_evidences_all/:badgeid" []
                    :path-params [badgeid :- Long]
                    :body-params [show_evidence :- (s/enum false true)]
-                   :summary "Set evidence visibility"
+                   :summary "disable or enable all badge evidences"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (str (b/toggle-show-evidence! ctx badgeid show_evidence (:id current-user)))))
+                   (ok (str (b/toggle-show-all-evidences! ctx badgeid show_evidence (:id current-user)))))
 
              (POST "/congratulate/:badgeid" []
                    :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
@@ -161,16 +165,16 @@
 
 
              (GET "/export-to-pdf" [badges lang-option]
-                   :summary "Export badges to PDF"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (let [badge-ids (map #(Integer/parseInt %)  (vals badges))
+                  :summary "Export badges to PDF"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (let [badge-ids (map #(Integer/parseInt %)  (vals badges))
                         h (if-not (empty? (rest badge-ids)) (str "attachment; filename=\"badge-collection_"lang-option".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang-option ".pdf\""))]
-                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
-                         ok
-                         (header "Content-Disposition" h)
-                         (header "Content-Type" "application/pdf")
-                         )))
+                    (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
+                        ok
+                        (header "Content-Disposition" h)
+                        (header "Content-Type" "application/pdf")
+                        )))
 
              (GET "/export" []
                   :return {:emails [schemas/UserBackpackEmail] :badges [schemas/BadgesToExport]}
@@ -236,13 +240,12 @@
                    :return {:status (s/enum "success" "error")}
                    :path-params [badgeid :- Long]
                    :body-params [visibility :- (s/enum "private" "public" "internal")
-                                 evidence-url :- (s/maybe s/Str)
                                  rating :- (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
                                  tags :- (s/maybe [s/Str])]
                    :summary "Save badge settings"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility evidence-url rating tags)))
+                   (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility rating tags)))
 
              (POST "/save_raiting/:badgeid" []
                    :return {:status (s/enum "success" "error")}
@@ -266,4 +269,93 @@
                   :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (b/badge-stats ctx (:id current-user)))))))
+                  (ok (b/badge-stats ctx (:id current-user))))
+
+             (POST "/evidence/:user-badge-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [user-badge-id :- Long]
+                   :body-params [evidence :- schemas/Evidence]
+                   :summary "Save badge evidence"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (b/save-badge-evidence ctx (:id current-user) user-badge-id evidence)))
+
+             (DELETE "/evidence/:evidenceid" [user_badge_id]
+                     :return {:status (s/enum "success" "error")}
+                     :path-params [evidenceid :- Long]
+                     :summary "Delete evidence"
+                     :auth-rules access/authenticated
+                     :current-user current-user
+                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))
+                     )
+
+             (POST "/toggle_evidence/:evidenceid" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [evidenceid :- Long]
+                   :body-params [show_evidence :- (s/enum false true)
+                                 user_badge_id :- Long]
+                   :summary "Set evidence visibility"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (b/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user))))
+
+             (POST "/endorsement/:user-badge-id" []
+                   :return {:id s/Int :status (s/enum "success" "error")}
+                   :path-params [user-badge-id :- Long]
+                   :body-params [content :- s/Str]
+                   :summary "Endorse user badge"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
+
+             (GET "/user/endorsement/:user-badge-id" []
+                  :return schemas/UserEndorsement
+                  :path-params [user-badge-id :- Long]
+                  :summary "Get user badge endorsements"
+                 ; :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (e/user-badge-endorsements ctx user-badge-id true)))
+
+             (DELETE "/endorsement/:user-badge-id/:endorsement-id" []
+                     :return {:status (s/enum "success" "error")}
+                     :path-params [user-badge-id :- Long
+                                   endorsement-id :- Long]
+                     :summary "Delete endorsement"
+                     :auth-rules access/authenticated
+                     :current-user current-user
+                     (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user) ))
+                     )
+             (POST "/endorsement/update_status/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [status :- (s/enum "accepted" "declined")
+                                 user_badge_id :- s/Int]
+                   :summary "Update endorsement status"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
+
+             (POST "/endorsement/edit/:endorsement-id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [endorsement-id :- Long]
+                   :body-params [content :- s/Str
+                                 user_badge_id :- s/Int]
+                   :summary "Edit endorsement"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
+
+             (GET "/user/pending_endorsement" []
+                  :auth-rules access/authenticated
+                  :summary "Get pending badge endorsments"
+                  :current-user current-user
+                  (ok (e/received-pending-endorsements ctx (:id current-user)))
+                  )
+
+             (GET "/user/endorsements" []
+                  :auth-rules access/signed
+                  :summary "Get all user's endorsements"
+                  :current-user current-user
+                  (ok (e/all-user-endorsements ctx (:id current-user)))
+                  )
+             )))

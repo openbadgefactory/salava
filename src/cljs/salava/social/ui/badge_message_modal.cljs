@@ -53,8 +53,8 @@
 (defn badge-message-content-modal [modal-data init-data state]
   (create-class {:reagent-render (fn [] (badge-content-modal-render modal-data))
                  :component-will-unmount (fn [] (do (close-modal!)
-                                                    (if (and init-data state)
-                                                      (init-data state))))}))
+                                                  (if (and init-data state)
+                                                    (init-data state))))}))
 
 
 (defn open-modal
@@ -63,16 +63,16 @@
   ([badge-id init-data state]
 
    (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
-    {:handler (fn [data]
-                (do
-                  (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
+     (path-for (str "/obpv1/gallery/public_badge_content/" badge-id))
+     {:handler (fn [data]
+                 (do
+                   (m/modal! [badge-message-content-modal data init-data state] {:size :lg})))})))
 
 (defn get-messages [badge-id data-atom]
   (ajax/GET
-   (path-for (str "/obpv1/social/messages_count/" badge-id))
-   {:handler (fn [data]
-               (reset! data-atom data))}))
+    (path-for (str "/obpv1/social/messages_count/" badge-id))
+    {:handler (fn [data]
+                (reset! data-atom data))}))
 
 
 (defn badge-message-link [message-count badge-id]

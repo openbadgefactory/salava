@@ -4,7 +4,8 @@
             [schema.core :as s]
             [pushy.core :as pushy]
             [salava.core.helper :as h]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [salava.core.helper :refer [dump]]))
 
 (defn plugin-fun [plugins nspace name]
   (let [fun (fn [p]
@@ -84,6 +85,13 @@
 
 (defn not-activated? []
   (not (session/get-in [:user :activated] false)))
+
+(defn url? [s]
+  "Pattern Source: https://mathiasbynens.be/demo/url-regex"
+  "Pattern author: @diegoperini"
+  (let [url-pattern #"(?i)^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$"]
+    (when-not (clojure.string/blank? s)
+      (not (clojure.string/blank? (re-matches url-pattern s))))))
 
 
 

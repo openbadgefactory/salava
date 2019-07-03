@@ -1,5 +1,6 @@
 (ns salava.core.layout
-  (:require [compojure.api.sweet :refer :all]
+  (:require [clojure.pprint :refer [pprint]]
+            [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer [ok content-type]]
             [schema.core :as s]
             [clojure.java.io :as io]
@@ -18,11 +19,15 @@
   ["/assets/bootstrap/css/bootstrap.min.css"
    "/assets/bootstrap/css/bootstrap-theme.min.css"
    "/assets/font-awesome/css/font-awesome.min.css"
-   "/css/rateit/rateit.css"])
+   "/assets/leaflet/leaflet.css"
+   "/css/rateit/rateit.css"
+   "/css/simplemde.min.css"])
+
 
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
+   "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
 
@@ -70,7 +75,8 @@
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
                    :factory-url     (get-in ctx [:config :factory :url])
-                   :gdpr-disabled?  (first (mapcat #(get-in ctx [:config % :disable-gdpr] []) (get-plugins ctx)))
+                   :show-terms?     (get-in ctx [:config :core :show-terms?] false)
+                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
                    }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
 
@@ -126,13 +132,14 @@
        "<![endif]-->"
        (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
        (apply include-js (js-list ctx))
-       (include-js "https://backpack.openbadges.org/issuer.js")]))))
+       #_(include-js "https://backpack.openbadges.org/issuer.js")]))))
 
 
 (defn main-response [ctx current-user flash-message meta-tags]
   (let [user (if current-user (-> (u/user-information ctx (:id current-user))
                                   (assoc :terms (:status (u/get-accepted-terms-by-id ctx (:id current-user))))
-                                  (assoc  :real-id (:real-id current-user))))] ;;real-id is for admin login as user
+                                  (assoc  :real-id (:real-id current-user) ;;real-id is for admin login as user
+                                          :last-visited (:last-visited current-user))))] ;;user's previous visit
     (-> (main-view (assoc ctx :user user :flash-message flash-message) meta-tags)
         (ok)
         (content-type "text/html; charset=\"UTF-8\""))))

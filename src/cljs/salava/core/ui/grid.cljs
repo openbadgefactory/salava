@@ -14,7 +14,8 @@
        [:div.buttons
         [:button {:class (str "btn btn-default " (if all-checked? "btn-active"))
                   :id "btn-all"
-                  :on-click (fn []
+                  :on-click (fn [e]
+                              (.preventDefault e)
                               (swap! state assoc (keyword key) [])
                               (swap! state assoc (keyword all-key) true)
                               (if func (func state))
@@ -26,7 +27,8 @@
                   checked? (boolean (some #(= value %) buttons-checked))]
               [:button {:class    (str "btn btn-default " (if checked? "btn-active"))
                         :key      value
-                        :on-click (fn []
+                        :on-click (fn [e]
+                                    (.preventDefault e)
                                     (swap! state assoc (keyword all-key) false)
                                     (if func (func state))
                                     (if checked?
@@ -77,7 +79,8 @@
   ([title name radio-buttons key state]
    (grid-radio-buttons title name radio-buttons key state nil))
   ([title name radio-buttons key state func]
-   (let [checked (get @state key)]
+   (let [key (if (vector? key) key [key])
+         checked (get-in @state key)]
      [:fieldset.form-group
       [:legend {:class "control-label col-sm-2"} title]
       [:div.col-sm-10
@@ -90,7 +93,7 @@
                    :name      name
                    :checked   (= checked (:value button))
                    :value     (:value button)
-                   :on-change (fn [x] (do (swap! state assoc key (-> x .-target .-value))
+                   :on-change (fn [x] (do (swap! state assoc-in key (-> x .-target .-value))
                                           (if func
                                             (func state))))}]
           (:label button)])]])))

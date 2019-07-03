@@ -24,10 +24,14 @@
           data-dir (get-in ctx [:config :core :data-dir])
           full-path (str data-dir "/" path)
           insert-data {:name filename
-                     :path path
-                     :size size
-                     :mime_type mime-type
-                       :tags []}]
+                       :path path
+                       :size size
+                       :mime_type mime-type
+                       :tags []}
+          max-quota (get-in ctx [:config :file :max-quota] 100000000)
+          used-quota (f/used-quota ctx user-id)]
+      (if (> (+ used-quota size) max-quota)
+        (throw+ "file/Exceededquota"))
       (if (> size max-size)
         (throw+ "file/Filetoobig"))
       (if-not (some #(= % mime-type) mime-types)
@@ -39,8 +43,8 @@
       (io/copy tempfile  (io/file full-path))
       (let [file-id (f/save-file! ctx user-id insert-data)
             file-data (assoc insert-data :id file-id
-                                         :ctime (unix-time)
-                                         :mtime (unix-time))]
+                        :ctime (unix-time)
+                        :mtime (unix-time))]
         {:status "success" :message "file/Fileuploaded" :reason "file/Fileuploaded" :data file-data}))
     (catch Object _
       {:status "error" :message "file/Errorwhileuploading" :reason _})

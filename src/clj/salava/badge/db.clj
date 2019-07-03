@@ -28,14 +28,16 @@
   "returns newest message and count new messages"
   [messages]
   (let [message-helper (fn [current item]
-                         (let [key  (:badge_id item)
+                         (let [key  (:gallery_id item)
                                new-messages-count (get-in current [key :new_messages] 0)]
                            (-> current
                                (assoc key item)
                                (assoc-in [key :new_messages] (if (> (:ctime item) (:last_viewed item))
-                                                              (inc new-messages-count)
-                                                              new-messages-count)))))]
-    (reduce message-helper {} (reverse messages))))
+                                                               (inc new-messages-count)
+                                                               new-messages-count)))))]
+    (->> (reverse messages)
+         (reduce message-helper {})
+         )))
 
 
 (defn filter-badge-message-events [events]
@@ -51,8 +53,13 @@
         reduced-events (badge-events-reduce events) ;bundle events together with object and verb
         badge-ids (map #(:object %) reduced-events)
         messages (if (not (empty? badge-ids)) (select-messages-with-badge-id {:badge_ids badge-ids :user_id user_id} (u/get-db ctx)) ())
+        badge-gallery-ids (reduce (fn [coll v] (assoc coll (:badge_id v) (:gallery_id v))) {} messages)
         messages-map (badge-message-map messages)
-        message-events (map (fn [event] (assoc event :message (get messages-map (:object event)))) (filter-badge-message-events reduced-events)) ;add messages for nessage event
+        message-events (->> (filter-badge-message-events reduced-events)
+                            (map (fn [event] (assoc event :message (get messages-map (get badge-gallery-ids (:object event)))
+                                                          :gallery_id (get badge-gallery-ids (:object event)))) ) ;add messages for nessage event
+                            (reduce (fn [coll v] (assoc coll (:gallery_id v) v)) {})
+                            vals)
         follow-events (filter-own-events reduced-events user_id)
         badge-events (into follow-events message-events)]
     badge-events))
@@ -112,36 +119,6 @@
     (insert-criteria-content! (assoc input :id id) {:connection t-con})
     id))
 
-
-#_(defn save-endorser-endorsements [t-con input]
-    (let [ endorser-id (content-id (-> input
-                                     (dissoc :endorsement)))
-           endorsements (:endorsement input)]
-
-    (insert-endorser-content! (assoc input :id endorser-id) {:connection t-con})
-
-    (when-not (empty? endorsements)
-      (doseq [endorsement endorsements
-              :let [
-                     parsed-endorsement (json/read-str endorsement :key-fn keyword)
-                     endorser (content-id (-> (:endorser_info parsed-endorsement)))
-                     endorsement-id (content-id (-> parsed-endorsement
-                                                   (dissoc :endorser_info)
-                                                   #_(assoc :endorser endorser-id)))]]
-
-
-        (-> parsed-endorsement
-            (update :endorser_info (fn [endorser-info] (map #(save-image t-con %) endorser-info))))
-
-
-        (insert-endorser-content! (assoc (:endorser_info parsed-endorsement) :id endorser) {:connection t-con})
-
-        (insert-endorsement-content! (assoc parsed-endorsement :id endorsement-id
-                                                  :endorser endorser) {:connection t-con})
-
-         (jdbc/execute! t-con ["INSERT IGNORE INTO client_endorsement_content (client_content_id, endorsement_content_id) VALUES (?,?)"
-                         (str endorser-id endorser) endorsement-id])))
-  endorser-id))
 
 (declare save-endorsement-content!)
 
@@ -234,22 +211,50 @@
         (insert-badge! {:connection tx}))
     badge-id))
 
-(defn save-user-badge! [ctx user-badge]
-  (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
-    (let [now (u/now)
-          badge-id (->> (:badge user-badge) (save-images ctx) (save-badge! tx))
-          user-badge-id (-> user-badge
-                            (dissoc :badge)
-                            (assoc :badge_id badge-id)
-                            (insert-user-badge<! {:connection tx})
-                            :generated_key)]
 
-      (when (seq (:evidence user-badge))
-        (doseq [evidence (:evidence user-badge)]
-          (when (map? evidence)
-            (jdbc/insert! tx "user_badge_evidence" (-> evidence
-                                                       (dissoc :id)
-                                                       (assoc :user_badge_id user-badge-id
-                                                              :ctime now
-                                                              :mtime now))))))
-      user-badge-id)))
+(defn save-gallery! [ctx badge]
+  (let [conn (:connection (u/get-db ctx))
+        badge-content  (first (filter #(= (:language_code %) (:default_language_code badge)) (:content badge)))
+        issuer-content (first (filter #(= (:language_code %) (:default_language_code badge)) (:issuer  badge)))]
+
+    (jdbc/execute! conn ["INSERT IGNORE INTO gallery (badge_name, badge_image, issuer_name) VALUES (?,?,?)"
+                         (:name badge-content) (:image_file badge-content) (:name issuer-content)])
+    (some->
+      (jdbc/query conn ["SELECT id FROM gallery
+                        WHERE badge_name = ? AND badge_image = ? AND issuer_name = ?"
+                        (:name badge-content) (:image_file badge-content) (:name issuer-content)])
+      first :id)))
+
+
+(defn save-user-badge! [ctx user-badge]
+  (let [badge      (save-images ctx (:badge user-badge))
+        gallery-id (save-gallery! ctx badge)]
+
+    (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+      (let [now (u/now)
+            badge-id (save-badge! tx badge)
+            user-badge-id (-> user-badge
+                              (dissoc :badge)
+                              (assoc :badge_id badge-id)
+                              (insert-user-badge<! {:connection tx})
+                              :generated_key)]
+
+        (when gallery-id
+          (jdbc/execute! tx ["UPDATE gallery SET badge_id = ? WHERE id = ?" badge-id gallery-id])
+          (jdbc/execute! tx ["UPDATE user_badge SET gallery_id = ? WHERE id = ?" gallery-id user-badge-id]))
+
+        (when (seq (:evidence user-badge))
+          (doseq [evidence (:evidence user-badge)]
+            (when (map? evidence)
+              (jdbc/insert! tx "user_badge_evidence" (-> evidence
+                                                         (dissoc :id)
+                                                         (assoc :user_badge_id user-badge-id
+                                                                :ctime now
+                                                                :mtime now))))))
+        (when (seq (:endorsement user-badge))
+          (doseq [endorsement (:endorsement user-badge)]
+            (when (map? endorsement)
+              (jdbc/insert! tx "user_badge_endorsement" (-> endorsement
+                                                            (dissoc :id)
+                                                            (assoc :user_badge_id user-badge-id :status "accepted"))))))
+        user-badge-id))))

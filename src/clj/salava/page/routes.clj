@@ -14,7 +14,7 @@
 
 (defn route-def [ctx]
   (routes
-    (context "/page" []
+    (context "/profile/page" []
              (layout/main ctx "/")
              (layout/main ctx "/mypages")
              (layout/main-meta ctx "/view/:id" :page)
@@ -150,7 +150,8 @@
                    (ok (p/save-page-settings! ctx pageid tags visibility password (:id current-user))))
 
              (POST "/toggle_visibility/:pageid" []
-                   :return (s/enum "private" "public")
+                   :return (s/conditional string? (s/enum "private" "public")
+                                          :else {:status (s/enum "error" "success") :message (s/maybe s/Str)})
                    :path-params [pageid :- s/Int]
                    :body-params [visibility :- (s/enum "private" "public")]
                    :summary "Toggle page visibility"

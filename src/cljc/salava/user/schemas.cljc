@@ -1,7 +1,7 @@
 (ns salava.user.schemas
   (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]
+             :include-macros true] ;; cljs only
+
             [salava.core.schema-helper :as h]
             [salava.core.countries :refer [all-countries]]))
 
@@ -27,7 +27,7 @@
                    :last_name  (s/constrained s/Str #(and (>= (count %) 1)
                                                           (<= (count %) 255)))
                    :country    (apply s/enum (keys all-countries))
-                   :language   (s/enum "fi" "en" "fr" "es" "pl" "pt" "ar" "nl")
+                   :language   (s/enum "fi" "en" "fr" "es" "pl" "pt" "ar" "nl" "sv")
                    :password   (s/constrained s/Str #(and (>= (count %) 6)
                                                           (<= (count %) 50)))
                    :password_verify (s/constrained s/Str #(and (>= (count %) 6)

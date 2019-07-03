@@ -1,5 +1,5 @@
 (ns salava.badge.ui.receive
-  (:require [clojure.string :refer [replace upper-case]]
+  (:require [clojure.string :refer [replace upper-case blank? starts-with?]]
             [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
@@ -16,7 +16,7 @@
             [salava.core.helper :refer [dump]]
             [salava.user.ui.helper :as uh]
             [salava.core.ui.modal :as mo]
-            [salava.core.ui.helper :refer [path-for private? js-navigate-to plugin-fun]]
+            [salava.core.ui.helper :refer [path-for private? js-navigate-to plugin-fun hyperlink url?]]
             [salava.core.time :refer [date-from-unix-time unix-time]]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.social.ui.follow :refer [follow-badge]]
@@ -69,9 +69,9 @@
                 (if (empty? (:content data))
                   (swap! state assoc :result "error")
                   (reset! state (assoc data :id id
-                                       :initializing false
-                                       :content-language (init-content-language (:content data))
-                                       :result "success"))))}
+                                  :initializing false
+                                  :content-language (init-content-language (:content data))
+                                  :result "success"))))}
     (fn [] (swap! state assoc :result "error"))))
 
 (defn num-days-left [timestamp]
@@ -82,7 +82,7 @@
   (let [{:keys [id badge_id email owner? issued_on expires_on assertion_url
                 user-logged-in?
                 evidence_url issued_by_obf verified_by_obf obf_url
-                recipient_count assertion  qr_code owner message_count content issuer-endorsements]} @state
+                recipient_count assertion  qr_code owner message_count content issuer-endorsements user_exists? evidences]} @state
         expired?                                                                 (bh/badge-expired? expires_on)
         show-recipient-name-atom                                                 (cursor state [:show_recipient_name])
         selected-language                                                        (cursor state [:content-language])
@@ -117,16 +117,20 @@
 
 
           [:div.text-center
-           [:p
-            [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
-           [:p
-            [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]
-           [:p
-            [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+           (if user_exists?
+             [:div [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]]
+
+             [:div
+              [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
+              [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]]
+             )
+
            [:hr]
-           [:p
-            [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]
+           [:div.col-md-12
+            [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+            [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]
            ]]]]]
+
       [:div#badge-info
        [m/modal-window]
        [:div.panel
@@ -160,7 +164,7 @@
                 [:label (t :badge/Metadata)": "]
                 [:a.link {:href     "#"
                           :on-click #(do (.preventDefault %)
-                                         (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
+                                       (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
                  (t :badge/Openassertion) "..."]])
              [:div.description description]]]
 
@@ -180,11 +184,33 @@
              [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
              [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-           (if evidence_url
-             [:div.row
+           (when (seq evidences)
+             [:div.row {:id "badge-settings"}
               [:div.col-md-12
-               [:h2.uppercase-header (t :badge/Evidence)]
-               [:div [:a.link {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]]]]]]]))
+               [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
+               (reduce (fn [r evidence]
+                         (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+                               added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
+                               desc (cond
+                                      (not (blank? narrative)) narrative
+                                      (not added-by-user?) description ;;todo use regex to match description
+                                      :else nil)]
+                           (conj r (when url? url
+                                 [:div.modal-evidence
+                                  (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
+                                  [:div.evidence-icon [:i.fa.fa-link]]
+                                  [:div.content
+                                   (when-not (blank? name) [:div.content-body.name name])
+                                   (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
+                                   [:div.content-body.url
+                                    (hyperlink url)]]]))))
+                       [:div ] evidences)]])
+
+           #_(if evidence_url
+               [:div.row
+                [:div.col-md-12
+                 [:h2.uppercase-header (t :badge/Evidence)]
+                 [:div [:a.link {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]]]]]]]))
 
 
 

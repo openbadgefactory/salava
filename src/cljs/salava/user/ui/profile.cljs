@@ -15,17 +15,19 @@
             [salava.core.ui.error :as err]
             [salava.admin.ui.admintool :refer [admintool]]
             [salava.admin.ui.reporttool :refer [reporttool1]]
+            [salava.core.ui.badge-grid :refer [badge-grid-element]]
+            [salava.core.ui.page-grid :refer [page-grid-element]]
             ))
 
 
 
 (defn toggle-visibility [visibility-atom]
   (ajax/POST
-     (path-for "/obpv1/user/profile/set_visibility")
-     {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
-      :handler (fn [new-value]
-                 (reset! visibility-atom new-value)
-                 )}))
+    (path-for "/obpv1/user/profile/set_visibility")
+    {:params  {:visibility (if (= "internal" @visibility-atom) "public" "internal")}
+     :handler (fn [new-value]
+                (reset! visibility-atom new-value)
+                )}))
 
 (defn profile-visibility-input [visibility-atom]
   [:div.col-xs-12
@@ -37,34 +39,49 @@
               :checked   (= "public" @visibility-atom)}]
      (t :user/Publishandshare)]]])
 
-(defn badge-grid-element [element-data]
-  (let [{:keys [id image_file name description issuer_content_name issuer_content_url]} element-data]
-    ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
-     [:div {:class "media grid-container"}
-      [:div.media-content
-       (if image_file
-         [:div.media-left
-          [:a{:href "#"
-              :on-click #(do
-                           (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
-                           (.preventDefault %)) }
+#_(defn badge-grid-element [element-data]
+    (let [{:keys [id image_file name description issuer_content_name issuer_content_url]} element-data]
+      ;[:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
+      [:div {:class "media grid-container"}
+       [:div.media-content
+        (if image_file
+          [:div.media-left
+           [:a{:href "#"
+               :on-click #(do
+                            (mo/open-modal [:badge :info] {:badge-id id})
+                            ;(b/open-modal id false init-data state)
+                            (.preventDefault %)) }
             [:img {:src (str "/" image_file)
-                 :alt name}]]])
+                   :alt name}]]])
+        [:div.media-body
+         [:div.media-heading
+          [:a.heading-link {:href "#"
+                            :on-click #(do
+                                         (mo/open-modal [:badge :info] {:badge-id id})
+                                         ;(b/open-modal id false init-data state)
+                                         (.preventDefault %)) }
+           name]]
+         [:div.media-issuer
+          [:p issuer_content_name]]]]]
+      ;]
+      ))
+#_(defn badge-grid-element [element-data]
+  (let [{:keys [id image_file name description issuer_content_name issuer_content_url endorsement_count user_endorsements_count]} element-data]
+    [:div.media.grid-container
+     [:div.media-content
+      [:a {:href "#" :on-click #(do
+                                  (.preventDefault %)
+                                  (mo/open-modal [:badge :info] {:badge-id id})
+                                  )}
+       (when image_file [:div.media-left [:img {:src (str "/" image_file)}]])
        [:div.media-body
-        [:div.media-heading
-         [:a.heading-link {:href "#"
-                           :on-click #(do
-                                        (mo/open-modal [:badge :info] {:badge-id id})
-                                        ;(b/open-modal id false init-data state)
-                                        (.preventDefault %)) }
-          name]]
-        [:div.media-issuer
-         [:p issuer_content_name]]]]]
-              ;]
-              ))
+        [:div.media-heading name]
+        [:div.media-issuer [:p issuer_content_name]]
+        (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:div.badge-view.text-center [:i.fa.fa-handshake-o]])]
 
-(defn page-grid-element [element-data profile_picture]
+       ]]]))
+
+#_(defn page-grid-element [element-data profile_picture]
   (let [{:keys [id name first_name last_name badges mtime]} element-data
         badges (take 4 badges)]
     [:div {:class "col-xs-12 col-sm-6 col-md-4" :key id}
@@ -90,12 +107,13 @@
 (defn badge-grid [badges badge-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
-          (badge-grid-element element-data))))
+          (badge-grid-element element-data nil "profile" nil))))
 
 (defn page-grid [pages profile_picture page-small-view]
   (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages))) ]
-          (page-grid-element element-data profile_picture))))
+          (page-grid-element (assoc element-data :profile_picture profile_picture) {:type "profile"})
+          #_(page-grid-element element-data profile_picture))))
 
 (defn connect-user [user-id]
   (let [connectuser (first (plugin-fun (session/get :plugins) "block" "connectuser"))]
@@ -132,8 +150,8 @@
       [:div.row.flip
        [:div {:class "col-md-3 col-sm-3 col-xs-12"}
         [:div.profile-picture-wrapper
-        [:img.profile-picture {:src (profile-picture profile_picture)
-                               :alt fullname}]]]
+         [:img.profile-picture {:src (profile-picture profile_picture)
+                                :alt fullname}]]]
        [:div {:class "col-md-9 col-sm-9 col-xs-12"}
         (if (not-empty about)
           [:div {:class "row about"}
@@ -176,6 +194,11 @@
          [page-grid pages profile_picture @page-small-view]
          (if (< 6 (count pages))
            [:div [:a {:href "#" :on-click #(reset! page-small-view (if @page-small-view false true))}  (if @page-small-view (t :admin/Showless) (t :user/Showmore))]])])
+
+       (into [:div]
+         (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
+           [f user-id]))
+
       (reporttool1 user-id fullname "user")
       ]]))
 
@@ -191,14 +214,14 @@
                          :status "false"}]
 
     (ajax/GET
-     (path-for (str "/obpv1/user/profile/" user-id) true)
-     {:handler (fn [data]
-                 (reset! state (assoc data :user-id user-id
-                                      :show-link-or-embed-code nil
-                                      :permission "success"
-                                      :badge-small-view false
-                                      :reporttool reporttool-init)))}
-     (fn [] (swap! state assoc :permission "error")))))
+      (path-for (str "/obpv1/user/profile/" user-id) true)
+      {:handler (fn [data]
+                  (reset! state (assoc data :user-id user-id
+                                  :show-link-or-embed-code nil
+                                  :permission "success"
+                                  :badge-small-view false
+                                  :reporttool reporttool-init)))}
+      (fn [] (swap! state assoc :permission "error")))))
 
 (defn handler [site-navi params]
   (let [user-id (:user-id params)

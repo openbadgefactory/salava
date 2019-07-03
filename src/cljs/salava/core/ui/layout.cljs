@@ -102,7 +102,7 @@
           (t :user/Logout)]])
     ]
    [:div.userpic
-    [:a {:href (path-for (str "/user/profile/" (session/get-in [:user :id])))}
+    [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))}
      [:img {:src (profile-picture (session/get-in [:user :profile_picture]))
             :alt "profile picture"}]]]])
 
@@ -243,9 +243,6 @@
      [:div {:class "col-md-12" :id "content"} content]]]
   (footer site-navi)])
 
-
-
-
 (defn landing-page [site-navi content]
   [:div {:role "main"}
    [:header {:id "navbar"}
@@ -255,6 +252,18 @@
      content]]
   (footer site-navi)])
 
+(defn dashboard [site-navi content]
+  [:div {:role "main"}
+   [:header {:id "navbar"}
+    (top-navi site-navi)]
+   #_[:div {:class "title-row"}
+    [:div {:class "container"}
+     (breadcrumb site-navi)]]
+   [:div#dashboard {:class "container-fluid main-container"}
+    [:div {:class "row"}
+     [:div {:class "col-md-12" :id "content"} content]]]
+  (footer site-navi)]
+  )
 
 (defn embed-page [content]
   [:div

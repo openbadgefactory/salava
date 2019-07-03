@@ -13,7 +13,7 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]
-            [salava.core.ui.helper :refer [path-for private?]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
             [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
             ;[salava.badge.ui.endorsement :refer [endorsement-modal-link]]
@@ -29,7 +29,7 @@
 
 (defn content [state show-messages]
   (let [{:keys [badge public_users private_user_count reload-fn]} @state
-        {:keys [badge_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
+        {:keys [badge_id gallery_id content average_rating rating_count obf_url verified_by_obf issued_by_obf endorsement_count]} badge
         selected-language (cursor state [:content-language])
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
@@ -107,15 +107,20 @@
                  (if (> (count public_users) 0)
                    [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
+
+        (when (and gallery_id (not @show-messages))
+          (into [:div]
+                (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
+                  [f gallery_id badge_id])))
         ]]
       (if (and badge_id name)
         [reporttool1 badge_id name "badges"])]]
     ))
 
 
-(defn init-data [badge-id state]
+(defn init-data [gallery-id badge-id state]
   (ajax/GET
-    (path-for (str "/obpv1/gallery/public_badge_content/" badge-id) true)
+    (path-for (str "/obpv1/gallery/public_badge_content/" (or gallery-id 0) "/" badge-id) true)
     {:handler (fn [data]
                 (reset! state (assoc data
                                 :permission "success"
@@ -126,8 +131,9 @@
 
 (defn handler [params]
   (let [badge-id (:badge-id params)
+        gallery-id (:gallery-id params)
         state (atom {:permission "initial"
-                     :badge {:badge_id badge-id}
+                     :badge {:badge_id badge-id :gallery_id gallery-id}
                      :public_users []
                      :private_user_count 0
                      :badge-small-view false
@@ -135,7 +141,7 @@
                      :reload-fn (or (:reload-fn params) nil)})
         user (session/get :user)
         show-messages (atom (or (:show-messages params) false))]
-    (init-data badge-id state)
+    (init-data gallery-id badge-id state)
     (fn []
       (content state show-messages))))
 

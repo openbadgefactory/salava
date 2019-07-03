@@ -1,11 +1,13 @@
 (ns salava.core.migrator
   (:require [migratus.core :as migratus]
-            [migratus.database :refer [find-migrations parse-migration-id]]
+            [migratus.migrations :refer [parse-migration-id]]
             [clojure.tools.logging :as log]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
+            [clojure.string :as string]
             [salava.core.helper :refer [dump plugin-str]]
-            [salava.core.util :refer [public-path]]))
+            [salava.core.util :refer [public-path]])
+  (:import (java.sql SQLIntegrityConstraintViolationException)))
 
 (defn read-config [path]
   (-> (clojure.java.io/file (str path "/core.edn")) slurp read-string))
@@ -14,7 +16,9 @@
 (defn test-config [] (read-config "resources/test_config"))
 
 
-(defn plugins [] (cons :core (:plugins (dev-config))))
+(defn plugins
+  ([] (cons :core (:plugins (dev-config))))
+  ([conf] (cons :core (:plugins conf))))
 
 
 (defn jdbc-uri [conf]
@@ -38,7 +42,11 @@
 
 (defn seed-insert [conf data-file]
   (doseq [seed (-> data-file slurp read-string)]
-    (jdbc/insert! (jdbc-uri conf) (:table seed) (:data seed))))
+    (try
+      (jdbc/insert! (jdbc-uri conf) (:table seed) (:data seed))
+      (catch SQLIntegrityConstraintViolationException e
+        (log/error "seed-insert failed at table" (:table seed))
+        (log/error (.getMessage e))))))
 
 (defn seed-delete [conf data-file]
   (doseq [seed (-> data-file slurp read-string)]
@@ -64,6 +72,8 @@
    :migration-dir        (migration-dir plugin)
    :migration-table-name schema-table})
 
+(defn plugin-migrations [plugin]
+  (set (some->> (migration-dir plugin) io/resource io/file file-seq (filter #(.isFile %)) (map #(string/replace (.getName %) #"^(\d+).+" "$1")))))
 
 (defn applied-migrations
   ([conf]
@@ -73,7 +83,7 @@
 
   ([conf plugin]
    (let [applied (applied-migrations conf)
-        available (->> (migration-dir plugin) find-migrations keys (map str) set)]
+        available (plugin-migrations plugin)]
     (filter available (map str applied)))))
 
 
@@ -107,7 +117,7 @@
 
 
 (defn run-test-reset []
-  (doseq [plugin (plugins)]
+  (doseq [plugin (plugins (test-config))]
     (run-reset (test-config) plugin)))
 
 
