@@ -610,9 +610,10 @@
 
 (defmethod str->badge :json [user input]
   (let [content (-> (json/read-str input :key-fn keyword) (dissoc :endorsement))
-        kind (get-in content [:verify :type] (get-in content [:verification :type]))]
-    (if (or (= kind "hosted") (= kind "HostedBadge"))
-      (str->badge user (get-in content [:verify :url] (:id content))))))
+        kind (some-> (get-in content [:verify :type] (get-in content [:verification :type])) string/lower-case)]
+    (if (or (= kind "hosted") (= kind "hostedbadge"))
+      (str->badge user (get-in content [:verify :url] (:id content)))
+      (throw (IllegalArgumentException. "assertion verification failed")))))
 
 (defmethod str->badge :url [user input]
   (let [body (http/http-get input)]
