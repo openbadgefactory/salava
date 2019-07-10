@@ -149,4 +149,20 @@ WHERE fm.id = :id;
 INSERT IGNORE INTO factory_metabadge_required (metabadge_id, required_badge_id, name, description, criteria, image_file, ctime, mtime)
 VALUES (:metabadge_id, :required_badge_id, :name, :description, :criteria, :image_file, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
+--name: replace-factory-metabadge!
+REPLACE factory_metabadge (id, remote_issuer_id, name, description, criteria, image_file, min_required, ctime, mtime)
+VALUES (:id, :remote_issuer_id, :name, :description, :criteria, :image_file, :min_required, :ctime, :mtime)
 
+--name: replace-factory-metabadge-required!
+REPLACE factory_metabadge_required (metabadge_id, required_badge_id, name, description, criteria, image_file, ctime, mtime)
+VALUES (:metabadge_id, :required_badge_id, :name, :description, :criteria, :image_file, :ctime, :mtime)
+
+--name: delete-factory-metabadge-multi!
+DELETE fm,fmr FROM factory_metabadge AS fm
+INNER JOIN factory_metabadge_required AS fmr ON fmr.metabadge_id = fm.id
+WHERE fm.id IN (:deleted_metabadges) AND fm.remote_issuer_id = :remote_issuer_id;
+
+--name: delete-factory-metabadge-required-multi!
+DELETE fmr FROM factory_metabadge_required fmr
+INNER JOIN factory_metabadge fm ON fmr.metabadge_id = fm.id
+WHERE fmr.required_badge_id IN (:deleted_badges) AND fm.remote_issuer_id = :remote_issuer_id;

@@ -6,9 +6,10 @@
             [salava.metabadge.db :as db]
             [salava.badge.main :as b]
             [salava.core.layout :as layout]
+            [salava.core.middleware :as mw]
             [salava.metabadge.schemas :as schemas]
             [salava.metabadge.cron :as cron]
-            salava.core.restructure))
+            [salava.core.restructure]))
 
 (defn route-def [ctx]
   (routes
@@ -49,4 +50,14 @@
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (b/set-status! ctx badgeid "accepted"(:id current-user) )))
-             )))
+             )
+
+    (context "/obpv1/factory" []
+             :tags ["factory"]
+
+            (PUT "/metabadge" []
+                 :return {:success Boolean}
+                 :body  [data schemas/MetabadgeUpdate]
+                 :middleware [#(mw/wrap-factory-auth % ctx)]
+                 (ok (db/metabadge-update ctx data)))
+    )))

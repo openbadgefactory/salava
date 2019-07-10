@@ -34,3 +34,29 @@
                                       (s/optional-key :required-in) [MilestoneBadge]}))
 
 (s/defschema AllMetabadges {:in_progress [MilestoneBadge] :completed [MilestoneBadge]})
+
+
+
+(s/defschema MetabadgeBadgeInput {:metabadge_id      s/Str
+                                  :required_badge_id s/Str
+                                  :name              s/Str
+                                  :description       s/Str
+                                  :criteria          s/Str
+                                  :image             s/Str
+                                  :ctime             s/Int
+                                  :mtime             s/Int})
+
+(s/defschema MetabadgeInput {:id           s/Str
+                             :name         s/Str
+                             :description  s/Str
+                             :criteria     s/Str
+                             :image        s/Str
+                             :min_required s/Int
+                             :ctime        s/Int
+                             :mtime        s/Int
+                             :required_badges [MetabadgeBadgeInput]})
+
+(s/defschema MetabadgeUpdate {:remote_issuer_id s/Str
+                              :metabadges [MetabadgeInput]
+                              :deleted_metabadges [s/Str]
+                              :deleted_badges [s/Str]})

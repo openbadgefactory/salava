@@ -1,5 +1,6 @@
 (ns salava.metabadge.db
-  (:require [yesql.core :refer [defqueries]]
+  (:require [clojure.pprint :refer [pprint]]
+            [yesql.core :refer [defqueries]]
             [salava.core.util :as u]
             [salava.core.http :as http]
             [clojure.tools.logging :as log]
@@ -74,3 +75,28 @@
 (defn all-metabadges [ctx]
   (select-all-metabadges {} (u/get-db ctx)))
 
+
+(defn metabadge-update [ctx data]
+  (try
+    (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
+      (doseq [mb (:metabadges data)]
+        (-> mb
+            (assoc :image_file (u/file-from-url ctx (:image mb)))
+            (assoc :remote_issuer_id (:remote_issuer_id data))
+            (replace-factory-metabadge! {:connection tx}))
+        (doseq [rb (:required_badges mb)]
+          (-> rb
+              (assoc :image_file (u/file-from-url ctx (:image rb)))
+              (replace-factory-metabadge-required! {:connection tx}))))
+
+      (when (pos? (count (:deleted_metabadges data)))
+        (delete-factory-metabadge-multi! data {:connection tx}))
+
+      (when (pos? (count (:deleted_badges data)))
+        (delete-factory-metabadge-required-multi! data {:connection tx})))
+
+    {:success true}
+
+    (catch Exception e
+      (log/error (.getMessage e))
+      {:success false})))

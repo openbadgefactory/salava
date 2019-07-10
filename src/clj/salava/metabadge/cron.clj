@@ -36,7 +36,8 @@
               (log/error (.toString ex)))))
         (try (Thread/sleep 1000) (catch InterruptedException _))))
     (log/info "check for metabadges: done")
-    (badges->metabadges! ctx factory-url)))
+    ;(badges->metabadges! ctx factory-url) ; Disabled, metabadge content updates are sent from factory instead.
+    ))
 
 (defn every-hour [ctx]
   (check-metabadges ctx (get-in ctx [:config :factory :url])))
