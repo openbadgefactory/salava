@@ -78,7 +78,7 @@
         user-data (ud/user-information ctx user-id)
         ul (if (blank? (:language user-data)) "en" (:language user-data))
         font-path  (first (mapcat #(get-in ctx [:config % :font] []) (get-plugins ctx)))
-        font  {:ttf-name (str site-url font-path) :encoding :unicode}
+        font  {:encoding :unicode :ttf-name (str site-url font-path)}
         stylesheet {:heading-name {:color [127 113 121]
                                    :family :times-roman
                                    :align :center}
@@ -91,7 +91,7 @@
                     :chunk {:size 11
                             :style :bold}}
 
-        pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers true :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right} :register-system-fonts? true})
+        pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers true :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}}) ;:register-system-fonts? true})
         badge-template (pdf/template
                          (let [template #(cons [:paragraph]  [ (if (and (not (= "-" (:image_file %)))(ends-with? (:image_file %) "png"))
                                                                  [:image {:width 85 :height 85 :align :center} (str data-dir "/" (:image_file %))]
