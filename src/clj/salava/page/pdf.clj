@@ -279,8 +279,9 @@
                                                                           [:cell " "])]]
                                                                    [:table {:border false :widths [1 3] :keep-together? false}
                                                                       [[:cell
-                                                                         [:paragraph.generic
-                                                                          [:chunk [:image {:width 100 :height 120} (str data-dir "/" profile_picture)]]]]
+                                                                        [:image {:width 100 :height 120} (str data-dir "/" profile_picture)]
+                                                                        #_[:paragraph.generic
+                                                                           [:chunk [:image {:width 100 :height 120} (str data-dir "/" profile_picture)]]]]
                                                                        (if (or (not (empty? profile)) (enabled-field? "about" fields) (enabled-field? "name" fields))
                                                                         [:cell
                                                                            [:table
