@@ -53,10 +53,10 @@
       issuer-verified-initial)))
 
 (defn badge-publish-update! [ctx user-badge-id visibility]
-  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)) )]
+  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)))]
     (if (not= visibility "private")
       (update-badge-published! {:badge_id badge-id :value 1} (u/get-db ctx))
-      (let [visibility-count (select-badge-visibility-recipients-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :visibility_count} (u/get-db ctx)) )]
+      (let [visibility-count (select-badge-visibility-recipients-count {:badge_id badge-id} (into {:result-set-fn first :row-fn :visibility_count} (u/get-db ctx)))]
         (if (not (pos? visibility-count))
           (update-badge-published! {:badge_id badge-id :value 0} (u/get-db ctx)))))))
 
@@ -130,7 +130,7 @@
   [ctx badge-id init-revoked? assertion-url last-checked]
   (if (and (not init-revoked?) (or (nil? last-checked) (< last-checked (- (unix-time) (* 2 24 60 60)))) assertion-url (not (get-in ctx [:config :core :test-mode])))
     (let [assertion (fetch-json-data assertion-url)
-          revoked? (and (= 410 (:status assertion)) (= true (get-in assertion [:body :revoked])) )]
+          revoked? (and (= 410 (:status assertion)) (= true (get-in assertion [:body :revoked])))]
       (update-revoked! {:revoked revoked? :id badge-id} (u/get-db ctx))
       (if revoked?
         (update-visibility! {:visibility "private" :id badge-id} (u/get-db ctx)))
@@ -170,7 +170,7 @@
                      properties (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
                                         (json/read-str :key-fn keyword))]
                  (conj r (-> evidence (assoc :properties properties))))) [] evidences)))
-  ([ctx badge-id user-id markdown?] (map (fn [evidence] (-> evidence (update :narrative u/md->html))) (badge-evidences ctx badge-id user-id))) )
+  ([ctx badge-id user-id markdown?] (map (fn [evidence] (-> evidence (update :narrative u/md->html))) (badge-evidences ctx badge-id user-id))))
 
 #_(defn user-badge-evidence
     [ctx user-badge-id url]
@@ -182,7 +182,7 @@
 (defn update-evidence! [ctx user-badge-id evidence-id evidence]
   (let [{:keys [name narrative url]} evidence
         site-url (u/get-site-url ctx)
-        description (str "Added by badge recipient " (today)  " at " site-url )
+        description (str "Added by badge recipient " (today)  " at " site-url)
         data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
     (update-user-badge-evidence! (assoc data :id evidence-id) (u/get-db ctx))
     evidence-id))
@@ -190,7 +190,7 @@
 (defn save-new-evidence! [ctx user-id user-badge-id evidence]
   (let [{:keys [name narrative url resource_id resource_type mime_type]} evidence
         site-url (u/get-site-url ctx)
-        description (str "Added by badge recipient " (today)  " at " site-url )
+        description (str "Added by badge recipient " (today)  " at " site-url)
         data {:user_badge_id user-badge-id :url url :name name :narrative narrative :description description}]
     (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
       (let [id (->> (insert-evidence<! data {:connection tx}) :generated_key)
@@ -209,13 +209,13 @@
         (do
           (if id
             (update-evidence! ctx user-badge-id id evidence)
-            (save-new-evidence! ctx user-id user-badge-id evidence)
-            )
+            (save-new-evidence! ctx user-id user-badge-id evidence))
+
           (send-badge-info-to-obf ctx user-badge-id user-id)
-          {:status "success"}
-          )
-        (throw+ {:status "error"})
-        )
+          {:status "success"})
+
+        (throw+ {:status "error"}))
+
       (catch Object _
         (log/error _)
         {:status "error"}))))
@@ -300,7 +300,7 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))
-        evidences (badge-evidences ctx badge-id user-id true)]
+        evidences (badge-evidences ctx badge-id (:user_id badge) true)]
     (assoc badge :congratulated? user-congratulation?
       :congratulations all-congratulations
       :view_count view-count
@@ -312,8 +312,8 @@
       :assertion (parse-assertion-json (:assertion_json badge))
       :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
       :evidences evidences
-      :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count)
-      )))
+      :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count))))
+
 
 
 (defn get-endorsements [ctx badge-id]
@@ -397,7 +397,7 @@
 
 
 (defn set-recipient-count! [ctx user-badge-id]
-  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)) )]
+  (let [badge-id (select-badge-id-by-user-badge-id {:user_badge_id user-badge-id} (into {:result-set-fn first :row-fn :badge_id} (u/get-db ctx)))]
     (update-badge-recipient-count! {:badge_id badge-id} (u/get-db ctx))))
 
 (defn set-status!
@@ -454,7 +454,7 @@
                   :rating       rating}
             evidences (badge-evidences ctx user-badge-id)]
         (if (and (private? ctx) (= "public" visibility))
-          (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}) )
+          (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibilty as public in private mode"}))
         (update-badge-settings! data (u/get-db ctx))
         (save-badge-tags! ctx tags user-badge-id)
         (send-badge-info-to-obf ctx user-badge-id user-id)
@@ -510,7 +510,7 @@
         (delete-badge-evidences! {:connection tr-cn} badge-id user-id)
         (delete-badge-endorsements! {:connection tr-cn} badge-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
-      (so/delete-connection-badge-by-badge-id! ctx user-id badge-id ))
+      (so/delete-connection-badge-by-badge-id! ctx user-id badge-id))
     {:status "success" :message "Badge deleted"}
     (catch Object _
       (log/error _)
