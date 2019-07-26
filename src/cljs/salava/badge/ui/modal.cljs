@@ -22,7 +22,8 @@
             [clojure.string :refer [blank? starts-with? split]]
             [salava.badge.ui.evidence :refer [evidence-icon]]
             [salava.core.helper :refer [dump]]
-            [salava.badge.ui.block :as block]))
+            [salava.badge.ui.block :as block]
+            [salava.translator.ui.helper :refer [translate]]))
 
 
 (defn init-badge-connection [state badge-id]
@@ -76,6 +77,17 @@
     {:handler (fn [] (swap! state assoc :congratulated? true))}))
 
 (defn badge-endorsement-modal-link
+ ([params]
+  (let [{:keys [badge-id endorsement-count lng]} params]
+   (when (pos? endorsement-count)
+     [:div.endorsement-link
+      [:span [:i {:class "fa fa-handshake-o"}]]
+      [:a {:href "#"
+           :on-click #(do (.preventDefault %)
+                        (mo/open-modal [:badge :endorsement] {:badge-id badge-id :lang lng}))}
+       (if (== endorsement-count 1)
+         (str  endorsement-count " " (translate lng :badge/endorsement))
+         (str  endorsement-count " " (translate lng :badge/endorsements)))]])))
   ([badge-id endorsement-count]
    (when (pos? endorsement-count)
      [:div.endorsement-link
@@ -88,7 +100,9 @@
          (str  endorsement-count " " (t :badge/endorsements)))]]))
   ([params endorsement-count user-endorsement-count]
    (if-not (pos? user-endorsement-count)
-     (badge-endorsement-modal-link (:badge-id params) endorsement-count)
+     (if (contains? params :lng)
+       (badge-endorsement-modal-link (assoc params :endorsement-count endorsement-count))
+       (badge-endorsement-modal-link (:badge-id params) endorsement-count))
      (let [endorsement-count (+ endorsement-count user-endorsement-count)]
        [:div.endorsement-link
         [:span [:i {:class "fa fa-handshake-o"}]]
@@ -96,20 +110,29 @@
              :on-click #(do (.preventDefault %)
                           (mo/open-modal [:badge :endorsement] params))}
          (if (== endorsement-count 1)
-           (str  endorsement-count " " (t :badge/endorsement))
-           (str  endorsement-count " " (t :badge/endorsements)))]]))))
+           (str  endorsement-count " " (translate (:lng params) :badge/endorsement) #_(t :badge/endorsement))
+           (str  endorsement-count " " (translate (:lng params) :badge/endorsements) #_(t :badge/endorsements)))]]))))
 
 
-(defn issuer-modal-link [issuer-id name]
+(defn issuer-modal-link
+ ([issuer-id name]
   [:div {:class "issuer-data clearfix"}
    [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
    [:div {:class "issuer-links pull-label-left inline"}
     [:a {:href "#"
          :on-click #(do (.preventDefault %)
                       (mo/open-modal [:badge :issuer] issuer-id {}))} name]]])
+ ([issuer-id name lang]
+  [:div {:class "issuer-data clearfix"}
+   [:label {:class "pull-label-left"}  (translate lang :badge/Issuedby) ":"]
+   [:div {:class "issuer-links pull-label-left inline"}
+    [:a {:href "#"
+         :on-click #(do (.preventDefault %)
+                      (mo/open-modal [:badge :issuer] issuer-id {}))} name]]]))
 
 ;;;TODO creator endorsements
-(defn creator-modal-link [creator-id name]
+(defn creator-modal-link
+ ([creator-id name]
   (when (and creator-id name)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left (t :badge/Createdby) ":"]
@@ -117,6 +140,14 @@
       [:a {:href "#"
            :on-click #(do (.preventDefault %)
                         (mo/open-modal [:badge :creator] creator-id))} name]]]))
+([creator-id name lang]
+ (when (and creator-id name)
+   [:div {:class "issuer-data clearfix"}
+    [:label.pull-left (translate lang :badge/Createdby) ":"]
+    [:div {:class "issuer-links pull-label-left inline"}
+     [:a {:href "#"
+          :on-click #(do (.preventDefault %)
+                       (mo/open-modal [:badge :creator] creator-id))} name]]])))
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))

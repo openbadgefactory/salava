@@ -7,7 +7,8 @@
             [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [js-navigate-to path-for private?]]
             [salava.location.ui.util :as lu]
-            [salava.core.ui.modal :as mo]))
+            [salava.core.ui.modal :as mo]
+            [salava.translator.ui.helper :refer [translate]]))
 
 
 
@@ -26,13 +27,38 @@
   {:lat (-> items first :lat) :lng (-> items first :lng)})
 
 
-(defn badge-info-content [user-badge-id visible]
+(defn badge-info-content
+ ([user-badge-id visible]
   (create-class
     {:reagent-render
-     (fn []
+      (fn []
+         [:div.row {:style {:display (if @visible "block" "none")}}
+          [:div.col-md-12
+           [:h2.uppercase-header (t :location/Location)]
+           [:div {:id "map-view-badge" :style {:height "400px" :margin "20px 0"}}]]])
+
+      :component-did-mount
+       (fn []
+         (js/window.setTimeout
+           (fn []
+             (ajax/GET
+               (path-for (str "/obpv1/location/user_badge/" user-badge-id) true)
+               {:handler (fn [{:keys [lat lng]}]
+                           (if (and lat lng)
+                             (let [lat-lng (js/L.latLng. lat lng)
+                                   my-marker (js/L.marker. lat-lng (clj->js {:icon lu/badge-icon-ro}))
+                                   my-map (-> (js/L.map. "map-view-badge" lu/map-opt)
+                                              (.setView lat-lng 5)
+                                              (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
+                               (.addTo my-marker my-map))
+                             (reset! visible false)))})) 300))}))
+ ([user-badge-id visible lang]
+  (create-class
+   {:reagent-render
+     (fn [_ lang]
        [:div.row {:style {:display (if @visible "block" "none")}}
         [:div.col-md-12
-         [:h2.uppercase-header (t :location/Location)]
+         [:h2.uppercase-header (translate lang :location/Location)]
          [:div {:id "map-view-badge" :style {:height "400px" :margin "20px 0"}}]]])
 
      :component-did-mount
@@ -49,7 +75,7 @@
                                             (.setView lat-lng 5)
                                             (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))]
                              (.addTo my-marker my-map))
-                           (reset! visible false)))})) 300))}))
+                           (reset! visible false)))})) 300))})))
 
 
 (defn gallery-badge-content [gallery-id visible]
@@ -219,9 +245,13 @@
 
 
 
-(defn ^:export badge_info [badge-id]
-  (let [visible (atom true)]
-    [badge-info-content badge-id visible]))
+(defn ^:export badge_info
+  ([badge-id]
+   (let [visible (atom true)]
+      [badge-info-content badge-id visible]))
+  ([badge-id lang]
+   (let [visible (atom true)]
+    (badge-info-content badge-id visible lang))))
 
 (defn ^:export gallery_badge [gallery-id badge-id]
   (let [visible (atom true)]

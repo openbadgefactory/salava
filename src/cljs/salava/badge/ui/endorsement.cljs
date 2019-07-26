@@ -13,16 +13,17 @@
             [salava.core.ui.layout :as layout]
             [salava.core.ui.error :as err]
             [salava.core.ui.grid :as g]
-            [cljsjs.simplemde]))
+            [cljsjs.simplemde]
+            [salava.translator.ui.helper :refer [translate]]))
 
-(defn endorsement-row [endorsement]
+(defn endorsement-row [endorsement & lang]
   (let [{:keys [issuer content issued_on]} endorsement]
 
     [:div {:style {:margin-bottom "20px"}}
      [:h5
       (when (:image_file issuer) [:img {:src (str "/" (:image_file issuer)) :style {:width "55px" :height "auto" :padding "7px"}}])
       [:a {:href "#"
-           :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] (:id issuer)))}
+           :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] {:id (:id issuer) :lang lang} #_(:id issuer)))}
           (:name issuer)]
       " "
       [:small (date-from-unix-time (* 1000 issued_on))]]
@@ -43,7 +44,7 @@
                          :show-content "none"
                          :show-endorsement-status "block")))}))
 
-(defn user-badge-endorsement-content [badge-id badge-endorsements]
+(defn user-badge-endorsement-content [badge-id badge-endorsements & lang]
   (let [state (atom {:id badge-id})]
     (init-user-badge-endorsement state)
     (fn []
@@ -52,7 +53,7 @@
         (when (seq endorsements)
           [:div
            (if badge-endorsements? [:hr.line])
-           [:h4 {:style {:margin-bottom "20px"}} (t :badge/BadgeEndorsedByIndividuals)]
+           [:h4 {:style {:margin-bottom "20px"}} (translate lang :badge/BadgeEndorsedByIndividuals)]
            (reduce (fn [r endorsement]
                      (let [{:keys [id user_badge_id image_file name content issuer_name profile_picture issuer_id mtime]} endorsement]
                        (conj r [:div {:style {:margin-bottom "20px"}}
@@ -70,20 +71,21 @@
 (defn badge-endorsement-content [param]
   (let [endorsements (atom [])
         badge-id (if (map? param) (:badge-id param) param)
-        user-badge-id (:id param)]
+        user-badge-id (:id param)
+        lang (:lang param)]
     (init-badge-endorsements endorsements badge-id)
     (fn []
       (let [endorsement-count (count @endorsements)]
         [:div.row {:id "badge-contents"}
          (when (seq @endorsements)
            [:div.col-xs-12
-            [:h4 {:style {:margin-bottom "20px"}} (t :badge/BadgeEndorsedByOrganizations)]
+            [:h4 {:style {:margin-bottom "20px"}} (translate lang :badge/BadgeEndorsedByOrganizations)]
             (into [:div]
                   (for [endorsement @endorsements]
-                    (endorsement-row endorsement)))])
+                    (endorsement-row endorsement lang)))])
          (when user-badge-id
            [:div.col-xs-12
-            [user-badge-endorsement-content user-badge-id endorsements]])]))))
+            [user-badge-endorsement-content user-badge-id endorsements lang]])]))))
 
 ;; User Badge Endorsements
 (defn init-user-endorsements [state]
