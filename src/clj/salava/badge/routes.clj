@@ -79,8 +79,8 @@
                     (ok (assoc (->> badgeid
                                     (b/fetch-badge ctx)
                                     (b/badge-issued-and-verified-by-obf ctx))
-                          :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))
-                          ))
+                          :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))))
+
                     (not-found)))
 
              (GET "/issuer/:issuerid" []
@@ -173,8 +173,8 @@
                     (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) badge-ids lang-option))
                         ok
                         (header "Content-Disposition" h)
-                        (header "Content-Type" "application/pdf")
-                        )))
+                        (header "Content-Type" "application/pdf"))))
+
 
              (GET "/export" []
                   :return {:emails [schemas/UserBackpackEmail] :badges [schemas/BadgesToExport]}
@@ -184,8 +184,8 @@
                   (let [emails (i/user-emails-for-badge-export ctx (:id current-user)) #_(i/user-backpack-emails ctx (:id current-user))]
                     (if (:private current-user)
                       (forbidden)
-                      (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))}))
-                    ))
+                      (ok {:emails emails :badges (b/user-badges-to-export ctx (:id current-user))}))))
+
 
              (GET "/import" []
                   :return schemas/Import
@@ -225,8 +225,8 @@
                    :current-user current-user
                    (if (:private current-user)
                      (forbidden)
-                     (ok (i/upload-badge-via-assertion ctx assertion current-user)))
-                   )
+                     (ok (i/upload-badge-via-assertion ctx assertion current-user))))
+
 
              (GET "/settings/:user-badge-id" []
                   ;return schemas/UserBadgeContent
@@ -271,6 +271,13 @@
                   :current-user current-user
                   (ok (b/badge-stats ctx (:id current-user))))
 
+             (GET "/stats/:id" [galleryid]
+                   :summary "Get user badge stats about recipients, ratings"
+                   :path-params [id :- Long]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (b/user-badge-stats ctx (:id current-user) id galleryid)))
+
              (POST "/evidence/:user-badge-id" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [user-badge-id :- Long]
@@ -286,8 +293,8 @@
                      :summary "Delete evidence"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))
-                     )
+                     (ok (b/delete-evidence! ctx evidenceid user_badge_id (:id current-user))))
+
 
              (POST "/toggle_evidence/:evidenceid" []
                    :return {:status (s/enum "success" "error")}
@@ -323,8 +330,8 @@
                      :summary "Delete endorsement"
                      :auth-rules access/authenticated
                      :current-user current-user
-                     (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user) ))
-                     )
+                     (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user))))
+
              (POST "/endorsement/update_status/:endorsement-id" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [endorsement-id :- Long]
@@ -349,13 +356,11 @@
                   :auth-rules access/authenticated
                   :summary "Get pending badge endorsments"
                   :current-user current-user
-                  (ok (e/received-pending-endorsements ctx (:id current-user)))
-                  )
+                  (ok (e/received-pending-endorsements ctx (:id current-user))))
+
 
              (GET "/user/endorsements" []
                   :auth-rules access/signed
                   :summary "Get all user's endorsements"
                   :current-user current-user
-                  (ok (e/all-user-endorsements ctx (:id current-user)))
-                  )
-             )))
+                  (ok (e/all-user-endorsements ctx (:id current-user)))))))

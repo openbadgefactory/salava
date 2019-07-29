@@ -557,6 +557,13 @@
      :badge_congratulations badge-congratulations
      :badge_issuers issuer-stats}))
 
+(defn user-badge-stats
+  "Get user badge statistics by gallery-id"
+  [ctx user-id id gallery-id]
+  (let [stats (as-> (first (u/plugin-fun (u/get-plugins ctx) "db" "user-badge-stats")) $
+                    (if $ ($ ctx user-id gallery-id) {}))]
+   stats))
+
 (defn meta-tags [ctx id]
   (let [base-url (u/get-full-path ctx)
         badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]
