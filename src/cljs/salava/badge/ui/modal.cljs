@@ -313,6 +313,10 @@
                   [:div ] evidences)]])
 
       (into [:div]
+        (for [f (plugin-fun (session/get :plugins) "block" "badge_recipients")]
+          [f (select-keys @state [:id :gallery_id])]))
+
+      (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
               [f id]))]]))
 

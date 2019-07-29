@@ -7,6 +7,7 @@
            [clojure.string :refer [upper-case]]
            [salava.core.i18n :as i18n :refer [t]]
            [clojure.set :as set :refer [intersection]]
+           [salava.user.ui.helper :refer [profile-link-inline-modal]]
            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 (defn init-data
@@ -98,3 +99,29 @@
                                                           (badge-grid-element element-data state badge-type init-data)))))]
                                             [:div {:style {:font-size "16px"}} [:p [:b (t :badge/Youhavenobadgesyet)]]])])]]))
                    :component-will-mount (fn [] (init-data state))})))
+
+(defn ^:export badge-recipients [params]
+  (let [{:keys [gallery_id id]} params
+         state (atom {})]
+    (ajax/GET
+      (path-for (str "/obpv1/badge/stats/" id))
+      {:params {:galleryid gallery_id}
+       :handler (fn [data]
+                  (reset! state data))})
+    (fn []
+     (let [{:keys [public_users private_user_count]} @state]
+       [:div.row
+        [:div.col-md-12.badge-info
+         (when (or (> (count public_users) 0) (> private_user_count 0))
+           [:div.recipients
+            [:div
+             [:h2.uppercase-header (t :gallery/Allrecipients)]]
+            [:div
+             (into [:div]
+                   (for [user public_users
+                         :let [{:keys [id first_name last_name profile_picture]} user]]
+                     (profile-link-inline-modal id first_name last_name profile_picture)))
+             (when (> private_user_count 0)
+               (if (> (count public_users) 0)
+                 [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
+                 [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]))))
