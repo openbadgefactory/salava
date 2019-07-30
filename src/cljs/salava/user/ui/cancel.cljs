@@ -45,24 +45,24 @@
                                                (if (.. e -target -checked)
                                                  (swap! state assoc :confirm-delete "true")(swap! state assoc :confirm-delete "false")))}]
 
-                         (t :user/Confirmaccountremoval3)]]]]]]
-    [:div.modal-footer
-     [:button {:type         "button"
-               :class        "btn btn-primary"
-               :style {:margin-bottom "unset"}
-               :data-dismiss "modal"}
-      (t :core/Cancel)]
-     [:button {:type         "button"
-               :class        "btn btn-warning"
-               :style {:margin-bottom "unset"}
-               :disabled (if-not (= "true" (:confirm-delete @state))
-                           "disabled")
-               :on-click   #(do
-                              (if (= "true" (:confirm-delete @state))
-                                (cancel-account state)))
-               :data-dismiss "modal"}
+                         (t :user/Confirmaccountremoval3)]]]]]]]
+   [:div.modal-footer
+    [:button {:type         "button"
+              :class        "btn btn-primary"
+              :style {:margin-bottom "unset"}
+              :data-dismiss "modal"}
+     (t :core/Cancel)]
+    [:button {:type         "button"
+              :class        "btn btn-warning"
+              :style {:margin-bottom "unset"}
+              :disabled (if-not (= "true" (:confirm-delete @state))
+                          "disabled")
+              :on-click   #(do
+                             (if (= "true" (:confirm-delete @state))
+                               (cancel-account state)))
+              :data-dismiss "modal"}
 
-      (t :user/Cancelaccount)]]]])
+     (t :user/Cancelaccount)]]])
 
 
 (defn cancel-form [state]
