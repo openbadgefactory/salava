@@ -224,7 +224,7 @@
       [:div.badge-image
        [:img {:src (str "/" image_file)}]]
       [below-image-block state endorsement_count]]
-     [:div {:class "col-md-9 badge-info view-tab"}
+     [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
       [:div.row
        [:div {:class "col-md-12"}
         (if revoked
@@ -310,7 +310,7 @@
                                               (hyperlink url))
                                      (hyperlink url))]]]))))
 
-                  [:div ] evidences)]])
+                  [:div] evidences)]])
 
       (into [:div]
         (for [f (plugin-fun (session/get :plugins) "block" "badge_recipients")]

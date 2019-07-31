@@ -229,7 +229,7 @@
            (bm/badge-endorsement-modal-link {:badge-id badge_id :id id :lng lng} endorsement_count user_endorsement_count)]]
 
 
-       [:div {:class "col-md-9 badge-info"}
+       [:div {:class "col-md-9 badge-info" :style {:display "block"}}
         [:div.row
          [:div {:class "col-md-12"}
           (if revoked

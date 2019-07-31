@@ -1890,3 +1890,33 @@ a.popup-info {
   margin-top: 15px;
   text-transform: none;
 }
+
+.expandable-block {
+  .panel-heading {
+    position: relative;
+
+    a {
+      outline: none !important;
+      text-decoration: none !important;
+    }
+  }
+
+  .panel-status-icon {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+    font-size: 26px !important;
+    color: $button-color;
+  }
+
+  &:active,
+  &:focus {
+    .panel-status-icon {
+      -webkit-transform: rotate(-10deg) scale(.8);
+      -ms-transform: rotate(-10deg) scale(.8);
+      transform: rotate(-10deg) scale(.8);
+      opacity: 0.7;
+      color: $button-hover;
+    }
+  }
+}
