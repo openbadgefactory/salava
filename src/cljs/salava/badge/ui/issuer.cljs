@@ -54,7 +54,7 @@
 
 (defn content [param]
   (let [issuer-id (if (map? param) (:id param) param)
-        lang (if (map? param) (-> (:lang param) first) nil)
+        lang (if (map? param) (-> (:lang param)) nil)
         state (atom {:issuer nil :endorsement []})
         connected? (cursor state [:connected])]
     (init-issuer-content state issuer-id)
