@@ -306,4 +306,5 @@
                                 distinct)
              :private_user_count (->> recipients
                                       (filter #(= (:visibility %) "private"))
-                                      count))))
+                                      count)
+             :all_recipients_count (count recipients))))

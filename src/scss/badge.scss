@@ -1909,6 +1909,10 @@ a.popup-info {
     color: $button-color;
   }
 
+  .in-badge{
+    top: 26px;
+  }
+
   &:active,
   &:focus {
     .panel-status-icon {
