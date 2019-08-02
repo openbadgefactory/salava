@@ -710,7 +710,7 @@ DELETE FROM user_badge_endorsement WHERE id = :id
 SELECT issuer_id FROM user_badge_endorsement WHERE id = :id
 
 --name: select-user-badge-endorsements
-SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture, u.profile_visibility
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.issuer_id
 WHERE user_badge_id = :user_badge_id

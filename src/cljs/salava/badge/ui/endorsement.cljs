@@ -18,12 +18,11 @@
 
 (defn endorsement-row [endorsement & lang]
   (let [{:keys [issuer content issued_on]} endorsement]
-
     [:div {:style {:margin-bottom "20px"}}
      [:h5
       (when (:image_file issuer) [:img {:src (str "/" (:image_file issuer)) :style {:width "55px" :height "auto" :padding "7px"}}])
       [:a {:href "#"
-           :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] {:id (:id issuer) :lang lang} #_(:id issuer)))}
+           :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] {:id (:id issuer) :lang (first lang)} #_(:id issuer)))}
           (:name issuer)]
       " "
       [:small (date-from-unix-time (* 1000 issued_on))]]
@@ -53,16 +52,17 @@
         (when (seq endorsements)
           [:div
            (if badge-endorsements? [:hr.line])
-           [:h4 {:style {:margin-bottom "20px"}} (translate lang :badge/BadgeEndorsedByIndividuals)]
+           [:h4 {:style {:margin-bottom "20px"}} (translate (first lang) :badge/BadgeEndorsedByIndividuals)]
            (reduce (fn [r endorsement]
-                     (let [{:keys [id user_badge_id image_file name content issuer_name profile_picture issuer_id mtime]} endorsement]
+                     (let [{:keys [id user_badge_id image_file name content issuer_name profile_picture profile_visibility issuer_id mtime]} endorsement
+                           disabled (and (= profile_visibility "internal") (nil? (session/get :user)))]
                        (conj r [:div {:style {:margin-bottom "20px"}}
 
                                 [:h5
                                  [:img {:src (profile-picture profile_picture) :style {:width "55px" :height "auto" :padding "7px"}}]
-                                 (if issuer_id [:a {:href "#"
-                                                    :on-click #(do (.preventDefault %) (mo/set-new-view [:profile :view] {:user-id issuer_id}))}
-                                                   issuer_name] issuer_name)
+                                 (if (and issuer_id (not disabled)) [:a {:href "#"
+                                                                         :on-click #(do (.preventDefault %) (mo/set-new-view [:profile :view] {:user-id issuer_id}))}
+                                                                      issuer_name] issuer_name)
                                  " "
                                  [:small (date-from-unix-time (* 1000 mtime))]]
                                 [:div {:dangerouslySetInnerHTML {:__html content}}]])))
@@ -72,7 +72,7 @@
   (let [endorsements (atom [])
         badge-id (if (map? param) (:badge-id param) param)
         user-badge-id (:id param)
-        lang (:lang param)]
+        lang (:lng param)]
     (init-badge-endorsements endorsements badge-id)
     (fn []
       (let [endorsement-count (count @endorsements)]
