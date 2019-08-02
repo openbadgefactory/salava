@@ -72,7 +72,7 @@
         [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
                                                                               (str "present")))
          (if-not dateto
-           [:div (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")])]]])
+           [:div [:b (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")]])]]])
 
 
 (defn open-linkedin-popup []
@@ -139,11 +139,11 @@
          [:div.row.flip
           [:div.col-md-6.copy-boxes
            [:form {:class "form-horizontal"}
-            [input-button (t :core/Certificationname)  "name" name]
-            [input-button (t :core/Certificationauthority) "authory" authory]
-            [input-button (t :core/Licensenumber) "licence" licence]
+            [input-button (t :badge/Name) #_(t :core/Certificationname)  "name" name]
+            [input-button (t :core/IssuingOrganization) #_(t :core/Certificationauthority) "authory" authory]
+            [input-button (t :core/CredentialID) #_(t :core/Licensenumber) "licence" licence]
             [input-date datefrom dateto]
-            [input-button (t :core/Certificationurl) "url" url]]]
+            [input-button (t :core/CredentialURL) #_(t :core/Certificationurl) "url" url]]]
           (tutorial-video)]]]])))
 
 
