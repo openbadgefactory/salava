@@ -4,9 +4,12 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.set :refer [rename-keys]]
             [clj-http.client :as http]
+            [buddy.hashers :as hashers]
             [slingshot.slingshot :refer :all]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db get-datasource get-site-url get-base-path save-file-from-http-url get-plugins]]))
+            [ring.middleware.session.cookie :refer [cookie-store]]
+            [ring.middleware.session :refer [session-response]]
+            [salava.core.util :as u :refer [get-db get-datasource get-site-url get-base-path save-file-from-http-url get-plugins]]))
 
 (defqueries "sql/oauth/queries.sql")
 
@@ -111,3 +114,52 @@
 
 (defn get-user-information [ctx user-id]
   (select-oauth-user-service {:user_id user-id}  (into {:row-fn :service} (get-db ctx))))
+
+(defn user-session [ctx user expires]
+  (let [session (-> user
+                    (select-keys [:id :role :activated])
+                    (assoc :private (get-in ctx [:config :core :private] false))
+                    (assoc :last-visited (:last_login user))
+                    (assoc :expires (+ (long (/ (System/currentTimeMillis) 1000)) expires)))
+        temp-res (-> {:session {:identity session}}
+                     (session-response {}
+                                       {:store (cookie-store {:key (get-in ctx [:config :core :session :secret])})
+                                        :root  "/"
+                                        :cookie-name  "oauth2"}))
+        session-str (get-in temp-res [:headers "Set-Cookie"])]
+    (some->> session-str first (re-find #"oauth2=(.+)") last)))
+
+(defn authorization-code [ctx client_id user_id code_challenge]
+  (let [auth_code (u/random-token user_id)]
+    (jdbc/with-db-transaction  [tx (:connection (get-db ctx))]
+      (delete-oauth2-auth-code! {:user_id user_id :client_id client_id} {:connection tx})
+      (insert-oauth2-auth-code! {:user_id user_id :client_id client_id :auth_code auth_code :auth_code_challenge code_challenge} {:connection tx}))
+    auth_code))
+
+(defn- challenge-hash [code_verifier]
+  (some->> code_verifier (u/digest "sha256") u/bytes->base64-url))
+
+(defn new-access-token [ctx client_id auth_code code_verifier]
+  (when-let [user (select-oauth2-auth-code-user {:client_id client_id :auth_code auth_code :auth_code_challenge (challenge-hash code_verifier)} (u/get-db-1 ctx))]
+    (let [rtoken (u/random-token auth_code)
+          expires 7200]
+      (update-oauth2-auth-code! {:client_id client_id :auth_code auth_code :rtoken (hashers/derive rtoken {:alg :bcrypt+sha512})} (get-db ctx))
+      {:access_token (user-session ctx user expires)
+       :refresh_token (str (:id user) "-" rtoken)
+       :token_type "bearer",
+       :expires expires})))
+
+(defn refresh-access-token [ctx client_id [user_id refresh_token]]
+  (let [users (select-oauth2-refresh-token-user {:client_id client_id :user_id user_id} (u/get-db ctx))]
+    (when-let [user (first (filter #(hashers/check refresh_token (:refresh_token %)) users))]
+      (let [rtoken (u/random-token refresh_token)
+            expires 7200]
+        (update-oauth2-refresh-token! {:client_id client_id :refresh_token refresh_token :rtoken (hashers/derive rtoken {:alg :bcrypt+sha512})} (get-db ctx))
+        {:access_token (user-session ctx user expires)
+         :refresh_token (str (:id user) "-" rtoken)
+         :token_type "bearer",
+         :expires expires}))))
+
+(defn unauthorize-client [ctx client_id user_id]
+  (delete-oauth2-token! {:client_id client_id :user_id user_id} (get-db ctx))
+  {:action "unauthorize" :success true})

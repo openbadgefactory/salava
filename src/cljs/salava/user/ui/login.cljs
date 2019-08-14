@@ -28,15 +28,15 @@
     [:div (doall (map #(%) blocks))]))
 
 (defn follow-up-url []
-
-  (let [
-         verification-key (verification-token js/window.location.search)
-         manual-referrer (session/get :referrer)
+  (let [verification-key (verification-token js/window.location.search)
+         manual-referrer (or (session/get :referrer)
+                             (some->> js/document.cookie js/decodeURIComponent (re-find #"login_redirect=(/[^; ]+)") last))
          referrer js/document.referrer
          site-url (str (session/get :site-url) (base-path))
-         path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url "") )]
+         path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url ""))]
 
     (session/put! :referrer nil)
+    (aset js/document "cookie" "login_redirect=")
     (cond
       (not (empty? verification-key))  (str "/user/verify_email/" verification-key)
       (and (not (empty? manual-referrer)) (string/starts-with? manual-referrer "/")) manual-referrer

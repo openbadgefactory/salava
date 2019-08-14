@@ -1,5 +1,7 @@
 (ns salava.oauth.routes
-  (:require [compojure.api.sweet :refer :all]
+  (:require [clojure.pprint :refer [pprint]]
+            [clojure.string :as string]
+            [compojure.api.sweet :refer :all]
             [ring.util.http-response :refer :all]
             [ring.util.response :refer [redirect]]
             [salava.core.layout :as layout]
@@ -20,8 +22,66 @@
              (layout/main ctx "/oauth/facebook")
              (layout/main ctx "/oauth/google")
              (layout/main ctx "/oauth/linkedin")
-             #_(layout/main ctx "/terms"))
+             #_(layout/main ctx "/terms")
 
+             (GET "/oauth2/authorize" req
+                  :no-doc true
+                  :summary ""
+                  :query-params [response_type  :- s/Str
+                                 client_id      :- s/Str
+                                 redirect_uri   :- s/Str
+                                 state          :- s/Str
+                                 code_challenge :- s/Str
+                                 code_challenge_method :- s/Str]
+                  :current-user current-user
+                  :flash-message flash-message
+                  (let [client (get-in ctx [:config :oauth :client client_id])]
+                    (if (and (= response_type "code") (= (:redirect_uri client) redirect_uri) (= code_challenge_method "S256"))
+                      (layout/main-response ctx current-user flash-message nil)
+                      {:status 400 :headers {"Content-Type" "text/plain; charset=us-ascii"} :body "400 Bad Request\n"})))
+
+             (POST "/oauth2/authorize" []
+                   :no-doc true
+                   :summary ""
+                   :form-params [client_id      :- s/Str
+                                 state          :- s/Str
+                                 code_challenge :- s/Str]
+                   :auth-rules access/signed
+                   :current-user current-user
+                  (if-let [client (get-in ctx [:config :oauth :client client_id])]
+                     (redirect (str (:redirect_uri client) "?code=" (d/authorization-code ctx client_id (:id current-user) code_challenge) "&state=" state))
+                     {:status 400 :headers {"Content-Type" "text/plain; charset=us-ascii"} :body "400 Bad Request\n"}))
+
+             (POST "/oauth2/unauthorize" []
+                   :no-doc true
+                   :summary ""
+                   :form-params [client_id :- s/Str]
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (ok (d/unauthorize-client ctx client_id (:id current-user))))
+
+             (POST "/oauth2/token" []
+                   :no-doc true
+                   :summary ""
+                   :form-params [grant_type   :- s/Str
+                                 client_id    :- s/Str
+                                 {redirect_uri  :- s/Str nil}
+                                 {code          :- s/Str nil}
+                                 {refresh_token :- s/Str nil}
+                                 {code_verifier :- s/Str nil}]
+                   (let [e400 {:status 400 :headers {"Content-Type" "text/plain; charset=us-ascii"} :body "400 Bad Request\n"}
+                         client (get-in ctx [:config :oauth :client client_id])]
+                     (cond
+                       (and (= grant_type "code")
+                            (not (nil? code))
+                            (= (:redirect_uri client) redirect_uri))
+                       (if-let [out (d/new-access-token ctx client_id code code_verifier)] (ok out) e400)
+
+                       (and (= grant_type "refresh_token")
+                            (not (nil? refresh_token)))
+                       (if-let [out (d/refresh-access-token ctx client_id (string/split refresh_token #"-" 2))] (ok out) e400)
+
+                       :else e400))))
 
     (context "/oauth" []
              (GET "/google" []
@@ -105,7 +165,10 @@
                            (s/optional-key :message) s/Str}
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (l/linkedin-deauthorize ctx (:id current-user)))))
+                  (ok (l/linkedin-deauthorize ctx (:id current-user))))
+
+
+             )
 
     (context "/obpv1/oauth" []
              :tags ["oauth"]
@@ -115,4 +178,7 @@
                   :path-params [service :- (s/enum "facebook" "linkedin")]
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (d/login-status ctx (:id current-user) service))))))
+                  (ok (d/login-status ctx (:id current-user) service)))
+
+
+             )))
