@@ -3,4 +3,6 @@
             :app-secret ""}
 
  :linkedin {:app-id     ""
-            :app-secret ""}}
+            :app-secret ""}
+
+ :client {"oauth-client-app-id" {:redirect_uri "http://example.com"}}}
