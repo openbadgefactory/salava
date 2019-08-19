@@ -86,15 +86,18 @@
 (defn received-pending-endorsements [ctx user-id]
   (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))
 
-(defn endorsements-received [ctx user-id]
+(defn endorsements-received
+ ([ctx user-id]
   (map (fn [e] (-> e (update :content md->html)) )
        (select-received-endorsements {:user_id user-id} (get-db ctx))))
+ ([ctx user-id md?]
+  (select-received-endorsements {:user_id user-id} (get-db ctx))))
 
 (defn endorsements-given [ctx user-id]
   (select-given-endorsements {:user_id user-id} (get-db ctx)))
 
-(defn all-user-endorsements [ctx user-id]
-  (let [received (endorsements-received ctx user-id)
+(defn all-user-endorsements [ctx user-id & md?]
+  (let [received (if md? (endorsements-received ctx user-id true)(endorsements-received ctx user-id))
         given (endorsements-given ctx user-id)
         all (->> (list* given received) flatten (sort-by :mtime >))]
     {:given given
@@ -103,4 +106,3 @@
 
 ;Endorsements show in user profile
 ;request-endorsement
-

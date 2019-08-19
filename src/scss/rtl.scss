@@ -1873,3 +1873,10 @@ html[dir="rtl"] #profile .page-content .panel-left{
 }
 
 }
+
+html[dir="rtl"] .expandable-block {
+  .panel-status-icon {
+    right: unset;
+    left: 10px;
+  }
+}
