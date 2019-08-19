@@ -214,6 +214,12 @@ a#login-button, #login-page .btn-primary {
   }
 }
 #badge-settings {
+  .new-evidence .fa-plus:before {
+    background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: initial;
+  }
   .settings-content legend.sub-heading, label.sub-heading, h1.uppercase-header {
     font-weight: 600;
   }
@@ -221,6 +227,12 @@ a#login-button, #login-page .btn-primary {
 .pages #grid, #page-gallery #grid, #my-files #grid, #profile-gallery #grid {
   #add-element {
     #add-element-icon {
+      .fa-plus:before {
+        background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: initial;
+      }
       //color: $title-color;
     }
     #add-element-link, .add-element-link {
@@ -494,6 +506,12 @@ a.popup-info {
 
 #my-badges #grid #import-badge #add-element-icon, .pages #grid .grid-container #add-element #add-element-icon {
   color: $title-color;
+  .fa-plus:before {
+    background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: initial;
+  }
 }
 
 #page-edit .thumbnail, #page-edit-theme .thumbnail {
@@ -537,6 +555,12 @@ a.popup-info {
 #field-editor .field .field-content #badge-showcase{
   .addbadge {
    border: 3px dashed #314755;
+     .fa-plus:before {
+       background: -webkit-gradient(linear, left bottom, right top, from(#314755), to(#26a0da));
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       display: initial;
+     }
  }
  #grid .grid-container{
   .move-left i, .move-right i {
@@ -591,6 +615,8 @@ a.popup-info {
         }
   }
 }
+
+
 /*
 a#login-button {
 height: 36px;
