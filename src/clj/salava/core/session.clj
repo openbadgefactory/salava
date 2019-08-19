@@ -16,7 +16,7 @@
   (fn [request]
     (if (some-> request (get-in [:session :identity :expires]) (> (long (/ (System/currentTimeMillis) 1000))))
         (handler request)
-        (handler (assoc request :session {})))))
+        (handler (assoc-in request [:session :identity] nil)))))
 
 ;;TODO allow other cookies in bearer token request
 (defn wrap-bearer-token [handler session-name]

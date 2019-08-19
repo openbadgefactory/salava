@@ -35,10 +35,13 @@
                                  code_challenge_method :- s/Str]
                   :current-user current-user
                   :flash-message flash-message
-                  (let [client (get-in ctx [:config :oauth :client client_id])]
+                  (let [client (get-in ctx [:config :oauth :client client_id])
+                        redirect-to (str  "/user/oauth2/authorize?" (:query-string req))
+                        login-redirect {:value (if (:id current-user) nil redirect-to) :max-age 600 :http-only true :path "/"}]
                     (if (and (= response_type "code") (= (:redirect_uri client) redirect_uri) (= code_challenge_method "S256"))
-                      (layout/main-response ctx current-user flash-message nil)
-                      {:status 400 :headers {"Content-Type" "text/plain; charset=us-ascii"} :body "400 Bad Request\n"})))
+                      (-> (layout/main-response ctx current-user flash-message nil)
+                          (assoc-in [:cookies "login_redirect"] login-redirect))
+                      (bad-request {:message "400 Bad Request"}))))
 
              (POST "/oauth2/authorize" []
                    :no-doc true
@@ -49,8 +52,10 @@
                    :auth-rules access/signed
                    :current-user current-user
                   (if-let [client (get-in ctx [:config :oauth :client client_id])]
-                     (redirect (str (:redirect_uri client) "?code=" (d/authorization-code ctx client_id (:id current-user) code_challenge) "&state=" state))
-                     {:status 400 :headers {"Content-Type" "text/plain; charset=us-ascii"} :body "400 Bad Request\n"}))
+                     (-> (redirect (str (:redirect_uri client)
+                                        "?code=" (d/authorization-code ctx client_id (:id current-user) code_challenge) "&state=" state))
+                         (assoc-in [:session :identity] nil))
+                     (bad-request {:message "400 Bad Request"})))
 
              (POST "/oauth2/unauthorize" []
                    :no-doc true
@@ -69,7 +74,7 @@
                                  {code          :- s/Str nil}
                                  {refresh_token :- s/Str nil}
                                  {code_verifier :- s/Str nil}]
-                   (let [e400 {:status 400 :headers {"Content-Type" "text/plain; charset=us-ascii"} :body "400 Bad Request\n"}
+                   (let [e400 (bad-request {:message "400 Bad Request"})
                          client (get-in ctx [:config :oauth :client client_id])]
                      (cond
                        (and (= grant_type "code")
@@ -92,7 +97,7 @@
                     (if (= status "success")
                       (if current-user
                         (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
-                        (assoc-in (redirect (str (get-base-path ctx) "/social"))[:session :identity] {:id user-id :role role :private private} ))
+                        (assoc-in (redirect (str (get-base-path ctx) "/social")) [:session :identity] {:id user-id :role role :private private} ))
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
                         (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
@@ -104,7 +109,8 @@
                   :current-user current-user
                   (let [{:keys [status user-id message role private]} (f/facebook-login ctx code (:id current-user) error)
                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
-                        accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                        accepted-terms? (u/get-accepted-terms-by-id ctx user-id)
+                        redirect-to (str (get-base-path ctx) (or (get-in req [:cookies "login_redirect" :value]) "/social"))]
                     (if (= status "success")
 
                       (if (and (not= accepted-terms? "accepted") (not= false accepted-terms?))
@@ -116,7 +122,7 @@
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/facebook"))
                           ;(u/set-session ctx (redirect (str (get-base-path ctx) "/social/stream")) user-id)
-                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false)))
+                          (u/finalize-login ctx (redirect redirect-to) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message)
@@ -139,7 +145,8 @@
                   (let [r (l/linkedin-login ctx code state (:id current-user) error)
                         {:keys [status user-id message]} r
                         _ (if (= true (get-in req [:session :seen-terms])) (d/insert-user-terms ctx user-id "accepted"))
-                        accepted-terms? (u/get-accepted-terms-by-id ctx user-id)]
+                        accepted-terms? (u/get-accepted-terms-by-id ctx user-id)
+                        redirect-to (str (get-base-path ctx) (or (get-in req [:cookies "login_redirect" :value]) "/social"))]
 
                     (if (= status "success")
 
@@ -153,7 +160,7 @@
                         (if current-user
                           (redirect (str (get-base-path ctx) "/user/oauth/linkedin"))
                           ;(u/set-session ctx (found (str (get-base-path ctx) "/social/stream/")) user-id)
-                          (u/finalize-login ctx (redirect (str (get-base-path ctx) "/social")) user-id (get-in req [:session :pending :user-badge-id]) false)))
+                          (u/finalize-login ctx (redirect redirect-to) user-id (get-in req [:session :pending :user-badge-id]) false)))
 
                       (if current-user
                         (assoc (redirect (str (get-base-path ctx) "/user/oauth/linkedin")) :flash message)

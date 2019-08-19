@@ -60,13 +60,17 @@
                    (let [{:keys [email password]} login-content
                          accepted-terms? (u/accepted-terms? ctx email)
                          login-status (-> (u/login-user ctx email password)
-                                          (assoc :terms accepted-terms?))]
+                                          (assoc :terms accepted-terms?)
+                                          (assoc :redirect-to (get-in req [:cookies "login_redirect" :value])))]
                      (if (= "success" (:status login-status))
                        (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) false)
                        (ok login-status))))
 
              (POST "/logout" []
-                   (assoc-in (ok) [:session :identity] nil))
+                   (-> (ok)
+                       (assoc-in [:session :identity] nil)
+                       (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"})))
+
 
              (GET "/register" req
                   :summary "Get config data for register form"

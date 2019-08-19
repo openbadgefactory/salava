@@ -107,7 +107,7 @@
                  :password password}
        :handler (fn [data]
                   (cond
-                    (and (= (:status data) "success")(or (= (:terms data) "accepted") (= false (:terms data)))) (js-navigate-to (follow-up-url))
+                    (and (= (:status data) "success")(or (= (:terms data) "accepted") (= false (:terms data)))) (js-navigate-to (or (:redirect-to data) (follow-up-url)))
                     ;(and (= (:status data) "success") (= (:terms data) "accepted")) (js-navigate-to (follow-up-url))
                     (and (= (:status data) "success") (nil? (:terms data))) (do (swap! state assoc :user-id (:id data))  (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
                     (and (= (:status data) "success") (= (:terms data) "declined")) (do (swap! state assoc :user-id (:id data)) (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
