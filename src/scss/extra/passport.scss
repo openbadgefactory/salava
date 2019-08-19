@@ -221,7 +221,7 @@ a#login-button, #login-page .btn-primary {
 .pages #grid, #page-gallery #grid, #my-files #grid, #profile-gallery #grid {
   #add-element {
     #add-element-icon {
-      color: $title-color;
+      //color: $title-color;
     }
     #add-element-link, .add-element-link {
     color: $badge-title;//$badge-title; //$orange-color;
@@ -461,7 +461,30 @@ a.popup-info {
 
   }
 
+  /*improvements to dashboard*/
 
+  #box_1 .notifications-block {
+    .notification-div  {
+    background-color: unset;
+    border: unset;
+    border-radius: 0px;
+    border-bottom: 1px solid;
+    margin: 3px auto;
+    .content-text p.content-heading {
+      font-weight: 500;
+    }
+
+  }
+
+}
+
+.info-block .text p.desc {
+  font-weight: 500;
+}
+
+.block .content p.header {
+  font-weight: 400;
+}
 }
 
 .title-row {
