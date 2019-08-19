@@ -42,6 +42,19 @@
                   :current-user current-user
                   (ok (f/user-files-all ctx (:id current-user))))
 
+             (GET "/as-png" []
+                  :query-params [image :- s/Str]
+                  :summary "Convert svg image to png"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (let [bytes (f/svg->png ctx image)]
+                    (if bytes
+                      {:status 200
+                       :headers {"Content-Type" "image/png"}
+                       :body bytes}
+                      (not-found))))
+
+
              (DELETE "/:fileid" []
                      :path-params [fileid :- Long]
                      :summary "Delete file by id"

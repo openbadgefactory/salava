@@ -4,9 +4,10 @@
             [clojure.java.io :as io]
             [clojure.string :refer [split blank?]]
             [yesql.core :refer [defqueries]]
+            [batik.rasterize :as batik]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
-            [salava.core.util :refer [get-db get-datasource map-sha256]]))
+            [salava.core.util :as u :refer [get-db get-datasource map-sha256]]))
 
 (defqueries "sql/file/queries.sql")
 
@@ -84,3 +85,16 @@
   "Get all image files by user"
   [ctx user-id]
   (select-user-image-files {:user_id user-id} (get-db ctx)))
+
+
+(defn svg->png [ctx image]
+  (when (re-find #"^file/\w/\w/\w/\w/\w+\.svg$" image)
+    (let [full-path (str (u/get-data-dir ctx) "/" image)]
+      (try
+        (some-> full-path
+                slurp
+                (batik/render-svg-string nil {:width 200 :height 200 :type :png})
+                java.io.ByteArrayInputStream.)
+        (catch Exception _
+          nil)))))
+

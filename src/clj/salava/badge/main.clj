@@ -75,6 +75,10 @@
     (catch Exception _
       badge)))
 
+(defn png-convert-url [ctx image]
+  (if (re-find #"\w+\.svg$" image)
+    (str (u/get-base-path ctx) "/obpv1/file/as-png?image=" image)
+    (str "/" image)))
 
 (defn check-metabadge!
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
@@ -84,7 +88,10 @@
 (defn user-badges-all
   "Returns all the badges of a given user"
   [ctx user-id]
-  (let [badges (map (fn [b] (assoc b :revoked (= 1 (b :revoked))))
+  (let [badges (map (fn [b]
+                      (-> b
+                          (assoc :revoked (= 1 (b :revoked)))
+                          (assoc :png_image_file (png-convert-url ctx (:image_file b)))))
                     (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
         tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
         badges-with-tags (map-badges-tags badges tags)]
@@ -278,6 +285,7 @@
                        (-> content
                            (update :criteria_content u/md->html)
                            (assoc  :alignment (select-alignment-content {:badge_content_id (:badge_content_id content)} (u/get-db ctx)))
+                           (assoc  :png_image_file (png-convert-url ctx (:image_file content)))
                            (dissoc :badge_content_id)))
                      (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx)))
         evidences (map (fn [evidence] (-> evidence (update :narrative u/md->html)))(badge-evidences ctx badge-id))]
