@@ -13,6 +13,7 @@
 @import '../user';
 @import 'application';
 @import '../rtl';
+@import '../profile';
 
 .logo-image-url{
   width: 350px;
@@ -101,12 +102,16 @@ ul#secondary-menu-links li a i.fa {
     }
 
   }
-  .connections-block .info-block .text p.num {
+  .connections-block .info-block .text p.num, .badge-block .connections-block .info-block .text p.num {
     color: #a1d1ca;
   }
 
   .badge {
     background-color: $link-color;//#2e2464;
+  }
+
+  .profile-block .profile-visibility a{
+    color:$link-color;
   }
 
   #box_3 {
@@ -161,6 +166,10 @@ ul#secondary-menu-links li a i.fa {
         background-color: $button-hover;
       }
 
+      .map {
+        background-color: #8984a8;
+      }
+
 
     }
 
@@ -180,6 +189,120 @@ ul#secondary-menu-links li a i.fa {
   background:linear-gradient(to left, $button-hover, $titlebar-color);
 }
 
+#profiletips .tip{
+  .tipicon, a {
+    color: $link-color;
+
+  }
+}
+
+.btn-success {
+  background-color: $button-color;
+  border-color: $button-color;
+
+  &:active:hover,
+  &:focus,
+  &:hover {
+    background-color: $button-hover;
+    border-color: $button-hover;
+    /*         box-shadow: 0px 2px $box-shadow; */
+   }
+}
+
+#page-edit .field .field-move .move-arrows {
+ .move-down,
+ .move-up {
+  color: $button-hover;
+ }
+}
+
+#page-edit #block-modal .block-types div.content-type,
+#page-edit-theme #block-modal .block-types div.content-type {
+ background-color: $button-color;
+ color: #fff;
+
+ &:focus,
+ &:hover {
+  background-color: $button-hover;
+ }
+}
+
+
+#field-editor .field .field-content #badge-showcase {
+ .addbadge .add-icon {
+  color: $button-hover;
+ }
+
+ #grid .grid-container {
+  .move-left i,.move-right i{
+   color: $button-color;
+  }
+ }
+}
+
+ #my-files #grid #add-element #add-element-link,
+ #my-files #grid #add-element .add-element-link,
+ #page-gallery #grid #add-element #add-element-link,
+ #page-gallery #grid #add-element .add-element-link,
+ #profile-gallery #grid #add-element #add-element-link,
+ #profile-gallery #grid #add-element .add-element-link,
+ #user-pages #grid #add-element #add-element-link,
+ #user-pages #grid #add-element .add-element-link,
+ .pages #grid #add-element #add-element-link,
+ .pages #grid #add-element .add-element-link {
+  color: $button-color; //$blue;//$text-color;
+  font-weight: bold;
+
+  &:hover {
+   color: $button-color;
+  }
+ }
+
+#theme-0 {
+  .panel-left, .panel-right {
+    background: -webkit-linear-gradient(to bottom, $titlebar-color, $button-hover);
+    background: linear-gradient(to bottom, $titlebar-color, $button-hover);
+  }
+}
+
+#page-edit, #profile, #page-edit-theme, #page-settings {
+ .action-bar {
+  &:hover {
+   opacity: 1;
+  }
+ }
+}
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:active:focus {
+  background-color:$button-hover;
+}
+
+#profile .profile-navi {
+  .nav .open > a {
+      border-color: $button-color;
+  }
+  .close {
+   opacity:0.8;
+   color: #314755;
+   &:hover {
+    opacity: 1;
+   }
+  }
+  .nav-tabs {
+  border-bottom: 1px solid $button-color;
+  >li {
+   margin-bottom: 0;
+  }
+  >li a {
+   margin-right: 0;
+   text-decoration: none;
+  }
+  > li.active a {
+    color: $button-hover;
+    border: 1px solid $button-color;
+    border-bottom-color: transparent;
+  }
+ }
+}
 /*#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{
