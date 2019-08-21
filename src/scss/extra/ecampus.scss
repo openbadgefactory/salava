@@ -14,6 +14,7 @@
 @import '../user';
 @import 'application';
 @import '../rtl';
+@import '../profile';
 
 .btn {
   border-radius: 10px;
@@ -169,7 +170,7 @@ nav a#login-button{
   opacity:0.4;
 }
 
-.btn-warning, .btn-success {
+.btn-warning, .btn-success, .btn-danger {
   color: black;
   background-color: white;
   border-color: $button-color;
@@ -292,7 +293,11 @@ select.form-control::-ms-expand {
     }
   }
 
-  .connections-block .info-block .text{
+  .profile-block .profile-visibility a{
+      color:$link-color;
+    }
+
+  .connections-block .info-block .text, .badge-block .connections-block .info-block .text{
     p.num {
       color: $button-color;
     }
@@ -362,6 +367,10 @@ select.form-control::-ms-expand {
         background-color: $link-color;
       }
 
+      .map {
+        background-color: $link-hover;
+      }
+
 
     }
 
@@ -375,7 +384,122 @@ select.form-control::-ms-expand {
   }
 }
 
+#profiletips .tip{
+  .tipicon, a {
+    color: $link-color;
 
+  }
+}
+
+ #my-files #grid #add-element #add-element-link,
+ #my-files #grid #add-element .add-element-link,
+ #page-gallery #grid #add-element #add-element-link,
+ #page-gallery #grid #add-element .add-element-link,
+ #profile-gallery #grid #add-element #add-element-link,
+ #profile-gallery #grid #add-element .add-element-link,
+ #user-pages #grid #add-element #add-element-link,
+ #user-pages #grid #add-element .add-element-link,
+ .pages #grid #add-element #add-element-link,
+ .pages #grid #add-element .add-element-link {
+  color: $grid-link; //$blue;//$text-color;
+  font-weight: bold;
+
+  &:hover {
+   color: $grid-link;
+  }
+ }
+.add-info, .add-field-after {
+  .btn-warning, .btn-success {
+  color: black;
+  background-color: $button-color;
+  border-color: $button-color;
+  &:hover{
+    background-color: $button-hover;
+    border-color: $button-hover;
+  }
+  &:focus, &:active{
+    background-color: $button-hover;
+    color: black;
+    border-color: $button-hover;
+    }
+  }
+}
+
+#field-editor .field .field-content #badge-showcase {
+ .addbadge .add-icon {
+  color: $titlebar-color;
+ }
+
+ #grid .grid-container {
+  .move-left i,.move-right i{
+   color: $button-color;
+  }
+ }
+}
+
+#page-edit #block-modal .block-types div.content-type,
+#page-edit-theme #block-modal .block-types div.content-type {
+ background-color: $button-color;
+ color: #000;
+
+ &:focus,
+ &:hover {
+  background-color: $button-hover;
+ }
+}
+
+#page-edit, #profile, #page-edit-theme, #page-settings {
+ .action-bar {
+  &:hover {
+   opacity: 1;
+  }
+ }
+}
+
+#theme-0 {
+  .panel-left, .panel-right {
+    background: -webkit-linear-gradient(to bottom, $titlebar-color, $button-hover);
+    background: linear-gradient(to bottom, $titlebar-color, $button-hover);
+  }
+}
+
+#profile .profile-navi {
+  .nav .open > a {
+      border-color: $button-color;
+  }
+  .close {
+   opacity:0.8;
+   color: #314755;
+   &:hover {
+    opacity: 1;
+   }
+  }
+  .nav-tabs {
+  border-bottom: 1px solid $titlebar-color;
+  >li {
+   margin-bottom: 0;
+  }
+  >li a {
+   margin-right: 0;
+   text-decoration: none;
+  }
+  > li.active a {
+    color: $button-color;
+    border: 1px solid $titlebar-color;
+    border-bottom-color: transparent;
+  }
+ }
+}
+
+.wizard {
+  a, .badge, .current {
+    color: #000;
+  }
+}
+
+#page-edit #step-button, #page-edit #step-button-previous {
+  color: #000;
+}
 /*#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{

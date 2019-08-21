@@ -55,7 +55,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
          connections (so/get-connections-badge ctx current-user-id)
-         endorsements (-> (all-user-endorsements ctx user-id) :all)
+         endorsements (-> (all-user-endorsements ctx user-id true) :all-endorsements)
          pending-badges (b/user-badges-pending ctx user-id)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
@@ -94,7 +94,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
          connections (count (so/get-connections-badge ctx current-user-id))
-         endorsements (-> (all-user-endorsements ctx user-id) :all count)
+         endorsements (-> (all-user-endorsements ctx user-id) :all-endorsements count)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) ())
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
@@ -446,7 +446,6 @@
                                                   ]))])])
         user-endorsements-template (pdf/template
                                      [:paragraph.generic
-                                      (prn $endorsements)
                                       (when-not (empty? $endorsements)
                                         [:paragraph
                                          [:heading.heading-name (str (t :badge/Myendorsements ul) ": ")]
@@ -456,8 +455,8 @@
                                                      :let [name (str (:first_name c) " " (:last_name c))]]
                                                  [:paragraph
                                                   [:chunk name]"\n"
-                                                  [:chunk (:name c)]
-                                                  [:chunk (date-from-unix-time (long (* 1000 (:mtime c))) "date")]
+                                                  [:chunk (:name c)]"\n"
+                                                  [:chunk (date-from-unix-time (long (* 1000 (:mtime c))) "date")]"\n"
                                                   (process-markdown (:content c) (:user_badge_id c) "User Endorsements")
                                                   ;[:chunk.chunk (str (t :badge/BadgeID ul) ": ")] [:chunk (str (:id c))]"\n"
                                                   ;[:chunk.chunk (str (t :badge/Name ul) ": ")][:chunk (str (:name c))]"\n"
@@ -501,5 +500,3 @@
                                             (user-endorsements-template user-data)
                                             (events-template user-data))) output-stream)
       )))
-
-

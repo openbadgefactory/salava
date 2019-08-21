@@ -4,7 +4,8 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [path-for private?]]
             [salava.badge.ui.endorsement :as endr]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.translator.ui.helper :refer [translate]]))
 
 
 
@@ -51,8 +52,10 @@
      {:src (if (re-find #"^file/" path) (str "/" path) path)
       :style {:width "50px"}}]))
 
-(defn content [issuer-id]
-  (let [state (atom {:issuer nil :endorsement []})
+(defn content [param]
+  (let [issuer-id (if (map? param) (:id param) param)
+        lang (if (map? param) (-> (:lang param)) nil)
+        state (atom {:issuer nil :endorsement []})
         connected? (cursor state [:connected])]
     (init-issuer-content state issuer-id)
     (fn []
@@ -92,7 +95,7 @@
             [:div.row
              [:div.col-xs-12
               [:hr]
-              [:h4 {:style {:margin-bottom "20px"}} (t :badge/IssuerEndorsedBy)]
+              [:h4 {:style {:margin-bottom "20px"}} (translate lang :badge/IssuerEndorsedBy)]
               (into [:div]
                     (for [endorsement (:endorsement @state)]
                       (endr/endorsement-row endorsement)))]])]]))))

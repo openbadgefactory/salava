@@ -7,6 +7,7 @@
            [clojure.string :refer [upper-case]]
            [salava.core.i18n :as i18n :refer [t]]
            [clojure.set :as set :refer [intersection]]
+           [salava.user.ui.helper :refer [profile-link-inline-modal]]
            [salava.core.ui.badge-grid :refer [badge-grid-element]]))
 
 (defn init-data

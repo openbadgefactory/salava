@@ -1,4 +1,4 @@
-(defproject salava "3.4.1"
+(defproject salava "3.4.2"
   :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
@@ -116,7 +116,7 @@
                        :aot            :all}}
 
 
-  :scss  {:builds
+  :scss  {:buildsfc5407a8a019d52ac94482ccb601708b2e3f91e7
           {:dev {:source-dir "src/scss"
                  :dest-dir   "target/generated/public/css"
                  :executable "sass"

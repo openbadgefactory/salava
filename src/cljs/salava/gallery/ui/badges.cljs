@@ -304,10 +304,13 @@
      :handler (fn [data]
                 (let [{:keys [badges badge_count]} data]
                   ;(value-helper state tags)
-                  (reset! (cursor state [:params :page_count]) 1)
-                  (swap! state assoc
-                         :badges badges
-                         :badge_count badge_count)))
+                  (if (empty? badges)
+                    (init-data (assoc params :country "all") state) ;;Recall init data with "all" countries if initial query returned empty coll
+                    (do
+                     (reset! (cursor state [:params :page_count]) 1)
+                     (swap! state assoc
+                           :badges badges
+                           :badge_count badge_count)))))
      :finally (fn []
                 (ajax-stop (cursor state [:ajax-message])))}))
 

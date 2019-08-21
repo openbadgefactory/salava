@@ -178,11 +178,6 @@
                             (s/optional-key :first_name) s/Str
                             (s/optional-key :last_name) s/Str
                             (s/optional-key :profile_picture) (s/maybe s/Str)
+                            (s/optional-key :profile_visibility) (s/enum "internal" "public")
 
                             }])
-
-
-
-
-
-
