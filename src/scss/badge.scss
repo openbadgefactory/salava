@@ -1907,6 +1907,7 @@ a.popup-info {
     top: 20px;
     font-size: 26px !important;
     color: $button-color;
+    transition: all 0.1s ease-in-out;
   }
 
   .in-badge{
@@ -1916,11 +1917,19 @@ a.popup-info {
   &:active,
   &:focus {
     .panel-status-icon {
-      -webkit-transform: rotate(-10deg) scale(.8);
-      -ms-transform: rotate(-10deg) scale(.8);
-      transform: rotate(-10deg) scale(.8);
-      opacity: 0.7;
       color: $button-hover;
+      opacity: 0.7;
     }
+    .fa-chevron-circle-right {
+      -webkit-transform: rotate(20deg) scale(.8);
+      -ms-transform: rotate(20deg) scale(.8);
+      transform: rotate(20deg) scale(.8);
+    }
+    .fa-chevron-circle-down {
+      -webkit-transform: rotate(-20deg) scale(.8);
+      -ms-transform: rotate(-20deg) scale(.8);
+      transform: rotate(-20deg) scale(.8);
+    }
+
   }
 }

@@ -271,13 +271,6 @@
                   :current-user current-user
                   (ok (b/badge-stats ctx (:id current-user))))
 
-             (GET "/stats/:id" [galleryid]
-                   :summary "Get user badge stats about recipients, ratings"
-                   :path-params [id :- Long]
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (ok (b/user-badge-stats ctx (:id current-user) id galleryid)))
-
              (POST "/evidence/:user-badge-id" []
                    :return {:status (s/enum "success" "error")}
                    :path-params [user-badge-id :- Long]

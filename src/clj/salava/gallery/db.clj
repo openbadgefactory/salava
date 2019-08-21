@@ -296,11 +296,9 @@
       "pages"  {:pages (public-pages-by-user ctx user-id visibility)}
       {})))
 
-(defn user-badge-stats "Return badge rating and recipients" [ctx user-id gallery-id]
-  (let [rating (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx))
-        recipients (when user-id (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))]
-   (hash-map :rating rating
-             :public_users (->> recipients
+(defn badge-recipients "Return badge recipients" [ctx user-id gallery-id]
+  (let [recipients (when user-id (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))]
+   (hash-map :public_users (->> recipients
                                 (filter #(not= (:visibility %) "private"))
                                 (map #(dissoc % :visibility))
                                 distinct)
