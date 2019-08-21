@@ -170,7 +170,7 @@ nav a#login-button{
   opacity:0.4;
 }
 
-.btn-warning, .btn-success {
+.btn-warning, .btn-success, .btn-danger {
   color: black;
   background-color: white;
   border-color: $button-color;
@@ -489,6 +489,16 @@ select.form-control::-ms-expand {
     border-bottom-color: transparent;
   }
  }
+}
+
+.wizard {
+  a, .badge, .current {
+    color: #000;
+  }
+}
+
+#page-edit #step-button, #page-edit #step-button-previous {
+  color: #000;
 }
 /*#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
