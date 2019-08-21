@@ -107,7 +107,7 @@
                        ;:repl-options   {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                        :plugins        [[lein-pdo "0.1.1"]
                                         [lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojure]]
-                                        [lein-scss "0.3.0"]
+                                        [lein-scss "0.3.0"]Isaac
                                         [lein-figwheel "0.5.18"]]
                        :resource-paths ["target/generated"]}
              :uberjar {:resource-paths ["target/adv"]
