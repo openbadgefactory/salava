@@ -51,7 +51,7 @@
 (defn issuer-connections [issuers state]
   (let [panel-identity :issuers
         visible-area-atom (cursor state [:visible-area])
-        icon-class (if (= @visible-area-atom :issuers) "fa-minus-circle" "fa-plus-circle")]
+        icon-class (if (= @visible-area-atom :issuers) "fa-chevron-circle-down" "fa-chevron-circle-right")]
     [:div.expandable-block {:class "panel issuer-panel"}
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :issuers visible-area-atom) #_(reset! (cursor state [:visible-area]) :issuers))}
@@ -76,7 +76,7 @@
 (defn badge-connections [badges state]
   (let [panel-identity :badges
         visible-area-atom (cursor state [:visible-area])
-        icon-class (if (= @visible-area-atom :badges) "fa-minus-circle" "fa-plus-circle")]
+        icon-class (if (= @visible-area-atom :badges) "fa-chevron-circle-down" "fa-chevron-circle-right")]
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :badges visible-area-atom) #_(reset! (cursor state [:visible-area]) :badges))}

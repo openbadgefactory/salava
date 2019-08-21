@@ -16,7 +16,7 @@
 (defn views-panel [views visible-area-atom]
   (let [panel-identity :views
         total-views (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0 views)
-        icon-class (if (= @visible-area-atom panel-identity) "fa-minus-circle" "fa-plus-circle")]
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
@@ -49,7 +49,7 @@
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations
         total-congratulations (->> congratulations (map :congratulation_count) (reduce +))
-        icon-class (if (= @visible-area-atom panel-identity) "fa-minus-circle" "fa-plus-circle")]
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
@@ -80,7 +80,7 @@
 
 (defn issuers-panel [issuers visible-area-atom]
   (let [panel-identity :issuers
-        icon-class (if (= @visible-area-atom panel-identity) "fa-minus-circle" "fa-plus-circle")]
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
