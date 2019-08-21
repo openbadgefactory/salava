@@ -116,7 +116,7 @@
                        :aot            :all}}
 
 
-  :scss  {:buildsfc5407a8a019d52ac94482ccb601708b2e3f91e7
+  :scss  {:builds
           {:dev {:source-dir "src/scss"
                  :dest-dir   "target/generated/public/css"
                  :executable "sass"
