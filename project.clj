@@ -51,10 +51,15 @@
                  [org.clojure/tools.cli "0.4.2"]
                  [alxlit/autoclave "0.2.0"]
                  [clj.qrgen "0.4.0"]
-                 [clj-pdf "2.2.34"]
+                 [clj-pdf "2.2.34" :exclusions [org.apache.xmlgraphics/batik-bridge]]
                  [clj-pdf-markdown "0.2.1"]
                  [org.clojure/core.cache "0.7.2"]
-                 [batik-rasterize "0.1.2"]
+
+                 [org.apache.xmlgraphics/batik-transcoder "1.11"]
+                 [org.apache.xmlgraphics/batik-codec "1.11"]
+                 [org.apache.xmlgraphics/batik-anim "1.11"]
+                 [org.apache.xmlgraphics/xmlgraphics-commons "2.3"]
+
 
                  ; Client side
                  [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]

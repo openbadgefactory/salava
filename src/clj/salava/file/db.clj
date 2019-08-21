@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [clojure.string :refer [split blank?]]
             [yesql.core :refer [defqueries]]
-            [batik.rasterize :as batik]
+            [salava.file.rasterize :as r]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.core.util :as u :refer [get-db get-datasource map-sha256]]))
@@ -93,7 +93,7 @@
       (try
         (some-> full-path
                 slurp
-                (batik/render-svg-string nil {:width 200 :height 200 :type :png})
+                (r/render-svg-string nil {:width 300 :height 300 :type :png})
                 java.io.ByteArrayInputStream.)
         (catch Exception _
           nil)))))
