@@ -246,7 +246,7 @@
 
         (if (pos? @show-recipient-name-atom)
           (if (and user-logged-in? (not owner?))
-            [:div [:label (t :badge/Recipient) ": " ] [:a {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+            [:div [:label (t :badge/Recipient) ": " ]  [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
         ;metabadges
         (if (and owner? metabadge-fn) [:div [metabadge-fn (:assertion_url @state)]])
