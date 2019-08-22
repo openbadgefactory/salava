@@ -8,7 +8,7 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]
             [salava.core.countries :refer [all-countries-sorted]]
-            [salava.oauth.ui.helper :refer [facebook-link linkedin-link ]]
+            [salava.oauth.ui.helper :refer [facebook-link linkedin-link google-link]]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]
@@ -172,10 +172,12 @@
       (t :user/Createnewaccount)]]))
 
 
-(defn oauth-registration-form []
+#_(defn oauth-registration-form []
   [:div {:class "row"}
-   [:div {:class "col-sm-6 left-column"} (facebook-link false true)]
-   [:div.col-sm-6.right-column (linkedin-link nil "register")]])
+   [:div.col-md-12
+    [:div {:class "col-sm-4 left-column"} (facebook-link false true)]
+    [:div.col-sm-4.right-column (linkedin-link nil "register")]
+    [:div.col-sm-4.right-column [google-link false true]]]])
 
 
 (defn terms-content [state]
@@ -213,9 +215,10 @@
 (defn registeration-content [state]
   (session/put! :seen-terms true)
   [:div
-   (oauth-registration-form)
-   (if (some #(= % "oauth") (session/get-in [:plugins :all]))
-     [:div {:class "or"} (t :user/or)])
+   ;(oauth-registration-form)
+    (into [:div]
+       (for [f (plugin-fun (session/get :plugins) "block" "oauth_registration_form")]
+         [f]))
    (registration-form state)])
 
 (defn content [state]

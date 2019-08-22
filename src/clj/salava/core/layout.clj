@@ -71,6 +71,7 @@
                    :base-path       (get-in ctx [:config :core :base-path])
                    :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
                    :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
+                   :google-app-id   (get-in ctx [:config :oauth :google :app-id])
                    :languages       (map name (get-in ctx [:config :core :languages]))
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)

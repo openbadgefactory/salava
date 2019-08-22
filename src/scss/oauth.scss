@@ -13,10 +13,12 @@
     color: #ffffff;
     &:hover {
         box-shadow: none;
+        text-decoration: none;
 	color: #ffffff;
     }
     &:active, &:visited {
         color: #ffffff;
+        text-decoration: none;
     }
 }
 
@@ -38,4 +40,117 @@
         background-color: #006292;
         border: 1px solid #007bb6;
     }
+}
+
+//https://developers.google.com/identity/branding-guidelines
+.btn-google {
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  background: white;
+  border-radius: 4px;
+  border: thin solid #888;
+  box-shadow: 1px 1px 2px grey;
+  white-space: nowrap;
+  transition-property: background-color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+  .icon {
+      display: inline-block;
+      vertical-align: middle;
+      img {
+        width: 18px;
+      }
+      margin-right: 10px;
+  }
+  .text {
+      display: inline-block;
+      vertical-align: middle;
+      padding: 0 5px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #444;
+  }
+
+  &:hover, &:active, &:focus {
+    box-shadow: 1px 2px 1px grey;
+    .text {
+      //color: #fff;
+        //  background: #4285f4;
+
+    }
+  }
+}
+
+.btn-google-logged-in {
+    background-color: #4285f4;
+    border: none;
+    color: #fff;
+    //height: 50px;
+    max-width: 150px;
+    border-radius: 4px;
+
+    a:hover {
+      text-decoration: none !important;
+      }
+
+    .content-wrapper {
+      border: 1px solid transparent;
+      border-radius: 4px;
+      height: 100%;
+      width: 100%;
+      text-decoration: none;
+    }
+
+    .icon {
+      background-color: #fff;
+      -webkit-border-radius: 1px;
+      border-radius: 1px;
+      float: left;
+      padding: 5px;
+      img {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .content {
+      font-family: Roboto,arial,sans-serif;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: .21px;
+      margin-left: 12px;
+      margin-right: 6px;
+      vertical-align: top;
+      line-height: 34px;
+      text-decoration: none;
+    }
+}
+
+
+#registration-page, #login-page {
+  .btn-oauth {
+    margin-bottom: 5px;
+  }
+  .oauth-buttons {
+    display: -webkit-flex;
+    align-items: center;
+    flex-direction: column;
+    margin: 20px auto;
+}
+
+  .or {
+    padding: unset;
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid;
+    line-height: 0.1em;
+    margin: 10px 0 20px;
+    font-size: 20px;
+
+   span {
+    background:#fff;
+    padding:0 10px;
+   }
+  }
 }

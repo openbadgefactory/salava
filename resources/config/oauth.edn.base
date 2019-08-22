@@ -3,4 +3,6 @@
             :app-secret ""}
 
  :linkedin {:app-id     ""
+            :app-secret ""}
+ :google   {:app-id ""
             :app-secret ""}}
