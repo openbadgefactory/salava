@@ -29,7 +29,7 @@
      [:a {:class "bottom-link" :href "mailto:info@hpass.org" }
       "info@hpass.org"]
      " | "
-     [:a {:class "bottom-link" :href "/terms" }
+     [:a {:class "bottom-link" :href "https://hpass.org/privacy-policy-2/" :target "_blank" }
       "Privacy Policy and Terms of Use"]
 
      ]]])
