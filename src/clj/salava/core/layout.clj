@@ -28,7 +28,8 @@
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
    "/assets/leaflet/leaflet.js"
-   "/js/ckeditor/ckeditor.js"])
+   "/js/ckeditor/ckeditor.js"
+   #_"/js/dataLayer.js"])
 
 
 (defn with-version [ctx resource-name]
@@ -124,7 +125,8 @@
        [:link {:rel "shortcut icon" :href (:icon favicons) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
-       [:script {:type "text/javascript"} (context-js ctx)]]
+       [:script {:type "text/javascript"} (context-js ctx)]
+       (include-js "/js/dataLayer.js")]
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
        "<!--[if lt IE 10]>"
