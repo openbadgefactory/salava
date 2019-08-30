@@ -507,6 +507,13 @@
     [explore-block state]
     [help-block]]])
 
+(defn new-user-oauth []
+  (let [[service _](-> (clojure.string/split js/window.location.search #"&"))
+        service (-> (clojure.string/split service #"=") second)]
+    (when (and service _)
+     (do
+       (.push js/dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method (str service "-oauth")}))
+       (.pushState js/history "" "dashboard" (path-for "/social"))))))
 
 (defn handler [site-navi]
   (let [state (atom {:endorsing 0
@@ -517,5 +524,6 @@
                      :pages_count 0
                      :files_count 0
                      :arrow-class "fa-angle-down"})]
+    (new-user-oauth)
     (init-dashboard state)
     (fn [] (layout/dashboard site-navi [content state]))))

@@ -30,6 +30,9 @@
    "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
+(defn gtm [ctx]
+ (let [script (first (plugin-fun (get-plugins ctx) "block" "gtmscript"))]
+   (if script (script ctx) "")))
 
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
@@ -124,7 +127,10 @@
        [:link {:rel "shortcut icon" :href (:icon favicons) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
-       [:script {:type "text/javascript"} (context-js ctx)]]
+       [:script {:type "text/javascript"} (context-js ctx)]
+       (include-js "/js/dataLayer.js")
+       (include-js (gtm ctx))]
+
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
        "<!--[if lt IE 10]>"
