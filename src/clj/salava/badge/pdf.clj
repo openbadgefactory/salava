@@ -11,7 +11,8 @@
             [salava.user.db :as ud]
             [ring.util.io :as io]
             [clojure.tools.logging :as log]
-            [salava.badge.endorsement :refer [user-badge-endorsements]]))
+            [salava.badge.endorsement :refer [user-badge-endorsements]]
+            [salava.badge.pdf-helper :as pdfh]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -54,7 +55,7 @@
 (defn process-markdown-helper [markdown id context]
   (let [file (java.io.File/createTempFile "markdown" ".pdf")]
     (try
-      (pdf/pdf [{} (markdown->clj-pdf {:wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
+      (pdf/pdf [{} (pdfh/markdown->clj-pdf {:wrap {:global-wrapper :paragraph}} markdown)] (.getAbsolutePath file))
 
       true
       (catch Exception e
@@ -66,9 +67,8 @@
   (if (== 1 (count markdown))
     markdown
     (if-let [p (process-markdown-helper markdown id context)]
-      (markdown->clj-pdf {:image {:x 10 :y 10} ;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
-
-                          :wrap {:global-wrapper :paragraph}} markdown)
+      (pdfh/markdown->clj-pdf {:image {:x 10 :y 10};} ;:spacer {:extra-starting-value 1 :allow-extra-line-breaks? true :single-value 2}
+                               :wrap {:global-wrapper :paragraph}} markdown)
       "")))
 
 
@@ -134,7 +134,11 @@
                                                                  [:chunk.chunk (str (t :badge/Criteria ul)": ")] [:anchor {:target (:criteria_url %)} [:chunk.link (t :badge/Opencriteriapage ul)]]"\n"
 
                                                                  [:spacer 0]
-                                                                 (process-markdown (:criteria_content %) $id "Criteria")]]
+                                                                 (process-markdown (:criteria_content %) $id "Criteria")
+                                                                 [:spacer 1] "\n"]]
+
+
+
 
                                                                (when-not (empty? $evidences)
                                                                  [:paragraph.generic

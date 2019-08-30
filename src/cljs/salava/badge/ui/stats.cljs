@@ -8,15 +8,20 @@
             [reagent-modals.modals :as m]
             [salava.core.time :refer [date-from-unix-time]]))
 
-
+(defn toggle-panel [key atom]
+  (if (= key @atom)
+    (reset! atom nil)
+    (reset! atom key)))
 
 (defn views-panel [views visible-area-atom]
   (let [panel-identity :views
-        total-views (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0 views)]
-    [:div.panel
+        total-views (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0 views)
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Badgeviews) ":" " (" total-views ")"]]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
+       [:h3 (t :badge/Badgeviews) ":" " (" total-views ")"]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:div {:class "row header"}
@@ -43,11 +48,13 @@
 
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations
-        total-congratulations (->> congratulations (map :congratulation_count) (reduce +))]
-    [:div.panel
+        total-congratulations (->> congratulations (map :congratulation_count) (reduce +))
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Congratulations) ":" " (" total-congratulations ")"]]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
+       [:h3 (t :badge/Congratulations) ":" " (" total-congratulations ")"]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Congratulations)}
@@ -72,11 +79,13 @@
                   [:td (if latest_congratulation (date-from-unix-time (* 1000 latest_congratulation)))]]))]])]))
 
 (defn issuers-panel [issuers visible-area-atom]
-  (let [panel-identity :issuers]
-    [:div.panel
+  (let [panel-identity :issuers
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Issuers) ":" " (" (count issuers) ")"]]]
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
+       [:h3 (t :badge/Issuers) ":" " (" (count issuers) ")"]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        (into [:div.panel-body]
              (for [issuer issuers
@@ -90,7 +99,7 @@
                              :on-click #(do
                                           (mo/open-modal [:badge :info] {:badge-id id})
                                           ;(b/open-modal id false init-data state)
-                                          (.preventDefault %)) }
+                                          (.preventDefault %))}
                          [:img.badge-icon {:src (str "/"  image_file) :title name :alt name}]]))])))]))
 
 (defn content [state]

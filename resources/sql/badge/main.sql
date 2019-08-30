@@ -190,7 +190,7 @@ ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
 ub.rating, ub.ctime,
 ub.mtime, ub.deleted,
-ub.revoked, ub.show_evidence,
+ub.revoked, ub.show_evidence, ub.gallery_id,
 b.remote_url,
 b.issuer_verified,
 ube.url AS evidence_url,
@@ -712,7 +712,7 @@ DELETE FROM user_badge_endorsement WHERE id = :id
 SELECT issuer_id FROM user_badge_endorsement WHERE id = :id
 
 --name: select-user-badge-endorsements
-SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture, u.profile_visibility
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.issuer_id
 WHERE user_badge_id = :user_badge_id

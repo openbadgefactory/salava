@@ -1890,3 +1890,46 @@ a.popup-info {
   margin-top: 15px;
   text-transform: none;
 }
+
+.expandable-block {
+  .panel-heading {
+    position: relative;
+
+    a {
+      outline: none !important;
+      text-decoration: none !important;
+    }
+  }
+
+  .panel-status-icon {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+    font-size: 26px !important;
+    color: $button-color;
+    transition: all 0.1s ease-in-out;
+  }
+
+  .in-badge{
+    top: 26px;
+  }
+
+  &:active,
+  &:focus {
+    .panel-status-icon {
+      color: $button-hover;
+      opacity: 0.7;
+    }
+    .fa-chevron-circle-right {
+      -webkit-transform: rotate(20deg) scale(.8);
+      -ms-transform: rotate(20deg) scale(.8);
+      transform: rotate(20deg) scale(.8);
+    }
+    .fa-chevron-circle-down {
+      -webkit-transform: rotate(-20deg) scale(.8);
+      -ms-transform: rotate(-20deg) scale(.8);
+      transform: rotate(-20deg) scale(.8);
+    }
+
+  }
+}
