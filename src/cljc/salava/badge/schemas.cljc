@@ -133,7 +133,7 @@
                            (s/optional-key :obf_url)    (s/maybe s/Str)
                            :alignment [(s/maybe {:name s/Str
                                                  :url  s/Str
-                                                 :description s/Str})]
+                                                 :description (s/maybe s/Str)})]
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema IssuerContent {:id   s/Str
