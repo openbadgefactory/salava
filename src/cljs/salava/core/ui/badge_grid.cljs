@@ -22,8 +22,8 @@
     (path-for (str "/obpv1/badge/" id))
     {:handler
      (fn []
-       (init-data state)
-       (navigate-to (str "/badge")))}))
+       #_(init-data state)
+       #_(navigate-to (str "/badge")))}))
 
 (defn delete-badge-modal [id state init-data]
   [:div#delete-modal
@@ -61,12 +61,12 @@
                                  (cond
                                    revoked [:div.icons
                                             [:div.lefticon [:i {:class "fa fa-ban"}] (t :badge/Revoked)]
-                                            [:a.righticon {:class "righticon revoked" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
-                                                                                                                 {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]]
+                                            [:a.righticon {:class "righticon revoked" :on-click #(do (.preventDefault %)(m/modal! [delete-badge-modal id state init-data]
+                                                                                                                                  {:size :lg :hidden (fn [] (init-data state))})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]]
                                    expired? [:div.icons
                                              [:div.lefticon [:i {:class "fa fa-history"}] (t :badge/Expired)]
-                                             [:a.righticon {:class "righticon expired" :on-click (fn [] (m/modal! [delete-badge-modal id state init-data]
-                                                                                                                  {:size :lg})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]])
+                                             [:a.righticon {:class "righticon expired" :on-click #(do (.preventDefault %) (m/modal! [delete-badge-modal id state init-data]
+                                                                                                                                    {:size :lg :hidden (fn [] (init-data state))})) :title (t :badge/Delete)} [:i {:class "fa fa-trash"}]]])
                                  [:a {:href "#" :on-click #(do (.preventDefault %)(mo/open-modal [:badge :info] {:badge-id id} {:hide (fn [] (init-data state))}))}
                                   (if image_file
                                     [:div.media-left
