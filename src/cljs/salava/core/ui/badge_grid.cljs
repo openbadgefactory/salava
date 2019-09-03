@@ -9,7 +9,6 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.social.ui.follow :refer [follow-badge]]
             [reagent.session :as session]
-            #_[salava.metabadge.ui.metabadge :as mb]
             [reagent.core :refer [atom cursor]]
             [salava.core.ui.field :as f]))
 
@@ -48,13 +47,33 @@
               :on-click #(delete-badge id state init-data)}
      (t :core/Delete)]]])
 
+(defn badge-icons [params]
+ (let [{:keys [endorsement-count meta_badge meta_badge_req visibility expires_on]} params]
+  [:div.icons.row
+   [:div.col-md-12
+    [:span.lefticons.pull-left {:style {:display "flex" :flex-direction "column" :width "20%"}}
+     [:span.visibility-icon {:style {:padding-bottom "3px"} :title visibility}
+      (case visibility
+       "private" [:i.fa.fa-lock]
+       "internal" [:i.fa.fa-group]
+       "public" [:i.fa.fa-globe]
+        nil)]
+     (if expires_on
+       [:span [:i.fa.fa-hourglass-half {:title (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))}]])]
+
+    [:span.righticons.pull-right {:style {:display "flex" :flex-direction "column"}}
+     (when (pos? endorsement-count) [:span.badge-view {:title (str endorsement-count " " (if (> endorsement-count 1) (t :badge/endorsements) (t :badge/endorsement) )) :style {:padding-bottom "5px"}} [:i.fa.fa-handshake-o]])
+     (into [:span]
+       (for [f (plugin-fun (session/get :plugins) "metabadge" "meta_icon")]
+         [f meta_badge meta_badge_req]))]]]))
 
 (defn badge-grid-element [element-data state badge-type init-data]
   (let [{:keys [id image_file name description visibility expires_on revoked issuer_content_name issuer_content_url recipients badge_id gallery_id assertion_url meta_badge meta_badge_req endorsement_count user_endorsements_count]} element-data
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
-        metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "meta_icon"))]
+        ;metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "meta_icon"))
+        endorsement-count (+ endorsement_count user_endorsements_count)]
     [:div {:class "media grid-container"}
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
@@ -87,25 +106,9 @@
                                                                                                                      (do
                                                                                                                        (if (clojure.string/includes? (str js/window.location.href) (path-for (str "/badge?id=" id)))
                                                                                                                          (.replaceState js/history {} "Badge modal" (path-for "/badge"))
-                                                                                                                         (navigate-to (current-route-path)))
-                                                                                                                       (init-data state)))}))}
-
-                                  [:div.icons
-                                   [:div.visibility-icon.inline
-                                    (case visibility
-                                      "private" [:i {:class "fa fa-lock"}]
-                                      "internal" [:i {:class "fa fa-group"}]
-                                      "public" [:i {:class "fa fa-globe"}]
-                                      nil)
-                                    (if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn meta_badge meta_badge_req]])
-                                    (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]
-
-                                   (if expires_on
-                                     [:div.righticon
-                                      [:i {:title (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))
-                                           :class "fa fa-hourglass-half"}]])]
-
-
+                                                                                                                         (navigate-to (current-route-path))))
+                                                                                                                    (init-data state))}))}
+                                    [badge-icons {:endorsement-count endorsement-count :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
@@ -175,18 +178,12 @@
                                                                                           (as-> (:function @state) f (f badge)))
                                                                   (= "swap" type) (when-not (some (fn [b] (= id (:id b))) badges)
                                                                                    (function index badge badges))
-                                                                 :else nil)
-                                                                #_(m/close-modal!)))
+                                                                 :else nil)))
+
                                        :data-dismiss "modal"}
 
                                    [:div.media-content
-
-                                    [:div.icons.col-xs-12 {:style {:min-height "15px" :padding "0px"}}
-                                     [:div.visibility-icon.inline
-                                      ;(if metabadge-icon-fn [:div.pull-right [metabadge-icon-fn id]])
-                                      (when (or (pos? user_endorsements_count) (pos? endorsement_count)) [:span.badge-view [:i.fa.fa-handshake-o]])]]
-
-
+                                    [badge-icons {:endorsement-count endorsement-count :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                     [:div.media-left
                                      (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                      [:div.media-body
@@ -199,11 +196,11 @@
                                                               (mo/open-modal [:badge :info] {:badge-id id}))}
 
                                    [:div.media-content
+
                                     [:div.media-left
                                      (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                      [:div.media-body
                                       [:div.media-heading name]]]]]
-                                      ;[:div.media-issuer [:p issuer_content_name]]
                                   [:div.swap-button {:title (t :page/Replacebadge)}
                                    [:a {:href "#" :on-click (fn []
                                                              (let [index (.indexOf (mapv :id (:badges @state)) id)
@@ -231,10 +228,8 @@
 
 
                                     [:i.fa.fa-trash]]]]
-      (= "embed" badge-type)    [:div #_{:class "col-xs-12 col-sm-6 col-md-4"
-                                         :key id}
+      (= "embed" badge-type)    [:div
                                   [:a.heading-link {:target "_blank" :href (path-for (str "/badge/info/" id))}
-                                   ;[:div {:class "media grid-container"}
                                     [:div.media-content
                                      (if image_file
                                       [:div.media-left

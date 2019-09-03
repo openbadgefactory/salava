@@ -1,5 +1,5 @@
 (ns salava.metabadge.schemas
-  (:require [schema.core :as s :include-macros true ]
+  (:require [schema.core :as s :include-macros true]
             [salava.badge.schemas :refer [Badge UserBadgeContent]]))
 
 (s/defschema Metabadge {:name s/Str

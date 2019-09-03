@@ -12,52 +12,44 @@
             [salava.core.restructure]))
 
 (defn route-def [ctx]
-  (routes
-    (context "/badge" []
-             (layout/main ctx "/metabadges"))
+ (routes
+  (context "/badge" []
+           (layout/main ctx "/metabadges"))
 
-    (context "/obpv1/metabadge" []
-             :tags ["metabadge"]
-             (GET "/" []
-                  :return schemas/AllMetabadges
-                  :summary "get all metabadges"
-                  :auth-rules access/signed
-                  :current-user current-user
-                  ;(ok (cron/every-hour ctx))
-                  (ok (mb/all-metabadges ctx (:id current-user))))
+  (context "/obpv1/metabadge" []
+           :tags ["metabadge"]
+           (GET "/" []
+                :return schemas/AllMetabadges
+                :summary "get all metabadges"
+                :auth-rules access/signed
+                :current-user current-user
+                (ok (mb/all-metabadges ctx (:id current-user))))
 
-             (GET "/info" [user_badge_id]
-                  :return schemas/BadgeMetabadge
-                  :summary "get metabadge info via user-badge-id"
-                  :current-user current-user
-                  (ok (mb/get-metabadge ctx user_badge_id (:id current-user))))
+           (GET "/info" [user_badge_id]
+                :return schemas/BadgeMetabadge
+                :summary "get metabadge info via user-badge-id"
+                :current-user current-user
+                (ok (mb/get-metabadge ctx user_badge_id (:id current-user))))
 
-             (GET "/assertion/info" [assertion_url]
-                  :return schemas/BadgeMetabadge
-                  :summary "get metabadge info via assertion url"
-                  :current-user current-user
-                  (ok (mb/check-metabadge ctx assertion_url)))
+           (GET "/assertion/info" [assertion_url]
+                :return schemas/BadgeMetabadge
+                :summary "get metabadge info via assertion url"
+                :current-user current-user
+                (ok (mb/check-metabadge ctx assertion_url)))
 
-             #_(GET "/badge/info" [user_badge_id]
-                  ;:return schemas/Milestone?
-                  :summary "check if badge is a metabadge"
-                  :current-user current-user
-                  (ok (mb/is-metabadge? ctx user_badge_id)))
+           (POST "/update_status/:badgeid" []
+                 :path-params [badgeid :- String]
+                 :summary "change badge status from declined to accepted"
+                 :auth-rules access/authenticated
+                 :current-user current-user
+                 (ok (b/set-status! ctx badgeid "accepted"(:id current-user))))
 
-             (POST "/update_status/:badgeid" []
-                   :path-params [badgeid :- String]
-                   :summary "change badge status from declined to accepted"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (ok (b/set-status! ctx badgeid "accepted"(:id current-user) )))
-             )
 
-    (context "/obpv1/factory" []
-             :tags ["factory"]
+   (context "/obpv1/factory" []
+            :tags ["factory"]
 
-            (PUT "/metabadge" []
-                 :return {:success Boolean}
-                 :body  [data schemas/MetabadgeUpdate]
-                 :middleware [#(mw/wrap-factory-auth % ctx)]
-                 (ok (db/metabadge-update ctx data)))
-    )))
+           (PUT "/metabadge" []
+                :return {:success Boolean}
+                :body  [data schemas/MetabadgeUpdate]
+                :middleware [#(mw/wrap-factory-auth % ctx)]
+                (ok (db/metabadge-update ctx data)))))))

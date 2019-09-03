@@ -22,9 +22,7 @@
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
-            [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            #_[salava.metabadge.ui.metabadge :as mb]
-            ))
+            [salava.social.ui.badge-message-modal :refer [badge-message-link]]))
 
 (defn banner [obf-url]
   (if-let [[_ banner-file] (->> js/window .-location .-search (re-find #"banner=(\w+\.[a-z]{3})"))]
@@ -60,8 +58,6 @@
               :on-click #(reject-badge user-badge-id)}
      (t :core/Delete)]]])
 
-
-
 (defn init-data [state id]
   (ajax/GET
     (path-for (str "/obpv1/badge/pending/" id))
@@ -77,7 +73,6 @@
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
-
 (defn content [state]
   (let [{:keys [id badge_id email owner? issued_on expires_on assertion_url
                 user-logged-in?
@@ -90,12 +85,9 @@
                 issuer_content_id issuer_content_name issuer_content_url issuer_contact
                 issuer_image issuer_description criteria_url
                 creator_content_id creator_name creator_url creator_email
-                creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)
-
-        metabadge-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadge"))]
+                creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
 
     (session/assoc-in! [:user :pending :email] email)
-
     [:div
      (banner obf_url)
      [:div {:style {:width "640px" :margin "15px auto"}}
@@ -122,14 +114,14 @@
 
              [:div
               [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
-              [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]]
-             )
+              [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]])
+
 
            [:hr]
            [:div.col-md-12
             [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
-            [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]
-           ]]]]]
+            [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]]]]]]
+
 
       [:div#badge-info
        [m/modal-window]
@@ -157,7 +149,9 @@
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
-             (if metabadge-fn [:div [metabadge-fn {:assertion_url assertion_url}]])
+             (into [:div]
+              (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
+                [f {:assertion_url assertion_url}]))
 
              (if assertion
                [:div {:id "assertion-link"}
@@ -187,7 +181,7 @@
            (when (seq evidences)
              [:div.row {:id "badge-settings"}
               [:div.col-md-12
-               [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")") ) ]
+               [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")"))]
                (reduce (fn [r evidence]
                          (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                                added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
@@ -196,23 +190,15 @@
                                       (not added-by-user?) description ;;todo use regex to match description
                                       :else nil)]
                            (conj r (when url? url
-                                 [:div.modal-evidence
-                                  (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
-                                  [:div.evidence-icon [:i.fa.fa-link]]
-                                  [:div.content
-                                   (when-not (blank? name) [:div.content-body.name name])
-                                   (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
-                                   [:div.content-body.url
-                                    (hyperlink url)]]]))))
-                       [:div ] evidences)]])
-
-           #_(if evidence_url
-               [:div.row
-                [:div.col-md-12
-                 [:h2.uppercase-header (t :badge/Evidence)]
-                 [:div [:a.link {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]]]]]]]))
-
-
+                                    [:div.modal-evidence
+                                     (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
+                                     [:div.evidence-icon [:i.fa.fa-link]]
+                                     [:div.content
+                                      (when-not (blank? name) [:div.content-body.name name])
+                                      (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
+                                      [:div.content-body.url
+                                       (hyperlink url)]]]))))
+                       [:div ] evidences)]])]]]]]]]))
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
@@ -225,4 +211,3 @@
         (= "initial" (:result @state)) [:div]
         (= "error" (:result @state)) (layout/landing-page site-navi (err/error-not-found))
         :else (layout/landing-page site-navi (content state))))))
-
