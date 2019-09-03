@@ -78,3 +78,7 @@ L.Icon.Default = function() {};
  * @constructor
  */
 L.divIcon = function() {};
+
+//dataLayer
+var dataLayer = {};
+dataLayer.push = function() {};

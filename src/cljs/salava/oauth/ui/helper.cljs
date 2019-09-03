@@ -2,7 +2,7 @@
   (:require [reagent.session :as session]
             [cljs-uuid-utils.core :refer [make-random-uuid uuid-string]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for navigate-to]]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t]]))
 
@@ -34,7 +34,7 @@
 (defn linkedin-register-link [linkedin-app-id]
   (let [redirect-uri (js/encodeURIComponent (str (session/get :site-url) (path-for "/oauth/linkedin")))
         random-state (-> (make-random-uuid) (uuid-string))
-        linkedin-url (str "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_liteprofile%20r_emailaddress%20w_member_social") #_(str "https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_basicprofile%20r_emailaddress")]
+        linkedin-url (str "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=" linkedin-app-id "&redirect_uri=" redirect-uri "&state=" random-state "&scope=r_liteprofile%20r_emailaddress%20w_member_social")]
     [:a {:class "btn btn-oauth btn-linkedin" :href linkedin-url :rel "nofollow"}
      [:i {:class "fa fa-linkedin"}]
      (t :oauth/RegisterwithLinkedin)]))

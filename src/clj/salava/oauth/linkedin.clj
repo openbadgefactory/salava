@@ -50,11 +50,12 @@
           linkedin-user (d/oauth-user ctx "https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))" {:oauth-token access-token} parse-linkedin-user) #_(d/oauth-user ctx "https://api.linkedin.com/v1/people/~:(id,first-name,last-name,picture-url,email-address,location)?format=json" {:oauth-token access-token} parse-linkedin-user)
           email-handle (keyword "handle~")
           email (some-> (d/oauth-request :get "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))" {:oauth-token access-token}) :elements first email-handle :emailAddress)
-          user-id (d/get-or-create-user ctx "linkedin" (assoc linkedin-user :email email) current-user-id)]
+          user (d/get-or-create-user ctx "linkedin" (assoc linkedin-user :email email) current-user-id)
+          user-id (if (map? user) (:user-id user) user)]
 
       (do
         (d/update-user-last_login ctx user-id)
-        {:status "success" :user-id user-id}))
+        (if (map? user) (merge {:status "success"} user ) {:status "success" :user-id user-id})))
     (catch Object _
       {:status "error" :message _})))
 
