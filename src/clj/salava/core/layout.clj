@@ -27,8 +27,16 @@
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
    "/assets/leaflet/leaflet.js"
+<<<<<<< HEAD
    "/js/ckeditor/ckeditor.js"
    #_"/js/dataLayer.js"])
+=======
+   "/js/ckeditor/ckeditor.js"])
+
+(defn gtm [ctx]
+ (let [script (first (plugin-fun (get-plugins ctx) "block" "gtmscript"))]
+   (if script (script ctx) "")))
+>>>>>>> 0749b8960f515b0f532584760911701234340ba2
 
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
@@ -118,7 +126,13 @@
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
        [:script {:type "text/javascript"} (context-js ctx)]
+<<<<<<< HEAD
        (include-js "/js/dataLayer.js")]
+=======
+       (include-js "/js/dataLayer.js")
+       (include-js (gtm ctx))]
+
+>>>>>>> 0749b8960f515b0f532584760911701234340ba2
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
        "<!--[if lt IE 10]>"

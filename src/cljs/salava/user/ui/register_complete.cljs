@@ -30,7 +30,7 @@
        [:li (t :social/Notactivatedbody6)]]]
      [:div.col-md-12 {:style {:text-align "center"}}[:a.btn.btn-primary {:style {:margin-top "20px" :text-align "center"}
                                                                           :href "#" :on-click #(do
-                                                                                                (.push js/dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method "form"})) 
+                                                                                                (.push window.dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method "form"}))
                                                                                                 (.preventDefault %)
                                                                                                 (navigate-to "/social"))}
                                                       (t :core/Continue)]]]]]])

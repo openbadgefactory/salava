@@ -508,7 +508,7 @@
     [help-block]]])
 
 (defn new-user-oauth []
-  (let [[service _](-> (clojure.string/split js/window.location.search #"&") #_second #_boolean)
+  (let [[service _](-> (clojure.string/split js/window.location.search #"&"))
         service (-> (clojure.string/split service #"=") second)]
     (when (and service _)
      (do
