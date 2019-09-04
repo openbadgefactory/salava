@@ -512,7 +512,7 @@
         service (-> (clojure.string/split service #"=") second)]
     (when (and service _)
      (do
-       (.push js/dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method (str service "-oauth")}))
+       (.push window.dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method (str service "-oauth")}))
        (.pushState js/history "" "dashboard" (path-for "/social"))))))
 
 (defn handler [site-navi]
