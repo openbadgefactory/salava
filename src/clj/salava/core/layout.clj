@@ -30,10 +30,6 @@
    "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
-(defn gtm [ctx]
- (let [script (first (plugin-fun (get-plugins ctx) "block" "gtmscript"))]
-   (if script (script ctx) "")))
-
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
     (str resource-name "?_=" (or version (System/currentTimeMillis)))))
@@ -57,6 +53,10 @@
 
 (defn js-list [ctx]
     (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
+
+(defn plugin-js [ctx]
+ (let [f (first (plugin-fun (get-plugins ctx) "block" "pluginjs"))]
+   (if f (f ctx) "")))
 
 
 (defn context-js [ctx]
@@ -128,8 +128,7 @@
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
        [:script {:type "text/javascript"} (context-js ctx)]
-       (include-js "/js/dataLayer.js")
-       (include-js (gtm ctx))]
+       (include-js "/js/dataLayer.js"))]
 
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
@@ -138,7 +137,7 @@
        "<![endif]-->"
        (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
        (apply include-js (js-list ctx))
-       #_(include-js "https://backpack.openbadges.org/issuer.js")]))))
+       (apply include-js (plugin-js ctx))]))))
 
 
 (defn main-response [ctx current-user flash-message meta-tags]
