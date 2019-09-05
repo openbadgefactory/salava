@@ -10,6 +10,7 @@
                           :remote_url            s/Str
                           :remote_id             s/Str
                           :remote_issuer_id      s/Str
+          (s/optional-key :remote_badge_id)      s/Str
                           :info                  s/Str
                           :application_url       s/Str
                           :application_url_label (s/maybe s/Str)
@@ -35,7 +36,8 @@
 
 (s/defschema BadgeAdvertUnpublish {:remote_url       s/Str
                                    :remote_id        s/Str
-                                   :remote_issuer_id s/Str})
+                                   :remote_issuer_id s/Str
+                   (s/optional-key :remote_badge_id) s/Str})
 
 
 
