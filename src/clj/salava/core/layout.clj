@@ -54,7 +54,7 @@
 (defn js-list [ctx]
     (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
 
-(defn plugin-js [ctx]
+(defn plugin-js-list [ctx]
  (let [f (first (plugin-fun (get-plugins ctx) "block" "pluginjs"))]
    (if f (f ctx) "")))
 
@@ -137,7 +137,7 @@
        "<![endif]-->"
        (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
        (apply include-js (js-list ctx))
-       (apply include-js (plugin-js ctx))]))))
+       (apply include-js (plugin-js-list ctx))]))))
 
 
 (defn main-response [ctx current-user flash-message meta-tags]
