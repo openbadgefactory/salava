@@ -128,7 +128,7 @@
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
        [:script {:type "text/javascript"} (context-js ctx)]
-       (include-js "/js/dataLayer.js"))]
+       (include-js "/js/dataLayer.js")]
 
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
