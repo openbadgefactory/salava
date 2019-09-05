@@ -23,24 +23,17 @@
    "/css/rateit/rateit.css"
    "/css/simplemde.min.css"])
 
+
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
    "/assets/leaflet/leaflet.js"
-<<<<<<< HEAD
-   "/js/ckeditor/ckeditor.js"
-   #_"/js/dataLayer.js"])
-=======
    "/js/ckeditor/ckeditor.js"])
-
-(defn gtm [ctx]
- (let [script (first (plugin-fun (get-plugins ctx) "block" "gtmscript"))]
-   (if script (script ctx) "")))
->>>>>>> 0749b8960f515b0f532584760911701234340ba2
 
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
     (str resource-name "?_=" (or version (System/currentTimeMillis)))))
+
 
 (defn css-list [ctx]
   (let [plugins (get-in ctx [:config :core :plugins])
@@ -57,15 +50,21 @@
            (concat asset-css)
            (map #(with-version ctx %))))))
 
+
 (defn js-list [ctx]
-  (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
+    (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
+
+(defn plugin-js [ctx]
+ (let [f (first (plugin-fun (get-plugins ctx) "block" "pluginjs"))]
+   (if f (f ctx) "")))
+
 
 (defn context-js [ctx]
   (let [site-name (get-in ctx [:config :core :site-name])
         share     {:site-name (get-in ctx [:config :core :share :site-name] site-name)
                    :hashtag   (get-in ctx [:config :core :share :hashtag] (->> (split site-name #" ")
                                                                                (map capitalize)
-                                                                               join))}
+                                                                               join)) }
         ctx-out   {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
                    :user            (:user ctx)
                    :flash-message   (:flash-message ctx)
@@ -80,8 +79,10 @@
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
                    :factory-url     (get-in ctx [:config :factory :url])
                    :show-terms?     (get-in ctx [:config :core :show-terms?] false)
-                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))}]
+                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
+                   }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
+
 
 (defn include-meta-tags [ctx tags]
   (if tags
@@ -103,6 +104,7 @@
                    (cons (map (fn [f] (f ctx)) (plugin-fun (get-plugins ctx) "layout" "html-attributes"))))]
     (apply merge attrib)))
 
+
 (defn main-view
   ([ctx] (main-view ctx nil))
   ([ctx meta-tags]
@@ -122,17 +124,12 @@
        [:link {:type "text/css" :href "/css/custom.css" :rel "stylesheet" :media "screen"}]
        [:link {:type "text/css" :href "/css/print.css" :rel "stylesheet" :media "print"}]
        [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
-       [:link {:rel "shortcut icon" :href (:icon favicons)}]
+       [:link {:rel "shortcut icon" :href (:icon favicons) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
        [:script {:type "text/javascript"} (context-js ctx)]
-<<<<<<< HEAD
-       (include-js "/js/dataLayer.js")]
-=======
-       (include-js "/js/dataLayer.js")
-       (include-js (gtm ctx))]
+       (include-js "/js/dataLayer.js"))]
 
->>>>>>> 0749b8960f515b0f532584760911701234340ba2
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
        "<!--[if lt IE 10]>"
@@ -140,7 +137,7 @@
        "<![endif]-->"
        (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
        (apply include-js (js-list ctx))
-       #_(include-js "https://backpack.openbadges.org/issuer.js")]))))
+       (apply include-js (plugin-js ctx))]))))
 
 
 (defn main-response [ctx current-user flash-message meta-tags]
@@ -154,22 +151,22 @@
 
 (defn main [ctx path]
   (GET path []
-       :no-doc true
-       :summary "Main HTML layout"
-       :current-user current-user
-       :flash-message flash-message
-       (main-response ctx current-user flash-message nil)))
+    :no-doc true
+    :summary "Main HTML layout"
+    :current-user current-user
+    :flash-message flash-message
+    (main-response ctx current-user flash-message nil)))
 
 (defn main-meta [ctx path plugin]
   (GET path []
-       :no-doc true
-       :path-params [id :- s/Any]
-       :summary "Main with meta tags"
-       :current-user current-user
-       :flash-message flash-message
-       (let [meta-tags (case plugin
-                         :badge (b/meta-tags ctx id)
-                         :page (p/meta-tags ctx id)
-                         :user (u/meta-tags ctx id)
-                         :gallery (g/meta-tags ctx id))]
-         (main-response ctx current-user flash-message meta-tags))))
+    :no-doc true
+    :path-params [id :- s/Any]
+    :summary "Main with meta tags"
+    :current-user current-user
+    :flash-message flash-message
+    (let [meta-tags (case plugin
+                      :badge (b/meta-tags ctx id)
+                      :page (p/meta-tags ctx id)
+                      :user (u/meta-tags ctx id)
+                      :gallery (g/meta-tags ctx id))]
+      (main-response ctx current-user flash-message meta-tags))))
