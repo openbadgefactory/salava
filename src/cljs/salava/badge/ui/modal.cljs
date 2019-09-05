@@ -258,7 +258,8 @@
         (check-badge id)
 
         ;;Endorse-badge
-        (when-not owner? [endr/endorse-badge id])]]
+        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])
+        #_(when-not owner? [endr/endorse-badge id])]]
 
 
       (when-not (empty? alignment)

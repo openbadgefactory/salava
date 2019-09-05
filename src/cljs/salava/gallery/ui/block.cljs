@@ -5,7 +5,8 @@
             [salava.core.i18n :refer [t]]
             [reagent.core :refer [atom cursor]]
             [salava.core.ui.page-grid :refer [page-grid-element]]
-            [salava.user.ui.helper :refer [profile-link-inline-modal]]))
+            [salava.user.ui.helper :refer [profile-link-inline-modal]]
+            [reagent.session :as session]))
 
 (defn init-grid [kind state]
   (ajax/GET
@@ -101,32 +102,33 @@
   (let [{:keys [gallery_id id data]} params
         state (or (atom data) (atom {}))
         expanded (atom false)]
-    (when (empty? @state)(ajax/GET
-                          (path-for (str "/obpv1/gallery/recipients/" gallery_id))
-                          {;:params {:galleryid gallery_id}
-                           :handler (fn [data]
-                                      (reset! state data))}))
-    (fn []
-     (let [{:keys [public_users private_user_count all_recipients_count]} @state
-            icon-class (if @expanded "fa-chevron-circle-down" "fa-chevron-circle-right")
-            title (if @expanded (t :core/Clicktocollapse) (t :core/Clicktoexpand))]
-      [:div.row
-       [:div.col-md-12
-        [:div.panel.expandable-block ;{:style {:padding "unset"}}
-         [:div.panel-heading {:style {:padding "unset"}}
-          [:h2.uppercase-header (str (t :gallery/recipients) ": " all_recipients_count)]
-          [:a {:href "#" :on-click #(do (.preventDefault %)
-                                        (if @expanded (reset! expanded false) (reset! expanded true)))}
-            ;[:h2.uppercase-header (str (t :gallery/Allrecipients) ": " all_recipients_count)]
-            [:i.fa.fa-lg.panel-status-icon.in-badge {:class icon-class :title title}]]]
-         (when @expanded
-           [:div.panel-body {:style {:padding "unset"}}
-            [:div
-             (into [:div]
-                   (for [user public_users
-                         :let [{:keys [id first_name last_name profile_picture]} user]]
-                     (profile-link-inline-modal id first_name last_name profile_picture)))
-             (when (> private_user_count 0)
-               (if (> (count public_users) 0)
-                 [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
-                 [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]]))))
+    (when (session/get :user)
+      (when (empty? @state)(ajax/GET
+                            (path-for (str "/obpv1/gallery/recipients/" gallery_id))
+                            {;:params {:galleryid gallery_id}
+                             :handler (fn [data]
+                                        (reset! state data))}))
+      (fn []
+       (let [{:keys [public_users private_user_count all_recipients_count]} @state
+              icon-class (if @expanded "fa-chevron-circle-down" "fa-chevron-circle-right")
+              title (if @expanded (t :core/Clicktocollapse) (t :core/Clicktoexpand))]
+        [:div.row
+         [:div.col-md-12
+          [:div.panel.expandable-block ;{:style {:padding "unset"}}
+           [:div.panel-heading {:style {:padding "unset"}}
+            [:h2.uppercase-header (str (t :gallery/recipients) ": " all_recipients_count)]
+            [:a {:href "#" :on-click #(do (.preventDefault %)
+                                          (if @expanded (reset! expanded false) (reset! expanded true)))}
+              ;[:h2.uppercase-header (str (t :gallery/Allrecipients) ": " all_recipients_count)]
+              [:i.fa.fa-lg.panel-status-icon.in-badge {:class icon-class :title title}]]]
+           (when @expanded
+             [:div.panel-body {:style {:padding "unset"}}
+              [:div
+               (into [:div]
+                     (for [user public_users
+                           :let [{:keys [id first_name last_name profile_picture]} user]]
+                       (profile-link-inline-modal id first_name last_name profile_picture)))
+               (when (> private_user_count 0)
+                 (if (> (count public_users) 0)
+                   [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
+                   [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]])))))
