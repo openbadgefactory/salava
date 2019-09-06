@@ -13,6 +13,8 @@
 @import 'application';
 @import '../rtl';
 @import '../profile';
+@import '../metabadge';
+
 /* Fonts */
 @font-face {
  font-family: 'GTAmerica';
@@ -64,9 +66,10 @@ body.anon {
  overflow-x: hidden;
  min-height: 100%;
  background-image: url("/img/extra/hpass/background.jpg");
+ background-position: center bottom;
 
  header#navbar {
-  border-bottom: 20px solid $titlebar-color;
+  border-bottom: 5px solid $light-blue;
  }
  @media (max-width: 425px) {
   background: none;
@@ -105,9 +108,9 @@ body.anon {
  }
 
  a {
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: bold;
-  color: $text-color;
+  color: $link-color;
  }
 
  #narrow-panel {
@@ -120,7 +123,8 @@ body.anon {
 
  footer.footer {
   margin-top: 20px;
-  background-color: #FFF;
+  background-color: #e5e5e5;
+  border-top: 1px solid $light-blue;
 
   .footer-container {
    .text-muted {
@@ -141,18 +145,22 @@ body.anon {
 .btn-primary:active:focus,
 .btn-primary:focus,
 a#login-button {
- background-color: $titlebar-color;
- border-color: $titlebar-color;
+ background-color: $titlebar-color !important; // #000 !important; //$titlebar-color;
+ border: 1px solid transparent;
+ border-color: $login-button-active; //$titlebar-color;
+ transition: background 0.3s, border 0.3s;
  //text-transform: uppercase;
  //color: #000000;
  color: $text-color;
  font-weight: bold !important;
  box-shadow: none;
+ text-decoration: none;
 
  &:hover {
-  background-color: rgba(242, 249, 191, 1) !important;
-  border-color: rgba(242, 249, 191, 1) !important;
-  color: $text-color;
+  background-color: $light-green !important; //#fff !important; // rgba(242, 249, 191, 1) !important;
+  border: 1px solid $titlebar-color;
+  //border-color: #000; //rgba(242, 249, 191, 1) !important;
+  color: #000; //$text-color;
  }
 }
 
@@ -203,8 +211,8 @@ ul.navbar-nav li a {
 /*humanitarian leadership academy changes*/
 #buttons .col-xs-8 .btn,
 #grid-filter .btn {
- background: $button-color;
- border-color: $button-color;
+ background: $titlebar-color;//$button-color;
+ border-color: $titlebar-color; //$button-color;
  line-height: 19px;
  box-shadow: none;
  color: #000000;
@@ -226,9 +234,10 @@ body {
  color: $text-color;
 
  a {
-  color: $text-color;
-  text-decoration: underline;
+  color: $link-color;
+  text-decoration: none;
   outline: none !important;
+  font-weight: 600;
  }
 
  #grid a {
@@ -236,8 +245,8 @@ body {
  }
 
  #badge-info a {
-  color: $text-color;
-  text-decoration: underline;
+  //color: $text-color;
+  //text-decoration: underline;
  }
 
  #badge-stats .panel .panel-heading {
@@ -357,7 +366,8 @@ body {
  }
 
  .pages #grid .media-content .media-body .visibility-icon {
-  color: $grey;
+  color: #373739;
+  font-size: 20px;
  }
 
  #assertion-info th {
@@ -415,7 +425,7 @@ ul.navbar-nav {
 header#navbar {
  background-image: none;
  min-height: 110px;
- box-shadow: 0 0 5px rgba(0, 0, 0, 0.4) !important;
+ box-shadow: 0 0 9px $light-blue !important; //0 0 5px rgba(0, 0, 0, 0.4) !important;
 }
 
 .navbar-header {
@@ -448,7 +458,8 @@ header#navbar {
  h1 {
   font-size: 24px;
   font-weight: 600;
-  color: #222;
+  //color: #222;
+  color: $link-color; //#c1bbbb !important;
   padding-bottom: 8px;
  }
 }
@@ -543,7 +554,7 @@ button.navbar-toggle {
  hr {
   margin-top: 0;
   height: 2px;
-  background-color: $titlebar-color;
+  background-color: $light-blue;
   width: 150px;
  }
 }
@@ -553,7 +564,7 @@ button.navbar-toggle {
  margin: 0 auto;
  padding-top: 0;
  padding-bottom: 0;
- background-color: #FFF;
+ background-color: #f9f9f9;
  -webkit-border-radius: 4px;
  -moz-border-radius: 4px;
  border-radius: 4px;
@@ -568,38 +579,45 @@ button.navbar-toggle {
  }
 
  .footer {
-  background-color: $titlebar-color;
+  background-color: $light-brown;
   height: 27px;
  }
 }
 
 .btn-primary {
- background-color: $button-color !important;
- border: none;
- //border-color: $button-hover;
+ background-color: $titlebar-color !important;
+ border: 1px solid transparent;
+ border-color: $login-button-active;
+ transition: background 0.3s, border 0.3s;
+ //text-transform: uppercase;
+ //color: #000000;
  color: $text-color;
- font-weight: bold;
+ font-weight: bold !important;
  box-shadow: none;
+ text-decoration: none;
 
  &:active,
  &:focus,
  &:hover {
-  background-color: $button-hover;
-  border-color: $button-hover;
+  background-color: $light-green !important; //#fff !important; // rgba(242, 249, 191, 1) !important;
+  border: 1px solid $titlebar-color;
+  //border-color: #000; //rgba(242, 249, 191, 1) !important;
+  color: $text-color;
  }
 }
 
 .btn-success {
- background-color: #dcea74 !important; //$text-color !important;
- border-color: #dcea74 !important; //$text-color !important;
+ background-color: #dcea74; //$text-color !important;
+ border-color: $titlebar-color;//#dcea74 !important; //$text-color !important;
  font-weight: bold;
- color: black !important; //$background-color !important;
+ color: $text-color !important; //$background-color !important;
 
  &:active:hover,
  &:focus,
  &:hover {
-  background-color: $titlebar-color !important;
+  background-color: $titlebar-color;//$titlebar-color !important;
   border-color: $titlebar-color !important;
+  color: $background-color;
   /*         box-shadow: 0px 2px $box-shadow; */
  }
 }
@@ -641,23 +659,33 @@ a.popup-info {
 }
 
 #dashboard {
+  width: 100%;
+  .profile-block {
+    img {
+      border: 1px solid #cdd455;
+    }
+  }
  #welcome-block {
   .welcome-block {
-   background-repeat: no-repeat;
-   background-image: linear-gradient(to right, rgba(255,255,255,0.7), rgba(255,255,255,0.2)), url("/img/extra/hpass/hpass_welcome_background.png");
+    background-repeat: no-repeat;
+    background-image:linear-gradient(to right, rgba(255,255,255,0.7), rgba(255,255,255,0.2)), url("/img/extra/hpass/hpass_welcome_background.png");
+    background-size: cover;
    @media (max-width: 768px) {
     background-image: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
    }
   }
   .icon {
-    color: $link-color;
+    color: $text-color;
+  }
+  .welcome-message {
+    //color: #c1bbbb;
   }
  }
 
  #welcome-block .hidden-content,
  .block {
   font-family: "GT America", "Arial", sans-serif !important;
-  color: $link-color;
+  color: $text-color;
 
   .pending {
    color: $pink;
@@ -665,12 +693,12 @@ a.popup-info {
 
   .heading_1 {
    .icon {
-    color: #568EB4;
+    color: $link-color;//#568EB4;
    }
   }
 
   .title {
-   color: #568EB4;
+   color: $link-color; //#568EB4;
   }
 
   .heading_1 .icon {
@@ -682,17 +710,20 @@ a.popup-info {
   }
 
   .button {
-   //border-color: $pink; //$titlebar-color;
-   border: none;
+   border-color: $login-button-active;//$pink; //$titlebar-color;
+   border: 1px solid transparent;
    background-color: $titlebar-color; //$pink;
    color: $text-color;
+   transition: background 0.3s, border 0.3s, box-shadow 0.3s;
 
    &:active:hover,
    &:focus,
    &:hover {
-    background-color: rgba(242, 249, 191, 1);
-    border-color: rgba(242, 249, 191, 1);
-    /*         box-shadow: 0px 2px $box-shadow; */
+    border: 1px solid $titlebar-color;
+    background-color: $light-green; //#fff; //rgba(242, 249, 191, 1);
+    //border-color: #000; //rgba(242, 249, 191, 1);
+    box-shadow: 0px 2px $box-shadow;
+    color: $text-color;
    }
    //background: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
   }
@@ -702,7 +733,7 @@ a.popup-info {
   color:#1c6799;
 }
  .info-block {
-  background-color: rgba(28, 103, 153, 1); //rgba(86, 142, 180, 1);
+  background-color: #cdd455;//rgba(28, 103, 153, 1); //rgba(86, 142, 180, 1);
  }
 
  .content,
@@ -710,7 +741,7 @@ a.popup-info {
   color: #000000;
 
   .badge-connection {
-   background-color: rgba(17, 113, 100, 1) !important; //rgba(17, 148, 139, 1) !important;
+   background-color: #b84681; //rgba(17, 113, 100, 1) !important; //rgba(17, 148, 139, 1) !important;
   }
 
   .map{
@@ -718,15 +749,15 @@ a.popup-info {
   }
 
   .page {
-   background-color:  rgba(181, 70, 129, 1); //rgba(199, 116, 160, 1);
+   background-color:  #1e679e; //rgba(181, 70, 129, 1); //rgba(199, 116, 160, 1);
   }
  }
 
  .block {
   background: inherit;
-  background-color: rgba(244, 244, 244, 1);
-  border-color: rgba(242, 249, 191, 1);
-  border-width: 2px;
+  //background-color: $background-color; //#ffffff; //#f9f9f9; //rgba(244, 244, 244, 1);
+  //border-color: rgba(242, 249, 191, 1);
+  border: none;
 
   .title,
   a {
@@ -742,7 +773,7 @@ a.popup-info {
   color: $text-color;
 
   .date {
-   color: #117164;
+   color: #117164 !important;
   }
  }
 
@@ -758,11 +789,44 @@ a.popup-info {
  .date {
   color: #117164;
  }
+
+   /*improvements to dashboard*/
+
+   #box_1 .notifications-block {
+     .notification-div  {
+     background-color: unset;
+     border: unset;
+     border-radius: 0px;
+     border-bottom: 1px solid;
+     margin: 3px auto;
+     .content-text {
+      p.content-heading {
+       font-weight: 500;
+       }
+      .date{
+        color: $dark-green;
+        font-weight: 500;
+      }
+     }
+   }
+
+ }
+
+ .info-block .text p.desc {
+   font-weight: 500;
+ }
+
+ .block .content p.header {
+   font-weight: 400;
+   }
 }
 
 .title-row {
- background-color: none;
- background: linear-gradient(to right, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+ background: $titlebar-color;  /* fallback for old browsers */
+ //background: linear-gradient(to right, $titlebar-color, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+ background-image: linear-gradient(to right top, #cdd455, #ced948, #cede3a, #cde327, #cce800);
+//background: -webkit-linear-gradient(to left, #c29f90, #073863);  /* Chrome 10-25, Safari 5.1-6 */
+//background-image: linear-gradient(to right bottom, #000000, #0d0d0d, #171617, #1e1d1e, #252526, #2a2a2b, #2f2f31, #343436, #38383a, #3c3c3e, #414143, #454547);
 }
 
 #endorsebadge .list-group a {
@@ -778,10 +842,12 @@ a.popup-info {
 #page-edit #block-modal .block-types div.content-type,
 #page-edit-theme #block-modal .block-types div.content-type {
  background-color: #dcea74;
+ color: $text-color;
 
  &:focus,
  &:hover {
   background-color: $titlebar-color;
+  //color: $background-color;
  }
 }
 
@@ -823,7 +889,7 @@ a.popup-info {
 html[dir="rtl"] .wizard {
   a {
    &:before {
-     border-right-color:$pink !important;
+     border-right-color: $pink !important;
    }
   }
 
@@ -834,9 +900,15 @@ html[dir="rtl"] .wizard {
    }
 }
 
+
+
 #theme-0 {
  .panel-left, .panel-right{
-  background-image: linear-gradient(to bottom, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
+    background-color: $titlebar-color;
+    background-image: linear-gradient(to right bottom, #cdd455, #ced948, #cede3a, #cde327, #cce800);
+    //background-image: linear-gradient(to right bottom, #000000, #0d0d0d, #171617, #1e1d1e, #252526, #2a2a2b, #2f2f31, #343436, #38383a, #3c3c3e, #414143, #454547);
+
+  //background-image: linear-gradient(to bottom, #cce800, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
  }
  font-family: "GT America", "Arial", sans-serif !important;
 }
@@ -844,7 +916,33 @@ html[dir="rtl"] .wizard {
 #step-button,
 #step-button-previous {
  font-weight: bold;
+ background-color: $titlebar-color;
  color: black !important;
+}
+
+  #step-button-previous:hover,
+  #step-button:hover {
+    background-color: $light-green !important;
+    color: black;
+  }
+
+  #step-button:hover:after {
+    border-left-color: $light-green !important;
+  }
+
+  #step-button-previous:hover:before {
+    border-right-color: $light-green !important;
+  }
+
+html[dir="rtl"] #step-button, #step-button-previous{
+  &:hover:after{
+    border-left-color: $light-green !important;
+    //border-right-color: #000000 !important;
+  }
+
+  &:hover:before{
+    border-right-color: $light-green !important;
+  }
 }
 
 #page-edit .close-button span.remove-button,
@@ -905,4 +1003,17 @@ html[dir="rtl"] .wizard {
   .edit-btn a{
     text-decoration: none;
   }
+}
+.action-bar {
+  //background-color: #fff;
+  background-color: darken($background-color, 2%) ;
+  opacity: 0.85;
+}
+
+#badge-advert .panel {
+  background-color: inherit !important;
+}
+
+#my-files .file-icon-large {
+  color: #373739;
 }
