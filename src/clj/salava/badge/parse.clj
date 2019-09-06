@@ -22,7 +22,7 @@
                            :description s/Str
                            :alignment [(s/maybe {:name s/Str
                                                  :url  s/Str
-                                                 :description s/Str})]
+                                                 :description (s/maybe s/Str)})]
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema Endorsement {:id s/Str
@@ -324,7 +324,6 @@
                                        (http/alternate-get "text/x-markdown" (:criteria badge)))
                        creator-url (get-in badge [:extensions:OriginalCreator :url])
                        image (if (map? (:image badge)) (get-in badge [:image :id]) (:image badge))]
-
                    {:content  [{:id ""
                                 :language_code language
                                 :name (:name badge)
