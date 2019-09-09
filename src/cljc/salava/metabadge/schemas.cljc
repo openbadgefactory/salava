@@ -36,6 +36,9 @@
 (s/defschema AllMetabadges {:in_progress [MilestoneBadge] :completed [MilestoneBadge]})
 
 
+(s/defschema BadgeApplicationInput {:application_url s/Str
+                                    :not_before (s/maybe s/Int)
+                                    :not_after  (s/maybe s/Int)})
 
 (s/defschema MetabadgeBadgeInput {:metabadge_id      s/Str
                                   :required_badge_id s/Str
@@ -43,6 +46,7 @@
                                   :description       s/Str
                                   :criteria          s/Str
                                   :image             s/Str
+                                  :badge_application (s/maybe BadgeApplicationInput)
                                   :ctime             s/Int
                                   :mtime             s/Int})
 
