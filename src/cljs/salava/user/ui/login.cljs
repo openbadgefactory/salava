@@ -6,7 +6,7 @@
             [salava.core.helper :as h]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.user.ui.input :as input]
-            [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
+            [salava.oauth.ui.helper :refer [facebook-link linkedin-link google-link]]
             [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun input-valid?]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
@@ -128,7 +128,6 @@
        (if @error-message-atom
          [:div {:class "alert alert-warning"}
           (translate-text @error-message-atom)])
-       ;(if login-info (login-info))
        [:form
         [:div.form-group {:aria-label "email"}
          [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (t :user/Email) :aria-label (t :user/Email)}]]
@@ -147,9 +146,15 @@
              [:a {:href "#" :on-click #(js-navigate-to "/user/register")} (t :user/Createnewaccount)]])
           [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
-         [:div {:class "row oauth-buttons"}
-          [:div {:class "col-sm-6 left-column"} (facebook-link false nil)]
-          [:div.col-sm-6.right-column (linkedin-link nil nil)]]]
+          (into [:div]
+            (for [f (plugin-fun (session/get :plugins) "block" "oauth_login_form")]
+              [f]))
+
+         #_[:div {:class "row oauth-buttons"}
+          [:div.col-md-12
+           [:div {:class "col-sm-4 left-column"} (facebook-link false nil)]
+           [:div.col-sm-4.right-column (linkedin-link nil nil)]
+           [:div.col-sm-4 [google-link false nil]]]]]
         #_[:div {:class "row login-links"}
          [:div.management-links
           (if-not (private?)

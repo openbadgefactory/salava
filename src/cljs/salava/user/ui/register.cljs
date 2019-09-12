@@ -8,13 +8,26 @@
             [salava.core.helper :refer [dump]]
             [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]
             [salava.core.countries :refer [all-countries-sorted]]
-            [salava.oauth.ui.helper :refer [facebook-link linkedin-link ]]
+            [salava.oauth.ui.helper :refer [facebook-link linkedin-link google-link]]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]
             [salava.user.ui.login :as login]))
 
 
+<<<<<<< HEAD
+=======
+(defn follow-up-url []
+  (let [referrer js/document.referrer
+        site-url (str (session/get :site-url) (base-path))
+        path (if (and referrer site-url) (string/replace referrer site-url ""))]
+    #_(if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
+        "/social/stream"
+        path)
+    "/social"))
+
+
+>>>>>>> google-sign-in
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country language password password-verify]} @state
         token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))
@@ -158,16 +171,18 @@
                :on-click #(do
                             (.preventDefault %)
                             (swap! state assoc :error-message "")
-                            (verify-registration-data state)
+                            (verify-registration-data state))}
 
-                            )}
+
       (t :user/Createnewaccount)]]))
 
 
-(defn oauth-registration-form []
-  [:div {:class "row"}
-   [:div {:class "col-sm-6 left-column"} (facebook-link false true)]
-   [:div.col-sm-6.right-column (linkedin-link nil "register")]])
+#_(defn oauth-registration-form []
+   [:div {:class "row"}
+    [:div.col-md-12
+     [:div {:class "col-sm-4 left-column"} (facebook-link false true)]
+     [:div.col-sm-4.right-column (linkedin-link nil "register")]
+     [:div.col-sm-4.right-column [google-link false true]]]])
 
 
 (defn terms-content [state]
@@ -191,8 +206,8 @@
                                                        [:input {:type     "checkbox"
                                                                 :on-change (fn [e]
                                                                              (if (.. e -target -checked)
-                                                                               (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
-                                                                               ))}]
+                                                                               (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")))}]
+
                                                        (t :user/Doyouaccept)]]]]]
    [:div
     {:style {:text-align "center"}}
@@ -205,10 +220,11 @@
 (defn registeration-content [state]
   (session/put! :seen-terms true)
   [:div
-   (oauth-registration-form)
-   (if (some #(= % "oauth") (session/get-in [:plugins :all]))
-     [:div {:class "or"} (t :user/or)])
-   (registration-form state)])
+   ;(oauth-registration-form)
+   (registration-form state)
+   (into [:div]
+    (for [f (plugin-fun (session/get :plugins) "block" "oauth_registration_form")]
+      [f]))])
 
 (defn content [state]
   [:div {:id "registration-page"}
@@ -221,8 +237,8 @@
          [:div {:class "alert alert-success"
                 :role "alert"}
           (t :user/Welcomemessagesent) "."]
-         (registeration-content state)
-         )]])])
+         (registeration-content state))]])])
+
 
 
 (defn init-data [state]
