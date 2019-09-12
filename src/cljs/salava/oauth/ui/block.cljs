@@ -6,19 +6,20 @@
 (defn ^:export oauth-login-form []
   (fn []
    [:div {:class "row"}
+    (if (some #(= % "oauth") (session/get :plugins))
+     [:div.col-md-12 [:h2.or [:span (t :user/or)]]])
     [:div.col-md-12.oauth-buttons
      [:div (facebook-link false nil)]
      [:div (linkedin-link nil nil)]
-     [:div [google-link false nil]]]
-    (if (some #(= % "oauth") (session/get :plugins))
-      [:div.col-md-12 [:h2.or [:span (t :user/or)]]])]))
+     [:div [google-link false nil]]]]))
+
 
 (defn ^:export oauth-registration-form []
  (fn []
   [:div {:class "row"}
+   (if (some #(= % "oauth") (session/get :plugins))
+     [:div.col-md-12 [:h2.or [:span (t :user/or)]]])
    [:div.col-md-12.oauth-buttons
     [:div (facebook-link false true)]
     [:div (linkedin-link nil "register")]
-    [:div [google-link false true]]]
-   (if (some #(= % "oauth") (session/get :plugins))
-     [:div.col-md-12 [:h2.or [:span (t :user/or)]]])]))
+    [:div [google-link false true]]]]))

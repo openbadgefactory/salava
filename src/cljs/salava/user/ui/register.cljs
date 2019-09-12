@@ -22,8 +22,8 @@
     #_(if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
         "/social/stream"
         path)
-    "/social"
-    ))
+    "/social"))
+
 
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country language password password-verify]} @state
@@ -166,18 +166,18 @@
                :on-click #(do
                             (.preventDefault %)
                             (swap! state assoc :error-message "")
-                            (verify-registration-data state)
+                            (verify-registration-data state))}
 
-                            )}
+
       (t :user/Createnewaccount)]]))
 
 
 #_(defn oauth-registration-form []
-  [:div {:class "row"}
-   [:div.col-md-12
-    [:div {:class "col-sm-4 left-column"} (facebook-link false true)]
-    [:div.col-sm-4.right-column (linkedin-link nil "register")]
-    [:div.col-sm-4.right-column [google-link false true]]]])
+   [:div {:class "row"}
+    [:div.col-md-12
+     [:div {:class "col-sm-4 left-column"} (facebook-link false true)]
+     [:div.col-sm-4.right-column (linkedin-link nil "register")]
+     [:div.col-sm-4.right-column [google-link false true]]]])
 
 
 (defn terms-content [state]
@@ -201,8 +201,8 @@
                                                        [:input {:type     "checkbox"
                                                                 :on-change (fn [e]
                                                                              (if (.. e -target -checked)
-                                                                               (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
-                                                                               ))}]
+                                                                               (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")))}]
+
                                                        (t :user/Doyouaccept)]]]]]
    [:div
     {:style {:text-align "center"}}
@@ -216,10 +216,10 @@
   (session/put! :seen-terms true)
   [:div
    ;(oauth-registration-form)
-    (into [:div]
-       (for [f (plugin-fun (session/get :plugins) "block" "oauth_registration_form")]
-         [f]))
-   (registration-form state)])
+   (registration-form state)
+   (into [:div]
+    (for [f (plugin-fun (session/get :plugins) "block" "oauth_registration_form")]
+      [f]))])
 
 (defn content [state]
   [:div {:id "registration-page"}
@@ -232,8 +232,8 @@
          [:div {:class "alert alert-success"
                 :role "alert"}
           (t :user/Welcomemessagesent) "."]
-         (registeration-content state)
-         )]])])
+         (registeration-content state))]])])
+
 
 
 (defn init-data [state]
