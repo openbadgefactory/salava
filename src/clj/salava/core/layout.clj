@@ -23,6 +23,7 @@
    "/css/rateit/rateit.css"
    "/css/simplemde.min.css"])
 
+
 (def asset-js
   ["/assets/jquery/jquery.min.js"
    "/assets/bootstrap/js/bootstrap.min.js"
@@ -32,6 +33,7 @@
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
     (str resource-name "?_=" (or version (System/currentTimeMillis)))))
+
 
 (defn css-list [ctx]
   (let [plugins (get-in ctx [:config :core :plugins])
@@ -48,6 +50,7 @@
            (concat asset-css)
            (map #(with-version ctx %))))))
 
+
 (defn js-list [ctx]
  (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
 
@@ -61,7 +64,7 @@
         share     {:site-name (get-in ctx [:config :core :share :site-name] site-name)
                    :hashtag   (get-in ctx [:config :core :share :hashtag] (->> (split site-name #" ")
                                                                                (map capitalize)
-                                                                               join))}
+                                                                               join)) }
         ctx-out   {:plugins         {:all (map plugin-str (get-in ctx [:config :core :plugins]))}
                    :user            (:user ctx)
                    :flash-message   (:flash-message ctx)
@@ -77,8 +80,10 @@
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
                    :factory-url     (get-in ctx [:config :factory :url])
                    :show-terms?     (get-in ctx [:config :core :show-terms?] false)
-                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))}]
+                   :filter-options  (first (mapcat #(get-in ctx [:config % :filter-options] []) (get-plugins ctx)))
+                   }]
     (str "function salavaCoreCtx() { return " (json/write-str ctx-out) "; }")))
+
 
 (defn include-meta-tags [ctx tags]
   (if tags
@@ -99,6 +104,7 @@
   (let [attrib (-> {:dir "ltr"}
                    (cons (map (fn [f] (f ctx)) (plugin-fun (get-plugins ctx) "layout" "html-attributes"))))]
     (apply merge attrib)))
+
 
 (defn main-view
   ([ctx] (main-view ctx nil))
@@ -146,22 +152,22 @@
 
 (defn main [ctx path]
   (GET path []
-       :no-doc true
-       :summary "Main HTML layout"
-       :current-user current-user
-       :flash-message flash-message
-       (main-response ctx current-user flash-message nil)))
+    :no-doc true
+    :summary "Main HTML layout"
+    :current-user current-user
+    :flash-message flash-message
+    (main-response ctx current-user flash-message nil)))
 
 (defn main-meta [ctx path plugin]
   (GET path []
-       :no-doc true
-       :path-params [id :- s/Any]
-       :summary "Main with meta tags"
-       :current-user current-user
-       :flash-message flash-message
-       (let [meta-tags (case plugin
-                         :badge (b/meta-tags ctx id)
-                         :page (p/meta-tags ctx id)
-                         :user (u/meta-tags ctx id)
-                         :gallery (g/meta-tags ctx id))]
-         (main-response ctx current-user flash-message meta-tags))))
+    :no-doc true
+    :path-params [id :- s/Any]
+    :summary "Main with meta tags"
+    :current-user current-user
+    :flash-message flash-message
+    (let [meta-tags (case plugin
+                      :badge (b/meta-tags ctx id)
+                      :page (p/meta-tags ctx id)
+                      :user (u/meta-tags ctx id)
+                      :gallery (g/meta-tags ctx id))]
+      (main-response ctx current-user flash-message meta-tags))))

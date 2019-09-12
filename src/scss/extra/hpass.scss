@@ -61,6 +61,20 @@
  background-image: url("/img/extra/hpass/verifiedissuedbyobf.png");
 }
 
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     width: 90px;
+     height: 87px;
+     background-image: url("/img/extra/hpass/logo_icon.png");
+  }
+
+  .media {
+    margin-top: 10px;
+    .media-body {
+      vertical-align: middle !important;
+    }
+  }
+}
 body.anon {
  background-size: cover;
  overflow-x: hidden;
