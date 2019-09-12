@@ -7,7 +7,7 @@
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url? plugin-fun]]
+            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url?]]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.social.ui.follow :refer [follow-badge]]
             [salava.core.ui.error :as err]
@@ -248,8 +248,8 @@
           (if (and user-logged-in? (not owner?))
             [:div [:label (t :badge/Recipient) ": " ]  [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
-        ;metabadges
-        (if (and owner? metabadge-fn) [:div [metabadge-fn (:assertion_url @state)]])
+                ;metabadges
+        (if (and owner? metabadge-fn) [:div [metabadge-fn {:user_badge_id id}]])
 
         [:div.description description]
 

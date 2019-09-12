@@ -947,6 +947,10 @@ button {
       height: auto;
       .icons {
         text-align: left;
+        .link-icon {
+          vertical-align: inherit;
+          font-size: 18px;
+        }
       }
       .visibility-icon {
         font-size: 17px;

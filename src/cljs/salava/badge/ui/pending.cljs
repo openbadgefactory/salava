@@ -112,7 +112,7 @@
             selected-language (cursor state [:content-language])
             {:keys [badge_id content assertion_url]} data
             {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count ]} (content-setter @selected-language content)]
-        [:div
+        [:div#badge-info
          (if (or verified_by_obf issued_by_obf)
            [:div.row.flip
             (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
@@ -125,15 +125,14 @@
           [:div.col-md-9
            [:h4.media-heading name]
 
-           [:div description]
+           [:div.description description]
 
            ;METABADGE
-           [:div (bh/meta-badge meta_badge meta_badge_req)]
-           (if metabadge-fn [:div.pending [metabadge-fn (:assertion_url @state)]])
-           ; [:div assertion_url]
-
+            (when metabadge-fn
+             (into [:div]
+              (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
+                [:div {:style {:margin "10px -10px"}}[f {:user_badge_id id}]])))
            [show-more state]]] ]))))
-
 
 (defn badge-alert [state]
   (if (:badge-alert @state)
