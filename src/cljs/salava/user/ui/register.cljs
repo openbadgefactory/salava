@@ -14,9 +14,6 @@
             [salava.user.ui.input :as input]
             [salava.user.ui.login :as login]))
 
-
-<<<<<<< HEAD
-=======
 (defn follow-up-url []
   (let [referrer js/document.referrer
         site-url (str (session/get :site-url) (base-path))
@@ -26,8 +23,6 @@
         path)
     "/social"))
 
-
->>>>>>> google-sign-in
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country language password password-verify]} @state
         token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))
