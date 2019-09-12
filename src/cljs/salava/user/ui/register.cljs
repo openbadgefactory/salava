@@ -15,16 +15,6 @@
             [salava.user.ui.login :as login]))
 
 
-(defn follow-up-url []
-  (let [referrer js/document.referrer
-        site-url (str (session/get :site-url) (base-path))
-        path (if (and referrer site-url) (string/replace referrer site-url ""))]
-    #_(if (or (= "/user/login" path) (empty? path) (= referrer path) (= path (path-for "/user/login")))
-        "/social/stream"
-        path)
-    "/social"
-    ))
-
 (defn send-registration [state]
   (let [{:keys [email first-name last-name country language password password-verify]} @state
         token (last (re-find #"/user/register/token/([\w-]+)"  (str (current-path))))
@@ -43,7 +33,9 @@
        :handler (fn [data]
                   (if (= (:status data) "error")
                     (swap! state assoc :error-message (:message data))
-                    (js-navigate-to (follow-up-url))))})))
+                    (js-navigate-to "/user/registration-complete")))
+        :finally (fn [] (session/put! :new-user {:first_name first-name :last_name last-name :email email}))})))
+
 
 (defn verify-registration-data
   "Verifies registration form data"
