@@ -46,7 +46,7 @@
         (jdbc/execute! db-conn
                        ["UPDATE user_badge SET revoked = 1, last_checked = UNIX_TIMESTAMP() WHERE id = ?"
                         (:id user-badge)])
-        (if delete-user-metabadge (delete-user-metabadge ctx db-conn (:id user-badge))))
+        (if delete-user-metabadge (delete-user-metabadge ctx (:id user-badge))))
 
       ;; still valid, check verified issuer
       (jdbc/with-db-transaction [t-con db-conn]

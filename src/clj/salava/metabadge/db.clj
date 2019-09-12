@@ -80,13 +80,18 @@
   (try
     (jdbc/with-db-transaction  [tx (:connection (u/get-db ctx))]
       (doseq [mb (:metabadges data)]
+        (delete-factory-metabadge! {:id (:id mb)} {:connection tx})
         (-> mb
             (assoc :image_file (u/file-from-url ctx (:image mb)))
             (assoc :remote_issuer_id (:remote_issuer_id data))
             (replace-factory-metabadge! {:connection tx}))
         (doseq [rb (:required_badges mb)]
           (-> rb
-              (assoc :image_file (u/file-from-url ctx (:image rb)))
+              (assoc :image_file (u/file-from-url ctx (:image rb))
+                     :application_url (get-in rb [:badge_application :application_url] nil)
+                     :not_after (get-in rb [:badge_application :not_after] nil)
+                     :not_before (get-in rb [:badge_application :not_before] nil))
+              (dissoc :badge_application)
               (replace-factory-metabadge-required! {:connection tx}))))
 
       (when (pos? (count (:deleted_metabadges data)))

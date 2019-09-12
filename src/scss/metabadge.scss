@@ -218,19 +218,10 @@ body #metabadge, body.anon #metabadge {
 }
 
 #metabadgegrid {
-  .image-container {
-    position:relative;
-    display:inline-block;
-    .opaque {
-      filter: opacity(25%);
-      -webkit-filter: opacity(25%);
-      &:hover {
-        filter: opacity(100%);
-        -webkit-filter: opacity(100%);
-      }
-    }
-  }
-
+.image-container {
+  position: relative;
+  display: inline-block;
+}
   .badge-modal-navi .fa-puzzle-piece {
     color: $link-color;
   }
@@ -287,7 +278,7 @@ body #metabadge, body.anon #metabadge {
       font-weight: unset;
       margin-top: unset;
       border: unset;
-      .opaque {
+  .opaque {
         filter: opacity(25%);
         -webkit-filter: opacity(25%);
         &:hover {
@@ -329,11 +320,72 @@ body #metabadge, body.anon #metabadge {
     }
   }
 }
-#grid  .opaque {
+/*#grid  .opaque {
   filter: opacity(50%);
   -webkit-filter: opacity(50%);
   &:hover {
     filter: opacity(100%);
     -webkit-filter: opacity(100%);
+  }
+}*/
+.opaque {
+    img {
+      filter: opacity(25%);
+        }
+  ._1 {
+    -webkit-filter: opacity(50%) brightness(5%) contrast(5%);
+    filter: opacity(50%) brightness(5%) contrast(5%);
+  }//0-9%
+  ._2 {
+    -webkit-filter: opacity(50%) brightness(15%) contrast(15%);
+    filter: opacity(50%) brightness(15%) contrast(15%);
+  }//10-19%
+  ._3 {
+    -webkit-filter: opacity(50%) brightness(25%) contrast(25%);
+    filter: opacity(50%) brightness(25%) contrast(25%);
+  }//20-29%
+  ._4 {
+    -webkit-filter: opacity(50%) brightness(35%) contrast(35%);
+    filter: opacity(50%) brightness(35%) contrast(35%);
+  }//30-39%
+  ._5 {
+    -webkit-filter: opacity(50%) brightness(45%) contrast(45%);
+    filter: opacity(50%) brightness(45%) contrast(45%);
+  }//40-49%
+  ._6 {
+    -webkit-filter: opacity(50%) brightness(55%) contrast(55%);
+    filter: opacity(50%) brightness(55%) contrast(55%);
+  }//50-59%
+  ._7 {
+    -webkit-filter: opacity(50%) brightness(65%) contrast(65%);
+    filter: opacity(50%) brightness(65%) contrast(65%);
+  }//60-69%
+  ._8 {
+    -webkit-filter: opacity(50%) brightness(75%) contrast(75%);
+    filter: opacity(50%) brightness(75%) contrast(75%);
+  }//70-79%
+  ._9 {
+    -webkit-filter: opacity(50%) brightness(85%) contrast(85%);
+    filter: opacity(50%) brightness(85%) contrast(85%);
+  }//80-89%
+  ._10 {
+    -webkit-filter: opacity(50%) brightness(95%) contrast(95%);
+    filter: opacity(50%) brightness(95%) contrast(95%);
+  }; //90-99
+
+  &:hover,
+  ._10:hover,
+  ._1:hover,
+  ._2:hover,
+  ._3:hover,
+  ._4:hover,
+  ._5:hover,
+  ._6:hover,
+  ._7:hover,
+  ._8:hover,
+  ._9:hover,
+   img:hover {
+    filter: opacity(100%) brightness(100%) contrast(100%);
+    -webkit-filter: opacity(100%) brightness(100%) contrast(100%);
   }
 }

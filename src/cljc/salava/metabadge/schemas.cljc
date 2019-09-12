@@ -16,8 +16,10 @@
                         (s/optional-key :milestone?) s/Bool
                         (s/optional-key :received) s/Bool
                         (s/optional-key :image) (s/maybe s/Str)
-                        (s/optional-key :criteria) (s/maybe s/Str)})
-
+                        (s/optional-key :criteria) (s/maybe s/Str)
+                        (s/optional-key :application_url) (s/maybe s/Str)
+                        (s/optional-key :not_after) (s/maybe s/Int)
+                        (s/optional-key :not_before) (s/maybe s/Int)})
 
 
 (s/defschema RequiredBadges [(-> Metabadge (assoc (s/optional-key :required_badge_id) s/Str))])

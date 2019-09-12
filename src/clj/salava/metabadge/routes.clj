@@ -42,14 +42,14 @@
                  :summary "change badge status from declined to accepted"
                  :auth-rules access/authenticated
                  :current-user current-user
-                 (ok (b/set-status! ctx badgeid "accepted"(:id current-user))))
+                 (ok (b/set-status! ctx badgeid "accepted"(:id current-user)))))
 
 
-   (context "/obpv1/factory" []
-            :tags ["factory"]
+  (context "/obpv1/factory" []
+           :tags ["factory"]
 
-           (PUT "/metabadge" []
-                :return {:success Boolean}
-                :body  [data schemas/MetabadgeUpdate]
-                :middleware [#(mw/wrap-factory-auth % ctx)]
-                (ok (db/metabadge-update ctx data)))))))
+          (PUT "/metabadge" []
+               :return {:success Boolean}
+               :body  [data schemas/MetabadgeUpdate]
+               :middleware [#(mw/wrap-factory-auth % ctx)]
+               (ok (db/metabadge-update ctx data))))))

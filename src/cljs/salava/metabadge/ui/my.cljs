@@ -8,7 +8,8 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.modal :as mo]
             [salava.core.ui.grid :as g]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.metabadge.ui.metabadge :as mb]))
 
 (defn init-data [state]
  (ajax/GET
@@ -24,15 +25,15 @@
  (>= gotten req))
 
 (defn metabadge-element [milestone state]
- (let [{:keys [name min_required image_file criteria completion_status]} milestone
-       image-class (if (= 100 completion_status) "" " opaque")
-       is-completed? (= completion_status 100)]
+ (let [{:keys [name min_required image_file criteria completion_status user_badge_id]} milestone
+       image-class (if (or user_badge_id (= 100 completion_status)) "" " opaque")
+       is-completed? (or user_badge_id (= completion_status 100))]
   [:div.media.grid-container
    [:div.media-content
     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
      (if image_file
-       [:div.media-left
-        [:img.badge-img {:src (str "/" image_file) :class image-class}]])
+       [:div.media-left {:class image-class}
+        [:img.badge-img {:src (str "/" image_file) :class (mb/image-class completion_status)}]])
      [:div.media-body
       [:div.media-heading
        [:p.heading-link name]]

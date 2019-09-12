@@ -34,7 +34,7 @@ GROUP BY ub.id
 ORDER BY ub.issued_on ASC
 
 --name: select-all-required-badges
-SELECT metabadge_id, required_badge_id, name, description, criteria AS criteria_content, image_file
+SELECT metabadge_id, required_badge_id, name, description, criteria AS criteria_content, image_file, application_url, not_before, not_after
 FROM factory_metabadge_required
 WHERE metabadge_id = :metabadge_id;
 
@@ -113,7 +113,7 @@ FROM factory_metabadge WHERE id = :id
 SELECT user_id from user_badge AS ub where ub.id = :id
 
 --name: select-factory-metabadge-required
-SELECT name, description, criteria AS criteria_content, image_file
+SELECT name, description, criteria AS criteria_content, image_file, application_url, not_before, not_after
 FROM factory_metabadge_required WHERE metabadge_id = :metabadge_id AND required_badge_id = :required_badge_id
 
 --name: select-all-badges
@@ -154,8 +154,8 @@ REPLACE factory_metabadge (id, remote_issuer_id, name, description, criteria, im
 VALUES (:id, :remote_issuer_id, :name, :description, :criteria, :image_file, :min_required, :ctime, :mtime)
 
 --name: replace-factory-metabadge-required!
-REPLACE factory_metabadge_required (metabadge_id, required_badge_id, name, description, criteria, image_file, ctime, mtime)
-VALUES (:metabadge_id, :required_badge_id, :name, :description, :criteria, :image_file, :ctime, :mtime)
+REPLACE factory_metabadge_required (metabadge_id, required_badge_id, name, description, criteria, image_file, application_url, not_before, not_after, ctime, mtime)
+VALUES (:metabadge_id, :required_badge_id, :name, :description, :criteria, :image_file, :application_url, :not_before, :not_after, :ctime, :mtime)
 
 --name: delete-factory-metabadge-multi!
 DELETE fm,fmr FROM factory_metabadge AS fm
@@ -166,3 +166,9 @@ WHERE fm.id IN (:deleted_metabadges) AND fm.remote_issuer_id = :remote_issuer_id
 DELETE fmr FROM factory_metabadge_required fmr
 INNER JOIN factory_metabadge fm ON fmr.metabadge_id = fm.id
 WHERE fmr.required_badge_id IN (:deleted_badges) AND fm.remote_issuer_id = :remote_issuer_id;
+
+--name: delete-factory-metabadge-all!
+DELETE FROM factory_metabadge
+
+--name: delete-factory-metabadge-required-all!
+DELETE FROM factory_metabadge_required

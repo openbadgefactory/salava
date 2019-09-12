@@ -25,20 +25,33 @@
      "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
      nil)))
 
+(defn image-class [completion_status]
+ (cond
+  (<= 0 completion_status 9) "_1"
+  (<= 10 completion_status 19) "_2"
+  (<= 20 completion_status 29) "_3"
+  (<= 30 completion_status 39) "_4"
+  (<= 40 completion_status 49) "_5"
+  (<= 50 completion_status 59) "_6"
+  (<= 60 completion_status 69) "_7"
+  (<= 70 completion_status 79) "_8"
+  (<= 80 completion_status 89) "_9"
+  (<= 90 completion_status 99) "_10"))
+
 (defn current-badge [required_badges current-badge-id]
  (->> required_badges (filter #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id))) first))
 
 (defn required-block-badges [m current-badge-id milestone?]
  (let [current-badge (current-badge (:required_badges m) current-badge-id)]
    (if milestone? (take 20 (:required_badges m)) (into [current-badge] (->> (take 19 (remove #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id)) (:required_badges m)))
-                                                                            (sort-by :received >))))))
+                                                                            (sort-by :issued_on >))))))
 (defn partition-count [m current-badge-id milestone?]
  (let [no (count (required-block-badges m current-badge-id milestone?))]
    (if (<= no 4) no (/ no 2))))
 
 (defn badge-block [m current-badge-id milestone?]
  (let [{:keys [user_badge_id name image_file image criteria criteria_content required_badges received]} m
-        milestone-image-class (if (or user_badge_id received) "" " not-received")]
+        milestone-image-class (if (and user_badge_id (pos? user_badge_id)) "" " not-received")]
    [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
     [:div.metabadge {:class (if (> (count required_badges) 8) " metabadge-large")}
      [:div.panel
@@ -59,7 +72,7 @@
                                                    image (if image_file (str "/" image_file) image)
                                                    current (if (string? current-badge-id) (= url current-badge-id) (= user_badge_id current-badge-id))]
 
-                                               (conj r (if user_badge_id
+                                               (conj r (if (and user_badge_id (pos? user_badge_id))
                                                          [:td [:div [:img.img-circle {:src image :alt name :title name :class (if current "img-thumbnail" "")}]]]
                                                          [:td [:div [:img.img-circle.not-received {:src image :alt name :title name}]]]))))
                                            [:tr]
