@@ -46,10 +46,11 @@
     (throw+ "oauth/Unexpectederroroccured")
     (let [access-token (google-access-token ctx code "/oauth/google")
           google-user (d/oauth-user ctx (str (:user-info-api api)"?access_token=" access-token ) {} parse-google-user)
-          user-id (d/get-or-create-user ctx "google" google-user current-user-id)]
+          user (d/get-or-create-user ctx "google" facebook-user current-user-id)
+          user-id (if (map? user) (:user-id user) user)]
       (do
        (d/update-user-last_login ctx user-id)
-       {:status "success" :user-id user-id})))
+       (if (map? user) (merge {:status "success"} user) {:status "success" :user-id user-id}))))
    (catch Object _
     {:status "error" :message _})))
 
