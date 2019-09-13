@@ -15,15 +15,17 @@
     :handler (fn [data]
                (reset! state data))})))
 
-(defn meta_icon [meta_badge meta_badge_req]
- (let [is_milestone? (and (not= "NULL" meta_badge) (not (blank? meta_badge)))
-       is_required? (not (blank? meta_badge_req))
-       string (str is_milestone? is_required?)]
-   (case string
-     "truefalse" [:div {:title (t :metabadge/Amilestonebadge)} [:span [:i.link-icon {:class "fa fa-sitemap"}]]]
-     "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-     "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
-     nil)))
+(defn metabadgeicon [meta_badge meta_badge_req]
+ (fn []
+   (prn meta_badge meta_badge_req)
+   (let [is_milestone? (and (not= "NULL" meta_badge) (not (blank? meta_badge)))
+         is_required? (not (blank? meta_badge_req))
+         string (str is_milestone? is_required?)]
+     (case string
+       "truefalse" [:div {:title (t :metabadge/Amilestonebadge)} [:span [:i.link-icon {:class "fa fa-sitemap"}]]]
+       "truetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+       "falsetrue" [:div {:title (t :metabadge/Partofamilestonebadge)} [:span [:i.link-icon {:class "fa fa-puzzle-piece"}]]]
+       nil))))
 
 (defn image-class [completion_status]
  (cond

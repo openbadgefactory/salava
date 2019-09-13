@@ -64,7 +64,7 @@
     [:span.righticons.pull-right {:style {:display "flex" :flex-direction "column"}}
      (when (pos? endorsement-count) [:span.badge-view {:title (str endorsement-count " " (if (> endorsement-count 1) (t :badge/endorsements) (t :badge/endorsement) )) :style {:padding-bottom "5px"}} [:i.fa.fa-handshake-o]])
      (into [:span]
-       (for [f (plugin-fun (session/get :plugins) "metabadge" "meta_icon")]
+       (for [f (plugin-fun (session/get :plugins) "block" "meta_icon")]
          [f meta_badge meta_badge_req]))]]]))
 
 (defn badge-grid-element [element-data state badge-type init-data]
@@ -72,8 +72,8 @@
         expired? (bh/badge-expired? expires_on)
         badge-link (path-for (str "/badge/info/" id))
         obf_url (session/get :factory-url)
-        ;metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "meta_icon"))
-        endorsement-count (+ endorsement_count user_endorsements_count)]
+        ;metabadge-icon-fn (first (plugin-fun (session/get :plugins) "metabadge" "metabadgeicon"))
+        endorsementscount (+ endorsement_count user_endorsements_count)]
     [:div {:class "media grid-container"}
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
@@ -108,7 +108,7 @@
                                                                                                                          (.replaceState js/history {} "Badge modal" (path-for "/badge"))
                                                                                                                          (navigate-to (current-route-path))))
                                                                                                                     (init-data state))}))}
-                                    [badge-icons {:endorsement-count endorsement-count :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
+                                    [badge-icons {:endorsement-count endorsementscount :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
@@ -183,7 +183,7 @@
                                        :data-dismiss "modal"}
 
                                    [:div.media-content
-                                    [badge-icons {:endorsement-count endorsement-count :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
+                                    [badge-icons {:endorsement-count endorsementscount :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                     [:div.media-left
                                      (if image_file  [:img {:src (str "/" image_file) :alt name}])
                                      [:div.media-body

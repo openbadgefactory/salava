@@ -172,3 +172,7 @@ DELETE FROM factory_metabadge
 
 --name: delete-factory-metabadge-required-all!
 DELETE FROM factory_metabadge_required
+
+--name: select-factory-required-badge-by-required-badge-id
+SELECT metabadge_id, required_badge_id, mtime FROM factory_metabadge_required
+WHERE required_badge_id = :id

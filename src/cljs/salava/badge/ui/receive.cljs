@@ -149,8 +149,11 @@
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
+             #_(into [:div]
+                (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
+                  [f {:assertion_url assertion_url}]))
              (into [:div]
-              (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
+              (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
                 [f {:assertion_url assertion_url}]))
 
              (if assertion
