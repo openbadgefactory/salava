@@ -128,7 +128,10 @@
            [:div.description description]
 
            ;METABADGE
-            (when metabadge-fn
+           (into [:div {:style {:margin "10px -10px"}}]
+             (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
+               [f {:user_badge_id id}]))
+            #_(when metabadge-fn
              (into [:div]
               (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
                 [:div {:style {:margin "10px -10px"}}[f {:user_badge_id id}]])))

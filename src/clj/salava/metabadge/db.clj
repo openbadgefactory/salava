@@ -23,20 +23,6 @@
 (defn clear-user-metabadge! [ctx user_badge_id]
   (delete-user-badge-metabadge! {:user_badge_id user_badge_id} (u/get-db ctx)))
 
-(defn metabadge?!
-  "checks if badge is a metabadge, db is updated with information"
-  [ctx factory-url user_badge]
-  (let [url (str factory-url "/v1/assertion/is_metabadge/?url=" (u/url-encode (:assertion_url user_badge)))
-        data (fetch-json-data url)]
-    (jdbc/with-db-transaction  [db-conn (:connection (u/get-db ctx))]
-      (delete-user-badge-metabadge! {:user_badge_id (:id user_badge)} {:connection db-conn})
-      (when-not (every? nil? (-> data (dissoc :last_modified) vals))
-        (if (nil? (:metabadge data))
-          (insert-user-badge-metabadge! {:user_badge_id (:id user_badge) :meta_badge "NULL" :meta_badge_req (:required_badge data) :last_modified (:last_modified data)} {:connection db-conn})
-          (doseq [metabadge-id (:metabadge data)]
-            (insert-user-badge-metabadge! {:user_badge_id (:id user_badge) :meta_badge metabadge-id :meta_badge_req (:required_badge data) :last_modified (:last_modified data)} {:connection db-conn})))))
-    (if (empty? data) false true)))
-
 (defn badge-url [s]
   (if (clojure.string/blank? s) nil (->> (clojure.string/split s #"&event=") first)))
 
@@ -68,6 +54,31 @@
                   ))))))
       (catch Exception e
         (log/error (.getMessage e))))))
+
+(defn metabadge?!
+  "checks if badge is a metabadge, db is updated with information"
+  [ctx factory-url user_badge]
+  (let [url (str factory-url "/v1/assertion/is_metabadge/?url=" (u/url-encode (:assertion_url user_badge)))
+        data (fetch-json-data url)]
+    (jdbc/with-db-transaction  [db-conn (:connection (u/get-db ctx))]
+      (delete-user-badge-metabadge! {:user_badge_id (:id user_badge)} {:connection db-conn})
+      (when-not (every? nil? (-> data (dissoc :last_modified) vals))
+        (if (nil? (:metabadge data))
+         (let [saved-required-badge (select-factory-required-badge-by-required-badge-id {:id (:required_badge data)} {:connection db-conn})]
+           (prn saved-required-badge)
+           (insert-user-badge-metabadge! {:user_badge_id (:id user_badge) :meta_badge "NULL" :meta_badge_req (:required_badge data) :last_modified (:last_modified data)} {:connection db-conn})
+           (when (empty? saved-required-badge)
+             (do (log/info "Required metabadge info not found in db, Getting info from factory")
+                 (get-metabadge! ctx factory-url user_badge))))
+         (doseq [metabadge-id (:metabadge data)]
+           (let [saved-metabadge (select-factory-metabadge {:id metabadge-id} {:connection db-conn})]
+            (prn saved-metabadge)
+            (insert-user-badge-metabadge! {:user_badge_id (:id user_badge) :meta_badge metabadge-id :meta_badge_req (:required_badge data) :last_modified (:last_modified data)} {:connection db-conn})
+            (when (empty? saved-metabadge)
+             (do (log/info "Metabadge info not found in db, Getting metabadge info from factory")
+                 (get-metabadge! ctx factory-url user_badge))))))))
+    (if (empty? data) false true)))
+
 
 (defn all-badges [ctx factory-url]
   (select-all-badges {:obf_url (str factory-url "%")} (u/get-db ctx)))

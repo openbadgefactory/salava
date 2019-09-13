@@ -3,7 +3,9 @@
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :as i18n :refer [t]]
             [salava.core.ui.helper :refer [base-path]]
-            [salava.metabadge.ui.my :as my]))
+            [salava.metabadge.ui.my :as my]
+            [salava.metabadge.ui.metabadge]
+            [salava.metabadge.ui.block]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/badge") [["/metabadges" my/handler]]})
