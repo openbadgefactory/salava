@@ -65,14 +65,12 @@
       (when-not (every? nil? (-> data (dissoc :last_modified) vals))
         (if (nil? (:metabadge data))
          (let [saved-required-badge (select-factory-required-badge-by-required-badge-id {:id (:required_badge data)} {:connection db-conn})]
-           (prn saved-required-badge)
            (insert-user-badge-metabadge! {:user_badge_id (:id user_badge) :meta_badge "NULL" :meta_badge_req (:required_badge data) :last_modified (:last_modified data)} {:connection db-conn})
            (when (empty? saved-required-badge)
              (do (log/info "Required metabadge info not found in db, Getting info from factory")
                  (get-metabadge! ctx factory-url user_badge))))
          (doseq [metabadge-id (:metabadge data)]
            (let [saved-metabadge (select-factory-metabadge {:id metabadge-id} {:connection db-conn})]
-            (prn saved-metabadge)
             (insert-user-badge-metabadge! {:user_badge_id (:id user_badge) :meta_badge metabadge-id :meta_badge_req (:required_badge data) :last_modified (:last_modified data)} {:connection db-conn})
             (when (empty? saved-metabadge)
              (do (log/info "Metabadge info not found in db, Getting metabadge info from factory")
