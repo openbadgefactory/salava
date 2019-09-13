@@ -17,7 +17,6 @@
 
 (defn metabadgeicon [meta_badge meta_badge_req]
  (fn []
-   (prn meta_badge meta_badge_req)
    (let [is_milestone? (and (not= "NULL" meta_badge) (not (blank? meta_badge)))
          is_required? (not (blank? meta_badge_req))
          string (str is_milestone? is_required?)]
