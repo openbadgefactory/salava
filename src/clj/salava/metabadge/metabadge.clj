@@ -74,8 +74,8 @@
         factory_metabadge_required (->> (select-factory-metabadge-required {:metabadge_id metabadge_id :required_badge_id (:id badge)} (u/get-db ctx)) first)]
     (->> (if (empty? badge-info) (assoc (get-badge-data ctx badge) :received true :user_badge_id 0) (assoc badge-info :url (:url badge))) (merge factory_metabadge_required)))
   (if-not milestone
-    (->> (select-factory-metabadge-required {:metabadge_id metabadge_id :required_badge_id (:id badge)} (u/get-db ctx)) first)
-    (->> (select-factory-metabadge {:id metabadge_id} (u/get-db ctx)) first))))
+    (or (->> (select-factory-metabadge-required {:metabadge_id metabadge_id :required_badge_id (:id badge)} (u/get-db ctx)) first) (assoc (get-badge-data ctx badge) :received false))
+    (or (->> (select-factory-metabadge {:id metabadge_id} (u/get-db ctx)) first) (assoc (get-badge-data ctx badge) :received false)))))
 
 (defn get-required-badges [ctx user_id metabadge_id user_badge_id]
  (let [all-required-badges (select-all-required-badges {:metabadge_id metabadge_id} (u/get-db ctx))
@@ -114,7 +114,11 @@
       (r/map (fn [m]
               (let [required-badges (expand-required-badges ctx (:id m) (:required_badges m) assertion-url)
                     received-required-badges (filter (fn [b] (and (:user_badge_id b)(pos? (:user_badge_id b)))) required-badges)
-                    min_required (if (pos? (:min_required m)) (:min_required m) (count (:required_badges m)))]
+                    min_required (if (pos? (:min_required m)) (:min_required m) (count (:required_badges m)))
+                    saved-metabadge (select-factory-metabadge {:id (:id m)} (u/get-db ctx))]
+               (when (empty? saved-metabadge)
+                (do (log/info "Metabadge info not found in db, Getting metabadge info from factory")
+                    (db/get-metabadge! ctx (get-in ctx [:config :factory :url]) {:assertion_url assertion-url})))
                (-> m
                   (assoc :name (:name m) :min_required min_required)
                   (merge (dissoc (lookup-badge ctx (:id m) "milestone" (:badge m)) :name))
@@ -125,7 +129,7 @@
       (r/foldcat)))
 
 (defn check-metabadge [ctx assertion-url]
- (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" (u/url-encode assertion-url))]
+ (let [meta-data-url (str (get-in ctx [:config :factory :url]) "/v1/assertion/metabadge/?url=" assertion-url #_(u/url-encode assertion-url))]
   (if-let [check (string/starts-with? assertion-url (get-in ctx [:config :factory :url]))]
     (try
       (if-let [metabadge (fetch-json-data meta-data-url)]
@@ -191,4 +195,9 @@
                          (map :metabadge_id)
                          (metabadge-helper ctx user_badge_id user_id)
                          flatten)]
+     (when (and (empty? milestones) (empty? required-in))
+      (let [user-badge (->> (select-user-badge-by-id {:id user_badge_id} (u/get-db ctx)) first)]
+        (do
+          (db/metabadge?! ctx (get-in ctx [:config :factory :url]) user-badge)
+          (get-metabadge ctx user_badge_id user_id))))
     {:milestones milestones :required-in required-in})))

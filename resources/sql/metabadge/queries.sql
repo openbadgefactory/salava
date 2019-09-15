@@ -6,6 +6,9 @@ JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code =
 WHERE ub.assertion_url = :assertion_url AND ub.revoked = 0
 ORDER BY ctime DESC
 
+--name: select-user-badge-by-id
+SELECT id, assertion_url FROM user_badge WHERE id = :id AND revoked = 0
+
 --name: select-completed-metabadges
 SELECT ubm.meta_badge AS metabadge_id, ubm.user_badge_id, fm.min_required, fm.name, bc.description, bc.image_file, cc.markdown_text AS criteria_content
 FROM user_badge_metabadge AS ubm
@@ -137,8 +140,8 @@ VALUES (:user_badge_id, :meta_badge, :meta_badge_req, :last_modified)
 DELETE FROM user_badge_metabadge WHERE user_badge_id = :user_badge_id
 
 --name: insert-factory-metabadge!
-INSERT IGNORE INTO factory_metabadge (id, name, description, criteria, image_file, min_required, ctime, mtime)
-VALUES (:id, :name, :description, :criteria, :image_file, :min_required, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+INSERT IGNORE INTO factory_metabadge (id, remote_issuer_id, name, description, criteria, image_file, min_required, factory_url, ctime, mtime)
+VALUES (:id, :remote_issuer_id, :name, :description, :criteria, :image_file, :min_required, :factory_url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
 
 --name: delete-factory-metabadge!
 DELETE fm,fmr FROM factory_metabadge AS fm
