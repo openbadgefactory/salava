@@ -194,10 +194,20 @@
         required-in (->> (select-required-metatabadge-by-badge-id {:id user_badge_id} (u/get-db ctx))
                          (map :metabadge_id)
                          (metabadge-helper ctx user_badge_id user_id)
-                         flatten)]
-     (when (and (empty? milestones) (empty? required-in))
-      (let [user-badge (->> (select-user-badge-by-id {:id user_badge_id} (u/get-db ctx)) first)]
-        (do
-          (db/metabadge?! ctx (get-in ctx [:config :factory :url]) user-badge)
-          (get-metabadge ctx user_badge_id user_id))))
-    {:milestones milestones :required-in required-in})))
+                         flatten)
+        fetch-metabadge! (fn []
+                          (when (and (empty? milestones) (empty? required-in))
+                            (let [user-badge (->> (select-user-badge-by-id {:id user_badge_id} (u/get-db ctx)) first)]
+                              (do
+                               (log/info "Check for metabadge started!" user-badge)
+                               (db/metabadge?! ctx (get-in ctx [:config :factory :url]) user-badge)
+                               (let [milestones (->> (select-completed-metabadge-by-badge-id {:user_id user_id :user_badge_id user_badge_id} (u/get-db ctx)) (expand-required-badges-db ctx user_id nil))
+                                     required-in (->> (select-required-metatabadge-by-badge-id {:id user_badge_id} (u/get-db ctx))
+                                                  (map :metabadge_id)
+                                                  (metabadge-helper ctx user_badge_id user_id)
+                                                  flatten)] {:milestones milestones :required-in required-in})))))]
+
+    (cond
+     (or (seq milestones) (seq required-in)) {:milestones milestones :required-in required-in}
+     (and (empty? milestones) (empty? required-in)) (fetch-metabadge!)
+     :else {}))))

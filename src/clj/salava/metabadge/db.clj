@@ -45,7 +45,6 @@
             (jdbc/with-db-transaction  [db-conn (:connection (u/get-db ctx))]
               (delete-factory-metabadge! {:id (:id metabadge)} {:connection db-conn})
               (replace-factory-metabadge! {:id (:id metabadge) :remote_issuer_id (:remote_issuer_id metabadge) :name (:name metabadge) :description (:description metabadge-badge-content) :criteria (u/md->html (:criteria metabadge-badge-content)) :image_file (u/file-from-url-fix ctx (:image metabadge-badge-content)) :min_required (:min_required metabadge) :ctime (u/now) :mtime (u/now)} {:connection db-conn})
-              #_(insert-factory-metabadge! {:id (:id metabadge) :remote_issuer_id (:remote_issuer_id metabadge) :name (:name metabadge) :description description :criteria (u/md->html criteria) :image_file (u/file-from-url ctx image) :min_required (:min_required metabadge) :factory_url (:factory_url metabadge)} {:connection db-conn})
               (doseq [badge (:required_badges metabadge)
                       :let [required-badge-content (if-not (:received badge)
                                                      (fetch-json-data (:url badge))
@@ -54,8 +53,21 @@
                                                               (fetch-json-data)))
                             {:keys [name description image criteria]} required-badge-content]]
                 (when-not (empty? required-badge-content)
-                  (insert-factory-metabadge-required-badge! {:metabadge_id (:id metabadge) :required_badge_id (:id badge) :name (:name required-badge-content) :description (:description required-badge-content) :criteria (u/md->html (:criteria required-badge-content)) :image_file (u/file-from-url-fix ctx (:image required-badge-content))} {:connection db-conn})
-                  ))))))
+                 (-> badge
+                     (assoc :image_file (u/file-from-url-fix ctx (:image required-badge-content))
+                            :application_url (get-in badge [:badge_application :application_url] nil)
+                            :not_after (get-in badge [:badge_application :not_after] nil)
+                            :not_before (get-in badge [:badge_application :not_before] nil)
+                            :criteria (u/md->html (:criteria required-badge-content))
+                            :metabadge_id (:id metabadge)
+                            :required_badge_id (:id badge)
+                            :name (:name required-badge-content)
+                            :description (:description required-badge-content)
+                            :ctime (u/now)
+                            :mtime (u/now))
+                     (dissoc :badge_application)
+                     (replace-factory-metabadge-required! {:connection db-conn}))))))))
+
       (catch Exception e
         (log/error "Could not get metabadge info from factory id:" (:id user_badge)", assertion: " (:assertion_url user_badge))
         (log/error (.getMessage e))))))
