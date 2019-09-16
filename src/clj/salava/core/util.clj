@@ -184,7 +184,7 @@
 
 (defn file-from-url-fix [ctx url]
    (cond
-      (string/blank? url) (throw (Exception. "file-from-url: url parameter missing"))
+      (string/blank? url) (do (log/error "file-from-url-fix: url parameter missing") nil)
       (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
       (re-find #"^data"    (str url)) (save-file-from-data-url-fix ctx url (.lastIndexOf url ","))
       :else (throw (Exception. (str "Error in file url: " url)))))
