@@ -3,7 +3,8 @@
             [salava.core.ui.helper :refer [base-path]]
             [salava.oauth.ui.status :as oauth-status]
             [salava.oauth.ui.block]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [clojure.string :refer [blank?]]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/user") [[["/oauth/" :service] oauth-status/handler]]})
