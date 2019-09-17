@@ -616,6 +616,15 @@ a.popup-info {
   }
 }
 
+html[dir="rtl"] .wizard {
+
+   .current {
+    &:before{
+     border-right-color: #314755 !important;
+    }
+   }
+}
+
 
 /*
 a#login-button {
