@@ -8,37 +8,37 @@
             [clojure.data.json :as json]))
 
 #_(defn- assertion [assertion-url]
-  (http/http-req {:socket-timeout 10000
-                  :conn-timeout   10000
-                  :method :get
-                  :url assertion-url
-                  :throw-exceptions false
-                  :as :json
-                  :accept :json}))
+   (http/http-req {:socket-timeout 10000
+                   :conn-timeout   10000
+                   :method :get
+                   :url assertion-url
+                   :throw-exceptions false
+                   :as :json
+                   :accept :json}))
 
 (defn- assertion [asr-url]
  (let [response (->> (http/http-req {:socket-timeout 10000
-                           :conn-timeout 10000
-                           :method :get
-                           :url asr-url
-                           :throw-exceptions false
-                           :accept :json})
+                                     :conn-timeout 10000
+                                     :method :get
+                                     :url asr-url
+                                     :throw-exceptions false
+                                     :accept :json})
                      (clojure.walk/keywordize-keys))]
    (if (clojure.string/includes? (get-in response [:headers :Content-Type]) "application/json")
-        (assoc response :body (json/read-str (:body response) :key-fn keyword))
-        nil)))
+       (assoc response :body (json/read-str (:body response) :key-fn keyword))
+       nil)))
 
 (defn- revoked? [asr]
   (or (= (:status asr) 410) (get-in asr [:body :revoked])))
 
 #_(defn- remote-url [factory-url asr]
-  (when (and (string? factory-url) (map? asr))
-    (cond
-      (string/starts-with? (get asr :id "") factory-url) factory-url
-      (string/starts-with? (get-in asr [:verify :url] "") factory-url) factory-url
-      (and (= (get-in asr [:related :type]) "Assertion")
-           (string/starts-with? (get (http/json-get (get-in asr [:related :id])) :id "") factory-url)) factory-url
-      :else nil)))
+   (when (and (string? factory-url) (map? asr))
+     (cond
+       (string/starts-with? (get asr :id "") factory-url) factory-url
+       (string/starts-with? (get-in asr [:verify :url] "") factory-url) factory-url
+       (and (= (get-in asr [:related :type]) "Assertion")
+            (string/starts-with? (get (http/json-get (get-in asr [:related :id])) :id "") factory-url)) factory-url
+       :else nil)))
 
 (defn- remote-url [factory-url asr]
  (when (and (string? factory-url) (not (clojure.string/blank? factory-url)) (map? asr))
@@ -56,15 +56,15 @@
            :else nil)))))
 
 #_(defn- issuer-verified? [factory-url asr]
-  (when (and (string? factory-url) (map? asr) (string/starts-with? (get asr :id "") factory-url))
-    (try
-      (let [badge (if (map? (:badge asr)) (:badge asr) (http/json-get (:badge asr)))
-            issuer-url (if (map? (:issuer badge)) (get-in badge [:issuer :id]) (:issuer badge))
-            issuer-id (last (re-find #"/v1/client.*[?&]key=(\w+)" issuer-url))]
-        (if issuer-id
-          (:verified (http/json-get (str factory-url "/v1/client?key=" issuer-id)))
-          false))
-      (catch Throwable _ false))))
+   (when (and (string? factory-url) (map? asr) (string/starts-with? (get asr :id "") factory-url))
+     (try
+       (let [badge (if (map? (:badge asr)) (:badge asr) (http/json-get (:badge asr)))
+             issuer-url (if (map? (:issuer badge)) (get-in badge [:issuer :id]) (:issuer badge))
+             issuer-id (last (re-find #"/v1/client.*[?&]key=(\w+)" issuer-url))]
+         (if issuer-id
+           (:verified (http/json-get (str factory-url "/v1/client?key=" issuer-id)))
+           false))
+       (catch Throwable _ false))))
 
 (defn- issuer-verified? [factory-url asr]
  (let [factory-url (remote-url factory-url asr)]
@@ -79,7 +79,6 @@
 
 (defn- check-badge [ctx db-conn factory-url user-badge]
   (let [asr (assertion (:assertion_url user-badge))
-        related-asr (->> (get-in asr [:body :related]) first :id)
         factory-url (remote-url factory-url (:body asr))
         delete-user-metabadge (first (u/plugin-fun (u/get-plugins ctx) "db" "clear-user-metabadge!"))
         check-metabadge (first (u/plugin-fun (u/get-plugins ctx) "db" "metabadge?!"))]
@@ -115,7 +114,7 @@
             ;(log/debug "check-badges: working on id " (:id user-badge))
             (check-badge ctx db-conn factory-url user-badge)
             (jdbc/execute! db-conn ["UPDATE user_badge SET last_checked = UNIX_TIMESTAMP() WHERE id = ?"
-                              (:id user-badge)])
+                                    (:id user-badge)])
             (Thread/sleep 100)
             (catch InterruptedException _)
             (catch Throwable ex
