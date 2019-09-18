@@ -31,7 +31,6 @@
              (layout/main ctx "/edit/email-addresses")
              (layout/main ctx "/edit/fboauth")
              (layout/main ctx "/edit/linkedin")
-             ;(layout/main-meta ctx "/profile/:id" :user)
              (layout/main-meta ctx "/profile/:id/embed" :user)
              (layout/main ctx "/edit/profile")
              (layout/main ctx "/cancel")
@@ -40,6 +39,7 @@
              (layout/main-meta ctx "/data/:id" :user)
              (layout/main ctx "/delete-user")
              (layout/main ctx "/terms")
+             (layout/main ctx "/registration-complete")
 
              (GET "/verify_email/:verification_key" []
                   :path-params [verification_key :- s/Str]
@@ -54,7 +54,6 @@
     (context "/obpv1/user" []
              :tags ["user"]
              (POST "/login" req
-                   ;:return ""
                    :body [login-content schemas/LoginUser]
                    :summary "User logs in"
                    (let [{:keys [email password]} login-content
@@ -80,12 +79,6 @@
                         (assoc :session (assoc (get req :session {}) :seen-terms true)))))
 
              (POST "/register" req
-                   ;:return
-                   #_{:status  (s/maybe  (s/enum "success" "error"))
-                      :message (s/maybe s/Str)
-                      :id      (s/maybe s/Int)
-                      :role    (s/maybe s/Str)
-                      :private (s/maybe s/Bool)}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
                    (let [{:keys [email first_name last_name country language password password_verify accept_terms]} form-content
@@ -97,18 +90,24 @@
                        ;return error status from save
                        (ok save)
                        (if (not (private? ctx))
-                         ;(ok save)
                          (let [login-status (u/login-user ctx email password)]
                            (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
-                             (u/finalize-login ctx (ok login-status) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
+                             (u/finalize-login ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id)) (:id login-status) (get-in req [:session :pending :user-badge-id]) true)
                              (ok login-status)))
                          (cond
                            (not (right-token? ctx (:token form-content)))        (forbidden)
                            (not (in-email-whitelist? ctx (:email form-content))) (ok {:status "error" :message "user/Invalidemail"})
                            :else                                                 (let [ login-status  (u/login-user ctx email password)]
                                                                                    (if (and (= "success" (:status login-status)) (= "success" (:status update-accept-term)) (or (= "accepted" (:input update-accept-term)) (= "disabled" (:input update-accept-term))))
-                                                                                     (u/set-session ctx (ok login-status) (:id login-status))
+                                                                                     (u/set-session ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id)) (:id login-status))
                                                                                      (ok login-status))))))))
+             (GET "/register/complete" req
+                  :return {:status (s/enum "success" "error")}
+                  :current-user current-user
+                  :auth-rules access/signed
+                  :summary "Check for successful registration"
+                  (let [check (= (get-in req [:session :new-user]) (:id current-user))]
+                    (ok {:status (if check "success" "error")})))
 
              (POST "/activate" []
                    :return {:status (s/enum "success" "error")

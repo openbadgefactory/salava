@@ -5,4 +5,7 @@
  :linkedin {:app-id     ""
             :app-secret ""}
 
+ :google   {:app-id ""
+            :app-secret ""}
+
  :client {"oauth-client-app-id" {:redirect_uri "http://example.com"}}}

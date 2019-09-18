@@ -26,7 +26,9 @@
             [salava.admin.ui.reporttool :refer [reporttool1]]
             [salava.badge.ui.verify :refer [check-badge]]
             [salava.metabadge.ui.metabadge :refer [metabadge]]
-            [salava.badge.ui.evidence :refer [evidence-icon]]))
+            [salava.badge.ui.evidence :refer [evidence-icon]]
+            [dommy.core :as dommy :refer-macros [sel1]]
+            [salava.translator.ui.helper :refer [translate]]))
 
 
 
@@ -115,6 +117,8 @@
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
+
+
 (defn content [state]
   (let [{:keys [id badge_id  owner? visibility show_evidence rating issued_on expires_on
                 revoked first_name last_name user-logged-in? congratulated? congratulations
@@ -128,207 +132,208 @@
                 issuer_content_id issuer_content_name issuer_content_url issuer_contact
                 issuer_image issuer_description criteria_url
                 creator_content_id creator_name creator_url creator_email
-                creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)
-        evidences (remove #(= true (get-in % [:properties :hidden])) evidences)]
+                creator_image creator_description message_count endorsement_count default_language_code]} (content-setter @selected-language content)
+        evidences (remove #(= true (get-in % [:properties :hidden])) evidences)
+        lng (->> (remove blank? (list @(cursor state [:content-language]) default_language_code "en")) first)]
+   (if (= lng "ar") (dommy/set-attr! (sel1 :html) :dir "rtl") (dommy/set-attr! (sel1 :html) :dir "ltr"))
+   [:div {:id "badge-info"}
+    [m/modal-window]
+    [:div.panel
+     [:div.panel-body
+      (comment
+        (if (and owner? (not expired?) (not revoked))
+          [:div {:class "row" :id "badge-share-inputs"}
+           (if-not (private?)
+             [:div.pull-left
+              [:div {:class (str "checkbox " visibility)}
+               [:a.link {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
+                [:i {:class "fa"}]
+                (if (not (= visibility "public"))
+                  (t :core/Publishandshare)
+                  (t :core/Public))]]])
 
-    [:div {:id "badge-info"}
-     [m/modal-window]
-     [:div.panel
-      [:div.panel-body
-       (comment
-         (if (and owner? (not expired?) (not revoked))
-           [:div {:class "row" :id "badge-share-inputs"}
-            (if-not (private?)
-              [:div.pull-left
-               [:div {:class (str "checkbox " visibility)}
-                [:a.link {:href "#" :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
-                 [:i {:class "fa"}]
-                 (if (not (= visibility "public"))
-                   (t :core/Publishandshare)
-                   (t :core/Public))]]])
+           [:div {:class "pull-right text-right"}
+            [follow-badge badge_id]
+            [:button {:class    "btn btn-primary settings-btn"
+                      :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
+             (t :badge/Settings)]
+            [:button {:class    "btn btn-primary print-btn"
+                      :on-click #(.print js/window)}
+             (t :core/Print)]]
 
-            [:div {:class "pull-right text-right"}
-             [follow-badge badge_id]
-             [:button {:class    "btn btn-primary settings-btn"
-                       :on-click #(do (.preventDefault %) (show-settings-dialog id state init-data))}
-              (t :badge/Settings)]
-             [:button {:class    "btn btn-primary print-btn"
-                       :on-click #(.print js/window)}
-              (t :core/Print)]]
+           [:div.share-wrapper
+            [s/share-buttons-badge
+             (str (session/get :site-url) (path-for (str "/badge/info/" id)))
+             name
+             (= "public" visibility)
+             true
+             (cursor state [:show-link-or-embed])
+             image_file
+             {:name     name
+              :authory  issuer_content_name
+              :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
+              :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
+              :datefrom issued_on
+              :dateto   expires_on}]]]))
 
-            [:div.share-wrapper
-             [s/share-buttons-badge
-              (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-              name
-              (= "public" visibility)
-              true
-              (cursor state [:show-link-or-embed])
-              image_file
-              {:name     name
-               :authory  issuer_content_name
-               :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
-               :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-               :datefrom issued_on
-               :dateto   expires_on}]]]))
+      (if (and (not expired?) (not revoked))
+        (admintool id "badge"))
 
-       (if (and (not expired?) (not revoked))
-         (admintool id "badge"))
+      (if (or verified_by_obf issued_by_obf)
+        [:div.row (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
+      [:div {:class "row flip"}
+       [:div {:id "pull-right" :class "col-md-3 badge-image"}
+        [:div.row
+         [:div.col-xs-12
+          [:img {:src (str "/" image_file)}]]]
+        (when (and qr_code (= visibility "public"))
+          [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
+        (comment
+          (if owner?
+            [:div.row {:id "badge-rating"}
+             [:div.col-xs-12
+              [:div.rating
+               [:div (t :badge/Rating)]
+               [:div
+                {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
+                [r/rate-it rating (cursor state [:badge-settings :rating])]]]
+              (if (and expires_on (not expired?))
+                [:div.expiresin [:i {:class "fa fa-hourglass-half"}] (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))])
+              [:div.view-count
+               (cond
+                 (= view_count 1) (t :badge/Viewedonce)
+                 (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
+                 :else            (t :badge/Badgeisnotviewedyet))]]])
+          (if (> recipient_count 1)
+            [:div.row {:id "badge-views"}
+             [:div.col-xs-12
+              [:a.link {:href     "#"
+                        :on-click #(do
+                                     (mo/open-modal [:gallery :badges] {:badge-id badge_id})
+                                     (.preventDefault %))} (t :badge/Otherrecipients)]]])
+          [:div.row
+           [:div.col-xs-12 {:id "badge-congratulated"}
+            (if (and user-logged-in? (not owner?))
+              (if congratulated?
+                [:div.congratulated
+                 [:i {:class "fa fa-heart"}]
+                 (str " " (t :badge/Congratulated))]
+                [:button {:class    "btn btn-primary"
+                          :on-click #(congratulate state)}
+                 [:i {:class "fa fa-heart"}]
+                 (str " " (t :badge/Congratulate) "!")]))]])
 
-       (if (or verified_by_obf issued_by_obf)
-         [:div.row (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
-       [:div {:class "row flip"}
-        [:div {:id "pull-right" :class "col-md-3 badge-image"}
-         [:div.row
-          [:div.col-xs-12
-           [:img {:src (str "/" image_file)}]]]
-         (when (and qr_code (= visibility "public"))
-           [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
-         (comment
-           (if owner?
-             [:div.row {:id "badge-rating"}
-              [:div.col-xs-12
-               [:div.rating
-                [:div (t :badge/Rating)]
-                [:div
-                 {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
-                 [r/rate-it rating (cursor state [:badge-settings :rating])]]]
-               (if (and expires_on (not expired?))
-                 [:div.expiresin [:i {:class "fa fa-hourglass-half"}] (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))])
-               [:div.view-count
-                (cond
-                  (= view_count 1) (t :badge/Viewedonce)
-                  (> view_count 1) (str (t :badge/Viewed) " " view_count " " (t :badge/times))
-                  :else            (t :badge/Badgeisnotviewedyet))]]])
-           (if (> recipient_count 1)
-             [:div.row {:id "badge-views"}
-              [:div.col-xs-12
+
+        [:div#info-page-block #_(if (session/get :user)
+                                 [badge-message-link message_count badge_id])
+           (bm/badge-endorsement-modal-link {:badge-id badge_id :id id :lng lng} endorsement_count user_endorsement_count)]]
+
+
+       [:div {:class "col-md-9 badge-info" :style {:display "block"}}
+        [:div.row
+         [:div {:class "col-md-12"}
+          (if revoked
+            [:div.revoked (translate lng :badge/Revoked)])
+          (if expired?
+            [:div.expired [:label (translate lng :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
+          [:h1.uppercase-header name]
+          (if (< 1 (count (:content @state)))
+            [:div.inline [:label (translate lng :core/Languages)": "](content-language-selector selected-language (:content @state))])
+          (bm/issuer-modal-link issuer_content_id issuer_content_name lng)
+          (bm/creator-modal-link creator_content_id creator_name lng)
+
+          (if (and issued_on (> issued_on 0))
+            [:div [:label (translate lng :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+          (if (and expires_on (not expired?))
+            [:div [:label (translate lng :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
+
+          (comment
+            (if assertion
+              [:div {:id "assertion-link"}
+               [:label (t :badge/Metadata)": "]
                [:a.link {:href     "#"
-                         :on-click #(do
-                                      (mo/open-modal [:gallery :badges] {:badge-id badge_id})
-                                      (.preventDefault %))} (t :badge/Otherrecipients)]]])
-           [:div.row
-            [:div.col-xs-12 {:id "badge-congratulated"}
-             (if (and user-logged-in? (not owner?))
-               (if congratulated?
-                 [:div.congratulated
-                  [:i {:class "fa fa-heart"}]
-                  (str " " (t :badge/Congratulated))]
-                 [:button {:class    "btn btn-primary"
-                           :on-click #(congratulate state)}
-                  [:i {:class "fa fa-heart"}]
-                  (str " " (t :badge/Congratulate) "!")]))]])
+                         :on-click #(do (.preventDefault %)
+                                      (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
+                (t :badge/Openassertion) "..."]]))
 
+          (if (pos? @show-recipient-name-atom)
+            (if (and user-logged-in? (not owner?))
+              [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+              [:div [:label (translate lng :badge/Recipient) #_(t :badge/Recipient) ": "]  first_name " " last_name]))
 
-         [:div#info-page-block #_(if (session/get :user)
-                                  [badge-message-link message_count badge_id])
-            (bm/badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]]
+          #_[:div [metabadge (:assertion_url @state)]]
 
+          [:div.description description]
 
-        [:div {:class "col-md-9 badge-info"}
-         [:div.row
-          [:div {:class "col-md-12"}
-           (if revoked
-             [:div.revoked (t :badge/Revoked)])
-           (if expired?
-             [:div.expired [:label (t :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
-           [:h1.uppercase-header name]
-           (if (< 1 (count (:content @state)))
-             [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
-           (bm/issuer-modal-link issuer_content_id issuer_content_name)
-           (bm/creator-modal-link creator_content_id creator_name)
+          ;check-badge-link
+          (check-badge id lng)]]
 
-           (if (and issued_on (> issued_on 0))
-             [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
-           (if (and expires_on (not expired?))
-             [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
+        (when-not (empty? alignment)
+          [:div.row
+           [:div.col-md-12
+            [:h2.uppercase-header (translate lng :badge/Alignments) #_(t :badge/Alignments)]
+            (doall
+              (map (fn [{:keys [name url description]}]
+                     [:p {:key url}
+                      [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                   alignment))]])
 
-           (comment
-             (if assertion
-               [:div {:id "assertion-link"}
-                [:label (t :badge/Metadata)": "]
-                [:a.link {:href     "#"
-                          :on-click #(do (.preventDefault %)
-                                       (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
-                 (t :badge/Openassertion) "..."]]))
+        [:div {:class "row criteria-html"}
+         [:div.col-md-12
+          [:h2.uppercase-header (translate lng :badge/Criteria)]
+          [:a.link {:href criteria_url :target "_blank"} (translate lng :badge/Opencriteriapage) #_(t :badge/Opencriteriapage) "..."]
+          [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-           (if (pos? @show-recipient-name-atom)
-             (if (and user-logged-in? (not owner?))
-               [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-               [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
+        (when (seq evidences)
+          [:div.row {:id "badge-settings"}
+           [:div.col-md-12
+            [:h2.uppercase-header (translate lng :badge/Evidences) #_(t :badge/Evidences)]
+            (reduce (fn [r evidence]
+                      (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+                            added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
+                            {:keys [resource_id resource_type mime_type hidden]} properties
+                            desc (cond
+                                   (not (blank? narrative)) narrative
+                                   (not added-by-user?) description ;;todo use regex to match description
+                                   :else nil)]
 
-           #_[:div [metabadge (:assertion_url @state)]]
+                        (conj r (when (and (not hidden) (url? url))
+                                  [:div.modal-evidence
+                                   (when-not added-by-user? [:span.label.label-success (translate lng :badge/Verifiedevidence) #_(t :badge/Verifiedevidence)])
+                                   [evidence-icon {:type resource_type :mime_type mime_type}]
+                                   [:div.content
 
-           [:div.description description]
+                                    (when-not (blank? name) [:div.content-body.name name])
+                                    (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
+                                    [:div.content-body.url
+                                     (case resource_type
+                                       "file" (hyperlink url)
+                                       "page" (if (session/get :user)
+                                                [:a {:href "#"
+                                                     :on-click #(do
+                                                                  (.preventDefault %)
+                                                                  (mo/open-modal [:page :view] {:page-id resource_id}))} url]
+                                                (hyperlink url))
+                                       (hyperlink url))]]]))))
 
-           ;check-badge-link
-           (check-badge id)]]
+                    [:div ] evidences)]])
 
-         (when-not (empty? alignment)
-           [:div.row
-            [:div.col-md-12
-             [:h2.uppercase-header (t :badge/Alignments)]
-             (doall
-               (map (fn [{:keys [name url description]}]
-                      [:p {:key url}
-                       [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
-                    alignment))]])
+        (if (and owner? (not-empty congratulations))
+          [:div.row
+           [:div.col-md-12 {:id "badge-congratulations"}
+            [:h3.congratulated-header
+             [:i {:class "fa fa-heart"}]
+             " " (translate lng :badge/Congratulatedby) #_(t :badge/Congratulatedby) ":"]
+            (into [:div]
+                  (for [congratulation congratulations
+                        :let           [{:keys [id first_name last_name profile_picture]} congratulation]]
+                    (uh/profile-link-inline id first_name last_name profile_picture)))]])
 
-         [:div {:class "row criteria-html"}
-          [:div.col-md-12
-           [:h2.uppercase-header (t :badge/Criteria)]
-           [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
-           [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
+        (into [:div]
+              (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
+                [f id lng]))]]
 
-         (when (seq evidences)
-           [:div.row {:id "badge-settings"}
-            [:div.col-md-12
-             [:h2.uppercase-header (t :badge/Evidences)]
-             (reduce (fn [r evidence]
-                       (let [{:keys [narrative description name id url mtime ctime properties]} evidence
-                             added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
-                             {:keys [resource_id resource_type mime_type hidden]} properties
-                             desc (cond
-                                    (not (blank? narrative)) narrative
-                                    (not added-by-user?) description ;;todo use regex to match description
-                                    :else nil)]
-
-                         (conj r (when (and (not hidden) (url? url))
-                                   [:div.modal-evidence
-                                    (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
-                                    [evidence-icon {:type resource_type :mime_type mime_type}]
-                                    [:div.content
-
-                                     (when-not (blank? name) [:div.content-body.name name])
-                                     (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
-                                     [:div.content-body.url
-                                      (case resource_type
-                                        "file" (hyperlink url)
-                                        "page" (if (session/get :user)
-                                                 [:a {:href "#"
-                                                      :on-click #(do
-                                                                   (.preventDefault %)
-                                                                   (mo/open-modal [:page :view] {:page-id resource_id}))} url]
-                                                 (hyperlink url))
-                                        (hyperlink url))]]]))))
-
-                     [:div ] evidences)]])
-
-         (if (and owner? (not-empty congratulations))
-           [:div.row
-            [:div.col-md-12 {:id "badge-congratulations"}
-             [:h3.congratulated-header
-              [:i {:class "fa fa-heart"}]
-              " " (t :badge/Congratulatedby) ":"]
-             (into [:div]
-                   (for [congratulation congratulations
-                         :let           [{:keys [id first_name last_name profile_picture]} congratulation]]
-                     (uh/profile-link-inline id first_name last_name profile_picture)))]])
-
-         (into [:div]
-               (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
-                 [f id]))]]
-
-       (if owner? "" [reporttool1 id name "badge"])]]]))
+      (if owner? "" [reporttool1 id name "badge"])]]]))
 
 
 

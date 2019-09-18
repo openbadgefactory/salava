@@ -40,6 +40,11 @@
                (tr/get-editable translation lang keylist)
                (apply str (map (fn [k] (if (keyword? k) (get-t lang k) k)) keylist))))))
 
+#?(:cljs (defn t+ [lang & keylist]
+          (let [lang (if (keyword? lang) lang (keyword lang))]
+           (if (session/get :i18n-editable)
+             (tr/get-editable translation lang keylist)
+             (apply str (map (fn [k] (if (keyword? k) (get-t lang k) k)) keylist))))))
 
 (defn translate-text [text]
   (if (re-find #"/" text)

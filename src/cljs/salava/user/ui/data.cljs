@@ -38,8 +38,8 @@
                   [:td email]
                   [:td.text-center (if verified [:i {:class "fa fa-check"}])]
                   [:td (if primary_address [:i {:class "fa fa-check"}])]
-                  [:td backpack_id]]
-        ))]])
+                  [:td backpack_id]]))]])
+
 
 (defn email-address-table-mobile [email]
   [:table.table.visible-xs
@@ -54,10 +54,10 @@
                   [:td email
                    [:p (t :user/verified) ": " (if verified [:i {:class "fa fa-check"}])]
                    (if backpack_id
-                     [:p (t :user/BackpackID) ": "  [:i backpack_id ]])
+                     [:p (t :user/BackpackID) ": "  [:i backpack_id]])
                    (if primary_address
-                     [:p (t :user/Loginaddress) ": " [:i {:class "fa fa-check"}]])]]
-        ))]])
+                     [:p (t :user/Loginaddress) ": " [:i {:class "fa fa-check"}]])]]))]])
+
 
 (defn content [state]
   (let [{user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
@@ -69,12 +69,11 @@
          profile :profile user-id :user-id} @state
         fullname (str first_name " " last_name)
         site-url (session/get :site-url)]
-
     [:div {:id "my-data"}
      [:h1.uppercase-header (t :user/Mydata)]
      [:div
-      [:p (str (t :user/Deleteinstruction) " " (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (str (t :user/Removeaccount) ".")]]
-      ]
+      [:p (str (t :user/Deleteinstruction) " " (t :user/Todeletedata) " ") [:a {:href (path-for "/user/cancel")} (str (t :user/Removeaccount) ".")]]]
+
      (if (:initializing @state)
        [:div.ajax-message
         [:i {:class "fa fa-cog fa-spin fa-2x "}]
@@ -105,7 +104,7 @@
             [:div
              [:div.col-xs-12 [:b (t :user/Aboutme) ":"]]
              [:div.col-xs-12 {:style {:margin-bottom "20px"}} about]]
-            (if (not-empty profile)
+            (when (seq profile)
               [:div {:style {:margin-top "20px"}}
                [:div.col-xs-12 [:b (t :user/Contactinfo) ":"]]
                [:div.col-xs-12
@@ -144,57 +143,59 @@
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12" :style {:margin-bottom "20px"}}
           [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")}(str (t :badge/Mybadges) ": ")(count user_badges)]]
-          (if (not-empty user_badges)
+          (when (seq user_badges)
             (doall
               (for [b user_badges]
                 ^{:key b}[:div.col-xs-12 [:a {:href "#"
                                               :on-click #(do
                                                            (.preventDefault %)
-                                                           (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)})
-                                                           )} (:name b)]])))]
+                                                           (mo/open-modal [:gallery :badges] {:badge-id (:badge_id b)}))}
+                                             (:name b)]])))]
          [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-          (if-not (empty? pending_badges)
+          (when (seq pending_badges)
             [:div
-             [:h3 [:a {:href (path-for "/social/stream")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge")} (str (t :badge/Pendingbadges) ": ") (count pending_badges)]]
              (doall
                (for [p pending_badges]
                  ^{:key p}[:div
                            [:div.col-xs-12 [:b (str (t :badge/Name) ": ")] (:name p)]
-                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]
-                           ]))])]
+                           [:div.col-xs-12 [:b (str (t :page/Description) ": ")] (:description p)]]))])]
 
-         [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-          [:h2 {:class "uppercase-header"} [:a {:href (path-for "/page")} (str (t :page/Mypages) ": ") (count user_pages)]]
-          (if (not-empty user_pages)
+
+
+         (when (seq user_pages)
+           [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
+            [:h2 {:class "uppercase-header"} [:a {:href (path-for "/profile/page")} (str (t :page/Mypages) ": ") (count user_pages)]]
             (doall
               (for [p user_pages]
                 ^{:key p}[:div.col-xs-12 [:a {:href "#"
                                               :on-click #(do
                                                            (.preventDefault %)
-                                                           (mo/open-modal [:page :view] {:page-id (:id p)})
-                                                           )} (:name p)]])))]
+                                                           (mo/open-modal [:page :view] {:page-id (:id p)}))}
+                                             (:name p)]]))])
 
-         [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-          [:h2 {:class "uppercase-header"} [:a {:href (path-for "/page/files")} (str (t :file/Files) ": ") (count user_files)]]
-          (if (not-empty user_files)
+
+         (when (seq user_files)
+           [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
+            [:h2 {:class "uppercase-header"} [:a {:href (path-for "/profile/files")} (str (t :file/Files) ": ") (count user_files)]]
             (doall
               (for [f user_files]
                 ^{:key f}[:div.col-xs-12 [:a {:href  (str "/" (:path f)) :target "_blank"}
-                                          (:name f)]])))]
+                                          (:name f)]]))])
 
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12"}
-          [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity) ]
-          (if (pos? connections)
+          [:h1 {:class "uppercase-header" :style {:text-align "center"}} (t :user/Activity)]
+          (when (pos? connections)
             [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/social/connections")} (str (t :user/Badgeconnections) ": ")  connections]]])
-          (if (pos? endorsements)
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/connections/badge") :on-click #(session/put! :visible-area :badges)} (str (t :user/Badgeconnections) ": ")  connections]]])
+          (when (pos? endorsements)
             [:div
-             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/badge/user/endorsements")} (str (t :badge/Myendorsements) ": ")  endorsements]]])
-          (if (or (not-empty user_following) (not-empty user_followers))
+             [:h2 {:class "uppercase-header"} [:a {:href (path-for "/connections/endorsement")} (str (t :badge/Myendorsements) ": ")  endorsements]]])
+          (when (or (seq user_following) (seq user_followers))
             [:div
              [:h2 {:class "uppercase-header"} (str (t :user/Socialconnections) ": ") (+ (count user_followers) (count user_following))]
-             (if (not-empty user_followers)
+             (when (seq user_followers)
                [:div
                 [:h3 (str (t :social/Followersusers) ": ")]
                 (for [follower user_followers
@@ -204,11 +205,11 @@
                             status (:status follower)]]
                   ^{:key follower}[:div
                                    [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"} [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:owner_id follower)})} (str (:first_name follower) " " (:last_name follower) )] ", "[:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]]
-                                   #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]
-                                   ])
+                                   #_[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status follower))))]])
+
                 [:br]])
 
-             (when-not (empty? user_following)
+             (when (seq user_following)
                [:div
                 [:h3 (str (t :social/Followedusers) ": ")]
                 (for [f user_following
@@ -217,11 +218,11 @@
                             lname (:last_name f)
                             status (:status f)]]
                   ^{:key f}[:div
-                            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"}  [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status f))))]]
-                            ])]
-               )])
+                            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:div {:id "inline"}  [:b (str (t :badge/Name) ": ")] [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id (:user_id f)})} (str (:first_name f) " " (:last_name f) )] ", " [:b (str (t :user/Status) ": ")] (t (keyword (str "social/"(:status f))))]]])])])
 
-          (if (not-empty events)
+
+
+          (when (seq events)
             [:div.th-align
              [:h2 {:class "uppercase-header"} (str (t :user/Activityhistory) ": ") (count events)]
              [:table.table
@@ -256,9 +257,9 @@
                                           "followuser" (or (get-in e [:info :object_name]) "-")
                                           "ticketadmin" (or (get-in e [:info :object_name]) "-")
                                           "-")]]
-                             [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]
-                   ))]]])
-          ]]])]))
+                             [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]))]]])]]])]))
+
+
 
 (defn init-data [user-id state]
   (ajax/GET

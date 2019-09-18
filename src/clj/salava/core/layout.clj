@@ -30,7 +30,6 @@
    "/assets/leaflet/leaflet.js"
    "/js/ckeditor/ckeditor.js"])
 
-
 (defn with-version [ctx resource-name]
   (let [version (get-in ctx [:config :core :asset-version])]
     (str resource-name "?_=" (or version (System/currentTimeMillis)))))
@@ -55,6 +54,10 @@
 (defn js-list [ctx]
     (map #(with-version ctx %) (conj asset-js "/js/salava.js")))
 
+(defn plugin-js-list [ctx]
+ (let [f (first (plugin-fun (get-plugins ctx) "block" "pluginjs"))]
+   (if f (f ctx) "")))
+
 
 (defn context-js [ctx]
   (let [site-name (get-in ctx [:config :core :site-name])
@@ -71,6 +74,7 @@
                    :base-path       (get-in ctx [:config :core :base-path])
                    :facebook-app-id (get-in ctx [:config :oauth :facebook :app-id])
                    :linkedin-app-id (get-in ctx [:config :oauth :linkedin :app-id])
+                   :google-app-id   (get-in ctx [:config :oauth :google :app-id])
                    :languages       (map name (get-in ctx [:config :core :languages]))
                    :private         (private? ctx)
                    :footer          (get-in ctx [:config :extra/theme :footer] nil)
@@ -124,7 +128,9 @@
        [:link {:rel "shortcut icon" :href (:icon favicons) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
-       [:script {:type "text/javascript"} (context-js ctx)]]
+       [:script {:type "text/javascript"} (context-js ctx)]
+       (include-js "/js/dataLayer.js")]
+
       [:body {:class (if (nil? (get-in ctx [:user])) "anon")}
        [:div#app]
        "<!--[if lt IE 10]>"
@@ -132,7 +138,7 @@
        "<![endif]-->"
        (include-js "/assets/es6-shim/es6-shim.min.js" "/assets/es6-shim/es6-sham.min.js")
        (apply include-js (js-list ctx))
-       #_(include-js "https://backpack.openbadges.org/issuer.js")]))))
+       (apply include-js (plugin-js-list ctx))]))))
 
 
 (defn main-response [ctx current-user flash-message meta-tags]

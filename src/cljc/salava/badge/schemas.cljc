@@ -62,8 +62,8 @@
    (s/optional-key :issuer_content_url)  (s/maybe s/Str)
    (s/optional-key :email)               (s/maybe s/Str)
    (s/optional-key :assertion_url)       (s/maybe s/Str)
-   (s/optional-key :meta_badge)          (s/maybe s/Bool)
-   (s/optional-key :meta_badge_req)      (s/maybe s/Bool)
+   (s/optional-key :meta_badge)          (s/maybe s/Str)
+   (s/optional-key :meta_badge_req)      (s/maybe s/Str)
    (s/optional-key :message_count)       {:new-messages (s/maybe s/Int)
                                           :all-messages (s/maybe s/Int)}
    (s/optional-key :tags)                (s/maybe [s/Str])
@@ -134,7 +134,7 @@
                            (s/optional-key :obf_url)    (s/maybe s/Str)
                            :alignment [(s/maybe {:name s/Str
                                                  :url  s/Str
-                                                 :description s/Str})]
+                                                 :description (s/maybe s/Str)})]
                            :tags      [(s/maybe s/Str)]})
 
 (s/defschema IssuerContent {:id   s/Str
@@ -179,11 +179,6 @@
                             (s/optional-key :first_name) s/Str
                             (s/optional-key :last_name) s/Str
                             (s/optional-key :profile_picture) (s/maybe s/Str)
+                            (s/optional-key :profile_visibility) (s/enum "internal" "public")
 
                             }])
-
-
-
-
-
-

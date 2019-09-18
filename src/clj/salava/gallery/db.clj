@@ -295,3 +295,14 @@
       "badges" {:badges (public-badges-by-user ctx user-id visibility)}
       "pages"  {:pages (public-pages-by-user ctx user-id visibility)}
       {})))
+
+(defn badge-recipients "Return badge recipients" [ctx user-id gallery-id]
+  (let [recipients (when user-id (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))]
+   (hash-map :public_users (->> recipients
+                                (filter #(not= (:visibility %) "private"))
+                                (map #(dissoc % :visibility))
+                                distinct)
+             :private_user_count (->> recipients
+                                      (filter #(= (:visibility %) "private"))
+                                      count)
+             :all_recipients_count (count recipients))))

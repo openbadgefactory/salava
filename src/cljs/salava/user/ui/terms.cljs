@@ -10,12 +10,19 @@
     [salava.user.ui.login :refer [follow-up-url]]
     [salava.core.ui.helper :refer [path-for current-path base-path js-navigate-to path-for private? plugin-fun]]))
 
+(defn next-url []
+  (let [[service _](-> (clojure.string/split js/window.location.search #"&"))
+        service (-> (clojure.string/split service #"=") second)]
+    (if (and service _)
+     (str (follow-up-url) js/window.location.search)
+     (follow-up-url))))
+
 (defn toggle-accept-terms []
   (ajax/POST
     (path-for (str "/obpv1/user/accept_terms"))
     {:handler (fn [data]
                 (when (= "success" (:status data))
-                  (js-navigate-to (follow-up-url))))}))
+                  (js-navigate-to (next-url))))}))
 
 (defn accept-terms-form [state]
   [:div {:style {:text-align "center"}}

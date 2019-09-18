@@ -106,4 +106,11 @@
              (GET "/recent" [userid kind]
                   :summary "get user's recent badges or pages"
                   :current-user current-user
-                  (ok (g/public-by-user ctx kind userid (:id current-user)))))))
+                  (ok (g/public-by-user ctx kind userid (:id current-user))))
+
+             (GET "/recipients/:gallery_id" []
+                   :summary "Get user badge stats about recipients, ratings"
+                   :path-params [gallery_id :- Long]
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (g/badge-recipients ctx (:id current-user) gallery_id))))))
