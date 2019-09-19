@@ -45,8 +45,6 @@
              (GET "/as-png" []
                   :query-params [image :- s/Str]
                   :summary "Convert svg image to png"
-                  :auth-rules access/authenticated
-                  :current-user current-user
                   (let [bytes (f/svg->png ctx image)]
                     (if bytes
                       {:status 200
