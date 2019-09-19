@@ -7,7 +7,7 @@
             [salava.metabadge.db :as db]
             [clojure.string :as string]))
 
-(defn- badges->metabadges! [ctx factory-url]
+#_(defn- badges->metabadges! [ctx factory-url]
   (log/info "badges->metabadges: started working")
   (let [time-limit (+ (System/currentTimeMillis) (* 15 60 1000))
         badges (db/all-metabadges ctx)]
@@ -22,7 +22,7 @@
         (try (Thread/sleep 1000) (catch InterruptedException _))))
     (log/info "badges->metabadges: done")))
 
-(defn- check-metabadges [ctx factory-url]
+#_(defn- check-metabadges [ctx factory-url]
   (log/info "check for metabadges: started working")
   (let [time-limit (+ (System/currentTimeMillis) (* 15 60 1000))
         badges (db/all-badges ctx factory-url)]
@@ -39,5 +39,5 @@
     ;(badges->metabadges! ctx factory-url) ; Disabled, metabadge content updates are sent from factory instead.
     ))
 
-(defn every-hour [ctx]
+#_(defn every-hour [ctx]
   (check-metabadges ctx (get-in ctx [:config :factory :url])))

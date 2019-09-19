@@ -1,4 +1,4 @@
-(defproject salava "3.4.3"
+(defproject salava "3.4.4"
   :description "Salava application server"
   :url "http://salava.org"
   :license {:name "Apache 2.0"
