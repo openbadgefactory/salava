@@ -15,7 +15,8 @@
 (defn route-def [ctx]
   (routes
     (context "/gallery" []
-             (layout/main ctx "/map"))
+             (layout/main ctx "/map")
+             (layout/main ctx "/map/embed"))
 
     (context "/obpv1/location" []
              :tags ["location"]
