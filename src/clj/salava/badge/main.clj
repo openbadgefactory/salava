@@ -77,8 +77,8 @@
 
 (defn png-convert-url [ctx image]
   (if (re-find #"\w+\.svg$" image)
-    (str (u/get-base-path ctx) "/obpv1/file/as-png?image=" image)
-    (str "/" image)))
+    (str (u/get-full-path ctx) "/obpv1/file/as-png?image=" image)
+    (str (u/get-site-url ctx) "/" image)))
 
 (defn check-metabadge!
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
