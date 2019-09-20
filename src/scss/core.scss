@@ -714,7 +714,7 @@ body.anon {
   }
   @media (max-width:550px){
     .container-fluid{
-      padding:0px;
+      //padding:0px;
     }
     header#navbar {
       padding:0px 10px 0px 25px;
@@ -848,10 +848,4 @@ body.anon {
 
 .inline{
   display:inline;
-}
-
-.terms-container {
-  padding: 15px;
-  height: 550px;
-  overflow: scroll;
 }
