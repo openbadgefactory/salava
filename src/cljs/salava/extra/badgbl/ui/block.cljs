@@ -12,7 +12,7 @@
      "Powered by Open Badge Factory ®. Open Badge Factory ® is a registered trademark"]]])
 
 (defn ^:export terms []
-  [:div {:style {:padding "15px"}}
+  [:div.terms-container #_{:style {:padding "15px"}}
    [:h1 {:style {:text-align "center"}} "Privacybeleid"]
    [:div
     [:p {:style {:text-align "center"}} "Bijgewerkt 05.09.2019"]

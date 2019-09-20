@@ -54,6 +54,10 @@ a#login-button {
   }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
 
 //NAVBAR FIXED TOP
 .navbar-fixed-top {

@@ -156,6 +156,11 @@ a#login-button, #login-page .btn-primary {
   }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
+
 
 /* GRID */
 .pages #grid .grid-container .media-content .media-body .media-heading,

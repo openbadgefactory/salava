@@ -331,6 +331,11 @@ a#login-button {
  }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
+
 #grid-filter .btn, #buttons .col-xs-8 .btn {
   background-color:  $dark-green;//darken($second-color, 10%); //lighten($title-color, 3%);
   border: 1px solid $main-color;

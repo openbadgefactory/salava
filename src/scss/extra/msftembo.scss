@@ -67,6 +67,11 @@ a#login-button, #login-page .btn-primary, .btn-primary:active:focus, .btn-primar
   }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
+
 .btn[disabled]{
   opacity:0.4;
 }

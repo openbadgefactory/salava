@@ -35,7 +35,7 @@
      ]]])
 
 (defn ^:export terms []
-  [:div {:style {:padding "30px"}}
+  [:div.terms-container #_{:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} [:b "PRIVACY POLICY"]]
     [:p "This Privacy Policy covers the information practices of the HPass platform (my.hpass.org) and the website which is used to access the HPass platform (hpass.org) (Site). The data controller of this website is the Humanitarian Leadership Academy (Academy), a charity registered in England and Wales (1161600) and a company limited by guarantee in England and Wales (9395495). The Academy’s registered office is at 1 St John’s Lane, London, EC1M 4AR"]

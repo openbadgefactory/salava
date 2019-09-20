@@ -178,6 +178,11 @@ a#login-button {
  }
 }
 
+nav a#login-button{
+  /* client request, no top row login button */
+  display: none;
+}
+
 .btn-warning {
  background-color: $menu-active;
  border-color: $menu-active;
