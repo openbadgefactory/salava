@@ -5,13 +5,13 @@
             [salava.location.ui.explore :as explore]
             [salava.location.ui.block]
             [salava.location.ui.modal]
-            [salava.location.ui.embed :as embed]
-            ))
+            [salava.location.ui.embed :as embed]))
+
 
 (defn ^:export routes [context]
   {(str (base-path context) "/gallery") [["/map" explore/handler]
-                                         ["/map/embed" embed/handler]]})
-
+                                         ["/map/embed" embed/handler]
+                                         ["/map/embed/generate-link" embed/link-handler]]})
 (defn ^:export navi [context]
   {(str (base-path context) "/gallery/map") {:weight 50 :title (t :location/Map) :site-navi true :breadcrumb (t :gallery/Gallery " / " :location/Map)}})
 

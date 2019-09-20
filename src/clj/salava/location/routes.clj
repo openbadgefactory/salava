@@ -9,14 +9,15 @@
             [salava.core.access :as access]
             [salava.core.util :as u]
             [salava.location.db :as l]
-            [salava.location.schemas :as ls]
-            ))
+            [salava.location.schemas :as ls]))
+
 
 (defn route-def [ctx]
   (routes
     (context "/gallery" []
              (layout/main ctx "/map")
-             (layout/main ctx "/map/embed"))
+             (layout/main ctx "/map/embed")
+             (layout/main ctx "/map/embed/generate-link"))
 
     (context "/obpv1/location" []
              :tags ["location"]
@@ -101,5 +102,4 @@
                   :summary "Get list of tags, badge and issuer names available for public badges."
                   :return ls/explore-filters
                   :current-user current-user
-                  (ok (l/explore-filters ctx (some-> current-user :id pos?))))
-             )))
+                  (ok (l/explore-filters ctx (some-> current-user :id pos?)))))))
