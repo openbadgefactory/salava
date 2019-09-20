@@ -71,7 +71,22 @@
 
 
 /*REGISTER */
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     //width: 87px;
+     //height: 97px;
+     background-image: url("/img/extra/ecampus/logo_icon.png");
+     background-size: contain;
+     background-repeat: no-repeat;  
+  }
 
+  .media {
+    margin-top: 10px;
+    .media-body {
+      //vertical-align: middle !important;
+    }
+  }
+}
 
 
 /*navbar*/

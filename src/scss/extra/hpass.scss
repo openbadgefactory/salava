@@ -63,9 +63,11 @@
 
 #registration-page #narrow-panel{
    .logo-image-icon-url {
-     width: 90px;
-     height: 87px;
+     width: 48px;
+     height: 48px;
      background-image: url("/img/extra/hpass/logo_icon.png");
+     background-repeat: no-repeat;
+     background-size: contain;
   }
 
   .media {

@@ -28,6 +28,23 @@
    background-image: url("/img/extra/badgbl/icon.png");
 }
 
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     width: 50px;
+     height: 57px;
+     background-image: url("/img/extra/badgbl/icon.png");
+     background-repeat: no-repeat;
+     background-size: contain;
+  }
+
+  .media {
+    //margin-top: 10px;
+    .media-body {
+      vertical-align: middle !important;
+    }
+  }
+}
+
 .system-image-url {
    width: 90px;
    height: 90px;

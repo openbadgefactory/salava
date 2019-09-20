@@ -80,6 +80,18 @@ a, #badge-info a {
   height: 44px;
   background-image: url("/img/extra/passport/verifiedissuedbyobf.png");
 }
+
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     width: 66px;
+     //height: 87px;
+     background-image: url("/img/extra/passport/logo_icon.png");
+     background-repeat: no-repeat;
+     background-size: contain;
+  }
+}
+
+
 /* MENU */
 ul.side-links{
   li {

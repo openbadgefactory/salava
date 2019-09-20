@@ -45,6 +45,21 @@
   background-image: url("/img/extra/cancred/verifiedissuedbyobf.png");
 }
 
+#registration-page #narrow-panel{
+   .logo-image-icon-url {
+     //width: 78px;
+     //height: 75px;
+     background-image: url("/img/extra/cancred/logo_icon.png");
+     background-size: contain;
+  }
+
+  .media {
+    margin-top: 10px;
+    .media-body {
+      vertical-align: middle !important;
+    }
+  }
+}
 
 a#login-button {
   background-color: $button-color;
