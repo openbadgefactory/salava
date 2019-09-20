@@ -20,7 +20,7 @@
 
 
 (defn ^:export terms_fr []
-  [:div {:style {:padding "30px"}}
+  [:div.terms-container #_{:style {:padding "30px" }}
    [:div
     [:h1 {:style {:text-align "center"}} (clojure.string/upper-case "Conditions d’utilisation")]]
    [:div {:style {:text-align "center"}}
@@ -162,7 +162,7 @@
 
 
 (defn ^:export terms []
-  [:div {:style {:padding "30px"}}
+  [:div.terms-container #_{:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} "TERMS OF USE"]]
    [:div {:style {:text-align "center"}}
@@ -222,7 +222,7 @@
     [:p "These Terms of Use and the contractual relation related thereto shall be governed by the Laws of Finland. Disputes arising out of these Terms of Use or the contractual relation related thereto will be attempted to be settled amicably. If no agreement is attained, the dispute shall be settled in the District Court of the City of Oulu, Finland as the first instance."]
     [:p "If you have questions regarding these Terms of Use, please contact the Service Provider " [:a {:href "mailto:contact@openbadgepassport.com"} "(contact@openbadgepassport.com)."]]
     [:p "The Privacy Notice document complements the Terms of Use and is incorporated into these Terms of Use by reference."]
-    [:div {:style {:padding "15px"}}
+    [:div #_{:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} " Privacy Notice"]
      [:div
       [:p {:style {:text-align "center"}} "Updated 29.01.2019"]
