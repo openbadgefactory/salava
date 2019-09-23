@@ -7,7 +7,8 @@
             [yesql.core :refer [defqueries]]
             [salava.badge.parse :refer [str->badge]]
             [clojure.data.json :as json]
-            ))
+            [autoclave.core :refer [json-sanitize]]))
+
 
 (defqueries "sql/badge/main.sql")
 
@@ -15,9 +16,20 @@
 (defn url? [s]
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
 
-(defn fetch-json-data [url]
-  (log/info "fetch-json-data: GET" url)
-  (http/http-get url {:as :json :accept :json :throw-entire-message? false}))
+#_(defn fetch-json-data [url]
+    (log/info "fetch-json-data: GET" url)
+    (http/http-get url {:as :json :accept :json :throw-entire-message? false}))
+
+(defn- fetch-json-data [url]
+ (log/info "fetch-json-data: GET" url)
+ (try
+  (http/json-get url)
+  (catch Exception _
+   (log/error (.getMessage _))
+   (log/error "Error occured when getting json content with json-get! Using http-get instead")
+   (as-> (http/http-get url) $
+         (if (map? $) $ (-> $ (json-sanitize) (json/read-str :key-fn keyword)))))))
+
 
 (defn fetch-image [url]
   (log/info "fetch image from " url)
@@ -38,9 +50,9 @@
 
 (defn- assertion [assertion-url]
   (try
-    (http/http-req  {:url assertion-url :as :json :method :get  :accept :json :throw-exceptions false })
+    (http/http-req  {:url assertion-url :as :json :method :get  :accept :json :throw-exceptions false})
     (catch Exception e
-      (log/error "failed to get assertion url " assertion-url " Message: "(.getMessage e) )
+      (log/error "failed to get assertion url " assertion-url " Message: "(.getMessage e))
       {:status 500 :message (.getMessage e)})))
 
 (defn- assertion-jws [b signature]
@@ -106,9 +118,9 @@
 
           (assoc result :assertion-status 500
                         :asr asr
-                        :message (:reason-phrase asr-response))
-          )
-        )
+                        :message (:reason-phrase asr-response))))
+
+
 
       (let [jws-response (assertion-jws badge asr)]
         (if (= 500 (:status jws-response))
@@ -120,7 +132,7 @@
                 revocation-list (if revocation-list-url (:revokedAssertions (fetch-json-data revocation-list-url)))
                 revoked (revoked? badge-id revocation-list)
                 revocation-reason (:revocationReason (first revoked))
-                assertion (json/read-str (:assertion_json jws-response) :key-fn keyword )
+                assertion (json/read-str (:assertion_json jws-response) :key-fn keyword)
                 issuedOn {:issuedOn (process-time (:issuedOn assertion))}
                 expires (if-let [exp (process-time (:expires assertion))]{:expires exp} nil)]
 
@@ -135,11 +147,4 @@
                           :badge-issuer-status 200
                           :revoked? (not (empty? revoked))
                           :revocation_reason revocation-reason
-                          :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time)))
-              )
-            )
-          )
-        )
-      )
-    )
-  )
+                          :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time))))))))))

@@ -196,7 +196,7 @@
        [:div
         (layout/terms-and-conditions)])
 
-     [:fieldset {:class "col-md-12 checkbox"}
+     [:fieldset {:class "col-md-12 checkbox accept-terms-checkbox"}
       [:div.col-md-12 {:style {:text-align "center"}} [:label
                                                        [:input {:type     "checkbox"
                                                                 :on-change (fn [e]

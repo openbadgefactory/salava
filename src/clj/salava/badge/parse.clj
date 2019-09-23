@@ -11,7 +11,8 @@
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.core.helper :refer [dump]]
-            [schema.core :as s])
+            [schema.core :as s]
+            [autoclave.core :refer [json-sanitize]])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
 
@@ -219,8 +220,8 @@
                     :audience nil
                     :ctime now
                     :mtime now})]
-      :endorsement []
-      )))
+      :endorsement [])))
+
 
 
 ; old v0.5.0 badge content
@@ -246,6 +247,15 @@
 
 ;;
 
+(defn- get-json-content [url]
+ (try
+  (http/json-get url)
+  (catch Exception _
+   (log/error (.getMessage _))
+   (log/error "Error occured when getting json content with json-get! Using http-get instead")
+   (as-> (http/http-get url) $
+         (if (map? $) $ (-> $ (json-sanitize) (json/read-str :key-fn keyword)))))))
+
 (defn- get-endorsement
   ([item] (get-endorsement item 1))
   ([item depth]
@@ -253,14 +263,14 @@
      (if (empty? (:endorsement item))
        []
        (->> (:endorsement item)
-            (map #(if (map? %) % (http/json-get %)))
+            (map #(if (map? %) % (get-json-content %) #_(http/json-get %)))
             (map (fn [e]
                    (if (= item-id (get-in e [:claim :id]))
                      {:id ""
                       :content (get-in e [:claim :endorsementComment] "")
                       :issued_on (u/str->epoch (:issuedOn e))
                       :issuer (as-> (:issuer e) $
-                                    (if (map? $) $ (http/json-get $))
+                                    (if (map? $) $ (get-json-content $) #_(http/json-get $))
                                     {:id (:id $)
                                      :language_code ""
                                      :name (:name $)
@@ -275,7 +285,7 @@
                    (if (pos? depth)
                      (assoc-in e [:issuer :endorsement]
                                (-> (get-in e [:issuer :id])
-                                   http/json-get
+                                   get-json-content #_http/json-get
                                    (get-endorsement (dec depth))))
                      (assoc-in e [:issuer :endorsement] [])))))))))
 
@@ -294,7 +304,7 @@
                                :ctime (u/str->epoch (:issuedOn %))
                                :mtime (u/str->epoch (:issuedOn %))}
 
-                   (http/json-get %)))
+                   (get-json-content %) #_(http/json-get %)))
            (map (fn [e] {:id nil
                          :external_id (:id e)
                          :user_badge_id nil
@@ -316,7 +326,7 @@
 (defmethod badge-content :v2.0 [initial assertion]
   (let [parser (fn [badge]
                  (let [language (get badge (keyword "@language") "")
-                       issuer (if (map? (:issuer badge)) (:issuer badge) (http/json-get (:issuer badge)))
+                       issuer (if (map? (:issuer badge)) (:issuer badge) (get-json-content (:issuer badge)) #_(http/json-get (:issuer badge)))
                        criteria-url  (if (map? (:criteria badge)) (get-in badge [:criteria :id]) (:criteria badge))
                        criteria-text (if (map? (:criteria badge))
                                        (get-in badge [:criteria :narrative]
@@ -345,7 +355,7 @@
                                 :revocation_list_url (:revocationList issuer)
                                 :endorsement (get-endorsement issuer)}]
                     :creator (when creator-url
-                               (let [data (http/json-get creator-url)]
+                               (let [data (get-json-content creator-url) #_(http/json-get creator-url)]
                                  [{:id ""
                                    :language_code language
                                    :name        (:name data)
@@ -405,9 +415,10 @@
                                                           :mtime now}) (:evidence assertion))
                    :else [])
 
-        badge  (if (map? (:badge assertion)) (:badge assertion) (http/json-get (:badge assertion)))
+        badge  (if (map? (:badge assertion)) (:badge assertion) (get-json-content (:badge assertion)) #_(http/json-get (:badge assertion)))
         related (->> (get badge :related [])
-                     (map #(http/json-get (:id %)))
+                     (map #(get-json-content (:id %)))
+                     #_(map #(http/json-get (:id %)))
                      (remove #(nil? ((keyword "@language") %))))
         default-language (get badge (keyword "@language") "")
         endorsement (get-assertion-endorsement assertion)]
@@ -421,25 +432,25 @@
                      :default_language_code default-language
                      :published 0
                      :last_received 0
-                     :recipient_count 0
-                     }
+                     :recipient_count 0}
+
                     (apply merge-with (cons concat (map parser (cons badge related)))))
       :issued_on  (u/str->epoch (:issuedOn assertion))
       :expires_on (u/str->epoch (:expires assertion))
       :evidence evidence
-      :endorsement endorsement
-      )))
+      :endorsement endorsement)))
+
 ;;;
 
 (defmethod badge-content :default [initial assertion]
   (let [now (u/now)
-        badge  (http/json-get (:badge assertion))
-        issuer (http/json-get (:issuer badge))
+        badge  (get-json-content (:badge assertion)) #_(http/json-get (:badge assertion))
+        issuer (get-json-content (:issuer badge))#_(http/json-get (:issuer badge))
         criteria (http/http-get (:criteria badge))
         evidence_url (:evidence assertion)
         creator-url (get-in badge [:extensions:OriginalCreator :url])
         creator (if-not (nil? creator-url)
-                  (let [data (http/json-get creator-url)]
+                  (let [data (get-json-content creator-url) #_(http/json-get creator-url)]
                     [{:id ""
                       :language_code ""
                       :name        (:name data)
@@ -495,8 +506,8 @@
                     :audience nil
                     :ctime now
                     :mtime now})]
-      :endorsement []
-      )))
+      :endorsement [])))
+
 
 ; old v1.0/v1.1 badge content
 #_{:badge_url    (:badge assertion)

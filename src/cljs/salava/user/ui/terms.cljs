@@ -26,7 +26,7 @@
 
 (defn accept-terms-form [state]
   [:div {:style {:text-align "center"}}
-   [:fieldset {:class "checkbox"}
+   [:fieldset.accept-terms-checkbox {:class "checkbox"}
     [:div [:label
            [:input {:type     "checkbox"
                     :on-change (fn [e]
