@@ -108,7 +108,8 @@
 (defn user-badges-pending
   "Returns pending badges of a given user"
   [ctx user-id]
-  (let [badges (select-user-badges-pending {:user_id user-id} (u/get-db ctx))
+  (let [badges (map (fn [b] (assoc b :png_image_file (png-convert-url ctx (:image_file b))))
+                    (select-user-badges-pending {:user_id user-id} (u/get-db ctx)))
         tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))]
     (map-badges-tags badges tags)))
 
