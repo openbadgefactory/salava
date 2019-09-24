@@ -102,4 +102,11 @@
                   :summary "Get list of tags, badge and issuer names available for public badges."
                   :return ls/explore-filters
                   :current-user current-user
-                  (ok (l/explore-filters ctx (some-> current-user :id pos?)))))))
+                  (ok (l/explore-filters ctx (some-> current-user :id pos?))))
+
+             (GET "/explore/badges/embed" []
+                  :summary "Get public badge locations for gallery for embed map. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by badge or issuer name and tags."
+                  :return ls/explore-badges-ex-em
+                  :query [params ls/explore-badge-query]
+                  :current-user current-user
+                  (ok (l/explore-list-badges ctx (some-> current-user :id pos?) params true))))))

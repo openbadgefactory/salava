@@ -15,7 +15,7 @@
            [komponentit.autocomplete :as autocomplete]))
 
 (defn link-builder [state]
-  (let [params (as-> {:issuer (get-in @state [:issuer :value] "") :badge (get-in @state [:badge :value] "") :tag (get-in @state [:tag :value] "")} m (remove (fn [[k v]] (blank? v)) m))
+  (let [params (as-> {:issuer (get-in @state [:issuer :value] "") :badge (get-in @state [:badge :value] "") :tag (get-in @state [:tag :value] "") :lat (:lat @state) :long (:long @state)} m (remove (fn [[k v]] (blank? v)) m))
         query (when-not (empty? params)(join (cons (str (name (key (first params))) "=" (val (first params)))
                                                    (map #(str (if (not (coll? (val %)))
                                                                 (str "&" (name (key %)) "=" (val %))
@@ -30,7 +30,9 @@
 (defn query-params [base]
   {:badge_name (get base :badge "")
    :issuer_name (get base :issuer "")
-   :tag_name (get base :tag "")})
+   :tag_name (get base :tag "")
+   :lat (get base :lat "")
+   :long (get base :long "")})
 
 (defn filter-autocomplete [kind state]
   (let [filter (cursor state [kind])
@@ -65,14 +67,15 @@
                    "badges"
                    (fn [b b-count]
                      (if (= 1 b-count)
-                       #(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id) :gallery-id (-> b first :gallery_id)})
-                       #(mo/open-modal [:location :badgelist] {:badges b}))))
+                       (if (= "public" (:profile_visibility (first b))) #(mo/open-modal [:profile :view] {:user-id (-> b first :user_id)}) #())
+                       ;#(mo/open-modal [:gallery :badges] {:badge-id (-> b first :badge_id) :gallery-id (-> b first :gallery_id)})
+                       #(mo/open-modal [:location :embedlist] {:badges b}))))
         item-name (case kind
                    "users"
                    (fn [u] (str (:first_name u) " " (:last_name u)))
                    "badges" :badge_name)]
     (ajax/GET
-      (path-for (str "/obpv1/location/explore/" kind) false)
+      (path-for (str "/obpv1/location/explore/" kind "/embed") false)
       {:params (merge opt {:max_lat (.getNorth bounds) :max_lng (if (<= -180 (.getEast bounds) 180) (.getEast bounds) (if (pos? (.getEast bounds)) 180 -180));(.getEast bounds)
                            :min_lat (.getSouth bounds) :min_lng (if (<= -180 (.getWest bounds) 180) (.getWest bounds) (if (pos? (.getWest bounds)) 180 -180))})
        :handler
@@ -106,84 +109,105 @@
      (fn []
        (let [timer (atom 0)
              layer-group (js/L.layerGroup. (clj->js []))
-             lat-lng (js/L.latLng. 40 -20)
+             lat (get-in @state [:query-params :lat] 40)
+             long (get-in @state [:query-params :long] -20)
+             lat-lng (js/L.latLng. lat long)
              my-map (-> (js/L.map. "map-view" lu/map-opt)
-                        (.setView lat-lng 3)
+                        (.setView lat-lng (if (and (clojure.string/blank? (get-in @state [:query-params :lat])) (clojure.string/blank? (get-in @state [:query-params :long]))) 3 5.7))
                         (.addLayer (js/L.TileLayer. lu/tile-url lu/tile-opt)))
              redraw-map! (fn []
                           (js/clearTimeout @timer)
                           (reset! timer
                                   (js/setTimeout
-                                    #(get-markers "badges" my-map layer-group (or (:query-params @state) {}))
+                                    #(get-markers "badges" my-map layer-group (or (-> (:query-params @state) (dissoc :lat :long)) {}))
                                     1000)))]
 
          (.addTo layer-group my-map)
          (.on my-map "moveend" redraw-map!)
-         (get-markers "badges" my-map layer-group (or (:query-params @state) {}))))}))
+         (get-markers "badges" my-map layer-group (or (-> (:query-params @state) (dissoc :lat :long)) {}))))}))
 
 (defn input-button [name id textatom]
-  (let [status (atom "")]
-    (fn []
-      [:div {:class "form-group" :key id}
-       [:fieldset
-        [:label {:class " sub-heading"} name]
-        [:div.input-group
-         [:input {:class       "form-control"
-                  :id          id
-                  :name        "email-text"
-                  :type        "text"
-                  :read-only true
-                  :value       @textatom}]
-         [:span {:class "input-group-btn"}
-          [clipboard-button (str "#" id) status]]]]])))
+ (let [status (atom "")]
+   (fn []
+     [:div {:class "form-group" :key id}
+      [:fieldset
+       [:label {:class " sub-heading"} name]
+       [:div.input-group
+        [:input {:class       "form-control"
+                 :id          id
+                 :name        "email-text"
+                 :type        "text"
+                 :read-only true
+                 :value       @textatom}]
+        [:span {:class "input-group-btn"}
+         [clipboard-button (str "#" id) status]]]]])))
 
 
 (defn generate-link-form [state]
- (fn []
-  [:div
-   [:div.form-horizontal
-    [:div.form-group.badges-filter
-     [:div.col-md-6
-      [filter-autocomplete :badge state]]
+ (let [latatom (cursor state [:lat])
+       longatom (cursor state [:long])]
 
-     [:div.col-md-1 {:style {:padding-left 0}}
-      [:button.btn.btn-link
-       {:title (t :location/clearField)
-        :style {:padding-left 0 :font-weight "bold"}
-        :on-click #(do (swap! state assoc-in [:badge :value] "")
-                       (link-builder state)
-                       (.trigger (js/jQuery (str "div.badges-filter .badge-filter input")) "change"))}
-       [:i.fa.fa-refresh]]]]
+  (fn []
+   [:div
+    [:div.form-horizontal
+     [:div.form-group.badges-filter
+      [:div.col-md-6
+       [filter-autocomplete :badge state]]
 
-    [:div.form-group.badges-filter
-     [:div.col-md-6
-      [filter-autocomplete :issuer state]]
+      [:div.col-md-1 {:style {:padding-left 0}}
+       [:button.btn.btn-link
+        {:title (t :location/clearField)
+         :style {:padding-left 0 :font-weight "bold"}
+         :on-click #(do (swap! state assoc-in [:badge :value] "")
+                        (link-builder state)
+                        (.trigger (js/jQuery (str "div.badges-filter .badge-filter input")) "change"))}
+        [:i.fa.fa-refresh]]]]
 
-     [:div.col-md-1 {:style {:padding-left 0}}
-      [:button.btn.btn-link
-       {:title (t :location/clearField)
-        :style {:padding-left 0 :font-weight "bold"}
-        :on-click #(do (swap! state assoc-in [:issuer :value] "")
-                       (link-builder state)
-                       (.trigger (js/jQuery (str "div.badges-filter .issuer-filter input")) "change"))}
-       [:i.fa.fa-refresh]]]]
+     [:div.form-group.badges-filter
+      [:div.col-md-6
+       [filter-autocomplete :issuer state]]
 
-    [:div.form-group.badges-filter
-     [:div.col-md-6
-      [filter-autocomplete :tag state]]
+      [:div.col-md-1 {:style {:padding-left 0}}
+       [:button.btn.btn-link
+        {:title (t :location/clearField)
+         :style {:padding-left 0 :font-weight "bold"}
+         :on-click #(do (swap! state assoc-in [:issuer :value] "")
+                        (link-builder state)
+                        (.trigger (js/jQuery (str "div.badges-filter .issuer-filter input")) "change"))}
+        [:i.fa.fa-refresh]]]]
 
-     [:div.col-md-1 {:style {:padding-left 0}}
-      [:button.btn.btn-link
-       {:title (t :location/clearField)
-        :style {:padding-left 0 :font-weight "bold"}
-        :on-click #(do (swap! state assoc-in [:tag :value] "")
-                       (link-builder state)
-                       (.trigger (js/jQuery (str "div.badges-filter .tag-filter input")) "change"))}
-       [:i.fa.fa-refresh]]]]]
-   [:div.row [:div.col-md-6 [:hr.border]]]
-   [:div.form-horizontal {:style {:margin "10px 0"}}
-    [:div.row [:div.col-md-12 [:div.col-md-6 [input-button (t :core/Embedcode) "embed" (cursor state [:embed-code]) #_(str "<iframe width=\"100%\" height=\"1000\" src=\""@(cursor state [:url])"\" frameborder=\"0\"  allowfullscreen=\"true\"></iframe>")]]]]
-    [:div.row [:div.col-md-12 [:div.col-md-6 [input-button (t :core/Link) "link" (cursor state [:url])]]]]]]))
+     [:div.form-group.badges-filter
+      [:div.col-md-6
+       [filter-autocomplete :tag state]]
+
+      [:div.col-md-1 {:style {:padding-left 0}}
+       [:button.btn.btn-link
+        {:title (t :location/clearField)
+         :style {:padding-left 0 :font-weight "bold"}
+         :on-click #(do (swap! state assoc-in [:tag :value] "")
+                        (link-builder state)
+                        (.trigger (js/jQuery (str "div.badges-filter .tag-filter input")) "change"))}
+        [:i.fa.fa-refresh]]]]
+     [:div.row
+      [:div.col-md-12
+       [:div.col-md-6
+        [:div.form-group
+         [:fieldset [:label.sub-heading "Latitude"]
+          [:div
+           [:input.form-control {:type "text" :value @latatom  :placeholder "Enter latitude of desired map area or leave blank for default map" :on-change #(do (reset! latatom (.-target.value %))
+                                                                                                                                                                (link-builder state))}]]]]]]]
+     [:div.row
+      [:div.col-md-12
+       [:div.col-md-6
+        [:div.form-group
+         [:fieldset [:label.sub-heading "Longitude"]
+          [:div
+           [:input.form-control {:type "text" :value @longatom :placeholder "Enter longitude of desired map area or leave blank for default map" :on-change #(do (reset! longatom (.-target.value %))
+                                                                                                                                                                 (link-builder state))}]]]]]]]]
+    [:div.row [:div.col-md-6 [:hr.border]]]
+    [:div.form-horizontal {:style {:margin "10px 0"}}
+     [:div.row [:div.col-md-12 [:div.col-md-6 [input-button (t :core/Embedcode) "embed" (cursor state [:embed-code])]]]]
+     [:div.row [:div.col-md-12 [:div.col-md-6 [input-button (t :core/Link) "link" (cursor state [:url])]]]]]])))
 
 
 (defn handler [site-navi]
@@ -200,7 +224,9 @@
                     :issuer {:value "" :autocomplete {}}
                     :query-params {:tag "" :issuer "" :badge ""}
                     :embed-code ""
-                    :url ""})]
+                    :url ""
+                    :lat nil
+                    :long nil})]
 
    (ajax/GET
      (path-for "/obpv1/location/explore/filters" false)

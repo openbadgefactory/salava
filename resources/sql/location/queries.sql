@@ -118,6 +118,18 @@ WHERE ub.id IN (:badge) AND u.location_lat IS NOT NULL AND u.location_lng IS NOT
 ORDER BY ub.mtime DESC
 LIMIT 500;
 
+--name: select-explore-badges-embed
+SELECT ub.id, ub.user_id, ub.badge_id, ub.gallery_id,
+    g.badge_name, g.badge_image, g.issuer_name,
+    ub.location_lat  AS badge_lat, u.location_lat AS user_lat,
+    ub.location_lng  AS badge_lng, u.location_lng AS user_lng, u.profile_visibility, u.first_name, u.last_name
+FROM user_badge ub
+INNER JOIN gallery g ON ub.gallery_id = g.id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.id IN (:badge) AND u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL
+ORDER BY ub.mtime DESC
+LIMIT 500;
+
 
 --name: select-explore-taglist
 SELECT DISTINCT t.tag FROM badge_content_tag t
@@ -148,4 +160,3 @@ WHERE u.location_public >= :min_pub AND ub.deleted = 0 AND ub.visibility IN (:vi
     AND ((u.location_lat IS NOT NULL AND u.location_lng IS NOT NULL) OR (ub.location_lat IS NOT NULL AND ub.location_lng IS NOT NULL))
 ORDER BY ub.mtime
 LIMIT 2000;
-
