@@ -308,14 +308,12 @@
        [endorse-badge-link state]
        [endorse-badge-content state]])))
 
-(defn endorsement-list [badge-id]
+(defn endorsement-list [badge-id & data]
   (let [state (atom {:id badge-id})]
-    (init-user-badge-endorsement state)
+    (if (seq (first data)) (swap! state assoc :user-badge-endorsements (first data))(init-user-badge-endorsement state))
     (fn []
       (when (seq @(cursor state [:user-badge-endorsements]))
         [:div
-         [:div.row
-          [:label.col-md-12.sub-heading (t :badge/Endorsements)]]
          [:div#endorsebadge
 
           (reduce (fn [r endorsement]
@@ -330,7 +328,7 @@
                                      [:a {:href "#"
                                           :on-click #(mo/open-modal [:profile :view] {:user-id issuer_id})}
                                       [:img.small-image {:src (profile-picture profile_picture)}]
-                                      issuer_name] [:div [:img.small-image {:src (profile-picture profile_picture)}] issuer_name])]]]
+                                      issuer_name] [:div [:img.small-image {:src (profile-picture profile_picture)}] issuer_name (if (= "pending" status) (t :badge/Hasendorsedyou))])]]]
 
                                 [:div [:button {:type "button"
                                                 :aria-label "OK"
@@ -343,7 +341,7 @@
                                 [:div {:dangerouslySetInnerHTML {:__html content}}]
                                 (when (= "pending" status)
                                   [:div.caption
-                                   [:hr.line]
+                                   [:hr.border]
                                    [:div.text-center
                                     [:ul.list-inline.buttons.buttons
                                      [:button.btn.btn-primary {:href "#"
@@ -557,7 +555,9 @@
        (endorsements state)]
       [:div (t :badge/Youhavenoendorsements)])]])
 
-(defn request-endorsement [])
+(defn request-endorsement [state]
+  (fn []))
+
 
 (defn handler [site-navi]
   (let [state (atom {:initializing true

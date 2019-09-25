@@ -14,7 +14,8 @@
             ;[salava.badge.ui.my :as my]
             [salava.core.ui.modal :as mo]
             [salava.badge.ui.evidence :as evidence]
-            [salava.badge.ui.endorsement :as endorsement]))
+            [salava.badge.ui.endorsement :as endorsement]
+            [salava.user.ui.helper :refer [profile-picture]]))
 
 
 (defn set-visibility [visibility state]
@@ -112,7 +113,7 @@
                                            (set-visibility "public" state)
                                            (save-settings state init-data "share"))
                        :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
-         [:i {:class "fa fa-globe" }]
+         [:i {:class "fa fa-globe"}]
          [:label {:for "visibility-public"}
           (t :badge/Public)]])
       [:div [:input {:id              "visibility-internal"
@@ -123,7 +124,7 @@
                                          (set-visibility "internal" state)
                                          (save-settings state init-data "share"))
                      :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
-       [:i {:class "fa fa-group" }]
+       [:i {:class "fa fa-group"}]
        [:label {:for "visibility-internal"}
         (t :badge/Shared)]]
       [:div [:input {:id              "visibility-private"
@@ -134,7 +135,7 @@
                                          (set-visibility "private" state)
                                          (save-settings state init-data "share"))
                      :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
-       [:i {:class "fa fa-lock" }]
+       [:i {:class "fa fa-lock"}]
        [:label {:for "visibility-private"}
         (t :badge/Private)]]]]]])
 
@@ -185,8 +186,8 @@
 
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
-              [f id]))
-      ]]))
+              [f id]))]]))
+
 
 (declare settings-tab-content)
 
@@ -200,8 +201,8 @@
 
     [:div {:id "badge-settings" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
-      [:img {:src (str "/" image_file) :alt name}]
-      ]
+      [:img {:src (str "/" image_file) :alt name}]]
+
      [:div {:class "col-md-9 settings-content settings-tab"}
       (if @message [:div @message])
       [:div
@@ -222,15 +223,15 @@
                        :href "#"
                        :on-click #(do
                                     (.preventDefault %)
-                                    (evidence/toggle-input-mode :page_input state)
-                                    )
-                       }
+                                    (evidence/toggle-input-mode :page_input state))}
+
+
                    [:i.fa.fa-file-text] (t :page/Pages)]]
            [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
                        :href "#":on-click #(do
                                              (.preventDefault %)
-                                             (evidence/toggle-input-mode :file_input state))
-                       } [:i.fa.fa-files-o] (t :page/Files)]]
+                                             (evidence/toggle-input-mode :file_input state))}
+                      [:i.fa.fa-files-o] (t :page/Files)]]
            [:div.cancel [:a {:href "#":on-click #(do
                                                    (.preventDefault %)
                                                    (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
@@ -257,7 +258,7 @@
              (if (and (not @(cursor state [:show-form]))(every? #(blank? %)(vector @evidence-name-atom @evidence-narrative-atom)))
                [:div [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
-                                                 (reset! (cursor state [:show-form]) true))}[:div [:i.fa.fa-plus] (t :badge/Addmoreinfoaboutevidence) ]]])
+                                                 (reset! (cursor state [:show-form]) true))}[:div [:i.fa.fa-plus] (t :badge/Addmoreinfoaboutevidence)]]])
              (when (or  @(cursor state [:show-form])(not (every? #(blank? %)(vector @evidence-name-atom @evidence-narrative-atom))))
 
                [:div [:div.form-group
@@ -267,9 +268,9 @@
                 [:div.form-group
                  [:label.col-md-3 (t :page/Description)]
                  [:div.col-md-9
-                  [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])
+                  [evidence/input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])]
 
-             ]
+
             [:div.add
              [:button {:type "button"
                        :class "btn btn-primary"
@@ -383,8 +384,8 @@
                                       :on-click #(do
                                                    (.preventDefault %)
                                                    (evidence/init-evidence-form evidence state true)
-                                                   (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))
-                                                                                                                                }]]]
+                                                   (evidence/toggle-show-evidence! id data state init-data))} [:i.fa.show-more {:class (if (= true hidden) (str " fa-toggle-off") (str " fa-toggle-on"))}]]]
+
                            (when added-by-user?
                              [:div [:div [:button {:type "button"
                                                    :aria-label "OK"
@@ -396,9 +397,9 @@
                                                    :data-target (str "#collapse" id)
                                                    :data-parent "#accordion"
                                                    :href (str "#collapse" id)
-                                                   :aria-expanded "true"
+                                                   :aria-expanded "true"}
                                                    ;:aria-controls (str "collapse" id)
-                                                   }
+
                                           [:i.fa.fa-edit.edit-evidence]]];;edit-button
 
                               [:div [:button {:type "button"
@@ -409,10 +410,10 @@
                                               :on-click #(do (.preventDefault %)
                                                            (evidence/delete-evidence! id data state init-data))
                                               :aria-expanded "false"
-                                              :aria-controls (str "collapse" id)
-                                              }
-                                     [:i.fa.fa-trash.trash]]] ;;delete-button
-                              ])]
+                                              :aria-controls (str "collapse" id)}
+
+                                     [:i.fa.fa-trash.trash]]]])] ;;delete-button
+
 
                           [:div.panel-collapse {:id (str "collapse" id)
                                                 :class "collapse"
@@ -434,9 +435,9 @@
                                        :on-click     #(do (.preventDefault %)(evidence/save-badge-evidence data state init-data))
                                        :data-toggle "collapse"
                                        :data-target (str "#collapse" id)}
-                              (t :badge/Save)]]
-                            ]]])))
-               )[:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))]))
+                              (t :badge/Save)]]]]]))))
+
+             [:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"}] @(cursor state [:badge-settings :evidences]))]))
 
 (defn evidenceblock [data state init-data]
   (let [files-atom (cursor state [:files])
@@ -454,8 +455,8 @@
                                 :show-form false
                                 :input_mode :url_input
                                 :tab [evidence-form data state init-data]
-                                :tab-no 2)
-                         )} (t :badge/Addnewevidence)]]]
+                                :tab-no 2))}
+           (t :badge/Addnewevidence)]]]
      (when-not (empty? @(cursor state [:badge-settings :evidences])) [:div.form-group
                                                                       [:div.col-md-12 [evidence-list data state init-data]]])]))
 
@@ -522,9 +523,9 @@
 
                                                    (into [:div]
                                                          (for [f (plugin-fun (session/get :plugins) "block" "badge_settings")]
-                                                           [f id]))
+                                                           [f id]))]]
 
-                                                   ]]
+
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
@@ -538,5 +539,113 @@
     [:hr]
     [:div
      [:a {:class "btn btn-primary" :href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url))} (t :badge/Downloadbadgeimage)]
-     [:div (t :badge/Downloadbakedbadge)]
-     ]]])
+     [:div (t :badge/Downloadbakedbadge)]]]])
+
+(defn toggle-panel [key atom]
+  (if (= key @atom)
+    (reset! atom nil)
+    (reset! atom key)))
+
+(defn badge-congratulations [congratulations state]
+ (let [panel-identity :cg
+       visible-area-atom (cursor state [:visible-area])
+       icon-class (if (= @visible-area-atom :cg) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+  [:div.row
+   [:div.col-md-12
+    [:div.panel.expandable-block {:id "social-tab"}
+     [:div.panel-heading
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :cg visible-area-atom))}
+       [:h3 (str (t :badge/Congratulations) " (" (count congratulations) ")")
+         [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]]
+     (when (= @(cursor state [:visible-area]) panel-identity)
+       [:div.panel-body.congratulations
+        (conj (reduce (fn [r congratulation]
+                        (let [{:keys [id first_name last_name profile_picture]} congratulation]
+                          (conj r
+                           [:div.col-md-12
+                            [:div.panel.panel-default.endorsement
+                             [:div.panel-body
+                               [:div.row.flip.settings-endorsement
+                                [:div.col-md-9
+                                  [:a {:href "#"
+                                       :on-click #(mo/open-modal [:profile :view] {:user-id id})}
+                                   [:img.small-image {:src (profile-picture profile_picture)}]
+                                   (str first_name " " last_name) ] " congratulated you for your badge"]]]]])))
+                [:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"} ] congratulations)
+              #_[:div "congratulate someone"])])]]]))
+
+
+(defn badge-endorsements [data state]
+ (let [panel-identity :endo
+       visible-area-atom (cursor state [:visible-area])
+       icon-class (if (= @visible-area-atom :endo) "fa-chevron-circle-down" "fa-chevron-circle-right")
+       pending-endorsements-count (->> data (filter #(= "pending" (:status %))) count)]
+  [:div.row
+   [:div.col-md-12
+    [:div.panel.expandable-block {:id "social-tab"}
+     [:div.panel-heading
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :endo visible-area-atom))}
+       [:h3 (str (t :badge/Endorsements) " ("(count data) ")")
+         [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]
+       (when (pos? pending-endorsements-count)[:span.badge pending-endorsements-count])]]
+
+     (when (= @(cursor state [:visible-area]) panel-identity)
+      [:div.panel-body.endorsements
+       [:div.col-md-12.request-link [:a {:href "#" :on-click #()} [:span [:i {:class "fa fa-hand-o-right fa-fw"}] "Request endorsement"]]]
+       (into [:div.col-md-12]
+         (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
+           [f (:id @state) data]))])]]]))
+
+(defn badge-views [data]
+ [:div.row {:id "social-tab"}
+  [:div.col-md-12
+   [:div.panel
+    [:div.panel-heading
+     [:div [:h3 (t :badge/Badgeviews)]]]
+    [:div.panel-body {:style {:padding "6px"}}
+     [:div#dashboard
+      [:div.connections-block
+        [:div.row.flip
+         [:div.total-badges.info-block
+          [:div.info
+           [:div.text
+            [:p.num (get-in data [:views-stats :reg_count] 0)]
+            [:p.desc (t :badge/Loggedinusers)]]]]
+         [:div.total-badges.info-block
+          [:div.info
+           [:div.text
+            [:p.num (get-in data [:views-stats :anon_count] 0)]
+            [:p.desc (t :badge/Anonymoususers)]]]]
+         [:div.info-block
+          [:div.info
+           [:div.text
+            [:p.num (date-from-unix-time (* (get-in data [:views-stats :latest_view] 0) 1000))]
+            [:p.desc (t :badge/Latestview)]]]]]]]]]]])
+
+(defn social-tab [{:keys [name image_file obf_url assertion_url congratulations user_endorsement_count settings_fn ]} state init-data]
+ (let [dataatom (atom {:user-badge-endorsements [] :views-stats {}})
+       endorsements (cursor dataatom [:user-badge-endorsements])
+       view-stats (cursor dataatom [:views-stats])
+       visibility (cursor state [:badge-settings :visibility])]
+  (update-settings (:id @state) state)
+  (ajax/GET
+    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
+    {:handler (fn [data] (reset! endorsements data))})
+  (ajax/GET
+    (path-for (str "/obpv1/badge/stats/views/" (:id @state)))
+    {:handler (fn [data] (reset! view-stats data))})
+  (fn []
+    (if (= "private" @visibility)
+     [:div {:id "badge-settings" :class "row flip"}
+      [:div {:class "col-md-3 badge-image modal-left"}
+       [:img {:src (str "/" image_file) :alt name}]]
+      [:div {:class "col-md-9 settings-content social-tab" :id "endorsebadge"}
+       [:div [:p (str (t :badge/Visibilityinfo))]
+             [:p [:b (t :badge/Setbadgevisibility) " " [:a {:href "#" :on-click (fn [] (settings_fn (:id @state) state init-data "share"))} (t :badge/Gohere)]]]]]]
+     [:div {:id "badge-settings" :class "row flip"}
+      [:div {:class "col-md-3 badge-image modal-left"}
+       [:img {:src (str "/" image_file) :alt name}]]
+      [:div {:class "col-md-9 settings-content social-tab" :id "endorsebadge"}
+       (when (-> (:views-stats @dataatom) (dissoc :id) (->> (filter second) seq boolean)) [badge-views @dataatom])
+       [badge-endorsements @endorsements state]
+       [badge-congratulations congratulations state]]]))))

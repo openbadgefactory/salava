@@ -1878,5 +1878,14 @@ html[dir="rtl"] .expandable-block {
   .panel-status-icon {
     right: unset;
     left: 10px;
+    &:before {
+         content: "\f137"
+       }
   }
 }
+
+/*html[dir="rtl"] #social-tab {
+  .info-block {
+    float: right;
+  }
+}*/

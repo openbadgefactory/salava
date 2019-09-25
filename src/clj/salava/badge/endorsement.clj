@@ -47,17 +47,17 @@
         {:status "success"})
       (throw+ {:status "error" :message "User cannot delete endorsement they do not own"}))
     (catch Object _
-      {:status "error" :message _ })))
+      {:status "error" :message _})))
 
 (defn delete! [ctx user-badge-id endorsement-id user-id]
   (try+
-    (if (or (endorsement-owner? ctx endorsement-id user-id) (badge-owner? ctx user-badge-id user-id ))
+    (if (or (endorsement-owner? ctx endorsement-id user-id) (badge-owner? ctx user-badge-id user-id))
       (do
         (delete-user-badge-endorsement! {:id endorsement-id} (get-db ctx))
         (send-badge-info-to-obf ctx user-badge-id user-id)
         {:status "success"})
-      {:status "error"}
-      )
+      {:status "error"})
+
     (catch Object _
       (log/error _)
       {:status "error"})))
@@ -88,7 +88,7 @@
 
 (defn endorsements-received
  ([ctx user-id]
-  (map (fn [e] (-> e (update :content md->html)) )
+  (map (fn [e] (-> e (update :content md->html)))
        (select-received-endorsements {:user_id user-id} (get-db ctx))))
  ([ctx user-id md?]
   (select-received-endorsements {:user_id user-id} (get-db ctx))))

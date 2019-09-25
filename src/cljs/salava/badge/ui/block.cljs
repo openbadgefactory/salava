@@ -8,7 +8,8 @@
            [salava.core.i18n :as i18n :refer [t]]
            [clojure.set :as set :refer [intersection]]
            [salava.user.ui.helper :refer [profile-link-inline-modal]]
-           [salava.core.ui.badge-grid :refer [badge-grid-element]]))
+           [salava.core.ui.badge-grid :refer [badge-grid-element]]
+           [salava.badge.ui.endorsement :refer [endorsement-list]]))
 
 (defn init-data
   ([state]
@@ -99,3 +100,6 @@
                                                           (badge-grid-element element-data state badge-type init-data)))))]
                                             [:div {:style {:font-size "16px"}} [:p [:b (t :badge/Youhavenobadgesyet)]]])])]]))
                    :component-will-mount (fn [] (init-data state))})))
+
+(defn ^:export badge_endorsements [id data]
+ [endorsement-list id data])

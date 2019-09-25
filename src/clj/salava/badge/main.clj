@@ -557,6 +557,11 @@
      :badge_congratulations badge-congratulations
      :badge_issuers issuer-stats}))
 
+(defn badge-view-stats
+  "Get user badge view statistics by badge-id"
+  [ctx id]
+  (select-user-badge-views-stats {:id id} (into {:result-set-fn first} (u/get-db ctx))))
+
 (defn meta-tags [ctx id]
   (let [base-url (u/get-full-path ctx)
         badge (select-badge {:id id} (into {:result-set-fn first} (u/get-db ctx)))]

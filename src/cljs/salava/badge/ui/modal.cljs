@@ -88,30 +88,30 @@
        (if (== endorsement-count 1)
          (str  endorsement-count " " (translate lng :badge/endorsement))
          (str  endorsement-count " " (translate lng :badge/endorsements)))]])))
-  ([badge-id endorsement-count]
-   (when (pos? endorsement-count)
-     [:div.endorsement-link
-      [:span [:i {:class "fa fa-handshake-o"}]]
-      [:a {:href "#"
-           :on-click #(do (.preventDefault %)
-                        (mo/open-modal [:badge :endorsement] badge-id))}
-       (if (== endorsement-count 1)
-         (str  endorsement-count " " (t :badge/endorsement))
-         (str  endorsement-count " " (t :badge/endorsements)))]]))
-  ([params endorsement-count user-endorsement-count]
-   (if-not (pos? user-endorsement-count)
-     (if (contains? params :lng)
-       (badge-endorsement-modal-link (assoc params :endorsement-count endorsement-count))
-       (badge-endorsement-modal-link (:badge-id params) endorsement-count))
-     (let [endorsement-count (+ endorsement-count user-endorsement-count)]
-       [:div.endorsement-link
-        [:span [:i {:class "fa fa-handshake-o"}]]
-        [:a {:href "#"
-             :on-click #(do (.preventDefault %)
-                          (mo/open-modal [:badge :endorsement] params))}
-         (if (== endorsement-count 1)
-           (str  endorsement-count " " (translate (:lng params) :badge/endorsement) #_(t :badge/endorsement))
-           (str  endorsement-count " " (translate (:lng params) :badge/endorsements) #_(t :badge/endorsements)))]]))))
+ ([badge-id endorsement-count]
+  (when (pos? endorsement-count)
+    [:div.endorsement-link
+     [:span [:i {:class "fa fa-handshake-o"}]]
+     [:a {:href "#"
+          :on-click #(do (.preventDefault %)
+                       (mo/open-modal [:badge :endorsement] badge-id))}
+      (if (== endorsement-count 1)
+        (str  endorsement-count " " (t :badge/endorsement))
+        (str  endorsement-count " " (t :badge/endorsements)))]]))
+ ([params endorsement-count user-endorsement-count]
+  (if-not (pos? user-endorsement-count)
+    (if (contains? params :lng)
+      (badge-endorsement-modal-link (assoc params :endorsement-count endorsement-count))
+      (badge-endorsement-modal-link (:badge-id params) endorsement-count))
+    (let [endorsement-count (+ endorsement-count user-endorsement-count)]
+      [:div.endorsement-link
+       [:span [:i {:class "fa fa-handshake-o"}]]
+       [:a {:href "#"
+            :on-click #(do (.preventDefault %)
+                         (mo/open-modal [:badge :endorsement] params))}
+        (if (== endorsement-count 1)
+          (str  endorsement-count " " (translate (:lng params) :badge/endorsement) #_(t :badge/endorsement))
+          (str  endorsement-count " " (translate (:lng params) :badge/endorsements) #_(t :badge/endorsements)))]]))))
 
 
 (defn issuer-modal-link
@@ -140,14 +140,14 @@
       [:a {:href "#"
            :on-click #(do (.preventDefault %)
                         (mo/open-modal [:badge :creator] creator-id))} name]]]))
-([creator-id name lang]
- (when (and creator-id name)
-   [:div {:class "issuer-data clearfix"}
-    [:label.pull-left (translate lang :badge/Createdby) ":"]
-    [:div {:class "issuer-links pull-label-left inline"}
-     [:a {:href "#"
-          :on-click #(do (.preventDefault %)
-                       (mo/open-modal [:badge :creator] creator-id))} name]]])))
+ ([creator-id name lang]
+  (when (and creator-id name)
+    [:div {:class "issuer-data clearfix"}
+     [:label.pull-left (translate lang :badge/Createdby) ":"]
+     [:div {:class "issuer-links pull-label-left inline"}
+      [:a {:href "#"
+           :on-click #(do (.preventDefault %)
+                        (mo/open-modal [:badge :creator] creator-id))} name]]])))
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
@@ -201,9 +201,9 @@
             (str " " (t :badge/Congratulate) "!")]))]]
      ;messages
      #_(when-not invalid?
-       (if user-logged-in?
-         [:div.row
-          [badge-message-link message_count  badge_id]]))
+        (if user-logged-in?
+          [:div.row
+           [badge-message-link message_count  badge_id]]))
 
      ;endorsements
      [:div.row (badge-endorsement-modal-link {:badge-id badge_id :id id} endorsement_count user_endorsement_count)]]))
@@ -331,7 +331,8 @@
         selected-language (cursor state [:content-language])
         data (content-setter @selected-language (:content @state))
         disable-link (if invalid? "btn disabled")
-        disable-export (if (or (private?) invalid?) "btn disabled")]
+        disable-export (if (or (private?) invalid?) "btn disabled")
+        disable-social (if (= "private" (:visibility @state)) "btn disabled")]
     [:div.col-md-9.badge-modal-navi
      [:ul {:class "nav nav-tabs wrap-grid"}
       [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
@@ -343,14 +344,19 @@
       [:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
         [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)]]]
+      [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
+       [:a.nav-link {#_:class #_disable-social :href "#" :on-click #(do
+                                                                      (swap! state assoc :tab [se/social-tab (assoc data :settings_fn show-settings-dialog :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state) ) state init-data] :tab-no 5))}
+        [:i.nav-icon {:class "fa fa-users fa-lg"}] (t :core/Social)]]
       [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
        [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
                                                                                                                     :obf_url (:obf_url @state)) state] :tab-no 4)}
         [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)]]]
-      [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
+
+      [:li.nav-item {:class (if (= 6 (:tab-no @state)) "active")}
        [:a.nav-link.delete-button {:href "#" :on-click #(do
                                                           (swap! state assoc-in [:badge-settings :confirm-delete?] true)
-                                                          (swap! state assoc :tab [se/delete-tab-content data state] :tab-no 5))}
+                                                          (swap! state assoc :tab [se/delete-tab-content data state] :tab-no 6))}
         [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]))
 
 

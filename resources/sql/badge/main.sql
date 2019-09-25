@@ -769,3 +769,11 @@ SELECT id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id = :id AND u
 
 --name: delete-user-badge-endorsements!
 DELETE FROM user_badge_endorsement WHERE user_badge_id = :id
+
+--name: select-user-badge-views-stats
+--get user-badge view stats
+SELECT ub.id,
+CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NOT NULL) AS UNSIGNED) AS reg_count, CAST(SUM(bv.id IS NOT NULL AND bv.user_id IS NULL) AS UNSIGNED) AS anon_count, MAX(bv.ctime) AS latest_view
+FROM user_badge AS ub
+JOIN badge_view AS bv ON ub.id = bv.user_badge_id
+WHERE ub.id = :id AND ub.deleted = 0 AND ub.status = 'accepted';

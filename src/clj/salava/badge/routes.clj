@@ -266,10 +266,17 @@
 
              (GET "/stats" []
                   :return schemas/BadgeStats
-                  :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
+                  :summary "Get user's badge statistics about badges, badge view counts, congratulations and issuers"
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (b/badge-stats ctx (:id current-user))))
+
+             (GET "/stats/views/:id" []
+                  :path-params [id :- Long]
+                  :summary "Get user-badge view statistics"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (b/badge-view-stats ctx id)))
 
              (POST "/evidence/:user-badge-id" []
                    :return {:status (s/enum "success" "error")}
