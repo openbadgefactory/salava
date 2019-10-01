@@ -3,10 +3,14 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.ui.badge-grid :refer [badge-grid-element]]
             [salava.core.i18n :refer [t]]
-            [reagent.core :refer [atom cursor]]
+            [reagent.core :refer [atom cursor create-class]]
             [salava.core.ui.page-grid :refer [page-grid-element]]
             [salava.user.ui.helper :refer [profile-link-inline-modal]]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.gallery.ui.profiles :as profiles]
+            [reagent-modals.modals :as m]
+            [salava.core.ui.modal :as mo]
+            [salava.user.ui.helper :refer [profile-picture]]))
 
 (defn init-grid [kind state]
   (ajax/GET
@@ -132,3 +136,45 @@
                  (if (> (count public_users) 0)
                    [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]])))))
+
+
+(defn profile-grid-element [profile]
+  (let [{:keys [id profile_picture first_name last_name]} profile]
+    [:div.col-md-12
+     [:div.panel.panel-default.endorsement
+      [:div.panel-body
+        [:div.row.flip.settings-endorsement
+         [:div.col-md-9
+           [:a {:href "#"
+                :on-click #(mo/open-modal [:profile :view] {:user-id id})}
+            [:img.small-image {:src (profile-picture profile_picture)}]
+            (str first_name " " last_name) ] " " (t :badge/Congratulatedyou)]]]]]))
+
+(defn allprofilesmodal []
+ (let [country (session/get-in [:user :country] "all")
+       filter-options (session/get :filter-options nil)
+       common-badges? (if filter-options (:common-badges filter-options) true)
+       state (atom {:users [] :selected [] :ajax-message nil :name "" :order_by "ctime" :common_badges common-badges?})]
+   (create-class {:reagent-render (fn []
+                                     [:div
+                                      [:div {:id "profile-gallery"}
+                                       [profiles/profile-gallery-grid-form state]
+                                       (if (:ajax-message @state)
+                                         [:div.ajax-message
+                                          [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                          [:span (:ajax-message @state)]]
+                                         (reduce (fn [r user]
+                                                   (conj r [profile-grid-element user])) [:div] @(cursor state [:users])))]])
+                  :component-will-mount (fn []
+                                           (ajax/POST
+                                            (path-for (str "/obpv1/gallery/profiles/"))
+                                            {:params {:country (session/get-in [:filter-options :country] country)
+                                                      :name ""
+                                                      :common_badges common-badges?
+                                                      :order_by "ctime"}
+                                             :handler (fn [{:keys [users countries]} data]
+                                                        (swap! state assoc :users users
+                                                               :countries countries
+                                                               :country-selected (session/get-in [:filter-options :country] country)))
+                                             :finally (fn []
+                                                        #_(ajax-stop ajax-message-atom))}))})))

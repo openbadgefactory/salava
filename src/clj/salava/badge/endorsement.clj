@@ -19,8 +19,6 @@
   (let [owner (select-endorsement-owner {:id endorsement-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx)))]
     (= owner user-id)))
 
-(defn request-endorsement [])
-
 (defn endorse! [ctx user-badge-id user-id content]
   (try+
     (if (badge-owner? ctx user-badge-id user-id)
@@ -103,6 +101,20 @@
     {:given given
      :received received
      :all-endorsements all}))
+
+
+#_(defn request-endorsement [ctx user-badge-id owner-id user-id request]
+   (let [{:keys [name content email]} request]
+    (try+
+     (if-not (badge-owner? ctx user-badge-id owner-id)
+       (throw+ {:status "error" :message "User cannot request endorsement for badge they do not own"})
+       (let [endorser-info (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
+                                 (if $ ($ ctx user-id) {}))
+             {:keys [first_name last_name]} endorser-info
+             request-id (-> (request-endorsement<! {:id user-badge-id :content (:content request)} :issuer))]))
+     (catch Object _
+       (log/error _)
+       {:status "error"}))))
 
 ;Endorsements show in user profile
 ;request-endorsement

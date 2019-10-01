@@ -559,20 +559,21 @@
          [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body.congratulations
-        (conj (reduce (fn [r congratulation]
-                        (let [{:keys [id first_name last_name profile_picture]} congratulation]
-                          (conj r
-                           [:div.col-md-12
-                            [:div.panel.panel-default.endorsement
-                             [:div.panel-body
-                               [:div.row.flip.settings-endorsement
-                                [:div.col-md-9
-                                  [:a {:href "#"
-                                       :on-click #(mo/open-modal [:profile :view] {:user-id id})}
-                                   [:img.small-image {:src (profile-picture profile_picture)}]
-                                   (str first_name " " last_name) ] " congratulated you for your badge"]]]]])))
-                [:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"} ] congratulations)
-              #_[:div "congratulate someone"])])]]]))
+        (if (seq congratulations)
+          (reduce (fn [r congratulation]
+                    (let [{:keys [id first_name last_name profile_picture]} congratulation]
+                      (conj r
+                       [:div.col-md-12
+                        [:div.panel.panel-default.endorsement
+                         [:div.panel-body
+                           [:div.row.flip.settings-endorsement
+                            [:div.col-md-9
+                              [:a {:href "#"
+                                   :on-click #(mo/open-modal [:profile :view] {:user-id id})}
+                               [:img.small-image {:src (profile-picture profile_picture)}]
+                               (str first_name " " last_name) ] " " (t :badge/Congratulatedyou)]]]]])))
+                  [:div {:id "accordion" :class "panel-group evidence-list" :role "tablist" :aria-multiselectable "true"} ] congratulations)
+          [:div.col-md-12 "No one has congratulated you yet"])])]]]))
 
 
 (defn badge-endorsements [data state]
@@ -591,7 +592,7 @@
 
      (when (= @(cursor state [:visible-area]) panel-identity)
       [:div.panel-body.endorsements
-       [:div.col-md-12.request-link [:a {:href "#" :on-click #()} [:span [:i {:class "fa fa-hand-o-right fa-fw"}] "Request endorsement"]]]
+       [:div.col-md-12.request-link [:a {:href "#" :on-click #(mo/open-modal [:gallery :profiles] {})} [:span [:i {:class "fa fa-hand-o-right fa-fw"}] (t :badge/Requestendorsement)]]]
        (into [:div.col-md-12]
          (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
            [f (:id @state) data]))])]]]))

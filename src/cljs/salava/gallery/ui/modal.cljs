@@ -15,7 +15,8 @@
             [salava.social.ui.badge-message :refer [badge-message-handler]]
             [salava.core.ui.helper :refer [path-for private? plugin-fun]]
             [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
-            [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]))
+            [salava.social.ui.badge-message-modal :refer [gallery-modal-message-info-link]]
+            [salava.gallery.ui.block :as block]))
             ;[salava.badge.ui.endorsement :refer [endorsement-modal-link]]
 
 
@@ -151,4 +152,5 @@
       (content state show-messages))))
 
 (def ^:export modalroutes
-  {:gallery {:badges handler}})
+  {:gallery {:badges handler
+             :profiles block/allprofilesmodal}})
