@@ -1,3 +1,4 @@
+
 (ns salava.core.ui.helper
   (:require [reagent.session :as session]
             [clojure.string :as str]
@@ -5,7 +6,8 @@
             [pushy.core :as pushy]
             [salava.core.helper :as h]
             [ajax.core :as ajax]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [dommy.core :as dommy :refer-macros [sel sel1]]))
 
 (defn plugin-fun [plugins nspace name]
   (let [fun (fn [p]
@@ -93,5 +95,9 @@
     (when-not (clojure.string/blank? s)
       (not (clojure.string/blank? (re-matches url-pattern s))))))
 
+(defn disable-background-image
+ ([] (-> (sel1 :body) (dommy/remove-class! :anon)))
+ ([embed?] (-> (sel1 :body) (dommy/add-class! :anon-embed))))
 
-
+(defn enable-background-image []
+ (-> (sel1 :body) (dommy/add-class! :anon)))
