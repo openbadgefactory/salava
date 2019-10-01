@@ -124,7 +124,9 @@
 
          (.addTo layer-group my-map)
          (.on my-map "moveend" redraw-map!)
-         (get-markers "badges" my-map layer-group (or (-> (:query-params @state) (dissoc :lat :long)) {}))))}))
+         (get-markers "badges" my-map layer-group (or (-> (:query-params @state) (dissoc :lat :long)) {}))
+         (.setInterval js/window #(memoize (redraw-map!)) 15000)))}))
+
 
 (defn input-button [name id textatom]
  (let [status (atom "")]
