@@ -35,7 +35,7 @@
         {:keys [name description tags alignment criteria_content image_file image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count]} (content-setter @selected-language content)
         tags (tag-parser tags)]
     [:div#gallery-modal
-     [bm/follow-verified-bar badge "gallery" @show-messages]
+     (when (session/get :user) [bm/follow-verified-bar badge "gallery" @show-messages])
      [:div {:id "badge-contents"}
       [:div.row.flip
        [:div {:class "col-md-3 badge-image modal-left"}
@@ -47,7 +47,7 @@
                    (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])
         [:div
-         [gallery-modal-message-info-link show-messages badge_id]]
+         (when (session/get :user) [gallery-modal-message-info-link show-messages badge_id])]
 
         (when-not @show-messages (bm/badge-endorsement-modal-link badge_id endorsement_count))]
 
@@ -114,7 +114,7 @@
                      [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                      [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])])
 
-        (when (and gallery_id (not @show-messages))
+        (when (and gallery_id (not @show-messages) (session/get :user))
           (into [:div]
                 (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
                   [f gallery_id badge_id])))]]
