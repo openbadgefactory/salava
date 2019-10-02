@@ -15,7 +15,10 @@
                               (select-keys [:first_name :last_name :country :profile_picture])
                               (merge {:id s/Int
                                       :ctime s/Int
-                                      :common_badge_count s/Int})))
+                                      :common_badge_count s/Int})
+                              (assoc (s/optional-key :endorsement) (s/maybe {;(s/optional-key :given) (s/maybe (s/enum "pending" "accepted"))
+                                                                             (s/optional-key :received) (s/maybe (s/enum "pending" "accepted"))
+                                                                             (s/optional-key :request) (s/maybe s/Str)}))))
 
 (s/defschema Countries (s/constrained [s/Str] (fn [c]
                                                 (and

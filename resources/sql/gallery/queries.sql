@@ -423,3 +423,5 @@ LIMIT 1;
 --name: all-users-on-map-count
 SELECT COUNT(id) AS users_count FROM user WHERE location_lng IS NOT NULL AND location_lat IS NOT NULL AND deleted = 0
 
+--name: select-user-owns-badge-id
+SELECT user_id FROM user_badge WHERE badge_id = :badge_id AND user_id = :user_id AND status != 'declined' AND deleted = 0 AND revoked = 0

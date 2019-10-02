@@ -12,20 +12,18 @@
 
 (defqueries "sql/social/queries.sql")
 
-(defn insert-social-event! [ctx data]
+#_(defn insert-social-event! [ctx data]
   (insert-social-event<! data (get-db ctx)))
 
 
 
 (defn get-all-owners [ctx data]
   (let [funs (plugin-fun (get-plugins ctx) "event" "owners")]
-    (set (mapcat (fn [f] (try (f ctx data) (catch Throwable _ ()))) funs)))
-  )
+    (set (mapcat (fn [f] (try (f ctx data) (catch Throwable _ ()))) funs))))
 
 (defn update-last-viewed [ctx events user_id]
-  (let [event_ids (map  #(:event_id %) events)]
-    (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))
-    ))
+ (let [event_ids (map  #(:event_id %) events)]
+  (update-last-checked-user-event-owner! {:user_id user_id :event_ids event_ids} (get-db ctx))))
 
 (defn get-all-events [ctx user_id]
   (let [funs (plugin-fun (get-plugins ctx) "event" "events")
@@ -42,6 +40,10 @@
     (catch Exception ex
       (log/error "insert-event-owners!: failed to save event owners")
       (log/error (.toString ex)))))
+
+(defn insert-social-event! [ctx data]
+ (let [id (-> (insert-social-event<! data (get-db ctx)) :generated_key)]
+  (insert-event-owners! ctx (assoc data :event-id id))))
 
 
 (defn get-all-events-add-viewed [ctx user_id]
@@ -68,10 +70,10 @@
       boolean))
 
 (defn insert-connection-badge! [ctx user_id badge_id]
-  (let [gallery-id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
-    (insert-connect-badge<! {:user_id user_id :badge_id badge_id :gallery_id gallery-id} (get-db ctx))
-    (util/event ctx user_id "follow" badge_id "badge")
-    (messages-viewed ctx badge_id user_id)))
+ (let [gallery-id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
+  (insert-connect-badge<! {:user_id user_id :badge_id badge_id :gallery_id gallery-id} (get-db ctx))
+  (util/event ctx user_id "follow" badge_id "badge")
+  (messages-viewed ctx badge_id user_id)))
 
 (defn create-connection-badge! [ctx user_id  badge_id]
   (try+

@@ -1943,6 +1943,22 @@ a.popup-info {
   }
 }
 #social-tab {
+  .profile-element {
+    min-height: 100px;
+    max-height: 100px;
+    padding: 6px;
+    position: relative;
+    .common-badges {
+      margin: 10px auto;
+    }
+
+    .checkbox {
+      position: absolute;
+      top: -6px;
+      right: 0;
+    }
+
+  }
   .request-link {
     margin: 20px 0;
     i {
@@ -2053,11 +2069,11 @@ a.popup-info {
   .endorsement .settings-endorsement {
     margin-top: unset;
   }
-  span.badge {
+  span.social-panel-info {
     position: absolute;
-    background-color: #5bc0de;
-    top: 20px;
-    right: 85px;
+    //background-color: #5bc0de;
+    top: 0;
+    left: 0;
   }
  .panel-heading {
       border-bottom: 1px solid #dddddd !important;
@@ -2106,4 +2122,40 @@ a.popup-info {
       margin-bottom: unset;
       }
     }
+}
+
+span.endorsement-notification{
+  margin-left:5px;
+  background-color: #FF3333 !important;
+  font-size: 10px;
+}
+
+span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
+  position: absolute;
+  right: 2px;
+  top: 1px;
+  margin-bottom: 5px;
+  i {
+    vertical-align: text-bottom;
+    font-size: 13px;
+  }
+}
+
+#endorsebadge .recipients-map {
+  i {
+    font-size: 25px;
+  }
+}
+
+.grid-element-info {
+  position: absolute;
+  bottom: 1px;
+  right:1px;
+}
+
+.modal-navi-info {
+  position: absolute;
+  right: 2px;
+  top: -1px;
+  z-index: 100;
 }

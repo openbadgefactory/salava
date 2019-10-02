@@ -183,4 +183,3 @@
                   (ok (so/get-user-issuer-connections ctx (:id current-user))))
 
              )))
-

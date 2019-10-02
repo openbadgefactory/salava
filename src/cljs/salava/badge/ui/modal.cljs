@@ -1,36 +1,43 @@
 (ns salava.badge.ui.modal
-  (:require [reagent.core :refer [atom cursor]]
-            [reagent.session :as session]
-            [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.i18n :refer [t]]
-            [salava.badge.ui.helper :as bh]
-            [salava.badge.ui.assertion :as a]
-            [salava.badge.ui.settings :as se]
-            [salava.core.ui.share :as s]
-            [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url?]]
-            [salava.core.time :refer [date-from-unix-time]]
-            [salava.social.ui.follow :refer [follow-badge]]
-            [salava.core.ui.error :as err]
-            [salava.core.ui.modal :as mo]
-            [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
-            [salava.badge.ui.endorsement :as endr]
-            [salava.badge.ui.issuer :as issuer]
-            [salava.social.ui.badge-message-modal :refer [badge-message-link]]
-            [salava.admin.ui.reporttool :refer [reporttool1]]
-            [salava.badge.ui.verify :refer [check-badge]]
-            [salava.core.ui.tag :as tag]
-            [clojure.string :refer [blank? starts-with? split]]
-            [salava.badge.ui.evidence :refer [evidence-icon]]
-            [salava.core.helper :refer [dump]]
-            [salava.badge.ui.block :as block]
-            [salava.translator.ui.helper :refer [translate]]))
-
+  (:require
+    [clojure.string :refer [blank? starts-with? split]]
+    [reagent.core :refer [atom cursor]]
+    [reagent.session :as session]
+    [salava.admin.ui.reporttool :refer [reporttool1]]
+    [salava.badge.ui.helper :as bh]
+    [salava.badge.ui.assertion :as a]
+    [salava.badge.ui.block :as block]
+    [salava.badge.ui.endorsement :as endr]
+    [salava.badge.ui.issuer :as issuer]
+    [salava.badge.ui.settings :as se]
+    [salava.badge.ui.social :as st]
+    [salava.badge.ui.verify :refer [check-badge]]
+    [salava.core.helper :refer [dump]]
+    [salava.core.ui.helper :refer [path-for private? plugin-fun hyperlink url?]]
+    [salava.core.time :refer [date-from-unix-time]]
+    [salava.core.ui.ajax-utils :as ajax]
+    [salava.core.i18n :refer [t]]
+    [salava.core.ui.error :as err]
+    [salava.core.ui.modal :as mo]
+    [salava.core.ui.content-language :refer [init-content-language content-language-selector content-setter]]
+    [salava.core.ui.share :as s]
+    [salava.core.ui.tag :as tag]
+    [salava.social.ui.follow :refer [follow-badge]]
+    [salava.social.ui.badge-message-modal :refer [badge-message-link]]
+    [salava.translator.ui.helper :refer [translate]]))
 
 (defn init-badge-connection [state badge-id]
   (ajax/GET
     (path-for (str "/obpv1/social/connected/" badge-id))
     {:handler (fn [data]
                 (swap! state assoc :receive-notifications data))}))
+
+(defn- init-pending-endorsements [state]
+ (when (:owner? @state)
+   (ajax/GET
+    (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
+    {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
+                         (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
 (defn init-data
   ([state id tab-no]
@@ -44,8 +51,11 @@
                                      :content-language (init-content-language (:content data))
                                      :tab-no tab-no
                                      :permission "success"
-                                     :evidence {:url nil}))
-
+                                     :evidence {:url nil}
+                                     :request-comment " "
+                                     :selected-users []
+                                     :request-mode false))
+                   (init-pending-endorsements state)
                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
 
@@ -55,7 +65,11 @@
                        :initializing false
                        :content-language (init-content-language (:content data))
                        :tab-no tab-no
-                       :permission "success"))
+                       :permission "success"
+                       :request-comment " "
+                       :selected-users []
+                       :request-mode false))
+     (init-pending-endorsements state)
      (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))))
 
 
@@ -232,13 +246,10 @@
         (if expired?
           [:div.expired [:label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
-        ;[metabadge-block (:assertion_url @state)]
-        ;[metabadge (:assertion_url @state)]
         (if (< 1 (count (:content @state)))
           [:div.inline [:label (t :core/Languages)": "](content-language-selector selected-language (:content @state))])
         (issuer-modal-link issuer_content_id issuer_content_name)
         (creator-modal-link creator_content_id creator_name)
-
         (if (and issued_on (> issued_on 0))
           [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
         (if (and expires_on (not expired?))
@@ -248,22 +259,20 @@
           (if (and user-logged-in? (not owner?))
             [:div [:label (t :badge/Recipient) ": " ]  [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
             [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
-                ;metabadges
+
+        ;metabadges
         (when owner?
          (into [:div]
           (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
             [f {:user_badge_id id}])))
-        #_(if (and owner? metabadge-fn) [:div [metabadge-fn {:user_badge_id id}]])
 
         [:div.description description]
-
 
         ;;Check-badge
         (check-badge id)
 
         ;;Endorse-badge
-        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])
-        #_(when-not owner? [endr/endorse-badge id])]]
+        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])]]
 
 
       (when-not (empty? alignment)
@@ -282,45 +291,11 @@
         [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-
-      (when (seq evidences)
-        [:div.row {:id "badge-settings"}
-         [:div.col-md-12
-          [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")"))]
-          (reduce (fn [r evidence]
-                    (let [{:keys [narrative description name id url mtime ctime properties]} evidence
-                          added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
-                          {:keys [resource_id resource_type mime_type hidden]} properties
-                          desc (cond
-                                 (not (blank? narrative)) narrative
-                                 (not added-by-user?) description ;;todo use regex to match description
-                                 :else nil)]
-
-                      (conj r (when (and (not hidden) (url? url))
-                                [:div.modal-evidence
-                                 (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
-                                 [evidence-icon {:type resource_type :mime_type mime_type}]
-                                 [:div.content
-
-                                  (when-not (blank? name) [:div.content-body.name name])
-                                  (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
-                                  [:div.content-body.url
-                                   (case resource_type
-                                     "file" (hyperlink url)
-                                     "page" (if (session/get :user)
-                                              [:a {:href "#"
-                                                   :on-click #(do
-                                                                (.preventDefault %)
-                                                                (mo/open-modal [:page :view] {:page-id resource_id}))} url]
-                                              (hyperlink url))
-                                     (hyperlink url))]]]))))
-
-                  [:div] evidences)]])
-
+      ;;evidence list
       (into [:div]
-        (for [f (plugin-fun (session/get :plugins) "block" "badge_recipients")]
-          [f (select-keys @state [:id :gallery_id])]))
-
+            (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
+              [f evidences]))
+      ;;map
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]
               [f id]))]]))
@@ -331,33 +306,35 @@
         selected-language (cursor state [:content-language])
         data (content-setter @selected-language (:content @state))
         disable-link (if invalid? "btn disabled")
-        disable-export (if (or (private?) invalid?) "btn disabled")
-        disable-social (if (= "private" (:visibility @state)) "btn disabled")]
-    [:div.col-md-9.badge-modal-navi
-     [:ul {:class "nav nav-tabs wrap-grid"}
-      [:li.nav-item{:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
-       [:a.nav-link {:href "#" :on-click #(do (init-data state (:id @state) 1) #_(swap! state assoc :tab [badge-content state] :tab-no 1))}
-        [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)]]]
-      [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
-       [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}
-        [:div  [:i.nav-icon {:class "fa fa-cogs fa-lg"}] (t :page/Settings)]]]
-      [:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
-       [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
-        [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)]]]
-      [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
-       [:a.nav-link {#_:class #_disable-social :href "#" :on-click #(do
-                                                                      (swap! state assoc :tab [se/social-tab (assoc data :settings_fn show-settings-dialog :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state) ) state init-data] :tab-no 5))}
-        [:i.nav-icon {:class "fa fa-users fa-lg"}] (t :core/Social)]]
-      [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
-       [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
-                                                                                                                    :obf_url (:obf_url @state)) state] :tab-no 4)}
-        [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)]]]
+        disable-export (if (or (private?) invalid?) "btn disabled")]
+    (fn []
+      [:div.col-md-9.badge-modal-navi
+       [:ul {:class "nav nav-tabs wrap-grid"}
+        [:li.nav-item {:class  (if (or (nil? (:tab-no @state))(= 1 (:tab-no @state))) "active")}
+         [:a.nav-link {:href "#" :on-click #(do (init-data state (:id @state) 1))}
+          [:div  [:i.nav-icon {:class "fa fa-eye fa-lg"}] (t :page/View)]]]
+        [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
+         [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}
+          [:div  [:i.nav-icon {:class "fa fa-cogs fa-lg"}] (t :page/Settings)]]]
+        [:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
+         [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
+          [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)]]]
+        [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
 
-      [:li.nav-item {:class (if (= 6 (:tab-no @state)) "active")}
-       [:a.nav-link.delete-button {:href "#" :on-click #(do
-                                                          (swap! state assoc-in [:badge-settings :confirm-delete?] true)
-                                                          (swap! state assoc :tab [se/delete-tab-content data state] :tab-no 6))}
-        [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]]))
+         (when (pos? @(cursor state [:notification])) [:span.label.label-danger.modal-navi-info "+" @(cursor state [:notification])])
+         [:a.nav-link {:class disable-export :href "#" :on-click #(do
+                                                                    (swap! state assoc :tab [st/social-tab (assoc data :settings_fn show-settings-dialog :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state) ) state init-data] :tab-no 5))}
+          [:i.nav-icon {:class "fa fa-users fa-lg"}] (t :core/Social)]]
+        [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
+         [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
+                                                                                                                      :obf_url (:obf_url @state)) state] :tab-no 4)}
+          [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)]]]
+
+        [:li.nav-item {:class (if (= 6 (:tab-no @state)) "active")}
+         [:a.nav-link.delete-button {:href "#" :on-click #(do
+                                                            (swap! state assoc-in [:badge-settings :confirm-delete?] true)
+                                                            (swap! state assoc :tab [se/delete-tab-content data state] :tab-no 6))}
+          [:i.nav-icon {:class "fa fa-trash fa-lg"}] (t :core/Delete)]]]])))
 
 
 (defn modal-top-bar [state]
@@ -382,11 +359,11 @@
 
 
 (defn handler [params]
-
   (let [id (:badge-id params)
         data (:data params)
         state (atom {:initializing true
                      :permission "initial"})
+
         user (session/get :user)]
     (if data (init-data state id nil data) (init-data state id nil))
 

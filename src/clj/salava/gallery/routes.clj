@@ -113,4 +113,24 @@
                    :path-params [gallery_id :- Long]
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (g/badge-recipients ctx (:id current-user) gallery_id))))))
+                   (ok (g/badge-recipients ctx (:id current-user) gallery_id)))
+
+             (POST "/profiles/:user_badge_id/:context" []
+                   :return {:users     [schemas/UserProfiles]
+                            :countries [schemas/Countries]}
+                   :path-params [user_badge_id :- s/Int
+                                 context :- (s/enum "endorsement")]
+                   :body [search-params schemas/UserSearch]
+                   :summary "Get public user profiles, add optional information like endorsement status, endorsement requests etc based on context"
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (ok {:users     (g/public-profiles-context ctx search-params (:id current-user) user_badge_id context)
+                        :countries (g/profile-countries ctx (:id current-user))}))
+
+             (GET "/user_owns_badge/:badge_id" []
+                  :return s/Bool
+                  :path-params [badge_id :- s/Str]
+                  :summary "Check if user owns badge by badge-id"
+                  :current-user current-user
+                  :auth-rules access/signed
+                  (ok (g/user-owns-badge? ctx (:id current-user) badge_id))))))

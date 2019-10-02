@@ -1,15 +1,18 @@
 (ns salava.badge.ui.block
- (:require [salava.core.ui.ajax-utils :as ajax]
-           [salava.core.ui.helper :refer [path-for unique-values]]
-           [reagent.core :refer [create-class atom cursor]]
-           [salava.badge.ui.helper :as bh]
-           [salava.core.ui.grid :as g]
-           [clojure.string :refer [upper-case]]
-           [salava.core.i18n :as i18n :refer [t]]
-           [clojure.set :as set :refer [intersection]]
-           [salava.user.ui.helper :refer [profile-link-inline-modal]]
-           [salava.core.ui.badge-grid :refer [badge-grid-element]]
-           [salava.badge.ui.endorsement :refer [endorsement-list]]))
+ (:require
+  [clojure.string :refer [upper-case]]
+  [clojure.set :as set :refer [intersection]]
+  [reagent.core :refer [create-class atom cursor]]
+  [salava.badge.ui.endorsement :refer [endorsement-list request-endorsement]]
+  [salava.badge.ui.evidence :refer [evidence-list-badge-view]]
+  [salava.badge.ui.helper :as bh]
+  [salava.badge.ui.settings :refer [settings-tab-content]]
+  [salava.core.ui.ajax-utils :as ajax]
+  [salava.core.ui.helper :refer [path-for unique-values]]
+  [salava.core.ui.grid :as g]
+  [salava.core.i18n :as i18n :refer [t]]
+  [salava.core.ui.badge-grid :refer [badge-grid-element]]
+  [salava.user.ui.helper :refer [profile-link-inline-modal]]))
 
 (defn init-data
   ([state]
@@ -103,3 +106,12 @@
 
 (defn ^:export badge_endorsements [id data]
  [endorsement-list id data])
+
+(defn ^:export request_endorsement [state]
+  [request-endorsement state])
+
+(defn ^:export settings_tab_content [data state init-data]
+  [settings-tab-content data state init-data])
+
+(defn ^:export evidence_list_badge [data]
+  [evidence-list-badge-view data])

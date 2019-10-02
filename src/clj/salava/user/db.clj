@@ -467,6 +467,8 @@
    :stats stats
    :endorsing (->> (end/endorsements-given ctx user-id) count)
    :endorsers (->> (end/endorsements-received ctx user-id) count)
+   :endorsement-requests (->> (end/endorsement-requests ctx user-id) count)
+   :pending-endorsements-requests (->> (end/endorsement-requests ctx user-id) (filter #(= "pending" (:status %))) count)
    :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
    :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
    :pages_count (->> (p/user-pages-all ctx user-id) count)

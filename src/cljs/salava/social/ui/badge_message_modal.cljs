@@ -88,6 +88,7 @@
               :on-click #(do
                            (mo/open-modal [:gallery :badges] {:badge-id badge-id
                                                               :show-messages true
+                                                              :hide-info-link true
                                                               :reload-fn nil})
                            ;(open-modal badge-id)
                            (.preventDefault %) )}
@@ -119,4 +120,3 @@
            (if @show-messages
              (t :social/Showinfo)
              all-messages)])))))
-

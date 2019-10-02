@@ -21,7 +21,7 @@
             [clj-time.core :refer [today]]))
 
 (defqueries "sql/badge/main.sql")
-
+(defqueries "sql/badge/endorsement.sql")
 
 (defn badge-url [ctx badge-id]
   (str (u/get-site-url ctx) (u/get-base-path ctx) "/badge/info/" badge-id))
@@ -80,6 +80,9 @@
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
   [ctx assertion-url])
 
+(defn- map-badges-notifications [ctx user-id badges]
+ (map #(assoc % :pending_endorsements_count (pending-user-badge-endorsement-count {:id (:id %)} (into {:result-set-fn first :row-fn :count} (u/get-db ctx)))
+                :message_count (-> (so/get-badge-message-count ctx (:badge_id %) user-id))) badges))
 
 (defn user-badges-all
   "Returns all the badges of a given user"
@@ -87,9 +90,10 @@
   (let [badges (map (fn [b] (assoc b :revoked (= 1 (b :revoked))))
                     (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
         tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
-        badges-with-tags (map-badges-tags badges tags)]
+        badges-with-tags (map-badges-tags badges tags)
+        badges-with-notifications (map-badges-notifications ctx user-id badges-with-tags)]
 
-    (map #(badge-issued-and-verified-by-obf ctx %) badges-with-tags)))
+    (map #(badge-issued-and-verified-by-obf ctx %) badges-with-notifications)))
 
 (defn user-badges-to-export
   "Returns valid badges of a given user"
@@ -290,7 +294,7 @@
   [ctx badge-id user-id]
   (let [badge (fetch-badge ctx badge-id) ;(update (select-badge {:id badge-id} (into {:result-set-fn first} (u/get-db ctx))) :criteria_content u/md->html)
         owner? (= user-id (:owner badge))
-        ;badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_content_id badge) user-id))
+        badge-message-count (if user-id (so/get-badge-message-count ctx (:badge_id badge) user-id))
         followed? (if user-id (so/is-connected? ctx user-id (:badge_id badge)))
         all-congratulations (if user-id (select-all-badge-congratulations {:user_badge_id badge-id} (u/get-db ctx)))
         user-congratulation? (and user-id
@@ -305,7 +309,7 @@
       :congratulations all-congratulations
       :view_count view-count
       :recipient_count recipient-count
-      ;:message_count badge-message-count
+      :message_count badge-message-count
       ;:followed? followed?
       :receive-notifications followed?
       :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
