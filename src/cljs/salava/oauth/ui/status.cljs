@@ -1,7 +1,7 @@
 (ns salava.oauth.ui.status
   (:require [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
-            [salava.oauth.ui.helper :refer [facebook-link linkedin-link]]
+            [salava.oauth.ui.helper :refer [facebook-link linkedin-link google-link]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.helper :refer [base-path navigate-to path-for]]
             [salava.core.ui.layout :as layout]
@@ -17,7 +17,10 @@
 (defn content [state]
   (let [error-message-atom (cursor state [:error-message])
         active-atom (cursor state [:active])
-        link-fn (if (= (:service @state) "facebook") facebook-link linkedin-link)]
+        link-fn (case (:service @state)
+                  "facebook" facebook-link
+                  "linkedin" linkedin-link
+                  "google" google-link)]
     [:div {:id "login-page"}
      [:div {:class "panel"}
       [:div {:class "panel-body"}
@@ -32,7 +35,7 @@
              (link-fn nil nil)
              (if (:no-password? @state)
                [:span (t :oauth/Cannotunlink) " " (t :oauth/Setpasswordfrom)
-                " " [:a {:href (path-for "/user/edit")} (t :oauth/accountsettings)] "."]
+                " " [:a {:href (path-for "/user/edit/password")} (t :user/Passwordsettings) #_(t :oauth/accountsettings)] "."]
                (link-fn unlink-linkedin active-atom)))]])]]]))
 
 (defn init-data [state service]

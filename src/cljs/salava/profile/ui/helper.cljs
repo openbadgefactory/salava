@@ -308,17 +308,18 @@
        (admintool user-id "user")])))
 
 (defn add-page [state]
+  (let [refresh-tabs (memoize (fn [] (pe/save-profile state nil false)))]
    (when (:edit-mode @state) [:li.nav-item.dropdown.addnew [:a.dropdown-toggle {:data-toggle "dropdown"} [:i.fa.fa-plus-square]]
                                 [:ul.dropdown-menu
                                  [:li [:a {:href "#" :on-click #(do
                                                                  (.preventDefault %)
-                                                                 (mo/open-modal [:page :my] {:tab-atom (cursor state [:tabs])} {:hidden (fn [] (pe/save-profile state nil false))}))}
+                                                                 (mo/open-modal [:page :my] {:tab-atom (cursor state [:tabs])} {:hidden refresh-tabs #_(fn [] (pe/save-profile state nil false))}))}
 
                                        (t :profile/Addexistingpage)]]
                                  [:li [:a {:href "#" :on-click #(do
                                                                  (.preventDefault %)
                                                                  (create-page)
-                                                                 #_(as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]]))
+                                                                 #_(as-> (first (plugin-fun (session/get :plugins) "my" "create_page")) f (when f (f)) ))} (t :profile/Createnewpage)]]]])))
 
 (defn page-content [page-id page state]
  (let [index (.indexOf (map :id @(cursor state [:tabs])) page-id)]

@@ -3,10 +3,12 @@
             [salava.core.http :as http]
             [salava.core.time :refer [iso8601-to-unix-time unix-time date-from-unix-time]]
             [clojure.tools.logging :as log]
-            [salava.core.util :refer [get-db]]
+            [salava.core.util :refer [get-db plugin-fun get-plugins]]
             [yesql.core :refer [defqueries]]
             [salava.badge.parse :refer [str->badge]]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [autoclave.core :refer [json-sanitize]]))
+
 
 (defqueries "sql/badge/main.sql")
 
@@ -14,9 +16,20 @@
 (defn url? [s]
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
 
-(defn fetch-json-data [url]
-  (log/info "fetch-json-data: GET" url)
-  (http/http-get url {:as :json :accept :json :throw-entire-message? false}))
+#_(defn fetch-json-data [url]
+    (log/info "fetch-json-data: GET" url)
+    (http/http-get url {:as :json :accept :json :throw-entire-message? false}))
+
+(defn- fetch-json-data [url]
+ (log/info "fetch-json-data: GET" url)
+ (try
+  (http/json-get url)
+  (catch Exception _
+   (log/error (.getMessage _))
+   (log/error "Error occured when getting json content with json-get! Using http-get instead")
+   (as-> (http/http-get url) $
+         (if (map? $) $ (-> $ (json-sanitize) (json/read-str :key-fn keyword)))))))
+
 
 (defn fetch-image [url]
   (log/info "fetch image from " url)
@@ -37,9 +50,9 @@
 
 (defn- assertion [assertion-url]
   (try
-    (http/http-req  {:url assertion-url :as :json :method :get  :accept :json :throw-exceptions false })
+    (http/http-req  {:url assertion-url :as :json :method :get  :accept :json :throw-exceptions false})
     (catch Exception e
-      (log/error "failed to get assertion url " assertion-url " Message: "(.getMessage e) )
+      (log/error "failed to get assertion url " assertion-url " Message: "(.getMessage e))
       {:status 500 :message (.getMessage e)})))
 
 (defn- assertion-jws [b signature]
@@ -63,7 +76,8 @@
   (log/info "Badge verification initiated:")
   (let [badge (b/fetch-badge ctx id)
         asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
-        result {}]
+        result {}
+        delete-user-metabadge (first (plugin-fun (get-plugins ctx) "db" "clear-user-metabadge!"))]
     (if (url? asr)
       (let [asr-response (assertion asr)]
         (case (:status asr-response)
@@ -72,6 +86,7 @@
           410 (do
                 (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
                 (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))
+                (if delete-user-metabadge (delete-user-metabadge ctx id))
                 (assoc result :assertion-status 410
                               :asr asr
                               :revoked? true))
@@ -103,9 +118,9 @@
 
           (assoc result :assertion-status 500
                         :asr asr
-                        :message (:reason-phrase asr-response))
-          )
-        )
+                        :message (:reason-phrase asr-response))))
+
+
 
       (let [jws-response (assertion-jws badge asr)]
         (if (= 500 (:status jws-response))
@@ -117,7 +132,7 @@
                 revocation-list (if revocation-list-url (:revokedAssertions (fetch-json-data revocation-list-url)))
                 revoked (revoked? badge-id revocation-list)
                 revocation-reason (:revocationReason (first revoked))
-                assertion (json/read-str (:assertion_json jws-response) :key-fn keyword )
+                assertion (json/read-str (:assertion_json jws-response) :key-fn keyword)
                 issuedOn {:issuedOn (process-time (:issuedOn assertion))}
                 expires (if-let [exp (process-time (:expires assertion))]{:expires exp} nil)]
 
@@ -132,11 +147,4 @@
                           :badge-issuer-status 200
                           :revoked? (not (empty? revoked))
                           :revocation_reason revocation-reason
-                          :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time)))
-              )
-            )
-          )
-        )
-      )
-    )
-  )
+                          :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time))))))))))

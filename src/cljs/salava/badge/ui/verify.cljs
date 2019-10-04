@@ -8,7 +8,9 @@
             [salava.badge.ui.assertion :as a]
             [clojure.string :refer [blank? upper-case]]
             [salava.core.time :refer [date-from-unix-time unix-time unix-time]]
+            [salava.translator.ui.helper :refer [translate]]
             ))
+
 
 (defn init-verify-info [state]
   (ajax/GET
@@ -26,21 +28,21 @@
                 :href     "#"
                 :on-click #(do (.preventDefault %)
                              (if (= (:display @state) "none") (swap! state assoc :display "block") (swap! state assoc :display "none"))
-                             )} (if (= (:display @state) "none") (str (t :badge/Openassertion) "...") (str (t :badge/Hideassertion) "..."))]
+                             )} (if (= (:display @state) "none") (str (translate (:lang @state) :badge/Openassertion) "...") (str (translate (:lang @state) :badge/Hideassertion) "..."))]
       #_[:a {:style {:float "right"} :href (str "https://badgecheck.io/?url="(:asr @state)) :target "_blank" :rel "nofollow noopener"} "use external validator"]]
      [:div {:style {:display (:display @state) :padding-top "30px"}}
       [a/assertion-content (dissoc assertion :evidence :endorsement)]]
      [:br]]))
 
 (defn verify-badge-content [state]
-  (fn []
+  ;(fn []
     (let [data (:result @state)
           {:keys [assertion-status badge-image-status revoked? expired? assertion badge-issuer-status badge-criteria-status asr revocation_reason message]} data]
       [:div {:id "verify-badge" :style {:display (:show-result @state)}}
        (if (= true (:verifying @state))
          [:div.ajax-message {:style {:padding-top "20px"}}
           [:i {:class "fa fa-cog fa-spin fa-2x "}]
-          [:span (str (t :core/Loading) "...")]]
+          [:span (str (translate (:lang @state) :core/Loading) "...")]]
          [:div;.panel {:style {:padding-top "20px"}}
           [:hr.border]
           [:div;.panel-body
@@ -52,30 +54,30 @@
                                      (swap! state assoc :show-result "none"
                                                         :show-link "block"
                                                         :display "none"))}
-             [:i.fa.fa-remove {:title (t :core/Cancel)}]
+             [:i.fa.fa-remove {:title (translate (:lang @state) :core/Cancel)}]
              #_[:span {:aria-hidden "true"
                      :dangerouslySetInnerHTML {:__html "&times;"}}]]]
 
            (case assertion-status
              404  [:div
-                   [:div {:class "alert alert-danger"} (t :badge/Badgecheckfailed)]
+                   [:div {:class "alert alert-danger"} (translate (:lang @state) :badge/Badgecheckfailed)]
                    [:p [:i "404 not found"]]
                    [:hr.border]]
              410  [:div
-                   [:div {:class "alert alert-danger"} (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))]
+                   [:div {:class "alert alert-danger"} (translate (:lang @state) :badge/Badgerevoked)]
                    #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
                    [:hr.border]]
              500 [:div
                   [:div {:class "alert alert-danger"}
-                   (t :badge/Badgecheckfailed)]
+                   (translate (:lang @state) :badge/Badgecheckfailed)]
                   [:br]
                   [:p [:i message]]
                   #_[:a {:target "_blank" :rel "nofollow noopener" :href (str "https://badgecheck.io/?url="asr) :style {:float "right"}} "use external validator"]
                   [:hr.border]]
              [:div
               (cond
-                revoked? [:div [:div {:class "alert alert-danger"}  (t :badge/Badgerevoked) #_(str (t :badge/Badge) " " (t :badge/Revoked))] [:p revocation_reason]]
-                expired? [:div [:div {:class "alert alert-danger"} (t :badge/Badgeisexpired)] [bottom-links state]]
+                revoked? [:div [:div {:class "alert alert-danger"}  (translate (:lang @state) :badge/Badgerevoked)] [:p revocation_reason]]
+                expired? [:div [:div {:class "alert alert-danger"} (translate (:lang @state) :badge/Badgeisexpired)] [bottom-links state]]
                 :else [:div
                        #_[:p.validation-header (t :badge/Badgevaliditycheck)]
                        #_[:h2.uppercase-header.validation-header (t :badge/Badgevaliditycheck)]
@@ -83,27 +85,27 @@
                        [:table
                         [:tbody
                          [:tr
-                          [:td.validation-result  (t :badge/Gotfromassertionurl)]
+                          [:td.validation-result  (translate (:lang @state) :badge/Gotfromassertionurl)]
                           [:td [:i {:class "fa fa-check-circle fa-lg"}]]]
                          (if (= 200 badge-image-status)
                            [:tr
-                            [:td.validation-result  (t :badge/Gotfromimageurl)]
+                            [:td.validation-result  (translate (:lang @state) :badge/Gotfromimageurl)]
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])
                          (if (= 200 badge-criteria-status)
                            [:tr
-                            [:td.validation-result  (t :badge/Gotfromcriteriaurl)]
+                            [:td.validation-result  (translate (:lang @state) :badge/Gotfromcriteriaurl)]
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])
                          (if (= 200 badge-issuer-status)
                            [:tr
-                            [:td.validation-result  (t :badge/Gotfromissuerurl)]
+                            [:td.validation-result  (translate (:lang @state) :badge/Gotfromissuerurl)]
                             [:td [:i {:class "fa fa-check-circle fa-lg"}]]])]]
 
-                       [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (t :badge/Validbadge)]
+                       [:div  {:class "alert alert-success "} [:i {:class "fa fa-check-circle fa-2x"}] (translate (:lang @state) :badge/Validbadge)]
                        [bottom-links state]
-                       [:hr.border]])])]])])))
+                       [:hr.border]])])]])]));)
 
 (defn check-badge-link [state]
-  (fn []
+  ;(fn []
     [:div
      [:a {:href "#"
           :style {:display (:show-link @state)}
@@ -111,10 +113,11 @@
                        (swap! state assoc :show-result "block"
                                           :show-link "none")
                        (when (empty? (:result @state)) (init-verify-info state))
-                       (.preventDefault %))}[:i.fa.fa-search] (str (t :badge/Verifybadge) "...")]]))
+                       (.preventDefault %))}[:i.fa.fa-search] (str (translate (:lang @state) :badge/Verifybadge) "...")]]);)
 
 
-(defn check-badge [badgeid]
+(defn check-badge
+ ([badgeid]
   (let [state (atom {:id badgeid
                      :verifying true
                      :show-result "none"
@@ -124,4 +127,14 @@
      [:br]
      [check-badge-link state]
      [verify-badge-content state]]))
-
+ ([badgeid lang]
+  (let [state (atom {:id badgeid
+                     :verifying true
+                     :show-result "none"
+                     :show-link "block"
+                     :result {}
+                     :lang lang})]
+    [:div {:id "verify-link"}
+     [:br]
+     [check-badge-link state]
+     [verify-badge-content state]])))

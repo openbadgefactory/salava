@@ -115,13 +115,18 @@ button {
 
 .badge-image-embed-pic {
   text-align: center;
-  height:320px;
+  height: 180px; //320px;
   width:90%;
   img {
     display: inline-block;
     max-width: 90%;
-    height: 320px;
+    height: 140px;  //320px;
     padding: 4px;
+    transition: all 0.1s ease-in-out;
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 }
 
@@ -947,6 +952,10 @@ button {
       height: auto;
       .icons {
         text-align: left;
+        .link-icon {
+          vertical-align: inherit;
+          font-size: 18px;
+        }
       }
       .visibility-icon {
         font-size: 17px;
@@ -1889,4 +1898,47 @@ a.popup-info {
   font-size: 12px;
   margin-top: 15px;
   text-transform: none;
+}
+
+.expandable-block {
+  .panel-heading {
+    position: relative;
+
+    a {
+      outline: none !important;
+      text-decoration: none !important;
+    }
+  }
+
+  .panel-status-icon {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+    font-size: 26px !important;
+    color: $button-color;
+    transition: all 0.1s ease-in-out;
+  }
+
+  .in-badge{
+    top: 26px;
+  }
+
+  &:active,
+  &:focus {
+    .panel-status-icon {
+      color: $button-hover;
+      opacity: 0.7;
+    }
+    .fa-chevron-circle-right {
+      -webkit-transform: rotate(20deg) scale(.8);
+      -ms-transform: rotate(20deg) scale(.8);
+      transform: rotate(20deg) scale(.8);
+    }
+    .fa-chevron-circle-down {
+      -webkit-transform: rotate(-20deg) scale(.8);
+      -ms-transform: rotate(-20deg) scale(.8);
+      transform: rotate(-20deg) scale(.8);
+    }
+
+  }
 }

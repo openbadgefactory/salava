@@ -6,13 +6,15 @@ WHERE badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM social_connec
 -- get user's badges
 SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, ub.assertion_url,
-           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsements_count
+           b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsements_count,
+           ubm.meta_badge, ubm.meta_badge_req
 FROM user_badge ub
 INNER JOIN badge b ON ub.badge_id = b.id
 INNER JOIN badge_badge_content bb ON b.id = bb.badge_id
 INNER JOIN badge_issuer_content bi ON b.id = bi.badge_id
 INNER JOIN badge_content bc ON bb.badge_content_id = bc.id
 INNER JOIN issuer_content ic ON bi.issuer_content_id = ic.id
+LEFT JOIN user_badge_metabadge ubm ON ub.id = ubm.user_badge_id
 LEFT JOIN badge_endorsement_content AS bec ON (bec.badge_id = ub.badge_id)
 LEFT JOIN user_badge_endorsement AS ube ON (ube.user_badge_id = ub.id) AND ube.status = 'accepted'
 WHERE ub.user_id = :user_id AND ub.deleted = 0 AND ub.status != 'declined'
@@ -188,7 +190,7 @@ ub.expires_on, ub.status,
 ub.visibility, ub.show_recipient_name,
 ub.rating, ub.ctime,
 ub.mtime, ub.deleted,
-ub.revoked, ub.show_evidence,
+ub.revoked, ub.show_evidence, ub.gallery_id,
 b.remote_url,
 b.issuer_verified,
 ube.url AS evidence_url,
@@ -334,8 +336,8 @@ SELECT issuer_content_id AS client_id FROM issuer_endorsement_content
 REPLACE INTO badge_tag (user_badge_id, tag)
        VALUES (:user_badge_id, :tag)
 
--- --name: update-user-badge-evidence!
---UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
+--name: update-user-badge-evidence!
+UPDATE user_badge_evidence SET url = :url, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: insert-user-badge-evidence-url<!
 INSERT INTO user_badge_evidence (user_badge_id, url, ctime, mtime) VALUES (:user_badge_id, :url, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
@@ -710,7 +712,7 @@ DELETE FROM user_badge_endorsement WHERE id = :id
 SELECT issuer_id FROM user_badge_endorsement WHERE id = :id
 
 --name: select-user-badge-endorsements
-SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture, u.profile_visibility
 FROM user_badge_endorsement AS ube
 LEFT JOIN user AS u on u.id = ube.issuer_id
 WHERE user_badge_id = :user_badge_id

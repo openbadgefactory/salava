@@ -164,6 +164,16 @@
           path (public-path-from-content content-str ext)]
       (save-file-data ctx content path))))
 
+(defn save-file-from-data-url-fix
+  [ctx data-str comma-pos]
+  (if (> comma-pos -1)
+    (let [base64-data (subs data-str (inc comma-pos))
+          content (.decode (Base64/getMimeDecoder) base64-data)
+          content-str (String. (.decode (Base64/getMimeDecoder) base64-data) "UTF-8")
+          ext (if (re-find #"^data:image/svg" data-str) ".svg" ".png")
+          path (public-path-from-content content-str ext)]
+      (save-file-data ctx content path))))
+
 (defn file-from-url
   [ctx url]
   (cond
@@ -171,6 +181,13 @@
     (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
     (re-find #"^data"    (str url)) (save-file-from-data-url ctx url (.lastIndexOf url ","))
     :else (throw (Exception. (str "Error in file url: " url)))))
+
+(defn file-from-url-fix [ctx url]
+   (cond
+      (string/blank? url) (do (log/error "file-from-url-fix: url parameter missing") nil)
+      (re-find #"^https?"  (str url)) (save-file-from-http-url ctx url)
+      (re-find #"^data"    (str url)) (save-file-from-data-url-fix ctx url (.lastIndexOf url ","))
+      :else (throw (Exception. (str "Error in file url: " url)))))
 
 (defn str->qr-base64 [text]
   (try
@@ -238,4 +255,3 @@
 (defn event [ctx subject verb object type]
   ;TODO VALIDATE DATA
   (publish ctx :event {:subject subject :verb verb :object object :type type}))
-
