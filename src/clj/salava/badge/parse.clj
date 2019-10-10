@@ -6,12 +6,17 @@
             [clojure.data.json :as json]
             [clojure.pprint :refer [pprint]]
             [clojure.xml :as xml]
+            [clojure.zip :as zip]
+            [clojure.data.zip.xml :as zip-xml]
             [clj-http.client :as clj-http]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.core.helper :refer [dump]]
             [schema.core :as s]
+            [pdfboxing.info :as pdf-info]
+            [pdfboxing.common :as pdf]
+            [pantomime.extract :as extract]
             [autoclave.core :refer [json-sanitize]])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
@@ -632,11 +637,30 @@
                       (json/read-str body :key-fn keyword)
                       {:assertion_url input :assertion_json body :assertion_jws nil})))
 
+
+(defn jws-pub-key [assertion]
+  (let [badge  (if (map? (:badge assertion)) (:badge assertion) (get-json-content (:badge assertion)))
+        issuer (if (map? (:issuer badge)) (:issuer badge) (get-json-content (:issuer badge)))]
+    (cond
+      (re-find #"^http" (get-in assertion [:verify :url] ""))
+      (some-> (get-in assertion [:verify :url]) http/http-get keys/str->public-key) ;; Older style key
+
+      (and (re-find #"^http" (get issuer :publicKey ""))
+           (= (get issuer :publicKey) (get-in assertion [:verification :creator]))) ;; New style key
+      (if-let [pub (some-> issuer :publicKey get-json-content)]
+        ;;TODO fix BRS and validate ids
+        #_(when (= (:owner pub) (:id issuer))
+          (keys/str->public-key (:publicKeyPem pub)))
+        (keys/str->public-key (:publicKeyPem pub)))
+
+      :else nil)))
+
+
 (defmethod str->badge :jws [user input]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
         header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
-        public-key (-> (get-in payload [:verify :url]) http/http-get keys/str->public-key)
+        public-key (jws-pub-key payload)
         body       (-> input (jws/unsign public-key {:alg (-> header :alg string/lower-case keyword)}) (String. "UTF-8"))]
     (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
 
@@ -672,11 +696,25 @@
            string/trim
            (str->badge user)))
 
-(defmethod file->badge "application/pdf" [user upload]
-  (some->> (pdf-info/metadata-value (or (:tempfile upload) (:body upload)) "openbadges")
-           string/trim
-           (str->badge user)))
+(defn- find-tag [tag root]
+  (if (= (:tag root) tag)
+    root
+    (some #(find-tag tag %) (:content root))))
 
+(defmethod file->badge "application/pdf" [user upload]
+  (with-open [doc (pdf/obtain-document (or (:tempfile upload) (:body upload)))]
+    (if-let [jws (some->> doc .getDocumentCatalog .getMetadata .createInputStream
+                          xml/parse (find-tag :openbadges:assertion) :attrs :verify)]
+      (str->badge user jws)
+
+      (some->>
+        (.. doc getDocumentInformation (getCustomMetadataValue "openbadges"))
+        string/trim
+        (str->badge user))))
+
+  #_(some->> (pdf-info/metadata-value (or (:tempfile upload) (:body upload)) "openbadges")
+             string/trim
+             (str->badge user)))
 
 (defmethod file->badge :default [_ upload]
   (log/error "file->assertion: unsupported file type:" (:content-type upload))

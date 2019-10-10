@@ -55,6 +55,7 @@
                  [org.clojure/core.cache "0.7.2"]
 
                  [pdfboxing "0.1.13" :exclusions [org.apache.pdfbox/pdfbox]]
+                 [org.clojure/data.zip "0.1.1"]
 
                  ; Client side
                  [org.clojure/clojurescript "1.10.520" :exclusions [com.google.errorprone/error_prone_annotations]]
