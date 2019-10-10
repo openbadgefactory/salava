@@ -115,13 +115,18 @@ button {
 
 .badge-image-embed-pic {
   text-align: center;
-  height:320px;
+  height: 180px; //320px;
   width:90%;
   img {
     display: inline-block;
     max-width: 90%;
-    height: 320px;
+    height: 140px;  //320px;
     padding: 4px;
+    transition: all 0.1s ease-in-out;
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 }
 

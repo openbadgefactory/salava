@@ -85,7 +85,6 @@ After that:
 
 ## TODO
 
-- OAuth (Google)
 - Full text search
 - More tests
 

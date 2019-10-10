@@ -85,3 +85,7 @@
 (s/defschema explore-filters {:tag_name    (describe [s/Str] "List of tags available in public badges")
                               :badge_name  (describe [s/Str] "List of public badge names")
                               :issuer_name (describe [s/Str] "List of public badge issuer names")})
+
+(s/defschema explore-badges-ex-em {:badges [(-> badge-location-ex (merge {(s/optional-key :profile_visibility) (s/maybe s/Str)
+                                                                          (s/optional-key :first_name) (s/maybe s/Str)
+                                                                          (s/optional-key :last_name) (s/maybe s/Str)}))]})

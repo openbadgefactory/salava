@@ -5,8 +5,8 @@
             [clojure.java.jdbc :as jdbc]
             [yesql.core :refer [defqueries]]
             [salava.core.util :as u]
-            [salava.location.country :as c]
-            ))
+            [salava.location.country :as c]))
+
 
 (defqueries "sql/location/queries.sql")
 
@@ -16,8 +16,8 @@
     {:success (and
                 (boolean (update-user-location-public! {:user user-id :pub 0} {:connection tx}))
                 (boolean (update-user-location! {:user user-id :lat nil :lng nil} {:connection tx}))
-                (boolean (reset-user-badge-location! {:user user-id} {:connection tx})))
-     }))
+                (boolean (reset-user-badge-location! {:user user-id} {:connection tx})))}))
+
 
 (defn set-location-public [ctx user-id public?]
   {:success (boolean (update-user-location-public! {:user user-id :pub (if public? 1 0)} (u/get-db ctx)))})
@@ -93,12 +93,12 @@
           (conj (fn [ids] (select-explore-user-ids-public {:user ids} (u/get-db-col ctx :id))))
 
           (not (string/blank? (:user_name opt)))
-          (conj (fn [ids] (select-explore-user-ids-name {:user ids :name (str "%" (:user_name opt) "%")} (u/get-db-col ctx :id))))
-          )
+          (conj (fn [ids] (select-explore-user-ids-name {:user ids :name (str "%" (:user_name opt) "%")} (u/get-db-col ctx :id)))))
+
         ;; Get final filtered user id list
         filtered-user-ids
-        (reduce (fn [coll f] (if (seq coll) (f coll) [])) user-ids filters)
-        ]
+        (reduce (fn [coll f] (if (seq coll) (f coll) [])) user-ids filters)]
+
 
     (if (seq filtered-user-ids)
       {:users (map (fn [u]
@@ -112,7 +112,7 @@
       {:users []})))
 
 
-(defn explore-list-badges [ctx logged-in? opt]
+(defn explore-list-badges [ctx logged-in? opt & embed?]
   (let [;; Get all user_badge ids in provided map box
         badge-ids
         (select-explore-badge-ids-latlng (select-keys opt [:max_lat :max_lng :min_lat :min_lng]) (u/get-db-col ctx :id))
@@ -129,22 +129,24 @@
           (conj (fn [ids] (select-explore-badge-ids-name {:badge ids :name (str "%" (:badge_name opt) "%")} (u/get-db-col ctx :id))))
 
           (not (string/blank? (:issuer_name opt)))
-          (conj (fn [ids] (select-explore-badge-ids-issuer {:badge ids :issuer (str "%" (:issuer_name opt) "%")} (u/get-db-col ctx :id))))
-          )
+          (conj (fn [ids] (select-explore-badge-ids-issuer {:badge ids :issuer (str "%" (:issuer_name opt) "%")} (u/get-db-col ctx :id)))))
+
+
+
         ;; Get final filtered user_badge id list
         filtered-badge-ids
         (reduce (fn [coll f] (if (seq coll) (f coll) [])) badge-ids filters)]
 
     (if (seq filtered-badge-ids)
-      {:badges (->> (select-explore-badges {:badge filtered-badge-ids} (u/get-db ctx))
+      {:badges (->> (if-not (first embed?) (select-explore-badges {:badge filtered-badge-ids} (u/get-db ctx)) (select-explore-badges-embed {:badge filtered-badge-ids} (u/get-db ctx)))
                     (map (fn [b]
                            (-> b
                                (assoc :badge_url   (str (u/get-full-path ctx) "/badge/info/" (:id b))
                                       :badge_image (str (u/get-site-url ctx) "/" (:badge_image b))
                                       :lat (or (:badge_lat b) (:user_lat b))
                                       :lng (or (:badge_lng b) (:user_lng b)))
-                               (dissoc :user_lat :badge_lat :user_lng :badge_lng))
 
-                           )))}
+                               (dissoc :user_lat :badge_lat :user_lng :badge_lng)))))}
+
+
       {:badges []})))
-
