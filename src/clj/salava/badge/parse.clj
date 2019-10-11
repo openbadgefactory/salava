@@ -696,6 +696,7 @@
            string/trim
            (str->badge user)))
 
+
 (defn- find-tag [tag root]
   (if (= (:tag root) tag)
     root
@@ -703,18 +704,17 @@
 
 (defmethod file->badge "application/pdf" [user upload]
   (with-open [doc (pdf/obtain-document (or (:tempfile upload) (:body upload)))]
-    (if-let [jws (some->> doc .getDocumentCatalog .getMetadata .createInputStream
-                          xml/parse (find-tag :openbadges:assertion) :attrs :verify)]
-      (str->badge user jws)
-
+    (or
       (some->>
         (.. doc getDocumentInformation (getCustomMetadataValue "openbadges"))
         string/trim
-        (str->badge user))))
+        (str->badge user))
+      (some->>
+        doc .getDocumentCatalog .getMetadata .createInputStream
+        xml/parse (find-tag :openbadges:assertion) :attrs :verify
+        string/trim
+        (str->badge user)))))
 
-  #_(some->> (pdf-info/metadata-value (or (:tempfile upload) (:body upload)) "openbadges")
-             string/trim
-             (str->badge user)))
 
 (defmethod file->badge :default [_ upload]
   (log/error "file->assertion: unsupported file type:" (:content-type upload))
