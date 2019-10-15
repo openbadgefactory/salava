@@ -1,3 +1,4 @@
+
 (ns salava.core.ui.helper
   (:require [reagent.session :as session]
             [clojure.string :as str]
@@ -94,8 +95,9 @@
     (when-not (clojure.string/blank? s)
       (not (clojure.string/blank? (re-matches url-pattern s))))))
 
-(defn disable-background-image []
- (-> (sel1 :body) (dommy/remove-class! :anon)))
+(defn disable-background-image
+ ([] (-> (sel1 :body) (dommy/remove-class! :anon)))
+ ([embed?] (-> (sel1 :body) (dommy/add-class! :anon-embed))))
 
 (defn enable-background-image []
  (-> (sel1 :body) (dommy/add-class! :anon)))

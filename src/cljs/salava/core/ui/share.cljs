@@ -186,8 +186,7 @@
 
 (defn wordpress-embed [badge_name image_file url issuer]
   (let [site-url (session/get :site-url)]
-    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><a href="url"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src="(str site-url"/"image_file)" /></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">"badge_name"</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">"issuer"</div></div></div></a></div>")))
-
+    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><a href="url" target= \"_blank\" rel=\"noopener noreferrer\" style=\"display:inline-block;\" ><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src="(str site-url"/"image_file)"/></a></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">"badge_name"</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">"issuer"</div></div></div></div>")))
 
 
 (defn share-buttons-element [url title public? is-badge? link-or-embed-atom image-file certification]
@@ -250,7 +249,7 @@
          [:div.form-horizontal
           [:div.form-group
            [:label.col-xs-3 (t :core/Imageonly) ":"]
-           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
+           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/pic/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
 
          [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))]))
 
