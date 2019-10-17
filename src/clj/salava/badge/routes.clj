@@ -314,7 +314,7 @@
                    (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
 
              (GET "/user/endorsement/:user-badge-id" []
-                  :return schemas/UserEndorsement
+                  :return [schemas/UserEndorsement]
                   :path-params [user-badge-id :- Long]
                   :summary "Get user badge endorsements"
                  ; :auth-rules access/authenticated
@@ -351,12 +351,14 @@
                    (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
 
              (GET "/user/pending_endorsement" []
+                  :return [schemas/UserEndorsement]
                   :auth-rules access/authenticated
                   :summary "Get pending badge endorsements"
                   :current-user current-user
                   (ok (e/received-pending-endorsements ctx (:id current-user))))
 
              (GET "/user/endorsements" []
+                  :return schemas/AllEndorsements
                   :auth-rules access/signed
                   :summary "Get all user's endorsements"
                   :current-user current-user
@@ -390,7 +392,7 @@
                   (ok (e/pending-endorsement-count ctx user-badge-id (:id current-user))))
 
              (GET "/user/pending_endorsement_request" []
-                  ;:return [schemas/Endorsementrequest]
+                  :return [schemas/EndorsementRequest]
                   :auth-rules access/authenticated
                   :summary "Get pending badge endorsments"
                   :current-user current-user

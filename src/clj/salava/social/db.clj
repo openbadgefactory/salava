@@ -13,9 +13,7 @@
 (defqueries "sql/social/queries.sql")
 
 #_(defn insert-social-event! [ctx data]
-  (insert-social-event<! data (get-db ctx)))
-
-
+   (insert-social-event<! data (get-db ctx)))
 
 (defn get-all-owners [ctx data]
   (let [funs (plugin-fun (get-plugins ctx) "event" "owners")]
@@ -61,9 +59,6 @@
     (catch Object _
       "error")))
 
-
-
-
 (defn is-connected? [ctx user_id badge_id]
   (-> (select-connection-badge {:user_id user_id :badge_id badge_id} (get-db ctx))
       first
@@ -80,8 +75,7 @@
     (insert-connection-badge! ctx user_id badge_id)
     {:status "success" :connected? (is-connected? ctx user_id badge_id)}
     (catch Object _
-      {:status "error" :connected? (is-connected? ctx user_id badge_id)}
-      )))
+      {:status "error" :connected? (is-connected? ctx user_id badge_id)})))
 
 (defn create-connection-issuer! [ctx user_id issuer_content_id]
   (try+
@@ -102,35 +96,25 @@
     (= issuer_content_id id)))
 
 ;; STREAM ;;
-
-
 (defn badge-events-reduce [events]
   (let [helper (fn [current item]
                  (let [key [(:verb item) (:object item)]]
                    (-> current
-                       (assoc  key item)
+                       (assoc  key item))))
                        ;(assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
-                       )))
+
         reduced-events (vals (reduce helper {} (reverse events)))]
     (filter #(false? (:hidden %)) reduced-events)))
-
-
-
-
 
 (defn admin-events-reduce [events]
   (let [helper (fn [current item]
                  (let [key [(:verb item)]]
                    (-> current
                        (assoc  key item)
-                       (assoc-in  [key :count] (inc (get-in current [key :count ] 0)))
-                       )))
+                       (assoc-in  [key :count] (inc (get-in current [key :count ] 0))))))
+
         reduced-events (vals (reduce helper {} (reverse events)))]
     (filter #(false? (:hidden %)) reduced-events)))
-
-
-
-
 
 (defn badge-message-map
   "returns newest message and count new messages"
@@ -145,14 +129,11 @@
                                                                new-messages-count)))))]
     (reduce message-helper {} (reverse messages))))
 
-
 (defn filter-badge-message-events [events]
   (filter #(= "message" (:verb %)) events))
 
 (defn filter-own-events [events user_id]
-  (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events) )
-
-
+  (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events))
 
 #_(defn get-user-admin-events [ctx user_id]
     (select-admin-events {:user_id user_id} (get-db ctx)))
@@ -163,7 +144,6 @@
         (update-last-viewed ctx events user_id))
       events))
 
-
 (defn hide-user-event! [ctx user_id event_id]
   (try+
     (update-hide-user-event! {:user_id user_id :event_id event_id} (get-db ctx))
@@ -171,7 +151,12 @@
     (catch Object _
       "error")))
 
-
+(defn hide-all-user-events! [ctx user_id]
+ (try+
+   (hide-user-events-all! {:user_id user_id} (get-db ctx))
+   {:status "success"}
+  (catch Object _
+    {:status "error"})))
 
 ;; MESSAGES ;;
 
@@ -199,41 +184,35 @@
              gallery_id (some-> (select-badge-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id)]
          (do
            (insert-badge-message<! {:badge_id badge_id :gallery_id gallery_id :user_id user_id :message message} (get-db ctx))
-           (util/event ctx user_id "message" badge_id "badge")
-           )
-         {:connected? badge-connection}
-         ))))
+           (util/event ctx user_id "message" badge_id "badge"))
 
+         {:connected? badge-connection}))))
   ([ctx badge_id user_id message]
    (if (blank? message) {:status "error" :connected? nil}
      (try+
-       (let [save-message (message! ctx {:badge_id badge_id :user_id user_id :message message}) ]
+       (let [save-message (message! ctx {:badge_id badge_id :user_id user_id :message message})]
          (merge save-message {:status "success"}))
        (catch Object _
-         {:status "error" :connected? nil})
-       ))))
-
+         {:status "error" :connected? nil})))))
 
 (defn get-badge-message-count
   [ctx badge_id user-id]
-   (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_id badge_id} (get-db ctx))
-         last-viewed (select-badge-message-last-view {:badge_id badge_id :user_id user-id} (into {:result-set-fn first :row-fn :mtime} (get-db ctx)))
-         new-messages (if last-viewed (filter #(and (not= user-id (:user_id %)) (< last-viewed (:ctime %))) badge-messages-user-id-ctime) ())]
-     {:new-messages (count new-messages)
-      :all-messages (count badge-messages-user-id-ctime)}))
-
+  (let [badge-messages-user-id-ctime (select-badge-messages-count {:badge_id badge_id} (get-db ctx))
+        last-viewed (select-badge-message-last-view {:badge_id badge_id :user_id user-id} (into {:result-set-fn first :row-fn :mtime} (get-db ctx)))
+        new-messages (if last-viewed (filter #(and (not= user-id (:user_id %)) (< last-viewed (:ctime %))) badge-messages-user-id-ctime) ())]
+    {:new-messages (count new-messages)
+     :all-messages (count badge-messages-user-id-ctime)}))
 
 (defn get-badge-messages-limit
   [ctx badge_id page_count user_id]
-   (let [limit 10
-         offset (* limit page_count)
-         badge-messages (select-badge-messages-limit {:badge_id badge_id :limit limit :offset offset} (get-db ctx))
-         messages-left (- (:all-messages (get-badge-message-count ctx badge_id user_id)) (* limit (+ page_count 1)))]
-     (if (= 0  page_count)
-       (messages-viewed ctx badge_id user_id))
-     {:messages badge-messages
-      :messages_left (if (pos? messages-left) messages-left 0)}))
-
+  (let [limit 10
+        offset (* limit page_count)
+        badge-messages (select-badge-messages-limit {:badge_id badge_id :limit limit :offset offset} (get-db ctx))
+        messages-left (- (:all-messages (get-badge-message-count ctx badge_id user_id)) (* limit (+ page_count 1)))]
+    (if (= 0  page_count)
+      (messages-viewed ctx badge_id user_id))
+    {:messages badge-messages
+     :messages_left (if (pos? messages-left) messages-left 0)}))
 
 (defn message-owner? [ctx message_id user_id]
   (let [message_owner (select-badge-message-owner {:message_id message_id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
@@ -247,23 +226,18 @@
         (update-badge-message-deleted! {:message_id message_id} (get-db ctx))))
     "success"
     (catch Object _
-      "error"
-      )))
-
+      "error")))
 
 (defn create-connection-badge-by-badge-id! [ctx user_id user_badge_id]
   (let [badge_id (select-badge-id-by-user-badge-id {:user_badge_id user_badge_id} (into {:result-set-fn first :row-fn :badge_id} (get-db ctx)))]
     (try+
       (insert-connection-badge! ctx user_id badge_id)
-      (catch Object _
-        ))))
-
+      (catch Object _))))
 
 (defn delete-connection-badge-by-badge-id! [ctx user_id badge_id]
   (try+
     (delete-connect-badge-by-badge-id! {:user_id user_id :badge_id badge_id} (get-db ctx))
-    (catch Object _
-      )))
+    (catch Object _)))
 
 (defn delete-connection-badge! [ctx user_id  badge_id]
   (try+
@@ -273,7 +247,6 @@
     {:status "success" :connected? (is-connected? ctx user_id badge_id)}
     (catch Object _
       {:status "error" :connected? (is-connected? ctx user_id badge_id)})))
-
 
 (defn get-connections-badge [ctx user_id]
   (select-user-connections-badge {:user_id user_id} (get-db ctx)))
@@ -286,12 +259,10 @@
         profile-picture-tip (if (not welcome-tip) (nil? (select-user-profile-picture {:user_id user_id} (into {:result-set-fn first :row-fn :profile_picture} (get-db ctx)))) false)]
     {:profile-picture-tip profile-picture-tip
      :welcome-tip welcome-tip
-     :not-verified-emails (get-users-not-verified-emails ctx user_id)}
-    ))
+     :not-verified-emails (get-users-not-verified-emails ctx user_id)}))
 
 (defn get-all-user-events [ctx user_id]
   (get-all-user-event {:subject user_id} (get-db ctx)))
 
 (defn get-user-issuer-connections [ctx user_id]
-  (select-user-connections-issuer {:user_id user_id} (get-db ctx))
-  )
+  (select-user-connections-issuer {:user_id user_id} (get-db ctx)))

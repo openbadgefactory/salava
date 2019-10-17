@@ -12,8 +12,6 @@
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]))
 
-
-
 (defn modal-content [{:keys [badge public_users private_user_count]}]
   (let [{:keys [badge_id name image_file message_count]} (first (filter  #(= (:language_code %) (:default_language_code %)) (:content badge)))
         all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")

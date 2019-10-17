@@ -1943,6 +1943,16 @@ a.popup-info {
   }
 }
 #social-tab {
+  div.rating {
+    position: absolute;
+    right: 12px;
+    top:5px;
+      @media (max-width: 345px) {
+        padding-top: 20px;
+        position: unset;
+      }
+
+  }
   .profile-element {
     min-height: 100px;
     max-height: 100px;
@@ -1956,6 +1966,7 @@ a.popup-info {
       position: absolute;
       top: -6px;
       right: 0;
+      z-index: 100;
     }
 
   }

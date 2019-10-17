@@ -111,7 +111,7 @@
 (defn all-user-endorsements [ctx user-id & md?]
   (let [received (if md? (endorsements-received ctx user-id true)(endorsements-received ctx user-id))
         given (endorsements-given ctx user-id)
-        requests (->> (endorsement-requests ctx user-id) (mapv #(assoc % :type "request")))
+        requests (->> (endorsement-requests ctx user-id) (filterv #(= (:status %) "pending")) (mapv #(assoc % :type "request")))
         all (->> (list* given received requests) flatten (sort-by :mtime >))]
     {:given given
      :received received
@@ -168,9 +168,9 @@
      (update-endorsement-request-status! {:id request-id :status status} (get-db ctx))
      (case status
       "declined" (delete-request! ctx request-id user-id)
-       nil)
-     {:status "success"})
+       nil))
     (throw+ {:status "error" :message "User does not own request"}))
+  {:status "success"}
   (catch Object ex
     (log/error ex)
     {:status "error"})))

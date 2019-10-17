@@ -199,8 +199,15 @@
                                         [:div#endorsebadge
                                          (reduce (fn [r user]
                                                    (conj r [profile-grid-element user selected-users-atom type]))
-                                                [:div]
-                                                (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id])))(take 100)))])]])
+                                                [:div {:style {:margin "20px auto"}}
+                                                 (when (= "endorsement" context)
+                                                   [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                     [:hr.line]
+                                                     [:p (t :badge/Requestendorsementmodalinfo)]
+                                                     [:p (t :badge/Clickbacktocontinue)]
+                                                     [:hr.line]])]
+
+                                          (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id])))(take 100)))])]])
                   :component-will-mount (fn []
                                            (ajax/POST
                                             (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))

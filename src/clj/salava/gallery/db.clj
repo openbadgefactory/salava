@@ -149,7 +149,8 @@
   (some-> (select-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id))
 
 (defn user-owns-badge? [ctx user-id badge_id]
- (let [id (select-user-owns-badge-id {:user_id user-id :badge_id badge_id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+ (let [gallery-id (badge-gallery-id ctx badge_id)
+       id  (select-user-owns-badge-id {:user_id user-id :gallery_id gallery-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
   (= user-id id)))
 
 (defn public-multilanguage-badge-content
@@ -292,3 +293,6 @@
                                       (filter #(= (:visibility %) "private"))
                                       count)
              :all_recipients_count (count recipients))))
+
+(defn badge-rating [ctx user-id gallery-id]
+ (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx)))

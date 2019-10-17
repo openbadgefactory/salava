@@ -1,6 +1,6 @@
 (ns salava.badge.ui.social
  (:require
-  [reagent.core :refer [cursor atom]]
+  [reagent.core :refer [cursor atom create-class force-update]]
   [reagent.session :as session]
   [salava.badge.ui.settings :refer [update-settings]]
   [salava.core.ui.ajax-utils :as ajax]
@@ -8,6 +8,7 @@
   [salava.core.ui.modal :as mo]
   [salava.core.ui.popover :refer [info]]
   [salava.core.ui.helper :refer [path-for plugin-fun]]
+  [salava.core.ui.rate-it :as r]
   [salava.core.time :refer [date-from-unix-time]]
   [salava.social.ui.badge-message-modal :refer [badge-message-link]]
   [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
@@ -22,15 +23,22 @@
     {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                          (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
-
 (defn refresh-social-tab [dataatom state]
  (let [endorsements (cursor state [:user-badge-endorsements])
        view-stats (cursor dataatom [:views-stats])
-       recipients (cursor dataatom [:other_recipients])]
+       recipients (cursor dataatom [:other_recipients])
+       rating (cursor dataatom [:rating])]
+
+   (update-settings (:id @state) state)
+
    (ajax/GET
     (path-for (str "/obpv1/social/messages_count/" (:badge_id @state)))
     {:handler (fn [data] (reset! (cursor state [:message_count]) data))
      :finally (fn [] (init-pending-endorsements state))})
+
+   (ajax/GET
+    (path-for (str "/obpv1/gallery/rating/" (:gallery_id @state)))
+    {:handler (fn [data] (reset! rating data))})
 
    (ajax/GET
     (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
@@ -47,7 +55,11 @@
     (path-for (str "/obpv1/gallery/recipients/" (:gallery_id @state)))
     {:handler (fn [data] (reset! recipients data))})))
 
-
+(defn save-rating [id state dataatom rating]
+ (ajax/POST
+   (path-for (str "/obpv1/badge/save_raiting/" id))
+   {:params   {:rating  (if (pos? rating) rating nil)}
+    :handler (fn [] (refresh-social-tab dataatom state))}))
 
 (defn badge-congratulations [congratulations state]
  (let [panel-identity :cg
@@ -58,7 +70,7 @@
     [:div.panel.expandable-block {:id "social-tab"}
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :cg visible-area-atom))}
-       [:h3 (str (t :badge/Congratulations) " (" (count congratulations) ")")
+       [:h3 (str (t :badge/Congratulations) " : " (count congratulations))
          [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body.congratulations {:id "endorsebadge"}
@@ -83,20 +95,22 @@
        visible-area-atom (cursor state [:visible-area])
        icon-class (if (= @visible-area-atom :endo) "fa-chevron-circle-down" "fa-chevron-circle-right")
        pending-endorsements-count @(cursor state [:pending_endorsements_count])
-       request-mode (cursor state [:request-mode])]
+       request-mode (cursor state [:request-mode])
+       hand-icon (if @request-mode "fa-hand-o-down" "fa-hand-o-right")]
      [:div.row
       [:div.col-md-12
        [:div.panel.expandable-block {:id "social-tab"}
         [:div.panel-heading
-         [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :endo visible-area-atom))}
-          [:h3 (str (t :badge/Endorsements) " ("(count @(cursor state [:endorsement_count #_:user-badge-endorsements]) ) ")")
+         [:a {:id (str "#" panel-identity) :href "#" :on-click #(do (.preventDefault %) (toggle-panel :endo visible-area-atom))}
+          [:h3 (str (t :badge/Userendorsements) " : "  @(cursor state [:user_endorsement_count]))
             [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]
           (when (and (pos? @(cursor state [:notification]) )(pos? pending-endorsements-count) )[:span.label.label-danger.social-panel-info "+" pending-endorsements-count])]]
         (when (= @(cursor state [:visible-area]) panel-identity)
          [:div.panel-body.endorsements
           [:div.col-md-12.request-link {:id "endorsebadge"} [:a {:href "#"
-                                                                 :on-click #(if @request-mode (reset! request-mode false) (reset! request-mode true))}
-                                                             [:span [:i {:class "fa fa-hand-o-right fa-fw"}] (t :badge/Requestendorsement)]]]
+                                                                 :on-click #(if @request-mode (reset! request-mode false) (reset! request-mode true))
+                                                                 :id "#request_endorsement"}
+                                                             [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]
           (when @request-mode
             (into [:div.col-md-12]
               (for [f (plugin-fun (session/get :plugins) "block" "request_endorsement")]
@@ -105,7 +119,6 @@
           (into [:div.col-md-12]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
               [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification])}]))])]]]))
-
 
 (defn badge-views [data]
  [:div.row {:id "social-tab"}
@@ -161,37 +174,56 @@
             (for [f (plugin-fun (session/get :plugins) "block" "gallery_badge")]
               [f (:gallery_id @state) (:badge_id @state)]))])]]]))
 
+(defn- badge-rating [dataatom state]
+ (let [average_rating (cursor dataatom [:rating :average_rating])
+       rating_count (cursor dataatom [:rating :rating_count])]
+   (when (pos? @average_rating)
+    ^{:key @average_rating}
+     [:div.rating
+      [r/rate-it @(cursor dataatom [:rating :average_rating])]
+      [:div (if (= @rating_count 1)
+              (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
+              (str (t :gallery/Ratedby) " " @rating_count " " (t :gallery/earners)))]])))
+
+(defn- rate-badge [dataatom state]
+  [:div.row {:id "social-tab"}
+   [:div.col-md-12
+    [:div.panel
+     [:div.panel-heading
+      [:div
+       [:h3 (t :badge/Rating)] (when-not (pos? @(cursor dataatom [:rating :rating_count])) [:span.label.label-primary (t :badge/Befirstrater)])
+       [:div.rating
+        {:on-click #(save-rating (:id @state) state dataatom (get-in @state [:badge-settings :rating]))}
+        [r/rate-it (or @(cursor state [:badge-settings :rating]) @(cursor state [:rating])) (cursor state [:badge-settings :rating])]]]]]]])
+
 (defn- message-link [state]
  (into [:div#endorsebadge]
   (for [f (plugin-fun (session/get :plugins) "block" "message_link")]
     [f (:message_count @state) (:badge_id @state)])))
 
 (defn social-tab [{:keys [name image_file obf_url assertion_url congratulations user_endorsement_count settings_fn ]} state init-data]
- (let [dataatom (atom {:user-badge-endorsements [] :views-stats {}})
+ (let [dataatom (atom {:user-badge-endorsements [] :views-stats {} :other_recipients [] :rating {}})
        endorsements (cursor state [:user-badge-endorsements])
        view-stats (cursor dataatom [:views-stats])
        recipients (cursor dataatom [:other_recipients])
        visibility (cursor state [:badge-settings :visibility])]
-
-  (update-settings (:id @state) state)
   (refresh-social-tab dataatom state)
-
   (fn []
     (if (= "private" @visibility)
      [:div {:id "badge-settings" :class "row flip"}
       [:div {:class "col-md-3 badge-image modal-left"}
        [:img {:src (str "/" image_file) :alt name}]]
-
       [:div {:class "col-md-9 settings-content social-tab" :id "endorsebadge"}
        [:div [:p [:i.fa.fa-lock] (t :badge/Lockedsocialfeatures) #_(str (t :badge/Visibilityinfo))]
              [:p [:b (t :badge/Unlocksocialfeatures)#_(t :badge/Setbadgevisibility) " " [:a {:href "#" :on-click (fn [] (settings_fn (:id @state) state init-data "share"))} (t :badge/Gohere)]]]]]]
      [:div {:id "badge-settings" :class "row flip"}
       [:div {:class "col-md-3 badge-image modal-left"}
        [:img {:src (str "/" image_file) :alt name}]
+       [badge-rating dataatom state]
        [message-link state]]
-      [:div {:class "col-md-9 settings-content social-tab"} ;:id "endorsebadge"}
+      [:div {:class "col-md-9 settings-content social-tab" :style {:margin-top "20px"}}
        (when (-> (:views-stats @dataatom) (dissoc :id) (->> (filter second) seq boolean)) [badge-views @dataatom])
+       [rate-badge dataatom state]
        [badge-recipients recipients state]
        [badge-endorsements @endorsements dataatom state]
-       [badge-congratulations congratulations state]]])
-    #_(refresh-social-tab dataatom state))))
+       [badge-congratulations congratulations state]]]))))

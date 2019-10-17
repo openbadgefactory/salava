@@ -173,3 +173,6 @@ SELECT DISTINCT ic.id, ic.name, ic.image_file FROM social_connections_issuer AS 
 --name: modify-social-event-table-endorsement!
 -- modify social event table add endorsement verbs "request_endorsement" and "endorse_badge"
 ALTER TABLE social_event MODIFY COLUMN verb enum('message','follow','publish','delete_message', 'ticket', 'congratulate', 'modify', 'unpublish', 'advertise', 'request_endorsement', 'endorse_badge')
+
+--name: hide-user-events-all!
+UPDATE social_event_owners SET hidden = 1 WHERE owner = :user_id

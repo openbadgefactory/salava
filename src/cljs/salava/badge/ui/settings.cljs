@@ -10,7 +10,6 @@
             [salava.core.ui.share :as s]
             [reagent.session :as session]
             [clojure.string :refer [upper-case replace blank? starts-with?]]
-            [salava.core.ui.rate-it :as r]
             [salava.core.ui.modal :as mo]
             [salava.badge.ui.evidence :as evidence]
             [salava.badge.ui.endorsement :as endorsement]
@@ -45,15 +44,15 @@
   (ajax/GET
     (path-for (str "/obpv1/badge/settings/" badge-id) true)
     {:handler (fn [data]
-                (swap! state assoc :badge-settings data (assoc data :new-tag "")))}))
+                (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
 
-(defn save-raiting [id state init-data raiting]
-  (ajax/POST
-    (path-for (str "/obpv1/badge/save_raiting/" id))
-    {:params   {:rating  (if (pos? raiting) raiting nil)}
-     :handler (fn []
-                (update-settings id state)
-                #_(init-data state id (:tab-no @state)))}))
+#_(defn save-raiting [id state init-data raiting]
+    (ajax/POST
+      (path-for (str "/obpv1/badge/save_raiting/" id))
+      {:params   {:rating  (if (pos? raiting) raiting nil)}
+       :handler (fn []
+                  (update-settings id state)
+                  #_(init-data state id (:tab-no @state)))}))
 
 
 (defn save-settings [state init-data context]
@@ -201,13 +200,13 @@
         revoked [:div.revoked (t :badge/Revoked)]
         expired? [:div.expired (t :badge/Expiredon) ": " (date-from-unix-time (* 1000 expires_on))]
         (and (not revoked) (not expired?)) [:div [:div {:class "form-horizontal"}
-                                                  [:div.form-group
-                                                   [:fieldset {:class "col-md-9 checkbox"}
-                                                    [:legend {:class "col-md-9 sub-heading"}
-                                                     (t :badge/Rating)]
-                                                    [:div.col-md-12
-                                                     {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
-                                                     [r/rate-it rating (cursor state [:badge-settings :rating])]]]]
+                                                  #_[:div.form-group
+                                                     [:fieldset {:class "col-md-9 checkbox"}
+                                                      [:legend {:class "col-md-9 sub-heading"}
+                                                       (t :badge/Rating)]
+                                                      [:div.col-md-12
+                                                       {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
+                                                       [r/rate-it rating (cursor state [:badge-settings :rating])]]]]
 
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
@@ -226,8 +225,8 @@
                                                                               :id        "receive-notifications"
                                                                               :on-change #(toggle-receive-notifications badge_id notifications-atom)
                                                                               :checked   @notifications-atom}]
-                                                                     (str (t :social/Followbadge))]]
-                                                    [:div.col-md-12 (t :social/Badgenotificationsinfo)]]]
+                                                                     (str (t :social/Getbadgenotifications) #_(t :social/Followbadge))]]]]
+                                                    ;[:div.col-md-12 (t :social/Badgenotificationsinfo)]]]
                                                   [:div
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "newtags"}

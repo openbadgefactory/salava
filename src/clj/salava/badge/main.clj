@@ -494,6 +494,9 @@
 (defn delete-badge-endorsements! [db id]
   (delete-user-badge-endorsements! {:id id} db))
 
+(defn delete-badge-endorsement-requests! [db id]
+  (delete-user-badge-endorsement-requests! {:id id} db))
+
 (defn delete-badge-with-db! [db user-badge-id]
   (delete-badge-tags! {:user_badge_id user-badge-id} db)
   (delete-badge-views! {:user_badge_id user-badge-id} db)
@@ -509,10 +512,10 @@
     (jdbc/with-db-transaction
       [tr-cn (u/get-datasource ctx)]
       (do
-        #_(db/delete-badge-endorsements ctx badge-id)
         (delete-badge-with-db! {:connection tr-cn} badge-id)
         (delete-badge-evidences! {:connection tr-cn} badge-id user-id)
-        (delete-badge-endorsements! {:connection tr-cn} badge-id)))
+        (delete-badge-endorsements! {:connection tr-cn} badge-id)
+        (delete-badge-endorsement-requests! {:connection tr-cn} badge-id)))
     (if (some #(= :social %) (get-in ctx [:config :core :plugins]))
       (so/delete-connection-badge-by-badge-id! ctx user-id badge-id))
     {:status "success" :message "Badge deleted"}

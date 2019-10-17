@@ -122,12 +122,17 @@
      :handler (fn [data]
                 (when (= "success" (:status data))))}))
 
-(defn update-request-status! [id status state]
+(defn- init-pending-requests [state]
+ (ajax/GET
+  (path-for (str "/obpv1/badge/user/pending_endorsement_request"))
+  {:handler (fn [data] (reset! state data))}))
+
+(defn update-request-status! [id status state reload-fn]
  (when id
    (ajax/POST
     (path-for (str "/obpv1/badge/endorsement/request/update_status/" id))
     {:params {:status status}
-     :handler (fn [data])})))
+     :handler (fn [data] (when (and reload-fn (= "success" (:status data)) (reload-fn))))})))
 
 (defn save-endorsement [state]
   (ajax/POST
@@ -139,7 +144,7 @@
                          :show-content "none"
                          :show-endorsement-status "block")
                   (when @(cursor state [:request_id])
-                    (update-request-status! @(cursor state [:request_id]) "endorsed" state))))}))
+                    (update-request-status! @(cursor state [:request_id]) "endorsed" state nil))))}))
 
 (defn update-status [id status user_badge_id state reload-fn]
   (ajax/POST
@@ -463,7 +468,8 @@
                            [:button.btn.btn-primary {:href "#"
                                                      :on-click #(do
                                                                   (.preventDefault %)
-                                                                  (update-status id "accepted" user_badge_id state init-pending-endorsements))
+                                                                  (update-status id "accepted" user_badge_id state nil #_init-pending-endorsements))
+
 
                                                      :data-dismiss "modal"}  (t :badge/Acceptendorsement)]
                            [:button.btn.btn-warning.cancel {:href "#"
@@ -488,7 +494,7 @@
                           (when (= status "pending")[:div#endorsebadge {:style {:margin "25px 0"}} [:a {:href "#"
                                                                                                         :on-click #(do
                                                                                                                      (.preventDefault %)
-                                                                                                                     (update-request-status! id "declined" state))
+                                                                                                                     (update-request-status! id "declined" state nil))
                                                                                                         :data-dismiss "modal"}
                                                                                                     [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
                                                      [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]])]]
@@ -514,6 +520,7 @@
                        (:mtime) (sort-by order > processed-endorsements)
                        (:name) (sort-by (comp clojure.string/upper-case str order) processed-endorsements)
                        (:user) (sort-by #(str (:first_name %) " " (:last_name %)) processed-endorsements)
+                       (:pending) (sort-by #(:status %) > processed-endorsements)
                        processed-endorsements)]
     [:div.panel
      [:div.panel-heading
@@ -566,7 +573,8 @@
 (defn order-opts []
   [{:value "mtime" :id "radio-date" :label (t :badge/bydate)}
    {:value "name" :id "radio-name" :label (t :core/byname)}
-   {:value "user" :id "radio-issuer" :label (t :badge/byuser)}])
+   {:value "user" :id "radio-issuer" :label (t :badge/byuser)}
+   {:value "pending" :id "pending" :label (t :social/pending)}])
 
 (defn user-endorsements-content [state]
  (let [pending-requests-count (count (filter #(= "pending" (:status %)) @(cursor state [:requests])))
@@ -594,10 +602,10 @@
                      :id "btn-all"
                      :on-click #(do (swap! state assoc :show "given"))}
             (t :badge/Iendorsed)]
-           [:button {:class (str "btn btn-default " (when (= "requests" @(cursor state [:show])) "btn-active"))
-                     :id "btn-all"
-                     :on-click #(do (swap! state assoc :show "requests"))}
-            [:span (t :badge/Endorsementrequests) (when (pos? pending-requests-count) [:span.badge.endorsement-notification pending-requests-count])]]]]]
+           (when (pos? pending-requests-count)  [:button {:class (str "btn btn-default " (when (= "requests" @(cursor state [:show])) "btn-active"))
+                                                          :id "btn-all"
+                                                          :on-click #(do (swap! state assoc :show "requests"))}
+                                                 [:span (t :badge/Endorsementrequests) [:span.badge.endorsement-notification pending-requests-count]]])]]]
         [g/grid-radio-buttons (t :core/Order ":") "order" (order-opts) :order state]]
 
        (endorsements state)]
@@ -646,10 +654,7 @@
        (when @(cursor state [:resp-message]) [:div.alert.alert-success {:style {:margin "15px 0"}} (t :badge/Requestsuccessfullysent)])
        [:hr.border]]]])))
 
-(defn- init-pending-requests [state]
- (ajax/GET
-  (path-for (str "/obpv1/badge/user/pending_endorsement_request"))
-  {:handler (fn [data] (reset! state data))}))
+
 
 (defn pending-endorsement-requests []
  (when (session/get-in [:user :id])
@@ -657,40 +662,42 @@
    (init-pending-requests state)
    (fn []
     (when (seq @state)
-     [:div#endorsebadge
-      (reduce
-       (fn [r request]
-        (let [{:keys [id user_badge_id content status mtime requester_id profile_picture first_name last_name name image_file description]} request]
-          (conj r
-            [:div
-             [:div.col-md-12
-              [:div.thumbnail
-                [:div.endorser.col-md-12
-                 [profile-link-inline requester_id (str first_name " " last_name) profile_picture name "request"]
-                 [:hr.line]]
-                [:div.caption.row.flip
-                 [:div.position-relative.badge-image.col-md-3
-                  [:img {:src (str "/" image_file) :style {:padding "15px"}}]]
+     ^{:key @state}[:div#endorsebadge
+                    (reduce
+                     (fn [r request]
+                      (let [{:keys [id user_badge_id content status mtime requester_id profile_picture first_name last_name name image_file description]} request]
+                        (conj r
+                          [:div
+                           [:div.col-md-12
+                            [:div.thumbnail
+                              [:div.endorser.col-md-12
+                               [profile-link-inline requester_id (str first_name " " last_name) profile_picture name "request"]
+                               [:hr.line]]
+                              [:div.caption.row.flip
+                               [:div.position-relative.badge-image.col-md-3
+                                [:img {:src (str "/" image_file) :style {:padding "15px"}}]]
 
-                 [:div.col-md-9 [:h4.media-heading name]
-                  [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]]
-               [:div.caption.card-footer.text-center
-                [:hr.line]
-                [:a {:style {:margin "5px 10px" } :href "#" :on-click #(do
-                                                                        (.preventDefault %)
-                                                                        (mo/open-modal [:badge :userendorsement] (atom {:endorsement request})))}
-                  [:i.fa.fa-thumbs-o-up.fw] (t :badge/Endorsebadge)]
-                [:a {:href "#"
-                     :on-click #(do
-                                  (.preventDefault %)
-                                  (update-request-status! id "declined" state)
-                                  (init-pending-requests state))
+                               [:div.col-md-9 [:h4.media-heading name]
+                                [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]]
+                             [:div.caption.card-footer.text-center
+                              [:hr.line]
+                              [:button.btn-primary.btn {:href "#" :on-click #(do
+                                                                              (.preventDefault %)
+                                                                              (mo/open-modal [:badge :userendorsement] (atom {:endorsement request :state state}) {:hidden (fn [] (init-pending-requests state))}))}
+                                #_[:i.fa.fa-thumbs-o-up.fw] (t :badge/Endorsebadge)]
+                              [:span [:button.btn.btn-warning.cancel {:href "#"
+                                                                      :on-click #(do
+                                                                                   (.preventDefault %)
+                                                                                   (update-request-status! id "declined" state (fn [] (init-pending-requests state))))
+                                                                                   ;(init-pending-requests state))
 
-                     :data-dismiss "modal"}
-                 [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
-                [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]]]]])))
-       [:div.row]
-       @state)])))))
+                                                                      :data-dismiss "modal"}
+                                      (t :badge/Deleteendorsementrequest)]
+                                     [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]]]]]])))
+
+
+                     [:div.row]
+                     @state)])))))
 
 (defn handler [site-navi]
   (let [state (atom {:initializing true
