@@ -5,7 +5,8 @@
              [salava.social.ui.stream :as s]
              [salava.social.ui.dashboard :as d]
              [salava.core.ui.helper :refer [base-path]]
-             [salava.badge.ui.stats :as stats]))
+             [salava.badge.ui.stats :as stats]
+             [salava.social.ui.block :as block]))
 
 (defn ^:export routes [context]
   {(str (base-path context) "/social") [["" d/handler]

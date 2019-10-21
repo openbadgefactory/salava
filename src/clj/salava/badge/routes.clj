@@ -39,9 +39,7 @@
                   :summary "Get the badges of a current user"
                   :auth-rules access/signed
                   :current-user current-user
-                  (do
-                    ;(f/save-pending-assertions ctx (:id current-user))
-                    (ok (b/user-badges-all ctx (:id current-user)))))
+                  (ok (b/user-badges-all ctx (:id current-user))))
 
              (GET "/info/:badgeid" []
                   ;:return schemas/UserBadgeContent
@@ -266,10 +264,17 @@
 
              (GET "/stats" []
                   :return schemas/BadgeStats
-                  :summary "Get badge statistics about badges, badge view counts, congratulations and issuers"
+                  :summary "Get user's badge statistics about badges, badge view counts, congratulations and issuers"
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (b/badge-stats ctx (:id current-user))))
+
+             (GET "/stats/views/:id" []
+                  :path-params [id :- Long]
+                  :summary "Get user-badge view statistics"
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (b/badge-view-stats ctx id)))
 
              (POST "/evidence/:user-badge-id" []
                    :return {:status (s/enum "success" "error")}
@@ -309,7 +314,7 @@
                    (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
 
              (GET "/user/endorsement/:user-badge-id" []
-                  :return schemas/UserEndorsement
+                  :return [schemas/UserEndorsement]
                   :path-params [user-badge-id :- Long]
                   :summary "Get user badge endorsements"
                  ; :auth-rules access/authenticated
@@ -346,14 +351,49 @@
                    (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
 
              (GET "/user/pending_endorsement" []
+                  :return [schemas/UserEndorsement]
                   :auth-rules access/authenticated
-                  :summary "Get pending badge endorsments"
+                  :summary "Get pending badge endorsements"
                   :current-user current-user
                   (ok (e/received-pending-endorsements ctx (:id current-user))))
 
-
              (GET "/user/endorsements" []
+                  :return schemas/AllEndorsements
                   :auth-rules access/signed
                   :summary "Get all user's endorsements"
                   :current-user current-user
-                  (ok (e/all-user-endorsements ctx (:id current-user)))))))
+                  (ok (e/all-user-endorsements ctx (:id current-user))))
+
+             (POST "/endorsement/request/:user-badge-id" []
+                  :return {:status (s/enum "success" "error")}
+                  :path-params [user-badge-id :- Long]
+                  :body-params [content :- s/Str
+                                user-ids :- [s/Int]]
+                  :auth-rules access/authenticated
+                  :summary "Send endorsement request"
+                  :current-user current-user
+                  (ok (e/request-endorsement! ctx user-badge-id (:id current-user) user-ids content)))
+
+             (POST "/endorsement/request/update_status/:request_id" []
+                   :return {:status (s/enum "success" "error")}
+                   :path-params [request_id :- Long]
+                   :body-params [status :- s/Str]
+                   :auth-rules access/authenticated
+                   :summary "Update endorsement request status"
+                   :current-user current-user
+                   (ok (e/update-request-status! ctx request_id status (:id current-user))))
+
+             (GET "/endorsement/pending_count/:user-badge-id" []
+                  :return s/Int
+                  :path-params [user-badge-id :- Long]
+                  :auth-rules access/authenticated
+                  :summary "Get user-badge pending endorsement count"
+                  :current-user current-user
+                  (ok (e/pending-endorsement-count ctx user-badge-id (:id current-user))))
+
+             (GET "/user/pending_endorsement_request" []
+                  :return [schemas/EndorsementRequest]
+                  :auth-rules access/authenticated
+                  :summary "Get pending badge endorsments"
+                  :current-user current-user
+                  (ok (e/endorsement-requests-pending ctx (:id current-user)))))))

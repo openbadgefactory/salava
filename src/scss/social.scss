@@ -814,7 +814,7 @@ background-color:#756A70;
   }
 
   .row_1 {
-    height: 396px;
+    height: 415px;
 
   }
 
@@ -836,7 +836,7 @@ background-color:#756A70;
   }
 
   .badge-block {
-    height: 395px;
+    height: 415px;
     img {
       width: 70px;
       height: auto;
@@ -853,7 +853,7 @@ background-color:#756A70;
 #box_3 {
   width: 100%;
   .row_1 {
-    height: 396px;
+    height: 415px;
   }
   .row_2 {
     height: 285px;
@@ -1327,5 +1327,20 @@ background-color:#756A70;
       color: #4D948B;
       font-weight: 700;
     }
+  }
+
+  .clear_all {
+   margin: 5px 0;
+   display: flex;
+   justify-content: flex-end;
+   a {
+     font-size: 12px;
+     font-weight: 600;
+   }
+   i {
+     font-size: 18px;
+     vertical-align: text-bottom;
+     color: $dark-red;
+   }
   }
 }
