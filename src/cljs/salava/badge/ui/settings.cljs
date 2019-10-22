@@ -155,35 +155,35 @@
                :on-click     #(delete-badge state)}
       (t :badge/Delete)]]]])
 
-(defn share-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked issuer_content_name]} state init-data]
-  (let [expired? (bh/badge-expired? expires_on)
-        revoked (pos? revoked)
-        visibility (cursor state [:badge-settings :visibility])]
-    [:div {:id "badge-settings" :class "row flip"}
-     [:div {:class "col-md-3 badge-image modal-left"}
-      [:img {:src (str "/" image_file) :alt name}]]
-     [:div {:class "col-md-9 settings-content"}
-      (if (and (not expired?) (not revoked))
-        [visibility-form state init-data])
-      [:div
-       [:hr]
-       [s/share-buttons-badge
-        (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-        name
-        (= "public" @visibility)
-        true
-        (cursor state [:show-link-or-embed])
-        image_file
-        {:name     name
-         :authory  issuer_content_name
-         :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
-         :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
-         :datefrom issued_on
-         :dateto   expires_on}]]
+#_(defn share-tab-content [{:keys [id name image_file issued_on expires_on show_evidence revoked issuer_content_name]} state init-data]
+    (let [expired? (bh/badge-expired? expires_on)
+          revoked (pos? revoked)
+          visibility (cursor state [:badge-settings :visibility])]
+     [:div {:id "badge-settings" :class "row flip"}
+      [:div {:class "col-md-3 badge-image modal-left"}
+       [:img {:src (str "/" image_file) :alt name}]]
+      [:div {:class "col-md-9 settings-content"}
+       (if (and (not expired?) (not revoked))
+         [visibility-form state init-data])
+       [:div
+        [:hr]
+        [s/share-buttons-badge
+         (str (session/get :site-url) (path-for (str "/badge/info/" id)))
+         name
+         (= "public" @visibility)
+         true
+         (cursor state [:show-link-or-embed])
+         image_file
+         {:name     name
+          :authory  issuer_content_name
+          :licence  (str (upper-case (replace (session/get :site-name) #"\s" "")) "-" id)
+          :url      (str (session/get :site-url) (path-for (str "/badge/info/" id)))
+          :datefrom issued_on
+          :dateto   expires_on}]]
 
-      (into [:div]
-            (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
-              [f id]))]]))
+       #_(into [:div
+                 (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
+                   [f id])])]]))
 
 (defn settings-tab-content [data state init-data]
   (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
@@ -226,7 +226,6 @@
                                                                               :on-change #(toggle-receive-notifications badge_id notifications-atom)
                                                                               :checked   @notifications-atom}]
                                                                      (str (t :social/Getbadgenotifications) #_(t :social/Followbadge))]]]]
-                                                    ;[:div.col-md-12 (t :social/Badgenotificationsinfo)]]]
                                                   [:div
                                                    [:div {:class "row"}
                                                     [:label {:class "col-md-12 sub-heading" :for "newtags"}
@@ -242,11 +241,16 @@
                                                     [:label {:class "col-md-12 sub-heading" :for "evidence"}
                                                      (t :badge/Evidences)]]
                                                    [:div [evidence/evidenceblock data state init-data]]
-                                                   #_[:div [endorsement/endorsement-list (:id @state)]]
 
                                                    (into [:div]
                                                          (for [f (plugin-fun (session/get :plugins) "block" "badge_settings")]
+                                                           [f id]))
+
+                                                   (into [:div]
+                                                         (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
                                                            [f id]))]]
+
+
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]

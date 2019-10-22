@@ -186,10 +186,11 @@
 
 (s/defschema EndorsementRequest {:id s/Int
                                   :user_badge_id s/Int
-                                  (s/optional-key :requester_id) (s/maybe s/Int)
                                   :content s/Str
                                   :status (s/enum "pending" "endorsed" "declined")
                                   :mtime s/Int
+                                  (s/optional-key :requester_id) (s/maybe s/Int)
+                                  (s/optional-key :user_id) (s/maybe s/Int)
                                   (s/optional-key :first_name) s/Str
                                   (s/optional-key :last_name) s/Str
                                   (s/optional-key :profile_picture) (s/maybe s/Str)

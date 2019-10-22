@@ -626,16 +626,16 @@
                   (swap! state assoc :resp-message true)
                   (js/setTimeout #(reset-request! state) 2000)))})))
 
-
-(defn request-endorsement [state]
- (let [request-comment (cursor state [:request-comment])
+(defn request-endorsement [params]
+ (let [{:keys [state]} params
+       request-comment (cursor state [:request-comment])
        selected-users (cursor state [:selected-users])]
+  (reset! request-comment (t :badge/Defaultrequestbadge))
   (fn []
-    [:div
-     [:hr.border]
+    [:div.col-md-12 {:id "social-tab"}
      [:div.editor
-      [:div.form-group
-       [:label {:for "claim"} (str (t :badge/Composeyourendorsementrequest) ":")]
+      [:div.form-group {:style {:display "block"}}
+       [:label {:for "claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
        [:div.editor [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
       (when (and (complement (blank? @request-comment)) (> (count @request-comment) 15))
         [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
@@ -645,16 +645,13 @@
       (reduce (fn [r u]
                 (let [{:keys [id first_name last_name profile_picture]} u]
                   (conj r [profile-link-inline-modal id first_name last_name profile_picture]))) [:div {:style {:margin "20px auto"}}] @selected-users)
-      [:div
+      [:div.confirmusers {:style {:margin "20px auto"}}
        [:button.btn.btn-primary {:on-click #(do
                                               (.preventDefault %)
-                                              (send-endorsement-request state))
+                                              (send-endorsement-request state)
+                                              (mo/previous-view))
                                  :disabled (empty? @selected-users)}
-                                (t :badge/Sendrequest)]
-       (when @(cursor state [:resp-message]) [:div.alert.alert-success {:style {:margin "15px 0"}} (t :badge/Requestsuccessfullysent)])
-       [:hr.border]]]])))
-
-
+                                (t :badge/Sendrequest)]]]])))
 
 (defn pending-endorsement-requests []
  (when (session/get-in [:user :id])

@@ -106,3 +106,14 @@ SELECT COUNT(id) AS count FROM user_badge_endorsement WHERE user_badge_id = :id 
 
 --name: delete-user-badge-endorsement-requests!
 DELETE FROM user_badge_endorsement_request WHERE user_badge_id = :id
+
+--name: select-request-by-request-id
+SELECT user_badge_id, content FROM user_badge_endorsement_request WHERE id = :id
+
+--name: sent-pending-requests-by-badge-id
+SELECT uber.id, uber.user_badge_id, uber.status, uber.content, uber.mtime, uber.issuer_id AS user_id, issuer.profile_picture, issuer.first_name, issuer.last_name
+FROM user_badge_endorsement_request AS uber
+JOIN user_badge AS ub ON ub.id = uber.user_badge_id
+LEFT JOIN user AS issuer ON issuer.id = uber.issuer_id
+WHERE uber.user_badge_id = :id AND uber.status = 'pending'
+ORDER BY uber.mtime DESC

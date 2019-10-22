@@ -76,7 +76,7 @@
         notification-count (+ new-messages pending_endorsements_count)
         endorsementscount (+ endorsement_count user_endorsements_count)]
     [:div {:class "media grid-container" :style {:position "relative"}}
-     (when (pos? notification-count) [:span.label.label-danger.grid-element-info  (str "+" notification-count)])
+
      (cond
        (= "basic" badge-type) (if (or expired? revoked)
                                 [:div {:class (str "media-content " (if expired? "media-expired") (if revoked " media-revoked"))}
@@ -115,10 +115,11 @@
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
                                                       :alt name}]])
-                                  [:div.media-body
-
+                                  [:div.media-body {:style {:position "relative"}}
+                                   (when (pos? notification-count) [:span.badge.grid-element-info notification-count])
                                    [:div.media-heading
                                     [:p.heading-link name]]
+
                                    [:div.media-issuer
                                     [:p issuer_content_name]]]]])
 

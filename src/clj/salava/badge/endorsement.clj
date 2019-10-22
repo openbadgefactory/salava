@@ -184,5 +184,8 @@
 (defn pending-endorsement-count [ctx user-badge-id user-id]
  (pending-user-badge-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
+(defn user-badge-pending-requests [ctx user-badge-id user-id]
+  (sent-pending-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
+
 
 ;Endorsements show in user profile

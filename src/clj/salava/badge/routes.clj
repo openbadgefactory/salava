@@ -396,4 +396,12 @@
                   :auth-rules access/authenticated
                   :summary "Get pending badge endorsments"
                   :current-user current-user
-                  (ok (e/endorsement-requests-pending ctx (:id current-user)))))))
+                  (ok (e/endorsement-requests-pending ctx (:id current-user))))
+
+             (GET "/endorsement/request/pending/:user-badge-id" []
+                  :return [schemas/EndorsementRequest]
+                  :auth-rules access/authenticated
+                  :path-params [user-badge-id :- Long]
+                  :summary "Return user badge's sent pending requests"
+                  :current-user current-user
+                  (ok (e/user-badge-pending-requests ctx user-badge-id (:id current-user)))))))

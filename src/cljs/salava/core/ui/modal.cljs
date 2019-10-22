@@ -17,6 +17,9 @@
 (defn set-new-view [route params]
   (reset! views (conj @views [((get-in (modal-navi) route) params)])))
 
+(defn previous-view []
+ (reset! views (pop @views)))
+
 (defn modal-content []
   [:div {:id "badge-content"}
    [:div.modal-header

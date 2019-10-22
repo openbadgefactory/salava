@@ -163,12 +163,11 @@
                 :on-click #(mo/open-modal [:profile :view] {:user-id id})}
             [:img.small-image {:src (profile-picture profile_picture)}]
             (str first_name " " last_name)]
-           [:div.common-badges
-            (if (= id current-user)
-              (t :gallery/ownprofile)
-              [:span common_badge_count " " (if (= common_badge_count 1)
-                                              (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]])))
-
+           #_[:div.common-badges
+              (if (= id current-user)
+                (t :gallery/ownprofile)
+                [:span common_badge_count " " (if (= common_badge_count 1)
+                                                (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]])))
 
 (defn allprofilesmodal [params]
  (let [country (session/get-in [:user :country] "all")
@@ -185,7 +184,8 @@
                         :country-selected (session/get-in [:filter-options :country] country)
                         :user_badge_id user_badge_id
                         :context context
-                        :url (str "/obpv1/gallery/profiles/" user_badge_id "/" context)})]
+                        :url (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
+                        :sent-requests []})]
 
 
    (create-class {:reagent-render (fn []
@@ -197,17 +197,25 @@
                                          [:i {:class "fa fa-cog fa-spin fa-2x "}]
                                          [:span (:ajax-message @data-atom)]]
                                         [:div#endorsebadge
-                                         (reduce (fn [r user]
-                                                   (conj r [profile-grid-element user selected-users-atom type]))
-                                                [:div {:style {:margin "20px auto"}}
-                                                 (when (= "endorsement" context)
-                                                   [:div.col-md-12 {:style {:font-weight "bold"}}
-                                                     [:hr.line]
-                                                     [:p (t :badge/Requestendorsementmodalinfo)]
-                                                     [:p (t :badge/Clickbacktocontinue)]
-                                                     [:hr.line]])]
+                                         (conj
+                                           [:div
+                                            (reduce (fn [r user]
+                                                      (conj r [profile-grid-element user selected-users-atom type]))
+                                                   [:div.col-md-12.profilescontainer
+                                                    (when (= "endorsement" context)
+                                                      [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                        [:hr.line]
+                                                        [:p (t :badge/Requestendorsementmodalinfo)]
+                                                        [:hr.line]])]
+                                             (->> @(cursor data-atom [:users])
+                                                   (remove #(= (:id %) (session/get-in [:user :id])))
+                                                   (filter #(every? nil? (-> % :endorsement vals)))))]
 
-                                          (->> @(cursor data-atom [:users]) (remove #(= (:id %) (session/get-in [:user :id])))(take 100)))])]])
+                                           [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
+                                            [:button.btn.btn-primary {:on-click #(mo/previous-view) #_(do (.preventDefault %)
+                                                                                                          (mo/previous-view))
+                                                                      :disabled (empty? @selected-users-atom)}
+                                             (t :core/Continue)]])])]])
                   :component-will-mount (fn []
                                            (ajax/POST
                                             (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
@@ -220,4 +228,5 @@
                                                                :countries countries
                                                                :country-selected (session/get-in [:filter-options :country] country)))
                                              :finally (fn []
+                                                        ;(when (= "endorsement" context) )
                                                         (swap! data-atom assoc :ajax-message nil))}))})))
