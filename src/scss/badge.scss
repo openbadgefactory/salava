@@ -1836,7 +1836,7 @@ button {
 
 }
 
-#badge-info, #user-endorsements, #badge-stats {
+#badge-info, #user-endorsements, #badge-stats, #social-tab, #badge-content {
 
   .editor {
     .fa {
@@ -1943,6 +1943,17 @@ a.popup-info {
   }
 }
 #social-tab {
+  .confirmusers {
+    padding: 10px;
+    background-color: $background-color;
+    text-align: center;
+    border-radius: 4px;
+  }
+  .profilescontainer {
+    max-height: 930px;
+    overflow-y: auto;
+
+  }
   div.rating {
     position: absolute;
     right: 12px;
@@ -1954,8 +1965,8 @@ a.popup-info {
 
   }
   .profile-element {
-    min-height: 100px;
-    max-height: 100px;
+    min-height: 65px;
+    max-height: 65px;
     padding: 6px;
     position: relative;
     .common-badges {
@@ -1971,7 +1982,7 @@ a.popup-info {
 
   }
   .request-link {
-    margin: 20px 0;
+    margin: 10px 0;
     i {
       vertical-align: text-bottom;
     }
@@ -1979,7 +1990,7 @@ a.popup-info {
       text-decoration: none;
     }
   }
-    .info-block {
+  .info-block {
       width: 150px !important;
       height: 130px;
       font-style: normal;
@@ -2073,21 +2084,21 @@ a.popup-info {
           right: 5px;
           //top: 0;
         }
-
       }
-
     }
   .endorsement .settings-endorsement {
     margin-top: unset;
   }
   span.social-panel-info {
     position: absolute;
-    //background-color: #5bc0de;
-    top: 0;
-    left: 0;
+    top: -2px;
+    left: -2px;
+    background-color: #FF3333;
   }
- .panel-heading {
+
+  .panel-heading {
       border-bottom: 1px solid #dddddd !important;
+
       h3 {
         line-height: 30px;
         font: 300 24px "Open Sans Condensed",sans-serif;
@@ -2124,9 +2135,9 @@ a.popup-info {
 
 .badge-modal-navi {
   .nav>li>a {
-      padding: 10px 8px;
+      //padding: 10px 8px;
     }
-   .nav-item  {
+  .nav-item  {
     .btn.disabled {
       margin: unset;
       margin-top: unset;
@@ -2143,8 +2154,8 @@ span.endorsement-notification{
 
 span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   position: absolute;
-  right: 2px;
-  top: 1px;
+  right: 0;
+  top: 0;
   margin-bottom: 5px;
   i {
     vertical-align: text-bottom;
@@ -2160,13 +2171,16 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
 
 .grid-element-info {
   position: absolute;
-  bottom: 1px;
-  right:1px;
+  //top: -5px;
+  right: 2px;
+  background-color: #FF3333;
+  z-index: 100;
 }
 
 .modal-navi-info {
   position: absolute;
   right: 2px;
-  top: -1px;
+  top: -3px;
   z-index: 100;
+  background-color: #FF3333;
 }

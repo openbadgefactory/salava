@@ -82,7 +82,7 @@
                   (swap! state assoc :tab [se/settings-tab-content data state init-data]
                          :tab-no 2
                          :evidences (:evidences data))
-                  (swap! state assoc :tab [se/share-tab-content data state init-data]
+                  (swap! state assoc :tab [st/social-tab (assoc data :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state)) state init-data]
                          :tab-no 3)))}))
 
 (defn congratulate [state]
@@ -315,14 +315,13 @@
         [:li.nav-item {:class (if (= 2 (:tab-no @state)) "active")}
          [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "settings")}
           [:div  [:i.nav-icon {:class "fa fa-cogs fa-lg"}] (t :page/Settings)]]]
+        #_[:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
+           [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
+            [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)]]]
         [:li.nav-item {:class (if (= 3 (:tab-no @state)) "active")}
-         [:a.nav-link {:class disable-link :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share")}
-          [:div  [:i.nav-icon {:class "fa fa-share-alt fa-lg"}] (t :badge/Share)]]]
-        [:li.nav-item {:class (if (= 5 (:tab-no @state)) "active")}
-
-         (when (pos? @(cursor state [:notification])) [:span.label.label-danger.modal-navi-info "+" @(cursor state [:notification])])
-         [:a.nav-link {:class disable-export :href "#" :on-click #(do
-                                                                    (swap! state assoc :tab [st/social-tab (assoc data :settings_fn show-settings-dialog :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state) ) state init-data] :tab-no 5))}
+         (when (pos? @(cursor state [:notification])) [:span.badge.modal-navi-info @(cursor state [:notification])])
+         [:a.nav-link {:class disable-export :href "#" :on-click #(show-settings-dialog (:id @state) state init-data "share") #_(do
+                                                                                                                                  (swap! state assoc :tab [st/social-tab (assoc data :settings_fn show-settings-dialog :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state) ) state init-data] :tab-no 3))}
           [:i.nav-icon {:class "fa fa-users fa-lg"}] (t :core/Social)]]
         [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
          [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
@@ -388,4 +387,5 @@
            :endorse endr/endorse-badge-content
            :userbadgeendorsement endr/user-badge-endorsement-content
            :userendorsement endr/user-endorsement-content
+           :requestendorsement endr/request-endorsement
            :my block/mybadgesmodal}})

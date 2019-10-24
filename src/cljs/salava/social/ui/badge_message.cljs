@@ -27,7 +27,6 @@
  (ajax/GET
    (path-for (str "/obpv1/gallery/user_owns_badge/" (:badge_id @state)))
    {:handler (fn [data]
-               (prn @state) 
                (swap! state assoc :user_owns_badge? data))}))
 
 

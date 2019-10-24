@@ -4,7 +4,7 @@
   [clojure.set :as set :refer [intersection]]
   [reagent.core :refer [create-class atom cursor]]
   [salava.badge.ui.endorsement :refer [endorsement-list request-endorsement]]
-  [salava.badge.ui.evidence :refer [evidence-list-badge-view]]
+  [salava.badge.ui.evidence :refer [evidence-list-badge-view evidenceblock]]
   [salava.badge.ui.helper :as bh]
   [salava.badge.ui.settings :refer [settings-tab-content]]
   [salava.core.ui.ajax-utils :as ajax]
@@ -115,3 +115,6 @@
 
 (defn ^:export evidence_list_badge [data]
   [evidence-list-badge-view data])
+
+(defn ^:export evidence_block [data state init-data]
+  [evidenceblock data state init-data])

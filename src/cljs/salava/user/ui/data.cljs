@@ -256,6 +256,10 @@
                                           "followbadge" (or (get-in e [:info :object_name]) "-")
                                           "followuser" (or (get-in e [:info :object_name]) "-")
                                           "ticketadmin" (or (get-in e [:info :object_name]) "-")
+                                          "request_endorsementbadge" [:div {:style {:max-width "550px"}}
+                                                                       (or (get-in e [:info :object_name]) "-")"\n"
+                                                                       [:br][:br]
+                                                                       [:p [:i (or (get-in e [:info :content]) "comment-removed")]] #_(or (get-in e [:info :object_name]) "-")]
                                           "-")]]
                              [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]))]]])]]])]))
 
