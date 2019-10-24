@@ -13,7 +13,6 @@
 (defqueries "sql/badge/main.sql")
 (defqueries "sql/badge/endorsement.sql")
 
-
 (defn badge-events-reduce [events]
   (let [helper (fn [current item]
                   (let [key [(:verb item) (:object item)]]
@@ -39,10 +38,10 @@
     (->> (reverse messages)
          (reduce message-helper {}))))
 
-
-
-(defn filter-badge-message-events [events]
-  (filter #(= "message" (:verb %)) events))
+(defn filter-badge-message-events [ctx events user_id]
+ (let [filtered-events (filter #(= "message" (:verb %)) events)]
+   (as-> (first (u/plugin-fun (u/get-plugins ctx) "db" "user-owns-badge?")) $
+         (when $ (filter #(true? ($ ctx user_id (:object %))) filtered-events)))))
 
 (defn filter-own-events [events user_id]
   (filter #(and (= user_id (:subject %)) (= "follow" (:verb %))) events))
@@ -56,7 +55,7 @@
         messages (if (not (empty? badge-ids)) (select-messages-with-badge-id {:badge_ids badge-ids :user_id user_id} (u/get-db ctx)) ())
         badge-gallery-ids (reduce (fn [coll v] (assoc coll (:badge_id v) (:gallery_id v))) {} messages)
         messages-map (badge-message-map messages)
-        message-events (->> (filter-badge-message-events reduced-events)
+        message-events (->> (filter-badge-message-events ctx reduced-events user_id)
                             (map (fn [event] (assoc event :message (get messages-map (get badge-gallery-ids (:object event)))
                                                           :gallery_id (get badge-gallery-ids (:object event))))) ;add messages for nessage event
                             (reduce (fn [coll v] (assoc coll (:gallery_id v) v)) {})

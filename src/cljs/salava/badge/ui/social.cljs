@@ -31,6 +31,11 @@
   (path-for (str "/obpv1/gallery/rating/" (:gallery_id @state)))
   {:handler (fn [data] (reset! (cursor dataatom [:rating]) data))}))
 
+(defn get-pending-requests [dataatom state]
+ (ajax/GET
+  (path-for (str "/obpv1/badge/endorsement/request/pending/" (:id @state)))
+  {:handler (fn [data] (reset! (cursor dataatom [:sent-requests]) data))}))
+
 (defn refresh-social-tab [dataatom state]
  (let [endorsements (cursor state [:user-badge-endorsements])
        view-stats (cursor dataatom [:views-stats])
@@ -64,9 +69,11 @@
     (path-for (str "/obpv1/gallery/recipients/" (:gallery_id @state)))
     {:handler (fn [data] (reset! recipients data))})
 
-   (ajax/GET
+   (get-pending-requests dataatom state)
+
+   #_(ajax/GET)
      (path-for (str "/obpv1/badge/endorsement/request/pending/" (:id @state)))
-     {:handler (fn [data] (reset! sent-requests data))})))
+     {:handler (fn [data] (reset! sent-requests data))}))
 
 (defn save-rating [id state dataatom rating]
  (ajax/POST
@@ -124,16 +131,20 @@
         (when (= @(cursor state [:visible-area]) panel-identity)
          [:div.panel-body.endorsements
           [:div.col-md-12.request-link {:id "endorsebadge"} [:a {:href "#"
-                                                                 :on-click #(mo/open-modal [:badge :requestendorsement] {:state state}) #_(if @request-mode (reset! request-mode false) (reset! request-mode true))
+                                                                 :on-click #(mo/open-modal [:badge :requestendorsement] {:state state :reload-fn (fn [] (get-pending-requests dataatom state)) }) #_(if @request-mode (reset! request-mode false) (reset! request-mode true))
                                                                  :id "#request_endorsement"}
                                                              [:span [:i {:class (str "fa fa-fw " hand-icon)}] (t :badge/Requestendorsement)]]]
           (when @(cursor state [:resp-message]) [:div.col-md-12 [:div.alert.alert-success {:style {:margin "15px 0"}} (t :badge/Requestsuccessfullysent)]])
+
           (when (seq @sent-requests)
-            (reduce (fn [r u]
-                      (let [{:keys [user_id first_name last_name profile_picture]} u]
+            [:div.col-md-12
+             [:hr.border]
+             (reduce (fn [r u]
+                       (let [{:keys [user_id first_name last_name profile_picture]} u]
                         (conj r [profile-link-inline-modal user_id first_name last_name profile_picture])))
-                  [:div.col-md-12 {:style {:margin "20px auto"}} [:div.row {:style {:margin "5px auto"}} [:span.label.label-primary (t :badge/Alreadysentrequest)]]]
-                  @sent-requests))
+                  [:div.col-md-12 {:style {:margin-bottom "20px"}} [:div.row {:style {:margin "5px auto"}} [:span.label.label-primary (t :badge/Alreadysentrequest)]]]
+                  @sent-requests)
+             [:hr.border]])
 
           #_(when @request-mode
               (into [:div.col-md-12]
@@ -141,7 +152,7 @@
                   [f state])))
 
 
-          (into [:div.col-md-12]
+          (into [:div.col-md-12 {:style {:margin-top "20px"}}]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
               [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification])}]))])]]])))
 
@@ -218,19 +229,29 @@
     :component-did-update (fn [] (get-rating dataatom state))})))
 
 (defn- rate-badge [dataatom state]
- (create-class
-  {:reagent-render
-   (fn []
-    [:div.row {:id "social-tab"}
-     [:div.col-md-12
-      [:div.panel
-       [:div.panel-heading
-        [:div
-         [:h3 (t :badge/Rating)] (when-not (pos? @(cursor dataatom [:rating :rating_count])) [:span.label.label-primary (t :badge/Befirstrater)])
-         [:div.rating
-          {:on-click #(save-rating (:id @state) state dataatom (get-in @state [:badge-settings :rating]))}
-          [r/rate-it (or @(cursor state [:badge-settings :rating]) @(cursor state [:rating])) (cursor state [:badge-settings :rating])]]]]]]])
-   :component-did-mount #(get-rating dataatom state)}))
+ (let [rating_count (cursor dataatom [:rating :rating_count])
+       user-rating (or (cursor state [:badge-settings :rating]) (cursor state [:rating]))]
+  (create-class
+   {:reagent-render
+    (fn []
+     [:div.row {:id "social-tab"}
+      [:div.col-md-12
+       [:div.panel
+        [:div.panel-heading
+         [:div
+          [:h3 (t :badge/Rating)]
+          [:div (cond
+                 (not (pos? @rating_count)) [:span.label.label-primary (t :badge/Befirstrater)]
+                 (not (pos? @user-rating))  [:span.label.label-primary (t :badge/Yettorate)]
+                 :else "")]
+
+          #_(when-not (pos? @(cursor dataatom [:rating :rating_count])) [:span.label.label-primary (t :badge/Befirstrater)])
+
+
+          [:div.rating
+           {:on-click #(save-rating (:id @state) state dataatom (get-in @state [:badge-settings :rating]))}
+           [r/rate-it (or @(cursor state [:badge-settings :rating]) @(cursor state [:rating])) (cursor state [:badge-settings :rating])]]]]]]])
+    :component-did-mount #(get-rating dataatom state)})))
 
 (defn- message-link [state]
  (when-not (= "private" @(cursor state [:badge-settings :visibility]))
@@ -252,7 +273,7 @@
                        :type            "radio"
                        :on-change       #(do
                                            (set-visibility "public" state)
-                                           (save-settings state init-data "share"))
+                                           (save-settings state))
                        :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
          [:i {:class "fa fa-globe"}]
          [:label {:for "visibility-public"}
@@ -263,7 +284,7 @@
                      :type            "radio"
                      :on-change       #(do
                                          (set-visibility "internal" state)
-                                         (save-settings state init-data "share"))
+                                         (save-settings state))
 
                      :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
        [:i {:class "fa fa-group"}]
@@ -275,7 +296,7 @@
                      :type            "radio"
                      :on-change       #(do
                                          (set-visibility "private" state)
-                                         (save-settings state init-data "share"))
+                                         (save-settings state))
                      :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
        [:i {:class "fa fa-lock"}]
        [:label {:for "visibility-private"}

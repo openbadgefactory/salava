@@ -116,7 +116,7 @@
 
 (defn endorsement-request-event-badge [event state]
   (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture] }  event
-        endorsement (select-keys event [:id :profile_picture :first_name :last_name :name :image_file :content :user_badge_id :requester_id :status])]
+        endorsement (select-keys event [:id :profile_picture :first_name :last_name :name :image_file :content :user_badge_id :requester_id :status :description :issuer_name :issuer_content_id :issued_on])]
 
       [:div {:style {:height "100%"}}
        [:a {:href "#"

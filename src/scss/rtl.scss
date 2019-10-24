@@ -1921,3 +1921,9 @@ html[dir="rtl"] .editor .CodeMirror-scroll{
     margin-right: unset;
     margin-left: -30px;
 }
+
+html[dir="rtl"] #endorsebadge{
+    .fa-hand-o-right:before {
+      content: "\f0a5"
+    }
+}

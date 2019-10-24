@@ -479,6 +479,10 @@
 (defn evidenceblock [data state init-data]
   (let [files-atom (cursor state [:files])
         pages-atom (cursor state [:pages])]
+   [:div
+    [:div {:class "row"}
+         [:label {:class "col-md-12 sub-heading" :for "evidence"}
+          (t :badge/Evidence)]]
     [:div#badge-settings
      [:div.form-group
       [:div.col-md-9 {:class "new-evidence"}
@@ -495,13 +499,13 @@
                                 :tab-no 2))}
            (t :badge/Addnewevidence)]]]
      (when-not (empty? @(cursor state [:badge-settings :evidences])) [:div.form-group
-                                                                      [:div.col-md-12 [evidence-list data state init-data]]])]))
+                                                                      [:div.col-md-12 [evidence-list data state init-data]]])]]))
 
 (defn evidence-list-badge-view [evidences]
  (if (seq evidences)
   [:div.row {:id "badge-settings"}
    [:div.col-md-12
-    [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")"))]
+    [:h2.uppercase-header (t :badge/Evidence)]
     (reduce (fn [r evidence]
               (let [{:keys [narrative description name id url mtime ctime properties]} evidence
                     added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex

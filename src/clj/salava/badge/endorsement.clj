@@ -4,7 +4,8 @@
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
             [salava.badge.main :refer [send-badge-info-to-obf]]
-            #_[salava.user.db :as user]))
+            #_[salava.user.db :as user]
+            [salava.core.time :as time]))
 
 (defqueries "sql/badge/main.sql")
 (defqueries "sql/badge/endorsement.sql")
@@ -112,10 +113,12 @@
   (let [received (if md? (endorsements-received ctx user-id true)(endorsements-received ctx user-id))
         given (endorsements-given ctx user-id)
         requests (->> (endorsement-requests ctx user-id) (filterv #(= (:status %) "pending")) (mapv #(assoc % :type "request")))
-        all (->> (list* given received requests) flatten (sort-by :mtime >))]
+        sent-requests (some->> (select-sent-endorsement-requests {:id user-id} (get-db ctx)) (mapv #(assoc % :type "sent_request")))
+        all (->> (list* given received requests sent-requests) flatten (sort-by :mtime >))]
     {:given given
      :received received
      :requests requests
+     :sent-requests sent-requests
      :all-endorsements all}))
 
 (defn insert-request-event! [ctx data]
@@ -140,21 +143,25 @@
      (let [endorser-info (as-> (first (plugin-fun (get-plugins ctx) "db" "user-information")) $
                               (if $ ($ ctx id) {}))
            {:keys [first_name last_name]} endorser-info
+           user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "get-connections-user")) $
+                                 (if $ (some-> ($ ctx owner-id id) :status) nil))
            request-id (-> (request-endorsement<! {:id user-badge-id
                                                   :content content
                                                   :issuer_name (str first_name " " last_name)
                                                   :issuer_id id
                                                   :issuer_url (str (get-full-path ctx) "/profile/" id)}  (get-db ctx))
                           :generated_key)]
-       (publish ctx :request_endorsement {:subject owner-id :object request-id})))))
+       (publish ctx :request_endorsement {:subject owner-id :object request-id})
+       (when-not user-connection (as-> (first (plugin-fun (get-plugins ctx) "db" "create-connections-user!")) $   ;;create user connection if not existing
+                                       (when $ ($ ctx owner-id id))))))))
   {:status "success"}
   (catch Object ex
     (log/error ex)
     {:status "error"})))
 
 (defn- request-owner? [ctx request-id user-id]
- (let [owner (->> (select-endorsement-request-owner {:id request-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx))))]
-   (= owner user-id)))
+ (let [{:keys [id issuer_id]} (->> (select-endorsement-request-owner {:id request-id} (into {:result-set-fn first} (get-db ctx))))]
+  (or (= id user-id) (= issuer_id user-id))))
 
 (defn- delete-request! [ctx request-id user-id]
  (delete-endorsement-request! {:id request-id} (get-db ctx)))
@@ -185,7 +192,20 @@
  (pending-user-badge-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
 (defn user-badge-pending-requests [ctx user-badge-id user-id]
-  (sent-pending-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
+ (sent-pending-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
+
+(defn delete-pending-request! [ctx user-badge-id]
+ (let [requests (user-badge-pending-requests ctx user-badge-id nil)]
+  (try+
+   (doseq [r requests
+           :let [days-pending (time/no-of-days-passed (long (:mtime r)))]]
+    (when (>= days-pending 30)
+      (log/info "Expired pending request id" (:id r))
+      (log/info "Deleting pending request id " (:id r))
+      (delete-request! ctx (:id r) nil)
+      (log/info "Pending request deleted!")))
+   (catch Object _
+     (log/error _)))))
 
 
 ;Endorsements show in user profile

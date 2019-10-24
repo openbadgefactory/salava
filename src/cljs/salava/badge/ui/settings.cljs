@@ -8,13 +8,7 @@
             [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to hyperlink url?]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.share :as s]
-            [reagent.session :as session]
-            [clojure.string :refer [upper-case replace blank? starts-with?]]
-            [salava.core.ui.modal :as mo]
-            [salava.badge.ui.evidence :as evidence]
-            [salava.badge.ui.endorsement :as endorsement]
-            [salava.user.ui.helper :refer [profile-picture profile-link-inline-modal]]))
-
+            [reagent.session :as session]))
 
 (defn set-visibility [visibility state]
   (swap! state assoc-in [:badge-settings :visibility] visibility))
@@ -46,26 +40,15 @@
     {:handler (fn [data]
                 (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
 
-#_(defn save-raiting [id state init-data raiting]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/save_raiting/" id))
-      {:params   {:rating  (if (pos? raiting) raiting nil)}
-       :handler (fn []
-                  (update-settings id state)
-                  #_(init-data state id (:tab-no @state)))}))
-
-
-(defn save-settings [state init-data context]
-  (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/save_settings/" id))
-      {:params  {:visibility   visibility
-                 :tags         tags
-                 :rating       (if (pos? rating) rating nil)}
-       :handler (fn []
-                  (case context
-                    "share" (update-settings id state)
-                    (init-data state id nil)))})))
+(defn save-settings [state]
+ (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
+  (ajax/POST
+    (path-for (str "/obpv1/badge/save_settings/" id))
+    {:params  {:visibility   visibility
+               :tags         tags
+               :rating       (if (pos? rating) rating nil)}
+     :handler (fn []
+                (update-settings id state))})))
 
 
 (defn toggle-recipient-name [id show-recipient-name-atom]
@@ -94,47 +77,47 @@
                {:handler (fn [data]
                            (reset! notifications-atom (:connected? data)))})))
 
-(defn visibility-form [state init-data]
-  [:form {:class "form-horizontal"}
-   [:div
-    [:fieldset {:class "form-group visibility"}
-     [:legend {:class "col-md-9 sub-heading"}
-      (t :badge/Badgevisibility)]
-     [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
-      (if-not (private?)
-        [:div [:input {:id              "visibility-public"
+#_(defn visibility-form [state init-data]
+    [:form {:class "form-horizontal"}
+     [:div
+      [:fieldset {:class "form-group visibility"}
+       [:legend {:class "col-md-9 sub-heading"}
+        (t :badge/Badgevisibility)]
+       [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
+        (if-not (private?)
+          [:div [:input {:id              "visibility-public"
+                         :name            "visibility"
+                         :value           "public"
+                         :type            "radio"
+                         :on-change       #(do
+                                             (set-visibility "public" state)
+                                             (save-settings state init-data "share"))
+                         :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
+           [:i {:class "fa fa-globe"}]
+           [:label {:for "visibility-public"}
+            (t :badge/Public)]])
+        [:div [:input {:id              "visibility-internal"
                        :name            "visibility"
-                       :value           "public"
+                       :value           "internal"
                        :type            "radio"
                        :on-change       #(do
-                                           (set-visibility "public" state)
+                                           (set-visibility "internal" state)
                                            (save-settings state init-data "share"))
-                       :default-checked (= "public" (get-in @state [:badge-settings :visibility]))}]
-         [:i {:class "fa fa-globe"}]
-         [:label {:for "visibility-public"}
-          (t :badge/Public)]])
-      [:div [:input {:id              "visibility-internal"
-                     :name            "visibility"
-                     :value           "internal"
-                     :type            "radio"
-                     :on-change       #(do
-                                         (set-visibility "internal" state)
-                                         (save-settings state init-data "share"))
-                     :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
-       [:i {:class "fa fa-group"}]
-       [:label {:for "visibility-internal"}
-        (t :badge/Shared)]]
-      [:div [:input {:id              "visibility-private"
-                     :name            "visibility"
-                     :value           "private"
-                     :type            "radio"
-                     :on-change       #(do
-                                         (set-visibility "private" state)
-                                         (save-settings state init-data "share"))
-                     :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
-       [:i {:class "fa fa-lock"}]
-       [:label {:for "visibility-private"}
-        (t :badge/Private)]]]]]])
+                       :default-checked (= "internal" (get-in @state [:badge-settings :visibility]))}]
+         [:i {:class "fa fa-group"}]
+         [:label {:for "visibility-internal"}
+          (t :badge/Shared)]]
+        [:div [:input {:id              "visibility-private"
+                       :name            "visibility"
+                       :value           "private"
+                       :type            "radio"
+                       :on-change       #(do
+                                           (set-visibility "private" state)
+                                           (save-settings state init-data "share"))
+                       :default-checked (= "private" (get-in @state [:badge-settings :visibility]))}]
+         [:i {:class "fa fa-lock"}]
+         [:label {:for "visibility-private"}
+          (t :badge/Private)]]]]]])
 
 (defn delete-tab-content [{:keys [name image_file]} state]
   [:div {:id "badge-settings" :class "row flip"}
@@ -181,9 +164,9 @@
           :datefrom issued_on
           :dateto   expires_on}]]
 
-       #_(into [:div
-                 (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
-                   [f id])])]]))
+       (into [:div
+               (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
+                 [f id])])]]))
 
 (defn settings-tab-content [data state init-data]
   (let [{:keys [id name image_file issued_on expires_on show_evidence revoked rating]} data
@@ -237,19 +220,13 @@
                                                     [:div {:class "col-md-12"}
                                                      [tag/new-tag-input (cursor state [:badge-settings :tags]) (cursor state [:badge-settings :new-tag]) state init-data]]]
 
-                                                   [:div {:class "row"}
-                                                    [:label {:class "col-md-12 sub-heading" :for "evidence"}
-                                                     (t :badge/Evidences)]]
-                                                   [:div [evidence/evidenceblock data state init-data]]
+                                                   (into [:div]
+                                                         (for [f (plugin-fun (session/get :plugins) "block" "evidence_block")]
+                                                           [f data state init-data]))
 
                                                    (into [:div]
                                                          (for [f (plugin-fun (session/get :plugins) "block" "badge_settings")]
-                                                           [f id]))
-
-                                                   (into [:div]
-                                                         (for [f (plugin-fun (session/get :plugins) "block" "badge_share")]
                                                            [f id]))]]
-
 
                                             [:div.modal-footer]])]]))
 
