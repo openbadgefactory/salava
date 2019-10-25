@@ -5,7 +5,7 @@
             [clojure.set :refer [rename-keys]]
             [clojure.java.jdbc :as jdbc]
             [salava.core.helper :refer [dump string->number]]
-            [salava.core.util :refer [get-db get-db-col get-db-1 md->html]]
+            [salava.core.util :refer [get-db get-db-col get-db-1 md->html plugin-fun get-plugins]]
             [salava.core.countries :refer [all-countries sort-countries]]
             [salava.page.main :as p]
             ;[salava.social.db :as so]
@@ -74,7 +74,6 @@
              nil)
            )) badges))
 
-
 (defn gallery-badges
   "Get badges for gallery grid"
   [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count]}]
@@ -83,9 +82,6 @@
         badges (some->> (select-badges ctx gallery-ids order offset) (badge-checker) (remove nil?))]
     {:badges badges
      :badge_count (badge-count (if-not (= (count gallery-ids) (count badges)) gallery-ids badges) offset) }))
-
-
-
 
 (defn public-badges-by-user
   "Return user's public badges"
@@ -152,6 +148,11 @@
 (defn badge-gallery-id [ctx badge_id]
   (some-> (select-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id))
 
+(defn user-owns-badge? [ctx user-id badge_id]
+ (let [gallery-id (badge-gallery-id ctx badge_id)
+       id  (select-user-owns-badge-id {:user_id user-id :gallery_id gallery-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+  (= user-id id)))
+
 (defn public-multilanguage-badge-content
     "Return data of the public badge by gallery and badge ids. Fetch badge criteria and issuer, uses most recent data.
     Fetch also average rating of the badge, rating count and recipient count"
@@ -181,29 +182,6 @@
                :private_user_count (->> recipients
                                         (filter #(= (:visibility %) "private"))
                                         count)))))
-
-
-#_(defn public-badge-content
-  "Return data of the public badge by badge-content-id. Fetch badge criteria and issuer data. If user has not received the badge use most recent criteria and issuer. Fetch also average rating of the badge, rating count and recipient count"
-  [ctx badge-id user-id]
-  (let [badge-content (select-common-badge-content {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
-        recipient-badge-data (select-badge-criteria-issuer-by-recipient {:badge_content_id badge-id :user_id user-id} (into {:result-set-fn first} (get-db ctx)))
-        badge-data (or recipient-badge-data (select-badge-criteria-issuer-by-date {:badge_content_id badge-id} (into {:result-set-fn first} (get-db ctx))))
-        rating (select-common-badge-rating {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
-        recipients (if user-id (select-badge-recipients {:badge_id badge-id} (get-db ctx)))
-        badge (merge badge-content (update badge-data :criteria_content md->html) rating)]
-    (hash-map :badge (b/badge-issued-and-verified-by-obf ctx badge)
-              :public_users (->> recipients
-                                 (filter #(not= (:visibility %) "private"))
-                                 (map #(dissoc % :visibility))
-                                 distinct)
-              :private_user_count (->> recipients
-                                       (filter #(= (:visibility %) "private"))
-                                       count))))
-
-
-
-
 
 (defn public-pages-by-user
   "Return all public pages owned by user"
@@ -274,6 +252,15 @@
       (->> visible-profiles
            (take 100)))))
 
+(defn public-profiles-context
+  "Search public user profiles by user's name and country, include extra data based on user badge's context when call was made."
+  [ctx search-params user-id user_badge_id context]
+  (let [profiles (public-profiles ctx search-params user-id)
+        data-fn (case context
+                  "endorsement" (as-> (first (plugin-fun (get-plugins ctx) "endorsement" "user-endorsements-status")) f)
+                  nil)]
+    (map #(assoc % (keyword context) (if data-fn (data-fn ctx user_badge_id user-id (:id %)) {})) profiles)))
+
 (defn meta-tags [ctx badge-content-id]
   (let [badge-content (select-common-badge-content {:id badge-content-id} (into {:result-set-fn first} (get-db ctx)))]
     (rename-keys badge-content {:image_file :image :name :title})))
@@ -306,3 +293,6 @@
                                       (filter #(= (:visibility %) "private"))
                                       count)
              :all_recipients_count (count recipients))))
+
+(defn badge-rating [ctx user-id gallery-id]
+ (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx)))

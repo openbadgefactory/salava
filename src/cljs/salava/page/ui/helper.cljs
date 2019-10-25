@@ -7,6 +7,7 @@
             [salava.core.ui.helper :refer [navigate-to path-for hyperlink url? plugin-fun]]
             [salava.badge.ui.helper :as bh]
             [salava.badge.ui.modal :as bm]
+            [salava.core.ui.modal :as mo]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
             [salava.core.helper :refer [dump]]
@@ -57,80 +58,86 @@
                           (delete-page page-id))}
      (t :page/Delete)]]])
 
-(defn badge-block [{:keys [format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]}]
-  [:div {:class "row badge-block badge-info flip"}
-   [:div {:class "col-md-4 badge-image"}
-    [:img {:src (str "/" image_file)}]]
-   [:div {:class "col-md-8"}
-    [:div.row
-     [:div.col-md-12
-      [:h3.badge-name name]]]
-    [:div.row
-     [:div.col-md-12
-      (bh/issued-on issued_on)]]
-    [:div.row
-     [:div.col-md-12
-      (bm/issuer-modal-link issuer_content_id issuer_content_name)
-      (bm/creator-modal-link creator_content_id creator_name)]]
+(defn badge-block [block #_{:keys [badge_id format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]}]
+  (let [{:keys [id badge_id format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]} block]
+      [:div {:class "row badge-block badge-info flip"}
+       [:div {:class "col-md-4 badge-image"}
+        [:a {:href "#" :on-click #(do
+                                   (.preventDefault %)
+                                   (prn block)
+                                   (mo/open-modal [:badge :info] {:badge-id (if (or (clojure.string/blank? badge_id)(string? badge_id)) id badge_id)}))}
 
-
-    [:div.row
-     [:div {:class "col-md-12 description"} description]]
-    [:div.row
-     [:div.col-md-12
-      [:h3.criteria (t :badge/Criteria)]]]
-    [:div.row
-     [:div.col-md-12
-      [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage)]]]
-    (if (= format "long")
-      [:div
-       [:div {:class "row criteria-html"}
-        [:div.col-md-12
-         {:dangerouslySetInnerHTML {:__html criteria_content}}]]
-       [:div.row
-        [:div {:class                   "col-md-12"
-               :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
-
-    (when (seq evidences)
-      [:div.row {:id "badge-settings"}
-       [:div.col-md-12
-        [:h3.criteria (t :badge/Evidences)]
-        (reduce (fn [r evidence]
-                  (let [{:keys [narrative description name id url mtime ctime properties]} evidence
-                        added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
-                        {:keys [resource_id resource_type mime_type hidden]} properties
-                        desc (cond
-                               (not (blank? narrative)) narrative
-                               (not added-by-user?) description ;;todo use regex to match description
-                               :else nil)
-
-                        icon-fn (first (plugin-fun (session/get :plugins) "evidence" "evidence_icon"))]
-                    (conj r (when (and (not hidden) (url? url))
-                              [:div.modal-evidence
-                               (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
-                               [icon-fn {:type resource_type :mime_type mime_type}]
-                               [:div.content
-
-                                (when-not (blank? name) [:div.content-body.name name])
-                                (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
-                                [:div.content-body.url
-                                 (case resource_type
-                                   "file" (hyperlink url)
-                                   "page" (if (session/get :user)
-                                            [:a {:href "#"
-                                                 :on-click #(do
-                                                              (.preventDefault %)
-                                                              (open-modal [:page :view] {:page-id resource_id}))} url]
-                                            (hyperlink url))
-                                   (hyperlink url))]]]))))
-
-                [:div ] evidences)]])
-
-    #_(if (and (pos? show_evidence) evidence_url)
+         [:img {:src (str "/" image_file)}]]]
+       [:div {:class "col-md-8"}
         [:div.row
          [:div.col-md-12
-          [:h2.uppercase-header (t :badge/Evidence)]
-          [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]])
+          [:h3.badge-name name]]]
+        [:div.row
+         [:div.col-md-12
+          (bh/issued-on issued_on)]]
+        [:div.row
+         [:div.col-md-12
+          (bm/issuer-modal-link issuer_content_id issuer_content_name)
+          (bm/creator-modal-link creator_content_id creator_name)]]
+
+
+        [:div.row
+         [:div {:class "col-md-12 description"} description]]
+        [:div.row
+         [:div.col-md-12
+          [:h3.criteria (t :badge/Criteria)]]]
+        [:div.row
+         [:div.col-md-12
+          [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage)]]]
+        (if (= format "long")
+          [:div
+           [:div {:class "row criteria-html"}
+            [:div.col-md-12
+             {:dangerouslySetInnerHTML {:__html criteria_content}}]]
+           [:div.row
+            [:div {:class                   "col-md-12"
+                   :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
+
+        (when (seq evidences)
+          [:div.row {:id "badge-settings"}
+           [:div.col-md-12
+            [:h3.criteria (t :badge/Evidences)]
+            (reduce (fn [r evidence]
+                      (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+                            added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
+                            {:keys [resource_id resource_type mime_type hidden]} properties
+                            desc (cond
+                                   (not (blank? narrative)) narrative
+                                   (not added-by-user?) description ;;todo use regex to match description
+                                   :else nil)
+
+                            icon-fn (first (plugin-fun (session/get :plugins) "evidence" "evidence_icon"))]
+                        (conj r (when (and (not hidden) (url? url))
+                                  [:div.modal-evidence
+                                   (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
+                                   [icon-fn {:type resource_type :mime_type mime_type}]
+                                   [:div.content
+
+                                    (when-not (blank? name) [:div.content-body.name name])
+                                    (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
+                                    [:div.content-body.url
+                                     (case resource_type
+                                       "file" (hyperlink url)
+                                       "page" (if (session/get :user)
+                                                [:a {:href "#"
+                                                     :on-click #(do
+                                                                  (.preventDefault %)
+                                                                  (open-modal [:page :view] {:page-id resource_id}))} url]
+                                                (hyperlink url))
+                                       (hyperlink url))]]]))))
+
+                    [:div ] evidences)]])
+
+        #_(if (and (pos? show_evidence) evidence_url)
+            [:div.row
+             [:div.col-md-12
+              [:h2.uppercase-header (t :badge/Evidence)]
+              [:div [:a {:target "_blank" :href evidence_url} (t :badge/Openevidencepage) "..."]]]])]]))
 
 (defn html-block [{:keys [content]}]
   [:div.html-block

@@ -17,11 +17,11 @@
   (reset! ajax-message-atom nil))
 
 (defn fetch-users [state]
-  (let [{:keys [name country-selected common-badges? order_by]} @state
+  (let [{:keys [name country-selected common-badges? order_by url]} @state
         ajax-message-atom (cursor state [:ajax-message])]
     (reset! ajax-message-atom (t :gallery/Searchingprofiles))
     (ajax/POST
-      (path-for "/obpv1/gallery/profiles/")
+      (path-for (or url "/obpv1/gallery/profiles/"))
       {:params  {:country       country-selected
                  :name          (trim (str name))
                  :common_badges (boolean common-badges?)

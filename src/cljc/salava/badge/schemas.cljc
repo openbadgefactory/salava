@@ -1,7 +1,7 @@
 (ns salava.badge.schemas
   (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]))
+             :include-macros true])) ;; cljs only
+
 
 (s/defschema Badge {:id s/Int
                     :name s/Str
@@ -68,7 +68,7 @@
    (s/optional-key :tags)                (s/maybe [s/Str])
    (s/optional-key :user_endorsements_count) (s/maybe s/Int)
    (s/optional-key :endorsement_count) (s/maybe s/Int)
-   })
+   (s/optional-key :pending_endorsements_count) (s/maybe s/Int)})
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
                                                 :issued_on :expires_on :visibility
@@ -165,19 +165,36 @@
                        :url s/Str
                        (s/optional-key  :resource_id) (s/maybe s/Int)
                        (s/optional-key  :resource_type) s/Str
-                       (s/optional-key  :mime_type) (s/maybe s/Str)} )
+                       (s/optional-key  :mime_type) (s/maybe s/Str)})
 
-(s/defschema UserEndorsement [{:id (s/maybe s/Int)
-                            :issuer_id (s/maybe s/Int)
-                            :issuer_name (s/maybe s/Str)
-                            :issuer_url (s/maybe s/Str)
-                            :user_badge_id s/Int
-                            :content s/Str
-                            :status (s/enum "pending" "accepted" "declined")
-                            :mtime s/Int
-                            (s/optional-key :first_name) s/Str
-                            (s/optional-key :last_name) s/Str
-                            (s/optional-key :profile_picture) (s/maybe s/Str)
-                            (s/optional-key :profile_visibility) (s/enum "internal" "public")
+(s/defschema UserEndorsement {:id s/Int
+                               :user_badge_id s/Int
+                               :content s/Str
+                               (s/optional-key :status) (s/maybe s/Str)
+                               (s/optional-key :ctime) (s/maybe s/Int)
+                               (s/optional-key :mtime) (s/maybe s/Int)
+                               (s/optional-key :issuer_id) (s/maybe s/Int)
+                               (s/optional-key :endorsee_id) (s/maybe s/Int)
+                               (s/optional-key :issuer_name) (s/maybe s/Str)
+                               (s/optional-key :issuer_url) (s/maybe s/Str)
+                               (s/optional-key :first_name) s/Str
+                               (s/optional-key :last_name) s/Str
+                               (s/optional-key :profile_picture) (s/maybe s/Str)
+                               (s/optional-key :profile_visibility) (s/enum "internal" "public")
+                               (s/optional-key :name) (s/maybe s/Str)
+                               (s/optional-key :image_file) (s/maybe s/Str)
+                               (s/optional-key :description) (s/maybe s/Str)})
 
-                            }])
+(s/defschema EndorsementRequest (-> UserEndorsement
+                                    (assoc (s/optional-key :issued_on) (s/maybe s/Int)
+                                           (s/optional-key :type) (s/maybe s/Str)
+                                           (s/optional-key :requester_id) s/Int
+                                           (s/optional-key :requestee_id) s/Int
+                                           (s/optional-key :user_id) s/Int
+                                           (s/optional-key :issuer_content_id) s/Str)))
+
+(s/defschema AllEndorsements {:given [(s/maybe UserEndorsement)]
+                              :received [(s/maybe UserEndorsement)]
+                              :requests [(s/maybe EndorsementRequest)]
+                              :sent-requests [(s/maybe EndorsementRequest)]
+                              :all-endorsements [(s/maybe (merge EndorsementRequest UserEndorsement))]})
