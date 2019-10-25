@@ -446,7 +446,8 @@
           tags (select-taglist {:user_badge_ids [user-badge-id]} (u/get-db ctx))
           evidences (badge-evidences ctx user-badge-id user-id)]
       (-> (assoc-badge-tags badge tags)
-          (assoc :evidences evidences)))))
+          (assoc :evidences evidences
+                 :user_endorsement_count (->> (select-accepted-badge-endorsements {:id user-badge-id}  (u/get-db ctx)) count))))))
 
 (defn save-badge-settings!
   "Update badge settings"

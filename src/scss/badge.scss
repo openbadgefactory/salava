@@ -2184,3 +2184,8 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   z-index: 100;
   background-color: #FF3333;
 }
+
+.endorsementlist{
+  max-height: 500px;
+  overflow-y: auto;
+}
