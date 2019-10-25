@@ -74,7 +74,7 @@
         new-field-atom (:new-field-atom param)
         func (:function param)]
     (create-class {:reagent-render (fn []
-                                    (let [badges (remove #(true? (bh/badge-expired? (:expires_on %))) (:badges @state))
+                                    (let [badges (remove #(or (true? (bh/badge-expired? (:expires_on %))) (:revoked %)) (:badges @state))
                                           order (keyword (:order @state))
                                           badges (case order
                                                    (:mtime) (sort-by order > badges)
