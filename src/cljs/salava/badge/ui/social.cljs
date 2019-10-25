@@ -157,8 +157,7 @@
 
              (into [:div.col-md-12 {:style {:margin-top "20px"}}]
                (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
-                 [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification]) :reload-fn (fn [] (update-settings (:id @state) state))}]))])]]])
-      :component-did-update (fn [] (prn "updaete"))})))
+                 [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification]) :reload-fn (fn [] (update-settings (:id @state) state))}]))])]]])})))
 
 
 (defn badge-views [data]
