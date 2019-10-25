@@ -553,7 +553,7 @@
     [:div.panel
      [:div.panel-heading
       [:h3
-       (str (t :badge/Endorsements))]
+       (str (t :badge/endorsements))]
       [:br]
       [:div (case @(cursor state [:show])
               "all" (t :badge/Allendorsementstext)
