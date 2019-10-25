@@ -8,11 +8,13 @@
  - Clear all notifications, dashboard
  - Badge event notifications (new comments, pending endorsements) in badge grid
 
+###  Updates
+
 - Made badge images in pages clickable
 - Moved comment functionality from gallery badges to user badge's social tab
 - Moved badge rating from settings tab to social tab
 - Merged Share tab into Social tab
-- Moved badge location setting from share tab to settings tab
+- Moved badge location setting from share tab to settings tab 
 - Minor ui fixes
 
 
