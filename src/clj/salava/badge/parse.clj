@@ -674,6 +674,13 @@
 
 ;;;
 
+(defn- find-tag [depth tag root]
+  (cond
+    (= (:tag root) tag) root
+    (> depth 10) nil
+    :else (some #(find-tag (inc depth) tag %) (:content root))))
+
+
 (defmulti file->badge (fn [_ upload]
                         (or (:content-type upload)
                             (get-in upload [:headers "Content-Type"]))))
@@ -687,20 +694,10 @@
              (str->badge user))))
 
 (defmethod file->badge "image/svg+xml" [user upload]
-  (some->> (xml/parse (or (:tempfile upload) (:body upload)))
-           :content
-           (filter #(= :openbadges:assertion (:tag %)))
-           first
-           :content
-           first
+  (some->> (or (:tempfile upload) (:body upload))
+           xml/parse (find-tag 0 :openbadges:assertion) :attrs :verify
            string/trim
            (str->badge user)))
-
-
-(defn- find-tag [tag root]
-  (if (= (:tag root) tag)
-    root
-    (some #(find-tag tag %) (:content root))))
 
 (defmethod file->badge "application/pdf" [user upload]
   (with-open [doc (pdf/obtain-document (or (:tempfile upload) (:body upload)))]
@@ -711,7 +708,7 @@
         (str->badge user))
       (some->>
         doc .getDocumentCatalog .getMetadata .createInputStream
-        xml/parse (find-tag :openbadges:assertion) :attrs :verify
+        xml/parse (find-tag 0 :openbadges:assertion) :attrs :verify
         string/trim
         (str->badge user)))))
 
