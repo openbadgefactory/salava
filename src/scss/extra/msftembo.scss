@@ -581,6 +581,11 @@ html[dir="rtl"] .wizard {
 #page-edit .thumbnail, #page-edit-theme .thumbnail {
   border: 1px solid $second-color;
 }
+
+.grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
+  background-color: #3d3e4f !important;
+}
+
 /*#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{

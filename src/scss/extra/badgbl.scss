@@ -320,7 +320,7 @@ button.navbar-toggle {
   background-color: $second-color;
   color: #000;
   border-color: $main-color;
-  font-weight: bold;
+  font-weight: bold !important;
 
   &:hover, &:active, &:focus, &:active:focus {
     background-color: $dark-green;

@@ -322,6 +322,11 @@ ul#secondary-menu-links li a i.fa {
   }
  }
 }
+
+.grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
+  background-color: $link-color !important;
+}
+
 /*#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{

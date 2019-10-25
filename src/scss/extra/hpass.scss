@@ -188,6 +188,7 @@ nav a#login-button{
 .btn-warning {
  background-color: $menu-active;
  border-color: $menu-active;
+ font-weight: bold !important;
 
  &:hover {
   background-color: lighten($menu-active, 5%);
@@ -673,9 +674,9 @@ ul#secondary-menu-links li a i.fa {
  color: $dark-red !important;
 }
 
-a.popup-info {
+a.popup-info, .thumbnail a.popup-info {
  .fa {
-  color: $orange-color;
+  color: $pink !important;
  }
 }
 
@@ -1037,4 +1038,8 @@ html[dir="rtl"] #step-button, #step-button-previous{
 
 #my-files .file-icon-large {
   color: #373739;
+}
+
+.grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
+  background-color: $pink !important;
 }
