@@ -158,16 +158,18 @@
         [endorsement-info-label endorsement]
         (when pickable? [:span.checkbox [:input {:type "checkbox" :on-change #(add-or-remove profile selected-users-atom) :checked (boolean (some #(= id (:id %)) @selected-users-atom))}]])
         [:div.row.flip.settings-endorsement
-         [:div.col-md-9 {:style {:margin-top "2px"}}
+         [:div.col-md-12.media; {:style {:margin-top "2px"}}
+          [:div.media-left
+            [:img {:src (profile-picture profile_picture)}]]
+          [:div.media-body
            [:a {:href "#"
                 :on-click #(mo/open-modal [:profile :view] {:user-id id})}
-            [:img.small-image {:src (profile-picture profile_picture)}]
             (str first_name " " last_name)]
            #_[:div.common-badges
               (if (= id current-user)
                 (t :gallery/ownprofile)
                 [:span common_badge_count " " (if (= common_badge_count 1)
-                                                (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]])))
+                                                (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]])))
 
 (defn allprofilesmodal [params]
  (let [country (session/get-in [:user :country] "all")

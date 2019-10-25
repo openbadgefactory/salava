@@ -1965,10 +1965,17 @@ a.popup-info {
 
   }
   .profile-element {
-    min-height: 65px;
-    max-height: 65px;
+    min-height: 75px;
+    max-height: 75px;
     padding: 6px;
     position: relative;
+    .media-body {
+      vertical-align: middle;
+    }
+    a {
+      font-weight: 600;
+      text-decoration: none;
+    }
     .common-badges {
       margin: 10px auto;
     }
@@ -1978,6 +1985,14 @@ a.popup-info {
       top: -6px;
       right: 0;
       z-index: 100;
+    }
+
+    img {
+      max-width: 55px;
+      max-height: 55px;
+      width: auto;
+      height: auto;
+      padding: 3px
     }
 
   }
