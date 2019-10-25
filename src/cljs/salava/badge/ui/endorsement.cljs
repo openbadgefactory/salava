@@ -48,7 +48,8 @@
      :finally (fn []
                 (when (and @(cursor state [:pending-info-atom]) @(cursor state [:pending-endorsements-atom]))
                     (reset! @(cursor state [:pending-info-atom]) (dec @@(cursor state [:pending-info-atom])))
-                    (reset! @(cursor state [:pending-endorsements-atom]) (:pending_endorsements_count @state))))}))
+                    (reset! @(cursor state [:pending-endorsements-atom]) (:pending_endorsements_count @state))
+                    (when @(cursor state [:reload-fn]) ((:reload-fn @state)))))}))
 
 (defn user-badge-endorsement-content [badge-id badge-endorsements & lang]
   (let [state (atom {:id badge-id})]
@@ -360,7 +361,7 @@
                                                 :aria-label "OK"
                                                 :class "close"
                                                 :on-click #(do (.preventDefault %)
-                                                               (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom)
+                                                               (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom :reload-fn reload-fn)
                                                                (delete-endorsement id user_badge_id state init-user-badge-endorsement))}
 
                                        [:i.fa.fa-trash.trash]]]]
@@ -374,13 +375,13 @@
                                      [:button.btn.btn-primary {:href "#"
                                                                :on-click #(do
                                                                             (.preventDefault %)
-                                                                            (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom)
+                                                                            (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom :reload-fn reload-fn)
                                                                             (update-status id "accepted" user_badge_id state init-user-badge-endorsement))}
                                                               (t :badge/Acceptendorsement)]
                                      [:button.btn.btn-warning.cancel {:href "#"
                                                                       :on-click #(do
                                                                                    (.preventDefault %)
-                                                                                   (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom)
+                                                                                   (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom :reload-fn reload-fn)
                                                                                    (update-status id "declined" user_badge_id state init-user-badge-endorsement))}
                                                                    (t :badge/Declineendorsement)]]]])]])))
                   [:div] @(cursor state [:user-badge-endorsements]))]]))))
@@ -434,11 +435,10 @@
                                                                 [:div.description description]]])
          ;(when description  [:div.description description])
          [:div (cond
-                 requester_id "" #_(t :badge/Manageendorsementrequest)
-                 requestee_id "Here you can delete sent endorsement requests"
+                 requester_id ""
+                 requestee_id (t :badge/Managesentendorsementrequest)
                  endorsee_id (t :badge/Manageendorsementtext1)
                  issuer_id (t :badge/Manageendorsementtext2)
-
                  :else "")]
 
          [:hr.line]
@@ -513,7 +513,7 @@
                            [:button.btn.btn-warning.cancel {:href "#"
                                                             :on-click #(do
                                                                          (.preventDefault %)
-                                                                         (update-status id "declined" user_badge_id state init-pending-endorsements))
+                                                                         (update-status id "declined" user_badge_id state nil #_init-pending-endorsements))
                                                             :data-dismiss "modal"} (t :badge/Declineendorsement)]]
                           [:div.row.flip.control-buttons
                            [:div.col-md-6.col-sm-6.col-xs-6  [:button.btn.btn-primary.cancel {:data-dismiss "modal"} (t :core/Cancel)]]
@@ -564,7 +564,7 @@
               (t :badge/Allendorsementstext))]]
 
      [:div.panel-body
-      [:div.table  {:summary (t :badge/Endorsements)}
+      [:div.table.endorsementlist  {:summary (t :badge/Endorsements)}
        (reduce (fn [r endorsement]
                  (let [{:keys [id endorsee_id issuer_id requester_id profile_picture issuer_name first_name last_name name image_file content status user_badge_id mtime type]} endorsement
                        endorser (or issuer_name (str first_name " " last_name))]
