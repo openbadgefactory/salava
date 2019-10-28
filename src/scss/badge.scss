@@ -1948,6 +1948,12 @@ a.popup-info {
     background-color: $background-color;
     text-align: center;
     border-radius: 4px;
+    .select-users-link {
+      white-space: normal;
+      .fa {
+          color: $background-color;
+      }
+    }
   }
   .profilescontainer {
     max-height: 930px;
@@ -2199,8 +2205,15 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   z-index: 100;
   background-color: #FF3333;
 }
+.panel-body.endorsement-container {
+  padding-right: 1px;
+  //min-height: 600px;
+  .endorsementlist{
+    max-height: 590px;
+    overflow-y: auto;
+    }
+}
 
-.endorsementlist{
-  max-height: 500px;
-  overflow-y: auto;
+.confirm-delete-block {
+  margin: 30px 0 5px 0;
 }
