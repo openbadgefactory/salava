@@ -121,7 +121,7 @@
       [:div {:style {:height "100%"}}
        [:a {:href "#"
             :on-click #(do
-                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement}) {:hidden (fn [] (init-dashboard state))})
+                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state (atom {:show-delete-dialogue false})}) {:hidden (fn [] (init-dashboard state))})
                          (.preventDefault %))}
            [:div {:class "media"}
                 [:div.media-left
@@ -454,15 +454,15 @@
            [:div.text
             [:p.num (:endorsers @state)]
             [:p.desc (t :badge/Endorsers)]]]]]
-        (when (pos? (:endorsement-requests @state))
+        (when (pos? (:pending-endorsements-requests @state)) #_(pos? (:endorsement-requests @state))
          [:div.info-block
           [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
                                                                               (.preventDefault %)
                                                                               (session/put! :visible-area "requests"))}
            [:div.info
-            (when (pos? (:pending-endorsements-requests @state)) [:span.badge (:pending-endorsements-requests @state)])
+            (when (pos? (:pending-endorsements-requests @state)) [:span.badge "!"])
             [:div.text
-             [:p.num (:endorsement-requests @state)]
+             [:p.num (:pending-endorsements-requests @state)]
              [:p.desc (t :badge/Endorsementrequests)]]]]])]]]]]])
 
 
