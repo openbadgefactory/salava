@@ -136,3 +136,13 @@ JOIN user_badge AS ub ON ub.id = uber.user_badge_id
 LEFT JOIN user AS issuer ON issuer.id = uber.issuer_id
 WHERE uber.user_badge_id = :id AND uber.status = 'pending'
 ORDER BY uber.mtime DESC
+
+--name:select-endorsement-event-info-by-endorsement-id
+-- return given endorsement event information
+SELECT ube.id, ube.user_badge_id, ube.content, bc.name FROM social_event AS se
+INNER JOIN user_badge_endorsement AS ube ON ube.id = se.object AND se.verb = 'endorse_badge'
+INNER JOIN user_badge AS ub ON ub.id= ube.user_badge_id
+INNER JOIN badge AS badge ON (badge.id = ub.badge_id)
+INNER JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+INNER JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE se.object = :id

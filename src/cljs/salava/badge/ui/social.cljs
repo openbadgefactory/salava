@@ -317,6 +317,7 @@
           [visibility-form dataatom state])
         [:div
          [:hr]
+         [:p [:b (str (t :badge/Sharethisbadge) ":")]]
          [s/share-buttons-badge
           (str (session/get :site-url) (path-for (str "/badge/info/" id)))
           name
