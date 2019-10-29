@@ -70,7 +70,7 @@
          events (map #(-> %
                           (assoc :info (events-helper ctx % user-id false))) (so/get-all-user-events ctx user-id))
          connections (so/get-connections-badge ctx current-user-id)
-         endorsements (-> (all-user-endorsements ctx user-id true) :all-endorsements)
+         endorsements (-> (all-user-endorsements ctx user-id true))
          pending-badges (b/user-badges-pending ctx user-id)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
@@ -162,7 +162,8 @@
                     :link {:family :times-roman
                            :color [66 100 162]}
                     :chunk {:size 11
-                            :style :bold}}
+                            :style :bold}
+                    :small-heading {:size 13 :style :bold}}
         pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
         user-info-template (pdf/template
                              (let [template (cons [:paragraph]
@@ -465,25 +466,46 @@
                                                   [:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description c))]"\n"
                                                   [:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"]))])])
 
-        user-endorsements-template (pdf/template
-                                     [:paragraph.generic
-                                      (when-not (empty? $endorsements)
-                                        [:paragraph
-                                         [:heading.heading-name (str (t :badge/Myendorsements ul) ": ")]
-                                         [:spacer 0]
-                                         (into [:paragraph]
-                                               (for [c $endorsements
-                                                     :let [name (str (:first_name c) " " (:last_name c))]]
-                                                 [:paragraph
-                                                  [:chunk name]"\n"
-                                                  [:chunk (:name c)]"\n"
-                                                  [:chunk (date-from-unix-time (long (* 1000 (:mtime c))) "date")]"\n"
-                                                  (process-markdown (:content c) (:user_badge_id c) "User Endorsements")]))])])
-                                                  ;[:chunk.chunk (str (t :badge/BadgeID ul) ": ")] [:chunk (str (:id c))]"\n"
-                                                  ;[:chunk.chunk (str (t :badge/Name ul) ": ")][:chunk (str (:name c))]"\n"
-                                                  ;[:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description c))]"\n"
-                                                  ;[:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"
-
+         user-endorsements-template  (pdf/template
+                                      [:paragraph.generic
+                                       (when-not (empty? $endorsements)
+                                        (let [{:keys [given received sent-requests]} $endorsements]
+                                          [:paragraph
+                                           [:heading.heading-name (str (t :badge/Myendorsements ul) ": ")]
+                                           [:spacer 0]
+                                           (when (seq given)
+                                             [:paragraph
+                                              [:chunk..small-heading (t :badge/Iendorsed ul)]
+                                              [:spacer 1]
+                                              (into [:paragraph] (for [g given
+                                                                       :let [name (str (:first_name g) " " (:last_name g))]]
+                                                                    [:paragraph
+                                                                     [:chunk name]"\n"
+                                                                     [:chunk.chunk (:name g)]"\n"
+                                                                     [:chunk (date-from-unix-time (long (* 1000 (:mtime g))) "date")]"\n"
+                                                                     (process-markdown (:content g) (:user_badge_id g) "User Endorsements")]))])
+                                           (when (seq received)
+                                             [:paragraph
+                                              [:chunk.small-heading (t :badge/Endorsedme ul)]
+                                              [:spacer 1]
+                                              (into [:paragraph] (for [r received
+                                                                       :let [name (str (:first_name r) " " (:last_name r))]]
+                                                                    [:paragraph
+                                                                     [:chunk (:issuer_name r)]"\n"
+                                                                     [:chunk.chunk (:name r)]"\n"
+                                                                     [:chunk (date-from-unix-time (long (* 1000 (:mtime r))) "date")]"\n"
+                                                                     (process-markdown (:content r) (:user_badge_id r) "User Endorsements")]))])
+                                           (when (seq sent-requests)
+                                             [:paragraph
+                                              [:chunk.small-heading (t :badge/Sentendorsementrequests ul)]
+                                              [:spacer 1]
+                                              (into [:paragraph] (for [sr sent-requests
+                                                                       :let [name (str (:first_name sr) " " (:last_name sr))]]
+                                                                    [:paragraph
+                                                                     [:chunk (:issuer_name sr)]"\n"
+                                                                     [:chunk.chunk (:name sr)]"\n"
+                                                                     [:chunk (date-from-unix-time (long (* 1000 (:mtime sr))) "date")]"\n"
+                                                                     (process-markdown (:content sr) (:user_badge_id sr) "User Endorsements")]))])]))])
 
         events-template (pdf/template
                           (let [template (cons [:paragraph]
