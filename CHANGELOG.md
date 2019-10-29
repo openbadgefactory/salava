@@ -15,6 +15,7 @@
 - Moved badge rating from settings tab to social tab
 - Merged share tab into social tab
 - Moved badge location setting from share tab to settings tab
+- Updated my data page, pdf export
 - Minor ui fixes
 
 
