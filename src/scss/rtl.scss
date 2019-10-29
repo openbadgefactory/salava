@@ -1878,5 +1878,52 @@ html[dir="rtl"] .expandable-block {
   .panel-status-icon {
     right: unset;
     left: 10px;
+    &:before {
+         content: "\f137"
+       }
   }
+}
+
+html[dir="rtl"] span.endorsement-notification {
+  margin-left: unset;
+  margin-right: 5px;
+}
+
+html[dir="rtl"] .modal-navi-info {
+  right: unset;
+  left: 0;
+}
+
+html[dir="rtl"] #social-tab {
+  div.rating {
+    right: unset;
+    left: 12px;
+  }
+  .fa-hand-o-right:before {
+    content: "\f0a5"
+  }
+  .profile-element .checkbox {
+      right: unset;
+      left: 0;
+    }
+  span.endorsement-info-label {
+    right: unset;
+    left: 0;
+  }
+  .social-panel-info {
+    left: unset;
+    right:0;
+  }
+
+}
+
+html[dir="rtl"] .editor .CodeMirror-scroll{
+    margin-right: unset;
+    margin-left: -30px;
+}
+
+html[dir="rtl"] #endorsebadge{
+    .fa-hand-o-right:before {
+      content: "\f0a5"
+    }
 }

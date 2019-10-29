@@ -81,13 +81,15 @@
   (let [asr (assertion (:assertion_url user-badge))
         factory-url (remote-url factory-url (:body asr))
         delete-user-metabadge (first (u/plugin-fun (u/get-plugins ctx) "db" "clear-user-metabadge!"))
-        check-metabadge (first (u/plugin-fun (u/get-plugins ctx) "db" "metabadge?!"))]
+        check-metabadge (first (u/plugin-fun (u/get-plugins ctx) "db" "metabadge?!"))
+        delete-pending-requests (first (u/plugin-fun (u/get-plugins ctx) "endorsement" "delete-pending-request!"))]
     (if (revoked? asr)
       (do
         (jdbc/execute! db-conn
                        ["UPDATE user_badge SET revoked = 1, last_checked = UNIX_TIMESTAMP() WHERE id = ?"
                         (:id user-badge)])
-        (if delete-user-metabadge (delete-user-metabadge ctx (:id user-badge))))
+        (when delete-user-metabadge (delete-user-metabadge ctx (:id user-badge)))
+        (when delete-pending-requests (delete-pending-requests ctx (:id user-badge))))
 
       ;; still valid, check verified issuer
       (jdbc/with-db-transaction [t-con db-conn]
@@ -97,7 +99,8 @@
                               (if (issuer-verified? factory-url (:body asr))
                                 1
                                 0) (:badge_id user-badge)])
-        (if (and check-metabadge (not (clojure.string/blank? factory-url))) (check-metabadge ctx factory-url user-badge))))))
+        (if (and check-metabadge (not (clojure.string/blank? factory-url))) (check-metabadge ctx factory-url user-badge))
+        (when delete-pending-requests (delete-pending-requests ctx (:id user-badge)))))))
 
 (defn- check-badges [ctx db-conn factory-url]
   (log/info "check-badges: started working")

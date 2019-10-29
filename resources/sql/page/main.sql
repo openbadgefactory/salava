@@ -217,7 +217,7 @@ SELECT DISTINCT ub.id, bc.name, bc.image_file FROM user_badge AS ub
   JOIN badge AS badge ON (badge.id = ub.badge_id)
   JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
   JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
-  WHERE pb.block_id = :block_id
+  WHERE pb.block_id = :block_id AND ub.revoked = 0 AND ub.deleted = 0
   ORDER BY pb.badge_order
 
 --name: select-showcase-block-content
@@ -238,7 +238,7 @@ FROM user_badge AS ub
   LEFT JOIN user_badge_evidence AS ube ON (ube.user_badge_id = ub.id)
   LEFT JOIN badge_creator_content AS bcrc ON (bcrc.badge_id = ub.badge_id)
   LEFT JOIN creator_content AS crc ON (crc.id = bcrc.creator_content_id)  AND crc.language_code = badge.default_language_code
-  WHERE pb.block_id = :block_id
+  WHERE pb.block_id = :block_id AND ub.revoked = 0 AND ub.deleted = 0
   ORDER BY pb.badge_order
 
 --name: delete-page-profile-fields!

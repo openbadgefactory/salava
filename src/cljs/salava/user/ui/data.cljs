@@ -60,7 +60,7 @@
 
 
 (defn content [state]
-  (let [{user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
+  (let [{location :location user_followers :user_followers user_following :user_following pending_badges :pending_badges connections :connections events :events user_files :user_files user_badges :user_badges endorsements :endorsements
          user_pages :user_pages owner? :owner? {id :id first_name :first_name last_name :last_name profile_picture :profile_picture about :about role :role language :language
                                                 private :private activated? :activated country :country
                                                 email_notifications :email_notifications
@@ -134,7 +134,8 @@
             [:div.col-xs-12 [:b (str (t :user/Emailnotifications) ": ")]  (if (true? email_notifications) (t :core/Yes) (t :core/No))]
             [:div.col-xs-12 [:b (str (t :user/Privateprofile) ": ")] (if (true? private) (t :core/Yes) (t :core/No))]
             [:div.col-xs-12 [:b (str (t :user/Activated) ": ")] (if (true? activated?) (t :core/Yes) (t :core/No))]
-            [:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))]]]]
+            [:div.col-xs-12  [:b (str (t :user/Profilevisibility) ": ")] (t (keyword (str "core/"(capitalize profile_visibility))))]
+            (when-not (and (nil? (:lat location)) (nil? (:lng location)))[:div.col-xs-12 {:style {:margin-bottom "20px"}} [:b (str (t :location/Location) ": ")] (str (:lat location) "," (:lng location))])]]]
 
          [:div {:class "row col-md-12 col-sm-12 col-xs-12 th-align" :style {:margin-bottom "10px"}}
           [:h2 {:class "uppercase-header"} [:a {:href (path-for "/user/edit/email-addresses")} (str (if (empty? (rest email)) (t :user/Email) (t :user/Emailaddresses)))]]
@@ -234,7 +235,7 @@
                 [:th (t :social/Created)]]]
               [:tbody
                (doall
-                 (for [e (reverse events)]
+                 (for [e (->> (reverse events) (remove #(= "-" (:info %))))]
                    ^{:key e}[:tr
                              [:td [:div (t (keyword (str "social/"(:verb e))))]]
                              [:td [:div (case (:type e)
@@ -256,6 +257,14 @@
                                           "followbadge" (or (get-in e [:info :object_name]) "-")
                                           "followuser" (or (get-in e [:info :object_name]) "-")
                                           "ticketadmin" (or (get-in e [:info :object_name]) "-")
+                                          "request_endorsementbadge" [:div {:style {:max-width "550px"}}
+                                                                       (or (get-in e [:info :object_name]) "-")"\n"
+                                                                       [:br][:br]
+                                                                       [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
+                                          "endorse_badgebadge" [:div {:style {:max-width "550px"}}
+                                                                 (or (get-in e [:info :object_name]) "-") "\n"
+                                                                 [:br][:br]
+                                                                 [:div {:dangerouslySetInnerHTML {:__html (or (get-in e [:info :content]) "-")}  :style {:font-style "italic"}}]]
                                           "-")]]
                              [:td [:div (date-from-unix-time (* 1000 (:ctime e)))]]]))]]])]]])]))
 

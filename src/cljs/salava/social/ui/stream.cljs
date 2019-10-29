@@ -16,7 +16,7 @@
             [salava.badge.ui.pending :refer [pending-badge-content]]
             [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
             [salava.badge.ui.modal :as bm]
-            [salava.badge.ui.endorsement :refer [pending-endorsements]]
+            [salava.badge.ui.endorsement :refer [pending-endorsements pending-endorsement-requests]]
             [salava.admin.ui.helper :refer [admin?]]))
 
 
@@ -411,7 +411,7 @@
         [:h3.media-heading (str (t :social/Emptystreamheader) " " (t :social/Sometips))]
         [:div.media-body
         [:ul
-         [:li (t :social/Pagetip) " "  [:a {:href (path-for "/page") } (t :page/Mypages)]]
+         [:li (t :social/Pagetip) " "  [:a {:href (path-for "/profile/page") } (t :page/Mypages)]]
          [:li (t :social/Badgetip) " " [:a {:href (path-for "/badge") } (t :badge/Mybadges) ]]
          [:li (t :social/Profiletip) " " [:a {:href (path-for "/gallery/profiles") }(t :gallery/Sharedprofiles)  ]]]]]]])
 
@@ -430,6 +430,7 @@
      #_[badge-alert state]
      [pending-connections reload-fn]
      [pending-endorsements]
+     [pending-endorsement-requests]
      #_[badges-pending state]
      (if (not-activated?)
        (not-activated-banner))

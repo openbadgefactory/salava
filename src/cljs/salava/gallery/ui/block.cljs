@@ -3,10 +3,14 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.ui.badge-grid :refer [badge-grid-element]]
             [salava.core.i18n :refer [t]]
-            [reagent.core :refer [atom cursor]]
+            [reagent.core :refer [atom cursor create-class]]
             [salava.core.ui.page-grid :refer [page-grid-element]]
             [salava.user.ui.helper :refer [profile-link-inline-modal]]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [salava.gallery.ui.profiles :as profiles]
+            [reagent-modals.modals :as m]
+            [salava.core.ui.modal :as mo]
+            [salava.user.ui.helper :refer [profile-picture]]))
 
 (defn init-grid [kind state]
   (ajax/GET
@@ -105,8 +109,7 @@
     (when (session/get :user)
       (when (empty? @state)(ajax/GET
                             (path-for (str "/obpv1/gallery/recipients/" gallery_id))
-                            {;:params {:galleryid gallery_id}
-                             :handler (fn [data]
+                            {:handler (fn [data]
                                         (reset! state data))}))
       (fn []
        (let [{:keys [public_users private_user_count all_recipients_count]} @state
@@ -114,12 +117,11 @@
               title (if @expanded (t :core/Clicktocollapse) (t :core/Clicktoexpand))]
         [:div.row
          [:div.col-md-12
-          [:div.panel.expandable-block ;{:style {:padding "unset"}}
+          [:div.panel.expandable-block
            [:div.panel-heading {:style {:padding "unset"}}
             [:h2.uppercase-header (str (t :gallery/recipients) ": " all_recipients_count)]
             [:a {:href "#" :on-click #(do (.preventDefault %)
                                           (if @expanded (reset! expanded false) (reset! expanded true)))}
-              ;[:h2.uppercase-header (str (t :gallery/Allrecipients) ": " all_recipients_count)]
               [:i.fa.fa-lg.panel-status-icon.in-badge {:class icon-class :title title}]]]
            (when @expanded
              [:div.panel-body {:style {:padding "unset"}}
@@ -132,3 +134,101 @@
                  (if (> (count public_users) 0)
                    [:span "... " (t :core/and) " " private_user_count " " (t :core/more)]
                    [:span private_user_count " " (if (> private_user_count 1) (t :gallery/recipients) (t :gallery/recipient))]))]])]]])))))
+
+(defn- add-or-remove [x coll]
+ (if (some #(= (:id x) %) (mapv :id @coll))
+  (reset! coll (->> @coll (remove #(= (:id x) (:id %))) vec))
+  (reset! coll (conj @coll (select-keys x [:id :first_name :last_name :profile_picture])))))
+
+(defn- endorsement-info-label [{:keys [request received]}]
+ (cond
+   (= "accepted" received) [:span.label.label-success.endorsement-info-label [:i.fa.fa-thumbs-o-up](t :badge/Endorsedyou)]
+   (= "pending" received)  [:span.label.label-info.endorsement-info-label [:i.fa.fa-thumbs-o-up] (t :badge/pendingreceived)]
+   (and (complement (clojure.string/blank? request)) (= "pending" request))  [:span.label.label-info.endorsement-info-label [:i.fa.fa-hand-o-left](t :badge/requestsent)]
+   :else ""))
+
+(defn- profile-grid-element [profile selected-users-atom type]
+  (let [{:keys [id profile_picture first_name last_name common_badge_count endorsement]} profile
+        pickable? (and (= "pickable" type) (every? nil? (vals endorsement)))
+        current-user (session/get-in [:user :id])]
+   (fn []
+    [:div.col-md-4.col-sm-6.col-xs-12
+     [:div.panel.panel-default.endorsement.profile-element
+      [:div.panel-body {:style {:padding "4px"}}
+        [endorsement-info-label endorsement]
+        (when pickable? [:span.checkbox [:input {:type "checkbox" :on-change #(add-or-remove profile selected-users-atom) :checked (boolean (some #(= id (:id %)) @selected-users-atom))}]])
+        [:div.row.flip.settings-endorsement
+         [:div.col-md-12.media; {:style {:margin-top "2px"}}
+          [:div.media-left
+            [:img {:src (profile-picture profile_picture)}]]
+          [:div.media-body
+           [:a {:href "#"
+                :on-click #(mo/open-modal [:profile :view] {:user-id id})}
+            (str first_name " " last_name)]
+           #_[:div.common-badges
+              (if (= id current-user)
+                (t :gallery/ownprofile)
+                [:span common_badge_count " " (if (= common_badge_count 1)
+                                                (t :gallery/commonbadge) (t :gallery/commonbadges))])]]]]]]])))
+
+(defn allprofilesmodal [params]
+ (let [country (session/get-in [:user :country] "all")
+       filter-options (session/get :filter-options nil)
+
+       common-badges? (if filter-options (:common-badges filter-options) true)
+       {:keys [type selected-users-atom context user_badge_id]} params
+       data-atom (atom {:users []
+                        :selected []
+                        :ajax-message nil
+                        :name ""
+                        :order_by "ctime"
+                        :common-badges? common-badges?
+                        :country-selected (session/get-in [:filter-options :country] country)
+                        :user_badge_id user_badge_id
+                        :context context
+                        :url (str "/obpv1/gallery/profiles/" user_badge_id "/" context)
+                        :sent-requests []})]
+
+
+   (create-class {:reagent-render (fn []
+                                    [:div
+                                     [:div {:id "social-tab"}
+                                      [profiles/profile-gallery-grid-form data-atom]
+                                      (if (:ajax-message @data-atom)
+                                        [:div.ajax-message
+                                         [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                                         [:span (:ajax-message @data-atom)]]
+                                        [:div#endorsebadge
+                                         (conj
+                                           [:div
+                                            (reduce (fn [r user]
+                                                      (conj r [profile-grid-element user selected-users-atom type]))
+                                                   [:div.col-md-12.profilescontainer
+                                                    (when (= "endorsement" context)
+                                                      [:div.col-md-12 {:style {:font-weight "bold"}}
+                                                        [:hr.line]
+                                                        [:p (t :badge/Requestendorsementmodalinfo)]
+                                                        [:hr.line]])]
+                                             (->> @(cursor data-atom [:users])
+                                                   (remove #(= (:id %) (session/get-in [:user :id])))
+                                                   (filter #(every? nil? (-> % :endorsement vals)))))]
+
+                                           [:div.col-md-12.confirmusers {:style {:margin "10px auto"}}
+                                            [:button.btn.btn-primary {:on-click #(mo/previous-view) #_(do (.preventDefault %)
+                                                                                                          (mo/previous-view))
+                                                                      :disabled (empty? @selected-users-atom)}
+                                             (t :core/Continue)]])])]])
+                  :component-will-mount (fn []
+                                           (ajax/POST
+                                            (path-for (str "/obpv1/gallery/profiles/" user_badge_id "/" context))
+                                            {:params {:country (session/get-in [:filter-options :country] country)
+                                                      :name ""
+                                                      :common_badges common-badges?
+                                                      :order_by "ctime"}
+                                             :handler (fn [{:keys [users countries]} data]
+                                                        (swap! data-atom assoc :users users
+                                                               :countries countries
+                                                               :country-selected (session/get-in [:filter-options :country] country)))
+                                             :finally (fn []
+                                                        ;(when (= "endorsement" context) )
+                                                        (swap! data-atom assoc :ajax-message nil))}))})))

@@ -12,21 +12,19 @@
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.social.ui.badge-message :refer [badge-message-handler]]))
 
-
-
 (defn modal-content [{:keys [badge public_users private_user_count]}]
   (let [{:keys [badge_id name image_file message_count]} (first (filter  #(= (:language_code %) (:default_language_code %)) (:content badge)))
         all-messages (str (t :social/Messages)  " (" (:all-messages message_count) ") ")
         new-messages (if (pos? (:new-messages message_count))
-                       (str (:new-messages message_count) " " (t :social/Newmessages ))
+                       (str (:new-messages message_count) " " (t :social/Newmessages))
                        "")
         all-messages (str all-messages new-messages)]
     (fn []
       [:div {:id "badge-contents"}
        [:div.row
         [:div {:class "col-md-3 badge-image modal-left"}
-         [:img {:src (str "/" image_file)}]
-         ]
+         [:img {:src (str "/" image_file)}]]
+
         [:div {:class "col-md-9 badge-info"}
          [:div.row
           [:h1.uppercase-header (str name " - " (t :social/Messages))]
@@ -88,9 +86,10 @@
               :on-click #(do
                            (mo/open-modal [:gallery :badges] {:badge-id badge-id
                                                               :show-messages true
+                                                              :hide-info-link true
                                                               :reload-fn nil})
                            ;(open-modal badge-id)
-                           (.preventDefault %) )}
+                           (.preventDefault %))}
           (str (:all-messages @message-count) " " (if (= 1 (:all-messages @message-count))
                                                     (t :social/Comment)
                                                     (t :social/Comments)))
@@ -115,8 +114,7 @@
                :on-click #(do
                             (reset! show-messages (if (= true @show-messages) nil true))
                             (.preventDefault %))
-               :class  (if @show-messages "info" )}
+               :class  (if @show-messages "info")}
            (if @show-messages
              (t :social/Showinfo)
              all-messages)])))))
-

@@ -96,6 +96,42 @@
                   [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
        (stream/hide-event event_id state)]))
 
+(defn endorse-event-badge [event state]
+  (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture] }  event
+        endorsement (select-keys event [:id :profile_picture :name :first_name :last_name :image_file :content :user_badge_id :issuer_id :issuer_name :endorsee_id :status])]
+
+      [:div {:style {:height "100%"}}
+       [:a {:href "#"
+            :on-click #(do
+                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement}) {:hidden (fn [] (init-dashboard state))})
+                         (.preventDefault %))}
+           [:div {:class "media"}
+                [:div.media-left
+                 [:img.small-image {:src (profile-picture profile_picture)}]]
+                [:div.media-body
+                 [:div.content-text
+                  [:p.content-heading (str first_name " " last_name " " (t :badge/Hasendorsedyou) " " name)]
+                  [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+       (stream/hide-event event_id state)]))
+
+(defn endorsement-request-event-badge [event state]
+  (let [{:keys [event_id subject verb image_file message ctime event_id name object first_name last_name profile_picture] }  event
+        endorsement (select-keys event [:id :profile_picture :first_name :last_name :name :image_file :content :user_badge_id :requester_id :status :description :issuer_name :issuer_content_id :issued_on])]
+
+      [:div {:style {:height "100%"}}
+       [:a {:href "#"
+            :on-click #(do
+                         (mo/open-modal [:badge :userendorsement] (atom {:endorsement endorsement :state (atom {:show-delete-dialogue false})}) {:hidden (fn [] (init-dashboard state))})
+                         (.preventDefault %))}
+           [:div {:class "media"}
+                [:div.media-left
+                 [:img.small-image {:src (profile-picture profile_picture)}]]
+                [:div.media-body
+                 [:div.content-text
+                  [:p.content-heading (str first_name " " last_name  " " (t :badge/requestsendorsement) " " name)]
+                  [:span.date (date-from-unix-time (* 1000 ctime) "days")]]]]]
+       (stream/hide-event event_id state)]))
+
 
 (defn publish-event-page [event state]
   (let [{:keys [subject verb profile_picture message ctime event_id name object first_name last_name]}  event]
@@ -176,19 +212,23 @@
         [:div.content
          [:div.row.welcome-message
            [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden" :on-click #(do
-                                                                                                                                          (.preventDefault %)
-                                                                                                                                          (if (= "true" (dommy/attr (sel1 :#hidden) :aria-expanded))
-                                                                                                                                            (reset! arrow-class "fa-angle-up")
-                                                                                                                                            (reset! arrow-class "fa-angle-down")))}[:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]]
+                                                                                                                                         (.preventDefault %)
+                                                                                                                                         (if (= "true" (dommy/attr (sel1 :#hidden) :aria-expanded))
+                                                                                                                                           (reset! arrow-class "fa-angle-up")
+                                                                                                                                           (reset! arrow-class "fa-angle-down")))}[:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]]
            (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))
           [:div.collapse {:id "hidden"}
            [:div.hidden-content
             [:p message]]]]])]]))
 
+(defn hide-all-events! [state]
+  (ajax/POST
+   (path-for (str "/obpv1/social/events/hide_all"))
+   {:handler (fn [data] (init-dashboard state))}))
 
 (defn notifications-block [state]
-  (let [events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take 5))
-        admin-events (->> (:events @state) (filter #(= (:verb %) "ticket")))
+  (let [admin-events (->> (:events @state) (filter #(= (:verb %) "ticket")))
+        events (->> (:events @state) (remove #(= (:verb %) "ticket")) (take (if (pos? (count admin-events)) 4 5)))
         tips (:tips @state)]
     [:div {:class "box col-md-4"}
      [:div#box_1
@@ -197,6 +237,7 @@
         [:div.heading_1 [:i.fa.fa-rss.icon]
          [:a {:href "social/stream"} [:span.title (t :social/Stream)]] [:span.badge (count (:events @state))]
          [:span.icon.small]]
+
 
         (if (not-activated?)
           [:div.content
@@ -227,9 +268,11 @@
                                                          (and (= "page" (:type event)) (= "publish" (:verb event))) (publish-event-page event state)
                                                          (= "advert" (:type event)) (badge-advert-event event state)
                                                          (= "message" (:verb event)) [message-event event state]
+                                                         (and (= "badge" (:type event)) (= "endorse_badge" (:verb event))) (endorse-event-badge event state)
+                                                         (and (= "badge" (:type event)) (= "request_endorsement" (:verb event))) (endorsement-request-event-badge event state)
                                                          :else "")]))
 
-                                      [:div] events)
+                                      [:div (when (>= (count events) 4)[:div.clear_all [:a {:href "#" :on-click #(hide-all-events! state)} [:span [:i.fa.fa-remove.fa-fw] (t :social/clearall)]]])] events)
             [:div.col-md-12 (t :social/Emptystreamheader)])])]]]]))
 
 
@@ -410,7 +453,18 @@
            (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
            [:div.text
             [:p.num (:endorsers @state)]
-            [:p.desc (t :badge/Endorsers)]]]]]]]]]]])
+            [:p.desc (t :badge/Endorsers)]]]]]
+        (when (pos? (:pending-endorsements-requests @state)) #_(pos? (:endorsement-requests @state))
+         [:div.info-block
+          [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
+                                                                              (.preventDefault %)
+                                                                              (session/put! :visible-area "requests"))}
+           [:div.info
+            (when (pos? (:pending-endorsements-requests @state)) [:span.badge "!"])
+            [:div.text
+             [:p.num (:pending-endorsements-requests @state)]
+             [:p.desc (t :badge/Endorsementrequests)]]]]])]]]]]])
+
 
 (defn profile-tips-block []
  (let [block (first (plugin-fun (session/get :plugins) "block" "profiletips"))]

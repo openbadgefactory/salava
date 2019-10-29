@@ -258,7 +258,7 @@
     [gallery-badge-content gallery-id visible]))
 
 
-(defn ^:export badge_share [user-badge-id]
+(defn ^:export badge_settings [user-badge-id]
   (let [visible (atom true)]
     [badge-share-content user-badge-id visible]))
 

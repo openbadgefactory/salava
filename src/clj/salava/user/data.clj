@@ -6,6 +6,7 @@
     [salava.page.main :as p]
     [salava.file.db :as f]
     [salava.social.db :as so]
+    [salava.location.db :as loc]
     [salava.core.helper :refer [dump]]
     [salava.core.util :as util]
     [clj-pdf.core :as pdf]
@@ -17,22 +18,34 @@
     [salava.core.i18n :refer [t translate-text]]
     [salava.user.schemas :refer [contact-fields]]
     [salava.badge.pdf :refer [replace-nils process-markdown]]
-    [salava.badge.endorsement :refer [all-user-endorsements]]
-    ))
+    [salava.badge.endorsement :refer [all-user-endorsements]]))
+
 
 (defqueries "sql/badge/main.sql")
+(defqueries "sql/badge/endorsement.sql")
 (defqueries "sql/social/queries.sql")
 (defqueries "sql/admin/queries.sql")
+(defqueries "sql/location/queries.sql")
 
-(defn events-helper [ctx event user-id]
+(defn- request-event-map [ctx request-id user-id md?]
+ (let [{:keys [user_badge_id content]} (select-request-by-request-id {:id request-id} (into {:result-set-fn first} (util/get-db ctx)))
+       badge-info (when user_badge_id (b/get-badge ctx user_badge_id user-id))]
+   (if (and user_badge_id name content) {:object_name (-> badge-info :content first :name) :content (if md? (util/md->html content) content) :badge_id user_badge_id} nil)))
+
+(defn- endorsement-event-map [ctx endorsement-id user-id md?]
+ (let [{:keys [user_badge_id name content]} (select-endorsement-event-info-by-endorsement-id {:id endorsement-id} (into {:result-set-fn first} (util/get-db ctx)))]
+  (if (and user_badge_id name content) {:object_name name :content (if md? (util/md->html content) content) :badge_id user_badge_id} nil)))
+
+(defn events-helper [ctx event user-id md?]
   (let [badge-info (select-multi-language-badge-content {:id (:object event)} (util/get-db ctx))
         badge-id (select-user-badge-id-by-badge-id-and-user-id {:id (:id event)} (util/get-db ctx))
         get-badge (b/fetch-badge ctx (:id badge-id))
         user-info (u/user-information ctx (:object event))
         user-badge-info (b/fetch-badge ctx (:object event))
         message (select-message-by-badge-id-and-user-id {:badge_id (:object event) :user_id user-id :ctime (:ctime event)} (util/get-db ctx))
-        page-info (p/page-with-blocks ctx (:object event))]
-
+        page-info (p/page-with-blocks ctx (:object event))
+        request-info (when (= "request_endorsement" (:verb event)) (request-event-map ctx (:object event) user-id md?))
+        endorsement-info (when (= "endorse_badge" (:verb event)) (endorsement-event-map ctx (:object event) user-id md?))]
     (cond
       (and (= (:verb event) "follow") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id (:id badge-id)}
       (and (= (:verb event) "follow") (= (:type event) "user")) {:object_name (str (:first_name user-info) " " (:last_name user-info)) :id (:object event)}
@@ -40,10 +53,12 @@
       (and (= (:verb event) "message") (= (:type event) "badge")) {:object_name (:name (first badge-info)) :badge_id badge-id :message (first message)}
       (and (= (:verb event) "publish") (= (:type event) "badge")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
       (and (= (:verb event) "unpublish") (= (:type event) "badge")) {:object_name (:name (first (:content user-badge-info))) :badge_id (:object event)}
-      (and (= (:verb event) "publish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info) }
-      (and (= (:verb event) "unpublish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info) }
-      :else nil
-      )))
+      (and (= (:verb event) "publish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info)}
+      (and (= (:verb event) "unpublish") (= (:type event) "page")) {:object_name (:name page-info) :page_id (:id page-info)}
+      (and (= (:verb event) "request_endorsement") (= (:type event) "badge")) request-info
+      (and (= (:verb event) "endorse_badge") (= (:type event) "badge")) endorsement-info
+      :else nil)))
+
 
 (defn all-user-data
   ([ctx user-id current-user-id]
@@ -53,15 +68,15 @@
          user-pages (p/user-pages-all ctx current-user-id)
          user-files (f/user-files-all ctx  current-user-id)
          events (map #(-> %
-                          (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
+                          (assoc :info (events-helper ctx % user-id false))) (so/get-all-user-events ctx user-id))
          connections (so/get-connections-badge ctx current-user-id)
-         endorsements (-> (all-user-endorsements ctx user-id true) :all-endorsements)
+         endorsements (-> (all-user-endorsements ctx user-id true))
          pending-badges (b/user-badges-pending ctx user-id)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) nil)
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-         user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil) ]
-
+         user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) nil)
+         user-location (-> (select-user-location {:user current-user-id} (into {:result-set-fn first} (util/get-db ctx))))]
      (assoc (replace-nils (assoc all-user-info
                             :emails email-addresses
                             :user_badges user-badges
@@ -73,7 +88,8 @@
                             :pending_badges pending-badges
                             :user_followers user-followers
                             :user_following user-following
-                            )) :events events)))
+                            :location user-location))
+            :events events)))
 
   ([ctx user-id current-user-id _]
    (let [all-user-info (u/user-information-and-profile ctx user-id current-user-id)
@@ -92,13 +108,15 @@
                            {:name (:name f)
                             :path (:path f)}) (:files (f/user-files-all ctx  current-user-id)))
          events (map #(-> %
-                          (assoc :info (events-helper ctx % user-id))) (so/get-all-user-events ctx user-id))
+                          (assoc :info (events-helper ctx % user-id true))) (so/get-all-user-events ctx user-id))
          connections (count (so/get-connections-badge ctx current-user-id))
          endorsements (-> (all-user-endorsements ctx user-id) :all-endorsements count)
          user-followers-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-followers-connections"))
          user-followers (if-not (nil? user-followers-fn) (user-followers-fn ctx user-id) ())
          user-following-fn (first (util/plugin-fun (util/get-plugins ctx) "db" "get-user-following-connections-user"))
-         user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) ())]
+         user-following (if-not (nil? user-followers-fn) (user-following-fn ctx user-id) ())
+         user-location (-> (select-user-location {:user current-user-id} (into {:result-set-fn first} (util/get-db ctx))))]
+
      (replace-nils (assoc all-user-info
                      :emails email-addresses
                      :user_badges user-badges
@@ -110,7 +128,8 @@
                      :user_followers user-followers
                      :user_following user-following
                      :endorsements endorsements
-                     )))))
+                     :location user-location)))))
+
 
 (defn strip-html-tags [s]
   (->> s
@@ -122,8 +141,8 @@
        (take-while (complement zip/end?))
        (filter (complement zip/branch?))
        (map zip/node)
-       (apply str)
-       ))
+       (apply str)))
+
 
 (defn export-data-to-pdf [ctx user-id current-user-id]
   (let [data-dir (get-in ctx [:config :core :data-dir])
@@ -143,7 +162,8 @@
                     :link {:family :times-roman
                            :color [66 100 162]}
                     :chunk {:size 11
-                            :style :bold}}
+                            :style :bold}
+                    :small-heading {:size 13 :style :bold}}
         pdf-settings  (if (empty? font-path) {:stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}} {:font font :stylesheet stylesheet  :bottom-margin 0 :footer {:page-numbers false :align :right}})
         user-info-template (pdf/template
                              (let [template (cons [:paragraph]
@@ -161,9 +181,10 @@
                                                     [:chunk.chunk (str (t :user/Activated ul) ": ")][:chunk (str (if (true? (:activated $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
                                                     [:chunk.chunk (str (t :user/Emailnotifications ul) ": ")][:chunk (str (if (true? (:email_notifications $user)) (t :core/Yes ul) (t :core/No ul)) "  ")]
                                                     [:chunk.chunk (str (t :user/Profilevisibility ul) ": ")][:chunk (t (keyword (str "core/"(capitalize (:profile_visibility $user)))) ul)]"\n"
-                                                    [:paragraph
-                                                     [:chunk.chunk (str (t :user/Aboutme ul) ":")]"\n"
-                                                     [:paragraph (str (:about $user)) ]]]
+                                                    (when-not (or (nil? $location) (= "-" $location))[:paragraph [:chunk.chunk (str (t :location/Location ul) ": ")][:chunk (str (:lat $location) "," (:lng $location))]])
+                                                    (when-not (blank? (:about $user))[:paragraph
+                                                                                      [:chunk.chunk (str (t :user/Aboutme ul) ":")]"\n"
+                                                                                      [:paragraph (str (:about $user))]])]
                                                    [:spacer 2]])]
                                template))
 
@@ -180,8 +201,8 @@
                                    [:chunk.chunk (str (t :user/verified ul)": ")] [:chunk (str (if (true? (:verified e)) (t :core/Yes ul) (t :core/No ul)) "  ")]
                                    (when (= true primary-address)
                                      [:phrase
-                                      [:chunk.chunk (str (t :user/Loginaddress ul)": ")] [:chunk (t :core/Yes ul)] "\n"]
-                                     )
+                                      [:chunk.chunk (str (t :user/Loginaddress ul)": ")] [:chunk (t :core/Yes ul)] "\n"])
+
                                    [:chunk.chunk (str (t :user/BackpackID ul) ": ")][:chunk (str (:backpack_id e))]]))])
 
         profile-template (pdf/template
@@ -196,8 +217,8 @@
                                                                       first
                                                                       :key)]]
                                                      [:phrase
-                                                      [:chunk.chunk (str (t k ul)": ")] [:chunk  (str (:value p) "  ")]]
-                                                     ))])])
+                                                      [:chunk.chunk (str (t k ul)": ")] [:chunk  (str (:value p) "  ")]]))])])
+
         badge-template (pdf/template
                          [:paragraph.generic
                           (when-not (empty? $user_badges)
@@ -212,6 +233,7 @@
                                               message-count (so/get-badge-message-count ctx (:badge_id b) user-id)
                                               messages (replace-nils (select-badge-messages {:badge_id (:badge_id b)} (util/get-db ctx)))
                                               endorsements (replace-nils (select-badge-endorsements {:id (:badge_id b)} (util/get-db ctx)))
+                                              location  (loc/user-badge-location ctx current-user-id (:id b))
 
                                               template #(cons [:paragraph][[:paragraph
                                                                             [:chunk.chunk (str (t :badge/BadgeID ul) ": ")][:chunk (str (or (:badge_id b ) "-"))]"\n"
@@ -233,7 +255,8 @@
                                                                             [:chunk.chunk (str (t :badge/Criteriaurl ul) ": ") ] [:anchor {:target (str (:criteria_url %))} [:chunk.link (str (:criteria_url %))]]"\n"
                                                                             [:paragraph
                                                                              [:chunk.chunk (str (t :badge/Criteria ul) ": ")][:paragraph (strip-html-tags (:criteria_content %))]"\n"]
-                                                                            [:chunk.chunk (str (t :user/Status ul) ": ")][:chunk  (capitalize (str (t (keyword (str "social/"(:status b))) ul) "  "))]
+                                                                            (when-not (blank? (:status b)) [:phrase [:chunk.chunk (str (t :user/Status ul) ": ")][:chunk  (capitalize (str (t (keyword (str "social/"(:status b))) ul) "  "))]])
+                                                                            (when-not (or (nil? location) (every? nil? (vals location))) [:phrase [:chunk.chunk (str (t :location/Location ul) ": ")] [:chunk (str (:lat location) "," (:lng location))] " "])
 
                                                                             [:chunk.chunk (str (t :badge/Verifiedbyobf ul) ": ")][:chunk (str (if (true? (:verified_by_obf b)) (t :core/Yes ul) (t :core/No ul)) "  ")]
 
@@ -258,14 +281,13 @@
                                                                                (reduce (fn [r evidence]
                                                                                          (conj r [:paragraph
                                                                                                   (when-not (blank? (:name evidence))[:phrase [:chunk.chunk (str (t :badge/Name ul) ": ")] [:chunk (:name evidence)]])"\n"
-                                                                                                  (when-not (blank? (:narrative evidence)) [:phrase [:chunk.chunk (str (t :badge/Narrative ul) ": ")][:chunk (:narrative evidence)]])"\n"
                                                                                                   (when-not (blank? (:description evidence)) [:phrase [:chunk.chunk (str (t :admin/Description ul) ": ")][:chunk (:description evidence)]])"\n"
                                                                                                   [:anchor {:target (:url evidence)}[:phrase [:chunk.chunk (str (t :admin/Url ul) ": ")] [:chunk.link (:url evidence)]]]
                                                                                                   [:spacer 0]]) )[:paragraph] (:evidences more-badge-info))])
                                                                             (when (not-empty (:alignment %))
                                                                               [:paragraph
                                                                                [:chunk.chunk (str (t :badge/Alignments ul) ": " (count (:alignment %)))]"\n"
-                                                                               (into [:paragraph ]
+                                                                               (into [:paragraph]
                                                                                      (for [a (:alignment %)]
                                                                                        [:paragraph
                                                                                         [:chunk (:name a)]"\n"
@@ -292,8 +314,8 @@
                                                                                        (:issuer_name e) "\n"
                                                                                        [:anchor {:target (:issuer_url e) :style{:family :times-roman :color [66 100 162]}} (:issuer_url e) ] "\n"
                                                                                        [:chunk (if (number? (:issued_on e)) (date-from-unix-time (long (* 1000 (:issued_on e)))) (:issued_on e))] "\n"
-                                                                                       (process-markdown (:content e) (:badge_id b ) "Endorsements")])
-                                                                                    ))
+                                                                                       (process-markdown (:content e) (:badge_id b ) "Endorsements")])))
+
                                                                             (when (> (:all-messages message-count) 0)
                                                                               [:phrase
                                                                                [:chunk.chunk (str (t :social/Messages ul) ": ")] [:chunk (str (:all-messages message-count))]"\n"])
@@ -308,8 +330,8 @@
 
                                                                             [:chunk.chunk (str (t :social/Lastmodified ul) ": ")][:chunk (if (number? (:mtime b))(str (date-from-unix-time (long (* 1000 (:mtime b))) "date")"  ") (str (:mtime b) " "))]
                                                                             [:chunk.chunk (str (t :badge/URL ul) ": ")] [:anchor {:target (str site-url "/app/badge/info/" (:id b))} [:chunk.link {:style :italic} (str site-url "/app/badge/info/" (:id b))]]
-                                                                            [:spacer 1]]])]
-                                        ]
+                                                                            [:spacer 1]]])]]
+
                                     (reduce into [:paragraph] (-> (mapv template content)
                                                                   (conj [[:line {:dotted true}]]))))))])
 
@@ -332,8 +354,8 @@
                                                    [:chunk.chunk (str (t :badge/Tags ul) ": ")] [:chunk (join ", " (:tags pb))]"\n"])
                                                 [:chunk.chunk (str (t :badge/Badgevisibility ul) ": ")] [:chunk (t (keyword (str "core/" (capitalize (:visibility pb)))))]"\n"
                                                 [:chunk.chunk (str (t :badge/Issuedon ul) ": ")] [:chunk (if (number? (:issued_on pb)) (str (date-from-unix-time (long (* 1000 (:issued_on pb))) "date") ", ") (str (:issued_on pb) ", "))]
-                                                [:chunk.chunk (str (t :badge/Expireson ul) ": ")] [:chunk (if (number? (:expires_on pb)) (str (date-from-unix-time (long (* 1000 (:expires_on pb))) "date") ", ") (str (:expires_on pb) ", "))]
-                                                ]))])])
+                                                [:chunk.chunk (str (t :badge/Expireson ul) ": ")] [:chunk (if (number? (:expires_on pb)) (str (date-from-unix-time (long (* 1000 (:expires_on pb))) "date") ", ") (str (:expires_on pb) ", "))]]))])])
+
         page-template (pdf/template
                         [:paragraph.generic
                          (when-not (empty? $user_pages)
@@ -362,46 +384,46 @@
                                      (when (not-empty page-blocks)
                                        (into [:paragraph
                                               [:phrase.chunk (t :page/Pageblocks ul)]
-                                              [:spacer 0]
-                                              ] (for [pb page-blocks]
+                                              [:spacer 0]]
+                                             (for [pb page-blocks]
+                                               [:paragraph
+                                                (when (= "heading"  (:type pb))
+                                                  (case (:size pb)
+                                                    "h1" [:phrase.generic {:align :left}
+                                                          [:chunk.chunk (str (t :page/Heading ul)": ")] [:chunk (str (:content pb))]]
+
+                                                    "h2" [:phrase.generic {:align :left}
+                                                          [:chunk.chunk (str (t :page/Subheading ul) ": ")] [:chunk (str (:content pb))]]))
+                                                (when (= "badge" (:type pb))
+                                                  [:phrase
+                                                   [:phrase.chunk (str (t :badge/Badge ul) ": ")]
+                                                   [:anchor {:target (str site-url "/app/badge/info/" (:badge_id pb))} [:chunk.link (str (:name pb))]]"\n"])
+
+
+                                                (when (= "html" (:type pb))
+                                                  [:phrase
+                                                   [:spacer 0]
+                                                   [:phrase.chunk (str (t :page/Html ul) ": ")]
+                                                   [:spacer 0]
+                                                   (:content pb)])
+                                                (when (= "file" (:type pb))
                                                   [:paragraph
-                                                   (when (= "heading"  (:type pb))
-                                                     (case (:size pb)
-                                                       "h1" [:phrase.generic {:align :left }
-                                                             [:chunk.chunk (str (t :page/Heading ul)": ")] [:chunk (str (:content pb))]
-                                                             ]
-                                                       "h2" [:phrase.generic {:align :left}
-                                                             [:chunk.chunk (str (t :page/Subheading ul) ": ")] [:chunk (str (:content pb))]] ))
-                                                   (when (= "badge" (:type pb))
-                                                     [:phrase
-                                                      [:phrase.chunk (str (t :badge/Badge ul) ": ")]
-                                                      [:anchor {:target (str site-url "/app/badge/info/" (:badge_id pb))} [:chunk.link (str (:name pb))]]"\n"
-                                                      ]
-                                                     )
-                                                   (when (= "html" (:type pb))
-                                                     [:phrase
-                                                      [:spacer 0]
-                                                      [:phrase.chunk (str (t :page/Html ul) ": ")]
-                                                      [:spacer 0]
-                                                      (:content pb)])
-                                                   (when (= "file" (:type pb))
-                                                     [:paragraph
-                                                      [:spacer 0]
-                                                      [:phrase.chunk (str (t :file/Files ul) ": ")]"\n"
-                                                      (into [:paragraph]
-                                                            (for [file (:files pb)]
-                                                              [:phrase
-                                                               [:chunk.bold (str (t :badge/Name ul) ": ")] [:chunk (:name file)]"\n"
-                                                               [:chunk.bold (str (t :badge/URL ul) ": ")][:anchor {:target (str site-url "/"(:path file)) :style{:family :times-roman :color [66 100 162]}} (str site-url "/"(:path file))]]
-                                                              ))])
-                                                   (when (= "tag" (:type pb))
-                                                     [:paragraph
-                                                      [:phrase.chunk (str (t :page/Badgegroup ul) ": ")]
-                                                      [:spacer 0]
-                                                      (into [:phrase ] (for [b (:badges pb)]
-                                                                         [:phrase
-                                                                          [:anchor {:target (str site-url "/app/badge/info/" (:id b))} [:chunk.link (str (:name b))]]"\n"]))])]
-                                                  )))[:line {:dotted true}] [:spacer 0]]))])])
+                                                   [:spacer 0]
+                                                   [:phrase.chunk (str (t :file/Files ul) ": ")]"\n"
+                                                   (into [:paragraph]
+                                                         (for [file (:files pb)]
+                                                           [:phrase
+                                                            [:chunk.bold (str (t :badge/Name ul) ": ")] [:chunk (:name file)]"\n"
+                                                            [:chunk.bold (str (t :badge/URL ul) ": ")][:anchor {:target (str site-url "/"(:path file)) :style{:family :times-roman :color [66 100 162]}} (str site-url "/"(:path file))]]))])
+
+                                                (when (= "tag" (:type pb))
+                                                  [:paragraph
+                                                   [:phrase.chunk (str (t :page/Badgegroup ul) ": ")]
+                                                   [:spacer 0]
+                                                   (into [:phrase ] (for [b (:badges pb)]
+                                                                      [:phrase
+                                                                       [:anchor {:target (str site-url "/app/badge/info/" (:id b))} [:chunk.link (str (:name b))]]"\n"]))])])))
+                                     [:line {:dotted true}] [:spacer 0]]))])])
         user-connections-template (pdf/template
                                     [:paragraph.generic
                                      (when (or (not-empty $user_followers) (not-empty $user_following))
@@ -427,8 +449,8 @@
                                                                                                                                  status (:status f)]]
                                                                                                                        [:paragraph
                                                                                                                         [:anchor {:target (str site-url "/app/user/profile/" followee-id)} [:chunk.link (str fname " " lname ", ")]]
-                                                                                                                        [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk (str (t (keyword (str "social/"status)) ul))]])))
-                                        ])])
+                                                                                                                        [:chunk.chunk (str (t :user/Status ul) ": ")] [:chunk (str (t (keyword (str "social/"status)) ul))]])))])])
+
 
         badge-connections-template (pdf/template
                                      [:paragraph.generic
@@ -442,41 +464,65 @@
                                                   [:chunk.chunk (str (t :badge/BadgeID ul) ": ")] [:chunk (str (:id c))]"\n"
                                                   [:chunk.chunk (str (t :badge/Name ul) ": ")][:chunk (str (:name c))]"\n"
                                                   [:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description c))]"\n"
-                                                  [:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"
-                                                  ]))])])
-        user-endorsements-template (pdf/template
-                                     [:paragraph.generic
-                                      (when-not (empty? $endorsements)
-                                        [:paragraph
-                                         [:heading.heading-name (str (t :badge/Myendorsements ul) ": ")]
-                                         [:spacer 0]
-                                         (into [:paragraph]
-                                               (for [c $endorsements
-                                                     :let [name (str (:first_name c) " " (:last_name c))]]
-                                                 [:paragraph
-                                                  [:chunk name]"\n"
-                                                  [:chunk (:name c)]"\n"
-                                                  [:chunk (date-from-unix-time (long (* 1000 (:mtime c))) "date")]"\n"
-                                                  (process-markdown (:content c) (:user_badge_id c) "User Endorsements")
-                                                  ;[:chunk.chunk (str (t :badge/BadgeID ul) ": ")] [:chunk (str (:id c))]"\n"
-                                                  ;[:chunk.chunk (str (t :badge/Name ul) ": ")][:chunk (str (:name c))]"\n"
-                                                  ;[:chunk.chunk (str (t :page/Description ul) ": ")][:chunk (str (:description c))]"\n"
-                                                  ;[:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"
-                                                  ]))])]
-                                     )
+                                                  [:chunk.chunk (str (t :badge/Imagefile ul) ": ")][:anchor {:target (str site-url "/" (:image_file c))} [:chunk.link (str site-url "/" (:image_file c))]]"\n"]))])])
+
+         user-endorsements-template  (pdf/template
+                                      [:paragraph.generic
+                                       (when-not (empty? $endorsements)
+                                        (let [{:keys [given received sent-requests]} $endorsements]
+                                          [:paragraph
+                                           [:heading.heading-name (str (t :badge/Myendorsements ul) ": ")]
+                                           [:spacer 0]
+                                           (when (seq given)
+                                             [:paragraph
+                                              [:chunk..small-heading (t :badge/Iendorsed ul)]
+                                              [:spacer 1]
+                                              (into [:paragraph] (for [g given
+                                                                       :let [name (str (:first_name g) " " (:last_name g))]]
+                                                                    [:paragraph
+                                                                     [:chunk name]"\n"
+                                                                     [:chunk.chunk (:name g)]"\n"
+                                                                     [:chunk (date-from-unix-time (long (* 1000 (:mtime g))) "date")]"\n"
+                                                                     (process-markdown (:content g) (:user_badge_id g) "User Endorsements")]))])
+                                           (when (seq received)
+                                             [:paragraph
+                                              [:chunk.small-heading (t :badge/Endorsedme ul)]
+                                              [:spacer 1]
+                                              (into [:paragraph] (for [r received
+                                                                       :let [name (str (:first_name r) " " (:last_name r))]]
+                                                                    [:paragraph
+                                                                     [:chunk (:issuer_name r)]"\n"
+                                                                     [:chunk.chunk (:name r)]"\n"
+                                                                     [:chunk (date-from-unix-time (long (* 1000 (:mtime r))) "date")]"\n"
+                                                                     (process-markdown (:content r) (:user_badge_id r) "User Endorsements")]))])
+                                           (when (seq sent-requests)
+                                             [:paragraph
+                                              [:chunk.small-heading (t :badge/Sentendorsementrequests ul)]
+                                              [:spacer 1]
+                                              (into [:paragraph] (for [sr sent-requests
+                                                                       :let [name (str (:first_name sr) " " (:last_name sr))]]
+                                                                    [:paragraph
+                                                                     [:chunk (:issuer_name sr)]"\n"
+                                                                     [:chunk.chunk (:name sr)]"\n"
+                                                                     [:chunk (date-from-unix-time (long (* 1000 (:mtime sr))) "date")]"\n"
+                                                                     (process-markdown (:content sr) (:user_badge_id sr) "User Endorsements")]))])]))])
+
         events-template (pdf/template
                           (let [template (cons [:paragraph]
                                                [[:paragraph.generic
                                                  (when-not (empty? $events)
                                                    [:heading.heading-name (t :user/Activityhistory ul)])]
                                                 (when-not (empty? $events)
+
                                                   (into [:table.generic {:header [(t :social/Action ul) (t :social/Object ul) (t :social/Objecttype ul) (t :social/Created ul)]}]
-                                                        (for [e (reverse $events)]
+                                                        (for [e (->> (reverse $events) (remove (fn [e] (nil? (:info e)))))]
                                                           [[:cell (if-not (= "-" (:verb e)) (t (keyword (str "social/"(:verb e))) ul) "-")]
                                                            [:cell  [:phrase
                                                                     [:chunk (get-in e [:info :object_name])]"\n"
                                                                     (if (contains? (:info e) :message)
-                                                                      [:chunk {:style :italic} (get-in e [:info :message :message])])]]
+                                                                      [:chunk {:style :italic} (get-in e [:info :message :message])])
+                                                                    (when-not (blank? (get-in e [:info :content]))
+                                                                     [:chunk {:style :italic} (get-in e [:info :content])])]]
                                                            [:cell
                                                             (when-not (blank? (str (:type e)))
                                                               (cond
@@ -485,8 +531,8 @@
                                                                 (= "user" (:type e)) (lower-case (t :social/User ul))
                                                                 (= "admin" (:type e)) (lower-case (t :admin/Admin ul))
                                                                 :else "-"))]
-                                                           [:cell (if (number? (:ctime e))(date-from-unix-time (long (* 1000 (:ctime e))) "date") (:ctime e))]
-                                                           ])))])]
+                                                           [:cell (if (number? (:ctime e))(date-from-unix-time (long (* 1000 (:ctime e))) "date") (:ctime e))]])))])]
+
                             template))]
     (fn [output-stream]
       (pdf/pdf (into [pdf-settings] (concat (user-info-template user-data)
@@ -498,5 +544,4 @@
                                             (user-connections-template user-data)
                                             (badge-connections-template user-data)
                                             (user-endorsements-template user-data)
-                                            (events-template user-data))) output-stream)
-      )))
+                                            (events-template user-data))) output-stream))))
