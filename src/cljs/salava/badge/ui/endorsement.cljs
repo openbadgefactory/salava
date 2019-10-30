@@ -675,7 +675,7 @@
   [:div
    [m/modal-window]
    [:div#badge-stats
-    (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given])) (pos? pending-requests-count))
+    (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given])) (pos? pending-requests-count) (pos? sent-requests-count))
       [:div
        [:div.form-horizontal {:id "grid-filter"}
         [g/grid-search-field (t :core/Search ":")  "endorsementsearch" (t :badge/Filterbybadgenameoruser) :search state]
