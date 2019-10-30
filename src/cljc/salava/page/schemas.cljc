@@ -2,7 +2,7 @@
   (:require [schema.core :as s
              :include-macros true] ;; cljs only
 
-            [salava.badge.schemas :refer [Badge Evidence]]
+            [salava.badge.schemas :refer [Badge evidence]]
             [salava.file.schemas :refer [File]]))
 
 (def page
@@ -91,7 +91,7 @@
                                                                                                                       (select-keys [:id :name :image_file :criteria_content :criteria_url :description :creator_name :creator_url
                                                                                                                                     :issuer_content_name :issuer_content_id :issuer_content_url])
                                                                                                                       (assoc :creator_content_id (s/maybe s/Str))
-                                                                                                                      (assoc :evidences [(-> Evidence
+                                                                                                                      (assoc :evidences [(-> evidence
                                                                                                                                              (select-keys [:url :id :narrative :name])
                                                                                                                                              (assoc :ctime (s/maybe s/Int) :description (s/maybe s/Str) :mtime (s/maybe s/Int)
                                                                                                                                                (s/optional-key :properties) (s/maybe {(s/optional-key :hidden) (s/maybe s/Bool)

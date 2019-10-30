@@ -166,10 +166,10 @@
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
-(defn save-raiting [id state init-data raiting]
+(defn save-rating [id state init-data rating]
   (ajax/POST
-    (path-for (str "/obpv1/badge/save_raiting/" id))
-    {:params   {:rating  (if (pos? raiting) raiting nil)}
+    (path-for (str "/obpv1/badge/save_rating/" id))
+    {:params   {:rating  (if (pos? rating) rating nil)}
      :handler (fn []
                 (init-data state id))}))
 
@@ -292,9 +292,14 @@
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
       ;;evidence list
+      #_(into [:div]
+              (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
+                [f evidences]))
+
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
-              [f evidences]))
+              [f id]))
+
       ;;map
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]

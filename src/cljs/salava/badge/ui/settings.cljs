@@ -58,16 +58,16 @@
       {:params {:show_recipient_name new-value}
        :handler (fn [] (reset! show-recipient-name-atom new-value))})))
 
-(defn toggle-evidence [state]
-  (let [id (get-in @state [:badge-settings :id])
-        new-value (not (get-in @state [:badge-settings :show_evidence]))]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
-      {:params {:show_evidence new-value}
-       :handler (fn [] (do
+#_(defn toggle-evidence [state]
+    (let [id (get-in @state [:badge-settings :id])
+          new-value (not (get-in @state [:badge-settings :show_evidence]))]
+      (ajax/POST
+        (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
+        {:params {:show_evidence new-value}
+         :handler (fn [] (do
 
-                         (swap! state assoc-in [:badge-settings :show_evidence] new-value)
-                         (swap! state assoc :show_evidence new-value)))})))
+                           (swap! state assoc-in [:badge-settings :show_evidence] new-value)
+                           (swap! state assoc :show_evidence new-value)))})))
 
 (defn toggle-receive-notifications [badge_id notifications-atom]
   (let [req-path (if @notifications-atom

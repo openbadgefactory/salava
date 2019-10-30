@@ -113,8 +113,8 @@
 (defn ^:export settings_tab_content [data state init-data]
   [settings-tab-content data state init-data])
 
-(defn ^:export evidence_list_badge [data]
-  [evidence-list-badge-view data])
+(defn ^:export evidence_list_badge [id]
+  [evidence-list-badge-view id])
 
 (defn ^:export evidence_block [data state init-data]
   [evidenceblock data state init-data])

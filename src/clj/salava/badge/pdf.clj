@@ -3,7 +3,8 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.badge.main :refer [user-badges-to-export fetch-badge badge-url badge-evidences]]
+            [salava.badge.evidence :refer [badge-evidence]]
+            [salava.badge.main :refer [user-badges-to-export fetch-badge badge-url]]
             [salava.core.util :as u :refer [get-db plugin-fun get-plugins md->html str->qr-base64]]
             [clj-pdf.core :as pdf]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
@@ -38,7 +39,7 @@
                            :endorsements (->> [(vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
                                                (user-badge-endorsements ctx (:id %1))]
                                               flatten) #_(->> (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx))))
-                           :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (badge-evidences ctx (:id %1) user-id))
+                           :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (badge-evidence ctx (:id %1) user-id))
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
 

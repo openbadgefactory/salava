@@ -123,6 +123,7 @@ SELECT id, status FROM user_badge_endorsement_request WHERE user_badge_id = :use
 --get user badge's pending endorsement
 SELECT COUNT(id) AS count FROM user_badge_endorsement WHERE user_badge_id = :id AND status = 'pending';
 
+
 --name: delete-user-badge-endorsement-requests!
 DELETE FROM user_badge_endorsement_request WHERE user_badge_id = :id
 

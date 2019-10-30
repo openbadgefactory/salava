@@ -191,6 +191,11 @@
 (defn pending-endorsement-count [ctx user-badge-id user-id]
  (pending-user-badge-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
+(defn endorsements-count [ctx user-badge-id user-id]
+ {:pending_endorsements_count (pending-endorsement-count ctx user-badge-id user-id)
+  :user_endorsement_count ""
+  :endorsement_count ""})
+
 (defn user-badge-pending-requests [ctx user-badge-id user-id]
  (sent-pending-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
 
