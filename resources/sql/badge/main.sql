@@ -4,7 +4,7 @@ WHERE badge_id = :badge_id OR gallery_id = (SELECT MAX(gallery_id) FROM social_c
 
 -- name: select-user-badges-all
 -- get user's badges
-SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on,
+SELECT ub.id, bc.name, bc.description, bc.image_file, ub.issued_on, ub.gallery_id,
            ub.expires_on, ub.revoked, ub.visibility, ub.mtime, ub.status, ub.badge_id, ub.assertion_url,
            b.issuer_verified, ic.name AS issuer_content_name, ic.url AS issuer_content_url, SUM(IF(bec.endorsement_content_id IS NULL, 0, 1)) AS endorsement_count, COUNT(ube.id) AS user_endorsements_count,
            ubm.meta_badge, ubm.meta_badge_req
