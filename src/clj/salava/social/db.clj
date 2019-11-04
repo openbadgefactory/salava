@@ -8,7 +8,8 @@
             [salava.admin.helper :as ah]
             [clojure.tools.logging :as log]
             [clojure.string :refer [blank? join]]
-            [salava.core.time :refer [unix-time get-date-from-today]]))
+            [salava.core.time :refer [unix-time get-date-from-today]]
+            [clojure.core.reducers :as r]))
 
 (defqueries "sql/social/queries.sql")
 
@@ -202,6 +203,17 @@
         new-messages (if last-viewed (filter #(and (not= user-id (:user_id %)) (< last-viewed (:ctime %))) badge-messages-user-id-ctime) ())]
     {:new-messages (count new-messages)
      :all-messages (count badge-messages-user-id-ctime)}))
+
+(defn get-badge-message-count-multi
+  [ctx gallery-ids user-id]
+  (let [badge-messages-user-id-ctime (->> (select-badge-messages-count-multi {:gallery_ids gallery-ids} (get-db ctx)) (remove #(= user-id (:user_id %))))
+        last-viewed (->> (select-badge-message-last-view-multi {:gallery_ids gallery-ids :user_id user-id} (get-db ctx))
+                         (group-by :gallery_id)
+                         (reduce-kv (fn [r k v] (conj r (hash-map :gallery_id k :mtime (->> (map :mtime v) (apply max))))) []))
+        filtered-list (r/filter (fn [b] (some #(and (not= user-id (:user_id b)) (= (:gallery_id %) (:gallery_id b)) (< (:mtime %) (:ctime b))) last-viewed)) badge-messages-user-id-ctime)]
+     (->> filtered-list
+         (group-by :gallery_id)
+         (reduce-kv (fn [r k v] (conj r (hash-map :gallery_id k :count (count v)))) []))))
 
 (defn get-badge-messages-limit
   [ctx badge_id page_count user_id]

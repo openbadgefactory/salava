@@ -18,7 +18,8 @@
             [salava.badge.assertion :refer [fetch-json-data]]
             [salava.core.i18n :refer [t]]
             [pantomime.mime :refer [mime-type-of]]
-            [clj-time.core :refer [today]]))
+            [clj-time.core :refer [today]]
+            [clojure.core.reducers :as r]))
 
 (defqueries "sql/badge/main.sql")
 (defqueries "sql/badge/endorsement.sql")
@@ -80,9 +81,21 @@
   "Check if badge is metabadge (= milestonebadge) or part of metabadge (= required badge)"
   [ctx assertion-url])
 
+#_(defn- map-badges-notifications [ctx user-id badges]
+   (map #(assoc % :pending_endorsements_count (pending-user-badge-endorsement-count {:id (:id %)} (into {:result-set-fn first :row-fn :count} (u/get-db ctx)))
+                  :message_count (-> (so/get-badge-message-count ctx (:badge_id %) user-id))) badges))
+
 (defn- map-badges-notifications [ctx user-id badges]
- (map #(assoc % :pending_endorsements_count (pending-user-badge-endorsement-count {:id (:id %)} (into {:result-set-fn first :row-fn :count} (u/get-db ctx)))
-                :message_count (-> (so/get-badge-message-count ctx (:badge_id %) user-id))) badges))
+  (let [user-badge-ids (map :id badges)
+        badge-ids (distinct (map :gallery_id badges))
+        pending_endorsements_counts (pending-user-badge-endorsement-count-multi {:user_badge_ids user-badge-ids} (u/get-db ctx))
+        new-message-counts (so/get-badge-message-count-multi ctx badge-ids user-id)]
+    (->> badges
+         (r/map #(assoc % :pending_endorsements_count (some (fn [b] (when (= (:id %) (:user_badge_id b)) (:count b))) pending_endorsements_counts)))
+         (r/map #(assoc % :new_message_count (some (fn [m] (when (= (:gallery_id %) (:gallery_id m)) (:count m))) new-message-counts)))
+         (r/foldcat))))
+
+
 
 (defn user-badges-all
   "Returns all the badges of a given user"
