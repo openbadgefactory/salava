@@ -97,6 +97,7 @@
                         (not-found)))))
 
              (GET "/verify/:badgeid" []
+                  :return schemas/verify-badge
                   :path-params [badgeid :- Long]
                   :summary "verify badge"
                   :current-user current-user

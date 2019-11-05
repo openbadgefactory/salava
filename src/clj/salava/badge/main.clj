@@ -373,13 +373,13 @@
         badge (badge-issued-and-verified-by-obf ctx badge)
         recipient-count (select-badge-recipient-count {:badge_id (:badge_id badge) :visibility (if user-id "internal" "public")}
                                                       (into {:result-set-fn first :row-fn :recipient_count} (u/get-db ctx)))]
-    (assoc badge :congratulated? user-congratulation?
-      :congratulations all-congratulations
-      :view_count view-count
-      :recipient_count recipient-count
-      :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
-      :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
-      :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count))))
+    (some-> badge (assoc :congratulated? user-congratulation?
+                         :congratulations all-congratulations
+                         :view_count view-count
+                         :recipient_count recipient-count
+                         :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
+                         :qr_code (u/str->qr-base64 (badge-url ctx badge-id))
+                         :user_endorsement_count (->> (select-accepted-badge-endorsements {:id badge-id}  (u/get-db ctx)) count)))))
 
 (defn get-badge-p
   "Get badge by id, public route"

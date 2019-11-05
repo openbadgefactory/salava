@@ -25,6 +25,11 @@ LIMIT :limit OFFSET :offset;
 SELECT ctime, user_id FROM badge_message WHERE deleted = 0
     AND (badge_id = :badge_id OR gallery_id = (SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id ORDER BY ctime DESC LIMIT 1));
 
+--name: select-badge-messages-count-multi
+--get badge's messages
+SELECT ctime, user_id, gallery_id FROM badge_message WHERE deleted = 0
+    AND (gallery_id IN (:gallery_ids));
+
 --name: update-badge-message-deleted!
 UPDATE badge_message SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :message_id
 
@@ -37,10 +42,11 @@ REPLACE INTO badge_message_view (user_id, badge_id, gallery_id, mtime) VALUES (:
 --name: select-badge-message-last-view
 SELECT mtime FROM badge_message_view where badge_id = :badge_id AND user_id = :user_id
 
+--name: select-badge-message-last-view-multi
+SELECT mtime, gallery_id FROM badge_message_view where gallery_id IN (:gallery_ids) AND user_id = :user_id
 
 --name: select-badge-gallery-id
 SELECT gallery_id FROM user_badge WHERE badge_id = :badge_id AND gallery_id IS NOT NULL ORDER BY ctime DESC LIMIT 1;
-
 
 --name: insert-connect-badge<!
 --add new connect with badge

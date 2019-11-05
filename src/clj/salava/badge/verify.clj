@@ -16,10 +16,6 @@
 (defn url? [s]
   (not (clojure.string/blank? (re-find #"^http" (str s)))))
 
-#_(defn fetch-json-data [url]
-    (log/info "fetch-json-data: GET" url)
-    (http/http-get url {:as :json :accept :json :throw-entire-message? false}))
-
 (defn- fetch-json-data [url]
  (log/info "fetch-json-data: GET" url)
  (try
@@ -29,7 +25,6 @@
    (log/error "Error occured when getting json content with json-get! Using http-get instead")
    (as-> (http/http-get url) $
          (if (map? $) $ (-> $ (json-sanitize) (json/read-str :key-fn keyword)))))))
-
 
 (defn fetch-image [url]
   (log/info "fetch image from " url)
@@ -46,7 +41,6 @@
     (catch Exception e
       (log/error "failed to get response from " url " Message: " (.getMessage e))
       {:status 500})))
-
 
 (defn- assertion [assertion-url]
   (try
@@ -73,78 +67,83 @@
   (if (nil? t) nil (if (string? t)(date-from-unix-time (long (* 1000 (iso8601-to-unix-time t))) "date")(date-from-unix-time (long (* 1000 t)) "date"))))
 
 (defn verify-badge [ctx id]
-  (log/info "Badge verification initiated:")
-  (let [badge (b/fetch-badge ctx id)
-        asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
-        result {}
-        delete-user-metabadge (first (plugin-fun (get-plugins ctx) "db" "clear-user-metabadge!"))]
-    (if (url? asr)
+ (log/info "Badge verification initiated:")
+ (let [badge (b/fetch-badge ctx id)]
+  (if-let [f (empty? (-> badge (dissoc :content)))]
+    (hash-map :assertion-status 500
+         :asr ""
+         :message "badge does not exist")
+
+    (let [asr (if (clojure.string/blank? (:assertion_url badge)) (get-assertion-jws {:id (:id badge)} (into {:result-set-fn first :row-fn :assertion_jws} (get-db ctx))) (:assertion_url badge))
+          result {}
+          delete-user-metabadge (first (plugin-fun (get-plugins ctx) "db" "clear-user-metabadge!"))]
+     (if (url? asr)
       (let [asr-response (assertion asr)]
-        (case (:status asr-response)
-          404 (assoc result :assertion-status 404
-                            :asr asr)
-          410 (do
-                (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
-                (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))
-                (if delete-user-metabadge (delete-user-metabadge ctx id))
-                (assoc result :assertion-status 410
-                              :asr asr
-                              :revoked? true))
-          500 (assoc result :assertion-status 500
-                            :asr asr
-                            :message (:message asr-response))
-          200 (let [asr-data (:body asr-response)
-                    badge-data (if (url? (:badge asr-data)) (fetch-json-data (:badge asr-data)) (:badge asr-data))
-                    badge-image (if (map? (:image badge-data)) (fetch-image (get-in badge-data [:image :id])) (fetch-image (:image badge-data)))
-                    badge-criteria (if (and (map? (:criteria badge-data))(contains? (:criteria badge-data) :id))
-                                     (fetch-url (get-in badge-data [:criteria :id]))
-                                     (if (url? (:criteria badge-data)) (fetch-url (:criteria badge-data)) {:status 800}))
-                    badge-issuer (if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
-                                   (fetch-url (get-in badge-data [:issuer :id]))
-                                   (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
-                    issuedOn {:issuedOn (process-time (:issuedOn asr-data))}
-                    expires (if-let [exp (process-time (:expires asr-data))]{:expires exp} nil)
+       (case (:status asr-response)
+         404 (assoc result :assertion-status 404
+                           :asr asr)
+         410 (do
+               (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
+               (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))
+               (if delete-user-metabadge (delete-user-metabadge ctx id))
+               (assoc result :assertion-status 410
+                             :asr asr
+                             :revoked? true))
+         500 (assoc result :assertion-status 500
+                           :asr asr
+                           :message (:message asr-response))
+         200 (let [asr-data (:body asr-response)
+                   badge-data (if (url? (:badge asr-data)) (fetch-json-data (:badge asr-data)) (:badge asr-data))
+                   badge-image (if (map? (:image badge-data)) (fetch-image (get-in badge-data [:image :id])) (fetch-image (:image badge-data)))
+                   badge-criteria (if (and (map? (:criteria badge-data))(contains? (:criteria badge-data) :id))
+                                    (fetch-url (get-in badge-data [:criteria :id]))
+                                    (if (url? (:criteria badge-data)) (fetch-url (:criteria badge-data)) {:status 800}))
+                   badge-issuer (if (and (map? (:issuer badge-data)) (contains? (:issuer badge-data) :id))
+                                  (fetch-url (get-in badge-data [:issuer :id]))
+                                  (if (url? (:issuer badge-data)) (fetch-url (:issuer badge-data)) {:status 800}))
+                   issuedOn {:issuedOn (process-time (:issuedOn asr-data))}
+                   expires (if-let [exp (process-time (:expires asr-data))]{:expires exp} nil)
 
-                    revoked? (or (= (:status asr-response) 410) (:revoked asr-data))
-                    expired? (expired? (:expires asr-data)) #_(and (:expires asr-data) (< (iso8601-to-unix-time (:expires asr-data)) (unix-time)))]
-                (assoc result :assertion-status 200
-                              :assertion (merge asr-data issuedOn expires)
-                              :asr asr
-                              :badge-image-status (:status badge-image)
-                              :badge-criteria-status (:status badge-criteria)
-                              :badge-issuer-status (:status badge-issuer)
-                              :revoked? revoked?
-                              :expired? expired?))
+                   revoked? (or (= (:status asr-response) 410) (:revoked asr-data))
+                   expired? (expired? (:expires asr-data)) #_(and (:expires asr-data) (< (iso8601-to-unix-time (:expires asr-data)) (unix-time)))]
+               (assoc result :assertion-status 200
+                             :assertion (merge asr-data issuedOn expires)
+                             :asr asr
+                             :badge-image-status (:status badge-image)
+                             :badge-criteria-status (:status badge-criteria)
+                             :badge-issuer-status (:status badge-issuer)
+                             :revoked? revoked?
+                             :expired? expired?))
 
-          (assoc result :assertion-status 500
-                        :asr asr
-                        :message (:reason-phrase asr-response))))
-
-
+         (assoc result :assertion-status 500
+                       :asr asr
+                       :message (:reason-phrase asr-response))))
 
       (let [jws-response (assertion-jws badge asr)]
-        (if (= 500 (:status jws-response))
-          (assoc result :assertion-status 500
+       (prn (:status jws-response))
+       (if (= 500 (:status jws-response))
+         (assoc result :assertion-status 500
+                       :asr asr
+                       :message (:message jws-response))
+         (let [badge-id (or (:id (json/read-str (:assertion_json jws-response) :key-fn keyword))(:uid (json/read-str (:assertion_json jws-response) :key-fn keyword)))
+               revocation-list-url (:revocation_list_url (first (get-in jws-response [:badge :issuer])))
+               revocation-list (if revocation-list-url (:revokedAssertions (fetch-json-data revocation-list-url)))
+               revoked (revoked? badge-id revocation-list)
+               revocation-reason (:revocationReason (first revoked))
+               assertion (json/read-str (:assertion_json jws-response) :key-fn keyword)
+               issuedOn {:issuedOn (process-time (:issuedOn assertion))}
+               expires (if-let [exp (process-time (:expires assertion))]{:expires exp} nil)]
+
+           (when-not (empty? revoked)
+             (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
+             (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx)))
+
+          (assoc result :assertion-status 200
+                        :assertion (merge assertion issuedOn expires)
                         :asr asr
-                        :message (:message jws-response))
-          (let [badge-id (or (:id (json/read-str (:assertion_json jws-response) :key-fn keyword))(:uid (json/read-str (:assertion_json jws-response) :key-fn keyword)))
-                revocation-list-url (:revocation_list_url (first (get-in jws-response [:badge :issuer])))
-                revocation-list (if revocation-list-url (:revokedAssertions (fetch-json-data revocation-list-url)))
-                revoked (revoked? badge-id revocation-list)
-                revocation-reason (:revocationReason (first revoked))
-                assertion (json/read-str (:assertion_json jws-response) :key-fn keyword)
-                issuedOn {:issuedOn (process-time (:issuedOn assertion))}
-                expires (if-let [exp (process-time (:expires assertion))]{:expires exp} nil)]
-
-            (if (not (empty? revoked))(do (update-revoked! {:revoked 1 :id (:id badge)} (get-db ctx))
-                                          (update-visibility! {:visibility "private" :id (:id badge)} (get-db ctx))))
-
-            (assoc result :assertion-status 200
-                          :assertion (merge assertion issuedOn expires)
-                          :asr asr
-                          :badge-image-status 200
-                          :badge-criteria-status 200
-                          :badge-issuer-status 200
-                          :revoked? (not (empty? revoked))
-                          :revocation_reason revocation-reason
-                          :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time))))))))))
+                        :badge-image-status 200
+                        :badge-criteria-status 200
+                        :badge-issuer-status 200
+                        :revoked? (not (empty? revoked))
+                        :revocation_reason revocation-reason
+                        :expired? (expired? (:expires_on jws-response)) #_(if (:expires_on jws-response) (< (:expires_on jws-response) (unix-time))))))))))))

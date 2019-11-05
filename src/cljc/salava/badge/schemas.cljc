@@ -6,11 +6,16 @@
 
 #?(:cljs (defn describe [v _] v))
 
+(defn either [v1 v2]
+  #?(:clj (s/either v1 v2)
+     :cljs (s/cond-pre v1 v2)))
+
 (s/defschema user-badge-p {:id                                   (describe s/Int "internal user-badge id")
                            :name                                 s/Str
                            :description                          (s/maybe s/Str)
                            :image_file                           (s/maybe s/Str)
-                           :assertion_url                        s/Str
+                           :assertion_url                        (s/maybe s/Str)
+                           (s/optional-key :assertion-jws)       (s/maybe s/Str)
                            :revoked                              (describe (s/cond-pre s/Int s/Bool) "badge revoked flag (1 -> revoked)")
                            :issued_on                            s/Int
                            :expires_on                           (s/maybe s/Int)
@@ -29,7 +34,9 @@
                                    (s/optional-key :pending_endorsements_count) (s/maybe s/Int)
                                    (s/optional-key :endorsement_count)          (s/maybe s/Int)
                                    (s/optional-key :message_count)              (describe {:new-messages (s/maybe s/Int)
-                                                                                           :all-messages (s/maybe s/Int)} "internal user-badge comments"))))
+                                                                                           :all-messages (s/maybe s/Int)} "internal user-badge comments")
+                                   (s/optional-key :assertion-jws)              (s/maybe s/Str))))
+
 
 (s/defschema user-badges {:badges [user-badge]})
 
@@ -86,7 +93,6 @@
 (s/defschema user-badge-content (-> user-badge-p
                                     (select-keys [:id :assertion_url :mtime :issued_on :expires_on :visibility :revoked])
                                     (assoc :ctime                                   s/Int
-                                           ;:deleted                                 (describe s/Int "badge deleted flag (1 -> deleted)")
                                            :owner?                                  s/Bool
                                            :issued_by_obf                           (describe s/Bool "badge issued by OBF?")
                                            :verified_by_obf                         (describe s/Bool "badge verified by OBF?")
@@ -107,7 +113,9 @@
                                            (s/optional-key :user-logged-in?)        (s/maybe s/Bool)
                                            (s/optional-key :show_recipient_name)    (describe (s/maybe s/Int) "used internally; when set, earner's name is shown in badge ")
                                            (s/optional-key :remote_url)             (describe (s/maybe s/Str) "domain where badge assertion is hosted")
-                                           (s/optional-key :recipient_count)        (s/maybe s/Int))))
+                                           (s/optional-key :recipient_count)        (s/maybe s/Int)
+                                           (s/optional-key :email)                  (describe (s/maybe s/Str) "email badge was issued to")
+                                           (s/optional-key :user_id)                (s/maybe s/Int))))
 
 (s/defschema user-badge-content-p (-> user-badge-p
                                       (select-keys [:id :assertion_url :mtime :issued_on :expires_on :visibility :revoked])
@@ -122,8 +130,56 @@
                                              (s/optional-key :show_recipient_name)    (describe (s/maybe s/Int) "used internally; when set, earner's name is shown in badge ")
                                              (s/optional-key :remote_url)             (describe (s/maybe s/Str) "domain where badge assertion is hosted")
                                              (s/optional-key :assertion_json)         (s/maybe s/Str)
-                                             (s/optional-key :qr_code)                (s/maybe s/Str))))
+                                             (s/optional-key :qr_code)                (s/maybe s/Str)
+                                             (s/optional-key :email)                  (describe (s/maybe s/Str) "email badge was issued to")
+                                             (s/optional-key :user_id)                (s/maybe s/Int))))
 
+(s/defschema verification {:type                                  (s/enum "HostedBadge" "SignedBadge" "hosted" "signed")
+                           (s/optional-key :url)                  (s/maybe s/Str)
+                           (s/optional-key :startsWith)           (s/maybe s/Str)
+                           (s/optional-key :id)                   (s/maybe s/Str)
+                           (s/optional-key :allowedOrigins)       (s/maybe (s/cond-pre s/Str [s/Str]))})
+
+(s/defschema recipient {:type                  (either s/Str [s/Str])
+                        :identity              s/Str
+                        :hashed                s/Bool
+                        (s/optional-key :salt) (s/maybe s/Str)})
+
+
+(s/defschema assertion {:id                                   s/Str
+                        :recipient                            recipient
+                        :badge                                s/Str
+                        (s/optional-key :verification)        verification
+                        (s/optional-key :verify)              verification
+                        :issuedOn                             s/Str
+                        (s/optional-key :type)                (s/maybe (either s/Str [s/Str]))
+                        (s/optional-key :image)               (s/maybe s/Str)
+                        (s/optional-key :evidence)            (s/maybe (s/cond-pre s/Str [s/Str]))
+                        (s/optional-key :narrative)           (s/maybe s/Str)
+                        (s/optional-key :expires)             (s/maybe s/Str)
+                        (s/optional-key :revoked)             (s/maybe s/Bool)
+                        (s/optional-key :revocationReason)    (s/maybe s/Str)
+                        (s/optional-key :uid)                 (s/maybe s/Str)})
+                        ;(s/optional-key (keyword "@context")) s/Any})
+
+(s/defschema verify-success {:assertion-status      (describe (s/eq 200) "Fetched assertion status response")
+                             :assertion             assertion
+                             :asr                   (describe s/Str "Assertion url")
+                             :badge-image-status    (s/eq 200)
+                             :badge-criteria-status (s/eq 200)
+                             :badge-issuer-status   (s/eq 200)
+                             :revoked?              (s/maybe (either s/Str s/Bool))
+                             :expired?              (s/maybe s/Bool)
+                             (s/optional-key :revocation_reason) (s/maybe s/Str)})
+
+(s/defschema verify-failure {:assertion-status            (describe (s/enum 404 410 500) "Fetched assertion status response")
+                             :asr                         (describe s/Str "Assertion url")
+                             (s/optional-key :revoked?)   (s/maybe s/Bool)
+                             (s/optional-key :message)    (s/maybe s/Str)})
+
+
+(s/defschema verify-badge #?(:clj (s/either verify-success verify-failure)
+                             :cljs (s/cond-pre verify-success verify-failure)))
 
 (s/defschema Badge {:id s/Int
                     :name s/Str
@@ -188,7 +244,9 @@
    (s/optional-key :tags)                (describe (s/maybe [s/Str]) "internal tags added by user")
    (s/optional-key :user_endorsements_count) (s/maybe s/Int)
    (s/optional-key :endorsement_count) (s/maybe s/Int)
-   (s/optional-key :pending_endorsements_count) (s/maybe s/Int)})
+   (s/optional-key :pending_endorsements_count) (s/maybe s/Int)
+   (s/optional-key :new_message_count) (s/maybe s/Int)
+   (s/optional-key :gallery_id)        (s/maybe s/Int)})
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
                                                 :issued_on :expires_on :visibility
