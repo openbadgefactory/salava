@@ -68,7 +68,9 @@
    (s/optional-key :tags)                (s/maybe [s/Str])
    (s/optional-key :user_endorsements_count) (s/maybe s/Int)
    (s/optional-key :endorsement_count) (s/maybe s/Int)
-   (s/optional-key :pending_endorsements_count) (s/maybe s/Int)})
+   (s/optional-key :pending_endorsements_count) (s/maybe s/Int)
+   (s/optional-key :new_message_count) (s/maybe s/Int)
+   (s/optional-key :gallery_id)        (s/maybe s/Int)})
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
                                                 :issued_on :expires_on :visibility

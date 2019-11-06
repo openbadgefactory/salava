@@ -636,3 +636,7 @@ nav a#login-button{
   font-weight: 600;
   background: $dark-blue;
 }
+
+.grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
+  background-color: $third-color !important;
+}

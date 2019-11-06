@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS user_badge_endorsement_request(
 
 --name: drop-request-endorsement-table!
 --drop user_badge_endorsement_request table
-DROP TABLE user_badge_endorsement_request
+DROP TABLE IF EXISTS user_badge_endorsement_request
 
 --name: request-endorsement<!
 --send endorsement request
@@ -122,6 +122,10 @@ SELECT id, status FROM user_badge_endorsement_request WHERE user_badge_id = :use
 --name: pending-user-badge-endorsement-count
 --get user badge's pending endorsement
 SELECT COUNT(id) AS count FROM user_badge_endorsement WHERE user_badge_id = :id AND status = 'pending';
+
+--name: pending-user-badge-endorsement-count-multi
+--get user badge's pending endorsement
+SELECT COUNT(ube.id) AS count, ube.user_badge_id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id IN (:user_badge_ids) AND ube.status = 'pending';
 
 --name: delete-user-badge-endorsement-requests!
 DELETE FROM user_badge_endorsement_request WHERE user_badge_id = :id
