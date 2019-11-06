@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS user_badge_endorsement_request(
 
 --name: drop-request-endorsement-table!
 --drop user_badge_endorsement_request table
-DROP TABLE user_badge_endorsement_request
+DROP TABLE IF EXISTS user_badge_endorsement_request
 
 --name: request-endorsement<!
 --send endorsement request

@@ -104,8 +104,7 @@
                     (select-user-badges-all {:user_id user-id} (u/get-db ctx)))
         tags (if-not (empty? badges) (select-taglist {:user_badge_ids (map :id badges)} (u/get-db ctx)))
         badges-with-tags (map-badges-tags badges tags)
-        badges-with-notifications (map-badges-notifications ctx user-id badges-with-tags)]
-
+        badges-with-notifications (when (seq badges)(map-badges-notifications ctx user-id badges-with-tags))]
     (map #(badge-issued-and-verified-by-obf ctx %) badges-with-notifications)))
 
 (defn user-badges-to-export

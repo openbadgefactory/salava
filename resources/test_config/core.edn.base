@@ -11,7 +11,9 @@
 
  :languages [:en :fi]
 
- :plugins [:badge :page :file :user :admin :factory :oauth :displayer :social :mail :oembed :rtl :connections :location :profile :gallery]
+ :show-terms? true
+
+ :plugins [:badge :page :file :user :admin :factory :oauth :displayer :social :mail :oembed :rtl :connections :location :profile :gallery :metabadge]
 
  :private false
 
