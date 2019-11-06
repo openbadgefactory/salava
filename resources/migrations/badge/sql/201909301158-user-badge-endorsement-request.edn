@@ -1,3 +1,0 @@
-{:ns salava.badge.migrations
- :up-fn request-endorsement-table-up
- :down-fn request-endorsement-table-down}
