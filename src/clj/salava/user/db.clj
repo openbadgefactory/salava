@@ -451,10 +451,12 @@
 
 (defn dashboard-info [ctx user-id]
   (let [badges (->> (b/user-badges-all ctx user-id)
+                    (:badges)
                     (filter #(= "accepted" (:status %)))
                     (sort-by :mtime >)
                     (take 5))
         public-badges-count (->> (b/user-badges-all ctx user-id)
+                                 (:badges)
                                  (filter #(= "public" (:visibility %)))
                                  count)
         pending-badges (b/user-badges-pending ctx user-id)

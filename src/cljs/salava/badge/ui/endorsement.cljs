@@ -32,7 +32,7 @@
 (defn init-badge-endorsements [state badge-id]
   (ajax/GET
     (path-for (str "/obpv1/badge/endorsement/" badge-id))
-    {:handler (fn [data] (reset! state data))}))
+    {:handler (fn [data] (reset! state (:endorsements data)))}))
 
 (defn init-user-badge-endorsement [state]
   (ajax/GET
@@ -138,7 +138,7 @@
 
 (defn save-endorsement [state]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/" (:id @state)))
+    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
     {:params {:content @(cursor state [:endorsement-comment])}
      :handler (fn [data]
                 (when (= (:status data) "success")

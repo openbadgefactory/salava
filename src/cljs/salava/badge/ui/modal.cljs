@@ -39,6 +39,11 @@
     {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                          (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
+(defn init-endorsement-count [id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/user/endorsement/count/" id))
+    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
+
 (defn init-data
   ([state id tab-no]
    (ajax/GET
@@ -56,6 +61,7 @@
                                      :selected-users []
                                      :request-mode false))
                    (init-pending-endorsements state)
+                   (init-endorsement-count id state)
                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
 
@@ -70,6 +76,7 @@
                        :selected-users []
                        :request-mode false))
      (init-pending-endorsements state)
+     (init-endorsement-count id state)
      (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))))
 
 
@@ -166,10 +173,10 @@
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
 
-(defn save-raiting [id state init-data raiting]
+(defn save-rating [id state init-data rating]
   (ajax/POST
-    (path-for (str "/obpv1/badge/save_raiting/" id))
-    {:params   {:rating  (if (pos? raiting) raiting nil)}
+    (path-for (str "/obpv1/badge/save_rating/" id))
+    {:params   {:rating  (if (pos? rating) rating nil)}
      :handler (fn []
                 (init-data state id))}))
 
@@ -292,9 +299,14 @@
         [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
       ;;evidence list
+      #_(into [:div]
+              (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
+                [f evidences]))
+
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "evidence_list_badge")]
-              [f evidences]))
+              [f id]))
+
       ;;map
       (into [:div]
             (for [f (plugin-fun (session/get :plugins) "block" "badge_info")]

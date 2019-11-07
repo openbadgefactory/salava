@@ -350,20 +350,19 @@
 
 
 (defn save-page-settings! [ctx page-id tags visibility pword user-id]
+ (let [evidence-check-fn (first (plugin-fun (get-plugins ctx) "evidence" "is-evidence?"))]
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
     (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
      {:status "error" :message "profile/Profiletaberror"}
-     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+     (if (and (not= "public" visibility) (evidence-check-fn ctx user-id {:id page-id :resource-type "page"}))
        {:status "error" :message "page/Evidenceerror"}
        (let [password (if (= visibility "password") (trim pword) "")
              page-visibility (if (and (= visibility "password")
                                       (empty? password))
                                "private"
-                               visibility)
-             evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
-             page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
+                               visibility)]
          (if (and (private? ctx) (= "public" visibility))
            (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
          (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
@@ -374,7 +373,7 @@
          {:status "success" :message "page/Pagesavedsuccessfully"})))
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
-      {:status "error" :message "page/Errorwhilesavingpage"})))
+      {:status "error" :message "page/Errorwhilesavingpage"}))))
 
 (defn remove-files-blocks-and-content! [db page-id]
   (let [file-blocks (select-pages-files-blocks {:page_id page-id} db)]
@@ -417,7 +416,7 @@
   (if (page-owner? ctx page-id user-id)
     (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
      {:status "error" :message "profile/Profiletaberror"}
-     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+     (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "evidence" "is-evidence?")) f (f ctx user-id {:id page-id :resource-type "page"})) #_(b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
          {:status "error" :message "page/Evidenceerror"}
          (do
            (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))

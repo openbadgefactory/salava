@@ -6,10 +6,12 @@
             [salava.core.ui.helper :refer [navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.error :as err]
+            [salava.core.ui.helper :refer [url?]]
             [salava.core.i18n :refer [t translate-text]]
             [salava.user.ui.input :as input]
             [salava.core.helper :refer [dump]]
             [clojure.string :as s]))
+
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -67,9 +69,8 @@
     (t :badge/Uploadbadgesfrominfo1) ":"]
    [:ul
     [:li {:dangerouslySetInnerHTML
-          {:__html (str (t :badge/Uploadbadgesfrominfo2) ". " (t :badge/Uploadbadgesfrominfo3))}}]
-    #_[:li {:dangerouslySetInnerHTML
-          {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
+          {:__html (str (t :badge/Uploadbadgesfrominfo2) ". " (t :badge/Uploadbadgesfrominfo3))}}]]
+
    [:p
     (t :badge/Uploadbagesfromresult1) " "
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
@@ -114,16 +115,15 @@
      [assertion-upload-info]
      (cond
        (= "importing" status) [:div.ajax-message
-                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                             [:span (str (t :core/Loading) "...")]]
+                               [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                               [:span (str (t :core/Loading) "...")]]
        :else                [:div {:id "assertion-textfield" :class "form-group"}
                              [:div {:style {:margin-top "15px"}}
-                              [input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
+                              [input/text-field {:name "input-assertion-url" :atom assertion-url :password? false :placeholder "http://"}]
                               [:button {:class "btn btn-primary"
                                         :on-click #(do
                                                      (swap! state assoc :status "importing")
                                                      (import-badge state))
-                                        } (t :badge/ImportBadge)]]])
+                                        :disabled (not (url? @assertion-url))}
+                                       (t :badge/ImportBadge)]]])
      [:br]]))
-
-

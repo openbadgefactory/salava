@@ -3,8 +3,7 @@
             [salava.core.util :refer [get-db md->html get-full-path plugin-fun get-plugins event publish]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
-            [salava.badge.main :refer [send-badge-info-to-obf]]
-            #_[salava.user.db :as user]
+            [salava.badge.main :refer [send-badge-info-to-obf badge-exists?]]
             [salava.core.time :as time]))
 
 (defqueries "sql/badge/main.sql")
@@ -21,6 +20,9 @@
   (let [owner (select-endorsement-owner {:id endorsement-id} (into {:result-set-fn first :row-fn :issuer_id} (get-db ctx)))]
     (= owner user-id)))
 
+(defn already-endorsed? [ctx user-badge-id user-id]
+  (pos? (count (select-endorsement-by-issuerid-and-badgeid {:user_id user-id :id user-badge-id} (get-db ctx)))))
+
 (defn insert-endorse-event! [ctx data]
  (insert-endorsement-event<! data (get-db ctx)))
 
@@ -29,23 +31,26 @@
    (insert-event-owner! (assoc data :object owner-id) (get-db ctx))))
 
 (defn endorse! [ctx user-badge-id user-id content]
+;;TODO check endorsment request first
   (try+
-    (if (badge-owner? ctx user-badge-id user-id)
-      (throw+ {:status "error" :message "User cannot endorse himself"})
-      (let [endorser-info-fn (first (plugin-fun (get-plugins ctx) "db" "user-information"))
-             endorser-info (endorser-info-fn ctx user-id)#_(user/user-information ctx user-id)]
-        (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
-                                                             :external_id (generate-external-id)
-                                                             :issuer_id user-id
-                                                             :issuer_name (str (:first_name endorser-info) " " (:last_name endorser-info))
-                                                             :issuer_url (str (get-full-path ctx) "/user/profile/" user-id)
-                                                             :content content} (get-db ctx))
-                           :generated_key)]
-          (publish ctx :endorse_badge {:subject user-id :verb "endorse_badge" :object id :type "badge"})
-          {:id id :status "success"})))
+    (if-not (badge-exists? ctx user-badge-id)
+     (throw+ {:status "error" :message (str "badge with id " user-badge-id " does not exist")})
+     (if (badge-owner? ctx user-badge-id user-id)
+       (throw+ {:status "error" :message "User cannot endorse himself"})
+       (let [endorser-info-fn (first (plugin-fun (get-plugins ctx) "db" "user-information"))
+              endorser-info (endorser-info-fn ctx user-id)]
+         (when-let [id (->> (insert-user-badge-endorsement<! {:user_badge_id user-badge-id
+                                                              :external_id (generate-external-id)
+                                                              :issuer_id user-id
+                                                              :issuer_name (str (:first_name endorser-info) " " (:last_name endorser-info))
+                                                              :issuer_url (str (get-full-path ctx) "/user/profile/" user-id)
+                                                              :content content} (get-db ctx))
+                            :generated_key)]
+           (publish ctx :endorse_badge {:subject user-id :verb "endorse_badge" :object id :type "badge"})
+           {:id id :status "success"}))))
     (catch Object _
       (log/error _)
-      {:status "error"})))
+      _)))
 
 (defn edit! [ctx user-badge-id endorsement-id content user-id]
   (try+
@@ -191,6 +196,14 @@
 (defn pending-endorsement-count [ctx user-badge-id user-id]
  (pending-user-badge-endorsement-count {:id user-badge-id} (into {:result-set-fn first :row-fn :count} (get-db ctx))))
 
+(defn accepted-endorsement-count [ctx user-badge-id user-id]
+ {:user_endorsement_count (->> (select-accepted-badge-endorsements {:id user-badge-id}  (get-db ctx)) count)})
+
+(defn endorsements-count [ctx user-badge-id user-id]
+ {:pending_endorsements_count (pending-endorsement-count ctx user-badge-id user-id)
+  :user_endorsement_count ""
+  :endorsement_count ""})
+
 (defn user-badge-pending-requests [ctx user-badge-id user-id]
  (sent-pending-requests-by-badge-id {:id user-badge-id} (get-db ctx)))
 
@@ -206,6 +219,3 @@
       (log/info "Pending request deleted!")))
    (catch Object _
      (log/error _)))))
-
-
-;Endorsements show in user profile

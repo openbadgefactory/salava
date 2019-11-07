@@ -49,12 +49,8 @@
                   (swap! state assoc :badge-alert "accepted" :badge-name (:name badge))
                   ))}))
 
-
-
-
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
-
 
 (defn- show-more-content [state]
   (fn []

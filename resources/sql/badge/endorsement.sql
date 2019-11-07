@@ -132,3 +132,75 @@ INNER JOIN badge AS badge ON (badge.id = ub.badge_id)
 INNER JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 INNER JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE se.object = :id
+
+--name: select-accepted-badge-endorsements
+SELECT id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id = :id AND ube.status = 'accepted'
+
+--name: insert-user-badge-endorsement<!
+INSERT INTO user_badge_endorsement (external_id,user_badge_id, issuer_id, issuer_name, issuer_url, content, status, ctime, mtime)
+VALUES (:external_id, :user_badge_id, :issuer_id, :issuer_name, :issuer_url, :content, 'pending', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())
+
+--name: delete-user-badge-endorsement!
+DELETE FROM user_badge_endorsement WHERE id = :id
+
+--name: select-endorsement-owner
+SELECT issuer_id FROM user_badge_endorsement WHERE id = :id
+
+--name: select-user-badge-endorsements
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,u.profile_picture, u.profile_visibility
+FROM user_badge_endorsement AS ube
+LEFT JOIN user AS u on u.id = ube.issuer_id
+WHERE user_badge_id = :user_badge_id
+ORDER BY ube.mtime DESC
+
+--name: update-endorsement-status!
+UPDATE user_badge_endorsement SET status = :status WHERE id = :id
+
+--name: select-user-badge-endorser
+SELECT issuer_id FROM user_badge_endorsement WHERE user_badge_id = :user_badge_id AND issuer_id = :issuer_id
+
+--name: select-pending-endorsements
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.ctime,
+endorser.profile_picture, bc.name, bc.image_file, bc.description
+FROM user_badge_endorsement AS ube
+LEFT JOIN user AS endorser ON endorser.id = ube.issuer_id
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+JOIN user AS recepient ON  ub.user_id = recepient.id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE recepient.id = :user_id AND ube.status = 'pending'
+ORDER BY ube.mtime DESC
+
+--name: update-user-badge-endorsement!
+UPDATE user_badge_endorsement SET status = 'pending', content = :content, mtime = UNIX_TIMESTAMP()
+WHERE id = :id
+
+--name: select-given-endorsements
+SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, bc.name, bc.description, bc.image_file, u.id AS endorsee_id, u.profile_picture, u.first_name, u.last_name, ube.status
+FROM user_badge_endorsement AS ube
+JOIN user_badge AS ub ON ub.id=ube.user_badge_id
+JOIN user AS u on u.id = ub.user_id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE ube.issuer_id = :user_id
+
+--name: select-received-endorsements
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,
+endorser.profile_picture, bc.name, bc.image_file, bc.description
+FROM user_badge_endorsement AS ube
+LEFT JOIN user AS endorser ON endorser.id = ube.issuer_id
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+JOIN user AS recepient ON  ub.user_id = recepient.id
+JOIN badge AS badge ON (badge.id = ub.badge_id)
+JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
+JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE recepient.id = :user_id
+ORDER BY ube.mtime DESC
+
+--name: delete-user-badge-endorsements!
+DELETE FROM user_badge_endorsement WHERE user_badge_id = :id
+
+--name: select-endorsement-by-issuerid-and-badgeid
+SELECT id from user_badge_endorsement WHERE user_badge_id = :id AND issuer_id = :user_id AND status != 'declined';

@@ -31,43 +31,69 @@
 
 (defn export-to-pdf [state]
   (let [lang-option "all"
-        badge-url (str "/obpv1/badge/export-to-pdf?badges[0]=" (:id @state) "&lang-option="lang-option)]
+        badge-url (str "/obpv1/badge/export-to-pdf?id="(:id @state) "&lang-option="lang-option)]
     (js-navigate-to badge-url)))
 
-(defn update-settings [badge-id state]
+(defn update-endorsement-count [id state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/settings/" badge-id) true)
-    {:handler (fn [data]
-                (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
+    (path-for (str "/obpv1/badge/user/endorsement/count/" id))
+    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:badge-settings :user_endorsement_count]) user_endorsement_count))}))
+
+(defn update-settings [id state]
+ (ajax/GET
+   (path-for (str "/obpv1/badge/settings/" id) true)
+   {:handler (fn [data]
+               (swap! state assoc :badge-settings (assoc data :new-tag "")))
+    :finally #(update-endorsement-count id state)}))
+
+#_(defn save-settings [state reload-fn]
+   (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
+    (ajax/POST
+      (path-for (str "/obpv1/badge/save_settings/" id))
+      {:params  {:visibility   visibility
+                 :tags         tags
+                 :rating       (if (pos? rating) rating nil)}
+       :handler (fn [] (update-settings id state))
+       :finally (fn [] (when reload-fn (reload-fn)))})))
 
 (defn save-settings [state reload-fn]
- (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
-  (ajax/POST
-    (path-for (str "/obpv1/badge/save_settings/" id))
-    {:params  {:visibility   visibility
-               :tags         tags
-               :rating       (if (pos? rating) rating nil)}
-     :handler (fn [] (update-settings id state))
-     :finally (fn [] (when reload-fn (reload-fn)))})))
+   (let [{:keys [id visibility tags rating]} (:badge-settings @state)
+         {:keys [show_recipient_name]} @state]
+    (ajax/PUT
+      (path-for (str "/obpv1/badge/settings/" id))
+      {:params  {:settings {:visibility   visibility
+                            :rating       (if (pos? rating) rating nil)
+                            :show_recipient_name (case show_recipient_name
+                                                   true 1
+                                                   false 0
+                                                   1)}
+                 :tags         tags}
+       :handler (fn [] (update-settings id state))
+       :finally (fn [] (when reload-fn (reload-fn)))})))
 
+#_(defn toggle-recipient-name [id show-recipient-name-atom]
+    (let [new-value (not @show-recipient-name-atom)]
+      (ajax/POST
+        (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
+        {:params {:show_recipient_name new-value}
+         :handler (fn [] (reset! show-recipient-name-atom new-value))})))
 
-(defn toggle-recipient-name [id show-recipient-name-atom]
-  (let [new-value (not @show-recipient-name-atom)]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
-      {:params {:show_recipient_name new-value}
-       :handler (fn [] (reset! show-recipient-name-atom new-value))})))
+(defn toggle-recipient-name [state]
+ (let [show-recipient-name-atom (cursor state [:show_recipient_name])
+       new-value (not @show-recipient-name-atom)]
+   (reset! show-recipient-name-atom new-value)
+   (save-settings state nil)))
 
-(defn toggle-evidence [state]
-  (let [id (get-in @state [:badge-settings :id])
-        new-value (not (get-in @state [:badge-settings :show_evidence]))]
-    (ajax/POST
-      (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
-      {:params {:show_evidence new-value}
-       :handler (fn [] (do
+#_(defn toggle-evidence [state]
+    (let [id (get-in @state [:badge-settings :id])
+          new-value (not (get-in @state [:badge-settings :show_evidence]))]
+      (ajax/POST
+        (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
+        {:params {:show_evidence new-value}
+         :handler (fn [] (do
 
-                         (swap! state assoc-in [:badge-settings :show_evidence] new-value)
-                         (swap! state assoc :show_evidence new-value)))})))
+                           (swap! state assoc-in [:badge-settings :show_evidence] new-value)
+                           (swap! state assoc :show_evidence new-value)))})))
 
 (defn toggle-receive-notifications [badge_id notifications-atom]
   (let [req-path (if @notifications-atom
@@ -196,7 +222,7 @@
                                                     [:div.col-md-12 [:label {:for "show-name"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "show-name"
-                                                                              :on-change #(toggle-recipient-name id show-recipient-name-atom)
+                                                                              :on-change #(toggle-recipient-name state) #_(toggle-recipient-name id show-recipient-name-atom)
                                                                               :checked   @show-recipient-name-atom}]
                                                                      (t :badge/Showyourname)]]]]
 

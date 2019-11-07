@@ -3,7 +3,8 @@
             [salava.core.time :refer [unix-time date-from-unix-time]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump private?]]
-            [salava.badge.main :refer [user-badges-to-export fetch-badge badge-url badge-evidences]]
+            [salava.badge.evidence :refer [badge-evidence]]
+            [salava.badge.main :refer [user-badges-to-export fetch-badge badge-url]]
             [salava.core.util :as u :refer [get-db plugin-fun get-plugins md->html str->qr-base64]]
             [clj-pdf.core :as pdf]
             [clj-pdf-markdown.core :refer [markdown->clj-pdf]]
@@ -12,7 +13,8 @@
             [ring.util.io :as io]
             [clojure.tools.logging :as log]
             [salava.badge.endorsement :refer [user-badge-endorsements]]
-            [salava.badge.pdf-helper :as pdfh]))
+            [salava.badge.pdf-helper :as pdfh]
+            [clojure.core.reducers :as r]))
 
 (defqueries "sql/badge/main.sql")
 
@@ -38,9 +40,19 @@
                            :endorsements (->> [(vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx)))
                                                (user-badge-endorsements ctx (:id %1))]
                                               flatten) #_(->> (vec (select-badge-endorsements {:id (:badge_id %1)} (u/get-db ctx))))
-                           :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (badge-evidences ctx (:id %1) user-id))
+                           :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (badge-evidence ctx (:id %1) user-id))
                            :content %2)) badge-with-content temp)]
     (replace-nils badges)))
+
+(defn- badge-pdf-helper [ctx user-id id]
+ (let [badge (fetch-badge ctx id)]
+   (replace-nils (some-> badge
+                         (assoc :qr_code (str->qr-base64 (badge-url ctx id))
+                                :endorsements (->> [(vec (select-badge-endorsements {:id (:badge_id badge)} (u/get-db ctx)))
+                                                    (user-badge-endorsements ctx id)]
+                                                   flatten)
+                                :evidences (remove (fn [e] (= true (get-in e [:properties :hidden]))) (:evidence (badge-evidence ctx id user-id)))
+                                :content (select-multi-language-badge-content {:id (:badge_id badge)} (u/get-db ctx)))))))
 
 
 #_(defn process-pdf-page [stylesheet template badge ul]
@@ -71,12 +83,10 @@
                                :wrap {:global-wrapper :paragraph}} markdown)
       "")))
 
-
-
 (defn generatePDF [ctx user-id input lang]
   (let [data-dir (get-in ctx [:config :core :data-dir])
         site-url (get-in ctx [:config :core :site-url])
-        badges (pdf-generator-helper ctx user-id input)
+        badges [(badge-pdf-helper ctx user-id input)] #_(pdf-generator-helper ctx user-id input)
         user-data (ud/user-information ctx user-id)
         ul (if (blank? (:language user-data)) "en" (:language user-data))
         font-path  (first (mapcat #(get-in ctx [:config % :font] []) (get-plugins ctx)))
