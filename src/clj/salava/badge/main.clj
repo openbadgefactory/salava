@@ -172,7 +172,7 @@
         (try+
           (http/http-get (str obf-url "/c/badge/passport_update") {:query-params {"badge" user-badge-id "user" user-id "url" site-url}})
           (catch Object _
-            (log/error "send-badge-info-to-obf: " _)))))))
+            (log/error "send-badge-info-to-obf: " (.getMessage _))))))))
 
 ;;EVIDENCE
 
