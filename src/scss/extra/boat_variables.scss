@@ -1,0 +1,20 @@
+$main-color: #3963e2;
+$second-color: #EADE3B;
+$third-color: #CD312F;
+$background-color: #e7e7e7;
+$text-color: #13100F;
+
+$dark-yellow: darken($second-color, 10%);
+$dark-blue: darken($main-color, 10%);
+$light-blue: lighten($main-color, 10%);
+$dark-red: darken($third-color, 10%);
+
+$menu-color: $text-color;
+$menu-active: $dark-blue;
+$title-color: $text-color;
+$titlebar-color: $main-color;
+$button-color: $dark-blue;
+$button-hover: $main-color;
+$link-color: $dark-blue;//$button-hover;
+$badge-title: $button-hover;
+$badge-title-hover: $main-color;
