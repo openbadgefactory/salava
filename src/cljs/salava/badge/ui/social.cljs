@@ -22,7 +22,7 @@
 (defn- init-pending-endorsements [state]
  (when (:owner? @state)
    (ajax/GET
-    (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
     {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                          (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
@@ -33,7 +33,7 @@
 
 (defn get-pending-requests [dataatom state]
  (ajax/GET
-  (path-for (str "/obpv1/badge/endorsement/request/pending/" (:id @state)))
+  (path-for (str "/obpv1/badge/user_endorsement/request/pending/" (:id @state)))
   {:handler (fn [data] (reset! (cursor dataatom [:sent-requests]) data))}))
 
 (defn refresh-social-tab [dataatom state]
@@ -50,7 +50,7 @@
      :finally (fn [] (init-pending-endorsements state))})
 
    (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
     {:handler (fn [data]
                (let [pending-endorsements-count (->> data (filter #(= "pending" (:status %))) count)]
                    (reset! endorsements data)

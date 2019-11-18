@@ -35,13 +35,13 @@
 (defn- init-pending-endorsements [state]
  (when (:owner? @state)
    (ajax/GET
-    (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
     {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                          (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
 (defn init-endorsement-count [id state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/count/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
     {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
 (defn init-data

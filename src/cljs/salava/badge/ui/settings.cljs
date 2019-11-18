@@ -36,7 +36,7 @@
 
 (defn update-endorsement-count [id state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/count/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
     {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:badge-settings :user_endorsement_count]) user_endorsement_count))}))
 
 (defn update-settings [id state]

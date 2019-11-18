@@ -39,8 +39,8 @@
 
 (defn delete-evidence! [id state evidence-atom]
   (ajax/DELETE
-    (path-for (str "/obpv1/badge/evidence/" id))
-    { :params {:user_badge_id (:id @state)}
+    (path-for (str "/obpv1/badge/evidence/"(:id @state)"/" id))
+    { ;:params {:user_badge_id (:id @state)}
       :handler (fn [data] (when evidence-atom (init-badge-evidence (:id @state) evidence-atom)))}))
 
 (defn init-resources [key resource-atom]

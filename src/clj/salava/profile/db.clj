@@ -10,7 +10,7 @@
 (defqueries "sql/profile/main.sql")
 
 (defn user-badges [ctx user-id]
- (as-> (first (plugin-fun (get-plugins ctx) "main" "user-badges-all")) f (if f (f ctx user-id) [])))
+ (as-> (first (plugin-fun (get-plugins ctx) "main" "user-badges-all")) f (if f (-> (f ctx user-id) :badges) [])))
 
 (defn user-published-badges [ctx user-id]
  (as-> (first (plugin-fun (get-plugins ctx) "db" "public-by-user")) f (if f (-> (f ctx "badges" user-id user-id) :badges) [])))

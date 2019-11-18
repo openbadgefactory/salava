@@ -383,6 +383,7 @@
          (up/delete-profile-block-and-properties! {:connection tr-cn} user-id) ;;remove profile badge showcases and profile properties
          #_(update-user-pages-set-deleted! {:user_id user-id} {:connection tr-cn})
          (delete-user-profile! {:user_id user-id} {:connection tr-cn})
+         (delete-user-terms! {:user_id user-id} {:connection tr-cn})
 
          #_(if activated
              (doall (map #(update-user-email-set-deleted! {:user_id user-id :email (:email %) :deletedemail (str "deleted-" (:email %) ".so.deleted")} {:connection tr-cn} ) emails))

@@ -33,7 +33,7 @@
 
 (defn init-endorsement-count [id state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/count/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
     {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
 (defn init-data [state id]

@@ -453,7 +453,7 @@
          (publish-badge-event! ctx user-badge-id user-id visibility))
        {:status "success"}))
     (catch Object _
-      (log/error "Badge settings update failed: " (.getMessage _))
+      (log/error "Badge settings update failed: " _)
       {:status "error"})))
 
 (defn set-visibility!

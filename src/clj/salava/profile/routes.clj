@@ -15,8 +15,9 @@
              (layout/main-meta ctx "/:id" :user)
              (layout/main-meta ctx "/:id/embed" :user))
     (context "/obpv1/profile" []
-             :tags ["profile"]
+             :tags ["user_profile"]
              (GET "/:userid" []
+                  :return schemas/user-profile
                   :summary "Get user information and profile fields"
                   :path-params [userid :- s/Int]
                   :current-user current-user
@@ -26,7 +27,9 @@
                             (and (= visibility "internal") current-user))
                       (ok profile)
                       (unauthorized))))
+
              (GET "/user/edit" []
+                  :return schemas/user-profile-for-edit
                   :summary "Get user information and profile fields for editing"
                   :auth-rules access/signed
                   :current-user current-user
@@ -34,13 +37,14 @@
 
              (POST "/user/edit" []
                    :return {:status (s/enum "success" "error") :message s/Str}
-                   :body [profile schemas/EditProfile]
+                   :body [profile schemas/edit-user-profile]
                    :summary "Save user profile"
                    :auth-rules access/authenticated
                    :current-user current-user
                    (ok (p/save-user-profile ctx profile (:id current-user))))
 
              (GET "/user/tips" []
+                  :no-doc true
                   :summary "Calculate profile completion and get tips"
                   :auth-rules access/authenticated
                   :current-user current-user

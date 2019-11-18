@@ -8,10 +8,10 @@
 
 (defn init-metabadge-data [param state]
 
- (let [link (if (:assertion_url param) (str "/obpv1/metabadge/assertion/info") (str "/obpv1/metabadge/info"))]
+ (let [link (if (:assertion_url param) (str "/obpv1/metabadge/assertion/info/" (:assertion_url param)) (str "/obpv1/metabadge/info/" (:user_badge_id param)))]
   (ajax/GET
    (path-for link)
-   {:params param
+   {;:params param
     :handler (fn [data]
                (reset! state data))})))
 
