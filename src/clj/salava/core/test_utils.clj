@@ -34,8 +34,9 @@
 (defn test-api-request
   ([ctx method url] (test-api-request ctx method url {}))
   ([ctx method url opt]
-   (let [handler (get-in (meta ctx) [:system :handler :handler])]
-     (-> (mock/request method url)
+   (let [handler (get-in (meta ctx) [:system :handler :handler])
+         base (get-in ctx [:config :core :base-path])]
+     (-> (mock/request method (str base url))
          (mock/content-type "application/json")
          (mock/body (cheshire/generate-string (:params opt)))
          (assoc :identity (:user opt))
@@ -56,4 +57,4 @@
          (finally
            (stop-system system#))))))
 
-;(migrator/run-test-reset)
+#_(migrator/run-test-reset)
