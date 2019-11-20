@@ -1,6 +1,6 @@
 (ns salava.profile.db
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db get-plugins plugin-fun md->html]]
+            [salava.core.util :refer [get-db get-plugins plugin-fun md->html file-from-url-fix url?]]
             [salava.core.helper :refer [dump private?]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
@@ -172,6 +172,71 @@
      (catch Object _
        (log/error _)
        {:status "error" :message ""}))))
+
+(defn add-profile-fields! "add profile fields to user profile" [ctx fields user-id]
+ (let [existing-fields (vec (user-profile ctx user-id))]
+   (try+
+    (doseq [index (range (count existing-fields) (+ (count existing-fields)(count fields)))
+              :let [{:keys [field value]} (get (into existing-fields fields) index)]]
+        (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
+    {:status "success"}
+    (catch Object _
+     (log/error _)
+     {:status "error" :message _}))))
+
+(defn delete-profile-fields! [ctx field_ids user-id]
+ (try+
+  (when (seq field_ids)
+    (delete-user-profile-fields-multi! {:user_id user-id :field_ids field_ids} (get-db ctx)))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
+
+(defn add-profile-tabs! "add pages as tabs to profile" [ctx input user-id]
+ (let [profile-properties (profile-properties ctx user-id)
+       existing-tabs (:tabs profile-properties)
+       tabs (if (seq input)(select-page-multi {:tabs input :user_id user-id} (get-db ctx)) [])
+       tabs-to-add (->> tabs (remove #(is-profile-tab? ctx user-id (:id %))))]
+   (try+
+    (when-not (every? true? (map #(= user-id (:user_id %)) tabs-to-add))
+      (throw+ {:status "error" :message "user trying to add page they do not own"}))
+    (when (seq tabs-to-add)
+     (publish-profile-tabs ctx user-id tabs-to-add)
+     (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :tabs (into existing-tabs (mapv :id tabs-to-add))))
+                                       :user_id user-id} (get-db ctx)))
+    {:status "success"}
+    (catch Object _
+      (log/error _)
+      {:status "error" :message _}))))
+
+(defn delete-profile-tabs! [ctx tabs user-id])
+
+
+(defn save-user-profile-p [ctx profile user-id]
+ (let [{:keys [profile_visibility profile_picture about theme]} profile
+       existing-user-info (user-information ctx user-id)
+       about (if about about (-> existing-user-info :about))
+       profile_visibility (if (clojure.string/blank? profile_visibility) (-> existing-user-info :profile_visibility) profile_visibility)
+       profile-picture (cond
+                         (url? profile_picture) (file-from-url-fix ctx profile_picture)
+                         (re-find #"^data" profile_picture) (file-from-url-fix ctx profile_picture)
+                         :else (-> existing-user-info :profile_picture))
+       profile-properties (profile-properties ctx user-id)]
+
+   (try+
+     (if (and (private? ctx) (= "public" profile_visibility))
+       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+     (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile-picture :about about :id user-id} (get-db ctx))
+     (when theme (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :theme theme))
+                                                   :user_id user-id} (get-db ctx)))
+     {:status "success" :message "profile/Profilesuccesfullyupdated"}
+     (catch Object _
+       (log/error _)
+       {:status "error" :message ""}))))
+
+(defn add-showcase-blocks [ctx blocks user-id])
+
 
 (defn profile-metrics [ctx user-id]
  (let [user-profile (user-information-and-profile ctx user-id nil)

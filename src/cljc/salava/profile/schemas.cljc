@@ -1,8 +1,9 @@
 (ns salava.profile.schemas
-  (:require [schema.core :as s
-             :include-macros true]
-            [salava.core.schema-helper :as h]
-            [salava.core.countries :refer [all-countries]]))
+  #?(:clj (:require [schema.core :as s]
+                    [compojure.api.sweet :refer [describe]]
+                    [salava.core.countries :refer [all-countries]])
+     :cljs (:require [schema.core :as s :include-macros true]
+                     [salava.core.countries :refer [all-countries]])))
 
 #?(:cljs (defn describe [v _] v))
 
@@ -27,8 +28,8 @@
    {:type "blog" :key :user/Blog}])
 
 (s/defschema badge {:id                           s/Int
-                    :name                         s/Str
-                    :image_file                   (s/maybe s/Str)
+                    (s/optional-key :name)        s/Str
+                    (s/optional-key :image_file ) (s/maybe s/Str)
                     (s/optional-key :description) (s/maybe s/Str)
                     (s/optional-key :visibility)  (s/enum "private" "public" "internal")})
 
@@ -43,20 +44,34 @@
 
 (s/defschema badge-showcase {(s/optional-key :id)          s/Int
                              :type                         (s/eq "showcase")
-                             (s/optional-key :block_order) s/Int
-                             :title                        (s/maybe s/Str)
-                             :badges                       [(s/maybe badge)]
-                             :format                       (s/enum "short" "long")})
+                             (s/optional-key :block_order) (describe s/Int "Block arrangement order")
+                             :title                        (describe (s/maybe s/Str) "Title of the showcase when displayed in profile. Default name is Untitled")
+                             :badges                       (describe [(s/maybe badge)] "ids of badges you want to add to your showcase")
+                             :format                       (describe (s/eq "short") "Always short format for showcase badges")})
+
+#_(def recent-badges-block  (describe {:block_order             s/Int
+                                       :type                    (s/eq "badges")
+                                       (s/optional-key :hidden) s/Bool}  "Default block, possible operations: hide, change display order in profile"))
+
+#_(def recent-pages-block  (describe {:block_order             s/Int
+                                      :type                    (s/eq "pages")
+                                      (s/optional-key :hidden) s/Bool}  "Default block, possible operations: hide, change display order in profile"))
+
+#_(def location-block  (describe {:block_order             s/Int
+                                  :type                    (s/eq "location")
+                                  (s/optional-key :hidden) s/Bool}  "Default block, Appears when user location is enabled. possible operations: hide, change display order in profile"))
+
 
 (s/defschema profile-block (either
-                            {:block_order s/Int
-                             :type (apply s/enum block-types)
-                             :hidden s/Bool}
-                            badge-showcase))
+                            badge-showcase
+                            {:block_order            s/Int
+                             :type                   (apply s/enum block-types)
+                             (s/optional-key :hidden) s/Bool}))
 
-(s/defschema profile-tab {:id         s/Int
-                          :name       s/Str
-                          :visibility (s/enum "private" "public" "internal")})
+
+(s/defschema profile-tab {:id         (describe s/Int "user page id")
+                          :name       (describe s/Str "page name")
+                          :visibility (describe (s/enum "private" "public" "internal") "page visibility")})
 
 (s/defschema picture-file {:id s/Int
                            :name s/Str
@@ -86,22 +101,32 @@
                            :tabs       [(s/maybe profile-tab)]
                            :owner?     s/Bool})
 
+(s/defschema edit-user-profile-p  {(s/optional-key :profile_visibility) (s/enum "internal" "public")
+                                   (s/optional-key :about)           (describe (s/maybe s/Str) "A short description about user")
+                                   (s/optional-key :profile_picture) (describe (s/maybe s/Str) "picture url")
+                                   (s/optional-key :theme)           (describe s/Int "Default theme is 0. Options 0 - 13")})
+
+
 (s/defschema user-profile-for-edit {:user_id       s/Int
                                     :user          (-> user (select-keys [:about :profile_picture :profile_visibility]))
                                     :profile       [(s/maybe profile-field)]
                                     :picture_files [(s/maybe picture-file)]})
 
-(s/defschema block-for-edit  (s/conditional
-                               #(= (:type %) "showcase") badge-showcase
-                               #(= (:type %) "badges")   {:block_order s/Int :type (s/eq "badges") :hidden (s/maybe s/Bool)}
-                               #(= (:type %) "pages")    {:block_order s/Int :type (s/eq "pages") :hidden (s/maybe s/Bool)}
-                               #(= (:type %) "location") {:block_order s/Int :type (s/eq "location") (s/optional-key :hidden) (s/maybe s/Bool)}))
+(s/defschema block-for-edit  (describe (s/conditional
+                                         #(= (:type %) "showcase") badge-showcase
+                                         #(= (:type %) "badges")   {:block_order s/Int :type (s/eq "badges") :hidden (s/maybe s/Bool)}
+                                         #(= (:type %) "pages")    {:block_order s/Int :type (s/eq "pages") :hidden (s/maybe s/Bool)}
+                                         #(= (:type %) "location") {:block_order s/Int :type (s/eq "location") (s/optional-key :hidden) (s/maybe s/Bool)}) "Badge blocks"))
+
+(s/defschema fields [(s/maybe {:field (apply s/enum (map :type additional-fields)) :value (s/maybe s/Str)})])
 
 (s/defschema edit-user-profile (assoc (-> user (select-keys [:profile_visibility :profile_picture :about]))
-                                      :fields [{:field (apply s/enum (map :type additional-fields)) :value (s/maybe s/Str)}]
-                                      :blocks [(s/maybe block-for-edit)]
-                                      :theme (s/maybe s/Int)
-                                      :tabs  [(s/maybe profile-tab #_{:id s/Int :name s/Str :visibility s/Str})]))
+                                      (s/optional-key :fields) fields
+                                      :blocks (describe [(s/maybe block-for-edit)]
+                                                        "Default blocks include user's recently published badges and pages. User location is also added by default when user location is enabled.
+                                                                          Badge showcases can be added as extra blocks. Model shows a badge showcase block being added")
+                                      :theme (describe (s/maybe s/Int) "Default theme 0")
+                                      :tabs  (describe [(s/maybe profile-tab)] "Pages created by the user can be added as profile tabs ")))
 
 #_(s/defschema ShowcaseBlock {:type (s/eq "showcase")
                               :title  (s/maybe s/Str)

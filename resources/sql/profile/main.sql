@@ -9,6 +9,9 @@ SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
 --name: delete-user-profile-fields!
 DELETE FROM user_profile WHERE user_id = :user_id
 
+--name: delete-user-profile-fields-multi!
+DELETE FROM user_profile WHERE user_id = :user_id AND id IN (:field_ids)
+
 --name: insert-user-profile-field!
 INSERT INTO user_profile (user_id, field, value, field_order) VALUES (:user_id, :field, :value, :field_order)
 
@@ -58,3 +61,6 @@ SELECT DISTINCT ub.id, bc.name, bc.image_file FROM user_badge AS ub
   --name: select-page
   --get profile page tab
   SELECT id, name, visibility FROM page WHERE id = :id AND deleted != 1;
+
+  --name: select-page-multi
+  SELECT id, name, visibility, user_id FROM page WHERE id IN (:tabs) AND deleted != 1 AND user_id = :user_id;

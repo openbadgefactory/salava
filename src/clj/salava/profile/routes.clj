@@ -14,8 +14,10 @@
     (context "/profile" []
              (layout/main-meta ctx "/:id" :user)
              (layout/main-meta ctx "/:id/embed" :user))
+
     (context "/obpv1/profile" []
              :tags ["user_profile"]
+
              (GET "/:userid" []
                   :return schemas/user-profile
                   :summary "Get user information and profile fields"
@@ -29,23 +31,57 @@
                       (unauthorized))))
 
              (GET "/user/edit" []
+                  :no-doc true
                   :return schemas/user-profile-for-edit
                   :summary "Get user information and profile fields for editing"
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (p/user-profile-for-edit ctx (:id current-user))))
 
-             (POST "/user/edit" []
-                   :return {:status (s/enum "success" "error") :message s/Str}
-                   :body [profile schemas/edit-user-profile]
-                   :summary "Save user profile"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (ok (p/save-user-profile ctx profile (:id current-user))))
+            (GET "/user/tips" []
+                 :no-doc true
+                 :summary "Calculate profile completion and get tips"
+                 :auth-rules access/authenticated
+                 :current-user current-user
+                 (ok (p/profile-metrics ctx (:id current-user))))
 
-             (GET "/user/tips" []
+            (POST "/user/edit" []
                   :no-doc true
-                  :summary "Calculate profile completion and get tips"
+                  :return {:status (s/enum "success" "error") :message s/Str}
+                  :body [profile schemas/edit-user-profile]
+                  :summary "Save user profile"
                   :auth-rules access/authenticated
                   :current-user current-user
-                  (ok (p/profile-metrics ctx (:id current-user)))))))
+                  (ok (p/save-user-profile ctx profile (:id current-user))))
+
+            (PUT "/user/edit" []
+                  :return {:status (s/enum "success" "error") :message s/Str}
+                  :body [profile schemas/edit-user-profile-p]
+                  :summary "Save user profile"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (p/save-user-profile-p ctx profile (:id current-user))))
+
+            (PUT "/add_field" []
+                 :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                 :body [fields schemas/fields]
+                 :summary "Add profile field, multiple fields can be added at once"
+                 :auth-rules access/authenticated
+                 :current-user current-user
+                 (ok (p/add-profile-fields! ctx fields (:id current-user))))
+
+            (PUT "/add_tab" []
+                  :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                  :body [tabs [(:id schemas/profile-tab)]]
+                  :summary "add pages as tabs to profile"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (p/add-profile-tabs! ctx tabs (:id current-user))))
+
+            (DELETE "/delete_field" []
+                   :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                   :body [ids [(s/maybe s/Int)]]
+                   :summary "Delete profile field by id, multiple fields can be deleted at once"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (p/delete-profile-fields! ctx ids (:id current-user)))))))
