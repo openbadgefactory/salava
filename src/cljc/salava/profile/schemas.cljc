@@ -49,6 +49,12 @@
                              :badges                       (describe [(s/maybe badge)] "ids of badges you want to add to your showcase")
                              :format                       (describe (s/eq "short") "Always short format for showcase badges")})
 
+(s/defschema add-showcase-block {(s/optional-key :id)          s/Int
+                                 :type                         (s/eq "showcase")
+                                 :title                        (describe (s/maybe s/Str) "Title of the showcase when displayed in profile. Default name is Untitled")
+                                 :badges                       (describe [s/Int] "ids of badges you want to add to your showcase")})
+
+
 #_(def recent-badges-block  (describe {:block_order             s/Int
                                        :type                    (s/eq "badges")
                                        (s/optional-key :hidden) s/Bool}  "Default block, possible operations: hide, change display order in profile"))
