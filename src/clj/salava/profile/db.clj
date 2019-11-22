@@ -159,6 +159,46 @@
      (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
        (delete-block! ctx old-block)))))
 
+(defn save-user-profile
+  "Save user's profile"
+  [ctx profile user-id]
+ (let [{:keys [profile_visibility profile_picture about fields blocks theme tabs]} profile]
+   (try+
+     (if (and (private? ctx) (= "public" profile_visibility))
+       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+     (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
+     (doseq [index (range 0 (count fields))
+             :let [{:keys [field value]} (get fields index)]]
+       (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
+     (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile_picture :about about :id user-id} (get-db ctx))
+     (save-profile-blocks ctx blocks theme tabs user-id)
+     {:status "success" :message "profile/Profilesuccesfullyupdated"}
+     (catch Object _
+       (log/error _)
+       {:status "error" :message ""}))))
+
+(defn save-user-profile-p [ctx profile user-id]
+ (let [{:keys [profile_visibility profile_picture about theme]} profile
+       existing-user-info (user-information ctx user-id)
+       about (if about about (-> existing-user-info :about))
+       profile_visibility (if (clojure.string/blank? profile_visibility) (-> existing-user-info :profile_visibility) profile_visibility)
+       profile-picture (cond
+                         (url? profile_picture) (file-from-url-fix ctx profile_picture)
+                         (re-find #"^data" profile_picture) (file-from-url-fix ctx profile_picture)
+                         :else (-> existing-user-info :profile_picture))
+       profile-properties (profile-properties ctx user-id)]
+
+   (try+
+     (if (and (private? ctx) (= "public" profile_visibility))
+       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+     (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile-picture :about about :id user-id} (get-db ctx))
+     (when theme (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :theme theme))
+                                                   :user_id user-id} (get-db ctx)))
+     {:status "success" :message "profile/Profilesuccesfullyupdated"}
+     (catch Object _
+       (log/error _)
+       {:status "error" :message ""}))))
+
 (defn add-profile-block! [ctx new-block user-id]
   (try+
     (let [profile-properties (profile-properties ctx user-id)
@@ -190,32 +230,6 @@
       (log/error _)
       {:status "error" :message _})))
 
-(defn delete-profile-blocks! [ctx block-ids user-id]
- (try+
-  (delete-block-multi! ctx block-ids user-id)
-  {:status "success"}
-  (catch Object _
-    (log/error _)
-    {:status "error" :message _})))
-
-(defn save-user-profile
-  "Save user's profile"
-  [ctx profile user-id]
- (let [{:keys [profile_visibility profile_picture about fields blocks theme tabs]} profile]
-   (try+
-     (if (and (private? ctx) (= "public" profile_visibility))
-       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
-     (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
-     (doseq [index (range 0 (count fields))
-             :let [{:keys [field value]} (get fields index)]]
-       (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
-     (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile_picture :about about :id user-id} (get-db ctx))
-     (save-profile-blocks ctx blocks theme tabs user-id)
-     {:status "success" :message "profile/Profilesuccesfullyupdated"}
-     (catch Object _
-       (log/error _)
-       {:status "error" :message ""}))))
-
 (defn add-profile-fields! "add profile fields to user profile" [ctx fields user-id]
  (let [existing-fields (vec (user-profile ctx user-id))]
    (try+
@@ -226,15 +240,6 @@
     (catch Object _
      (log/error _)
      {:status "error" :message _}))))
-
-(defn delete-profile-fields! [ctx field_ids user-id]
- (try+
-  (when (seq field_ids)
-    (delete-user-profile-fields-multi! {:user_id user-id :field_ids field_ids} (get-db ctx)))
-  {:status "success"}
-  (catch Object _
-    (log/error _)
-    {:status "error" :message _})))
 
 (defn add-profile-tabs! "add pages as tabs to profile" [ctx input user-id]
  (let [profile-properties (profile-properties ctx user-id)
@@ -253,40 +258,35 @@
       (log/error _)
       {:status "error" :message _}))))
 
+(defn delete-profile-blocks! [ctx block-ids user-id]
+ (try+
+  (delete-block-multi! ctx block-ids user-id)
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
+
+(defn delete-profile-fields! [ctx field_ids user-id]
+ (try+
+  (when (seq field_ids)
+    (delete-user-profile-fields-multi! {:user_id user-id :field_ids field_ids} (get-db ctx)))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
+
 (defn delete-profile-tabs! [ctx tabs user-id]
+ (try+
   (let [profile-properties (profile-properties ctx user-id)
         existing-tabs (-> profile-properties :tabs)
-        filtered-tabs (remove (fn [t] (some #(= (:id t) (:id %)))) existing-tabs)]
+        tabs (if (seq tabs)(select-page-multi {:tabs tabs :user_id user-id} (get-db ctx)) [])
+        filtered-tabs (remove (fn [t] (some #(= t  (:id %)) tabs)) existing-tabs)]
     (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :tabs filtered-tabs))
-                                      :user_id user-id} (get-db ctx))))
-
-(defn save-user-profile-p [ctx profile user-id]
- (let [{:keys [profile_visibility profile_picture about theme]} profile
-       existing-user-info (user-information ctx user-id)
-       about (if about about (-> existing-user-info :about))
-       profile_visibility (if (clojure.string/blank? profile_visibility) (-> existing-user-info :profile_visibility) profile_visibility)
-       profile-picture (cond
-                         (url? profile_picture) (file-from-url-fix ctx profile_picture)
-                         (re-find #"^data" profile_picture) (file-from-url-fix ctx profile_picture)
-                         :else (-> existing-user-info :profile_picture))
-       profile-properties (profile-properties ctx user-id)]
-
-   (try+
-     (if (and (private? ctx) (= "public" profile_visibility))
-       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
-     (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile-picture :about about :id user-id} (get-db ctx))
-     (when theme (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :theme theme))
-                                                   :user_id user-id} (get-db ctx)))
-     {:status "success" :message "profile/Profilesuccesfullyupdated"}
-     (catch Object _
-       (log/error _)
-       {:status "error" :message ""}))))
-
-(defn add-showcase-blocks [ctx blocks user-id])
-
-
-
-
+                                      :user_id user-id} (get-db ctx))
+    {:status "success"})
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
 
 (defn profile-metrics [ctx user-id]
  (let [user-profile (user-information-and-profile ctx user-id nil)

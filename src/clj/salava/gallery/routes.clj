@@ -98,12 +98,14 @@
                    (ok {:users     (g/public-profiles ctx search-params (:id current-user))
                         :countries (g/profile-countries ctx (:id current-user))}))
              (GET "/stats" []
+                  :no-doc true
                   :summary "Get gallery stats"
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (g/gallery-stats ctx (:last-visited current-user) (:id current-user))))
 
              (GET "/recent" [userid kind]
+                  :no-doc true
                   :summary "get user's recent badges or pages"
                   :current-user current-user
                   (ok (g/public-by-user ctx kind userid (:id current-user))))
@@ -124,6 +126,7 @@
                   (ok (g/badge-rating ctx (:id current-user) gallery_id)))
 
             (POST "/profiles/:user_badge_id/:context" []
+                  :no-doc true
                   :return {:users     [schemas/UserProfiles]
                            :countries [schemas/Countries]}
                   :path-params [user_badge_id :- s/Int

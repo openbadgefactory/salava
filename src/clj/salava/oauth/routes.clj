@@ -24,6 +24,7 @@
 
 
    (context "/oauth" []
+         :tags ["oauth"]
          (GET "/google" req
                  :query-params [{code :- s/Str nil}
                                 {state :- s/Str nil}

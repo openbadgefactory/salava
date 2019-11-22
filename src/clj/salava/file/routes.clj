@@ -24,6 +24,7 @@
              (layout/main ctx "/browser/:editor/:callback/:lang")
 
              (GET "/browser" []
+                  :no-doc true
                   :summary "View user files"
                   :query-params [CKEditor :- String
                                  CKEditorFuncNum :- String

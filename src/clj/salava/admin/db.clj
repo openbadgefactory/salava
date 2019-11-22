@@ -1,18 +1,18 @@
 (ns salava.admin.db
  (:require [yesql.core :refer [defqueries]]
-            [clojure.set :refer [rename-keys]]
-            [clojure.java.jdbc :as jdbc]
-            [salava.core.helper :refer [dump]]
-            [slingshot.slingshot :refer :all]
-            [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name plugin-fun get-plugins]]
-            [salava.core.time :refer [unix-time get-date-from-today]]
-            [salava.core.countries :refer [all-countries sort-countries]]
-            [salava.user.db :as u]
-            [clojure.tools.logging :as log]
-            [salava.badge.main :as b]
-            [salava.page.main :as p]
-            [salava.mail.mail :as m]
-            [salava.gallery.db :as g]))
+           [clojure.set :refer [rename-keys]]
+           [clojure.java.jdbc :as jdbc]
+           [salava.core.helper :refer [dump]]
+           [slingshot.slingshot :refer :all]
+           [salava.core.util :as util :refer [get-db get-datasource get-site-url get-base-path get-site-name plugin-fun get-plugins]]
+           [salava.core.time :refer [unix-time get-date-from-today]]
+           [salava.core.countries :refer [all-countries sort-countries]]
+           [salava.user.db :as u]
+           [clojure.tools.logging :as log]
+           [salava.badge.main :as b]
+           [salava.page.main :as p]
+           [salava.mail.mail :as m]
+           [salava.gallery.db :as g]))
 
 (defqueries "sql/admin/queries.sql")
 
@@ -84,7 +84,6 @@
    (catch Object _
      "error")))
 
-
 (defn private-badges! [ctx badge_id]
   (try+
    (update-user-badge-visibility-by-badge-id!{ :badge_id badge_id} (get-db ctx))
@@ -92,8 +91,6 @@
    "success"
    (catch Object _
      "error")))
-
-
 
 (defn private-page! [ctx id]
   (try+
@@ -140,7 +137,8 @@
      (update-badge-deleted! {:id id} (get-db ctx)))
    "success"
    (catch Object _
-     "error")))
+    (log/error _)
+    "error")))
 
 (defn delete-badges! [ctx badge-id subject message]
   (try+
@@ -210,8 +208,8 @@
 
 (defn get-oauth-user-services [ctx user_id]
   (let [fun (first (plugin-fun (get-plugins ctx) "block" "user-information"))]
-    (fun ctx user_id))
-  )
+    (fun ctx user_id)))
+
 
 (defn get-user [ctx user_id]
   (let [user (u/user-information-with-registered-and-last-login ctx user_id)
@@ -252,9 +250,9 @@
 (defn get-public-badge-content-modal [ctx badge-id user-id]
   (let [badge (g/public-multilanguage-badge-content ctx badge-id user-id)
                                         ;badge (g/select-common-badge-content {:id badge-id} (into {:result-set-fn first} (get-db ctx)))
-        badge-content (first (filter #(= (:language_code %) (:default_language_code %)) (get-in badge [:badge :content]))) ;(g/select-badge-criteria-issuer-by-date {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
+        badge-content (first (filter #(= (:language_code %) (:default_language_code %)) (get-in badge [:badge :content])))] ;(g/select-badge-criteria-issuer-by-date {:badge_id badge-id} (into {:result-set-fn first} (get-db ctx)))
         ;recipients (g/select-badge-recipients {:badge_id badge-id} (get-db ctx))
-        ]
+
     (hash-map :name (:name badge-content)
               :image_file (:image_file badge-content)
               :item_owner_id  (vec (map :id (:public_users badge)))
@@ -359,10 +357,10 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
     (try+
      (if (not (:activated user))
        (m/send-activation-message ctx site-url (u/activation-link site-url base-path user-id activation_code language) (u/login-link site-url base-path) (str first-name " " last-name) email language)
-      (throw+ "error") )
+      (throw+ "error"))
      "success"
      (catch Object _
-     "error"))))
+      "error"))))
 
 (defn user-information
   "Get user data by user-id"
@@ -375,10 +373,10 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 (defn set-fake-session [ctx ok-status user-id real-user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)]
     (log/info "admin-id: " real-user-id " is login as user-id: " user-id)
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :real-id real-user-id})
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :real-id real-user-id})))
 
-    )
-  )
+
+
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)]
@@ -388,10 +386,9 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
 (defn update-user-to-admin [ctx user-id]
   (log/info "admin set user-id: " user-id "to admin.")
   (update-user-to-admin! {:id user-id} (get-db ctx))
-  "success"
-  )
+  "success")
+
 
 (defn update-admin-to-user [ctx user-id]
   (log/info "admin set user-id:" user-id "to admin.")
-  (update-admin-to-user! {:id user-id} (get-db ctx))
-  )
+  (update-admin-to-user! {:id user-id} (get-db ctx)))

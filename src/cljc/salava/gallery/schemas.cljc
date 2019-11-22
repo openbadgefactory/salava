@@ -1,7 +1,7 @@
 (ns salava.gallery.schemas
   (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]
+             :include-macros true] ;; cljs only
+
             [salava.core.countries :refer [all-countries]]
             [salava.user.schemas :as u]))
 
@@ -34,12 +34,12 @@
 
 
 #_(s/defschema Badgesgallery {:badge_count s/Int
-                            :badges       [GalleryBadges]
-                            :countries    [Countries]
-                            :tags         [{:badge_id_count s/Int
-                                            :badge_ids      s/Str
-                                            :tag            s/Str}]
-                            :user-country s/Str})
+                              :badges       [GalleryBadges]
+                              :countries    [Countries]
+                              :tags         [{:badge_id_count s/Int
+                                              :badge_ids      s/Str
+                                              :tag            s/Str}]
+                              :user-country s/Str})
 
 (s/defschema Badgesgallery {:badge_count s/Int
                             :badges       [GalleryBadges]})
@@ -55,8 +55,8 @@
                          :issuer-name s/Str
                          :order s/Str
                          :recipient-name s/Str
-                         :page_count s/Str
-                         })
+                         :page_count s/Str})
+
 
 
 (s/defschema MultilanguageContent {:default_language_code s/Str
@@ -101,3 +101,8 @@
                                                           :last_name       s/Str
                                                           :profile_picture (s/maybe s/Str)}])
                            :private_user_count (s/maybe s/Int)})
+
+(s/defschema page {:description (s/maybe s/Str)
+                   :id s/Str
+                   :name s/Str
+                   :badges [{:name s/Str :image_file (s/maybe s/Str)}]})

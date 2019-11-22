@@ -46,7 +46,7 @@
                  (ok (p/profile-metrics ctx (:id current-user))))
 
             (POST "/user/edit" []
-                  :no-doc true
+                  :no-doc false
                   :return {:status (s/enum "success" "error") :message s/Str}
                   :body [profile schemas/edit-user-profile]
                   :summary "Save user profile"
@@ -62,7 +62,7 @@
                   :current-user current-user
                   (ok (p/save-user-profile-p ctx profile (:id current-user))))
 
-            (PUT "/add_field" []
+            (PUT "/field" []
                  :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
                  :body [fields schemas/fields]
                  :summary "Add profile field, multiple fields can be added at once"
@@ -70,7 +70,7 @@
                  :current-user current-user
                  (ok (p/add-profile-fields! ctx fields (:id current-user))))
 
-            (PUT "/add_tab" []
+            (PUT "/tab" []
                   :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
                   :body [tabs [(:id schemas/profile-tab)]]
                   :summary "Add pages as tabs to profile, multiple tabs can be added at once"
@@ -86,7 +86,7 @@
                  :current-user current-user
                  (ok (p/add-profile-block! ctx block (:id current-user))))
 
-            (DELETE "/delete_block" []
+            (DELETE "/block" []
                  :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
                  :body [ids [s/Int]]
                  :summary "Delete showcase block. multiple blocks can be deleted at once"
@@ -94,10 +94,18 @@
                  :current-user current-user
                  (ok (p/delete-profile-blocks! ctx ids (:id current-user))))
 
-            (DELETE "/delete_field" []
+            (DELETE "/field" []
                    :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
                    :body [ids [(s/maybe s/Int)]]
                    :summary "Delete profile field by id, multiple fields can be deleted at once"
                    :auth-rules access/authenticated
                    :current-user current-user
-                   (ok (p/delete-profile-fields! ctx ids (:id current-user)))))))
+                   (ok (p/delete-profile-fields! ctx ids (:id current-user))))
+
+           (DELETE "/tab" []
+                   :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                   :body [tabs [(s/maybe s/Int)]]
+                   :summary "Delete profile tab by id, multiple tabs can be deleted at once"
+                   :auth-rules access/authenticated
+                   :current-user current-user
+                   (ok (p/delete-profile-tabs! ctx tabs (:id current-user)))))))
