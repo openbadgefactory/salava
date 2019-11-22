@@ -210,8 +210,12 @@
       (log/error _)
       {:status "error" :message _}))))
 
-(defn delete-profile-tabs! [ctx tabs user-id])
-
+(defn delete-profile-tabs! [ctx tabs user-id]
+  (let [profile-properties (profile-properties ctx user-id)
+        existing-tabs (-> profile-properties :tabs)
+        filtered-tabs (remove (fn [t] (some #(= (:id t) (:id %)))) existing-tabs)]
+    (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :tabs filtered-tabs))
+                                      :user_id user-id} (get-db ctx))))
 
 (defn save-user-profile-p [ctx profile user-id]
  (let [{:keys [profile_visibility profile_picture about theme]} profile
