@@ -73,10 +73,26 @@
             (PUT "/add_tab" []
                   :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
                   :body [tabs [(:id schemas/profile-tab)]]
-                  :summary "add pages as tabs to profile"
+                  :summary "Add pages as tabs to profile, multiple tabs can be added at once"
                   :auth-rules access/authenticated
                   :current-user current-user
                   (ok (p/add-profile-tabs! ctx tabs (:id current-user))))
+
+            (PUT "/block" []
+                 :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                 :body [block schemas/add-showcase-block]
+                 :summary "Add block to profile. Currently, only badge showcase blocks can be added to profile. Add id to update existing block"
+                 :auth-rules access/authenticated
+                 :current-user current-user
+                 (ok (p/add-profile-block! ctx block (:id current-user))))
+
+            (DELETE "/delete_block" []
+                 :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                 :body [ids [s/Int]]
+                 :summary "Delete showcase block. multiple blocks can be deleted at once"
+                 :auth-rules access/authenticated
+                 :current-user current-user
+                 (ok (p/delete-profile-blocks! ctx ids (:id current-user))))
 
             (DELETE "/delete_field" []
                    :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}

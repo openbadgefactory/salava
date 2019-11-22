@@ -74,7 +74,7 @@
      :visibility visibility
      :blocks blocks
      :owner?  (= user-id current-user-id)
-     :theme (-> profile-properties :theme)
+     :theme (or (-> profile-properties :theme) 0)
      :tabs tabs}))
 
 (defn user-profile-for-edit
@@ -118,6 +118,10 @@
                  (delete-showcase-block! {:id (:id block)} (get-db ctx))
                  (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))))
 
+(defn delete-block-multi! [ctx block-ids user-id]
+   (delete-showcase-block-multi! {:block_ids block-ids :user_id user-id} (get-db ctx))
+   #_(delete-showcase-badges-multi! {:block_ids block-ids :user_id user-id} (get-db ctx)))
+
 (defn publish-profile-tabs
  "Set profile tab page's visibility to public"
  [ctx user-id tabs]
@@ -154,6 +158,45 @@
    (doseq [old-block profile-blocks]
      (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
        (delete-block! ctx old-block)))))
+
+(defn add-profile-block! [ctx new-block user-id]
+  (try+
+    (let [profile-properties (profile-properties ctx user-id)
+          existing-blocks (profile-blocks ctx user-id)
+          badge-ids (map :id (user-badges ctx user-id))
+          blocks (conj (vec existing-blocks) new-block)]
+     (doseq [block-index (range (count blocks))]
+      (let [block (-> (nth blocks block-index)
+                      (assoc :block_order block-index))
+            id (and (:id block)
+                    (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) blocks))]
+         (case (:type block)
+          ("showcase") (when (= (->> (:badges block)
+                                     (filter (fn [x] (some #(= x %) badge-ids)))
+                                     count)
+                                (count (:badges block)))
+                         (let [badges (if (map? (last (:badges block)))
+                                          (:badges block)
+                                          (when (seq (:badges block)) (->> (select-badge-multi {:ids (:badges block)} (get-db ctx)))))]
+                           (if (empty? badges)
+                             (throw+ "Trying to create showcase without badges or with badges user does not own")
+                             (if id
+                               (update-showcase-block! ctx (assoc block :badges badges :user_id user-id :format "short"))
+                               (create-showcase-block! ctx (assoc block :badges badges :user_id user-id :format "short"))))))
+
+            nil)))
+     {:status "success"})
+    (catch Object _
+      (log/error _)
+      {:status "error" :message _})))
+
+(defn delete-profile-blocks! [ctx block-ids user-id]
+ (try+
+  (delete-block-multi! ctx block-ids user-id)
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
 
 (defn save-user-profile
   "Save user's profile"
@@ -240,6 +283,9 @@
        {:status "error" :message ""}))))
 
 (defn add-showcase-blocks [ctx blocks user-id])
+
+
+
 
 
 (defn profile-metrics [ctx user-id]
