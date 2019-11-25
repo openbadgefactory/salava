@@ -135,9 +135,6 @@
                   :current-user current-user
                   (ok {:endorsements (b/get-endorsements ctx badgeid)}))
 
-
-
-
             (GET "/export-to-pdf" [id lang-option]
                  :no-doc true
                  :summary "Export badges to PDF"
@@ -151,6 +148,7 @@
                        (header "Content-Type" "application/pdf"))))
 
             (GET "/info-embed/:user-badge-id" []
+                 :no-doc true
                  :return (select-keys schemas/user-badge-content-p [:id :content])
                  :path-params [badgeid :- Long]
                  :summary "Get badge for embed view"
@@ -168,6 +166,7 @@
                      (not-found))))
 
             (GET "/settings/:user-badge-id" []
+                 :no-doc true
                  :return schemas/user-badge-settings
                  :path-params [user-badge-id :- Long]
                  :summary "Get badge settings"
@@ -202,6 +201,7 @@
                    (ok (b/save-badge-settings! ctx user-badge-id (:id current-user) data))))
 
             (POST "/set_visibility/:user-badge-id" []
+                  :no-doc true
                   :return {:status (s/enum "success" "error")}
                   :path-params [user-badge-id :- Long]
                   :body-params [visibility :- (s/enum "private" "public" "internal")]
@@ -348,12 +348,12 @@
            (POST "/toggle_evidence/:evidenceid" []
                  :return {:status (s/enum "success" "error")}
                  :path-params [evidenceid :- Long]
-                 :body-params [show_evidence :- (s/enum false true)
+                 :body-params [hide_evidence :- (s/enum false true)
                                user_badge_id :- Long]
                  :summary "Set evidence visibility"
                  :auth-rules access/authenticated
                  :current-user current-user
-                 (ok (evidence/toggle-show-evidence! ctx user_badge_id evidenceid show_evidence (:id current-user))))
+                 (ok (evidence/toggle-show-evidence! ctx user_badge_id evidenceid hide_evidence (:id current-user))))
 
            (DELETE "/:user_badge_id/:evidenceid" [user_badge_id]
                    :return {:status (s/enum "success" "error")}
@@ -376,6 +376,7 @@
                 (ok {:endorsements (e/user-badge-endorsements ctx user-badge-id true)}))
 
            (GET "/count/:user-badge-id" []
+                :no-doc true
                 :return {:user_endorsement_count s/Int}
                 :path-params [user-badge-id :- Long]
                 :summary "Get accepted user badge endorsements count"
@@ -383,6 +384,7 @@
                 (ok (e/accepted-endorsement-count ctx user-badge-id (:id current-user))))
 
            (GET "/pending_count/:user-badge-id" []
+                :no-doc true
                 :return s/Int
                 :path-params [user-badge-id :- Long]
                 :auth-rules access/authenticated
@@ -390,13 +392,12 @@
                 :current-user current-user
                 (ok (e/pending-endorsement-count ctx user-badge-id (:id current-user))))
 
-
            (GET "/_/pending" []
-                :return [schemas/user-badge-endorsement]
+                :return schemas/pending-user-endorsements
                 :auth-rules access/authenticated
                 :summary "Get pending badge endorsements"
                 :current-user current-user
-                (ok (e/received-pending-endorsements ctx (:id current-user))))
+                (ok {:endorsements (e/received-pending-endorsements ctx (:id current-user))}))
 
            (GET "/_/all" []
                 :return schemas/AllEndorsements
@@ -408,11 +409,12 @@
            (GET "/request/pending" []
                 :return [schemas/EndorsementRequest]
                 :auth-rules access/authenticated
-                :summary "Get pending badge endorsments"
+                :summary "Get pending badge endorsement requests"
                 :current-user current-user
                 (ok (e/endorsement-requests-pending ctx (:id current-user))))
 
            (GET "/request/pending/:user-badge-id" []
+                :no-doc true
                 :return [schemas/EndorsementRequest]
                 :auth-rules access/authenticated
                 :path-params [user-badge-id :- Long]
@@ -462,7 +464,7 @@
           (POST "/:user-badge-id" []
                 :return {(s/optional-key :id) s/Int :status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
                 :path-params [user-badge-id :- Long]
-                :body-params [content :- s/Str]
+                :body-params [content :- (:content schemas/endorsement-content)]
                 :summary "Endorse user badge"
                 :auth-rules access/authenticated
                 :current-user current-user

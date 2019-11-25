@@ -114,7 +114,7 @@
   (ajax/GET
     (path-for "/obpv1/badge/user_endorsement/_/pending")
     {:handler (fn [data]
-                (swap! state assoc :pending data))}))
+                (swap! state assoc :pending (:endorsements data)))}))
 
 (defn edit-endorsement [id badge-id content]
   (ajax/POST

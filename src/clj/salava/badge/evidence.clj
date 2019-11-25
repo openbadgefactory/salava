@@ -45,6 +45,7 @@
                             (into {})
                             (json/write-str))]
         (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
+        (prn id)
         id))))
 
 (defn save-badge-evidence [ctx user-id user-badge-id evidence]
@@ -97,7 +98,7 @@
     (if (badge-owner? ctx badge-id user-id)
       (update-show-evidence! {:id badge-id :show_evidence show-evidence} (u/get-db ctx))))
 
-(defn toggle-show-evidence! [ctx badge-id evidence-id show_evidence user-id]
+(defn toggle-show-evidence! [ctx badge-id evidence-id hide_evidence user-id]
   "Toggle evidence visibility"
   (try+
     (if (badge-owner? ctx badge-id user-id)
@@ -105,7 +106,7 @@
         (let [property-name (str "evidence_id:" evidence-id)
               metadata (some-> (select-user-evidence-property {:name property-name :user_id user-id} (into {:result-set-fn first :row-fn :value} (u/get-db ctx)))
                                (json/read-str :key-fn keyword))
-              updated-metadata (-> (assoc metadata :hidden show_evidence)
+              updated-metadata (-> (assoc metadata :hidden hide_evidence)
                                    (json/write-str))]
 
           (insert-user-evidence-property! {:user_id user-id :value updated-metadata :name property-name} (u/get-db ctx)))

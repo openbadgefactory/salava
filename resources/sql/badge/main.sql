@@ -256,6 +256,19 @@ LEFT JOIN user AS u ON (u.id = ub.user_id)
 WHERE ub.id = :id AND ub.deleted = 0
 GROUP BY ub.id
 
+--name: select-multi-language-user-badge-p
+--get badge by id, for public route
+SELECT  ub.id, ub.badge_id, ub.gallery_id,
+ub.assertion_url, ub.assertion_json, ub.assertion_jws, b.remote_url,
+ub.issued_on, ub.expires_on, ub.revoked,
+ub.visibility, ub.show_recipient_name,
+ub.ctime, ub.mtime,
+u.first_name, u.last_name
+FROM user_badge AS ub
+INNER JOIN badge as b ON (b.id= ub.badge_id)
+LEFT JOIN user AS u ON (u.id = ub.user_id)
+WHERE ub.id = :id AND ub.deleted = 0
+GROUP BY ub.id
 
 --name: select-multi-language-badge-content
 --get badge by id
@@ -467,7 +480,7 @@ WHERE ub.id = :id
 
 --name:select-badge-settings
 --get badge settings
-SELECT ub.id, ub.visibility, ub.show_recipient_name, ub.rating, bc.name, bc.image_file
+SELECT ub.id, ub.visibility, ub.show_recipient_name, ub.rating, bc.name, bc.image_file, ub.show_evidence
 FROM user_badge AS ub
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)

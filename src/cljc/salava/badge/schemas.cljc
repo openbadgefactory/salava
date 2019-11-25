@@ -126,19 +126,19 @@
                                              :content                                 [badge-content]
                                              :first_name                              (describe (s/maybe s/Str) "badge earner's first name")
                                              :last_name                               (describe (s/maybe s/Str) "badge earner's last name")
-                                             :issuer_verified                         (describe (s/maybe s/Int) "issuer verified by OBF?")
-                                             :issued_by_obf                           (describe s/Bool "badge issued by OBF?")
-                                             :verified_by_obf                         (describe s/Bool "badge verified by OBF?")
-                                             :owner                                   (describe s/Int "internal id of badge owner")
+                                             ;:issuer_verified                         (describe (s/maybe s/Int) "issuer verified by OBF?")
+                                             ;:issued_by_obf                           (describe s/Bool "badge issued by OBF?")
+                                             ;:verified_by_obf                         (describe s/Bool "badge verified by OBF?")
+                                             ;:owner                                   (describe s/Int "internal id of badge owner")
                                              (s/optional-key :assertion_url)          (s/maybe s/Str)
-                                             (s/optional-key :assertion-jws)          (s/maybe s/Str)
+                                             (s/optional-key :assertion_jws)          (s/maybe s/Str)
                                              (s/optional-key :gallery_id)             (describe s/Int "internal gallery badge id")
                                              (s/optional-key :show_recipient_name)    (describe (s/maybe s/Int) "used internally; when set, earner's name is shown in badge ")
                                              (s/optional-key :remote_url)             (describe (s/maybe s/Str) "domain where badge assertion is hosted")
-                                             (s/optional-key :assertion_json)         (s/maybe s/Str)
-                                             (s/optional-key :qr_code)                (s/maybe s/Str)
-                                             (s/optional-key :email)                  (describe (s/maybe s/Str) "email badge was issued to")
-                                             (s/optional-key :user_id)                (s/maybe s/Int))))
+                                             (s/optional-key :assertion_json)         (s/maybe s/Str))))
+                                             ;(s/optional-key :qr_code)                (s/maybe s/Str)
+                                             ;(s/optional-key :email)                  (describe (s/maybe s/Str) "email badge was issued to")
+                                             ;(s/optional-key :user_id)                (s/maybe s/Int))))
 
 (s/defschema verification {:type                                  (s/enum "HostedBadge" "SignedBadge" "hosted" "signed")
                            (s/optional-key :url)                  (s/maybe s/Str)
@@ -317,14 +317,15 @@
 (s/defschema user-badge-settings (-> (select-keys user-badge [:id :name :image_file :visibility])
                                      (assoc (s/optional-key :tags)                 (describe (s/maybe [s/Str]) "internal tags added by current user")
                                             (s/optional-key :show_recipient_name)  (describe (s/maybe s/Int) "used internally; when set, earner's name is shown in badge ")
+                                            (s/optional-key :show_evidence) s/Int
                                             :rating (s/maybe s/Int))))
 
-(s/defschema badge-settings {:visibility          (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
-                             :rating              (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
-                             :show_recipient_name (s/maybe (describe (s/enum 0 1) "used internally; when set, earner's name is shown in badge "))})
+(s/defschema badge-settings {(s/optional-key :visibility )         (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
+                             (s/optional-key :rating)              (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
+                             (s/optional-key :show_recipient_name) (s/maybe (describe (s/enum 0 1) "used internally; when set, earner's name is shown in badge "))})
 
 (s/defschema update-badge-settings {(s/optional-key :settings) badge-settings
-                                    (s/optional-key :tags)     (s/maybe [s/Str])})
+                                    (s/optional-key :tags)     (describe (s/maybe [s/Str]) "Adding tags overrides previously added tags, To preserve previously added tags include them in the list of tags. Pass empty vector to delete all tags")})
 
 (s/defschema Endorsement {:id s/Str
                           :content s/Str
@@ -373,7 +374,7 @@
 (s/defschema UserBackpackEmail {:email s/Str
                                 :backpack_id (s/maybe s/Int)})
 
-(s/defschema save-badge-evidence {:id (s/maybe s/Int)
+(s/defschema save-badge-evidence {;:id (s/maybe s/Int)
                                   :name (s/maybe s/Str)
                                   :narrative (s/maybe s/Str)
                                   :url s/Str
@@ -398,6 +399,23 @@
                                 (s/optional-key :name) (s/maybe s/Str)
                                 (s/optional-key :image_file) (s/maybe s/Str)
                                 (s/optional-key :description) (s/maybe s/Str)})
+
+(s/defschema endorsement-content {:content (describe (s/constrained s/Str #(and (>= (count %) 5)
+                                                                                (not (clojure.string/blank? %)))) "Content in markdown format")})
+
+(s/defschema pending-endorsement {:id s/Int
+                                  :description (s/maybe s/Str)
+                                  :user_badge_id s/Int
+                                  :profile_picture (describe (s/maybe s/Str) "Issuer's profile picture")
+                                  :issuer_name (describe (s/maybe s/Str) "Issuer's name")
+                                  :issuer_url (s/maybe s/Str)
+                                  :issuer_id s/Int
+                                  :content s/Str
+                                  :name (describe s/Str "Endorsed badge's name")
+                                  :image_file (describe (s/maybe s/Str) "Endorsed badge's image")
+                                  :ctime s/Int})
+
+(s/defschema pending-user-endorsements {:endorsements [pending-endorsement]})
 
 (s/defschema user-badge-endorsement {:endorsements [user-endorsement]})
 

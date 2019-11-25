@@ -213,6 +213,16 @@
                          (r/foldcat))]
    (assoc my-badge :content content)))
 
+(defn fetch-badge-p [ctx badge-id]
+  (let [my-badge (select-multi-language-user-badge-p {:id badge-id} (u/get-db-1 ctx))
+        content  (some->> (select-multi-language-badge-content {:id (:badge_id my-badge)} (u/get-db ctx))
+                          (r/map #(-> %
+                                      (assoc :criteria_content (u/md->html (:criteria_content %)))
+                                      (assoc :alignment (select-alignment-content {:badge_content_id (:badge_content_id %)} (u/get-db ctx)))
+                                      (dissoc :badge_content_id)))
+                          (r/foldcat))]
+       (assoc my-badge :content content)))
+
 
 (defn get-badge-REMOVE
   "Get badge by id"
@@ -267,10 +277,10 @@
 (defn get-badge-p
   "Get badge by id, public route"
   [ctx badge-id user-id]
-  (let [badge (some->> (fetch-badge ctx badge-id) (badge-issued-and-verified-by-obf ctx))]
+  (let [badge (some->> (fetch-badge-p ctx badge-id) #_(badge-issued-and-verified-by-obf ctx))]
    (some-> badge
-           (assoc :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge))
-                  :qr_code (u/str->qr-base64 (badge-url ctx badge-id)))
+           (assoc :revoked (check-badge-revoked ctx badge-id (:revoked badge) (:assertion_url badge) (:last_checked badge)))
+                  ;:qr_code (u/str->qr-base64 (badge-url ctx badge-id)))
            (dissoc :badge_id :deleted :obf_url))))
 
 (defn get-endorsements [ctx badge-id]
@@ -439,10 +449,11 @@
       (throw+ {:status "error" :message "Settings cannot be updated, user does not own this badge!"})
       (let [{:keys [tags settings]} data
             {:keys [visibility rating show_recipient_name]} settings
+            previous-settings (badge-settings ctx user-badge-id user-id)
             settings-data {:id user-badge-id
-                           :rating rating
-                           :visibility visibility
-                           :show_recipient_name show_recipient_name}]
+                           :rating (if-not (number? rating) (:rating previous-settings) rating)
+                           :visibility (if (blank? visibility) (:visibility previous-settings) visibility)
+                           :show_recipient_name (if-not (number? show_recipient_name) (:show_recipient_name previous-settings) show_recipient_name)}]
        (when (and (private? ctx) (= "public" visibility))
          (throw+ {:status "error" :user-badge-id user-badge-id :user-id user-id :message "trying save badge visibility as public in private mode"}))
        (when (or rating visibility show_recipient_name) (update-badge-settings! settings-data (u/get-db ctx)))

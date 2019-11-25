@@ -87,14 +87,14 @@
         badgeid (:id @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/evidence/toggle_evidence/" id))
-      {:params {:show_evidence new-value
+      {:params {:hide_evidence new-value
                 :user_badge_id (int badgeid)}
        :handler (fn [data] (when evidence-atom (init-badge-evidence badgeid evidence-atom)))})))
- ([id state show_evidence evidence-atom]
+ ([id state visibility evidence-atom]
   (let [badgeid (:id @state)]
     (ajax/POST
       (path-for (str "/obpv1/badge/evidence/toggle_evidence/" id))
-      {:params {:show_evidence show_evidence
+      {:params {:hide_evidence visibility
                 :user_badge_id (int badgeid)}
        :handler (fn [data] (when evidence-atom (init-badge-evidence badgeid evidence-atom)))}))))
 
@@ -419,9 +419,9 @@
                               (not added-by-user?) description ;;todo use regex to match description
                               :else nil)
                        visibility-class (if (= true hidden) " opaque" "")
-                       show_evidence (if (pos? @(cursor state [:badge-settings :show_evidence])) true false)]
+                       visibility (if (pos? @(cursor state [:badge-settings :show_evidence])) true false)]
                    (if (and (blank? properties) (not added-by-user?))
-                     (toggle-show-evidence! id state show_evidence evidence-atom))
+                     (toggle-show-evidence! id state visibility evidence-atom))
                    (conj r
                          (when (and (not (blank? url)) (url? url))
                            [:div.panel.panel-default
