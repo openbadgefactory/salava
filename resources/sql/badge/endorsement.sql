@@ -68,6 +68,16 @@ JOIN issuer_content AS ic ON (ic.id = bic.issuer_content_id) AND ic.language_cod
 WHERE uber.issuer_id = :user_id
 ORDER BY uber.mtime DESC
 
+--name: select-endorsement-requests-p
+--for public API
+SELECT uber.id, uber.user_badge_id, uber.content, uber.status, uber.mtime, requester.id AS requester_id
+FROM user_badge_endorsement_request AS uber
+JOIN user_badge AS ub ON ub.id = uber.user_badge_id
+LEFT JOIN user AS requester ON requester.id = ub.user_id
+WHERE uber.issuer_id = :user_id
+ORDER BY uber.mtime DESC
+
+
 --name: select-sent-endorsement-requests
 --select all endorsement requests sent by user
 SELECT uber.id, uber.user_badge_id, uber.content, uber.status, uber.issuer_id AS requestee_id, uber.issuer_name, issuer.profile_picture, uber.ctime, uber.mtime, bc.name, bc.image_file
@@ -78,6 +88,14 @@ JOIN user AS issuer ON uber.issuer_id = issuer.id
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE uber.status = 'pending' AND u.id = :id
+
+--name: select-sent-endorsement-requests-p
+--for public API
+SELECT uber.id, uber.user_badge_id, uber.content, uber.status, uber.issuer_id AS requestee_id, uber.ctime, uber.mtime
+FROM user_badge_endorsement_request AS uber
+JOIN user_badge AS ub ON ub.id= uber.user_badge_id
+JOIN user AS u ON u.id = ub.user_id
 WHERE uber.status = 'pending' AND u.id = :id
 
 --name: select-endorsement-request-owner
@@ -153,6 +171,13 @@ LEFT JOIN user AS u on u.id = ube.issuer_id
 WHERE user_badge_id = :user_badge_id
 ORDER BY ube.mtime DESC
 
+--name: select-user-badge-endorsements-p
+--for public API
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.content, ube.status, ube.mtime
+FROM user_badge_endorsement AS ube
+WHERE user_badge_id = :id
+ORDER BY ube.mtime DESC
+
 --name: update-endorsement-status!
 UPDATE user_badge_endorsement SET status = :status WHERE id = :id
 
@@ -186,6 +211,14 @@ JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
 WHERE ube.issuer_id = :user_id
 
+--name: select-given-endorsements-p
+--for public API
+SELECT ube.id, ube.user_badge_id, ube.content, ube.mtime, ube.status, u.id AS endorsee_id
+FROM user_badge_endorsement AS ube
+JOIN user_badge AS ub ON ub.id=ube.user_badge_id
+JOIN user AS u on u.id = ub.user_id
+WHERE ube.issuer_id = :user_id
+
 --name: select-received-endorsements
 SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.issuer_name, ube.issuer_url, ube.content, ube.status, ube.mtime,
 endorser.profile_picture, bc.name, bc.image_file, bc.description
@@ -196,6 +229,15 @@ JOIN user AS recepient ON  ub.user_id = recepient.id
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id) AND bc.language_code = badge.default_language_code
+WHERE recepient.id = :user_id
+ORDER BY ube.mtime DESC
+
+--name: select-received-endorsements-p
+--received endorsements for public API
+SELECT ube.id, ube.user_badge_id, ube.issuer_id, ube.content, ube.status, ube.mtime
+FROM user_badge_endorsement AS ube
+JOIN user_badge AS ub ON ub.id = ube.user_badge_id
+JOIN user AS recepient ON  ub.user_id = recepient.id
 WHERE recepient.id = :user_id
 ORDER BY ube.mtime DESC
 

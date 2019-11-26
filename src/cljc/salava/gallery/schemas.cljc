@@ -1,9 +1,20 @@
 (ns salava.gallery.schemas
-  (:require [schema.core :as s
-             :include-macros true] ;; cljs only
+  #?(:clj (:require [schema.core :as s]
+                    [schema.coerce :as c]
+                    [salava.core.countries :refer [all-countries]]
+                    [salava.user.schemas :as u]
+                    [compojure.api.sweet :refer [describe]])
+     :cljs (:require [schema.core :as s :include-macros true]
+                     [salava.core.countries :refer [all-countries]]
+                     [salava.user.schemas :as u]
+                     [schema.coerce :as c])))
 
-            [salava.core.countries :refer [all-countries]]
-            [salava.user.schemas :as u]))
+#?(:cljs (defn describe [v _] v))
+
+(def constrained-str (s/constrained s/Str #(and (>= (count %) 0)
+                                                (<= (count %) 255))))
+
+(def country (s/constrained s/Str (fn [c] #(some (= % c) (conj (keys all-countries) "all")))))
 
 (s/defschema UserSearch {:name          (s/constrained s/Str #(and (>= (count %) 0)
                                                                    (<= (count %) 255)))
@@ -49,13 +60,13 @@
 (s/defschema BadgesgalleryCountries {:countries [Countries]})
 
 
-(s/defschema BadgeQuery {:country s/Str
-                         :tags s/Str
-                         :badge-name s/Str
-                         :issuer-name s/Str
-                         :order s/Str
-                         :recipient-name s/Str
-                         :page_count s/Str})
+(s/defschema BadgeQuery {:country (describe country "Filter by country code")
+                         (s/optional-key :tags) (describe constrained-str "Filter by tag")
+                         (s/optional-key :badge-name) (describe constrained-str "Filter by badge name")
+                         (s/optional-key :issuer-name)(describe constrained-str "Filter by issuer name")
+                         (s/optional-key :order) (describe (s/enum "recipients" "mtime" "name" "issuer_content_name") "Select order, dafault mtime")
+                         (s/optional-key :recipient-name) (describe constrained-str "Filter by badge earner")
+                         :page_count (describe constrained-str "Page offset. 0 for first page.")})
 
 
 
@@ -106,3 +117,14 @@
                    :id s/Str
                    :name s/Str
                    :badges [{:name s/Str :image_file (s/maybe s/Str)}]})
+
+(s/defschema public-badge-recipient {:id (s/maybe s/Int)
+                                     :first_name (s/maybe s/Str)
+                                     :last_name (s/maybe s/Str)
+                                     :profile_picture (s/maybe s/Str)})
+
+(s/defschema public-badge-recipient-p {:id (s/maybe s/Int)})
+
+(s/defschema recipients {:all_recipients_count s/Int
+                         :private_user_count s/Int
+                         :public_users (describe [(s/maybe public-badge-recipient)] "User ids of users who have published their badge")})

@@ -95,6 +95,9 @@
    (reduce (fn [r e]
              (conj r (-> e (update :content md->html)))) [] (user-badge-endorsements ctx user-badge-id))))
 
+(defn user-badge-endorsements-p [ctx user-badge-id]
+  (select-user-badge-endorsements-p {:id user-badge-id} (get-db ctx)))
+
 (defn received-pending-endorsements [ctx user-id]
   (map (fn [e] (-> e (update :content md->html))) (select-pending-endorsements {:user_id user-id} (get-db ctx))))
 
@@ -105,11 +108,20 @@
  ([ctx user-id md?]
   (select-received-endorsements {:user_id user-id} (get-db ctx))))
 
+(defn endorsements-received-p [ctx user-id]
+  (select-received-endorsements-p {:user_id user-id} (get-db ctx)))
+
 (defn endorsements-given [ctx user-id]
   (select-given-endorsements {:user_id user-id} (get-db ctx)))
 
+(defn endorsements-given-p [ctx user-id]
+  (select-given-endorsements-p {:user_id user-id} (get-db ctx)))
+
 (defn endorsement-requests [ctx user-id]
   (map (fn [r] (-> r (update :content md->html))) (select-endorsement-requests {:user_id user-id} (get-db ctx))))
+
+(defn endorsement-requests-p [ctx user-id]
+  (select-endorsement-requests-p {:user_id user-id} (get-db ctx)))
 
 (defn endorsement-requests-pending [ctx user-id]
   (->> (endorsement-requests ctx user-id) (filter #(= "pending" (:status %)))))
@@ -125,6 +137,17 @@
      :requests requests
      :sent-requests sent-requests
      :all-endorsements all}))
+
+(defn all-user-endorsements-p [ctx user-id]
+  (let [received (endorsements-received-p ctx user-id)
+        given (endorsements-given-p ctx user-id)
+        sent-requests (some->> (select-sent-endorsement-requests-p {:id user-id} (get-db ctx)) (mapv #(assoc % :type "sent_request")))
+        requests (->> (endorsement-requests-p ctx user-id) (filterv #(= (:status %) "pending")) (mapv #(assoc % :type "request")))]
+    
+    {:given given
+     :received received
+     :sent-requests sent-requests
+     :requests requests}))
 
 (defn insert-request-event! [ctx data]
  (insert-endorsement-request-event<! data (get-db ctx)))

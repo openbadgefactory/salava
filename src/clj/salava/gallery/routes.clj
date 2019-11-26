@@ -47,9 +47,8 @@
                   :auth-rules access/signed
                   (ok (g/badge-countries ctx)))
 
-
              (GET "/public_badge_content/:badge-id" []
-;;                   :return schemas/BadgeContent
+                ;  :return schemas/BadgeContent
                   :path-params [badge-id :- s/Str]
                   :summary "Get public badge data"
                   :current-user current-user
@@ -66,6 +65,7 @@
                     (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user)))))
 
              (GET "/badge_gallery_id/:badge-id" []
+                  :no-doc true
                   :path-params [badge-id :- s/Str]
                   :summary "Get gallery id of a badge"
                   (ok (g/badge-gallery-id ctx badge-id)))
@@ -83,6 +83,7 @@
                      (ok (into {:pages (g/public-pages ctx current-country owner)} countries))))
 
              (POST "/pages/:userid" []
+                   :no-doc true
                    :path-params [userid :- s/Int]
                    :summary "Get user's public pages."
                    :current-user current-user
@@ -111,6 +112,7 @@
                   (ok (g/public-by-user ctx kind userid (:id current-user))))
 
              (GET "/recipients/:gallery_id" []
+                   :return schemas/recipients
                    :summary "Get user badge stats about recipients"
                    :path-params [gallery_id :- Long]
                    :auth-rules access/authenticated

@@ -99,7 +99,7 @@
   (ajax/GET
     (path-for "/obpv1/page" true)
     {:handler (fn [data]
-                (swap! state assoc :pages data))}))
+                (swap! state assoc :pages (:pages data)))}))
 
 (defn handler [site-navi]
   (let [state (atom {:pages []

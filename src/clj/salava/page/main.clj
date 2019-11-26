@@ -143,11 +143,12 @@
     (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
           blocks (page-blocks-for-edit ctx page-id)
           owner (:user_id page)
-          badges (map #(select-keys % [:id :name :image_file :tags :description]) (b/user-badges-all ctx owner))
+          badges (map #(select-keys % [:id :name :image_file :tags :description]) (:badges (b/user-badges-all ctx owner)))
           files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
-          tags (distinct (flatten (map :tags badges)))
+          tags (-> (mapcat :tags badges) distinct) #_(distinct (flatten (map :tags badges)))
           is-profile-tab? (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx (:user_id page) page-id))]
       {:page (assoc page :blocks blocks) :badges badges :tags tags :files files :profile-tab? is-profile-tab?})))
+
 
 (defn delete-block! [ctx block]
   (case (:type block)
@@ -266,7 +267,7 @@
                        (:files (f/user-files-all ctx page-owner-id)))
           file-ids (map :id user-files)
           user-badges (if (some #(or (= "badge" (:type %)) (= "showcase" (:type %))) blocks)
-                        (b/user-badges-all ctx page-owner-id))
+                        (:badges (b/user-badges-all ctx page-owner-id)))
           badge-ids (map :id user-badges)
           page-blocks (page-blocks ctx page-id)]
       (update-page-name-description! {:id page-id :name name :description description} (get-db ctx))
