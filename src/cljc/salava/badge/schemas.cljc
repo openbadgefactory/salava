@@ -56,7 +56,7 @@
 (s/defschema evidence {:id                              (either s/Int s/Str)
                        :name                            (s/maybe s/Str)
                        :narrative                       (s/maybe s/Str)
-                       (s/optional-key  :url )          (s/maybe s/Str)
+                       :url                             (s/maybe s/Str)
                        (s/optional-key  :description)   (s/maybe s/Str)
                        (s/optional-key  :ctime)         (s/maybe s/Int)
                        (s/optional-key  :mtime)         (s/maybe s/Int)
@@ -374,10 +374,10 @@
 (s/defschema UserBackpackEmail {:email s/Str
                                 :backpack_id (s/maybe s/Int)})
 
-(s/defschema save-badge-evidence {;:id (s/maybe s/Int)
-                                  :name (s/maybe s/Str)
-                                  :narrative (s/maybe s/Str)
-                                  :url s/Str
+(s/defschema save-badge-evidence {(s/optional-key :id)             (s/maybe s/Int)
+                                  :name                            (s/maybe s/Str)
+                                  :narrative                       (s/maybe s/Str)
+                                  :url                             s/Str
                                   (s/optional-key  :resource_id)   (describe (s/maybe s/Int) "used internally, attached evidence resource id")
                                   (s/optional-key  :mime_type)     (describe (s/maybe s/Str) "used internally, mime type of attached evidence resource")
                                   (s/optional-key  :resource_type) (s/maybe s/Str)})

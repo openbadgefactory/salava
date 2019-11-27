@@ -2,10 +2,11 @@
   (:require [clojure.java.io :as io]
             [slingshot.slingshot :refer :all]
             [pantomime.mime :refer [mime-type-of extension-for-name]]
-            [salava.core.util :refer [public-path]]
+            [salava.core.util :as u :refer [public-path]]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
-            [salava.file.db :as f]))
+            [salava.file.db :as f]
+            [salava.core.http :as http]))
 
 (defn upload-file [ctx user-id file image-only?]
   (try+
@@ -50,3 +51,26 @@
       {:status "error" :message "file/Errorwhileuploading" :reason _})
     (finally
       (.delete (:tempfile file)))))
+
+(defn rand-filename [length]
+  (apply str (take length (repeatedly #(char (+ (rand 26) 65))))))
+
+(defn upload-file-from-http-url [ctx user-id url]
+ (let [filename (rand-filename 10)
+       content (http/http-get url {:as :byte-array :max-redirects 5})
+       extension (u/extension-from-content content)
+       file     (java.io.File/createTempFile filename extension)]
+  (try+
+    (let [path (public-path file extension)
+          size (.length file)]
+     (with-open [f (io/output-stream file)]
+       (.write f content))
+     (if-let [file-path (:path (:data (upload-file ctx user-id {:tempfile (.getAbsoluteFile file) :size size :filename filename } true)))]
+            file-path
+            nil))
+    (catch Object _
+      (throw+ (str "Error getting file: " _)))
+    (finally
+      (.delete file)))))
+
+;;TODO upload file from data url

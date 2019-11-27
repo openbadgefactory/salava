@@ -46,7 +46,7 @@
                  (ok (p/profile-metrics ctx (:id current-user))))
 
             (POST "/user/edit" []
-                  :no-doc false
+                  :no-doc true
                   :return {:status (s/enum "success" "error") :message s/Str}
                   :body [profile schemas/edit-user-profile]
                   :summary "Save user profile"

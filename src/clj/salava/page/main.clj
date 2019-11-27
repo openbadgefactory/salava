@@ -75,10 +75,10 @@
     (map #(assoc % :badges (if for-edit?
                              (select-showcase-block-content-for-edit {:block_id (:id %)} (get-db ctx))
                              (map (fn [b]
-                                    (let [evidence-fn (first (plugin-fun (get-plugins ctx) "main" "badge-evidences"))]
+                                    (let [evidence (as-> (first (plugin-fun (get-plugins ctx) "evidence" "badge-evidence")) f (if f (f ctx (:id b) (:user_id b) true) []))]
                                        (-> b
                                            (update :criteria_content md->html)
-                                           (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true))
+                                           (assoc :evidence evidence)
                                            (dissoc :user_id)))) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
 (defn enabled-profile-blocks [ctx page-id]
  (let [profile-block (some->> (select-profile-block {:page_id page-id} (get-db ctx)) first)

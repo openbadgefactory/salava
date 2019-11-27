@@ -44,6 +44,7 @@
              (layout/main ctx "/registration-complete")
 
              (GET "/verify_email/:verification_key" []
+                  :no-doc true
                   :path-params [verification_key :- s/Str]
                   :summary "Confirm user email address"
                   :current-user current-user
@@ -221,6 +222,7 @@
                    (ok (u/insert-user-terms ctx (:id current-user) "accepted")))
 
              (GET "/data/:userid" []
+                  :no-doc true
                   :summary "Get everything on user"
                   :path-params [userid :- s/Int]
                   :auth-rules access/authenticated

@@ -51,7 +51,10 @@
     (ajax/GET
       (path-for url true)
       {:handler (fn [data]
-                  (reset! resource-atom data))})))
+                  (reset! resource-atom (case key
+                                          :page_input (:pages data)
+                                          :file_input data
+                                          data)))})))
 
 (defn init-evidence-form [evidence state show-url?]
   (let [ {:keys [id name url narrative]} evidence

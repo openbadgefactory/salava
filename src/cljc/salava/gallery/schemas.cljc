@@ -11,10 +11,11 @@
 
 #?(:cljs (defn describe [v _] v))
 
+
 (def constrained-str (s/constrained s/Str #(and (>= (count %) 0)
                                                 (<= (count %) 255))))
 
-(def country (s/constrained s/Str (fn [c] #(some (= % c) (conj (keys all-countries) "all")))))
+(def gallery-id (describe s/Int "internal gallery badge id, use 0 if gallery badge id is unknown"))
 
 (s/defschema UserSearch {:name          (s/constrained s/Str #(and (>= (count %) 0)
                                                                    (<= (count %) 255)))
@@ -59,16 +60,13 @@
 
 (s/defschema BadgesgalleryCountries {:countries [Countries]})
 
-
-(s/defschema BadgeQuery {:country (describe country "Filter by country code")
+(s/defschema BadgeQuery {:country (describe s/Str "Filter by country code. Use all to get all badges")
                          (s/optional-key :tags) (describe constrained-str "Filter by tag")
                          (s/optional-key :badge-name) (describe constrained-str "Filter by badge name")
                          (s/optional-key :issuer-name)(describe constrained-str "Filter by issuer name")
-                         (s/optional-key :order) (describe (s/enum "recipients" "mtime" "name" "issuer_content_name") "Select order, dafault mtime")
+                         (s/optional-key :order) (describe (s/enum "recipients" "mtime" "name" "issuer_content_name") "Select order, default mtime")
                          (s/optional-key :recipient-name) (describe constrained-str "Filter by badge earner")
-                         :page_count (describe constrained-str "Page offset. 0 for first page.")})
-
-
+                         :page_count (describe constrained-str "Page offset. 0 for first page, Each page returns 20 badges")})
 
 (s/defschema MultilanguageContent {:default_language_code s/Str
                                    :language_code         s/Str
@@ -95,7 +93,8 @@
                                                                      :url  s/Str
                                                                      :description s/Str})]
                                    :endorsement_count     (s/maybe s/Int)
-                                   :remote_url            (s/maybe s/Str)})
+                                   :remote_url            (s/maybe s/Str)
+                                   (s/optional-key :last_received) (s/maybe s/Int)})
 
 (s/defschema BadgeContent {:badge {:badge_id        s/Str
                                    :average_rating  (s/maybe s/Num)
@@ -106,17 +105,38 @@
                                    :obf_url         s/Str
                                    :remote_url      (s/maybe s/Str)
                                    :rating_count    (s/maybe s/Int)
-                                   :endorsement_count (s/maybe s/Int)}
+                                   :endorsement_count (s/maybe s/Int)
+                                   :gallery_id (s/maybe s/Int)}
                            :public_users       (s/maybe [{:id              s/Int
                                                           :first_name      s/Str
                                                           :last_name       s/Str
                                                           :profile_picture (s/maybe s/Str)}])
                            :private_user_count (s/maybe s/Int)})
 
-(s/defschema page {:description (s/maybe s/Str)
-                   :id s/Str
-                   :name s/Str
-                   :badges [{:name s/Str :image_file (s/maybe s/Str)}]})
+(s/defschema badge-content-p {:badge {:badge_id s/Str
+                                      :gallery_id (s/maybe s/Int)
+                                      :content [(-> MultilanguageContent
+                                                    (dissoc :remote_url :endorsement_count :issuer_verified))]}})
+
+(s/defschema page-p {:description (s/maybe s/Str)
+                     :id s/Int
+                     :name s/Str
+                     :badges [(s/maybe {:name s/Str :image_file (s/maybe s/Str)})]
+                     :ctime s/Int
+                     :mtime s/Int
+                     :user_id (describe s/Int "internal id of page owner")})
+
+(s/defschema page (-> page-p
+                      (assoc :first_name constrained-str
+                             :last_name constrained-str
+                             :profile_picture (s/maybe s/Str))))
+
+(s/defschema gallery-pages-p {:pages [(s/maybe page-p)] :user-country (s/maybe s/Str) :countries [Countries]})
+
+(s/defschema gallery-pages (-> gallery-pages-p (assoc :pages [(s/maybe page)])))
+
+(s/defschema pages-search {:country (describe (s/maybe s/Str) "Filter by country code. Use all to get all pages")
+                           (s/optional-key :owner)(describe (s/maybe s/Str) "Search by page owner")})
 
 (s/defschema public-badge-recipient {:id (s/maybe s/Int)
                                      :first_name (s/maybe s/Str)

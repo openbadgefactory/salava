@@ -20,7 +20,7 @@
 (s/defschema request (-> endorsement
                          (assoc
                           :status (s/enum "pending" "endorsed" "declined")
-                          :type (s/enum "sent_request" "request")
+                          (s/optional-key  :type) (s/enum "sent_request" "request")
                           (s/optional-key :ctime) s/Int)))
 
 (s/defschema received-user-endorsement-p  (-> endorsement

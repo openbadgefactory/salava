@@ -56,6 +56,7 @@
                (ok {:pending-badges (b/user-badges-pending ctx (:id current-user))}))
 
           (GET "/events" []
+               :no-doc true
                :summary "Returns users events"
                :auth-rules access/signed
                :current-user current-user
@@ -112,6 +113,7 @@
                 (ok (so/delete-connection-badge! ctx (:id current-user) badge_id)))
 
           (POST "/hide_event/:event_id" []
+                :no-doc true
                 :return (s/enum "success" "error")
                 :summary "Hide user event"
                 :path-params [event_id :- s/Int]
@@ -120,6 +122,7 @@
                 (ok (so/hide-user-event! ctx (:id current-user) event_id)))
 
           (POST "/events/hide_all" []
+                :no-doc true
                 :return {:status (s/enum "success" "error")}
                 :summary "Hide all user events"
                 :auth-rules access/signed

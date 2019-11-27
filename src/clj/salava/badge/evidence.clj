@@ -45,7 +45,6 @@
                             (into {})
                             (json/write-str))]
         (insert-user-evidence-property! {:user_id user-id :value properties :name property-name} {:connection tx})
-        (prn id)
         id))))
 
 (defn save-badge-evidence [ctx user-id user-badge-id evidence]
