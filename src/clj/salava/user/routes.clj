@@ -18,6 +18,8 @@
 (defn route-def [ctx]
   (routes
     (context "/user" []
+             :tags ["user"]
+
              (layout/main ctx "/login")
              (layout/main ctx "/login/:lang")
              (layout/main ctx "/register")
@@ -42,6 +44,7 @@
              (layout/main ctx "/registration-complete")
 
              (GET "/verify_email/:verification_key" []
+                  :no-doc true
                   :path-params [verification_key :- s/Str]
                   :summary "Confirm user email address"
                   :current-user current-user
@@ -65,9 +68,11 @@
                        (ok login-status))))
 
              (POST "/logout" []
+                   :summary "End user session"
                    (assoc-in (ok) [:session :identity] nil))
 
              (GET "/register" req
+                  :no-doc true
                   :summary "Get config data for register form"
                   (if (private? ctx)
                     (forbidden)
@@ -75,6 +80,7 @@
                         (assoc :session (assoc (get req :session {}) :seen-terms true)))))
 
              (POST "/register" req
+                   :return {:status (s/enum "error" "success") :message s/Str}
                    :body [form-content schemas/RegisterUser]
                    :summary "Create new user account"
                    (let [{:keys [email first_name last_name country language password password_verify accept_terms]} form-content
@@ -98,6 +104,7 @@
                                                                                      (u/set-session ctx (assoc-in (ok login-status) [:session :new-user] (:id user-id)) (:id login-status))
                                                                                      (ok login-status))))))))
              (GET "/register/complete" req
+                  :no-doc true
                   :return {:status (s/enum "success" "error")}
                   :current-user current-user
                   :auth-rules access/signed
@@ -114,6 +121,7 @@
                      (ok (u/set-password-and-activate ctx user_id code password password_verify))))
 
              (GET "/edit" []
+                  :no-doc true
                   :summary "Get user information for editing"
                   :auth-rules access/signed
                   :current-user current-user
@@ -125,6 +133,7 @@
                          :email-notifications (get-in ctx [:config :user :email-notifications] false)})))
 
              (GET "/edit/password" []
+                  :no-doc true
                   :summary "Get user information for editing"
                   :auth-rules access/signed
                   :current-user current-user
@@ -193,17 +202,17 @@
                    :current-user current-user
                    (ok (u/set-primary-email-address ctx email (:id current-user))))
 
-             (GET "/profile/:userid" []
-                  ;:return ""
-                  :summary "Get user information and profile fields"
-                  :path-params [userid :- s/Int]
-                  :current-user current-user
-                  (let [profile (u/user-information-and-profile ctx userid (:id current-user))
-                        visibility (get-in profile [:user :profile_visibility])]
-                    (if (or (= visibility "public")
-                            (and (= visibility "internal") current-user))
-                      (ok profile)
-                      (unauthorized))))
+             #_(GET "/profile/:userid" []
+                    ;:return ""
+                    :summary "Get user information and profile fields"
+                    :path-params [userid :- s/Int]
+                    :current-user current-user
+                    (let [profile (u/user-information-and-profile ctx userid (:id current-user))
+                          visibility (get-in profile [:user :profile_visibility])]
+                      (if (or (= visibility "public")
+                              (and (= visibility "internal") current-user))
+                        (ok profile)
+                        (unauthorized))))
 
              (POST "/accept_terms" []
                    :return {:status (s/enum "success" "error") :input s/Str}
@@ -213,12 +222,15 @@
                    (ok (u/insert-user-terms ctx (:id current-user) "accepted")))
 
              (GET "/data/:userid" []
+                  :no-doc true
                   :summary "Get everything on user"
                   :path-params [userid :- s/Int]
+                  :auth-rules access/authenticated
                   :current-user current-user
                   (ok (md/all-user-data ctx userid (:id current-user) "true")))
 
              (GET "/export-to-pdf/:userid" []
+                  :no-doc true
                   :summary "export user data to pdf"
                   :path-params [userid :- s/Int]
                   :current-user current-user
@@ -227,13 +239,12 @@
                       (header  "Content-Disposition" (str "attachment; filename=\" Copy-of-Mydata.pdf\""))
                       (header "Content-Type" "application/pdf")))
 
-
-             (GET "/edit/profile" []
-                  ;:return
-                  :summary "Get user information and profile fields for editing"
-                  :auth-rules access/signed
-                  :current-user current-user
-                  (ok (u/user-profile-for-edit ctx (:id current-user))))
+             #_(GET "/edit/profile" []
+                    ;:return
+                    :summary "Get user information and profile fields for editing"
+                    :auth-rules access/signed
+                    :current-user current-user
+                    (ok (u/user-profile-for-edit ctx (:id current-user))))
 
              (POST "/profile/set_visibility" []
                    :return (:profile_visibility schemas/User)
@@ -245,16 +256,16 @@
                      (forbidden)
                      (ok (u/set-profile-visibility ctx visibility (:id current-user)))))
 
-             (POST "/profile" []
-                   ;:return
-                   :body-params [profile_visibility :- (:profile_visibility schemas/User)
-                                 profile_picture :- (:profile_picture schemas/User)
-                                 about :- (:about schemas/User)
-                                 fields :- [{:field (apply s/enum (map :type schemas/contact-fields)) :value (s/maybe s/Str)}]]
-                   :summary "Save user's profile fields, visibility, picture and about text"
-                   :auth-rules access/signed
-                   :current-user current-user
-                   (ok (str (u/save-user-profile ctx profile_visibility profile_picture about fields (:id current-user)))))
+             #_(POST "/profile" []
+                     ;:return
+                     :body-params [profile_visibility :- (:profile_visibility schemas/User)
+                                   profile_picture :- (:profile_picture schemas/User)
+                                   about :- (:about schemas/User)
+                                   fields :- [{:field (apply s/enum (map :type schemas/contact-fields)) :value (s/maybe s/Str)}]]
+                     :summary "Save user's profile fields, visibility, picture and about text"
+                     :auth-rules access/signed
+                     :current-user current-user
+                     (ok (str (u/save-user-profile ctx profile_visibility profile_picture about fields (:id current-user)))))
 
              (POST "/reset" []
                    :return {:status (s/enum "success" "error")}
@@ -263,6 +274,7 @@
                    (ok (u/send-password-reset-link ctx email)))
 
              (POST "/delete" []
+                   :return {:status (s/enum "success" "error")}
                    :body-params [password :- (:password schemas/User)]
                    :summary "Delete user account"
                    :auth-rules access/signed
@@ -273,6 +285,7 @@
                        (ok result))))
 
              (GET "/test" []
+                  :no-doc true
                   :summary "Test is user authenticated"
                   :auth-rules access/signed
                   (ok))
@@ -286,6 +299,7 @@
                     (ok {:status "success"})))
 
              (GET "/dashboard" []
+                  :no-doc true
                   :summary "Get dashboard information"
                   :auth-rules access/signed
                   :current-user current-user

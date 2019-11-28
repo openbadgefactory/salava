@@ -14,14 +14,14 @@
   (ajax/GET
     (path-for "/obpv1/connections/connections_issuer")
     {:handler (fn [data]
-                (swap! state assoc :issuers data))}))
+                (swap! state assoc :issuers (:issuers data)))}))
 
 (defn init-data [state]
   (ajax/GET
     (path-for "/obpv1/connections/connections_badge" true)
     {:handler (fn [data]
                 ; (prn data)
-                (swap! state assoc :badges data
+                (swap! state assoc :badges (:badges data)
                        :visible-area (session/get! :visible-area nil))
                 (init-issuer-connections state))}))
 

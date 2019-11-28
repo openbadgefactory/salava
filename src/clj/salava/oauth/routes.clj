@@ -24,7 +24,9 @@
 
 
    (context "/oauth" []
+         :tags ["oauth"]
          (GET "/google" req
+                 :no-doc true
                  :query-params [{code :- s/Str nil}
                                 {state :- s/Str nil}
                                 {error :- s/Str nil}]
@@ -51,6 +53,7 @@
                              (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
          (GET "/google/deauthorize" []
+              :no-doc true
               :query-params [code :- s/Str]
               :return {:status (s/enum "success" "error")
                        (s/optional-key :message) s/Str}
@@ -62,6 +65,7 @@
                  (assoc (redirect (str (get-base-path ctx) "/user/oauth/google")) :flash message))))
 
          (GET "/facebook" req
+              :no-doc true
               :query-params [{code :- s/Str nil}
                              {error :- s/Str nil}]
               :current-user current-user
@@ -89,6 +93,7 @@
                     (assoc (redirect (str (get-base-path ctx) "/user/login")) :flash message)))))
 
          (GET "/facebook/deauthorize" []
+              :no-doc true
               :query-params [code :- s/Str]
               :auth-rules access/signed
               :current-user current-user
@@ -98,6 +103,7 @@
                   (assoc (redirect (str (get-base-path ctx) "/user/oauth/facebook")) :flash message))))
 
          (GET "/linkedin" req
+              :no-doc true
               :query-params [{code :- s/Str nil}
                              {state :- s/Str nil}
                              {error :- s/Str nil}]
@@ -128,6 +134,7 @@
 
 
          (GET "/linkedin/deauthorize" []
+              :no-doc true
               :return {:status (s/enum "success" "error")
                        (s/optional-key :message) s/Str}
               :auth-rules access/signed

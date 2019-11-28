@@ -32,16 +32,16 @@
 (defn init-badge-endorsements [state badge-id]
   (ajax/GET
     (path-for (str "/obpv1/badge/endorsement/" badge-id))
-    {:handler (fn [data] (reset! state data))}))
+    {:handler (fn [data] (reset! state (:endorsements data)))}))
 
 (defn init-user-badge-endorsement [state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
     {:handler (fn [data]
-               (let [pending-endorsements-count (->> data (filter #(= "pending" (:status %))) count)]
-                (swap! state assoc :user-badge-endorsements data
+               (let [pending-endorsements-count (->> data :endorsements (filter #(= "pending" (:status %))) count)]
+                (swap! state assoc :user-badge-endorsements (:endorsements data)
                                    :pending_endorsements_count pending-endorsements-count)
-                (when (some #(= (:issuer_id %) (:endorser-id @state)) data)
+                (when (some #(= (:issuer_id %) (:endorser-id @state)) (:endorsements data))
                   (swap! state assoc :show-link "none"
                          :show-content "none"
                          :show-endorsement-status "block"))))
@@ -98,7 +98,7 @@
 ;; User Badge Endorsements
 (defn init-user-endorsements [state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsements"))
+    (path-for (str "/obpv1/badge/user_endorsement/_/all"))
     {:handler (fn [data]
                 (reset! state (assoc data
                                 :initializing false
@@ -112,13 +112,13 @@
 
 (defn init-pending-endorsements [state]
   (ajax/GET
-    (path-for "/obpv1/badge/user/pending_endorsement/")
+    (path-for "/obpv1/badge/user_endorsement/_/pending")
     {:handler (fn [data]
-                (swap! state assoc :pending data))}))
+                (swap! state assoc :pending (:endorsements data)))}))
 
 (defn edit-endorsement [id badge-id content]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/edit/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/edit/" id))
     {:params {:content content
               :user_badge_id badge-id}
      :handler (fn [data]
@@ -126,19 +126,19 @@
 
 (defn- init-pending-requests [state]
  (ajax/GET
-  (path-for (str "/obpv1/badge/user/pending_endorsement_request"))
+  (path-for (str "/obpv1/badge/user_endorsement/request/pending"))
   {:handler (fn [data] (reset! state data))}))
 
 (defn update-request-status! [id status state reload-fn]
  (when id
    (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/request/update_status/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/request/update_status/" id))
     {:params {:status status}
      :handler (fn [data] (when (and reload-fn (= "success" (:status data)) (reload-fn))))})))
 
 (defn save-endorsement [state]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
     {:params {:content @(cursor state [:endorsement-comment])}
      :handler (fn [data]
                 (when (= (:status data) "success")
@@ -150,7 +150,7 @@
 
 (defn update-status [id status user_badge_id state reload-fn]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/update_status/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/update_status/" id))
     {:params {:user_badge_id user_badge_id
               :status status}
      :handler (fn [data]
@@ -159,7 +159,7 @@
 
 (defn delete-endorsement [id user_badge_id state reload-fn]
   (ajax/DELETE
-    (path-for (str "/obpv1/badge/endorsement/" user_badge_id "/" id))
+    (path-for (str "/obpv1/badge/user_endorsement/" user_badge_id "/" id))
     {:handler (fn [data]
                 (when (= "success" (:status data))
                   (when reload-fn (reload-fn state))))}))
@@ -717,7 +717,7 @@
  (let [request-comment (cursor state [:request-comment])
        selected-users (cursor state [:selected-users])]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/request/" (:id @state)) true)
+    (path-for (str "/obpv1/badge/user_endorsement/request/" (:id @state)) true)
     {:params {:user-ids (mapv :id @selected-users)
               :content @request-comment}
      :handler (fn [data]

@@ -183,6 +183,20 @@
                                         (filter #(= (:visibility %) "private"))
                                         count)))))
 
+(defn public-multilanguage-badge-content-p
+  ([ctx badge-id]
+   (map (fn [content]
+          (-> content
+              (update :criteria_content md->html)
+              (assoc  :alignment (b/select-alignment-content {:badge_content_id (:badge_content_id content)} (get-db ctx)))
+              (dissoc :badge_content_id)))
+        (select-multi-language-badge-content-p {:id badge-id} (get-db ctx))))
+  ([ctx badge-id user-id] (public-multilanguage-badge-content-p ctx badge-id user-id (badge-gallery-id ctx badge-id)))
+  ([ctx badge-id user-id gallery-id]
+   (let [badge-content (public-multilanguage-badge-content-p ctx badge-id)
+         badge {:badge_id badge-id :gallery_id gallery-id :content badge-content}]
+     (hash-map :badge badge))))
+
 (defn public-pages-by-user
   "Return all public pages owned by user"
   [ctx user-id visibility]
@@ -212,6 +226,11 @@
                 [conn (:connection (get-db ctx))]
                 (jdbc/query conn (into [query] params)))]
     (p/page-badges ctx pages)))
+
+(defn public-pages-p [ctx country owner]
+  (->> (public-pages ctx country owner)
+       (clojure.core.reducers/map #(-> % (dissoc :first_name :last_name :profile_picture)))
+       (clojure.core.reducers/foldcat)))
 
 (defn public-profiles
   "Search public user profiles by user's name and country"

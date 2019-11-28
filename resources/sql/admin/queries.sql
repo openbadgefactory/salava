@@ -59,8 +59,11 @@ SELECT t.id, t.description, t.report_type, t.item_id, t.item_url, t.item_name, t
 UPDATE report_ticket SET status  = :status, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 
---name: update-badge-deleted!
+--name: update-badge-deleted!-REMOVE
 UPDATE badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
+
+--name: update-badge-deleted!
+UPDATE user_badge SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
 
 --name: update-page-deleted!
 UPDATE page SET deleted = 1, mtime = UNIX_TIMESTAMP() WHERE id = :id
@@ -80,8 +83,11 @@ WHERE u.id= :id AND ue.primary_address = 1
 SELECT email FROM user_email
        WHERE user_id IN (:user_id) AND primary_address = 1
 
---name: select-user-id-by-badge-id
+--name: select-user-id-by-badge-id-REMOVE
 SELECT user_id FROM badge WHERE id=:id
+
+--name: select-user-id-by-badge-id
+SELECT user_id FROM user_badge WHERE id = :id
 
 --name: select-users-id-by-badge-id
 select user_id from user_badge WHERE badge_id = :badge_id AND deleted = 0

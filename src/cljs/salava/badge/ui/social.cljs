@@ -4,7 +4,7 @@
   [reagent.core :refer [cursor atom create-class force-update]]
   [reagent.session :as session]
   [salava.badge.ui.helper :refer [badge-expired?]]
-  [salava.badge.ui.settings :refer [update-settings set-visibility save-settings]]
+  [salava.badge.ui.settings :refer [update-settings set-visibility save-settings update-endorsement-count]]
   [salava.core.ui.ajax-utils :as ajax]
   [salava.core.i18n :refer [t]]
   [salava.core.ui.modal :as mo]
@@ -22,7 +22,7 @@
 (defn- init-pending-endorsements [state]
  (when (:owner? @state)
    (ajax/GET
-    (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
     {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                          (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
@@ -33,7 +33,7 @@
 
 (defn get-pending-requests [dataatom state]
  (ajax/GET
-  (path-for (str "/obpv1/badge/endorsement/request/pending/" (:id @state)))
+  (path-for (str "/obpv1/badge/user_endorsement/request/pending/" (:id @state)))
   {:handler (fn [data] (reset! (cursor dataatom [:sent-requests]) data))}))
 
 (defn refresh-social-tab [dataatom state]
@@ -50,14 +50,16 @@
      :finally (fn [] (init-pending-endorsements state))})
 
    (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
+    (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
     {:handler (fn [data]
                (let [pending-endorsements-count (->> data (filter #(= "pending" (:status %))) count)]
                    (reset! endorsements data)
                    (swap! state assoc :pending_endorsements_count pending-endorsements-count)))})
 
+   (update-endorsement-count (:id @state) state)
+
    (ajax/GET
-    (path-for (str "/obpv1/badge/stats/views/" (:id @state)))
+    (path-for (str "/obpv1/badge/stats/" (:id @state)))
     {:handler (fn [data] (reset! view-stats data))})
 
    (ajax/GET
@@ -66,12 +68,12 @@
 
    (get-pending-requests dataatom state)))
 
-(defn save-rating [id state dataatom rating]
- (ajax/POST
-   (path-for (str "/obpv1/badge/save_raiting/" id))
-   {:params   {:rating  (if (pos? rating) rating nil)}
-    :handler (fn [] (get-rating dataatom state))
-    :finally (fn [] (update-settings (:id @state) state))}))
+#_(defn save-rating [id state dataatom rating]
+   (ajax/POST
+     (path-for (str "/obpv1/badge/save_rating/" id))
+     {:params   {:rating  (if (pos? rating) rating nil)}
+      :handler (fn [] (get-rating dataatom state))
+      :finally (fn [] (update-settings (:id @state) state))}))
 
 
 (defn badge-congratulations [congratulations state]
@@ -236,7 +238,7 @@
                  (not (pos? @user-rating))  [:span.label.label-primary (t :badge/Yettorate)]
                  :else "")]
           [:div.rating
-           {:on-click #(do (.preventDefault %)(save-rating (:id @state) state dataatom @user-rating))}
+           {:on-click #(do (.preventDefault %) (save-settings state (fn [] (get-rating dataatom state))) #_(save-rating (:id @state) state dataatom @user-rating))}
            [r/rate-it @user-rating user-rating]]]]]]])})))
 
 (defn- message-link [state]

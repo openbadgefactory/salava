@@ -59,7 +59,7 @@
      (t :page/Delete)]]])
 
 (defn badge-block [block #_{:keys [badge_id format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]}]
-  (let [{:keys [id badge_id format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidences]} block]
+  (let [{:keys [id badge_id format image_file name description issuer_image issued_on issuer_contact criteria_url criteria_markdown issuer_content_id issuer_content_name issuer_content_url issuer_email issuer_description criteria_content creator_content_id creator_name creator_url creator_email creator_image creator_description show_evidence evidence_url evidence]} block]
       [:div {:class "row badge-block badge-info flip"}
        [:div {:class "col-md-4 badge-image"}
         [:a {:href "#" :on-click #(do
@@ -98,12 +98,12 @@
             [:div {:class                   "col-md-12"
                    :dangerouslySetInnerHTML {:__html (md->html criteria_markdown)}}]]])
 
-        (when (seq evidences)
+        (when (seq evidence)
           [:div.row {:id "badge-settings"}
            [:div.col-md-12
             [:h3.criteria (t :badge/Evidences)]
-            (reduce (fn [r evidence]
-                      (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+            (reduce (fn [r e]
+                      (let [{:keys [narrative description name id url mtime ctime properties]} e
                             added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
                             {:keys [resource_id resource_type mime_type hidden]} properties
                             desc (cond
@@ -131,7 +131,7 @@
                                                 (hyperlink url))
                                        (hyperlink url))]]]))))
 
-                    [:div ] evidences)]])
+                    [:div ] evidence)]])
 
         #_(if (and (pos? show_evidence) evidence_url)
             [:div.row
