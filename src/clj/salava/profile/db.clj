@@ -260,6 +260,18 @@
       (log/error _)
       {:status "error" :message _}))))
 
+(defn rearrange [ctx type ids user-id]
+ (when (seq ids)
+   (try+
+     (let [profile-properties (profile-properties ctx user-id)]
+       (case type
+         "tabs" (add-profile-tabs! ctx ids user-id)
+         "fields" "")
+      {:status "success"})
+    (catch Object _
+     {:status "error" :message _}))))
+
+
 (defn delete-profile-blocks! [ctx block-ids user-id]
  (try+
   (delete-block-multi! ctx block-ids user-id)

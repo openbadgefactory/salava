@@ -134,6 +134,8 @@
                                       :theme (describe (s/maybe s/Int) "Default theme 0")
                                       :tabs  (describe [(s/maybe profile-tab)] "Pages created by the user can be added as profile tabs ")))
 
+(s/defschema reorder-profile-resource {:type (describe (s/enum "tabs" "blocks" "fields")) :ids (describe [s/Int] "")})
+
 #_(s/defschema ShowcaseBlock {:type (s/eq "showcase")
                               :title  (s/maybe s/Str)
                               :badges [{:id (s/maybe s/Int) (s/optional-key :visibility) s/Str}]

@@ -54,6 +54,15 @@
                   :current-user current-user
                   (ok (p/save-user-profile ctx profile (:id current-user))))
 
+            (POST "/rearrange" []
+                  :return {:status (s/enum "success" "error") (s/optional-key :message) s/Str}
+                  :body-params [type :- (s/enum "tabs" "fields" "blocks")
+                                ids :- [s/Int]]
+                  :summary "Rearrange tabs, blocks or profile fields"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (p/rearrange ctx type ids (:id current-user))))
+
             (PUT "/user/edit" []
                   :return {:status (s/enum "success" "error") :message s/Str}
                   :body [profile schemas/edit-user-profile-p]
