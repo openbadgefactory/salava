@@ -19,6 +19,7 @@
 
     (context "/obpv1/socialuser" []
              :tags ["socialuser"]
+             :no-doc true
 
              (GET "/accepted-connections" []
                   :return [schemas/AcceptedUserConnections]
@@ -114,4 +115,3 @@
                    (ok
                     (db/set-pending-request ctx owner_id (:id current-user) status)
                     )))))
-
