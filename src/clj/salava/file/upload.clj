@@ -6,7 +6,10 @@
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [unix-time]]
             [salava.file.db :as f]
-            [salava.core.http :as http]))
+            [salava.core.http :as http])
+  (:import (java.io StringReader)
+           (java.net URLEncoder)
+           (java.util Base64)))
 
 (defn upload-file [ctx user-id file image-only?]
   (try+
@@ -61,11 +64,10 @@
        extension (u/extension-from-content content)
        file     (java.io.File/createTempFile filename extension)]
   (try+
-    (let [path (public-path file extension)
-          size (.length file)]
+    (let [path (public-path file extension)]
      (with-open [f (io/output-stream file)]
        (.write f content))
-     (if-let [file-path (:path (:data (upload-file ctx user-id {:tempfile (.getAbsoluteFile file) :size size :filename filename } true)))]
+     (if-let [file-path (:path (:data (upload-file ctx user-id {:tempfile (.getAbsoluteFile file) :size (.length file) :filename filename } true)))]
             file-path
             nil))
     (catch Object _
@@ -73,4 +75,22 @@
     (finally
       (.delete file)))))
 
-;;TODO upload file from data url
+(defn upload-file-from-data-url [ctx user-id data-str comma-pos]
+ (when (> comma-pos -1)
+  (let [filename (rand-filename 10)
+        base64-data (subs data-str (inc comma-pos))
+        content (.decode (Base64/getMimeDecoder) base64-data)
+        content-str (String. (.decode (Base64/getMimeDecoder) base64-data) "UTF-8")
+        ext (if (re-find #"^data:image/svg" data-str) ".svg" ".png")
+        file (java.io.File/createTempFile filename nil)]
+    (try+
+      (let [path (public-path file ext)]
+        (with-open [f (io/output-stream file)]
+          (.write f content))
+        (if-let [file-path (:path (:data (upload-file ctx user-id {:tempfile (.getAbsoluteFile file) :size (.length file) :filename filename } true)))]
+               file-path
+               nil))
+      (catch Object _
+        (throw+ (str "Error getting file: " _)))
+      (finally
+        (.delete file))))))

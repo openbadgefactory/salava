@@ -6,7 +6,7 @@
             [clojure.tools.logging :as log]
             [clojure.data.json :as json]
             [clojure.string :refer [blank?]]
-            [salava.file.upload :refer [upload-file-from-http-url]]))
+            [salava.file.upload :refer [upload-file-from-http-url upload-file-from-data-url]]))
 
 (defqueries "sql/profile/main.sql")
 
@@ -186,7 +186,7 @@
        profile_visibility (if (clojure.string/blank? profile_visibility) (-> existing-user-info :profile_visibility) profile_visibility)
        profile-picture (cond
                          (url? profile_picture) (upload-file-from-http-url ctx user-id profile_picture) #_(file-from-url-fix ctx profile_picture)
-                         (and (not (clojure.string/blank? profile_picture))(re-find #"^data" profile_picture)) (file-from-url-fix ctx profile_picture)
+                         (and (not (clojure.string/blank? profile_picture))(re-find #"^data" profile_picture)) (upload-file-from-data-url ctx user-id profile_picture (.lastIndexOf profile_picture ","))
                          :else (-> existing-user-info :profile_picture))
        profile-properties (profile-properties ctx user-id)]
 
