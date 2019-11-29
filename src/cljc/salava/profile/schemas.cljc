@@ -134,7 +134,7 @@
                                       :theme (describe (s/maybe s/Int) "Default theme 0")
                                       :tabs  (describe [(s/maybe profile-tab)] "Pages created by the user can be added as profile tabs ")))
 
-(s/defschema reorder-profile-resource {:type (describe (s/enum "tabs" "blocks" "fields")) :ids (describe [s/Int] "")})
+(s/defschema reorder-profile-resource {:type (describe (s/enum "tabs" "blocks" "fields") "resource to be reordered") :input (describe [s/Int] "ids in desired order. For type blocks, current block_order in desired order")})
 
 #_(s/defschema ShowcaseBlock {:type (s/eq "showcase")
                               :title  (s/maybe s/Str)

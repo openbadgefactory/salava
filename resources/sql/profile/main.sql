@@ -5,6 +5,11 @@ SELECT id, first_name, last_name, country, language, profile_visibility, profile
 --name: select-user-profile-fields
 -- get all user's profile fields
 SELECT id, field, value, field_order FROM user_profile WHERE user_id = :user_id
+ORDER BY field_order
+
+--name: select-user-profile-fields-multi
+-- get all user's profile fields
+SELECT id, field, value, field_order FROM user_profile WHERE id IN (:field_ids) AND user_id = :user_id
 
 --name: delete-user-profile-fields!
 DELETE FROM user_profile WHERE user_id = :user_id
