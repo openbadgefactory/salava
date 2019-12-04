@@ -1,5 +1,5 @@
 (ns salava.badge.ui.receive
-  (:require [clojure.string :refer [replace upper-case blank? starts-with?]]
+  (:require [clojure.string :refer [replace upper-case blank? starts-with? split]]
             [reagent.core :refer [atom cursor]]
             [reagent.session :as session]
             [reagent-modals.modals :as m]
@@ -97,7 +97,7 @@
          [:div.col-md-12
 
           [:div.pull-right
-           (doall (map (fn [lang] [:a {:href "#" :on-click #(session/assoc-in! [:user :language] lang)} (upper-case lang) " "]) (session/get :languages)))]
+           (doall (map (fn [lang] ^{:key lang}[:a {:href "#" :on-click #(session/assoc-in! [:user :language] lang)} (upper-case lang) " "]) (session/get :languages)))]
 
           [:h1.uppercase-header (t :badge/YouHaveGotaBadge)]
 
@@ -149,9 +149,6 @@
              (if (and expires_on (not expired?))
                [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
-             #_(into [:div]
-                (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
-                  [f {:assertion_url assertion_url}]))
              (into [:div]
               (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
                 [f {:assertion_url assertion_url}]))
@@ -207,7 +204,11 @@
   (let [id (:badge-id params)
         state (atom {:initializing true :result "initial"})
         user (session/get :user)
-        site-navi (assoc site-navi :navi-items [] :no-login true)]
+        site-navi (assoc site-navi :navi-items [] :no-login true)
+        languages (session/get :languages)
+        lang (-> (or js/window.navigator.userLanguage js/window.navigator.language) (split #"-") first)]
+
+    (when (some #(= % lang) languages) (session/assoc-in! [:user :language] lang))
     (init-data state id)
     (fn []
       (cond
