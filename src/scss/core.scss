@@ -665,7 +665,7 @@ ol.welcome-text li {
   margin-bottom:10px;
 }
 
-footer.footer {
+div.footer {
   position: absolute;
   bottom: 0;
   height: 100px;
@@ -718,7 +718,7 @@ body.anon {
     .container-fluid{
       //padding:0px;
     }
-    header#navbar {
+    div#navbar {
       padding:0px 10px 0px 25px;
     }
   }

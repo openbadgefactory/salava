@@ -111,7 +111,8 @@
   ([ctx meta-tags]
    (let [favicons (favicon ctx)
          attrib (html-attributes ctx)]
-     (html5 {:dir (:dir attrib)}
+     (html5 {:dir (:dir attrib)
+             :lang (or (get-in ctx [:user :language]) "en")}
       [:head
        [:title (get-in ctx [:config :core :site-name])]
        [:meta {:charset "utf-8"}]

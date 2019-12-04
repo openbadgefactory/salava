@@ -34,7 +34,7 @@
      [:div {:id "badge-contents"}
       [:div.row.flip
        [:div {:class "col-md-3 badge-image modal-left"}
-        [:div.badge-image [:img {:src (str "/" image_file)}]]
+        [:div.badge-image [:img {:src (str "/" image_file) :alt name}]]
         (when (> average_rating 0)
           [:div.rating
            [r/rate-it average_rating]

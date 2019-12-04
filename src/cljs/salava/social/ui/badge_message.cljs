@@ -111,7 +111,7 @@
   [:div {:class "media message-item" :key id}
    [:div.msgcontent
     [:span {:class "pull-left"}
-     [:img {:class "message-profile-img" :src (profile-picture profile_picture)}]]
+     [:img {:class "message-profile-img" :src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
     [:div {:class "media-body"}
      [:h4 {:class "media-heading"}
       [:a {:href "#"
@@ -158,7 +158,9 @@
   (let [message-atom (cursor state [:message])]
     [:div
      [:div {:class "form-group"}
-      [:textarea {:class    "form-control"
+      [:label {:for "textInput"} ""]
+      [:textarea {:id "textInput"
+                  :class    "form-control"
                   :rows     "5"
                   :value    @message-atom
                   :disabled (if (not-activated?) "disabled" "")
