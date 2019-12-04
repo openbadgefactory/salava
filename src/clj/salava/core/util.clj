@@ -14,6 +14,8 @@
             [salava.core.helper :refer [plugin-str]]
             [salava.core.http :as http]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs]
             [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
            (java.net URLEncoder)
@@ -94,6 +96,10 @@
     (partition 2)
     (map (fn [[x y]] (Integer/parseInt (str x y) 16)))
     byte-array))
+
+(defn hmac-sha256-hex [v secret]
+  (-> (mac/hash v {:key secret :alg :hmac+sha256})
+      (codecs/bytes->hex)))
 
 (defn random-token
   ([] (random-token ""))

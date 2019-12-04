@@ -32,12 +32,15 @@
     {:handler (fn [data]
                 (swap! state assoc :receive-notifications data))}))
 
-(defn- init-pending-endorsements [state]
- (when (:owner? @state)
-   (ajax/GET
-    (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
-    {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
-                         (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
+
+(defn- init-more [state]
+  (when (:owner? @state)
+    (ajax/GET
+      (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
+      {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
+                  (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))}))
+  )
+
 
 (defn init-data
   ([state id tab-no]
@@ -45,18 +48,18 @@
      (path-for (str "/obpv1/badge/info/" id))
      {:handler (fn [data]
                  (do (reset! state (assoc data :id id
-                                     :show-link-or-embed-code nil
-                                     :show_evidence_options false
-                                     :initializing false
-                                     :content-language (init-content-language (:content data))
-                                     :tab-no tab-no
-                                     :permission "success"
-                                     :evidence {:url nil}
-                                     :request-comment " "
-                                     :selected-users []
-                                     :request-mode false))
-                   (init-pending-endorsements state)
-                   (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
+                                          :show-link-or-embed-code nil
+                                          :show_evidence_options false
+                                          :initializing false
+                                          :content-language (init-content-language (:content data))
+                                          :tab-no tab-no
+                                          :permission "success"
+                                          :evidence {:url nil}
+                                          :request-comment " "
+                                          :selected-users []
+                                          :request-mode false))
+                     (init-more state)
+                     (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
      (fn [] (swap! state assoc :permission "error"))))
 
   ([state id tab-no data]
@@ -69,7 +72,7 @@
                        :request-comment " "
                        :selected-users []
                        :request-mode false))
-     (init-pending-endorsements state)
+     (init-more state)
      (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))))
 
 
@@ -325,8 +328,10 @@
                                                                                                                                   (swap! state assoc :tab [st/social-tab (assoc data :settings_fn show-settings-dialog :congratulations (:congratulations @state) :user_endorsement_count (:user_endorsement_count @state) ) state init-data] :tab-no 3))}
           [:i.nav-icon {:class "fa fa-users fa-lg"}] (t :core/Social)]]
         [:li.nav-item {:class (if (= 4 (:tab-no @state)) "active")}
-         [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data :assertion_url (:assertion_url @state)
-                                                                                                                      :obf_url (:obf_url @state)) state] :tab-no 4)}
+         [:a.nav-link {:class disable-export  :href "#" :on-click #(swap! state assoc :tab [se/download-tab-content (assoc data
+                                                                                                                           :assertion_url (:assertion_url @state)
+                                                                                                                           :obf_url (:obf_url @state)
+                                                                                                                           :cert_list (:cert_list @state)) state] :tab-no 4)}
           [:div  [:i.nav-icon {:class "fa fa-download fa-lg"}] (t :core/Download)]]]
 
         [:li.nav-item {:class (if (= 6 (:tab-no @state)) "active")}

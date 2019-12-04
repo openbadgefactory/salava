@@ -6,6 +6,7 @@
             [salava.core.ui.tag :as tag]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.helper :refer [plugin-fun private? navigate-to path-for js-navigate-to hyperlink url?]]
+            [salava.core.helper :refer [dump]]
             [salava.badge.ui.helper :as bh]
             [salava.core.ui.share :as s]
             [reagent.session :as session]))
@@ -230,15 +231,56 @@
 
                                             [:div.modal-footer]])]]))
 
+(defn revalidation-request [user-badge-id state]
+  (ajax/POST
+    (path-for (str "/obpv1/factory/pdf_cert_request/" user-badge-id))
+    {:params  {:message   "Please revalidate my badge!"}
+     :handler (fn [data]
+                (swap! state merge data))}))
+
+(defn cert-block [user-badge-id state]
+  (when-let [cert (some-> @state :cert)]
+    [:div
+     [:hr]
+     [:div (t :badge/Downloadcertificateinfo)]
+     [:label.sub-heading "Version"
+      [:select.form-control {:name "cert_version" :style {:width "200px" :margin "10px 0"}}
+       [:option "2019-11-01"]
+       [:option "2019-11-14"]
+       [:option "2019-11-28"]]]
+     [:div
+      (doall
+        (map (fn [[badge lang]]
+               (let [uri (str (:uri cert) "&lang=" lang)]
+                 [:p {:key uri}
+                  [:i.fa.fa-file-pdf-o.fa-2x] " "
+                  [:a {:href uri} (str badge " (" lang ")")]]))
+             (:badge @state)))]
+     [:div
+      [:button {:class "btn btn-primary" :on-click #(revalidation-request user-badge-id state)} (t :badge/RevalidationRequest)]]
+     ]))
+
+(defn init-cert [user-badge-id state]
+  (ajax/GET
+    (path-for (str "/obpv1/factory/pdf_cert/" user-badge-id))
+    {:handler (fn [data]
+                (swap! state merge data))}))
+
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
-  [:div {:id "badge-settings" :class "row flip"}
-   [:div {:class "col-md-3 badge-image modal-left"}
-    [:img {:src (str "/" image_file) :alt name}]]
-   [:div {:class "col-md-9 settings-content download-tab"}
-    [:div
-     [:button {:class "btn btn-primary" :on-click  #(export-to-pdf state)} (t :badge/Downloadpdf)]
-     [:div (t :badge/Pdfdownload)]]
-    [:hr]
-    [:div
-     [:a {:class "btn btn-primary" :href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url))} (t :badge/Downloadbadgeimage)]
-     [:div (t :badge/Downloadbakedbadge)]]]])
+  (let [user-badge-id (:id @state)
+        badge (map (fn [v] [(:name v) (:language_code v)]) (:content @state))
+        cert-state (atom {:cert [] :badge badge})]
+    (init-cert user-badge-id cert-state)
+    (fn []
+      [:div {:id "badge-settings" :class "row flip"}
+       [:div {:class "col-md-3 badge-image modal-left"}
+        [:img {:src (str "/" image_file) :alt name}]]
+       [:div {:class "col-md-9 settings-content download-tab"}
+        [:div
+         [:button {:class "btn btn-primary" :on-click  #(export-to-pdf state)} (t :badge/Downloadpdf)]
+         [:div (t :badge/Pdfdownload)]]
+        [:hr]
+        [:div
+         [:a {:class "btn btn-primary" :href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url))} (t :badge/Downloadbadgeimage)]
+         [:div (t :badge/Downloadbakedbadge)]]
+        [cert-block user-badge-id cert-state]]])))
