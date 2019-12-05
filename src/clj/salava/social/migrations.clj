@@ -6,6 +6,6 @@
 (defqueries "sql/social/queries.sql")
 
 (defn social-edit-column-endorsement-up [config]
- (modify-social-event-table-endorsement! {} (get-db (:conn config))))
+  (modify-social-event-table-endorsement! {} {:connection (:conn config)}))
 
 (defn social-edit-column-endorsement-down [config])
