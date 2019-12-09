@@ -32,13 +32,13 @@
                 (swap! state assoc :gallery data))}))
 
 (defn init-dashboard [state]
-  (stream/init-data state)
   (pb/init-data state)
   (init-gallery-stats state)
   (ajax/GET
     (path-for (str "/obpv1/user/dashboard"))
     {:handler (fn [data]
-                (swap! state merge data))}))
+                (swap! state merge data))})
+  (stream/init-data state))
 
 (defn follow-event-badge [event state]
   (let [{:keys [subject verb image_file message ctime event_id name object]}  event
@@ -575,8 +575,8 @@
                      :badges []
                      :pending-endorsements 0
                      :connections {:badges 0}
-                     :pages_count 0
-                     :files_count 0
+                     ;:pages_count 0
+                     ;:files_count 0
                      :arrow-class "fa-angle-down"})]
     (new-user-oauth)
     (init-dashboard state)
