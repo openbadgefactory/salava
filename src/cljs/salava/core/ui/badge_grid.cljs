@@ -93,7 +93,7 @@
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
-                                                      :alt name}]])
+                                                      :alt (str (t :badge/Badge) " " name)}]])
                                   [:div.media-body
                                    [:div.media-heading
                                     [:p.heading-link name]]
@@ -135,7 +135,7 @@
 
 
                                    [:div.media-left
-                                    (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                    (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                     [:div.media-body
                                      [:div.media-heading name]
                                      [:div.media-issuer [:p issuer_content_name]]]]]]]
@@ -148,7 +148,7 @@
                                    (if image_file
                                      [:div.media-left
                                       [:img {:src (str "/" image_file)
-                                             :alt name}]])
+                                             :alt (str (t :badge/Badge) " " name)}]])
                                    [:div.media-body
                                     [:div.media-heading
                                      [:p.heading-link name]]
@@ -188,7 +188,7 @@
                                    [:div.media-content
                                     [badge-icons {:endorsement-count endorsementscount :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                     [:div.media-left
-                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                     (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                      [:div.media-body
                                       [:div.media-heading name]
                                       [:div.media-issuer [:p issuer_content_name]]]]]]]
@@ -201,7 +201,7 @@
                                    [:div.media-content
 
                                     [:div.media-left
-                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                     (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                      [:div.media-body
                                       [:div.media-heading name]]]]]
                                   [:div.swap-button {:title (t :page/Replacebadge)}
@@ -236,7 +236,7 @@
                                     [:div.media-content
                                      (if image_file
                                       [:div.media-left
-                                       [:img {:src (str "/" image_file)}]])
+                                       [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}]])
                                      [:div.media-body
                                       [:div.media-heading
                                        [:p.heading-link

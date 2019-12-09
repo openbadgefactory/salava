@@ -45,7 +45,7 @@
 
 (defn view-profile [state]
   (let [blocks (cursor state [:blocks])]
-    [:div#profile
+    [:div;#profile
      (if (= 0 @(cursor state [:active-index]))
       [:div#page-view
         [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
@@ -56,7 +56,7 @@
                [:div.panel-content
                 [:div.panel-body
                  [userinfoblock state]
-                 (into [:div#profile]
+                 (into [:div];#profile]
                        (for [index (range (count @blocks))]
                          (ph/block (cursor blocks [index]) state index)))]]]]]]]
       @(cursor state [:tab-content]))]))
@@ -122,10 +122,10 @@
    [m/modal-window]
    [:div#profile
     [ph/profile-navi state]
-    (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])]
-   (if @(cursor state [:edit-mode])
-     [edit-profile state]
-     [view-profile state])])
+    (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])
+    (if @(cursor state [:edit-mode])
+      [edit-profile state]
+      [view-profile state])]])
 
 (defn init-data [user-id state]
   (ajax/GET

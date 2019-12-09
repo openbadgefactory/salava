@@ -132,7 +132,7 @@
 
   .panel-content {
       padding: 10px;
-      #user-badges .row .col-md-12 {
+      #user-badges .row .col-md-12, #profile-user-badges .row .col-md-12 {
         padding-right: unset;
       }
 
@@ -151,6 +151,11 @@
   .page-content .panel-left {
     padding-left:20px !important;
   }
+}
+
+.sectiontitle {
+  font-size: 24px;
+  color: $text-color;
 }
 
 }
@@ -178,7 +183,7 @@
         word-break: break-word;
       }
     }
-.panel-content #user-badges .grid-container  {
+.panel-content #user-badges .grid-container, .panel-content #profile-user-badges .grid-container  {
     margin-right: 8px !important;
     max-width: 180px !important;
     min-width: 180px !important;

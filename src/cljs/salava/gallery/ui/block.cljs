@@ -26,7 +26,7 @@
 
 
 (defn badge-grid [badges badge-small-view]
-  (into [:div {:class "row wrap-grid" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "pages-grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
           (badge-grid-element element-data nil "profile" nil))))
 
@@ -40,7 +40,7 @@
        [:div#user-badges
         [:div.row.wrap-grid
          [:div.col-md-12
-          [:h3 {:class ""} (t :user/Recentbadges)]
+          [:h2.sectiontitle (t :user/Recentbadges)]
           [badge-grid (:badges @data) @badge-small-view]
           (when (< 6 (count @(cursor data [:badges])))
            [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]]
@@ -55,7 +55,7 @@
                [:div#user-badges
                 [:div.row.wrap-grid
                  [:div.col-md-12
-                  [:h3 (t :user/Recentbadges)]
+                  [:h2.sectiontitle (t :user/Recentbadges)]
                   [:div
                    (into [:div.row.wrap-grid {:id "grid"}]
                     (for [element-data (:badges @data)]
@@ -75,7 +75,7 @@
       [:div#user-pages
        [:div.row.wrap-grid
         [:div.col-md-12
-         [:h3 {:class ""} (t :user/Recentpages)]
+         [:h2.sectiontitle {:class ""} (t :user/Recentpages)]
          [page-grid (:pages @data) @page-small-view]
 
          (when (< 6 (count @(cursor data [:pages])))
@@ -84,7 +84,7 @@
          [:div#user-pages
           [:div.row.flip
            [:div.col-md-12
-            [:h3 {:class ""} (t :user/Recentpages)]]]])))))
+            [:h2.sectiontitle {:class ""} (t :user/Recentpages)]]]])))))
 
  ([data page-type]
   (init-grid "pages" data)
@@ -94,9 +94,9 @@
              [:div#user-pages
               [:div.row.wrap-grid
                [:div.col-md-12
-                [:h3 (t :user/Recentbadges)]
+                [:h2.sectiontitle (t :user/Recentbadges)]
                 [:div
-                 (into [:div.row.wrap-grid {:id "grid"}]
+                 (into [:div.row.wrap-grid] ;{:id "grid"}]
                   (for [element-data (:pages @data)]
                    (page-grid-element element-data {:type page-type})))
                  #_[:div [:a {:target "_blank" :href (path-for (str "/gallery/pages/" (:user-id @data)))} (t :user/Showmore)]]]]]]))

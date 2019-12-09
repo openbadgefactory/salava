@@ -116,9 +116,9 @@
   (swap! block-atom assoc key value))
 
 (defn showcase-grid [state block-atom]
- [:div#user-badges
-  [:h3 (or (:title @block-atom) (t :page/Untitled))]
-  [:div#grid {:class "row wrap-grid"}
+ [:div#profile-user-badges
+  [:h2.sectiontitle (or (:title @block-atom) (t :page/Untitled))]
+  [:div#badges-grid {:class "row wrap-grid"}
    (reduce (fn [r b]
             (conj r (badge-grid-element b state "profile" nil))) [:div] (:badges @block-atom))]])
 
@@ -149,7 +149,7 @@
                      :on-change #(update-block-value block-atom :format (.-target.value %))}
             [:option {:value "short"} (t :core/Imageonly)]
             [:option {:value "long"} (t :page/Content)]]]]]
-      [:div#grid {:class "row wrap-grid"}
+      [:div#badges-grid {:class "row wrap-grid"}
        (reduce (fn [r b]
                  (conj r
                        (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))

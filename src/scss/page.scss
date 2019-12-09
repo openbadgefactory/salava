@@ -4,7 +4,7 @@
 #my-files #grid,
 #page-gallery #grid,
 #profile-gallery #grid,
-#user-pages #grid,
+#user-pages #grid, #user-pages #pages-grid,
 .pages #grid {
   .grid-container {
     background-color: #ffffff;
@@ -154,7 +154,7 @@
   }
 }
 
-#user-pages #grid .grid-container {
+#user-pages #grid .grid-container, #user-pages #pages-grid .grid-container {
     margin-right: unset;
     float:left;
    .media-content {

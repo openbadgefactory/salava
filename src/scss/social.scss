@@ -30,7 +30,10 @@
 .message-item{
   padding-bottom: 15px;
   border-bottom: 1px solid #dddddd;
-  h4, p.h4{
+  h2,h4, p.h4{
+    a {
+      text-decoration: none;
+    }
     font-size: 14px;
   }
   font-size: 14px;
@@ -154,7 +157,7 @@
       }
     }
   }
-  h4.media-heading, p.h4{
+  h4.media-heading, p.h4, h2.media-heading{
     a{
       font-weight: 600;
       font-size: 14px;
