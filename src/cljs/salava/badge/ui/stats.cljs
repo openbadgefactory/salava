@@ -42,9 +42,9 @@
                                                    (mo/open-modal [:badge :info] {:badge-id id})
                                                    ;(b/open-modal id false init-data state)
                                                    (.preventDefault %)) }  name]]
-                  [:div.col-md-2 [:label (t :badge/Loggedinusers)] reg_count]
-                  [:div.col-md-2 [:label (t :badge/Anonymoususers)]anon_count]
-                  [:div.col-md-2 [:label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
+                  [:div.col-md-2 [:label.hidden-label  (t :badge/Loggedinusers)] reg_count]
+                  [:div.col-md-2 [:label.hidden-label (t :badge/Anonymoususers)]anon_count]
+                  [:div.col-md-2 [:label.hidden-label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
 
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations
