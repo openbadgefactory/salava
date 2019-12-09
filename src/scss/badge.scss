@@ -151,7 +151,7 @@ button {
   margin-top: 20px;
 }
 /* BADGE SETTINGS */
-#badge-settings {
+#badge-settings, #badge-evidence {
 
 
   .modal-evidence {
@@ -476,7 +476,7 @@ button {
   }
 
 }
-#badge-settings  {
+#badge-settings, #badge-evidence  {
   h1.uppercase-header {
     font-size: 16px;
     font-weight: 400;
@@ -1484,7 +1484,7 @@ button {
     line-height: 24px;
   }
 }
-#info-page-block .badge-message-link-info {
+#info-page-block .badge-message-link-info, #badge-settings .badge-message-link-info {
   i {
     color: $link-color;
     font-size: 20px;
@@ -1900,7 +1900,8 @@ a.popup-info {
   text-transform: none;
 }
 
-.expandable-block {
+.expandable-block, div.expandable-block, .panel.expandable-block {
+  border: unset !important;
   .panel-heading {
     position: relative;
 
@@ -1942,7 +1943,7 @@ a.popup-info {
 
   }
 }
-#social-tab {
+#social-tab, #badge-settings #social-tab {
   .confirmusers {
     padding: 10px;
     background-color: $background-color;
@@ -2120,7 +2121,7 @@ a.popup-info {
   .panel-heading {
       border-bottom: 1px solid #dddddd !important;
 
-      h3 {
+      h1 {
         line-height: 30px;
         font: 300 24px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;

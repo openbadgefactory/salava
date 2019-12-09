@@ -7,9 +7,10 @@
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.error :as err]
             [salava.core.i18n :refer [t translate-text]]
-            [salava.user.ui.input :as input]
+            ;[salava.user.ui.input :as input]
             [salava.core.helper :refer [dump]]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [salava.core.ui.input :refer [text-field file-input]]))
 
 (defn upload-modal [{:keys [status message reason]}]
   [:div
@@ -69,7 +70,7 @@
     [:li {:dangerouslySetInnerHTML
           {:__html (str (t :badge/Uploadbadgesfrominfo2) ". " (t :badge/Uploadbadgesfrominfo3))}}]
     #_[:li {:dangerouslySetInnerHTML
-          {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
+            {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
     [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
@@ -99,11 +100,15 @@
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
-       :else                [:span {:class "btn btn-primary btn-file"}
-                             [:input {:type       "file"
-                                      :name       "file"
-                                      :on-change  #(send-file state)
-                                      :accept     "image/png, image/svg+xml"}] (t :badge/Browse)])
+       :else                [:div {:class "btn btn-primary btn-file"}
+                              [file-input {:upload-fn (fn [] (send-file state)) :aria-label (t :badge/Uploadbadgefrom)}]
+                             #_[:input {:type       "file"
+                                        :name       "file"
+                                        :on-change  #(send-file state)
+                                        :accept     "image/png, image/svg+xml"
+                                        :aria-label "Upload badge file"}]
+
+                             (t :badge/Browse)])
      [:br]]))
 
 (defn assertion-url-upload-content [state]
@@ -114,16 +119,15 @@
      [assertion-upload-info]
      (cond
        (= "importing" status) [:div.ajax-message
-                             [:i {:class "fa fa-cog fa-spin fa-2x "}]
-                             [:span (str (t :core/Loading) "...")]]
+                               [:i {:class "fa fa-cog fa-spin fa-2x "}]
+                               [:span (str (t :core/Loading) "...")]]
        :else                [:div {:id "assertion-textfield" :class "form-group"}
                              [:div {:style {:margin-top "15px"}}
-                              [input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
+                              [text-field {:name "input-assertion-url" :atom assertion-url :password? false :aria-label (t :badge/Importbadgeswithassertioninfo1)}]
+                              #_[input/text-field {:name "input-assertion-url" :atom assertion-url :password? false}]
                               [:button {:class "btn btn-primary"
                                         :on-click #(do
                                                      (swap! state assoc :status "importing")
-                                                     (import-badge state))
-                                        } (t :badge/ImportBadge)]]])
+                                                     (import-badge state))}
+                                      (t :badge/ImportBadge)]]])
      [:br]]))
-
-

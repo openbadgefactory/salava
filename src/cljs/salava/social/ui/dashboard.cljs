@@ -208,7 +208,8 @@
       (if (blank? message)
         [:div.content
          [:div.row.welcome-message
-          (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
+          [:h1 {:style {:font-size "inherit" :padding "inherit" :margin "inherit"}}
+           (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]]
         [:div.content
          [:div.row.welcome-message
            [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden" :on-click #(do
@@ -403,10 +404,6 @@
           [:div.since-last-login]]]]]]]]]))
 
 
-
-
-
-
 (defn user-connections-stats []
   (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
     (if blocks
@@ -551,7 +548,6 @@
    [m/modal-window]
    (if (not-activated?)
      (not-activated-banner))
-   [:h1]
    [welcome-block state]
    [:div.row.flip
     [notifications-block state]

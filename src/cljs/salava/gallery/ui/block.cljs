@@ -160,7 +160,7 @@
         [:div.row.flip.settings-endorsement
          [:div.col-md-12.media; {:style {:margin-top "2px"}}
           [:div.media-left
-            [:img {:src (profile-picture profile_picture)}]]
+            [:img {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
           [:div.media-body
            [:a {:href "#"
                 :on-click #(mo/open-modal [:profile :view] {:user-id id})}

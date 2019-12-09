@@ -281,7 +281,7 @@ fieldset.checkbox {
   border-color: #d9534f;
 }
 /* NAVI */
-header#navbar {
+header#navbar, div#navbar {
   background: url(/img/header_pic.png) no-repeat #ffffff;
   background-position: top center;
   padding: 0px 30px;
@@ -718,7 +718,7 @@ body.anon {
     .container-fluid{
       //padding:0px;
     }
-    div#navbar {
+    header#navbar, div#navbar {
       padding:0px 10px 0px 25px;
     }
   }
