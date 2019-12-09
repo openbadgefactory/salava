@@ -572,7 +572,7 @@ button {
   }
 
   .panel {
-    border:none;
+    border:1px solid #dddddd;
     border-radius: 4px;
     img.badge-icon {
       width: 30px;
@@ -635,7 +635,7 @@ button {
           }
         }
       }
-      label {
+      label.hidden-label {
         display: none;
       }
       .row.header {

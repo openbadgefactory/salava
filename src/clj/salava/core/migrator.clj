@@ -6,7 +6,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
             [salava.core.helper :refer [dump plugin-str]]
-            [salava.core.util :refer [public-path]])
+            [salava.core.util :refer [public-path url-encode]])
   (:import (java.sql SQLIntegrityConstraintViolationException)))
 
 (defn read-config [path]
@@ -24,9 +24,11 @@
 (defn jdbc-uri [conf]
   (let [source (:datasource conf)]
     (str "jdbc:" (:adapter source "mysql") "://"
-         (:server-name source "localhost")  "/" (:database-name source)
-         "?user=" (:username source)
-         (if (not-empty (:password source)) (str "&password=" (:password source))))))
+         (url-encode (:username source))
+         (when (not-empty (:password source))
+           (str ":" (url-encode (:password source))))
+         "@"
+         (:server-name source "localhost")  "/" (:database-name source))))
 
 
 (def schema-table "schema_migrations")
