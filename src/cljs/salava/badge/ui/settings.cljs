@@ -30,9 +30,9 @@
                  #_(init-badges state)
                  #_(navigate-to "/badge"))}))
 
-(defn export-to-pdf [state]
+(defn export-to-pdf [user-badge-id]
   (let [lang-option "all"
-        badge-url (str "/obpv1/badge/export-to-pdf?badges[0]=" (:id @state) "&lang-option="lang-option)]
+        badge-url (str "/obpv1/badge/export-to-pdf?badges[0]=" user-badge-id "&lang-option="lang-option)]
     (js-navigate-to badge-url)))
 
 (defn update-settings [badge-id state]
@@ -231,7 +231,7 @@
 
                                             [:div.modal-footer]])]]))
 
-(defn revalidation-request [user-badge-id state]
+#_(defn revalidation-request [user-badge-id state]
   (ajax/POST
     (path-for (str "/obpv1/factory/pdf_cert_request/" user-badge-id))
     {:params  {:message   "Please revalidate my badge!"}
@@ -239,26 +239,32 @@
                 (swap! state merge data))}))
 
 (defn cert-block [user-badge-id state]
-  (when-let [cert (some-> @state :cert)]
-    [:div
-     [:hr]
-     [:div (t :badge/Downloadcertificateinfo)]
-     [:label.sub-heading "Version"
-      [:select.form-control {:name "cert_version" :style {:width "200px" :margin "10px 0"}}
-       [:option "2019-11-01"]
-       [:option "2019-11-14"]
-       [:option "2019-11-28"]]]
+  [:div
+   [:label.sub-heading (t :badge/Downloadpdf)]
+   (if-let [cert-uri (some-> @state :cert :uri)]
      [:div
-      (doall
-        (map (fn [[badge lang]]
-               (let [uri (str (:uri cert) "&lang=" lang)]
-                 [:p {:key uri}
-                  [:i.fa.fa-file-pdf-o.fa-2x] " "
-                  [:a {:href uri} (str badge " (" lang ")")]]))
-             (:badge @state)))]
+      #_[:hr]
+      #_[:div (t :badge/Downloadcertificateinfo)]
+      #_[:label.sub-heading "Version"
+         [:select.form-control {:name "cert_version" :style {:width "200px" :margin "10px 0"}}
+          [:option "2019-11-01"]
+          [:option "2019-11-14"]
+          [:option "2019-11-28"]]]
+      [:div
+       (doall
+         (map (fn [[badge lang]]
+                (let [uri (str cert-uri "&lang=" lang)]
+                  [:p {:key uri}
+                   [:i.fa.fa-file-pdf-o.fa-2x] " "
+                   [:a {:href uri} (str badge " (" lang ")")]]))
+              (:badge @state)))]
+      #_[:div
+         [:button {:class "btn btn-primary" :on-click #(revalidation-request user-badge-id state)} (t :badge/RevalidationRequest)]]]
      [:div
-      [:button {:class "btn btn-primary" :on-click #(revalidation-request user-badge-id state)} (t :badge/RevalidationRequest)]]
-     ]))
+      [:p
+       [:i.fa.fa-file-pdf-o.fa-2x] " "
+       [:a {:href "#" :on-click #(export-to-pdf user-badge-id)} (-> @state :badge first first)]]])
+   [:div (t :badge/Pdfdownload)]])
 
 (defn init-cert [user-badge-id state]
   (ajax/GET
@@ -276,11 +282,9 @@
        [:div {:class "col-md-3 badge-image modal-left"}
         [:img {:src (str "/" image_file) :alt name}]]
        [:div {:class "col-md-9 settings-content download-tab"}
-        [:div
-         [:button {:class "btn btn-primary" :on-click  #(export-to-pdf state)} (t :badge/Downloadpdf)]
-         [:div (t :badge/Pdfdownload)]]
+        [cert-block user-badge-id cert-state]
         [:hr]
         [:div
          [:a {:class "btn btn-primary" :href (str obf_url "/c/receive/download?url="(js/encodeURIComponent assertion_url))} (t :badge/Downloadbadgeimage)]
          [:div (t :badge/Downloadbakedbadge)]]
-        [cert-block user-badge-id cert-state]]])))
+        ]])))
