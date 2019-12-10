@@ -151,6 +151,9 @@ DELETE FROM user_profile WHERE user_id = :user_id
 --name: delete-email-addresses!
 DELETE FROM user_email WHERE user_id = :user_id
 
+--name: delete-user-terms!
+DELETE FROM user_terms WHERE user_id = :user_id
+
 --name: delete-user!
 DELETE FROM user WHERE id = :id
 

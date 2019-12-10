@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.6.2
+ - Migration fixes for testing
+ - Optimized badge event notifications for faster loading of user badges
+ - Bug fixes for social tab feature
+
 ## 3.6.0
 
 ### New features

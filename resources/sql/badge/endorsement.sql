@@ -1,21 +1,3 @@
---name: create-request-endorsement-table!
---create user_badge_endorsement_request table
-CREATE TABLE IF NOT EXISTS user_badge_endorsement_request(
-    `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_badge_id`  bigint(20) NOT NULL,
-    `status` enum('pending','endorsed','declined') DEFAULT 'pending',
-    `content` text,
-    `issuer_name` text,
-    `issuer_id` bigint(20) UNSIGNED DEFAULT NULL,
-    `issuer_url` varchar(500) DEFAULT NULL,
-    `ctime` bigint UNSIGNED DEFAULT NULL,
-    `mtime` bigint UNSIGNED DEFAULT NULL
-);
-
---name: drop-request-endorsement-table!
---drop user_badge_endorsement_request table
-DROP TABLE user_badge_endorsement_request
-
 --name: request-endorsement<!
 --send endorsement request
 INSERT INTO user_badge_endorsement_request (user_badge_id, status, content, issuer_name, issuer_id, issuer_url, ctime,mtime)
@@ -122,6 +104,10 @@ SELECT id, status FROM user_badge_endorsement_request WHERE user_badge_id = :use
 --name: pending-user-badge-endorsement-count
 --get user badge's pending endorsement
 SELECT COUNT(id) AS count FROM user_badge_endorsement WHERE user_badge_id = :id AND status = 'pending';
+
+--name: pending-user-badge-endorsement-count-multi
+--get user badge's pending endorsement
+SELECT COUNT(ube.id) AS count, ube.user_badge_id FROM user_badge_endorsement AS ube WHERE ube.user_badge_id IN (:user_badge_ids) AND ube.status = 'pending';
 
 --name: delete-user-badge-endorsement-requests!
 DELETE FROM user_badge_endorsement_request WHERE user_badge_id = :id

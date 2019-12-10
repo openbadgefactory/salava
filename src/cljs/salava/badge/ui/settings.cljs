@@ -41,15 +41,15 @@
     {:handler (fn [data]
                 (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
 
-(defn save-settings [state]
+(defn save-settings [state reload-fn]
  (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
   (ajax/POST
     (path-for (str "/obpv1/badge/save_settings/" id))
     {:params  {:visibility   visibility
                :tags         tags
                :rating       (if (pos? rating) rating nil)}
-     :handler (fn []
-                (update-settings id state))})))
+     :handler (fn [] (update-settings id state))
+     :finally (fn [] (when reload-fn (reload-fn)))})))
 
 
 (defn toggle-recipient-name [id show-recipient-name-atom]

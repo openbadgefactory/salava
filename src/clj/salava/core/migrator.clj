@@ -6,7 +6,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
             [salava.core.helper :refer [dump plugin-str]]
-            [salava.core.util :refer [public-path]])
+            [salava.core.util :refer [public-path url-encode]])
   (:import (java.sql SQLIntegrityConstraintViolationException)))
 
 (defn read-config [path]
@@ -24,9 +24,11 @@
 (defn jdbc-uri [conf]
   (let [source (:datasource conf)]
     (str "jdbc:" (:adapter source "mysql") "://"
-         (:server-name source "localhost")  "/" (:database-name source)
-         "?user=" (:username source)
-         (if (not-empty (:password source)) (str "&password=" (:password source))))))
+         (url-encode (:username source))
+         (when (not-empty (:password source))
+           (str ":" (url-encode (:password source))))
+         "@"
+         (:server-name source "localhost")  "/" (:database-name source))))
 
 
 (def schema-table "schema_migrations")
@@ -115,10 +117,21 @@
       (migratus/migrate (migratus-config conf plugin))
       (run-seed conf plugin))))
 
+(defn- test-drop-all! [conf]
+  (let [conn (jdbc-uri conf)
+        db-name (get-in conf [:datasource :database-name] "salava_test")
+        sql "SELECT table_name FROM information_schema.tables WHERE table_schema = ?"
+        tables (map :table_name (jdbc/query conn [sql db-name]))]
+    (doseq [t tables]
+      (jdbc/execute! conn [(str "DROP TABLE " t)]))))
 
 (defn run-test-reset []
-  (doseq [plugin (plugins (test-config))]
-    (run-reset (test-config) plugin)))
+  (let [conf (test-config)]
+    (test-drop-all! conf)
+    (doseq [plugin (plugins conf)]
+      (log/info "running reset functions for plugin" (plugin-str plugin))
+      (migratus/migrate (migratus-config conf plugin))
+      (run-seed conf plugin))))
 
 
 (defn migrate-all [config-path]
