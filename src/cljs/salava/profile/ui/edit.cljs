@@ -89,7 +89,7 @@
         previous? (get-in logic [@current :previous])
         next?  (get-in logic [@current :next])]
     (create-class {:reagent-render  (fn []
-                                      [:div.action-bar {:id "page-edit"}
+                                      [:div.action-bar ;{:id "page-edit"}
                                        [:div.row
                                         [:div.col-md-12
                                          (when previous? [:a {:href "#"
@@ -151,14 +151,14 @@
                   (m/modal! (my/upload-modal status message reason)))})))
 
 (defn gallery-element [picture-data profile-picture-atom pictures-atom]
-  (let [{:keys [path id]} picture-data
+  (let [{:keys [path id name]} picture-data
         current-profile-picture (session/get-in  [:user :profile_picture])]
         ;profile-picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))
         ;delete-fn (first (plugin-fun (session/get :plugins) "my" "delete_file_modal"))]
     [:div {:key path
            :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
            :on-click #(reset! profile-picture-atom path)}
-     [:img {:src (uh/profile-picture path)}]
+     [:img {:src (uh/profile-picture path) :alt (or name "default profile picture")}]
      (if (and (not (nil? id)) (not (= path current-profile-picture)))
        [:a {:class    "delete-icon"
             :title    (t :file/Delete)
@@ -178,16 +178,18 @@
    [:div.col-xs-12 {:id "profile-picture-upload-button"}
     [:button {:class "btn btn-primary"
               :on-click #(.preventDefault %)}
+
      (t :file/Upload)]
     [:input {:id "profile-picture-upload"
              :type "file"
              :name "file"
              :on-change #(send-file pictures-atom profile-picture-atom)
-             :accept "image/*"}]]])
+             :accept "image/*"
+             :aria-label (t :file/Choosefile)}]]])
 
 (defn add-content-modal [profile-fields-atom index]
   (fn []
-    [:div {:id "badge-content"}
+    [:div ;{:id "badge-content"}
      [:div.modal-header
       [:button {:type         "button"
                 :class        "close"
@@ -198,7 +200,7 @@
      [:div.modal-body
       [:div#profile
        [:div.field-list
-        [:h3.block-title (t :user/Addfield)]
+        [:h2.block-title (t :user/Addfield)]
         (reduce-kv
           (fn [r _ v]
             (conj r [:a {:on-click #(do
@@ -254,10 +256,11 @@
          [:input {:type "text"
                   :class "form-control"
                   :value (:value @profile-field-atom)
-                  :on-change #(swap! profile-field-atom assoc :value (.-target.value %))}]]]]]]))
+                  :on-change #(swap! profile-field-atom assoc :value (.-target.value %))
+                  :aria-label type}]]]]]]))
 
 (defn profile-fields [profile-fields-atom]
-  [:div#profile
+  [:div;#profile
    (into [:div.form-horizontal]
          (for [index (range (count @profile-fields-atom))]
            (profile-field index profile-fields-atom)))
@@ -276,7 +279,7 @@
              [:div {:id "about-me" :class "form-group"}
               [:label.col-xs-12 (t :user/Aboutme)]
               [:div.col-xs-12
-               [:textarea {:class "form-control" :rows 5 :cols 60 :value @about-me-atom :on-change #(reset! about-me-atom (.-target.value %))}]]]
+               [:textarea {:class "form-control" :rows 5 :cols 60 :value @about-me-atom :on-change #(reset! about-me-atom (.-target.value %)) :aria-label (t :profile/Aboutmetip)}]]]
              [:div.row
               [:label.col-xs-12 (t :profile/Additionalinformation)]
               [:div.col-xs-12

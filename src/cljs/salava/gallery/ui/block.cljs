@@ -20,13 +20,13 @@
      :handler (fn [data] (swap! state merge data))}))
 
 (defn page-grid [pages page-small-view]
-  (into [:div {:class "row wrap-grid" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "pages-grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages)))]
           (page-grid-element element-data {:type "profile"}))))
 
 
 (defn badge-grid [badges badge-small-view]
-  (into [:div {:class "row wrap-grid" :id "pages-grid"}]
+  (into [:div {:class "row wrap-grid" :id "grid"}]
         (for [element-data (if badge-small-view (sort-by :mtime > badges) (take 6 (sort-by :mtime > badges)))]
           (badge-grid-element element-data nil "profile" nil))))
 
@@ -38,7 +38,7 @@
    (fn []
     (if (seq (:badges @data))
        [:div#user-badges
-        [:div.row.wrap-grid
+        [:div.row.wrap-grid ;{:id "grid"}
          [:div.col-md-12
           [:h2.sectiontitle (t :user/Recentbadges)]
           [badge-grid (:badges @data) @badge-small-view]
@@ -53,7 +53,7 @@
      "embed" (fn []
               (when (seq (:badges @data))
                [:div#user-badges
-                [:div.row.wrap-grid
+                [:div.row.wrap-grid ;{:id "grid"}
                  [:div.col-md-12
                   [:h2.sectiontitle (t :user/Recentbadges)]
                   [:div
@@ -92,9 +92,9 @@
    "embed" (fn []
             (when (seq (:pages @data))
              [:div#user-pages
-              [:div.row.wrap-grid
+              [:div.row.wrap-grid {:id "pages-grid"}
                [:div.col-md-12
-                [:h2.sectiontitle (t :user/Recentbadges)]
+                [:h2.sectiontitle (t :user/Recentpages)]
                 [:div
                  (into [:div.row.wrap-grid] ;{:id "grid"}]
                   (for [element-data (:pages @data)]
@@ -156,7 +156,7 @@
      [:div.panel.panel-default.endorsement.profile-element
       [:div.panel-body {:style {:padding "4px"}}
         [endorsement-info-label endorsement]
-        (when pickable? [:span.checkbox [:input {:type "checkbox" :on-change #(add-or-remove profile selected-users-atom) :checked (boolean (some #(= id (:id %)) @selected-users-atom))}]])
+        (when pickable? [:span.checkbox [:input {:aria-label (str "select user" first_name " " last_name) :type "checkbox" :on-change #(add-or-remove profile selected-users-atom) :checked (boolean (some #(= id (:id %)) @selected-users-atom))}]])
         [:div.row.flip.settings-endorsement
          [:div.col-md-12.media; {:style {:margin-top "2px"}}
           [:div.media-left
@@ -193,7 +193,7 @@
    (create-class {:reagent-render (fn []
                                     [:div
                                      [:div {:id "social-tab"}
-                                      [profiles/profile-gallery-grid-form data-atom]
+                                      [profiles/profile-gallery-grid-form data-atom true]
                                       (if (:ajax-message @data-atom)
                                         [:div.ajax-message
                                          [:i {:class "fa fa-cog fa-spin fa-2x "}]

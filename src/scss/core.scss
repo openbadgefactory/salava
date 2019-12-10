@@ -68,7 +68,7 @@ button {
     outline: none;
 }
 
-#grid-filter .btn, #buttons .col-xs-8 .btn {
+#grid-filter .btn, #buttons .col-xs-8 .btn, #grid-filter-modal .btn {
   color: #ffffff;
   background-color: $icon-color;
   border-color:darken($icon-color, 2%);
@@ -519,7 +519,7 @@ ul.side-dropdown-links {
 }
 
 /* GRID */
-#grid-filter {
+#grid-filter, #grid-filter-modal {
   padding-right: 15px;
   label {
     text-align: left;

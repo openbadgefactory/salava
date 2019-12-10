@@ -22,6 +22,7 @@
                     :issuer_content_url (s/maybe s/Str)
                     :issuer_image (s/maybe s/Str)
                     :issuer_url (s/maybe s/Str)
+                    :creator_content_id (s/maybe s/Str)
                     :creator_email (s/maybe s/Str)
                     :creator_name (s/maybe s/Str)
                     :creator_url (s/maybe s/Str)

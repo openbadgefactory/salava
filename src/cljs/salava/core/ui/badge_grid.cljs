@@ -208,26 +208,31 @@
                                    [:a {:href "#" :on-click (fn []
                                                              (let [index (.indexOf (mapv :id (:badges @state)) id)
                                                                    new-field (atom {:type "swap" :index index :badges (:badges @state) :function (:swap! init-data)})]
-                                                              (mo/open-modal [:badge :my] {:type "pickable" :block-atom state :new-field-atom new-field})))}
+                                                              (mo/open-modal [:badge :my] {:type "pickable" :block-atom state :new-field-atom new-field})))
+                                        :aria-label (t :page/Replacebadge)}
                                     [:i.fa.fa-exchange]]]
                                   (when-not (= id (last (mapv :id (:badges @state))))
                                    [:div.move-right {:title (t :page/Moveright)}
                                                     [:a {:href "#" :on-click (fn []
                                                                               (let [index (.indexOf (mapv :id (:badges @state)) id)]
-                                                                               (f/move-field :down (cursor state [:badges]) index)))}
+                                                                               (f/move-field :down (cursor state [:badges]) index)))
+                                                         :aria-label (t :page/Moveright)}
                                                         [:i.fa.fa-chevron-right]]])
                                   (when-not (= id (first (mapv :id (:badges @state))))
                                    [:div.move-left {:title (t :page/Moveleft)}
                                                [:a {:href "#" :on-click (fn []
                                                                          (let [index (.indexOf (mapv :id (:badges @state)) id)]
-                                                                          (f/move-field :up (cursor state [:badges]) index)))}
+                                                                          (f/move-field :up (cursor state [:badges]) index)))
+                                                    :aria-label (t :page/Moveleft)}
                                                    [:i.fa.fa-chevron-left]]])
+
 
                                   [:div.delete-button {:title (t :badge/Delete)}
                                    [:a {:href "#" :on-click #(do
                                                                (.preventDefault %)
                                                                (let [block-atom @state]
-                                                                ((:delete! init-data) id (:badges block-atom))))}
+                                                                ((:delete! init-data) id (:badges block-atom))))
+                                        :aria-label (t :badge/Delete)}
 
 
                                     [:i.fa.fa-trash]]]]

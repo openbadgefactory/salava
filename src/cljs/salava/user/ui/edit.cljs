@@ -26,9 +26,9 @@
                   (if (= (:status data) "success")
                     (js-navigate-to "/user/edit")
                     (do
-                      (swap! state assoc :message {:class "alert-danger" :content (:message data)})
-                      ))
-                  )})))
+                      (swap! state assoc :message {:class "alert-danger" :content (:message data)}))))})))
+
+
 
 
 
@@ -49,7 +49,7 @@
     [:div {:class "panel" :id "edit-user"}
      (if message
        [:div {:class (str "alert " (:class message))}
-       (translate-text (:content message)) ])
+        (translate-text (:content message))])
      [:div {:class "panel-body"}
       [:form.form-horizontal
        [:div.form-group
@@ -60,12 +60,12 @@
          [input/radio-button-selector "language" (:languages @state) language-atom]]]
 
        [:div.form-group
-        [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
+        [:label {:for "input-first_name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "first_name" :atom first-name-atom}]]]
 
        [:div.form-group
-        [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
+        [:label {:for "input-last_name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last_name" :atom last-name-atom}]]]
 
@@ -88,8 +88,8 @@
                      :checked   @email-notifications-atom}] (str " ") (if @email-notifications-atom  (t :user/Active) (t :user/Deactive))]
            (if @email-notifications-atom
              [:div (t :user/Emailnotificationsactivetip)]
-             [:div (t :user/Emailnotificationsdeactivetip)])
-           ]])
+             [:div (t :user/Emailnotificationsdeactivetip)])]])
+
        (user-connect-config)
 
        (into [:div]
@@ -101,9 +101,9 @@
          [:button {:class "btn btn-primary"
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
-                                          (input/country-valid? @country-atom)
+                                          (input/country-valid? @country-atom))
 
-                                          )
+
                                "disabled")
                    :on-click #(do
                                (.preventDefault %)

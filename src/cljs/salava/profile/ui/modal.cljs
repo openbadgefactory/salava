@@ -62,7 +62,7 @@
  (let [blocks (cursor state [:blocks])
        {badges :badges pages :pages owner? :owner? {first_name :first_name last_name :last_name profile_picture :profile_picture about :about} :user profile :profile user-id :user-id} @state
        fullname (str first_name " " last_name)]
-   [:div {:id "profile"}
+   [:div ;{:id "profile"}
     [:div#page-view
        [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
               :class "page-content"}
@@ -71,7 +71,7 @@
                [:div.panel-content
                  [:div.panel-body
                   [userinfoblock state]
-                  (into [:div#profile]
+                  (into [:div];#profile]
                         (for [index (range (count @blocks))]
                           [:div.row
                            [:div.col-xs-12 (ph/block (cursor blocks [index]) state index)]]))]]]]]]

@@ -306,14 +306,17 @@
   }
 
   .badge-block {
-    h3.badge-name {
+    .badge-name {
       font: 300 30px "Open Sans Condensed";
       text-transform: uppercase;
+      margin-top: 20px;
+      margin-bottom: 10px;
     }
 
-    h3.criteria {
+    .criteria {
       font: 300 20px "Open Sans Condensed";
       text-transform: uppercase;
+      margin: 10px 0;
     }
   }
 }

@@ -565,7 +565,7 @@ button {
 }
 /* BADGE STATS */
 #badge-stats {
-  h3 {
+  h2 {
     font-weight: 300;
     padding-bottom: 10px;
     font: 400 20px "Open Sans",sans-serif;
@@ -582,7 +582,7 @@ button {
     }
     .panel-heading {
       border-bottom: 1px solid #dddddd;
-      h3 {
+      h2 {
         line-height: 30px;
         font: 300 24px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
@@ -1674,6 +1674,7 @@ button {
 
   .badge-name {
     color: $badge-title;
+    font-size: 18px;
   }
 
   .profile-container {
@@ -1726,7 +1727,7 @@ button {
           margin: 10px;
         }
 
-        h4 {
+        h4, span.profileowner {
           margin-top: 0px;
           margin-bottom: 5px;
           color: $link-color;
@@ -1736,6 +1737,7 @@ button {
           height: 2.2em;
           word-wrap: break-word;
           padding: 4px;
+          font-size: 20px;
         }
 
       }
@@ -1901,7 +1903,7 @@ a.popup-info {
 }
 
 .expandable-block, div.expandable-block, .panel.expandable-block {
-  border: unset !important;
+  //border: unset !important;
   .panel-heading {
     position: relative;
 

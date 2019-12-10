@@ -55,7 +55,7 @@
     [:div.expandable-block {:class "panel issuer-panel"}
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :issuers visible-area-atom) #_(reset! (cursor state [:visible-area]) :issuers))}
-       [:h3 (str (t :badge/Issuers) " (" (count issuers) ")")]
+       [:h2 (str (t :badge/Issuers) " (" (count issuers) ")")]
        #_[:div {:style {:margin-top "5px"}} (t :connections/Issuerblockinfo)]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
@@ -69,7 +69,7 @@
                                  :on-click #(do
                                               (mo/open-modal [:badge :issuer] id {:hide (fn [] (init-data state))})
                                               (.preventDefault %)) }(if image_file [:img.badge-icon {:src (str "/" image_file) :alt name}]
-                                                                      [:img.badge-icon]) name]]
+                                                                      [:span {:style {:width "30px" :display "inline-block" :margin-right "10px"} :dangerouslySetInnerHTML {:__html "&nbsp;"}}]) name]]
                   [:td.action (remove-issuer-from-favourites id state)]]))]])]))
 
 
@@ -80,7 +80,7 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :badges visible-area-atom) #_(reset! (cursor state [:visible-area]) :badges))}
-       [:h3 (str (t :badge/Badges) " (" (count badges) ")")]
+       [:h2 (str (t :badge/Badges) " (" (count badges) ")")]
        #_[:p {:style {:margin-top "5px"}} (t :connections/Badgeblockinfo)]
          [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= @(cursor state [:visible-area]) panel-identity)

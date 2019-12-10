@@ -46,11 +46,12 @@
                   init-fn
                   (init-issuer-connection issuer-id state)))}))
 
-(defn- issuer-image [path]
+(defn- issuer-image [path name]
   (when (not-empty path)
     [:img.profile-picture
      {:src (if (re-find #"^file/" path) (str "/" path) path)
-      :style {:width "50px"}}]))
+      :style {:width "50px"}
+      :alt name }]))
 
 (defn content [param]
   (let [issuer-id (if (map? param) (:id param) param)
@@ -71,7 +72,7 @@
                 )])
            ]
           [:h2.uppercase-header
-           (issuer-image image_file)
+           (issuer-image image_file name)
            " "
            name]
 
@@ -109,7 +110,7 @@
         [:div.row {:id "badge-contents"}
          [:div.col-xs-12
           [:h2.uppercase-header
-           (issuer-image image_file)
+           (issuer-image image_file name)
            " "
            name]
 

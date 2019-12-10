@@ -37,7 +37,7 @@
            [pe/action-buttons state]
            [:div.panel.thumbnail
             [:div.panel-heading
-             [:h3 (t :profile/Personalinformation)]]
+             [:h1 (t :profile/Personalinformation)]]
             [:div.panel-body
              [pe/edit-profile state]]]
            [profile-blocks state]]
@@ -74,7 +74,7 @@
   [:div {:id "page-edit-theme"}
    [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
     [:div.panel-heading
-     [:h3 (t :page/Selecttheme)]]
+     [:h2 (t :page/Selecttheme)]]
     [:div.panel-body
      [theme-selection (cursor state [:theme]) themes]]]
    [pe/action-buttons state]
@@ -85,7 +85,7 @@
     [:div#page-edit
      [:div.panel.thumbnail
       [:div.panel-heading
-       [:h3 (t :page/Settings)]]
+       [:h2 (t :page/Settings)]]
       [:div.panel-body
        (if-not (private?)
          [:div.col-md-12

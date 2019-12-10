@@ -139,7 +139,8 @@
                  :value     title
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
-                 :placeholder (t :page/Untitled)}]]
+                 :placeholder (t :page/Untitled)
+                 :aria-label (t :page/Title)}]]
        #_[:div
           [:label (t :page/Displayinpageas)]
           [:div.badge-select
@@ -149,7 +150,7 @@
                      :on-change #(update-block-value block-atom :format (.-target.value %))}
             [:option {:value "short"} (t :core/Imageonly)]
             [:option {:value "long"} (t :page/Content)]]]]]
-      [:div#badges-grid {:class "row wrap-grid"}
+      [:div#grid {:class "row wrap-grid"}
        (reduce (fn [r b]
                  (conj r
                        (badge-grid-element b block-atom "showcase" {:delete! (fn [id badges] (update-block-value block-atom :badges (into [] (remove #(= id (:id %)) badges))))
@@ -159,7 +160,8 @@
        [:a {:href "#" :on-click #(do
                                    (.preventDefault %)
                                   (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
-                                                            :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+                                                            :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))
+            :aria-label "Add badge"}
         [:div.addbadge
           [:i.fa.fa-plus.add-icon.fa-5x]]]]]]))
 
@@ -202,7 +204,7 @@
          ("pages") [recent-pages state]
          ("showcase") [badge-showcase state block-atom]
          ("location") [:div
-                        [:h3 {:style {:padding-bottom "10px"}} (t :location/Location)]
+                        [:h2.sectiontitle {:style {:padding-bottom "10px"}} (t :location/Location)]
                        (into [:div {:style {:margin-top "15px" :padding-top "15px"}}]
                              (for [f (plugin-fun (session/get :plugins) "block" "user_profile")]
                                [f (:user-id @state)]))]
@@ -274,8 +276,8 @@
                                            (.preventDefault %)
                                            (reset! (cursor state [:edit-mode]) false))}
 
-                             [:i.fa.fa-eye.fa-lg.fa-fw](t :page/View)]]
-      [m/modal-window]]]))
+                             [:i.fa.fa-eye.fa-lg.fa-fw](t :page/View)]]]]))
+      ;[m/modal-window]]]))
 
 (defn manage-buttons [state]
   (let [visibility-atom (cursor state [:user :profile_visibility])
