@@ -34,7 +34,7 @@
 
 
 (defn select-selector [values atom init-text]
-  (into [:select {:id        "input-country"
+  (into [:select {:id        "input-language"
                   :class     "form-control"
                   :value     @atom
                   :on-change #(reset! atom (.-target.value %))}
@@ -67,7 +67,7 @@
                 :id          (str "input-emailwhitelist")
                 :name        "email-text"
                 :type        "text"
-             
+
                 :on-change   #(do
                                 (reset! text-atom (.-target.value %))
                                 (reset! email-atom (str @text-atom @current-value))
@@ -75,7 +75,7 @@
                                 )
                 :value       @text-atom}]
        (if (= 1 (count values))
-         [:span {:class "input-group-addon"}  @current-value]  
+         [:span {:class "input-group-addon"}  @current-value]
          [:div {:class "input-group-btn"}
           [:button {:type "button" :class "btn btn-default dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expended "false"} @current-value  [:span.caret]]
           [:ul {:class "dropdown-menu dropdown-menu-right"}

@@ -6,7 +6,9 @@
             [salava.core.ui.helper :refer [js-navigate-to navigate-to path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.core.helper :refer [dump]]))
+            [salava.core.helper :refer [dump]]
+            [dommy.core :as dommy :refer-macros [sel sel1]]
+            [clojure.string :as string]))
 
 (defn content [state]
  [:div#registration-page
@@ -16,7 +18,7 @@
      [:div.media-left
       [:div.logo-image-icon-url #_{:style {:vertical-align "middle"}}]]
      [:div.media-body {:style {:vertical-align "bottom"}}
-      [:span {:style {:font-size "16px" :font-weight "600"}} (str (t :core/Emailactivation2) " " (session/get :site-name) (t :core/Service))]]]]
+      [:h1 {:style {:font-size "16px" :font-weight "600" :margin "unset" :margin-bottom "2px"}} (str (t :core/Emailactivation2) " " (session/get :site-name) #_(t :core/Service))]]]]
    [:div {:style {:margin-top "10px"}} [:hr.border]]
    [:div.panel-body
     [:div.col-md-12
@@ -30,7 +32,7 @@
        [:li (t :social/Notactivatedbody6)]]]
      [:div.col-md-12 {:style {:text-align "center"}}[:a.btn.btn-primary {:style {:margin-top "20px" :text-align "center"}
                                                                           :href "#" :on-click #(do
-                                                                                                (.push window.dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method "form"})) 
+                                                                                                (.push window.dataLayer (clj->js {:event "virtualPage" :vpv "app/user/register/complete" :registration-method "form"}))
                                                                                                 (.preventDefault %)
                                                                                                 (navigate-to "/social"))}
                                                       (t :core/Continue)]]]]]])
@@ -43,7 +45,11 @@
     (fn [] (swap! state assoc :permission "error"))))
 
 (defn handler [site-navi params]
-  (let [state (atom {:permission "initial"})]
+  (let [state (atom {:permission "initial"})
+        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
+    (when (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang)
+      (-> (sel1 :html) (dommy/set-attr! :lang lang)))
     (init-data state)
     (fn []
       (cond
