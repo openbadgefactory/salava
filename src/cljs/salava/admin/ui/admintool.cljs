@@ -75,7 +75,7 @@
       [:button {:class    "btn btn-primary text-right admin-btn"
                 :on-click #(do (.preventDefault %)
                                (open-admintool-modal item-id item-type))}
-      (t :admin/Admintools)]]]))
+       (t :admin/Admintools)]]]))
 
 (defn admin-gallery-badge [item-id item-type state init-data]
   (if (admin?)
@@ -83,9 +83,9 @@
      [:a {:class    "bottom-link pull-right"
           :on-click #(do (.preventDefault %)
                          (open-admintool-modal "badges" item-id state init-data))}
-      [:i {:class "fa fa-wrench"}]
+      [:i {:class "fa fa-wrench"}]]]))
       ;(t :admin/Admintools)
-      ]]))
+
 
 (defn admintool-gallery-page [item-id item-type state init-data user-id]
   (if (admin?)
@@ -98,11 +98,11 @@
 
 (defn admintool-admin-page [item-id item-type state init-data]
 
-(if (admin?)
-    [:div
-     [:div {:id "buttons"
-            :class "text-right"}
-      [:button {:class    "btn btn-primary text-right"
-                :on-click #(do (.preventDefault %)
-                               (open-admintool-modal item-type item-id state  init-data))}
-      (t :admin/Admintools)]]]))
+ (if (admin?)
+     [:div
+      [:div {;:id "buttons"
+             :class "text-right"}
+       [:button {:class    "btn btn-primary text-right"
+                 :on-click #(do (.preventDefault %)
+                                (open-admintool-modal item-type item-id state  init-data))}
+        (t :admin/Admintools)]]]))
