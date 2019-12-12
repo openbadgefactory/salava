@@ -31,9 +31,9 @@
   [:div.media.grid-container
    [:div.media-content
     [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] milestone)}
-     (if image_file
+     (when image_file
        [:div.media-left {:class image-class}
-        [:img.badge-img {:src (str "/" image_file) :class (mb/image-class completion_status)}]])
+        [:img.badge-img {:src (str "/" image_file) :class (mb/image-class completion_status) :title name :alt (str "metabadge " name)}]])
      [:div.media-body
       [:div.media-heading
        [:p.heading-link name]]

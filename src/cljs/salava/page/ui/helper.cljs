@@ -197,12 +197,12 @@
 (defn showcase-block [block-atom]
  (let [{:keys [badges format title]} block-atom
         container (case format
-                    "short" [:div#grid {:class "row"}]
+                    "short" [:div#badges-grid {:class "row"}]
                     "long" [:div.tag-block])]
    [:div
     [:div.heading-block
      [:h2 title]]
-    [:div#user-badges
+    [:div.showcase_badges
      [:div
       (doall (reduce (fn [r badge]
                        (conj r (if (= format "short")
@@ -474,7 +474,7 @@
         next?  (get-in logic [current :next])]
 
    (create-class {:reagent-render   (fn []
-                                      [:div.action-bar {:id "page-edit"}
+                                      [:div.action-bar ;{:id "page-edit"}
                                        [:div.row
                                         [:div.col-md-12
                                          (when previous? [:a {:href "#"

@@ -22,7 +22,7 @@
       (when (= "error" (get-in @state [:alert :status]))
         [:div.alert.alert-warning (t @(cursor state [:alert :message]))])
       [:div.form-group
-       [:label {:for "page-tags"}
+       [:label {:for "newtags"} ;"page-tags"}
         (t :page/Pagetags)]
        [tag/tags tags-atom]
        [tag/new-tag-input tags-atom new-tag-atom]]
@@ -64,7 +64,8 @@
          [:input {:class     "form-control"
                   :type      "text"
                   :read-only true
-                  :value     (str (session/get :site-url) (path-for "/profile/page/view/") id)}]])
+                  :value     (str (session/get :site-url) (path-for "/profile/page/view/") id)
+                  :aria-label "Page url"}]])
       (if (= @visibility-atom "password")
         [:div.form-group
          [:label {:for "page-password"}

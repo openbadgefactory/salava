@@ -63,7 +63,7 @@
 
 (defn theme-selection [theme-atom themes]
   (reduce (fn [r theme]
-            (conj r [:div {:id (str "theme-" (:id theme))}
+            (conj r [:div {:class (str "theme-" (:id theme))}
                      [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! theme-atom (js/parseInt (:id theme))))

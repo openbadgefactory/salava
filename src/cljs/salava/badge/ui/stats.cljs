@@ -36,7 +36,7 @@
                     :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                 [:div.col-md-12
                  [:div.flip-table
-                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
+                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file) :alt name}]]
                   [:div.col-md-5 [:a {:href "#"
                                       :on-click #(do
                                                    (mo/open-modal [:badge :info] {:badge-id id})

@@ -68,7 +68,7 @@
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:badge :issuer] id {:hide (fn [] (init-data state))})
-                                              (.preventDefault %)) }(if image_file [:img.badge-icon {:src (str "/" image_file) :alt name}]
+                                              (.preventDefault %)) }(if image_file [:img.badge-icon {:src (str "/" image_file) :alt (str name " icon")}]
                                                                       [:span {:style {:width "30px" :display "inline-block" :margin-right "10px"} :dangerouslySetInnerHTML {:__html "&nbsp;"}}]) name]]
                   [:td.action (remove-issuer-from-favourites id state)]]))]])]))
 

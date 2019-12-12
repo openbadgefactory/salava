@@ -526,12 +526,12 @@ ul.side-dropdown-links {
   }
 
 }
-#grid.row, #pages-grid.row {
+#grid.row, #pages-grid.row, #badges-grid.row {
   margin:0px;
   margin-top:15px;
 }
 @media (min-width: 992px){
-  #grid .col-md-4, #pages-grid .col-md-4 {
+  #grid .col-md-4, #pages-grid .col-md-4, #badges-grid .col-md-4 {
     width: auto;
     padding-left: 0px;
     padding-right: 20px;
