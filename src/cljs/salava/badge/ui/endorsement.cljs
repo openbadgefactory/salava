@@ -277,7 +277,7 @@
 (defn profile-link-inline [id issuer_name picture name type]
   [:div [:a {:href "#"
              :on-click #(mo/open-modal [:profile :view] {:user-id id})}
-         [:img {:src (profile-picture picture)}]
+         [:img {:src (profile-picture picture) :alt (str issuer_name " " (t :user/Profilepicture))}]
          (str issuer_name " ")]  (case type
                                    "endorse" (t :badge/Hasendorsedyou)
                                    "request" (str (t :badge/requestsendorsement) " " name)
@@ -287,7 +287,7 @@
   (let [state (atom {:user-id (-> (session/get :user) :id) :pending []})]
     (init-pending-endorsements state)
     (fn []
-      [:div#endorsebadge
+      [:div.endorsebadge
        (reduce (fn [r endorsement]
                  (let [{:keys [id user_badge_id image_file name content profile_picture issuer_id description issuer_name]} endorsement]
                    (conj r
@@ -300,9 +300,9 @@
 
                             [:div.caption.row.flip
                              [:div.position-relative.badge-image.col-md-3
-                              [:img {:src (str "/" image_file) :style {:padding "15px"}}]]
+                              [:img {:src (str "/" image_file) :style {:padding "15px"} :alt name}]]
 
-                             [:div.col-md-9 [:h4.media-heading name]
+                             [:div.col-md-9 [:h1.media-heading name]
                               [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]]
 
 
@@ -481,7 +481,7 @@
        [:div.col-md-9
         [:div
          [:h1.uppercase-header name]
-         (when (and description issuer_content_id issuer_name)[:div#badge-info
+         (when (and description issuer_content_id issuer_name)[:div;#badge-info
                                                                [:div.badge-info
                                                                 [:div {:class "issuer-data clearfix"}
                                                                  [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
@@ -536,7 +536,7 @@
                          [:div.caption
                           [:hr.line]
                           [endorse-badge user_badge_id {:request_id id}]
-                          (when (= status "pending")[:div#endorsebadge {:style {:margin "25px 0"}} [:a {:href "#"
+                          (when (= status "pending")[:div.endorsebadge {:style {:margin "25px 0"}} [:a {:href "#"
                                                                                                         :on-click #(do
                                                                                                                      (.preventDefault %)
                                                                                                                      (toggle-delete-dialogue state)
@@ -765,7 +765,7 @@
    (init-pending-requests state)
    (fn []
     (when (seq @state)
-     ^{:key @state}[:div#endorsebadge
+     ^{:key @state}[:div.endorsebadge
                     (reduce
                      (fn [r request]
                       (let [{:keys [id user_badge_id content status mtime requester_id profile_picture first_name last_name name image_file description issuer_id issuer_name issued_on]} request]
@@ -778,10 +778,10 @@
                                [:hr.line]]
                               [:div.caption.row.flip
                                [:div.position-relative.badge-image.col-md-3
-                                [:img {:src (str "/" image_file) :style {:padding "15px"}}]]
+                                [:img {:src (str "/" image_file) :style {:padding "15px"} :alt name}]]
 
                                [:div.col-md-9
-                                [:h4.media-heading name]
+                                [:h1.media-heading name]
                                 [:div#badge-info
                                  [:div.badge-info
                                   [:div {:class "issuer-data clearfix"}
