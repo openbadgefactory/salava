@@ -236,7 +236,7 @@
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
-       [:img {:src (str "/" image_file)}]]
+       [:img {:src (str "/" image_file) :alt name}]]
       [below-image-block state endorsement_count]]
      [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
       [:div.row

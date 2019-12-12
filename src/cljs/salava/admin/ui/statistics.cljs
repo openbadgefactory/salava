@@ -17,18 +17,18 @@
      [:h1 {:class "uppercase-header"} (t :admin/Statistics)]
      [:div.row
       [:div {:class "col-md-12"}
-      [:h3 (t :admin/Users)]
+       [:h2.sectionheading (t :admin/Users)]
        [:div [:label (t :admin/Registeredusers)]  register-users]
        [:div [:label (t :admin/Numberofmonthlyactiveuser)] last-month-active-users]
        [:div [:label (t :admin/Numberofmonthlyregisteredusers)]  last-month-registered-users]
-      [:h3 (t :badge/Badges)]
+       [:h2.sectionheading (t :badge/Badges)]
        [:div [:label (t :admin/Totalbadges)]  all-badges]
        [:div [:label (t :admin/Numberofmonthlyaddedbadges) ]  last-month-added-badges]
-      [:h3 (t :page/Pages)]
-       [:div [:label (t :admin/Totalpages)]  pages]
-       ]]]))
+       [:h2.sectionheading (t :page/Pages)]
+       [:div [:label (t :admin/Totalpages)]  pages]]]]))
+
 (defn init-data [state]
-  (ajax/GET 
+  (ajax/GET
    (path-for "/obpv1/admin/stats")
    {:handler (fn [data]
                (reset! state data))}))

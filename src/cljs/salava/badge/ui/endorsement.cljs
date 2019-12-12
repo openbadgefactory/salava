@@ -422,10 +422,10 @@
           [:div.profile-image
            [:img.img-responsive.img-thumbnail
             {:src (profile-picture profile_picture)
-             :alt name
+             :alt (str (t :user/Profilepicture) " " name)
              :title name}]]]
          [:div.col-md-8
-          [:h4 name]
+          [:span.profileowner name]
           (when (= status "pending") [:p [:span.label.label-info label]])]]]
        [:div.panel-body.flip
         [:div.col-md-4
@@ -435,7 +435,7 @@
             :alt name
             :title name}]]]
         [:div.col-md-8
-         [:h4 name]
+         [:span.profileowner name]
          (when (= status "pending") [:p [:span.label.label-info label]])]])]))
 
 (defn- toggle-delete-dialogue [state]
@@ -477,7 +477,7 @@
 
       [:div.row.flip {:id "badge-info"}
        [:div.col-md-3
-        [:div.badge-image [:img.badge-image {:src (str "/" image_file)}]]]
+        [:div.badge-image [:img.badge-image {:src (str "/" image_file) :alt name}]]]
        [:div.col-md-9
         [:div
          [:h1.uppercase-header name]
@@ -614,7 +614,7 @@
                        processed-endorsements)]
     [:div.panel
      [:div.panel-heading
-      [:h3
+      [:h2
        (str (t :badge/endorsements))]
       [:br]
       [:div (case @(cursor state [:show])
@@ -651,13 +651,13 @@
                                    [:span.label.label-info
                                     (t :social/pending)])]]
                                [:div.media-left.media-top.list-item-bodyv
-                                [:img.main-img.media-object {:src (str "/" image_file)}]]
+                                [:img.main-img.media-object {:src (str "/" image_file) :alt name}]]
 
                                [:div.media-body
-                                [:h4.media-heading.badge-name  name]
+                                [:h3.media-heading.badge-name  name]
                                 [:div.media
                                  [:div.child-profile [:div.media-left.media-top
-                                                      [:img.media-object.small-img {:src (profile-picture profile_picture)}]]
+                                                      [:img.media-object.small-img {:src (profile-picture profile_picture) :alt endorser}]]
                                   [:div.media-body
                                    [:p endorser]]]]]]]]])))
                [:div] endorsements)]]]))
@@ -688,20 +688,20 @@
                      :on-click #(do (swap! state assoc :show "all"))}
             (t :core/All) #_(when (or (pos? pending-received-count) (pos? pending-requests-count)) [:span.badge.endorsement-notification (+ pending-requests-count pending-received-count)])]
            [:button {:class (str "btn btn-default " (when (= "received" @(cursor state [:show])) "btn-active"))
-                     :id "btn-all"
+                     :id "btn-endorsedme"
                      :on-click #(do (swap! state assoc :show "received"))}
             (t :badge/Endorsedme) (when (pos? pending-received-count) [:span.badge.endorsement-notification pending-received-count])]
            [:button {:class (str "btn btn-default " (when (= "given" @(cursor state [:show])) "btn-active"))
-                     :id "btn-all"
+                     :id "btn-iendorsed"
                      :on-click #(do (swap! state assoc :show "given"))}
             (t :badge/Iendorsed)]
            (when (pos? pending-requests-count)  [:button {:class (str "btn btn-default " (when (= "requests" @(cursor state [:show])) "btn-active"))
-                                                          :id "btn-all"
+                                                          :id "btn-pendingrequests"
                                                           :on-click #(do (swap! state assoc :show "requests"))}
                                                  [:span (t :badge/Endorsementrequests) [:span.badge.endorsement-notification pending-requests-count]]])
 
            (when (pos? sent-requests-count) [:button {:class (str "btn btn-default " (when (= "sent-requests" @(cursor state [:show])) "btn-active"))
-                                                      :id "btn-all"
+                                                      :id "btn-sentrequests"
                                                       :on-click #(do (swap! state assoc :show "sent-requests"))}
                                               [:span (t :badge/Sentendorsementrequests) [:span.badge.endorsement-notification sent-requests-count]]])]]]
 

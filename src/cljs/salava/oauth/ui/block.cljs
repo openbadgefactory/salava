@@ -7,7 +7,7 @@
   (fn []
    [:div {:class "row"}
     (if (some #(= % "oauth") (session/get :plugins))
-     [:div.col-md-12 [:h2.or [:span (t :user/or)]]])
+     [:div.col-md-12 [:h1.or [:span (t :user/or)]]])
     [:div.col-md-12.oauth-buttons
      [:div (facebook-link false nil)]
      [:div (linkedin-link nil nil)]
@@ -18,7 +18,7 @@
  (fn []
   [:div {:class "row"}
    (if (some #(= % "oauth") (session/get :plugins))
-     [:div.col-md-12 [:h2.or [:span (t :user/or)]]])
+     [:div.col-md-12 [:h1.or [:span (t :user/or)]]])
    [:div.col-md-12.oauth-buttons
     [:div (facebook-link false true)]
     [:div (linkedin-link nil "register")]

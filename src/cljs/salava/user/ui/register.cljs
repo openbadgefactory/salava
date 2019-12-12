@@ -12,7 +12,8 @@
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.ui.error :as err]
             [salava.user.ui.input :as input]
-            [salava.user.ui.login :as login]))
+            [salava.user.ui.login :as login]
+            [dommy.core :as dommy :refer-macros [sel sel1]]))
 
 (defn follow-up-url []
   (let [referrer js/document.referrer
@@ -162,7 +163,7 @@
         [:div {:class (str "form-bar " (if (input/country-valid? @country-atom) "form-bar-success" "form-bar-error"))}
          [input/country-selector country-atom]]]]]
 
-     [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2"
+     [:button {:class "btn btn-primary col-sm-4 col-sm-offset-4 col-xs-8 col-xs-offset-2 management-links"
                :on-click #(do
                             (.preventDefault %)
                             (swap! state assoc :error-message "")
@@ -260,10 +261,12 @@
                      :password-verify ""
                      :accept-terms nil
                      :show-terms (session/get :show-terms?)})
-        lang (:lang params)]
+        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
-      (swap! state assoc :language lang))
+      (swap! state assoc :language lang)
+      (-> (sel1 :html) (dommy/set-attr! :lang lang)))
+
     (init-data state)
 
     (fn []

@@ -35,9 +35,9 @@
                       (clear-password-fields state)
                       (swap! state assoc :message {:class "alert-success" :content (:message data)}))
                     (do
-                      (swap! state assoc :message {:class "alert-danger" :content (:message data)})
-                      ))
-                  )})))
+                      (swap! state assoc :message {:class "alert-danger" :content (:message data)}))))})))
+
+
 
 (defn new-password-valid? [has-password? current-password new-password new-password-verify]
   (or
@@ -62,7 +62,7 @@
     [:div {:class "panel" :id "edit-user"}
      (if message
        [:div {:class (str "alert " (:class message))}
-       (translate-text (:content message)) ])
+        (translate-text (:content message))])
      [:div {:class "panel-body"}
       [:form.form-horizontal
 
@@ -83,12 +83,12 @@
         [:div.col-md-12 (t :user/Tochangecurrentpassword)]
         [:br]
         [:div.flip
-        [:label {:for "input-new-password" :class "col-md-3"} (t :user/Newpassword)]
-        [:div {:class "col-md-9"}
-         [input/text-field {:name "new_password" :atom new-password-atom :password? true}]]]]
+         [:label {:for "input-new_password" :class "col-md-3"} (t :user/Newpassword)]
+         [:div {:class "col-md-9"}
+          [input/text-field {:name "new_password" :atom new-password-atom :password? true}]]]]
 
        [:div.form-group
-        [:label {:for "input-new-password-verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
+        [:label {:for "input-new_password_verify" :class "col-md-3"} (t :user/Confirmnewpassword)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "new_password_verify" :atom new-password-verify-atom :password? true}]]]
 
@@ -106,8 +106,8 @@
   {:current_password    nil
    :new_password        nil
    :new_password_verify nil
-   :message             nil}
-  )
+   :message             nil})
+
 
 (defn init-data [state]
   (ajax/GET
@@ -120,7 +120,7 @@
                      :current_password    nil
                      :password?           true
                      :new_password        nil
-                     :message             nil} )]
+                     :message             nil})]
     (init-data state)
     (fn []
       (layout/default site-navi (content state)))))

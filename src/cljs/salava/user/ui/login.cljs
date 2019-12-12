@@ -5,14 +5,17 @@
             [clojure.string :as string]
             [salava.core.helper :as h]
             [salava.core.ui.ajax-utils :as ajax]
-            [salava.user.ui.input :as input]
+            [salava.core.ui.input :as input]
+            ;[salava.user.ui.input :as input]
             [salava.oauth.ui.helper :refer [facebook-link linkedin-link google-link]]
             [salava.core.ui.helper :refer [base-path js-navigate-to path-for private? plugin-fun input-valid? enable-background-image]]
             [salava.core.ui.layout :as layout]
             [salava.social.ui.helper :refer [social-plugin?]]
             [salava.core.helper :refer [dump]]
             [salava.user.schemas :as schemas]
-            [salava.core.i18n :refer [t translate-text]]))
+            [salava.core.i18n :refer [t translate-text]]
+            [salava.translator.ui.helper :refer [translate]]
+            [dommy.core :as dommy :refer-macros [sel sel1]]))
 
 (defn verification-token [url]
   (if-let [match (re-find #"verification_key=([\w-]+)" url)]
@@ -104,7 +107,8 @@
   (let [email-atom (cursor state [:email])
         password-atom (cursor state [:password])
         error-message-atom (cursor state [:error-message])
-        f (fn [] (js-navigate-to "/user/register"))]
+        f (fn [] (js-navigate-to "/user/register"))
+        l (session/get-in [:user :language] "en")]
     [:div {:id "login-page"}
      (plugin-blocks "login_top")
      [m/modal-window]
@@ -115,10 +119,10 @@
          [:div {:class "alert alert-warning"}
           (translate-text @error-message-atom)])
        [:form
-        [:div.form-group {:aria-label "email"}
-         [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (t :user/Email) :aria-label (t :user/Email)}]]
         [:div.form-group
-         [input/text-field {:name "password" :atom password-atom :error-message-atom error-message-atom :placeholder (t :user/Password) :aria-label (t :user/Password) :password? true}]]
+         [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (translate l :user/Email) :aria-label (translate l :user/Email)}]]
+        [:div.form-group
+         [input/text-field {:name "password" :atom password-atom :error-message-atom error-message-atom :placeholder (translate l :user/Password) :aria-label (translate l :user/Password) :password? true}]]
         [:button {:class    "btn btn-primary login-button"
                   :on-click #(do (.preventDefault %)
                                  (if-not (input-valid? schemas/LoginUser {:email @email-atom :password @password-atom})
@@ -126,21 +130,21 @@
                                  (login state))}
          (t :user/Login)]
         [:div {:class "row login-links"}
-         [:div.management-links
+         [:div.management-links.col-md-12
           (if-not (private?)
             [:div {:class "col-sm-6 left-column"}
              [:a {:href "#" :on-click #(js-navigate-to "/user/register")} (t :user/Createnewaccount)]])
           [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
-          (into [:div]
-            (for [f (plugin-fun (session/get :plugins) "block" "oauth_login_form")]
-              [f]))
+         (into [:div]
+           (for [f (plugin-fun (session/get :plugins) "block" "oauth_login_form")]
+             [f]))
 
          #_[:div {:class "row oauth-buttons"}
-          [:div.col-md-12
-           [:div {:class "col-sm-4 left-column"} (facebook-link false nil)]
-           [:div.col-sm-4.right-column (linkedin-link nil nil)]
-           [:div.col-sm-4 [google-link false nil]]]]]
+            [:div.col-md-12
+             [:div {:class "col-sm-4 left-column"} (facebook-link false nil)]
+             [:div.col-sm-4.right-column (linkedin-link nil nil)]
+             [:div.col-sm-4 [google-link false nil]]]]]
         #_[:div {:class "row login-links"}
            [:div.management-links
             (if-not (private?)
@@ -160,9 +164,10 @@
                      :error-message (if (not-empty flash-message) flash-message)
                      :accept-terms "declined"
                      :modal-content (layout/terms-and-conditions)})
-        lang (:lang params)]
-    (if (and lang (some #(= lang %) (session/get :languages)))
-      (session/assoc-in! [:user :language] lang))
+        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
+    (when (and lang (some #(= lang %) (session/get :languages)))
+      (session/assoc-in! [:user :language] lang)
+      (-> (sel1 :html) (dommy/set-attr! :lang lang)))
     (fn []
       (enable-background-image)
       (layout/landing-page site-navi (content state)))))

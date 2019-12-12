@@ -37,7 +37,7 @@
            [pe/action-buttons state]
            [:div.panel.thumbnail
             [:div.panel-heading
-             [:h3 (t :profile/Personalinformation)]]
+             [:h1 (t :profile/Personalinformation)]]
             [:div.panel-body
              [pe/edit-profile state]]]
            [profile-blocks state]]
@@ -45,7 +45,7 @@
 
 (defn view-profile [state]
   (let [blocks (cursor state [:blocks])]
-    [:div#profile
+    [:div;#profile
      (if (= 0 @(cursor state [:active-index]))
       [:div#page-view
         [:div {:id (str "theme-" (or @(cursor state [:theme]) 0))
@@ -56,14 +56,14 @@
                [:div.panel-content
                 [:div.panel-body
                  [userinfoblock state]
-                 (into [:div#profile]
+                 (into [:div];#profile]
                        (for [index (range (count @blocks))]
                          (ph/block (cursor blocks [index]) state index)))]]]]]]]
       @(cursor state [:tab-content]))]))
 
 (defn theme-selection [theme-atom themes]
   (reduce (fn [r theme]
-            (conj r [:div {:id (str "theme-" (:id theme))}
+            (conj r [:div {:class (str "theme-" (:id theme))}
                      [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! theme-atom (js/parseInt (:id theme))))
@@ -74,7 +74,7 @@
   [:div {:id "page-edit-theme"}
    [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
     [:div.panel-heading
-     [:h3 (t :page/Selecttheme)]]
+     [:h2 (t :page/Selecttheme)]]
     [:div.panel-body
      [theme-selection (cursor state [:theme]) themes]]]
    [pe/action-buttons state]
@@ -85,7 +85,7 @@
     [:div#page-edit
      [:div.panel.thumbnail
       [:div.panel-heading
-       [:h3 (t :page/Settings)]]
+       [:h2 (t :page/Settings)]]
       [:div.panel-body
        (if-not (private?)
          [:div.col-md-12
@@ -122,10 +122,10 @@
    [m/modal-window]
    [:div#profile
     [ph/profile-navi state]
-    (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])]
-   (if @(cursor state [:edit-mode])
-     [edit-profile state]
-     [view-profile state])])
+    (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])
+    (if @(cursor state [:edit-mode])
+      [edit-profile state]
+      [view-profile state])]])
 
 (defn init-data [user-id state]
   (ajax/GET

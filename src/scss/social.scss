@@ -30,7 +30,10 @@
 .message-item{
   padding-bottom: 15px;
   border-bottom: 1px solid #dddddd;
-  h4{
+  h2,h4, p.h4{
+    a {
+      text-decoration: none;
+    }
     font-size: 14px;
   }
   font-size: 14px;
@@ -42,7 +45,7 @@
 .message-item.media {
   position: relative;
   margin:5px 15px 0px 15px;
-  h3.media-heading {
+  h3.media-heading, p.media-heading {
     position: relative;
     color:$badge-title;
     font-size: 16px;
@@ -88,13 +91,13 @@
     }
   }
   &.new {
-    h3.media-heading:before{
+    h3.media-heading:before, p.media-heading:before{
       content: "\f086";
       color:  $text-color;
     }
   }
   &.follow {
-    h3.media-heading{
+    h3.media-heading, p.media-heading{
       &:before{
         content:"\f006";
       }
@@ -132,14 +135,14 @@
 
         }
       }
-      h3{
+      h3, p{
         text-align: center;
         a {
           margin-left: 0px !important;
         }
       }
     }
-    h3.media-heading{
+    h3.media-heading, p.media-heading{
       &:before{
         content:"";
       }
@@ -154,7 +157,7 @@
       }
     }
   }
-  h4.media-heading{
+  h4.media-heading, p.h4, h2.media-heading{
     a{
       font-weight: 600;
       font-size: 14px;
@@ -245,7 +248,7 @@
         .pull-left{
           display: none;
         }
-        h3.media-heading {
+        h3.media-heading,p.media-heading {
           margin-bottom:10px;
           margin-left:60px;
           text-align: center;
@@ -291,7 +294,7 @@
   .message-item.media.tips{
     .media-left{
       //padding-top:35px;
-      ~ .media-body h3.media-heading{
+      ~ .media-body h3.media-heading, ~ .media-body p.media-heading{
         &:before{
           margin-top:0px;
         }
@@ -302,7 +305,7 @@
     }
     .media-left .system-image-url {width:55px; height:55px;}
   }
-  .message-item.media.follow h3.media-heading ~ span {
+  .message-item.media.follow h3.media-heading ~ span, .message-item.media.follow p.media-heading ~ span {
     padding-left:0px;
   }
 }
@@ -437,7 +440,7 @@ background-color:#756A70;
   border-radius: 4px;
   padding:5px;
 
-  .message-item.media, h3.media-heading {
+  .message-item.media, h3.media-heading, p.media-heading {
     &:before{
       content:"\f129";
       font-size: 26px;
@@ -738,7 +741,7 @@ background-color:#756A70;
 
 
 
-#box_1 {
+#box_1, #box_4 {
   width: 100%;
   .notifications-block {
     .badge {
@@ -826,7 +829,7 @@ background-color:#756A70;
   }
 }
 
-#box_2 {
+#box_2, #box_5 {
   width: 100%;
   .row_2 {
     height: 285px;
@@ -850,7 +853,7 @@ background-color:#756A70;
   }
 }
 
-#box_3 {
+#box_3, #box_6 {
   width: 100%;
   .row_1 {
     height: 420px;

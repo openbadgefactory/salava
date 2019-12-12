@@ -52,7 +52,7 @@
          [:div {:class "media"}
 
           [:div.media-left
-           [:img {:src (str "/" image_file)}]]
+           [:img {:src (str "/" image_file) :alt name}]]
           [:div.media-body
            [:div.content-text
             [:p.content-heading
@@ -73,7 +73,7 @@
          :style {:text-decoration "none"}}
      [:div {:class "media"}
       [:div.media-left
-       [:img {:src (str "/" image_file)}]]
+       [:img {:src (str "/" image_file) :alt name}]]
       [:div.media-body
        [:div.content-text
         [:p.content-heading (:message message)]
@@ -89,7 +89,7 @@
                          (.preventDefault %))}
            [:div {:class "media"}
                 [:div.media-left
-                 [:img {:src (str "/" image_file)}]]
+                 [:img {:src (str "/" image_file) :alt name}]]
                 [:div.media-body
                  [:div.content-text
                   [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedbadge) " " name)]
@@ -107,7 +107,7 @@
                          (.preventDefault %))}
            [:div {:class "media"}
                 [:div.media-left
-                 [:img.small-image {:src (profile-picture profile_picture)}]]
+                 [:img.small-image {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
                 [:div.media-body
                  [:div.content-text
                   [:p.content-heading (str first_name " " last_name " " (t :badge/Hasendorsedyou) " " name)]
@@ -125,7 +125,7 @@
                          (.preventDefault %))}
            [:div {:class "media"}
                 [:div.media-left
-                 [:img.small-image {:src (profile-picture profile_picture)}]]
+                 [:img.small-image {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
                 [:div.media-body
                  [:div.content-text
                   [:p.content-heading (str first_name " " last_name  " " (t :badge/requestsendorsement) " " name)]
@@ -143,7 +143,7 @@
                       (.preventDefault %))}
      [:div {:class "media"}
            [:div.media-left
-            [:img {:src (profile-picture profile_picture)}]]
+            [:img {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
            [:div.media-body
             [:div.content-text
              [:p.content-heading (str (t :social/User) " " first_name " " last_name " " (t :social/Publishedpage) " " name)]
@@ -184,7 +184,7 @@
         [:div {:class "media"}
 
               [:div.media-left
-               [:img {:src (str "/" image_file)}]]
+               [:img {:src (str "/" image_file) :alt name}]]
               [:div.media-body
                [:div.content-text
                 [:p.content-heading (str issuer_content_name " " (t :social/Publishedbadge) " " name)]
@@ -208,7 +208,8 @@
       (if (blank? message)
         [:div.content
          [:div.row.welcome-message
-          (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]
+          [:h1 {:style {:font-size "inherit" :padding "inherit" :margin "inherit"}}
+           (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]]
         [:div.content
          [:div.row.welcome-message
            [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden" :on-click #(do
@@ -341,14 +342,14 @@
                         [:div {:style {:padding "5px 0"}}] badges)])
             [latest-earnable-badges]]
            (when (> (get-in @state [:stats :badge_count] 0) (:published_badges_count @state))
-                 [:div#profiletips {:style {:position "relative" :bottom "1px" :margin-right "10px" :padding-top "20px"}}
+                 [:div#_profiletips {:style {:position "relative" :bottom "1px" :margin-right "10px" :padding-top "20px"}}
                     [:div.tip
                      [:i.fa.fa-fw.fa-lightbulb-o.tipicon] [:span {:style {:margin "5px"}} (t :badge/Visibilityinfo)]]])]]]]])))
 
 (defn explore-block [state]
  (let [hidden? (session/get-in [:filter-options :hide-explore-block-num] false)]
   [:div.box.col-md-5.col-sm-6.explore
-   [:div#box_2 {:class "row_2 explore-block"}
+   [:div#box_5 {:class "row_2 explore-block"}
     [:div.col-md-12.block
      [:div.row_2
       [:div.heading_1
@@ -403,10 +404,6 @@
           [:div.since-last-login]]]]]]]]]))
 
 
-
-
-
-
 (defn user-connections-stats []
   (let [blocks (first (plugin-fun (session/get :plugins) "block" "userconnectionstats"))]
     (if blocks
@@ -415,7 +412,7 @@
 
 (defn connections-block [state]
   [:div.box.col-md-4.col-sm-6.connections ;{:style {:min-width "45%"}}
-   [:div#box_1 {:class "connections-block"}
+   [:div#box_4 {:class "connections-block"}
     [:div.col-md-12.block
      [:div.row_2
       [:div
@@ -494,7 +491,7 @@
 
          [:div
           [:div.media
-           [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture]))}]]
+           [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture])) :alt user-name}]]
 
            [:div.media-body[:div.name user-name]
             [:div.stats
@@ -536,7 +533,7 @@
 
 (defn help-block [state]
   [:div {:class "box col-md-3 col-sm-12"}
-   [:div#box_3
+   [:div#box_6
     [:div.col-md-12.block
      [:div.row_2.help
       [:div.heading_1

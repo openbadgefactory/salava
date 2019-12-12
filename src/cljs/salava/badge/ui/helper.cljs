@@ -18,10 +18,10 @@
      [:label (t :badge/Issuedon) ":"]
      [:span (date-from-unix-time (* 1000 issued))]]))
 
-(defn issuer-image [image]
+(defn issuer-image [image name]
   (if-not (blank? image)
       [:div {:class "issuer-image pull-left"}
-       [:img {:src (str "/" image)}]]))
+       [:img {:src (str "/" image) :alt name}]]))
 
 (defn issuer-label-and-link [name url email]
   [:div {:class "issuer-data clearfix"}
@@ -35,9 +35,9 @@
   (if issuer-description
     [:div [:div {:class "w3-container issuer-description"} issuer_description]]))
 
-(defn creator-image [image]
+(defn creator-image [image name]
   [:div {:class "issuer-image pull-left"}
-   [:img {:src (str "/" image)}]])
+   [:img {:src (str "/" image) :alt name}]])
 
 (defn creator-label-and-link [name url email]
   [:div {:class "issuer-data clearfix"}
@@ -55,7 +55,7 @@
       [:div {:class "issuer-data clearfix"}
        [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
        [:div {:class "issuer-links pull-label-left inline"}
-         (issuer-image image)
+         (issuer-image image name)
          [:a {:target "_blank" :rel "noopener noreferrer" :href url} name]
          (if (not-empty email)
            [:span [:br] [:a {:href (str "mailto:" email)} email]])]]))
@@ -64,7 +64,7 @@
   (if (or name url email image)
     [:div {:class "issuer-data clearfix"}
      [:label.pull-left (t :badge/Createdby) ":"]
-     (issuer-image image)
+     (issuer-image image name)
      [:div {:class "issuer-links pull-left"}
       [:a {:target "_blank" :rel "noopener noreferrer" :href url} name]
       (if (not-empty email)
@@ -73,4 +73,4 @@
 (defn issued-by-obf [obf-url verified-by-obf? issued-by-obf?]
   (let [class-name (if verified-by-obf? "verifiedissuedbyobf-image-url" "issuedbyobf-image-url")]
      [:div.col-md-3
-      [:a {:class class-name :href obf-url :target "_blank" :style {:display "block"}}]]))
+      [:a {:class class-name :href obf-url :target "_blank" :style {:display "block"} :aria-label (t :badge/Issuedandverifiedbyobf)}]]))

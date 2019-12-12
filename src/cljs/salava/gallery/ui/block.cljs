@@ -20,7 +20,7 @@
      :handler (fn [data] (swap! state merge data))}))
 
 (defn page-grid [pages page-small-view]
-  (into [:div {:class "row wrap-grid" :id "grid"}]
+  (into [:div {:class "row wrap-grid" :id "pages-grid"}]
         (for [element-data (if page-small-view (sort-by :mtime > pages) (take 6 (sort-by :mtime > pages)))]
           (page-grid-element element-data {:type "profile"}))))
 
@@ -38,9 +38,9 @@
    (fn []
     (if (seq (:badges @data))
        [:div#user-badges
-        [:div.row.wrap-grid
+        [:div.row.wrap-grid ;{:id "grid"}
          [:div.col-md-12
-          [:h3 {:class ""} (t :user/Recentbadges)]
+          [:h2.sectiontitle (t :user/Recentbadges)]
           [badge-grid (:badges @data) @badge-small-view]
           (when (< 6 (count @(cursor data [:badges])))
            [:div [:a {:href "#" :on-click #(reset! badge-small-view (if @badge-small-view false true))}  (if @badge-small-view (t :admin/Showless) (t :user/Showmore))]])]]]
@@ -53,9 +53,9 @@
      "embed" (fn []
               (when (seq (:badges @data))
                [:div#user-badges
-                [:div.row.wrap-grid
+                [:div.row.wrap-grid ;{:id "grid"}
                  [:div.col-md-12
-                  [:h3 (t :user/Recentbadges)]
+                  [:h2.sectiontitle (t :user/Recentbadges)]
                   [:div
                    (into [:div.row.wrap-grid {:id "grid"}]
                     (for [element-data (:badges @data)]
@@ -75,7 +75,7 @@
       [:div#user-pages
        [:div.row.wrap-grid
         [:div.col-md-12
-         [:h3 {:class ""} (t :user/Recentpages)]
+         [:h2.sectiontitle {:class ""} (t :user/Recentpages)]
          [page-grid (:pages @data) @page-small-view]
 
          (when (< 6 (count @(cursor data [:pages])))
@@ -84,7 +84,7 @@
          [:div#user-pages
           [:div.row.flip
            [:div.col-md-12
-            [:h3 {:class ""} (t :user/Recentpages)]]]])))))
+            [:h2.sectiontitle {:class ""} (t :user/Recentpages)]]]])))))
 
  ([data page-type]
   (init-grid "pages" data)
@@ -92,11 +92,11 @@
    "embed" (fn []
             (when (seq (:pages @data))
              [:div#user-pages
-              [:div.row.wrap-grid
+              [:div.row.wrap-grid {:id "pages-grid"}
                [:div.col-md-12
-                [:h3 (t :user/Recentbadges)]
+                [:h2.sectiontitle (t :user/Recentpages)]
                 [:div
-                 (into [:div.row.wrap-grid {:id "grid"}]
+                 (into [:div.row.wrap-grid] ;{:id "grid"}]
                   (for [element-data (:pages @data)]
                    (page-grid-element element-data {:type page-type})))
                  #_[:div [:a {:target "_blank" :href (path-for (str "/gallery/pages/" (:user-id @data)))} (t :user/Showmore)]]]]]]))
@@ -156,11 +156,11 @@
      [:div.panel.panel-default.endorsement.profile-element
       [:div.panel-body {:style {:padding "4px"}}
         [endorsement-info-label endorsement]
-        (when pickable? [:span.checkbox [:input {:type "checkbox" :on-change #(add-or-remove profile selected-users-atom) :checked (boolean (some #(= id (:id %)) @selected-users-atom))}]])
+        (when pickable? [:span.checkbox [:input {:aria-label (str "select user" first_name " " last_name) :type "checkbox" :on-change #(add-or-remove profile selected-users-atom) :checked (boolean (some #(= id (:id %)) @selected-users-atom))}]])
         [:div.row.flip.settings-endorsement
          [:div.col-md-12.media; {:style {:margin-top "2px"}}
           [:div.media-left
-            [:img {:src (profile-picture profile_picture)}]]
+            [:img {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
           [:div.media-body
            [:a {:href "#"
                 :on-click #(mo/open-modal [:profile :view] {:user-id id})}
@@ -193,7 +193,7 @@
    (create-class {:reagent-render (fn []
                                     [:div
                                      [:div {:id "social-tab"}
-                                      [profiles/profile-gallery-grid-form data-atom]
+                                      [profiles/profile-gallery-grid-form data-atom true]
                                       (if (:ajax-message @data-atom)
                                         [:div.ajax-message
                                          [:i {:class "fa fa-cog fa-spin fa-2x "}]

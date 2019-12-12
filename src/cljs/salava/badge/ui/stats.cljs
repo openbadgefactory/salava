@@ -20,7 +20,7 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Badgeviews) ":" " (" total-views ")"]
+       [:h2 (t :badge/Badgeviews) ":" " (" total-views ")"]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
@@ -36,7 +36,7 @@
                     :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                 [:div.col-md-12
                  [:div.flip-table
-                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file)}]]
+                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file) :alt name}]]
                   [:div.col-md-5 [:a {:href "#"
                                       :on-click #(do
                                                    (mo/open-modal [:badge :info] {:badge-id id})
@@ -53,7 +53,7 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Congratulations) ":" " (" total-congratulations ")"]
+       [:h2 (t :badge/Congratulations) ":" " (" total-congratulations ")"]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        [:div.panel-body
@@ -84,14 +84,14 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom) #_(reset! visible-area-atom panel-identity))}
-       [:h3 (t :badge/Issuers) ":" " (" (count issuers) ")"]
+       [:h2 (t :badge/Issuers) ":" " (" (count issuers) ")"]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (if (= @visible-area-atom panel-identity)
        (into [:div.panel-body]
              (for [issuer issuers
                    :let [{:keys [issuer_content_id issuer_content_name issuer_content_url badges]} issuer]]
                [:div.issuer-badges-wrapper
-                [:h4 [:a {:href "#" :on-click #(mo/open-modal [:badge :issuer] issuer_content_id)} issuer_content_name] ": " (count badges)]
+                [:p {:style {:font-size "18px"}} [:a {:href "#" :on-click #(mo/open-modal [:badge :issuer] issuer_content_id)} issuer_content_name] ": " (count badges)]
                 (into [:div.issuer-badges]
                       (for [badge badges
                             :let [{:keys [id image_file name]} badge]]
@@ -111,7 +111,7 @@
       (t :badge/Stats)
       #_(t :badge/Badgestatistics)]
      [:p (t :connections/Statisticspageinfo)]
-     [:h3 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
+     [:h2 (t :badge/Totalbadges) ": " badge_count " " (t :badge/Expired) ": " expired_badge_count]
      [views-panel badge_views visible-area-atom]
      [congratulations-panel badge_congratulations visible-area-atom]
      [issuers-panel badge_issuers visible-area-atom]]))

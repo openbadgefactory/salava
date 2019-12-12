@@ -120,7 +120,7 @@
           (t :badge/Private)]]]]]])
 
 (defn delete-tab-content [{:keys [name image_file]} state]
-  [:div {:id "badge-settings" :class "row flip"}
+  [:div {#_:id #_"badge-settings" :class "row flip"}
    [:div {:class "col-md-3 badge-image modal-left"}
     [:img {:src (str "/" image_file) :alt name}]]
    [:div {:class "col-md-9 delete-confirm delete-tab"}
@@ -231,7 +231,7 @@
                                             [:div.modal-footer]])]]))
 
 (defn download-tab-content [{:keys [name image_file obf_url assertion_url]} state]
-  [:div {:id "badge-settings" :class "row flip"}
+  [:div {#_:id #_"badge-settings" :class "row flip"}
    [:div {:class "col-md-3 badge-image modal-left"}
     [:img {:src (str "/" image_file) :alt name}]]
    [:div {:class "col-md-9 settings-content download-tab"}

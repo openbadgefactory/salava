@@ -111,7 +111,8 @@
            [:div.col-md-6
             [:input.form-control {:name "user_name"
                                   :type "text"
-                                  :placeholder (t :location/SearchUsers)}]
+                                  :placeholder (t :location/SearchUsers)
+                                  :aria-label (t :location/SearchUsers)}]
             ]]
 
           [:div.form-group.badges-filter {:style {:display "none"}}

@@ -80,10 +80,10 @@
        icon-class (if (= @visible-area-atom :cg) "fa-chevron-circle-down" "fa-chevron-circle-right")]
   [:div.row
    [:div.col-md-12
-    [:div.panel.expandable-block {:id "social-tab"}
+    [:div.panel.expandable-block ;{:id "social-tab"}
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel :cg visible-area-atom))}
-       [:h3 (str (t :badge/Congratulations) " : " (count congratulations))
+       [:h1 (str (t :badge/Congratulations) " : " (count congratulations))
          [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]]
      (when (= @(cursor state [:visible-area]) panel-identity)
        [:div.panel-body.congratulations {:id "endorsebadge"}
@@ -116,10 +116,10 @@
       (fn []
         [:div.row
          [:div.col-md-12
-          [:div.panel.expandable-block {:id "social-tab"}
+          [:div.panel.expandable-block ;{:id "social-tab"}
            [:div.panel-heading
             [:a {:id (str "#" panel-identity) :href "#" :on-click #(do (.preventDefault %) (toggle-panel :endo visible-area-atom))}
-             [:h3 (str (t :badge/Userendorsements) " : "  @(cursor state [:badge-settings :user_endorsement_count]))
+             [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:badge-settings :user_endorsement_count]))
                [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]
              (when (and (pos? @(cursor state [:notification]) )(pos? pending-endorsements-count) )[:span.badge.social-panel-info  pending-endorsements-count])]]
            (when (= @(cursor state [:visible-area]) panel-identity)
@@ -147,11 +147,11 @@
 
 
 (defn badge-views [data]
- [:div.row {:id "social-tab"}
+ [:div.row ;{:id "social-tab"}
   [:div.col-md-12
    [:div.panel
     [:div.panel-heading
-     [:div [:h3 (t :badge/Badgeviews)]]]
+     [:div [:h1 (t :badge/Badgeviews)]]]
     [:div.panel-body {:style {:padding "6px"}}
      [:div#dashboard {:style {:padding-bottom "20px"}}
       [:div.connections-block
@@ -179,11 +179,11 @@
         {:keys [public_users private_user_count all_recipients_count]} @recipients]
     [:div.row
      [:div.col-md-12
-      [:div.panel.expandable-block {:id "social-tab"}
+      [:div.panel.expandable-block ;{:id "social-tab"}
        [:div.panel-heading
         [:a {:href "#" :on-click #(do (.preventDefault %)
                                       (toggle-panel panel-identity visible-area-atom))}
-         [:h3 (str (t :gallery/recipients) ": " all_recipients_count)
+         [:h1 (str (t :gallery/recipients) ": " all_recipients_count)
            [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]]
        (when (= @visible-area-atom panel-identity)
          [:div.panel-body.endorsements
@@ -210,7 +210,7 @@
       (if (and (= "public" @(cursor state [:badge-settings :visibility])) (pos? @average_rating))
        ^{:key @average_rating}
         [:div.rating
-         [r/rate-it @(cursor dataatom [:rating :average_rating])]
+         [r/rate-it+ "rateit2" @(cursor dataatom [:rating :average_rating])]
          [:div (if (= @rating_count 1)
                  (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                  (str (t :gallery/Ratedby) " " @rating_count " " (t :gallery/earners)))]]
@@ -225,12 +225,12 @@
   (create-class
    {:reagent-render
     (fn []
-     [:div.row {:id "social-tab"}
+     [:div.row ;{:id "social-tab"}
       [:div.col-md-12
        [:div.panel
         [:div.panel-heading
          [:div
-          [:h3 (t :badge/Rating)]
+          [:h1 (t :badge/Rating)]
           [:div (cond
                  (and (not= "internal" @visibility) (not (pos? @rating_count))) [:span.label.label-primary (t :badge/Befirstrater)]
                  (not (pos? @user-rating))  [:span.label.label-primary (t :badge/Yettorate)]
@@ -241,7 +241,7 @@
 
 (defn- message-link [state]
  (when-not (= "private" @(cursor state [:badge-settings :visibility]))
-  (into [:div#endorsebadge]
+  (into [:div.badge-message-link-info];#endorsebadge]
    (for [f (plugin-fun (session/get :plugins) "block" "message_link")]
      [f (:message_count @state) (:badge_id @state)]))))
 
@@ -292,11 +292,11 @@
   (let [expired? (badge-expired? expires_on)
         revoked (pos? revoked)
         visibility (cursor state [:badge-settings :visibility])]
-    [:div.row {:id "social-tab"}
+    [:div.row ;{:id "social-tab"}
      [:div.col-md-12
       [:div.panel
        [:div.panel-heading
-        [:div [:h3 (t :badge/Badgevisibility)]]]
+        [:div [:h1 (t :badge/Badgevisibility)]]]
 
        [:div.panel-body {:style {:padding "6px"}}
         (if (and (not expired?) (not revoked))
@@ -333,7 +333,7 @@
      [:img {:src (str "/" image_file) :alt name}]
      [badge-rating dataatom state]
      [message-link state]]
-    [:div {:class "col-md-9 settings-content social-tab" :style {:margin-top "20px"}}
+    [:div#social-tab {:class "col-md-9 settings-content social-tab" :style {:margin-top "20px"}}
      [share-badge data dataatom state]
      (case @visibility
        "public" [:div

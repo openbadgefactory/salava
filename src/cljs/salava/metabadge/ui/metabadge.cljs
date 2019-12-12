@@ -63,7 +63,7 @@
         [:tbody
          [:tr
           [:td.meta {:rowSpan "2"}
-           [:div [:img.image {:src (if image_file (str "/" image_file) image) :title name :class milestone-image-class}]]]
+           [:div [:img.image {:src (if image_file (str "/" image_file) image) :title name :class milestone-image-class :alt name}]]]
           [:td.icon-container
            [:table
             (reduce (fn [result coll]

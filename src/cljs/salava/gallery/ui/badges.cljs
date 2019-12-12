@@ -137,9 +137,6 @@
           :control-class   "form-control"
           }]]])))
 
-
-
-
 (defn search-timer [state]
   (let [timer-atom (cursor state [:timer])]
     (if @timer-atom
@@ -212,8 +209,6 @@
                                                           )}
                      item-value]))))]))))
 
-
-
 (defn gallery-grid-form [state]
   (let [show-advanced-search (cursor state [:advanced-search])]
     [:div {:id "grid-filter"
@@ -236,8 +231,6 @@
            [text-field :issuer-name (t :gallery/Issuer) (t :gallery/Searchbyissuer) state]])])
      [g/grid-radio-buttons (str (t :core/Order) ":") "order" (order-radio-values) [:params :order] state fetch-badges]]))
 
-
-
 (defn load-more [state]
   (if (pos? (:badge_count @state))
     [:div {:class "media message-item"}
@@ -258,8 +251,6 @@
                        (for [element-data badges]
                          (badge-grid-element element-data state "gallery" fetch-badges)))
      (load-more state)]))
-
-
 
 (defn content [state]
   (fn []

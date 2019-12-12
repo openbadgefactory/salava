@@ -94,8 +94,8 @@
                 :on-change #(do
                               (reset! filter-atom 1)
                               (fetch-users state))}]
-       (t :admin/Deleted)]
-      ]]))
+       (t :admin/Deleted)]]]))
+
 
 (defn userlist-form [state]
   [:div {:id "grid-filter"
@@ -104,9 +104,9 @@
     [country-selector state]
     [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
     [text-field :email (t :badge/Email)  (t :admin/Searchbyemail) state]
-    [filter-buttons state]
-    ]
-   ])
+    [filter-buttons state]]])
+
+
 
 (defn email-parser [email]
   (let [splitted (s/split email #",")
@@ -124,7 +124,7 @@
     [:tr {:key id}
      [:td
       (if deleted
-        [:div [:i {:class "fa fa-ban" :aria-hidden "true"}] (str " " first_name " " last_name) ]
+        [:div [:i {:class "fa fa-ban" :aria-hidden "true"}] (str " " first_name " " last_name)]
         [:a {:href "#"
              :on-click #(do
                           (mo/open-modal  [:profile :view] {:user-id id})
@@ -136,16 +136,17 @@
      [:td
       [:div
        (if terms
-         (t (keyword (str "social/"terms))) nil)]
-      ]
-     [:td
-      (admintool-admin-page id "user" state fetch-users)
+         (t (keyword (str "social/"terms))) nil)]]
 
-      ]
-     ]))
+     [:td
+      (admintool-admin-page id "user" state fetch-users)]]))
+
+
+
 
 (defn userlist-table [state]
   (let [users (:users @state)]
+   (when (seq users)
     [:table {:id "userlist" :class "table"}
      [:thead
       [:tr
@@ -156,7 +157,7 @@
      [:tbody
       (doall
         (for [element-data users]
-          (userlist-table-element element-data state)))]]))
+          (userlist-table-element element-data state)))]])))
 
 (defn content [state]
   [:div

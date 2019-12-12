@@ -46,15 +46,10 @@
      :handler (fn [data]
                 (when (= (:status data) "success")
                   (update-status (:id badge) "accepted" state nil)
-                  (swap! state assoc :badge-alert "accepted" :badge-name (:name badge))
-                  ))}))
-
-
-
+                  (swap! state assoc :badge-alert "accepted" :badge-name (:name badge))))}))
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
-
 
 (defn- show-more-content [state]
   (fn []
@@ -64,7 +59,7 @@
            expired?                                                                 (bh/badge-expired? expires_on)
            show-recipient-name-atom                                                 (cursor state [:result :show_recipient_name])
            {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
-      [:div#badge-info {:class "preview-badge" :style {:display (:show-result @state)}}
+      [:div {:class "preview-badge" :style {:display (:show-result @state)}}
        [:div.row.flip
         [:div.col-md-9.badge-info
          (if (< 1 (count content))
@@ -81,8 +76,7 @@
          [:div {:class "criteria-html"}
           [:h2.uppercase-header (t :badge/Criteria)]
           [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
-          [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]
-         ]]])))
+          [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]]])))
 
 (defn- show-more [state]
   (fn []
@@ -93,10 +87,9 @@
           :on-click #(do
                        (swap! state assoc :show-result "block"
                               :show-link "none")
-                       (init-badge-preview state))
-          }(t :admin/Showmore)]
+                       (init-badge-preview state))}
+         (t :admin/Showmore)]
      [show-more-content state]]))
-
 
 (defn pending-badge-content [{:keys [id image_file name description visibility assertion_url meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]}]
   (let [state (atom {:id id
@@ -119,11 +112,11 @@
 
          [:div.row.flip
           [:div.col-md-3.badge-image
-           [:img.badge-image {:src (str "/" image_file)}]
-           (bm/badge-endorsement-modal-link badge_id endorsement_count)
-           ]
+           [:img.badge-image {:src (str "/" image_file) :alt name}]
+           (bm/badge-endorsement-modal-link badge_id endorsement_count)]
+
           [:div.col-md-9
-           [:h4.media-heading name]
+           [:h1.media-heading {:style {:font-size "45px"}} name]
 
            [:div.description description]
 
@@ -131,11 +124,11 @@
            (into [:div {:style {:margin "10px -10px"}}]
              (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
                [f {:user_badge_id id}]))
-            #_(when metabadge-fn
-             (into [:div]
-              (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
-                [:div {:style {:margin "10px -10px"}}[f {:user_badge_id id}]])))
-           [show-more state]]] ]))))
+           #_(when metabadge-fn
+              (into [:div]
+               (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
+                 [:div {:style {:margin "10px -10px"}}[f {:user_badge_id id}]])))
+           [show-more state]]]]))))
 
 (defn badge-alert [state]
   (if (:badge-alert @state)
@@ -163,7 +156,7 @@
                                                 :on-change       #(do
                                                                     (.preventDefault %)
                                                                     (reset! visibility "public"))}]
-                                  [:i {:class "fa fa-globe" }]
+                                  [:i {:class "fa fa-globe"}]
                                   [:label {:for "visibility-public"}
                                    (t :badge/Public)]])
                                [:div [:input {:id              "visibility-internal"
@@ -173,7 +166,7 @@
                                               :on-change       #(do
                                                                   (.preventDefault %)
                                                                   (reset! visibility "internal"))}]
-                                [:i {:class "fa fa-group" }]
+                                [:i {:class "fa fa-group"}]
                                 [:label {:for "visibility-internal"}
                                  (t :badge/Shared)]]
                                [:div [:input {:id              "visibility-private"
@@ -184,7 +177,7 @@
                                                                   (.preventDefault %)
                                                                   (reset! visibility "private"))
                                               :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))}]
-                                [:i {:class "fa fa-lock" }]
+                                [:i {:class "fa fa-lock"}]
                                 [:label {:for "visibility-private"}
                                  (t :badge/Private)]]]]]]
 
@@ -195,10 +188,10 @@
                            [:hr.border]
                            [:button.btn.btn-primary {:on-click #(do
                                                                   (.preventDefault %)
-                                                                  (update-visibility @visibility badge state)
-                                                                  )
-                                                     :data-dismiss "modal"}(t :core/Save)]
-                           ])
+                                                                  (update-visibility @visibility badge state))
+
+                                                     :data-dismiss "modal"}(t :core/Save)]])
+
                    :component-will-unmount (fn [] (m/close-modal!))})))
 
 (defn badge-pending [badge state reload-fn]
@@ -211,8 +204,8 @@
        [:button {:class "btn btn-primary"
                  :on-click #(do
                               (m/modal! [visibility-modal badge state reload-fn] {:size :md :hidden (fn [] (reload-fn state))})
-                              (.preventDefault %)
-                              )
+                              (.preventDefault %))
+
                  :data-dismiss "modal"}
         (t :badge/Acceptbadge)]
        [:button {:class "btn btn-warning"

@@ -5,6 +5,7 @@
             [reagent.session :as session]
             [salava.core.i18n :refer [t translate-text]]
             [salava.core.ui.helper :refer [plugin-fun path-for hyperlink base-url url?]]
+            [salava.core.ui.input :refer [text-field file-input]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.time :refer [date-from-unix-time]]
             [salava.file.icons :refer [file-icon]]
@@ -113,7 +114,7 @@
            :handler #(init-settings (:id @state) state init-data)})))))
 
 (defn input [input-data textarea?]
-  (let [{:keys [name atom placeholder type error-message-atom rows cols preview?]} input-data]
+  (let [{:keys [name atom placeholder type error-message-atom rows cols preview? aria-label]} input-data]
     [(if textarea? :textarea :input)
      {:class       "form-control"
       :id          (str "input-" name)
@@ -126,7 +127,9 @@
                       (when (and preview? (url? @atom )) (reset! preview? true)))
       :value       @atom
       :rows rows
-      :cols cols}]))
+      :cols cols
+      :aria-label (or aria-label (str "input " name))}]))
+
 
 (defn evidence-icon
   ([evidence_type]
@@ -221,13 +224,14 @@
     [:div.col-md-12.resource-container
      (reduce (fn [r resource]
                (conj r [grid-element resource state :file_input]))
-             [:div [:label
+             [:div [:label {:for "grid-file-upload"}
                     [:a [:span [:i.fa.fa-upload] (t :file/Upload)]]
-                    [:input {:id "grid-file-upload"
-                             :type "file"
-                             :name "file"
-                             :on-change #(upload-file (cursor state [:files]) state)
-                             :style {:display "none"}}]]
+                    [file-input {:id "grid-file-upload" :upload-fn #(upload-file (cursor state [:files]) state) :style {:display "none"} :aria-label (t :file/Choosefile)}]
+                    #_[:input {:id "grid-file-upload"
+                               :type "file"
+                               :name "file"
+                               :on-change #(upload-file (cursor state [:files]) state)
+                               :style {:display "none"}}]]
               (if (seq files) [:div [:label {:style {:margin "5px" :margin-bottom "10px"}} (t :badge/Orchoosefile)]])]
              files)]))
 
@@ -260,7 +264,7 @@
         input-mode (cursor state [:input_mode])
         {:keys [image_file name]} data]
 
-    [:div {:id "badge-settings" :class "row flip"}
+    [:div {:id "badge-evidence" :class "row flip"}
      [:div {:class "col-md-3 badge-image modal-left"}
       [:img {:src (str "/" image_file) :alt name}]]
 
@@ -348,7 +352,7 @@
            [:div.panel.panel-default
             [:div.panel-heading
              [:div.panel-title
-              [:div.url [:i.fa.fa-link]] [input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith)}]]]
+              [:div.url [:i.fa.fa-link]] [input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith) :aria-label (t :badge/EnterevidenceURLstartingwith)}]]]
             [:div.panel-body.evidence-panel-body
              [:div [:div.form-group
                     [:label.col-md-3 "Name"]
@@ -483,7 +487,7 @@
     [:div {:class "row"}
          [:label {:class "col-md-12 sub-heading" :for "evidence"}
           (t :badge/Evidence)]]
-    [:div#badge-settings
+    [:div#badge-evidence
      [:div.form-group
       [:div.col-md-9 {:class "new-evidence"}
        [:i.fa.fa-plus]
@@ -503,7 +507,7 @@
 
 (defn evidence-list-badge-view [evidences]
  (if (seq evidences)
-  [:div.row {:id "badge-settings"}
+  [:div.row {:id "badge-evidence"}
    [:div.col-md-12
     [:h2.uppercase-header (t :badge/Evidence)]
     (reduce (fn [r evidence]

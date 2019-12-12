@@ -64,14 +64,13 @@
        [:div {:class "col-md-4 badge-image"}
         [:a {:href "#" :on-click #(do
                                    (.preventDefault %)
-                                   (prn block)
                                    (mo/open-modal [:badge :info] {:badge-id (if (or (clojure.string/blank? badge_id)(string? badge_id)) id badge_id)}))}
 
-         [:img {:src (str "/" image_file)}]]]
+         [:img {:src (str "/" image_file) :alt name}]]]
        [:div {:class "col-md-8"}
         [:div.row
          [:div.col-md-12
-          [:h3.badge-name name]]]
+          [:p.badge-name name]]]
         [:div.row
          [:div.col-md-12
           (bh/issued-on issued_on)]]
@@ -85,8 +84,8 @@
          [:div {:class "col-md-12 description"} description]]
         [:div.row
          [:div.col-md-12
-          [:h3.criteria (t :badge/Criteria)]]]
-        [:div.row
+          [:p.criteria (t :badge/Criteria)]]]
+        [:div.row {:style {:margin-bottom "5px"}}
          [:div.col-md-12
           [:a {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage)]]]
         (if (= format "long")
@@ -157,7 +156,7 @@
        (into [:div.file-block-images]
              (for [file files]
                [:div.file-block-image
-                [:img {:src (str "/" (:path file))}]]))
+                [:img {:src (str "/" (:path file)) :alt (:name file)}]]))
        [:div.file-block-attachments
         [:label.files-label
          (t :page/Attachments) ": "]
@@ -198,12 +197,12 @@
 (defn showcase-block [block-atom]
  (let [{:keys [badges format title]} block-atom
         container (case format
-                    "short" [:div#grid {:class "row"}]
+                    "short" [:div#badges-grid {:class "row"}]
                     "long" [:div.tag-block])]
    [:div
     [:div.heading-block
      [:h2 title]]
-    [:div#user-badges
+    [:div.showcase_badges
      [:div
       (doall (reduce (fn [r badge]
                        (conj r (if (= format "short")
@@ -227,7 +226,7 @@
            (if (and qr_code (= visibility "public"))
              [:div.row
               [:div {:class "col-xs-12 text-center"}
-               [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}]]])
+               [:img#print-qr-code {:src (str "data:image/png;base64," qr_code) :alt "qr code"}]]])
            (if mtime
              [:div.row
               [:div {:class "col-md-12 page-mtime"}
@@ -463,10 +462,10 @@
                                       (as-> (get-in logic [:preview :go!]) f (f))))}
 
                    [:span {:class (str "badge" (if (= target :preview) " badge-inverse" ))} "4."]
-                   (t  :page/Preview)]]]
+                   (t  :page/Preview)]]]]))
 
 
-      [m/modal-window]]))
+      ;[m/modal-window]]))
 
 (defn manage-page-buttons [current id state]
   (let [id @id
@@ -475,7 +474,7 @@
         next?  (get-in logic [current :next])]
 
    (create-class {:reagent-render   (fn []
-                                      [:div.action-bar {:id "page-edit"}
+                                      [:div.action-bar ;{:id "page-edit"}
                                        [:div.row
                                         [:div.col-md-12
                                          (when previous? [:a {:href "#"

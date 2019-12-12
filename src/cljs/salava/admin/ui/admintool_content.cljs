@@ -478,7 +478,7 @@
     [:div {:class "admin-modal"}
      [:div.row.flip
       [:div {:class "col-sm-3 badge-image modal-left"}
-       [:img {:src (profile-picture image_file)} ]
+       [:img {:src (profile-picture image_file) :alt name} ]
        (if (:deleted info)
          [:h4 (t :admin/Deleteduser) ])]
       [:div {:class "col-sm-9 badge-info"}

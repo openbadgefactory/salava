@@ -35,9 +35,11 @@
       (js/clearTimeout @timer-atom))
     (reset! timer-atom (js/setTimeout (fn [] (fetch-users state)) 500))))
 
-(defn text-field [key label placeholder state]
-  (let [search-atom (cursor state [key])
-        field-id (str key "-field")]
+(defn text-field
+ ([opts]
+  (let [{:keys [key label placeholder state modal?]} opts
+         search-atom (cursor state [key])
+         field-id (if modal? (str key "-field-modal") (str key "-field"))]
     [:div.form-group
      [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
      [:div.col-sm-10
@@ -50,23 +52,57 @@
                                (reset! search-atom (.-target.value %))
                                (search-timer state))}]]]))
 
-(defn country-selector [state]
-  (let [country-atom (cursor state [:country-selected])]
+ ([key label placeholder state]
+  [text-field {:key key :label label :placeholder placeholder :state state :modal? false}]
+  #_(let [search-atom (cursor state [key])
+          field-id (str key "-field")]
+      [:div.form-group
+       [:label {:class "control-label col-sm-2" :for field-id} (str label ":")]
+       [:div.col-sm-10
+        [:input {:class       (str "form-control")
+                 :id          field-id
+                 :type        "text"
+                 :placeholder placeholder
+                 :value       @search-atom
+                 :on-change   #(do
+                                 (reset! search-atom (.-target.value %))
+                                 (search-timer state))}]]])))
 
-    [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ": ")]
-     [:div.col-sm-10
-      [:select {:class     "form-control"
-                :id        "country-selector"
-                :name      "country"
-                :value     @country-atom
-                :on-change #(do
-                              (reset! country-atom (.-target.value %))
-                              (fetch-users state))}
-       [:option {:value "all" :key "all"} (t :core/All)]
-       (for [[country-key country-name] (map identity (:countries @state))]
-         [:option {:value country-key
-                   :key country-key} country-name])]]]))
+(defn country-selector
+  ([state]
+   (let [country-atom (cursor state [:country-selected])]
+     [:div.form-group
+      [:label {:class "control-label col-sm-2" :for "country-selector"} (str (t :gallery/Country) ": ")]
+      [:div.col-sm-10
+       [:select {:class     "form-control"
+                 :id        "country-selector"
+                 :name      "country"
+                 :value     @country-atom
+                 :on-change #(do
+                               (reset! country-atom (.-target.value %))
+                               (fetch-users state))}
+        [:option {:value "all" :key "all"} (t :core/All)]
+        (for [[country-key country-name] (map identity (:countries @state))]
+          [:option {:value country-key
+                    :key country-key} country-name])]]]))
+  ([state modal?]
+   (let [country-atom (cursor state [:country-selected])]
+
+     [:div.form-group
+      [:label {:class "control-label col-sm-2" :for "country-selector-modal"} (str (t :gallery/Country) ": ")]
+      [:div.col-sm-10
+       [:select {:class     "form-control"
+                 :id        "country-selector-modal"
+                 :name      "country"
+                 :value     @country-atom
+                 :on-change #(do
+                               (reset! country-atom (.-target.value %))
+                               (fetch-users state))}
+        [:option {:value "all" :key "all"} (t :core/All)]
+        (for [[country-key country-name] (map identity (:countries @state))]
+          [:option {:value country-key
+                    :key country-key} country-name])]]])))
+
 
 (defn common-badges-checkbox [state]
   (let [common-badges-atom (cursor state [:common-badges?])]
@@ -80,47 +116,94 @@
                                (reset! common-badges-atom (not @common-badges-atom))
                                (fetch-users state))}](str (t :gallery/Hideuserswithnocommonbadges))]]]]))
 
-(defn order-buttons [state]
-  (let [order-atom (cursor state [:order_by])]
-    [:div.form-group
-     [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
-     [:div.col-sm-10
-      [:label.radio-inline {:for "radio-date"}
-       [:input {:id "radio-date"
-                :name "radio-date"
-                :type "radio"
-                :checked (= @order-atom "ctime")
-                :on-change #(do
-                              (reset! order-atom "ctime")
-                              (fetch-users state))}]
-       (t :core/bydatejoined)]
-      [:label.radio-inline {:for "radio-name"}
-       [:input {:id "radio-name"
-                :name "radio-name"
-                :type "radio"
-                :checked (= @order-atom "name")
-                :on-change #(do
-                              (reset! order-atom "name")
-                              (fetch-users state))}]
-       (t :core/byname)]
-      [:label.radio-inline {:for "radio-count"}
-       [:input {:id "radio-count"
-                :name "radio-count"
-                :type "radio"
-                :checked (= @order-atom "common_badge_count")
-                :on-change #(do
-                              (reset! order-atom "common_badge_count")
-                              (fetch-users state))}]
-       (t :core/bycommonbadges)]]]))
+(defn order-buttons
+  ([state]
+   (let [order-atom (cursor state [:order_by])]
+     [:div.form-group
+      [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
+      [:div.col-sm-10
+       [:label.radio-inline {:for "radio-date"}
+        [:input {:id "radio-date"
+                 :name "radio-date"
+                 :type "radio"
+                 :checked (= @order-atom "ctime")
+                 :on-change #(do
+                               (reset! order-atom "ctime")
+                               (fetch-users state))}]
+        (t :core/bydatejoined)]
+       [:label.radio-inline {:for "radio-name"}
+        [:input {:id "radio-name"
+                 :name "radio-name"
+                 :type "radio"
+                 :checked (= @order-atom "name")
+                 :on-change #(do
+                               (reset! order-atom "name")
+                               (fetch-users state))}]
+        (t :core/byname)]
+       [:label.radio-inline {:for "radio-count"}
+        [:input {:id "radio-count"
+                 :name "radio-count"
+                 :type "radio"
+                 :checked (= @order-atom "common_badge_count")
+                 :on-change #(do
+                               (reset! order-atom "common_badge_count")
+                               (fetch-users state))}]
+        (t :core/bycommonbadges)]]]))
 
-(defn profile-gallery-grid-form [state]
-  [:div {:id "grid-filter"
-         :class "form-horizontal"}
-   [:div
-    [country-selector state]
-    [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
-    [common-badges-checkbox state]]
-   [order-buttons state]])
+  ([state modal?]
+   (let [order-atom (cursor state [:order_by])]
+     [:div.form-group
+      [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
+      [:div.col-sm-10
+       [:label.radio-inline {:for "radio-date_"}
+        [:input {:id "radio-date_"
+                 :name "radio-date_"
+                 :type "radio"
+                 :checked (= @order-atom "ctime")
+                 :on-change #(do
+                               (reset! order-atom "ctime")
+                               (fetch-users state))}]
+        (t :core/bydatejoined)]
+       [:label.radio-inline {:for "radio-name_"}
+        [:input {:id "radio-name_"
+                 :name "radio-name_"
+                 :type "radio"
+                 :checked (= @order-atom "name")
+                 :on-change #(do
+                               (reset! order-atom "name")
+                               (fetch-users state))}]
+        (t :core/byname)]
+       [:label.radio-inline {:for "radio-count_"}
+        [:input {:id "radio-count_"
+                 :name "radio-count_"
+                 :type "radio"
+                 :checked (= @order-atom "common_badge_count")
+                 :on-change #(do
+                               (reset! order-atom "common_badge_count")
+                               (fetch-users state))}]
+        (t :core/bycommonbadges)]]])))
+
+(defn profile-gallery-grid-form
+  ([state]
+   [:div {:id "grid-filter"
+          :class "form-horizontal"}
+    [:div
+     [country-selector state]
+     [text-field :name (t :gallery/Username) (t :gallery/Searchbyusername) state]
+     [common-badges-checkbox state]]
+    [order-buttons state]])
+
+  ([state modal?]
+   (if-not modal?
+     [profile-gallery-grid-form state]
+     [:div {:id "grid-filter-modal"
+            :class "form-horizontal"}
+      [:div
+       [country-selector state modal?]
+       [text-field {:key :name :label (t :gallery/Username) :placeholder (t :gallery/Searchbyusername) :state state :modal? true}]
+       [common-badges-checkbox state]]
+      [order-buttons state modal?]])))
+
 
 (defn profile-gallery-grid-element [element-data]
   (let [{:keys [id first_name last_name ctime profile_picture common_badge_count]} element-data

@@ -119,10 +119,6 @@
                  :component-will-unmount (fn []
                                            (reset! view-atom :start))}))
 
-
-
-
-
 (defn content-modal-render [{:keys [url title certification]}]
   (let [{:keys [name authory licence url datefrom dateto]} certification]
     (fn []
@@ -145,8 +141,6 @@
             [input-date datefrom dateto]
             [input-button (t :core/CredentialURL) #_(t :core/Certificationurl) "url" url]]]
           (tutorial-video)]]]])))
-
-
 
 (defn linkedin-modal1 [{:keys [url title certification]}]
   (let [site-name (session/get-in [:share :site-name])
@@ -173,9 +167,6 @@
            [:i {:class "fa fa-linkedin"}]
            (t :badge/Share)]]]]])))
 
-
-
-
 (defn google-plus [url]
   (create-class
     {:reagent-render (fn [url]
@@ -200,38 +191,40 @@
             :href   (str "https://twitter.com/intent/tweet?size=medium&count=none&text="
                          (js/encodeURIComponent (str site-name ": " title))
                          "&url=" (js/encodeURIComponent url) "&hashtags=" hashtag)
-            :target "_blank"}
+            :target "_blank"
+            :aria-label "Twitter"}
         [:i {:class "fa fa-twitter-square"}]]]
       [:div.share-button
        (if is-badge?
-         [:a {:href "#" :on-click #(mo/open-modal [:badge :linkedin1] {:url url :title title :certification certification})}
+         [:a {:href "#" :aria-label "Linkedin" :on-click #(mo/open-modal [:badge :linkedin1] {:url url :title title :certification certification})}
           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]
          #_[:a {:href (str "https://www.linkedin.com/profile/add?_ed=0_JhwrBa9BO0xNXajaEZH4q5ax3e9v34rhyYLtaPv6h1UAvW5fJAD--ayg_G2AIDAQaSgvthvZk7wTBMS3S-m0L6A6mLjErM6PJiwMkk6nYZylU7__75hCVwJdOTZCAkdv&pfCertificationName=" title "&pfCertificationUrl=" url "&trk=onsite_html")
                 :target "_blank"}
             [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
-          [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank"}
+          [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank" :aria-label "Linkedin"}
            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]])]
 
 
       #_[:div.share-button
          [google-plus url]]
       [:div.share-button
-       [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank"} [:i {:class "fa fa-facebook-square"}]]]
+       [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank" :aria-label "Facebook"} [:i {:class "fa fa-facebook-square"}]]]
 
       [:div.share-button
-       (if is-badge?
-         [:a {:href            (str "https://www.pinterest.com/pin/create/button/?url=" url "&media=" (base-url) "/" image-file "&description=" title)
+       (when is-badge?
+         [:a {:href (str "https://www.pinterest.com/pin/create/button/?url=" url "&media=" (base-url) "/" image-file "&description=" title)
               :data-pin-do     "buttonPin"
               :data-pin-custom "true"
-              :target "_blank"}
+              :target "_blank"
+              :aria-label "Pinterest"}
 
           [:i {:class "fa fa-pinterest-square"}]])]
 
       ;;Wordpress embed
-      (if is-badge?
+      (when is-badge?
         [:div.share-button
-         [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "wordpress" @link-or-embed-atom) nil "wordpress")))}
+         [:a {:href "#" :aria-label "Wordpress" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "wordpress" @link-or-embed-atom) nil "wordpress")))}
           [:i {:class "fa fa-wordpress"}]]])
 
       [:div.share-link

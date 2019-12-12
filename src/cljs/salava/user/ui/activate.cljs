@@ -6,7 +6,9 @@
             [salava.core.ui.layout :as layout]
             [salava.core.helper :refer [dump]]
             [salava.core.i18n :refer [t translate-text]]
-            [salava.user.schemas :as schemas]))
+            [salava.user.schemas :as schemas]
+            [dommy.core :as dommy :refer-macros [sel sel1]]
+            [clojure.string :as string]))
 
 (defn password-valid? [password]
   (input-valid? (:password schemas/User) password))
@@ -33,6 +35,8 @@
   (let [password-atom (cursor state [:password])
         password-verify-atom (cursor state [:password-verify])]
     [:div {:class "form-horizontal"}
+
+
      (if (= "error" (:status @state))
        [:div {:class "alert alert-danger" :role "alert"}
         (translate-text (:message @state))])
@@ -73,6 +77,7 @@
   [:div {:id "activate-account"}
    [:div {:id "narrow-panel"
           :class "panel"}
+    [:div.panel-heading [:h1 {:style {:font-size "24px"}} (t :core/Emailresetheader)]]
     [:div.panel-body
      (if (:account-activated @state)
        [:div {:class "alert alert-success"
@@ -88,8 +93,9 @@
                      :code (:code params)
                      :message nil
                      :account-activated false})
-        lang (:lang params)]
+        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
     (when (and lang (some #(= lang %) (session/get :languages)))
-      (session/assoc-in! [:user :language] lang))
+      (session/assoc-in! [:user :language] lang)
+      (-> (sel1 :html) (dommy/set-attr! :lang lang)))
     (fn []
       (layout/landing-page site-navi (content state)))))

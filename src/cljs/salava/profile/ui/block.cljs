@@ -41,7 +41,7 @@
      [:div.row.flip
       [:div {:class "col-md-3 col-sm-3 col-xs-12"}
        [:div.profile-picture-wrapper
-        [:img.profile-picture {:src (profile-picture profile_picture)}]]]
+        [:img.profile-picture {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]]
       [:div.col-md-9
        [:div.col-xs-12
         [:div.row
@@ -98,7 +98,7 @@
          [:div.row.flip
           [:div {:class "col-md-3 col-sm-3 col-xs-12"}
            [:div.profile-picture-wrapper
-            [:img.profile-picture {:src (profile-picture profile_picture)}]]]
+            [:img.profile-picture {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]]
 
           [:div.col-md-9
            [:div.col-xs-12
