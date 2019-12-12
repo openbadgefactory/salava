@@ -2,7 +2,7 @@
   (:require [salava.core.i18n :refer [t]]))
 
 (defn ^:export footer []
-  [:footer.footer
+  [:div.footer
    [:div.footer-container
     [:p
      "droits d'auteur © 2019 BOAT"

@@ -283,16 +283,17 @@
 (defn ^:export latestearnablebadges []
   (let [params (query-params {:country "all"})
         state (atom {})]
-    (init-data params state #_{:country "all" :order "mtime" :issuer-name "" :name ""})
+    (init-data params state)
     (fn []
+     (when (seq (:applications @state))
       [:div.badges {:style {:display "inline-block"}}
        [:p.header (t :social/Newestearnablebadges)]
        (reduce (fn [r application]
                  (conj r [:a {:href "#" :on-click #(do
                                                      (.preventDefault %)
                                                      (mo/open-modal [:application :badge] {:id (:id application) :state state}))}
-                          [:img {:src (str "/" (:image_file application))}]]))
-               [:div] (take 5 (:applications @state)))])))
+                          [:img {:src (str "/" (:image_file application)) :alt (:name application)}]]))
+               [:div] (take 5 (:applications @state)))]))))
 
 (defn ^:export button [opt]
   (fn []
