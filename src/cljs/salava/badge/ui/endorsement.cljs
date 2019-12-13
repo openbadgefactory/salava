@@ -203,10 +203,10 @@
     [:div {:style {:display @(cursor state [:show-content])}}
      [:hr.border]
      [:div.row
-      [:div.col-xs-12 {:style {:margin-bottom "10px"}} [:a.close {:href "#" :on-click #(do
-                                                                                         (.preventDefault %)
-                                                                                         (swap! state assoc :show-link "block"
-                                                                                                :show-content "none"))} [:i.fa.fa-remove {:title (t :core/Cancel)}]]]]
+      [:div.col-xs-12 {:style {:margin-bottom "10px"}} [:a.close {:aria-label "Cancel" :href "#" :on-click #(do
+                                                                                                              (.preventDefault %)
+                                                                                                              (swap! state assoc :show-link "block"
+                                                                                                                     :show-content "none"))} [:i.fa.fa-remove {:title (t :core/Cancel)}]]]]
 
      [:div.endorse {:style {:margin "5px"}} (t :badge/Endorsehelptext)]
 
@@ -240,7 +240,7 @@
 
      [:div.editor
       [:div.form-group
-       [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
+       [:label {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
        [:div [markdown-editor (cursor state [:endorsement-comment]) (str "editor" (-> (session/get :user) :id))]]]
       [:div
        [:button.btn.btn-primary {:on-click #(do
@@ -300,7 +300,7 @@
 
                             [:div.caption.row.flip
                              [:div.position-relative.badge-image.col-md-3
-                              [:img {:src (str "/" image_file) :style {:padding "15px"} :alt name}]]
+                              [:img {:src (str "/" image_file) :style {:padding "15px"} :alt ""}]]
 
                              [:div.col-md-9 [:h1.media-heading name]
                               [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]]
@@ -484,13 +484,13 @@
          (when (and description issuer_content_id issuer_name)[:div;#badge-info
                                                                [:div.badge-info
                                                                 [:div {:class "issuer-data clearfix"}
-                                                                 [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+                                                                 [:span._label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
                                                                  [:div {:class "issuer-links pull-label-left inline"}
                                                                   [:a {:href "#"
                                                                        :on-click #(do (.preventDefault %)
                                                                                     (mo/open-modal [:badge :issuer] issuer_content_id {}))} issuer_name]]]
                                                                 (when (and issued_on (pos? issued_on))
-                                                                  [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+                                                                  [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
                                                                 [:div.description description]]])
          [:div (cond
                  requester_id ""
@@ -651,13 +651,13 @@
                                    [:span.label.label-info
                                     (t :social/pending)])]]
                                [:div.media-left.media-top.list-item-bodyv
-                                [:img.main-img.media-object {:src (str "/" image_file) :alt name}]]
+                                [:img.main-img.media-object {:src (str "/" image_file) :alt ""}]]
 
                                [:div.media-body
                                 [:h3.media-heading.badge-name  name]
                                 [:div.media
                                  [:div.child-profile [:div.media-left.media-top
-                                                      [:img.media-object.small-img {:src (profile-picture profile_picture) :alt endorser}]]
+                                                      [:img.media-object.small-img {:src (profile-picture profile_picture) :alt ""}]]
                                   [:div.media-body
                                    [:p endorser]]]]]]]]])))
                [:div] endorsements)]]]))
@@ -778,20 +778,20 @@
                                [:hr.line]]
                               [:div.caption.row.flip
                                [:div.position-relative.badge-image.col-md-3
-                                [:img {:src (str "/" image_file) :style {:padding "15px"} :alt name}]]
+                                [:img {:src (str "/" image_file) :style {:padding "15px"} :alt (str (t :badge/Badge) " " name)}]]
 
                                [:div.col-md-9
                                 [:h1.media-heading name]
                                 [:div#badge-info
                                  [:div.badge-info
                                   [:div {:class "issuer-data clearfix"}
-                                   [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
-                                   [:div {:class "issuer-links pull-label-left inline"}
+                                   [:span._label {:class "pull-label-left" :for "issuer_name"}  (t :badge/Issuedby) ":"]
+                                   [:div {:id "issuer_name" :class "issuer-links pull-label-left inline"}
                                     [:a {:href "#"
                                          :on-click #(do (.preventDefault %)
                                                       (mo/open-modal [:badge :issuer] issuer_id {}))} issuer_name]]]
                                   (when (and issued_on (pos? issued_on))
-                                    [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+                                    [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
                                   [:div.description description]]
                                  [:div {:style {:margin "15px auto"}} [:i.fa.fa-hand-o-down {:style {:margin-bottom "10px"}}]
                                   [:div.thumbnail-description.smaller {:display "inline-block" :dangerouslySetInnerHTML {:__html content}}]]]]]

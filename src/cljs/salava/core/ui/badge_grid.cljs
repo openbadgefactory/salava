@@ -93,7 +93,7 @@
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
-                                                      :alt (str (t :badge/Badge) " " name)}]])
+                                                      :alt ""}]])
                                   [:div.media-body
                                    [:div.media-heading
                                     [:p.heading-link name]]
@@ -114,7 +114,7 @@
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
-                                                      :alt name}]])
+                                                      :alt ""}]])
                                   [:div.media-body {:style {:position "relative"}}
                                    (when (pos? notification-count) [:span.badge.grid-element-info notification-count])
                                    [:div.media-heading

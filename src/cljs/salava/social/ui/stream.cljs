@@ -14,7 +14,7 @@
             [salava.social.ui.helper :refer [system-image]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.badge.ui.pending :refer [pending-badge-content]]
-            [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
+            [salava.core.ui.helper :refer [path-for plugin-fun not-activated? navigate-to]]
             [salava.badge.ui.modal :as bm]
             [salava.badge.ui.endorsement :refer [pending-endorsements pending-endorsement-requests]]
             [salava.admin.ui.helper :refer [admin?]]))
@@ -41,7 +41,7 @@
 (defn message-item [{:keys [message first_name last_name ctime id profile_picture user_id]}]
   [:div {:class "media" :key id}
    [:span {:class "pull-left"}
-    [:img {:class "message-profile-img" :src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
+    [:img {:class "message-profile-img" :src (profile-picture profile_picture) :alt (str first_name " " last_name " " (t :user/Profilepicture))}]]
    [:div {:class "media-body"}
     [:p {:class " h4"}
      [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id user_id})} (str first_name " "last_name)]]
@@ -127,7 +127,7 @@
            :on-click #(do
                         (mo/open-modal [:gallery :badges] {:badge-id object})
                         (.preventDefault %))}
-       [:img {:src (str "/" image_file) :alt name}]]]
+       [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days")]
       [:i {:class "fa fa-lightbulb-o"}]
@@ -151,7 +151,7 @@
            :on-click #(do
                         (.preventDefault %)
                         (mo/open-modal [:application :badge] {:id subject :state state}))}
-       [:img {:src (str "/" image_file) :alt name}]]]
+       [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days")]
       [:p {:class "media-heading"}
@@ -160,7 +160,7 @@
                          (.preventDefault %)
                          (mo/open-modal [:application :badge] {:id subject :state state}))} name]]
       [:div.media {:key issuer_content_id}
-         [:span.pull-left {:style {:visibility visibility}} [:img {:class "message-profile-img" :src (profile-picture issuer_image) :alt name}]]
+         [:span.pull-left {:style {:visibility visibility}} [:img {:class "message-profile-img" :src (profile-picture issuer_image) :alt (str (t :gallery/Issuer) " " name)}]]
        [:div.media-body
         [:p.h4
          [:a {:href "#"
@@ -183,7 +183,7 @@
                         (mo/open-modal [:badge :info] {:badge-id object})
 
                         (.preventDefault %))}
-       [:img {:src (str "/" image_file) :alt (str first_name " " last_name)}]]]
+       [:img {:src (str "/" image_file) :alt (str first_name " " last_name " " (t :user/Profilepicture))}]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days")]
       [:i {:class "fa fa-lightbulb-o"}]
@@ -207,7 +207,7 @@
                         (mo/open-modal [:page :view] {:page-id object})
 
                         (.preventDefault %))}
-       [:img {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]]
+       [:img {:src (profile-picture profile_picture) :alt (str first_name " " last_name " " (t :user/Profilepicture))}]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days")]
       [:i {:class "fa fa-lightbulb-o"}]
@@ -237,7 +237,7 @@
        [:img {:src (profile-picture (if (= owner s_id)
                                       o_profile_picture
                                       s_profile_picture))
-              :alt (if (= owner s_id) (str o_first_name " " o_last_name) (str s_first_name " " s_last_name))}]]]
+              :alt (if (= owner s_id) (str o_first_name " " o_last_name) (str s_first_name " " s_last_name " " (t :user/Profilepicture)))}]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days")]
       [:i {:class "fa fa-lightbulb-o"}]
@@ -276,7 +276,7 @@
                                                            :show-messages true
                                                            :reload-fn reload-fn})
                         (.preventDefault %))}
-       [:img {:src (str "/" image_file) :alt name}]]]
+       [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}]]]
      [:div.media-body
       [:div.date (date-from-unix-time (* 1000 ctime) "days")]
       [:p {:class "media-heading"}
@@ -330,8 +330,9 @@
       ;[:div.date (date-from-unix-time (* 1000 ctime) "days") ]
       [:i {:class "fa fa-lightbulb-o"}]
       [:div [:p {:class "media-heading"}
-             [:a {:href (if link (path-for link) "#") :on-click #(do (.preventDefault %)
-                                                                     (if function (function)))} (translate-text header)]]
+             [:a {:href "#" #_(if link (path-for link) "#") :on-click #(do (.preventDefault %)
+                                                                           (when link (navigate-to link))
+                                                                           (when function (function)))} (translate-text header)]]
        [:div.media-body
         ;(translate-text body)
         body]
