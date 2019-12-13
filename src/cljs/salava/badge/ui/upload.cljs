@@ -103,7 +103,7 @@
                              [:input {:type       "file"
                                       :name       "file"
                                       :on-change  #(send-file state)
-                                      :accept     "image/png, image/svg+xml"}] (t :badge/Browse)])
+                                      :accept     "image/png, image/svg+xml, application/pdf"}] (t :badge/Browse)])
      [:br]]))
 
 (defn assertion-url-upload-content [state]

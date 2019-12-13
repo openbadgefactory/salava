@@ -354,3 +354,13 @@
         (and (= "success" (:permission @state)) (:owner? @state) user) (layout/default site-navi (content state))
         (and (= "success" (:permission @state)) user) (layout/default-no-sidebar site-navi (content state))
         :else (layout/landing-page site-navi (content state))))))
+
+(defn embed-handler [site-navi params]
+  (let [id (:badge-id params)
+        state (atom {:initializing true
+                     :permission "initial"})]
+    (init-data state id)
+    (fn []
+      (cond
+        (= "initial" (:permission @state)) [:div]
+        :else (layout/embed-badge (content state))))))

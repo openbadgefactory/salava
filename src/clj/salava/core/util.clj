@@ -14,6 +14,8 @@
             [salava.core.helper :refer [plugin-str]]
             [salava.core.http :as http]
             [pantomime.mime :refer [extension-for-name mime-type-of]]
+            [buddy.core.mac :as mac]
+            [buddy.core.codecs :as codecs]
             [clojure.core.async :refer [>!!]])
   (:import (java.io StringReader)
            (java.net URLEncoder)
@@ -77,6 +79,9 @@
 (defn bytes->base64 [input]
   (.encodeToString (Base64/getEncoder) input))
 
+(defn bytes->base64-url [input]
+  (.encodeToString (Base64/getUrlEncoder) input))
+
 (defn hex-digest [algo string]
   (case algo
     "sha1" (d/sha-1 string)
@@ -84,6 +89,21 @@
     "sha512" (d/sha-512 string)
     "md5" (d/md5 string)
     (throw+ (str "Unknown algorithm: " algo))))
+
+(defn digest [algo string]
+  (->> string
+    (hex-digest algo)
+    (partition 2)
+    (map (fn [[x y]] (Integer/parseInt (str x y) 16)))
+    byte-array))
+
+(defn hmac-sha256-hex [v secret]
+  (-> (mac/hash v {:key secret :alg :hmac+sha256})
+      (codecs/bytes->hex)))
+
+(defn random-token
+  ([] (random-token ""))
+  ([seed] (hex-digest "sha256" (str (System/currentTimeMillis) (java.util.UUID/randomUUID) seed))))
 
 (defn ordered-map-values
   "Returns a flat list of keys and values in a map, sorted by keys."
