@@ -1,5 +1,5 @@
 (ns salava.profile.ui.block
-  (:require [salava.core.ui.helper :refer [base-path path-for plugin-fun hyperlink]]
+  (:require [salava.core.ui.helper :refer [base-path path-for plugin-fun hyperlink navigate-to]]
             [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [reagent.session :as session]
@@ -165,13 +165,15 @@
                  (conj r (when (true? v)
                           [:div.col-xs-12.tip ;{:style {:margin "10px 0" :font-size "14px"}}
                            [:i.fa.fa-fw.fa-lightbulb-o.tipicon](case k
-                                                                  :profile-picture-tip  [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))
+                                                                  :profile-picture-tip  [:a {:href "#" #_(path-for (str "/profile/" (session/get-in [:user :id])))
                                                                                              :on-click #(do
                                                                                                          (.preventDefault %)
+                                                                                                         (navigate-to (str "/profile/" (session/get-in [:user :id])))
                                                                                                          (session/put! :edit-mode true))}  (t :profile/Profilepicturetip)]
-                                                                  :aboutme-tip          [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))
+                                                                  :aboutme-tip          [:a {:href "#" #_(path-for (str "/profile/" (session/get-in [:user :id])))
                                                                                              :on-click #(do
                                                                                                          (.preventDefault %)
+                                                                                                         (navigate-to (str "/profile/" (session/get-in [:user :id])))
                                                                                                          (session/put! :edit-mode true))} (t :profile/Aboutmetip)]
                                                                   :location-tip         [:a {:href (path-for "/user/edit")}(t :profile/Locationtip)]
                                                                   :tabs-tip             [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))

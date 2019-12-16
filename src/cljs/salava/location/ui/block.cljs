@@ -113,9 +113,9 @@
     {:reagent-render
      (fn []
        [:div.row {:style {:display (if @visible "block" "none")}}
-        [:label.col-md-12.sub-heading (t :location/Location)]
+        [:span.col-md-12.sub-heading (t :location/Location)]
         [:div.col-md-12
-         [:label {:style {:display (if @visible "block" "none")}} (t :location/setLocationHere)]
+         [:span {:style {:display (if @visible "block" "none")}} (t :location/setLocationHere)]
          [:div {:id "map-view-badge" :style {:height "400px" :margin "20px 0"}}]]])
 
      :component-did-mount

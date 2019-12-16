@@ -635,9 +635,10 @@ button {
           }
         }
       }
-      label.hidden-label {
+      label.hidden-label, span.hidden-label {
         display: none;
       }
+
       .row.header {
         font-weight: 600;
         text-align: center;
@@ -655,11 +656,12 @@ button {
         .row.body{
           text-align: left;
           padding:10px 0px;
-          label {
+          label, span.hidden-label {
             display: inline-block;
             width:68%;
             font-weight: 600;
           }
+
           .col-md-1, .col-md-5 {
             display: inline-block;
             width: auto;
@@ -717,7 +719,7 @@ button {
     text-transform: uppercase;
   }
   .badge-info {
-    label {
+    label, ._label {
       color: $green;
       margin-bottom: 5px;
     }
@@ -762,9 +764,11 @@ button {
   }
 }
 #badge-info, #badge-content {
-  .badge-info label{
+  .badge-info label, .badge-info ._label{
     color: $text-color;
     min-width: 100px;
+    font-weight: 700;
+    display: inline-block;
   }
   .checkbox {
     margin-right: 15px;
@@ -2021,7 +2025,7 @@ a.popup-info {
       color: #FFFFFF;
       text-align: center;
       line-height: 20px;
-      background-color: $titlebar-color;
+      //background-color: $titlebar-color;
       border-radius: 4px;
       margin-right: 5px;
       margin-bottom: 10px;
@@ -2062,11 +2066,11 @@ a.popup-info {
           p {
             margin: 0;
           }
-          p.num {
+          p.num{
             font-size: 22px !important;
             font-weight: 600 !important;
           }
-          p.desc {
+          p.desc{
             margin-top: 10px;
             margin-bottom: 10px;
           }
@@ -2091,7 +2095,7 @@ a.popup-info {
             margin: unset;
             display: flex;
             margin-top: -2px;
-            p.desc, p.num {
+            p.desc, p.num{
               margin-top: 0px;
               float: left;
               font-size: 16px !important;
@@ -2173,7 +2177,7 @@ a.popup-info {
 span.endorsement-notification{
   margin-left:5px;
   background-color: #FF3333 !important;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
@@ -2219,4 +2223,39 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
 
 .confirm-delete-block {
   margin: 30px 0 5px 0;
+}
+
+._label{
+  color: $text-color;
+  min-width: 100px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.selected-users-container {
+  margin: 20px auto;
+  a {
+    text-decoration: none;
+  }
+  .user-item {
+    display: inline-block;
+    position: relative;
+    margin-right: 10px;
+    .close {
+      font-size: 18px;
+      position: absolute;
+      top: -10px;
+      right: -5px;
+      color: $dark-red;
+      opacity: 0.5;
+      font-weight: 800;
+      padding: 2px 4px;
+    }
+
+    .close:hover {
+      opacity: 1;
+      font-size: 20px;
+
+    }
+  }
 }

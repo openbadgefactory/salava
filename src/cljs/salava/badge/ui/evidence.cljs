@@ -128,7 +128,7 @@
       :value       @atom
       :rows rows
       :cols cols
-      :aria-label (or aria-label (str "input " name))}]))
+      :aria-label (or aria-label (str "input-" name))}]))
 
 
 (defn evidence-icon
@@ -232,7 +232,7 @@
                                :name "file"
                                :on-change #(upload-file (cursor state [:files]) state)
                                :style {:display "none"}}]]
-              (if (seq files) [:div [:label {:style {:margin "5px" :margin-bottom "10px"}} (t :badge/Orchoosefile)]])]
+              (if (seq files) [:div [:span._label {:style {:margin "5px" :margin-bottom "10px"}} (t :badge/Orchoosefile)]])]
              files)]))
 
 (defn pages-grid [state]
@@ -241,7 +241,7 @@
      (reduce (fn [r resource]
                (conj r [grid-element resource state :page_input]))
              [:div
-              (if (seq pages) [:div [:label {:style {:margin-bottom "10px"}} (t :badge/Clickpagebelow)]])]
+              (if (seq pages) [:div [:span._label {:style {:margin-bottom "10px"}} (t :badge/Clickpagebelow)]])]
              pages)]))
 
 (defn resource-input [data state init-data]
@@ -271,7 +271,7 @@
      [:div {:class "col-md-9 settings-content settings-tab"}
       (if @message [:div @message])
       [:div
-       [:div.row {:style {:margin-bottom "10px"}} [:label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
+       [:div.row {:style {:margin-bottom "10px"}} [:span.col-md-9.sub-heading (t :badge/Addnewevidence)]]
        [:div.evidence-info (t :badge/Evidenceinfo)]
 
        [:div.row.form-horizontal
@@ -325,13 +325,13 @@
              (when (or  @(cursor state [:show-form])(not (every? #(blank? %)(vector @evidence-name-atom @evidence-narrative-atom))))
 
                [:div [:div.form-group
-                      [:label.col-md-3 "Name"]
+                      ;[:label.col-md-3 {:for "name-input"} (t :badge/Name)]
                       [:div.col-md-9
-                       [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+                       [input {:name "name" :atom evidence-name-atom :type "text" :placeholder (t :badge/Name)} nil]]]
                 [:div.form-group
-                 [:label.col-md-3 (t :page/Description)]
+                 ;[:label.col-md-3 {:for "narrative-input"} (t :page/Description)]
                  [:div.col-md-9
-                  [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]])]
+                  [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom :placeholder (t :page/Description)} true]]]])]
 
 
             [:div.add
@@ -355,13 +355,13 @@
               [:div.url [:i.fa.fa-link]] [input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith) :aria-label (t :badge/EnterevidenceURLstartingwith)}]]]
             [:div.panel-body.evidence-panel-body
              [:div [:div.form-group
-                    [:label.col-md-3 "Name"]
+                    ;[:label.col-md-3 {:for "input-name"} (t :badge/Name)]
                     [:div.col-md-9
-                     [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+                     [input {:name "name" :atom evidence-name-atom :type "text" :placeholder (t :badge/Name)} nil]]]
               [:div.form-group
-               [:label.col-md-3 (t :page/Description)]
+               ;[:label.col-md-3 {:for "input-name"} (t :page/Description)]
                [:div.col-md-9
-                [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]]]
+                [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom :placeholder (t :page/Description)} true]]]]]
             [:div.add
              [:button {:type "button"
                        :class "btn btn-primary"
@@ -410,8 +410,8 @@
                                                                                 (mo/open-modal [:page :view] {:page-id resource_id}))} url]
                                                               (hyperlink url))
                                                      (hyperlink url))]]
-                            (when-not (blank? name) [:div.inline [:label (t :badge/Name) ": "] name])
-                            (when-not (blank? desc) [:div [:label (t :admin/Description) ": "]   desc])]
+                            (when-not (blank? name) [:div.inline [:span._label (t :badge/Name) ": "] name])
+                            (when-not (blank? desc) [:div [:span._label (t :admin/Description) ": "]   desc])]
 
                            [:div [:div.evidence-status
                                   ;[:span.label.label-info
@@ -462,13 +462,13 @@
                                                 :aria-labelledby (str "heading" id)}
                            [:div.panel-body.evidence-panel-body {:style {:padding-top "10px"}}
                             [:div.form-group
-                             [:label.col-md-3 (t :badge/Name)]
+                             ;[:label.col-md-3 (t :badge/Name)]
                              [:div.col-md-9
-                              [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+                              [input {:name "name" :atom evidence-name-atom :type "text" :placeholder (t :badge/Name)} nil]]]
                             [:div.form-group
-                             [:label.col-md-3 (t :page/Description)]
+                             ;[:label.col-md-3 (t :page/Description)]
                              [:div.col-md-9
-                              [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom } true]]]
+                              [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom :placeholder (t :page/Description)} true]]]
                             ;[:hr]
                             [:div
                              [:button {:type         "button"
@@ -485,7 +485,7 @@
         pages-atom (cursor state [:pages])]
    [:div
     [:div {:class "row"}
-         [:label {:class "col-md-12 sub-heading" :for "evidence"}
+         [:span._label {:class "col-md-12 sub-heading" :for "evidence"}
           (t :badge/Evidence)]]
     [:div#badge-evidence
      [:div.form-group
