@@ -2217,3 +2217,31 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
 .confirm-delete-block {
   margin: 30px 0 5px 0;
 }
+
+.selected-users-container {
+  margin: 20px auto;
+  a {
+    text-decoration: none;
+  }
+  .user-item {
+    display: inline-block;
+    position: relative;
+    margin-right: 10px;
+    .close {
+      font-size: 18px;
+      position: absolute;
+      top: -10px;
+      right: -5px;
+      color: $dark-red;
+      opacity: 0.5;
+      font-weight: 800;
+      padding: 2px 4px;
+    }
+
+    .close:hover {
+      opacity: 1;
+      font-size: 20px;
+
+    }
+  }
+}
