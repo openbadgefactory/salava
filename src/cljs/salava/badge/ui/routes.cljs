@@ -28,6 +28,7 @@
                                        [["/info/" :badge-id] info/handler]
                                        [["/info/" :badge-id "/embed"] embed/handler]
                                        [["/info/" :badge-id "/pic/embed"] embed-pic/handler]
+                                       [["/info/" :badge-id "/full/embed"] info/embed-handler]
                                        ["/import" imp/handler]
                                        [["/receive/" :badge-id] rec/handler]
                                        #_[["/user/endorsements"] e/handler]]})

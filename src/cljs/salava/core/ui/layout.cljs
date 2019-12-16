@@ -269,3 +269,11 @@
 (defn embed-page [content]
   [:div
    content])
+
+(defn embed-badge [content]
+  (js/document.body.classList.add "embed")
+  [:div {:role "main"}
+   [:div {:class "container main-container" :style {:padding "10px" :margin "auto"}}
+    [:div {:id "content"}
+     content]]])
+
