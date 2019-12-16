@@ -1,5 +1,6 @@
 (ns salava.badge.ui.settings
   (:require [reagent.core :refer [cursor atom]]
+            [clojure.string :as string]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.i18n :refer [t]]
             [salava.core.time :refer [date-from-unix-time]]
@@ -256,7 +257,7 @@
                 (let [uri (str cert-uri "&lang=" lang)]
                   [:p {:key uri}
                    [:i.fa.fa-file-pdf-o.fa-2x] " "
-                   [:a {:href uri} (str badge " (" lang ")")]]))
+                   [:a {:href uri} (if-not (string/blank? lang) (str badge " (" lang ")") badge)]]))
               (:badge @state)))]
       #_[:div
          [:button {:class "btn btn-primary" :on-click #(revalidation-request user-badge-id state)} (t :badge/RevalidationRequest)]]]
