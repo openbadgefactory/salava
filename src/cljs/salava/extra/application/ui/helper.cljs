@@ -3,7 +3,7 @@
    [reagent.core :refer [atom cursor create-class dom-node]]
    [reagent.session :as session]
    [salava.core.i18n :refer [t]]
-   [clojure.string :refer [join blank?]]
+   [clojure.string :refer [join blank? upper-case capitalize lower-case split]]
    [dommy.core :as dommy :refer-macros [sel sel1]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.ui.helper :refer [path-for base-url private?]]
@@ -75,15 +75,23 @@
     (reset! tags (apply str (interpose "," (vals (select-keys @autocomplete-items value)))))
     (fetch-badge-adverts state)))
 
-(defn get-items-key [autocomplete-items tag]
-  (key (first (filter #(= (str "#" tag) (val %)) autocomplete-items))))
+
+(defn- match? [tag item]
+ (when (and tag item)
+  (let [item (-> (split item #"#") last)]
+    (some #(= tag (str %)) [item (str "#" item) (lower-case item) (capitalize item) (upper-case item)]))))
+
+(defn get-items-key [state tag]
+  (let [autocomplete-items (cursor state [:autocomplete :tags :items])]
+    (key (first (filter #(match? tag (val %)) @autocomplete-items)))))
+    ;(key (first (filter #(= (str "#" tag) (or (val %))) @autocomplete-items)))))
 
 (defn set-to-autocomplete [state tag]
-  (let [key (get-items-key (:autocomplete @state) tag)]
-    (if key
-      (do
-        (swap! state assoc :value #{key})
-        (taghandler state #{key})))))
+  (let [key (get-items-key state tag)]
+    (when key
+      (swap! state assoc :value #{key})
+      (reset! (cursor state [:autocomplete :tags :value]) #{key})
+      (taghandler state #{key}))))
 
 (defn add-to-followed
   "set advert to connections"

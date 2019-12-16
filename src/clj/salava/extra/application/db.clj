@@ -27,7 +27,12 @@
 
 (defn tag-parser [tags]
   (if tags
-    (set (string/split tags #","))
+    (set (->> (string/split tags #",") (reduce (fn [r t] (conj r
+                                                               t
+                                                               (string/upper-case t)
+                                                               (string/lower-case t)
+                                                               (string/capitalize t))) []) distinct))
+
     #{}))
 
 (defn filter-tags [search tags]
