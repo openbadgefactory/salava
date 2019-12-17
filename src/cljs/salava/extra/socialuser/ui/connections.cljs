@@ -30,17 +30,23 @@
                                                   (do
                                                     (init-data state)))
                                :error-handler   (fn [{:keys [status status-text]}]
-                                                  (.log js/console (str status " " status-text))
-                                                  )})} (t :social/Unfollow) ])
+                                                  (.log js/console (str status " " status-text)
+                                                   (t :social/Unfollow)))})}])
 
+(defn toggle-panel [key atom]
+  (if (= key @atom)
+    (reset! atom nil)
+    (reset! atom key)))
 
 (defn accepted-user-connections [state users visible-area-atom]
-  (let [panel-identity :accepted]
-    [:div.panel
+  (let [panel-identity :accepted
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom))}
        [:h3
-        (str (t :social/Followedusers) " (" (count users) ")")]]]
+        (str (t :social/Followedusers) " (" (count users) ")")]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= panel-identity @visible-area-atom)
        [:div.panel-body
         [:table {:class "table" :summary (t :social/Followedusers)}
@@ -60,8 +66,8 @@
                                               (mo/open-modal [:profile :view] {:user-id user_id})
                                               ;(b/open-modal id false init-data state)
                                               (.preventDefault %)) } (str first_name " " last_name)]]
-                  [:td.action  (if (= "accepted" status) (deleteconnect user_id state)  (str (t :social/Pending) "..."))]]))]]
-       )]))
+                  [:td.action  (if (= "accepted" status) (deleteconnect user_id state)  (str (t :social/Pending) "..."))]]))]])]))
+
 
 
 (defn accept [owner-id state]
@@ -75,8 +81,8 @@
                                         (do
                                           (init-data state)))
                      :error-handler   (fn [{:keys [status status-text]}]
-                                        (.log js/console (str status " " status-text))
-                                        )})} (t :social/Accept)])
+                                        (.log js/console (str status " " status-text)
+                                         (t :social/Accept)))})}])
 
 (defn decline [owner-id state]
   [:a {:class  "btn btn-warning btn-xs"
@@ -89,19 +95,21 @@
                                         (do
                                           (init-data state)))
                      :error-handler   (fn [{:keys [status status-text]}]
-                                        (.log js/console (str status " " status-text))
-                                        )})} (t :social/Decline)])
+                                        (.log js/console (str status " " status-text)
+                                         (t :social/Decline)))})}])
 
 
 
 
 (defn pending-user-connections [state users visible-area-atom]
-  (let [panel-identity :pending]
-    [:div.panel
+  (let [panel-identity :pending
+        icon-class (if (= @visible-area-atom panel-identity) "fa-chevron-circle-down" "fa-chevron-circle-right")]
+    [:div.panel.expandable-block
      [:div.panel-heading
-      [:a {:href "#" :on-click #(do (.preventDefault %) (reset! visible-area-atom panel-identity))}
+      [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom))}
        [:h3
-        (str (t :social/Followersusers) " (" (count users) ")")]]]
+        (str (t :social/Followersusers) " (" (count users) ")")]
+       [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= panel-identity @visible-area-atom)
        [:div.panel-body
         [:table {:class "table" :summary (t :badge/Badgeviews)}
@@ -124,7 +132,7 @@
                                               (.preventDefault %)) } (str first_name " " last_name)]]
                   (if (= "pending" status)
                     [:td.action (accept owner_id state) " " (decline owner_id state)]
-                    [:td.action  (str(t :social/Follows)  " ") ])]))]])]))
+                    [:td.action  (str(t :social/Follows)  " ")])]))]])]))
 
 
 
@@ -133,18 +141,16 @@
   (let [visible-area-atom (cursor state [:visible-area])
         followers-users     (cursor state [:followers-users])
         following-users    (cursor state [:following-users])]
-    [:div
+    [:div {:id "badge-stats"}
      [m/modal-window]
      [:h1.uppercase-header (t :connections/UserConnections)]
 
      [:div {:style {:margin-bottom "10px"}} (t :connections/Userconnectionsinfo)]
 
-     (if-not (empty? @followers-users)
-       [:div {:id "badge-stats"}
-        (pending-user-connections state @followers-users visible-area-atom)])
-     (if-not (empty? @following-users)
-       [:div {:id "badge-stats"}
-        (accepted-user-connections state @following-users visible-area-atom)])]))
+     (when (seq @followers-users)
+        (pending-user-connections state @followers-users visible-area-atom))
+     (when (seq @following-users)
+        (accepted-user-connections state @following-users visible-area-atom))]))
 
 (defn init-stats [state]
   (init-data state)
@@ -161,29 +167,24 @@
        [:div.info-block
         [:a {:href (path-for "/connections/user") :on-click #(do
                                                                (.preventDefault %)
-                                                               (session/put! :visible-area :accepted) )}
+                                                               (session/put! :visible-area :accepted))}
          [:div.info
-          ;[:i.fa.fa-user.icon]
           [:div.text
            [:p.num (->> (:following-users @state) count)]
-           [:p.desc (t :social/Followedusers)]
-           ]]
-         ]
-        ]
+           [:p.desc (t :social/Followedusers)]]]]]
 
        [:div.info-block
         [:a {:href (path-for "/connections/user")  :on-click #(do
                                                                 (.preventDefault %)
-                                                                (session/put! :visible-area :pending) )}
+                                                                (session/put! :visible-area :pending))}
          [:div.info
           (when (pos? (count (:pending @state))) [:span.badge (count (:pending @state))])
-          ;[:i.fa.fa-user.icon]
           [:div.text
            [:p.num (->> (:followers-users @state) count)]
-           [:p.desc (t :social/Followersusers)]
-           ]
-          ]
-         ]]])))
+           [:p.desc (t :social/Followersusers)]]]]]])))
+
+
+
 
 (defn handler [site-navi]
   (let [state (atom {:visible-area  nil
