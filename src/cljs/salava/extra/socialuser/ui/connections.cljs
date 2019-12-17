@@ -44,7 +44,7 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom))}
-       [:h3
+       [:h2
         (str (t :social/Followedusers) " (" (count users) ")")]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= panel-identity @visible-area-atom)
@@ -107,7 +107,7 @@
     [:div.panel.expandable-block
      [:div.panel-heading
       [:a {:href "#" :on-click #(do (.preventDefault %) (toggle-panel panel-identity visible-area-atom))}
-       [:h3
+       [:h2
         (str (t :social/Followersusers) " (" (count users) ")")]
        [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]]
      (when (= panel-identity @visible-area-atom)
