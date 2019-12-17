@@ -78,7 +78,7 @@
 (defn top-navi-header []
   [:div {:class "navbar-header"}
    (logo)
-   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+   [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse" :title "Show menu" :aria-label "Show menu"}
      [:span {:class "icon-bar"}]
      [:span {:class "icon-bar"}]
      [:span {:class "icon-bar"}]]])
@@ -222,7 +222,7 @@
        [:div {:class "alert alert-warning text-center"} (str  (t :admin/Loggedas) " " (:first_name current-user) " " (:last_name current-user) ". ") [:a {:href "#" :on-click #(return-to-admin)} (t :admin/Returntoadmin)]]))
    [:div {:id "navbar"}
     (top-navi site-navi)]
-   [:img {:id "print-logo" :src "/img/logo.png"}]
+   [:img {:id "print-logo" :src "/img/logo.png" :alt "site logo"}]
    [:div {:class "title-row"}
     [:div {:class "container"}
      (breadcrumb site-navi)]]

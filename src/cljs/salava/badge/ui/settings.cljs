@@ -194,6 +194,7 @@
 
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
+                                                    [:legend.md-9 ""]
                                                     [:div.col-md-12 [:label {:for "show-name"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "show-name"
@@ -204,6 +205,7 @@
 
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
+                                                    [:legend.col-md-9 ""]
                                                     [:div.col-md-12 [:label {:for "receive-notifications"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "receive-notifications"

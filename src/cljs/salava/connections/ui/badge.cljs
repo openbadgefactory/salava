@@ -90,14 +90,14 @@
           [:tr
            [:th (t :badge/Badge)]
            [:th (t :badge/Name)]
-           [:th ""]]]
+           #_[:th ""]]]
 
          (into [:tbody]
                (for [badge-views badges
                      :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                  [:tr
                   [:td.icon [:img.badge-icon {:src (str "/" image_file)
-                                              :alt name}]]
+                                              :alt ""}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:gallery :badges] {:badge-id id} {:hide (fn [] (init-data state))})

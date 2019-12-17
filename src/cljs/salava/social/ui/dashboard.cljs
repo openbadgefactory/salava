@@ -7,7 +7,7 @@
             [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent-modals.modals :as m]
-            [salava.core.ui.helper :refer [path-for plugin-fun not-activated?]]
+            [salava.core.ui.helper :refer [path-for plugin-fun not-activated? navigate-to]]
             [salava.badge.ui.my :as my]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
@@ -107,7 +107,7 @@
                          (.preventDefault %))}
            [:div {:class "media"}
                 [:div.media-left
-                 [:img.small-image {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
+                 [:img.small-image {:src (profile-picture profile_picture) :alt ""}]] ;(str first_name " " last_name)}]]
                 [:div.media-body
                  [:div.content-text
                   [:p.content-heading (str first_name " " last_name " " (t :badge/Hasendorsedyou) " " name)]
@@ -125,7 +125,7 @@
                          (.preventDefault %))}
            [:div {:class "media"}
                 [:div.media-left
-                 [:img.small-image {:src (profile-picture profile_picture) :alt (str first_name " " last_name)}]]
+                 [:img.small-image {:src (profile-picture profile_picture) :alt ""}]];(str first_name " " last_name)}]]
                 [:div.media-body
                  [:div.content-text
                   [:p.content-heading (str first_name " " last_name  " " (t :badge/requestsendorsement) " " name)]
@@ -308,19 +308,19 @@
              [:div.total-badges.info-block
               [:div.info
                [:div.text
-                [:p.num (get-in @state [:stats :badge_count] 0)]
-                [:p.desc (t :badge/Badges)]]]]
+                [:span.num (get-in @state [:stats :badge_count] 0)]
+                [:span.desc (t :badge/Badges)]]]]
              [:div.total-badges.info-block
               [:div.info
                [:div.text
-                [:p.num (->> (get-in @state [:stats :badge_views])
-                             (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0))]
-                [:p.desc (t :badge/Badgeviews)]]]]
+                [:span.num (->> (get-in @state [:stats :badge_views])
+                                (reduce #(+ %1 (:reg_count %2) (:anon_count %2)) 0))]
+                [:span.desc (t :badge/Badgeviews)]]]]
              [:div.info-block
               [:div.info
                [:div.text
-                [:p.num (:published_badges_count @state)]
-                [:p.desc (t :gallery/Sharedbadges)]]]]]]
+                [:span.num (:published_badges_count @state)]
+                [:span.desc (t :gallery/Sharedbadges)]]]]]]
 
            (when (seq (:pending-badges @state)) [:div.pending
                                                  [:p.header (t :badge/Pendingbadges)]
@@ -338,7 +338,7 @@
                 (reduce (fn [r badge]
                           (conj r [:a {:href "#" :on-click #(do
                                                               (.preventDefault %)
-                                                              (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
+                                                              (mo/open-modal [:badge :info] {:badge-id (:id badge )} {:hidden (fn [] (init-dashboard state))}))} [:img {:src (str "/" (:image_file badge)) :alt (:name badge)}]])) ;:title (:name badge)}]]))
                         [:div {:style {:padding "5px 0"}}] badges)])
             [latest-earnable-badges]]
            (when (> (get-in @state [:stats :badge_count] 0) (:published_badges_count @state))
@@ -366,8 +366,8 @@
             [:div.info
              [:i.fa.fa-certificate.icon]
              [:div.text
-              (when-not hidden? [:p.num (get-in @state [:gallery :badges :all] 0)])
-              [:p.desc (t :gallery/Sharedbadges)]]]]]
+              (when-not hidden? [:span.num (get-in @state [:gallery :badges :all] 0)])
+              [:span.desc (t :gallery/Sharedbadges)]]]]]
           (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
             [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
          [:div.col-sm-4.button-block
@@ -377,8 +377,8 @@
              [:div.info
               [:i.fa.fa-file.icon]
               [:div.text
-               (when-not hidden? [:p.num (get-in @state [:gallery :pages :all] 0)])
-               [:p.desc (t :gallery/Sharedpages)]]]]]]
+               (when-not hidden? [:span.num (get-in @state [:gallery :pages :all] 0)])
+               [:span.desc (t :gallery/Sharedpages)]]]]]]
           (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
             [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
          [:div.col-sm-4.button-block
@@ -388,8 +388,8 @@
              [:div.info
               [:i.fa.fa-user.icon]
               [:div.text
-               (when-not hidden? [:p.num (get-in @state [:gallery :profiles :all] 0)])
-               [:p.desc (t :gallery/Sharedprofiles)]]]]]]
+               (when-not hidden? [:span.num (get-in @state [:gallery :profiles :all] 0)])
+               [:span.desc (t :gallery/Sharedprofiles)]]]]]]
           (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
             [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
          [:div.col-sm-4.button-block
@@ -399,8 +399,8 @@
              [:div.info
               [:i.fa.fa-map-marker.icon]
               [:div.text
-               (when-not hidden? [:p.num (get-in @state [:gallery :map :all] 0)])
-               [:p.desc (t :location/Map)]]]]]]
+               (when-not hidden? [:span.num (get-in @state [:gallery :map :all] 0)])
+               [:span.desc (t :location/Map)]]]]]]
           [:div.since-last-login]]]]]]]]]))
 
 
@@ -429,38 +429,41 @@
 
           [:div.info
            [:div.text
-            [:p.num (get-in @state [:connections :badges])]
-            [:p.desc (t :badge/Badges)]]]]]
+            [:span.num (get-in @state [:connections :badges])]
+            [:span.desc (t :badge/Badges)]]]]]
         [:div.info-block
-         [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
-                                                                             (.preventDefault %)
-                                                                             (session/put! :visible-area "given"))}
+         [:a {:href "#" #_(str (path-for "/connections/endorsement")) :on-click #(do
+                                                                                   (.preventDefault %)
+                                                                                   (navigate-to "/connections/endorsement")
+                                                                                   (session/put! :visible-area "given"))}
 
           [:div.info
            [:div.text
-            [:p.num (:endorsing @state)]
-            [:p.desc (t :badge/Endorsing)]]]]]
+            [:span.num (:endorsing @state)]
+            [:span.desc (t :badge/Endorsing)]]]]]
 
         [:div.info-block
-         [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
-                                                                             (.preventDefault %)
-                                                                             (session/put! :visible-area "received"))}
+         [:a {:href "#" #_(str (path-for "/connections/endorsement")) :on-click #(do
+                                                                                   (.preventDefault %)
+                                                                                   (navigate-to "/connections/endorsement")
+                                                                                   (session/put! :visible-area "received"))}
 
           [:div.info
            (when (pos? (:pending-endorsements @state)) [:span.badge (:pending-endorsements @state)])
            [:div.text
-            [:p.num (:endorsers @state)]
-            [:p.desc (t :badge/Endorsers)]]]]]
+            [:span.num (:endorsers @state)]
+            [:span.desc (t :badge/Endorsers)]]]]]
         (when (pos? (:pending-endorsements-requests @state)) #_(pos? (:endorsement-requests @state))
          [:div.info-block
-          [:a {:href (str (path-for "/connections/endorsement")) :on-click #(do
-                                                                              (.preventDefault %)
-                                                                              (session/put! :visible-area "requests"))}
+          [:a {:href "#" #_(str (path-for "/connections/endorsement")) :on-click #(do
+                                                                                    (.preventDefault %)
+                                                                                    (navigate-to "/connections/endorsement")
+                                                                                    (session/put! :visible-area "requests"))}
            [:div.info
             (when (pos? (:pending-endorsements-requests @state)) [:span.badge "!"])
             [:div.text
-             [:p.num (:pending-endorsements-requests @state)]
-             [:p.desc (t :badge/Endorsementrequests)]]]]])]]]]]])
+             [:span.num (:pending-endorsements-requests @state)]
+             [:span.desc (t :badge/Endorsementrequests)]]]]])]]]]]])
 
 
 (defn profile-tips-block []
@@ -484,14 +487,15 @@
          [:span.small.icon]]
 
         [:div.content
-         (when-not (not-activated?) [:a.btn.button {:href (path-for (str "/profile/" (session/get-in [:user :id])))
+         (when-not (not-activated?) [:a.btn.button {:href "#" #_(path-for (str "/profile/" (session/get-in [:user :id])))
                                                     :on-click #(do
                                                                 (.preventDefault %)
+                                                                (navigate-to (str "/profile/" (session/get-in [:user :id])))
                                                                 (session/put! :edit-mode true))} (t :page/Edit)])
 
          [:div
           [:div.media
-           [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture])) :alt user-name}]]
+           [:div.media-left [:img.img-rounded {:src (profile-picture (get-in user [:user :profile_picture])) :alt ""}]]
 
            [:div.media-body[:div.name user-name]
             [:div.stats
@@ -526,8 +530,9 @@
   (let [blocks (plugin-fun (session/get :plugins) "routes" "quicklinks")
         quicklinks  (mapcat #(%) blocks)]
     (reduce (fn [r link]
-              (conj r [:a {:href (:url link) :on-click #(do (.preventDefault %)
-                                                         (when (:function link) ((:function link))))} (:title link)]))
+              (conj r [:a {:href "#" #_(:url link) :on-click #(do (.preventDefault %)
+                                                               (navigate-to (:url link))
+                                                               (when (:function link) ((:function link))))} (:title link)]))
             [:div.quicklinks]
             (some->> quicklinks (sort-by :weight <)))))
 

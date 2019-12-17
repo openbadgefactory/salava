@@ -672,13 +672,15 @@ background-color:#756A70;
         p {
           margin: 0;
         }
-        p.num {
+        p.num, span.num{
           font-size: 20px;
           font-weight: 800;
+          display: block;
         }
-        p.desc {
+        p.desc, span.desc {
           margin-top: 10px;
           margin-bottom: 10px;
+          display: block;
         }
 
 
@@ -795,7 +797,7 @@ background-color:#756A70;
         }
         .date {
           color: $orange-color;
-          font-size: 10px;
+          font-size: 11px;
           display: block;
           //margin: 3px auto;
         }
@@ -1050,17 +1052,18 @@ background-color:#756A70;
       margin-right: 5px;
       margin-bottom: 25px;
       .text {
-        p.num {
+        p.num, span.num {
           font-size: 36px;
           color: #4d948b;
           font-weight: 400;
         }
 
 
-        p.desc {
+        p.desc, span.desc {
           font-size: 16px;
           color: $text-color;
-
+          display: block;
+          margin-top: 5px;
         }
 
       }
@@ -1076,14 +1079,14 @@ background-color:#756A70;
             display: block;
             margin-top: 5px;
             margin-bottom: 5px;
-            p.num {
+            p.num, span.num {
               font-size: 22px;
             }
 
-            p.desc {
+            p.desc, span.desc {
               font-size: 16px;
             }
-            p.desc, p.num {
+            p.desc, p.num, span.desc, span.num {
               margin-top: 0px;
               float: unset;
               margin: 3px;
@@ -1308,7 +1311,7 @@ background-color:#756A70;
             display: flex;
             margin-top: -2px;
             float:none;
-            p.desc, p.num {
+            p.desc, p.num, span.desc, span.num {
               margin-top: 0px;
               float: left;
               font-size: 16px;

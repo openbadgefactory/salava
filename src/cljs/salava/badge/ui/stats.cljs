@@ -36,15 +36,15 @@
                     :let [{:keys [id name image_file reg_count anon_count latest_view]} badge-views]]
                 [:div.col-md-12
                  [:div.flip-table
-                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file) :alt name}]]
+                  [:div.col-md-1 [:img.badge-icon {:src (str "/" image_file) :alt ""}]]
                   [:div.col-md-5 [:a {:href "#"
                                       :on-click #(do
                                                    (mo/open-modal [:badge :info] {:badge-id id})
                                                    ;(b/open-modal id false init-data state)
                                                    (.preventDefault %)) }  name]]
-                  [:div.col-md-2 [:label.hidden-label  (t :badge/Loggedinusers)] reg_count]
-                  [:div.col-md-2 [:label.hidden-label (t :badge/Anonymoususers)]anon_count]
-                  [:div.col-md-2 [:label.hidden-label (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
+                  [:div.col-md-2 [:span.hidden-label  (t :badge/Loggedinusers)] reg_count]
+                  [:div.col-md-2 [:span.hidden-label (t :badge/Anonymoususers)] anon_count]
+                  [:div.col-md-2 [:span.hidden-label  (t :badge/Latestview)] (if latest_view (date-from-unix-time (* 1000 latest_view)))]]]))])]))
 
 (defn congratulations-panel [congratulations visible-area-atom]
   (let [panel-identity :congratulations
@@ -69,7 +69,7 @@
                      :let [{:keys [id name image_file congratulation_count latest_congratulation]} badge-congrats]]
                  [:tr
                   [:td [:img.badge-icon {:src (str "/"  image_file)
-                                         :alt name}]]
+                                         :alt ""}]]
                   [:td.name [:a {:href "#"
                                  :on-click #(do
                                               (mo/open-modal [:badge :info] {:badge-id id})
@@ -100,7 +100,7 @@
                                           (mo/open-modal [:badge :info] {:badge-id id})
                                           ;(b/open-modal id false init-data state)
                                           (.preventDefault %))}
-                         [:img.badge-icon {:src (str "/"  image_file) :title name :alt name}]]))])))]))
+                         [:img.badge-icon {:src (str "/"  image_file) :title name :alt (str (t :badge/Badge) " " name)}]]))])))]))
 
 (defn content [state]
   (let [{:keys [badge_count expired_badge_count badge_views badge_congratulations badge_issuers]} @state
