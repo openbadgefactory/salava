@@ -124,7 +124,7 @@
        (apply include-css (css-list ctx))
        [:link {:type "text/css" :href "/css/custom.css" :rel "stylesheet" :media "screen"}]
        [:link {:type "text/css" :href "/css/print.css" :rel "stylesheet" :media "print"}]
-       [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
+       [:link {:type "text/css", :href "https://fonts.googleapis.com/css?family=Halant:300,400,600,700|Dosis:300,400,600,700,800|Roboto|Gochi+Hand|Coming+Soon|Oswald:400,300,700|Dancing+Script:400,700|Archivo+Black|Archivo+Narrow|Open+Sans:700,300,600,800,400|Open+Sans+Condensed:300,700|Cinzel:400,700&subset=latin,latin-ext", :rel "stylesheet"}]
        [:link {:rel "shortcut icon" :href (:icon favicons) }]
        [:link {:rel "icon" :type "image/png" :href  (:png favicons)}]
 
