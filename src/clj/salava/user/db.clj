@@ -433,8 +433,11 @@
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)
-        last-visited (last-visited ctx user-id)]
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited})))
+        last-visited (last-visited ctx user-id)
+        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))]
+    (-> ok-status
+        (assoc-in [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited :expires expires})
+        (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"}))))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)

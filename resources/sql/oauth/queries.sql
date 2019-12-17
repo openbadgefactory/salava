@@ -40,4 +40,33 @@ INSERT INTO user_terms (user_id, status, ctime) VALUES (:user_id, :status, UNIX_
 REPLACE INTO user_properties (user_id, name, value) VALUES (:user_id, 'last_visited', :value );
 
 --name: select-oauth-user-last-login
-SELECT last_login FROM user WHERE id = :id
+SELECT last_login FROM user WHERE id = :id;
+
+
+--name: select-oauth2-auth-code-user
+SELECT u.* FROM user u
+INNER JOIN oauth2_token t ON u.id = t.user_id
+WHERE t.client_id = :client_id AND t.auth_code = :auth_code AND t.refresh_token IS NULL;
+
+--name: select-oauth2-refresh-token-user
+SELECT u.*, t.refresh_token FROM user u
+INNER JOIN oauth2_token t ON u.id = t.user_id
+WHERE t.client_id = :client_id AND t.user_id = :user_id AND t.refresh_token IS NOT NULL;
+
+-- name: delete-oauth2-token!
+DELETE FROM oauth2_token WHERE user_id = :user_id AND client_id = :client_id;
+
+-- name: delete-oauth2-auth-code!
+DELETE FROM oauth2_token WHERE user_id = :user_id AND client_id = :client_id AND auth_code IS NOT NULL;
+
+-- name: insert-oauth2-auth-code!
+INSERT INTO oauth2_token (user_id, client_id, auth_code, ctime, mtime)
+    VALUES (:user_id, :client_id, :auth_code, UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+-- name: update-oauth2-auth-code!
+UPDATE oauth2_token SET refresh_token = :rtoken, auth_code = NULL, auth_code_challenge = NULL, mtime = UNIX_TIMESTAMP()
+WHERE client_id = :client_id AND auth_code = :auth_code;
+
+-- name: update-oauth2-refresh-token!
+UPDATE oauth2_token SET refresh_token = :rtoken, mtime = UNIX_TIMESTAMP()
+WHERE client_id = :client_id AND refresh_token = :refresh_token AND auth_code IS NULL;

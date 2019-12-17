@@ -56,7 +56,7 @@
    [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
     [:div.metabadge {:class (if (> (count required_badges) 8) " metabadge-large")}
      [:div.panel
-      [:div.panel-heading (:name m)
+      [:div.panel-heading [:span.metabadge_block_name (:name m)]
        [:div.pull-right (if milestone? [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
       [:div.panel-body
        [:table.table

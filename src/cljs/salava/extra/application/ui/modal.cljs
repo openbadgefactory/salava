@@ -42,7 +42,7 @@
            [:div {:class "col-md-3 badge-image modal-left"}
             [:img {:src (str "/" image_file)}]
             [:div
-             [:div
+             [:div.clip-text
               [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]]]]
            [:div {:class "col-md-9 "}
             [:div.rowcontent
@@ -61,10 +61,10 @@
                       :target "_blank"} (t :badge/Opencriteriapage)]])]
              [:div {:class " badge-info"}
               [:h2.uppercase-header (t :extra-application/Howtogetthisbadge)]
-              [:div {:dangerouslySetInnerHTML {:__html info}}]]
+              [:div {:dangerouslySetInnerHTML {:__html info} :style {:word-wrap "break-word"}}]]
              [:div
               (if (not (empty? tags))
-                (into [:div]
+                (into [:div {:style {:word-wrap "break-word"}}]
                       (for [tag tags]
                         [:a {:href         "#"
                              :id           "tag"

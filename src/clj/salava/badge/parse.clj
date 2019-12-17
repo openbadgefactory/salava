@@ -6,12 +6,17 @@
             [clojure.data.json :as json]
             [clojure.pprint :refer [pprint]]
             [clojure.xml :as xml]
+            [clojure.zip :as zip]
+            [clojure.data.zip.xml :as zip-xml]
             [clj-http.client :as clj-http]
             [net.cgrand.enlive-html :as html]
             [salava.core.util :as u]
             [salava.core.http :as http]
             [salava.core.helper :refer [dump]]
             [schema.core :as s]
+            [pdfboxing.info :as pdf-info]
+            [pdfboxing.common :as pdf]
+            [pantomime.extract :as extract]
             [autoclave.core :refer [json-sanitize]])
   (:import (ar.com.hjg.pngj PngReader)
            (java.io StringReader)))
@@ -334,6 +339,7 @@
                                        (http/alternate-get "text/x-markdown" (:criteria badge)))
                        creator-url (get-in badge [:extensions:OriginalCreator :url])
                        image (if (map? (:image badge)) (get-in badge [:image :id]) (:image badge))]
+
                    {:content  [{:id ""
                                 :language_code language
                                 :name (:name badge)
@@ -631,11 +637,30 @@
                       (json/read-str body :key-fn keyword)
                       {:assertion_url input :assertion_json body :assertion_jws nil})))
 
+
+(defn jws-pub-key [assertion]
+  (let [badge  (if (map? (:badge assertion)) (:badge assertion) (get-json-content (:badge assertion)))
+        issuer (if (map? (:issuer badge)) (:issuer badge) (get-json-content (:issuer badge)))]
+    (cond
+      (re-find #"^http" (get-in assertion [:verify :url] ""))
+      (some-> (get-in assertion [:verify :url]) http/http-get keys/str->public-key) ;; Older style key
+
+      (and (re-find #"^http" (get issuer :publicKey ""))
+           (= (get issuer :publicKey) (get-in assertion [:verification :creator]))) ;; New style key
+      (if-let [pub (some-> issuer :publicKey get-json-content)]
+        ;;TODO fix BRS and validate ids
+        #_(when (= (:owner pub) (:id issuer))
+          (keys/str->public-key (:publicKeyPem pub)))
+        (keys/str->public-key (:publicKeyPem pub)))
+
+      :else nil)))
+
+
 (defmethod str->badge :jws [user input]
   (let [[raw-header raw-payload raw-signature] (clojure.string/split input #"\.")
         header     (-> raw-header u/url-base64->str (json/read-str :key-fn keyword))
         payload    (-> raw-payload u/url-base64->str (json/read-str :key-fn keyword))
-        public-key (-> (get-in payload [:verify :url]) http/http-get keys/str->public-key)
+        public-key (jws-pub-key payload)
         body       (-> input (jws/unsign public-key {:alg (-> header :alg string/lower-case keyword)}) (String. "UTF-8"))]
     (assertion->badge user (json/read-str body :key-fn keyword) {:assertion_url nil :assertion_jws input :assertion_json body})))
 
@@ -648,6 +673,13 @@
   (throw (IllegalArgumentException. "invalid assertion string")))
 
 ;;;
+
+(defn- find-tag [depth tag root]
+  (cond
+    (= (:tag root) tag) root
+    (> depth 10) nil
+    :else (some #(find-tag (inc depth) tag %) (:content root))))
+
 
 (defmulti file->badge (fn [_ upload]
                         (or (:content-type upload)
@@ -662,14 +694,24 @@
              (str->badge user))))
 
 (defmethod file->badge "image/svg+xml" [user upload]
-  (some->> (xml/parse (or (:tempfile upload) (:body upload)))
-           :content
-           (filter #(= :openbadges:assertion (:tag %)))
-           first
-           :content
-           first
+  (some->> (or (:tempfile upload) (:body upload))
+           xml/parse (find-tag 0 :openbadges:assertion) :attrs :verify
            string/trim
            (str->badge user)))
+
+(defmethod file->badge "application/pdf" [user upload]
+  (with-open [doc (pdf/obtain-document (or (:tempfile upload) (:body upload)))]
+    (or
+      (some->>
+        (.. doc getDocumentInformation (getCustomMetadataValue "openbadges"))
+        string/trim
+        (str->badge user))
+      (some->>
+        doc .getDocumentCatalog .getMetadata .createInputStream
+        xml/parse (find-tag 0 :openbadges:assertion) :attrs :verify
+        string/trim
+        (str->badge user)))))
+
 
 (defmethod file->badge :default [_ upload]
   (log/error "file->assertion: unsupported file type:" (:content-type upload))
