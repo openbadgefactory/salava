@@ -153,8 +153,6 @@
 (defn gallery-element [picture-data profile-picture-atom pictures-atom]
   (let [{:keys [path id name]} picture-data
         current-profile-picture (session/get-in  [:user :profile_picture])]
-        ;profile-picture-fn (first (plugin-fun (session/get :plugins) "helper" "profile_picture"))
-        ;delete-fn (first (plugin-fun (session/get :plugins) "my" "delete_file_modal"))]
     [:div {:key path
            :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
            :on-click #(reset! profile-picture-atom path)}
@@ -169,7 +167,7 @@
 
 (defn profile-picture-gallery [pictures-atom profile-picture-atom]
   [:div {:id "profile-picture-gallery" :class "row"}
-   [:label.col-xs-12 (t :user/Selectprofilepicture)]
+   [:span._label.col-xs-12 (t :user/Selectprofilepicture)]
    [:div.col-xs-12
     [gallery-element {:path nil} profile-picture-atom]
     (into [:div]

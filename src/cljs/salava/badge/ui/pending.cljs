@@ -67,11 +67,11 @@
          (bm/issuer-modal-link issuer_content_id issuer_content_name)
          (bm/creator-modal-link creator_content_id creator_name)
          (if (and issued_on (> issued_on 0))
-           [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+           [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
          (if (and expires_on (not expired?))
-           [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
+           [:div [:span._label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
          (if (pos? @show-recipient-name-atom)
-           [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
+           [:div [:span._label (t :badge/Recipient) ": "]  first_name " " last_name])
          ;[:div [mb/metabadge (:assertion_url @state)]]
          [:div {:class "criteria-html"}
           [:h2.uppercase-header (t :badge/Criteria)]
@@ -112,7 +112,7 @@
 
          [:div.row.flip
           [:div.col-md-3.badge-image
-           [:img.badge-image {:src (str "/" image_file) :alt name}]
+           [:img.badge-image {:src (str "/" image_file) :alt ""}]
            (bm/badge-endorsement-modal-link badge_id endorsement_count)]
 
           [:div.col-md-9
@@ -124,10 +124,7 @@
            (into [:div {:style {:margin "10px -10px"}}]
              (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
                [f {:user_badge_id id}]))
-           #_(when metabadge-fn
-              (into [:div]
-               (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
-                 [:div {:style {:margin "10px -10px"}}[f {:user_badge_id id}]])))
+
            [show-more state]]]]))))
 
 (defn badge-alert [state]

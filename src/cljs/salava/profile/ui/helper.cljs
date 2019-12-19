@@ -36,7 +36,7 @@
                                                :checked   (= "public" @visibility-atom)}]
                                       (t :user/Publishandshare)]]]
     [:div.visibility
-     [:label (t :user/Profilevisibility) ": " @visibility-atom]]))
+     [:span._label (t :user/Profilevisibility) ": " @visibility-atom]]))
 
 (def block-type-map
  [{:icon "fa-certificate" :icon-2 "fa-th-large" :text :page/Badgeshowcase :value "showcase"}])

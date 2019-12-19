@@ -2232,6 +2232,10 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   display: inline-block;
 }
 
+._label.filter-opt {
+    text-align: unset;
+  }
+
 .selected-users-container {
   margin: 20px auto;
   a {

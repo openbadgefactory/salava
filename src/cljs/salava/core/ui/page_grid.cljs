@@ -31,17 +31,19 @@
                                                   [:div.page-create-date.no-flip
                                                    (date-from-unix-time (* 1000 mtime) "minutes")]
                                                   (reduce (fn [r badge] (conj r [:img {:title (:name badge)
-                                                                                       :alt (:name badge)
+                                                                                       :alt (str (t :badge/Badge) " " (:name badge))
                                                                                        :src (str "/" (:image_file badge))}] ) )[:div.page-badges] badges)]]]]]
 
                                              [:div.media-bottom.flip-modal
                                               [:a {:class "bottom-link"
                                                    :title (t :page/Edit)
-                                                   :href  (path-for (str "/profile/page/edit/" id))}
+                                                   :href  (path-for (str "/profile/page/edit/" id))
+                                                   :aria-label (t :page/Edit)}
                                                [:i {:class "fa fa-pencil"}]]
                                               [:a {:class "bottom-link pull-right"
                                                    :title (t :page/Settings)
-                                                   :href  (path-for (str "/profile/page/settings/" id))}
+                                                   :href  (path-for (str "/profile/page/settings/" id))
+                                                   :aria-label (t :page/Settings)}
                                                [:i {:class "fa fa-cog"}]]]]]
 
       "profile" [:div.col-xs-12.col-md-4  {:key id :style {:padding-left "0"}}
@@ -57,7 +59,7 @@
                       [:div.page-create-date.no-flip
                        (date-from-unix-time (* 1000 mtime) "minutes")]
                       (reduce (fn [r badge] (conj r [:img {:title (:name badge)
-                                                           :alt (:name badge)
+                                                           :alt (str (t :badge/Badge) " " (:name badge))
                                                            :src (str "/" (:image_file badge))}] ) )[:div.page-badges] (take 4 badges))]]
 
                     [:div {:class "media-right"}
@@ -76,7 +78,7 @@
                        [:div.page-create-date.no-flip
                         (date-from-unix-time (* 1000 mtime) "minutes")]
                        (reduce (fn [r badge] (conj r [:img {:title (:name badge)
-                                                            :alt (:name badge)
+                                                            :alt (str (t :badge/Badge) " " (:name badge))
                                                             :src (str "/" (:image_file badge))}] ) )[:div.page-badges] (take 4 badges))]]
 
 
@@ -108,7 +110,7 @@
                        [:div.page-create-date.no-flip
                         (date-from-unix-time (* 1000 mtime) "minutes")]
                        (reduce (fn [r badge] (conj r [:img {:title (:name badge)
-                                                            :alt (:name badge)
+                                                            :alt (str (t :badge/Badge) " " (:name badge))
                                                             :src (str "/" (:image_file badge))}] ) )[:div.page-badges] (take 4 badges))]]
 
 
@@ -126,7 +128,7 @@
                      [:div.page-create-date.no-flip
                       (date-from-unix-time (* 1000 mtime) "minutes")]
                      (reduce (fn [r badge] (conj r [:img {:title (:name badge)
-                                                          :alt (:name badge)
+                                                          :alt (str (t :badge/Badge) " " (:name badge))
                                                           :src (str "/" (:image_file badge))}] ) )[:div.page-badges] (take 4 badges))]]
 
 
