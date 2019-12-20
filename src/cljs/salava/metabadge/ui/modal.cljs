@@ -163,7 +163,7 @@
                                                  (if (pos? deleted) name [:a {:href "#" :on-click #(mo/open-modal [:badge :info] {:badge-id user_badge_id})} name])))
                                              [:a {:href "#" :on-click #(mo/open-modal [:metabadge :dummy] badge)} name])]
 
-                            [:div.col-md-2 [:label (t :metabadge/Earnedon)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
+                            [:div.col-md-2 [:label.hidden-label (t :metabadge/Earnedon)] (if issued_on (date-from-unix-time (* 1000 issued_on)) "-")]
                             [:div.col-md-4 ]]]))) [:div.row.body] (->> required_badges
                                                                        (sort-by #(-> % :issued_on) >)
                                                                        #_(sort-by :received >)))]]]]]))
