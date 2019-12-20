@@ -354,8 +354,9 @@
                                    (if issuer_id
                                      [:a {:href "#"
                                           :on-click #(mo/open-modal [:profile :view] {:user-id issuer_id})}
-                                      [:img.small-image {:src (profile-picture profile_picture)}]
-                                      issuer_name] [:div [:img.small-image {:src (profile-picture profile_picture)}] issuer_name (if (= "pending" status) (t :badge/Hasendorsedyou))])]]]
+                                      [:img.small-image {:src (profile-picture profile_picture) :alt ""}]
+                                      issuer_name]
+                                     [:div [:img.small-image {:src (profile-picture profile_picture) :alt ""}] issuer_name (if (= "pending" status) (t :badge/Hasendorsedyou))])]]]
 
                                 [:div [:button {:type "button"
                                                 :aria-label "OK"

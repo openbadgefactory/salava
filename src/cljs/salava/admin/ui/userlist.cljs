@@ -75,7 +75,7 @@
 (defn filter-buttons [state]
   (let [filter-atom (cursor state [:filter])]
     [:div.form-group
-     [:label {:class "control-label col-sm-2"} (str (t :core/Show) ":")]
+     [:span._label.filter-opt {:class "control-label col-sm-2"} (str (t :core/Show) ":")]
      [:div.col-sm-10
       [:label.radio-inline {:for "radio-date"}
        [:input {:id "radio-date"
@@ -153,7 +153,7 @@
        [:th (t :admin/Name)]
        [:th (t :badge/Email)]
        [:th (t :user/Terms)]
-       [:th ""]]]
+       [:td ""]]]
      [:tbody
       (doall
         (for [element-data users]

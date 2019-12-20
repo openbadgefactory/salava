@@ -32,20 +32,22 @@
         subject (cursor mail [:subject])]
     [:div
      [:div.form-group
-      [:label
+      [:label {:for "subjectArea"}
        (str (t :admin/Subjectforitemowner) ":")]
       [:input {:class    "form-control"
                :value    @subject
                :onChange #(reset! subject (.-target.value %))
-               :aria-label (t :admin/Subjectforitemowner)}]]
+               :aria-label (t :admin/Subjectforitemowner)
+               :id "subjectArea"}]]
      [:div.form-group
-      [:label
+      [:label {:for "textArea"}
        (str (t :admin/Messageforitemowner) ":")]
       [:textarea {:class    "form-control"
                   :rows     "5"
                   :value    @message
                   :onChange #(reset! message (.-target.value %))
-                  :aria-label (t :admin/Messageforitemowner)}]]]))
+                  :aria-label (t :admin/Messageforitemowner)
+                  :id "textArea"}]]]))
 
 
 (defn email-select [emails email-atom]

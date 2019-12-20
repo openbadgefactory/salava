@@ -159,18 +159,18 @@
          [:div.total-badges.info-block
           [:div.info
            [:div.text
-            [:p.num (get-in data [:views-stats :reg_count] 0)]
-            [:p.desc (t :badge/Loggedinusers)]]]]
+            [:span.num (get-in data [:views-stats :reg_count] 0)]
+            [:span.desc (t :badge/Loggedinusers)]]]]
          [:div.total-badges.info-block
           [:div.info
            [:div.text
-            [:p.num (get-in data [:views-stats :anon_count] 0)]
-            [:p.desc (t :badge/Anonymoususers)]]]]
+            [:span.num (get-in data [:views-stats :anon_count] 0)]
+            [:span.desc (t :badge/Anonymoususers)]]]]
          [:div.info-block
           [:div.info
            [:div.text
-            [:p.num (date-from-unix-time (* (get-in data [:views-stats :latest_view] 0) 1000))]
-            [:p.desc (t :badge/Latestview)]]]]]]]]]]])
+            [:span.num (date-from-unix-time (* (get-in data [:views-stats :latest_view] 0) 1000))]
+            [:span.desc (t :badge/Latestview)]]]]]]]]]]])
 
 (defn badge-recipients [recipients state]
   (let [panel-identity :recipients
@@ -250,6 +250,7 @@
   [:div {:class "form-horizontal"}
    [:div
     [:fieldset {:class "form-group visibility"}
+     [:legend ""]
      [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
       (if-not (private?)
         [:div [:input {:id              "visibility-public"

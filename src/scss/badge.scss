@@ -1949,7 +1949,7 @@ a.popup-info {
 
   }
 }
-#social-tab, #badge-settings #social-tab {
+#social-tab { //, #badge-settings #social-tab {
   .confirmusers {
     padding: 10px;
     background-color: $background-color;
@@ -2066,11 +2066,11 @@ a.popup-info {
           p {
             margin: 0;
           }
-          p.num{
+          .num{
             font-size: 22px !important;
             font-weight: 600 !important;
           }
-          p.desc{
+          .desc{
             margin-top: 10px;
             margin-bottom: 10px;
           }
@@ -2095,7 +2095,7 @@ a.popup-info {
             margin: unset;
             display: flex;
             margin-top: -2px;
-            p.desc, p.num{
+            .desc, .num{
               margin-top: 0px;
               float: left;
               font-size: 16px !important;
@@ -2235,6 +2235,12 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
 ._label.filter-opt {
     text-align: unset;
   }
+
+._label.stats {
+  width: 60%;
+  font-size: 14px;
+}
+
 
 .selected-users-container {
   margin: 20px auto;

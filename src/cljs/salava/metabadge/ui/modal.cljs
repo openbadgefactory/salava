@@ -95,7 +95,7 @@
     [:div.image-container
      [:div {:class (when-not is-complete? "opaque")}
       [:img {:src (if image_file (str "/" image_file) image) :class (mb/image-class completion_status) :alt (str "Metabadge " name)}]]]
-    [:div.progress {:alt (str completion_status "%") :title (str completion_status "%")}
+    [:div.progress {:alt (str completion_status "%") :title (str "Progress: " completion_status "%")}
      [:div.progress-bar.progress-bar-success
       {:role "progressbar"
        :aria-valuenow (str completion_status)
@@ -103,13 +103,13 @@
        :aria-valuemin "0"
        :aria-valuemax "100"
        :alt (str completion_status "%")
-       :title (str completion_status "%")}
+       :title (str "Progress: " completion_status "%")}
       (str completion_status "%")]]]
    [:div.col-md-9
     [:div.col-md-12
      [:h1.uppercase-header (:name metabadge)]
-     [:div {:style {:margin-top "10px"}}[:label (str (t :metabadge/Minimumrequired) ": ")] min_required]
-     [:div [:label (str (t :metabadge/Amountearned)": ")] amount_received]
+     [:div {:style {:margin-top "10px"}}[:span._label (str (t :metabadge/Minimumrequired) ": ")] min_required]
+     [:div [:span._label (str (t :metabadge/Amountearned)": ")] amount_received]
      [:div.description description]
      [:div {:class "row criteria-html"}
       [:div.col-md-12
@@ -125,7 +125,7 @@
     [:div.image-container
      [:div {:class (if-not is-complete? "opaque")}
       [:img {:src (if image_file (str "/" image_file) image) :class (mb/image-class completion_status) :alt (str "Metabadge " name)}]]]
-    [:div.progress {:alt (str completion_status "%") :title (str completion_status "%")}
+    [:div.progress {:alt (str completion_status "%") :title (str "Progress: " completion_status "%")}
      [:div.progress-bar.progress-bar-success
       {:role "progressbar"
         :aria-valuenow (str completion_status)
@@ -133,7 +133,7 @@
         :aria-valuemin "0"
         :aria-valuemax "100"
         :alt (str completion_status "%")
-        :title (str completion_status "%")}
+        :title (str "Progress: " completion_status "%")}
       (str completion_status "%")]]]
    [:div.col-md-9 {:id "badge-stats"}
     [:div.col-md-12

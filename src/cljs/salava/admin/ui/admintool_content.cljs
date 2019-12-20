@@ -63,7 +63,7 @@
        [:div.col-md-12
         (str (t :admin/Sendmessageforuser) " " item_owner ".")
         [:div.form-group
-         [:label
+         [:span._label
           (str (t :user/Email) ":")]
          (email-select (:emails info) email-atom) ]
         (message-form mail)
@@ -114,30 +114,30 @@
 (defn user-info-block [info]
  [:div
    [:div {:class "row"}
-    [:label.col-xs-4 (t :user/Email) ":"]
+    [:span._label.col-xs-4 (t :user/Email) ":"]
     [:div.col-xs-6
      (doall
       (for [element-data (:emails info)]
         [:div {:key (hash (:email element-data)) :class (if (:primary_address element-data) "primary-address" "") } (str (:email element-data) " ") (if (:verified element-data) [:i {:class "fa fa-check"}])]
         ))]]
   [:div {:class "row"}
-   [:label.col-xs-4 (t :admin/Created) ":"]
+   [:span._label.col-xs-4 (t :admin/Created) ":"]
    [:div.col-xs-6
     (date-from-unix-time (* 1000 (:ctime info)) "minutes")]]
   (if-not (empty? (:service info))
     [:div {:class "row"}
-     [:label.col-xs-4 (t :admin/Service) ":"]
+     [:span._label.col-xs-4 (t :admin/Service) ":"]
      [:div.col-xs-6
       (interpose ", " (:service info))]])
   (if-not (empty? (:service info))
     [:div {:class "row"}
-     [:label.col-xs-4 (t :admin/Haspassword?) ":"]
+     [:span._label.col-xs-4 (t :admin/Haspassword?) ":"]
      [:div.col-xs-6
       (if (pos? (:has_password? info))
         (t :admin/Hassetpassword)
         (t :admin/Hasntsetpassword))]])
   [:div {:class "clearfix row"}
-    [:label.col-xs-4 (t :admin/Lastlogin) ":"]
+    [:span._label.col-xs-4 (t :admin/Lastlogin) ":"]
    [:div.col-xs-6
     (if (:last_login info)
       (date-from-unix-time (* 1000 (:last_login info)) "minutes")
@@ -478,7 +478,7 @@
     [:div {:class "admin-modal"}
      [:div.row.flip
       [:div {:class "col-sm-3 badge-image modal-left"}
-       [:img {:src (profile-picture image_file) :alt name} ]
+       [:img {:src (profile-picture image_file) :alt ""} ]
        (if (:deleted info)
          [:h4 (t :admin/Deleteduser) ])]
       [:div {:class "col-sm-9 badge-info"}
