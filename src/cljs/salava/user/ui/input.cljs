@@ -15,8 +15,8 @@
              :placeholder placeholder
              :on-change   #(do
                              (reset! atom (.-target.value %))
-                             (if error-message-atom(reset! error-message-atom (:message "")))
-                             )
+                             (if error-message-atom(reset! error-message-atom (:message ""))))
+
              :value       @atom}]))
 
 
@@ -29,7 +29,9 @@
                          :name      name
                          :value     value
                          :default-checked (= @atom value)
-                         :on-change  #(reset! atom value)}]
+                         :on-change  #(reset! atom value)
+                         :id "languages"}]
+
                 (t (keyword (str "core/" value)))]) values)))
 
 

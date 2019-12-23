@@ -171,14 +171,19 @@
 
 (def editor (atom nil))
 
+;(def editor (atom {:editor nil :md-enabled? true}))
+
+(def md? (atom true))
+
 (defn init-editor [element-id value]
   (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
                                           :toolbar simplemde-toolbar
                                           :spellChecker false})))
+
+  (when-not @md? (do (.toTextArea @editor))) ;(reset! editor nil)))
   (.value @editor @value)
   (js/setTimeout (fn [] (.value @editor @value)) 200)
   (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
-
 
 (defn markdown-editor [value]
   (create-class {:component-did-mount (fn []
@@ -188,7 +193,15 @@
                                     [:textarea {:class "form-control"
                                                 :id (str "editor" (-> (session/get :user) :id))
                                                 :defaultValue @value
-                                                :on-change #(reset! value (.-target.value %))}]])}))
+                                                :on-change #(reset! value (.-target.value %))
+                                                :cols 12
+                                                :rows 12
+                                                :aria-label "Compose text"}]])}))
+
+(defn toggle-markdown-editor [element-id value]
+  (if @md?
+    (do (reset! md? false) (.toTextArea @editor) (reset! editor nil))
+    (do (reset! md? true) (init-editor element-id value))))
 
 (defn process-text [s state]
   (let [text (-> js/document
@@ -732,14 +745,22 @@
  (let [{:keys [state reload-fn]} params
        request-comment (cursor state [:request-comment])
        selected-users (cursor state [:selected-users])]
+       ;md-enabled? (cursor state [:md?])]
   (reset! request-comment (t :badge/Defaultrequestbadge))
+  ;(reset! md-enabled? true)
   (fn []
     [:div.col-md-12 {:id "social-tab"}
      [:div.editor
       [:div.form-group {:style {:display "block"}}
-       [:label {:for "claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
-       [:div.editor [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
-      (when (seq @selected-users) ;(and (complement (blank? @request-comment)) (> (count @request-comment) 15))
+       [:label {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
+       [:div.pull-right [:button {:type "button"
+                                  :aria-label "toggle markdown-editor"
+                                  :class "close evidence-toggle"
+                                  :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) request-comment))}
+
+                         [:i.fa.show-more {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]
+       [:div.editor  [markdown-editor request-comment #_(str "editor" (-> (session/get :user) :id))]]]
+      (when (seq @selected-users)
         [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
          [:a {:href "#"
               :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})}
