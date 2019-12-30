@@ -1849,6 +1849,9 @@ button {
       font-size: 16px;
     }
 
+    .fa-toggle-on, .fa-toggle-off {
+      color: $button-color;
+    }
 
     .fa-eye {
       //float: right;

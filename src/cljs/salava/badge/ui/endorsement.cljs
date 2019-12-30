@@ -216,7 +216,7 @@
                                :class "close evidence-toggle"
                                :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) value))}
 
-                       [:i.fa.show-more {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]))
+                       [:i.fa.show-more.fa-fw {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]))
 
 (defn process-text [s state]
   (let [element (-> js/document (.getElementById (str "editor" (-> (session/get :user) :id))))
@@ -270,7 +270,7 @@
 
      [:div.editor
       [:div.form-group
-       [:div.row.flip {:style {:margin-bottom "10px"}}
+       [:div.row.flip {:style {:margin-bottom "5px"}}
         [:label.col-md-6 {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
         [:div.col-md-6 [toggle-md-button (cursor state [:endorsement-comment])]]]
        [:div [markdown-editor (cursor state [:endorsement-comment]) (str "editor" (-> (session/get :user) :id))]]]
@@ -544,7 +544,7 @@
          (cond
            endorsee_id  [:div {:style {:margin-top "15px"}}
                          [:div
-                          [:div.row.flip {:style {:margin-bottom "10px"}}
+                          [:div.row.flip {:style {:margin-bottom "5px"}}
                            [:span._label.col-md-6 {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
                            [:div.col-md-6 [toggle-md-button (cursor params [:endorsement :content])]]]
                           [:div.editor [markdown-editor (cursor params [:endorsement :content])]]]
@@ -774,7 +774,7 @@
     [:div.col-md-12 {:id "social-tab"}
      [:div.editor
       [:div.form-group {:style {:display "block"}}
-       [:div.row.flip {:style {:margin-bottom "10px"}}
+       [:div.row.flip {:style {:margin-bottom "5px"}}
         [:label.col-md-6 {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
         [:div.col-md-6 [toggle-md-button request-comment]]]
        #_[:div.pull-right [:span (str (if @md? (t :core/Disablemarkdowneditor) (t :core/Enablemarkdowneditor)) " ")]
