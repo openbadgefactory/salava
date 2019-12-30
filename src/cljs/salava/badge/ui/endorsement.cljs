@@ -169,21 +169,22 @@
                               "link" "horizontal-rule"
                               "preview"))
 
-(def editor (atom nil))
+;(def editor (atom nil))
 
-;(def editor (atom {:editor nil :md-enabled? true}))
-
-(def md? (atom true))
+(def md-editor (atom {:editor nil :enabled? true}))
 
 (defn init-editor [element-id value]
-  (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
-                                          :toolbar simplemde-toolbar
-                                          :spellChecker false})))
-
-  (when-not @md? (do (.toTextArea @editor))) ;(reset! editor nil)))
-  (.value @editor @value)
-  (js/setTimeout (fn [] (.value @editor @value)) 200)
-  (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
+  (let [editor (cursor md-editor [:editor])
+        md? (cursor md-editor [:enabled?])]
+    (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
+                                            :toolbar simplemde-toolbar
+                                            :spellChecker false
+                                            :forceSync true})))
+    (reset! md? @md?)
+    (when-not @md? (.toTextArea @editor))
+    (.value @editor @value)
+    (js/setTimeout (fn [] (.value @editor @value)) 200)
+    (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor))))))
 
 (defn markdown-editor [value]
   (create-class {:component-did-mount (fn []
@@ -193,23 +194,39 @@
                                     [:textarea {:class "form-control"
                                                 :id (str "editor" (-> (session/get :user) :id))
                                                 :defaultValue @value
+                                                :name "content"
                                                 :on-change #(reset! value (.-target.value %))
                                                 :cols 12
                                                 :rows 12
-                                                :aria-label "Compose text"}]])}))
+                                                :aria-label "Compose text"}]])
+                 :component-did-update (fn [] #(reset! value (.-target.value %)))}))
 
 (defn toggle-markdown-editor [element-id value]
+ (let [md? (cursor md-editor [:enabled?])
+       editor (cursor md-editor [:editor])]
   (if @md?
     (do (reset! md? false) (.toTextArea @editor) (reset! editor nil))
-    (do (reset! md? true) (init-editor element-id value))))
+    (do (reset! md? true) (init-editor element-id value)))))
+
+(defn toggle-md-button [value]
+  (let [md? (cursor md-editor [:enabled?])]
+    [:div.pull-right [:span (str (if @md? (t :core/Disablemarkdowneditor) (t :core/Enablemarkdowneditor)) " ")]
+                     [:button {:type "button"
+                               :aria-label "toggle markdown-editor"
+                               :class "close evidence-toggle"
+                               :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) value))}
+
+                       [:i.fa.show-more {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]))
 
 (defn process-text [s state]
-  (let [text (-> js/document
-                 (.getElementById (str "editor" (-> (session/get :user) :id)))
-                 (.-innerHTML))
-        endorsement-claim (str text (if (blank? text) "" "\n\n") "* " s)]
+  (let [element (-> js/document (.getElementById (str "editor" (-> (session/get :user) :id))))
+        text (.-innerHTML element)
+        endorsement-claim (str text (if (blank? text) "" "\n\n") "* " s)
+        editor (cursor md-editor [:editor])
+        md? (cursor md-editor [:enabled?])]
     (reset! (cursor state [:endorsement-comment]) endorsement-claim)
-    (.value @editor  @(cursor state [:endorsement-comment]))))
+    (when @md? (.value @editor  @(cursor state [:endorsement-comment])))
+    (when-not @md? (set! (.-value element)  @(cursor state [:endorsement-comment])))))
 
 (defn endorse-badge-content [state]
   (fn []
@@ -253,7 +270,9 @@
 
      [:div.editor
       [:div.form-group
-       [:label {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
+       [:div.row.flip {:style {:margin-bottom "10px"}}
+        [:label.col-md-6 {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
+        [:div.col-md-6 [toggle-md-button (cursor state [:endorsement-comment])]]]
        [:div [markdown-editor (cursor state [:endorsement-comment]) (str "editor" (-> (session/get :user) :id))]]]
       [:div
        [:button.btn.btn-primary {:on-click #(do
@@ -431,7 +450,7 @@
     [:div.endorsement-profile.panel-default
      (if id
        [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id id})}
-        [:div.panel-body.flip
+        [:div.panel-body.fliprequest
          [:div.col-md-4
           [:div.profile-image
            [:img.img-responsive.img-thumbnail
@@ -525,7 +544,9 @@
          (cond
            endorsee_id  [:div {:style {:margin-top "15px"}}
                          [:div
-                          [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
+                          [:div.row.flip {:style {:margin-bottom "10px"}}
+                           [:span._label.col-md-6 {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
+                           [:div.col-md-6 [toggle-md-button (cursor params [:endorsement :content])]]]
                           [:div.editor [markdown-editor (cursor params [:endorsement :content])]]]
                          [:div.row.flip.control-buttons
                           (if-not @(cursor state [:show-delete-dialogue])
@@ -738,27 +759,31 @@
                 (when (= "success" (:status data))
                   (reload-fn)
                   (swap! state assoc :resp-message true)
+                  (reset! md-editor {:editor nil :enabled? true})
                   (js/setTimeout #(reset-request! state) 2000)))
      :finally (fn [] (mo/previous-view))})))
 
 (defn request-endorsement [params]
  (let [{:keys [state reload-fn]} params
        request-comment (cursor state [:request-comment])
-       selected-users (cursor state [:selected-users])]
-       ;md-enabled? (cursor state [:md?])]
+       selected-users (cursor state [:selected-users])
+       md? (cursor md-editor [:enabled?])]
   (reset! request-comment (t :badge/Defaultrequestbadge))
   ;(reset! md-enabled? true)
   (fn []
     [:div.col-md-12 {:id "social-tab"}
      [:div.editor
       [:div.form-group {:style {:display "block"}}
-       [:label {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
-       [:div.pull-right [:button {:type "button"
-                                  :aria-label "toggle markdown-editor"
-                                  :class "close evidence-toggle"
-                                  :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) request-comment))}
+       [:div.row.flip {:style {:margin-bottom "10px"}}
+        [:label.col-md-6 {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
+        [:div.col-md-6 [toggle-md-button request-comment]]]
+       #_[:div.pull-right [:span (str (if @md? (t :core/Disablemarkdowneditor) (t :core/Enablemarkdowneditor)) " ")]
+                          [:button {:type "button"
+                                    :aria-label "toggle markdown-editor"
+                                    :class "close evidence-toggle"
+                                    :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) request-comment))}
 
-                         [:i.fa.show-more {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]
+                            [:i.fa.show-more {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]
        [:div.editor  [markdown-editor request-comment #_(str "editor" (-> (session/get :user) :id))]]]
       (when (seq @selected-users)
         [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]

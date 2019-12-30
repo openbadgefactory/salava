@@ -1473,6 +1473,8 @@ html [dir="rtl"] .editor .form-group {
  display: block;
 }
 
+
+
 html[dir="rtl"] #pending-badges {
  .fa-chevron-down {
   margin-right: 5px;
@@ -1926,4 +1928,8 @@ html[dir="rtl"] #endorsebadge{
     .fa-hand-o-right:before {
       content: "\f0a5"
     }
+}
+
+html[dir= "rtl"] .editor .pull-right {
+  float: left !important;
 }
