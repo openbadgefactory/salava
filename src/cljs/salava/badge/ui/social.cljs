@@ -210,7 +210,7 @@
       (if (and (= "public" @(cursor state [:badge-settings :visibility])) (pos? @average_rating))
        ^{:key @average_rating}
         [:div.rating
-         [r/rate-it+ "rateit2" @(cursor dataatom [:rating :average_rating])]
+         [r/rate-it "rateit2" @(cursor dataatom [:rating :average_rating])]
          [:div (if (= @rating_count 1)
                  (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                  (str (t :gallery/Ratedby) " " @rating_count " " (t :gallery/earners)))]]
@@ -237,7 +237,7 @@
                  :else "")]
           [:div.rating
            {:on-click #(do (.preventDefault %)(save-rating (:id @state) state dataatom @user-rating))}
-           [r/rate-it @user-rating user-rating]]]]]]])})))
+           [r/rate-it "rateit" @user-rating user-rating]]]]]]])})))
 
 (defn- message-link [state]
  (when-not (= "private" @(cursor state [:badge-settings :visibility]))

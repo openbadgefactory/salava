@@ -784,7 +784,7 @@
                                     :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) request-comment))}
 
                             [:i.fa.show-more {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]
-       [:div.editor  [markdown-editor request-comment #_(str "editor" (-> (session/get :user) :id))]]]
+       [:div.editor  [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
       (when (seq @selected-users)
         [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
          [:a {:href "#"
