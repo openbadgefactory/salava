@@ -152,8 +152,8 @@
             (str (t (keyword (str "admin/" item_type))) " - " item_name)])]]
        [:div.media-description
         [:div {:class "col-xs-12 closed"}  ;:id (if open? "" "closed")}
-         [:div [:label (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description)]
-         [:div [:label (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/profile/" reporter_id))}(str first_name " " last_name)]]]
+         [:div [:span._label {:style {:margin-bottom "5px"}} (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description)]
+         [:div [:span._label {:style {:margin-bottom "5px"}} (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/profile/" reporter_id))}(str first_name " " last_name)]]]
         [:button {:class    "btn btn-primary"
                   :disabled (not open?)
                   :on-click #(do
@@ -189,7 +189,7 @@
 
 (defn grid-buttons-with-translates [title buttons key all-key state]
   [:div.form-group
-   [:label {:class "control-label col-sm-2"} title]
+   [:span._label.filter-opt {:class "control-label col-sm-2"} title]
    [:div.col-sm-10
     (let [all-checked? (= ((keyword all-key) @state) true)
           buttons-checked ((keyword key) @state)]

@@ -93,10 +93,10 @@
     [:div.badge-select
      [:div.row.flip
       [:div.col-md-3.badge-image
-       [:img.badge-image {:src (str "/" image)}]]
+       [:img.badge-image {:src (str "/" image) :alt ""}]]
 
       [:div.col-md-9
-       [:h4.media-heading name]
+       [:h2.media-heading name]
 
        [:div description]]]]))
 
@@ -137,7 +137,8 @@
       (if tagged-badges
         (for [badge tagged-badges]
           [:img {:src (str "/" (:image_file badge))
-                 :key (:name badge)}]))]]))
+                 :key (:name badge)
+                 :alt ""}]))]]))
 
 (defn edit-block-files [block-atom files]
   [:div
@@ -159,7 +160,8 @@
      [:div.file-select
       [:select {:class "form-control"
                 :value ""
-                :on-change #(select-file block-atom @files (js/parseInt (.-target.value %)))}
+                :on-change #(select-file block-atom @files (js/parseInt (.-target.value %)))
+                :aria-label (t :page/choosefile)}
        [:option {:value ""} "- " (t :page/choosefile) " -"]
        (for [file @files]
          [:option {:value (:id file) :key (:id file)} (:name file)])]]]]
@@ -172,7 +174,8 @@
               :class     "page-file-upload"
               :type      "file"
               :name      "file"
-              :on-change #(send-file files block-atom)}]]]])
+              :on-change #(send-file files block-atom)
+              :aria-label "Upload new file"}]]]])
 
 (defn edit-block-text [block-atom]
   (let [content (:content @block-atom)]
@@ -181,7 +184,8 @@
       [:input {:class     "form-control"
                :type      "text"
                :value     content
-               :on-change #(update-block-value block-atom :content (.-target.value %))}]]]))
+               :on-change #(update-block-value block-atom :content (.-target.value %))
+               :aria-label "Input text"}]]]))
 
 (defn save-editor-content [block-atom]
   (if-let [editor (aget js/CKEDITOR "instances" "ckeditor")]
@@ -193,9 +197,9 @@
    [:div.modal-header
     [:button {:class "close" :type "button" :data-dismiss "modal" :aria-label "OK"}
      [:span {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]
-    [:h4.modal-title (t :page/Editblockcontent)]]
+    [:h3.modal-title (t :page/Editblockcontent)]]
    [:div.modal-body
-    [:textarea {:name "ckeditor"}]]
+    [:textarea {:name "ckeditor" :aria-label "ckeditor"}]]
    [:div.modal-footer
     [:button {:class "btn btn-primary" :type "button" :on-click #(save-editor-content block-atom)}
      (t :core/Save)]]])
@@ -259,21 +263,24 @@
      [:div
       [:div;.form-group
        [:div;.col-md-12
-        [:label (t :page/Title)]
+        [:span_.label (t :page/Title)]
 
         [:input {:class     "form-control"
                  :type      "text"
                  :value     title
                  :default-value (t :page/Untitled)
                  :on-change #(update-block-value block-atom :title (.-target.value %))
-                 :placeholder (t :page/Untitled)}]]
+                 :placeholder (t :page/Untitled)
+                 :aria-label "Input showcase title"}]]
+
        [:div;.col-md-12
-        [:label (t :page/Displayinpageas)]
+        [:span._label (t :page/Displayinpageas)]
         [:div.badge-select
          [:select {:class "form-control"
                    :aria-label "select badge format"
                    :value (or format "short")
                    :on-change #(update-block-value block-atom :format (.-target.value %))}
+
           [:option {:value "short"} (t :page/ImageandName)]
           [:option {:value "long"} (t :page/Content)]]]]]
       [:div#grid {:class "row wrap-grid"}
@@ -286,7 +293,8 @@
        [:a {:href "#" :on-click #(do
                                    (.preventDefault %)
                                    (open-modal [:badge :my] {:type "pickable" :block-atom block-atom :new-field-atom new-field-atom
-                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))}
+                                                             :function (fn [f] (update-block-value block-atom :badges (conj badges f)))}))
+            :aria-label (t :page/Badgeinfo)}
         [:div.addbadge
 
           [:i.fa.fa-plus.fa-5x.add-icon]]]]]]))
@@ -302,7 +310,7 @@
       [:div#page-edit
        [:div#block-modal
         [:div.modal-body
-         [:p.block-title (t :page/Addblock)]
+         [:h2.block-title (t :page/Addblock)]
          [:p (t :page/Choosecontent)]
          (reduce-kv
            (fn [r k v]
@@ -471,7 +479,7 @@
   (let [{:keys [id name]} (:page @state)]
 
     [:div {:id "page-edit"}
-     ;[m/modal-window]
+     [m/modal-window]
      [ph/edit-page-header (t :page/Editpage ": " name)]
      [ph/edit-page-buttons id :content state]
      [page-form state]]))

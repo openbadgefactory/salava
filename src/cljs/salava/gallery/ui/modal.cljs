@@ -37,7 +37,7 @@
         [:div.badge-image [:img {:src (str "/" image_file) :alt name}]]
         (when (> average_rating 0)
           [:div.rating
-           [r/rate-it average_rating]
+           [r/rate-it "rateit1" average_rating]
            [:div (if (= rating_count 1)
                    (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                    (str (t :gallery/Ratedby) " " rating_count " " (t :gallery/earners)))]])

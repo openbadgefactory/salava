@@ -21,8 +21,13 @@
                      [:a {:href "#" :on-click #(do
                                                  (.preventDefault %)
                                                  (reset! theme-atom (js/parseInt (:id theme))))
-                          :alt (t (:name theme)) :title (t (:name theme))}[:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " "]]]))
-          [:div {:id "theme-container"}] themes))
+                          :alt (t (:name theme))
+                          :title (t (:name theme))
+                          :aria-label (str (t :page/Selecttheme) " " (:id theme))}
+                      [:div {:class (str "panel-right theme-container" (if (= @theme-atom (:id theme)) " selected"))} " "]]]))
+
+          [:div {:id "theme-container"}]
+          themes))
 
 (defn padding-selection [padding-atom]
   [:div.row
@@ -76,7 +81,7 @@
      [:div {:class "panel page-panel thumbnail" :id "theme-panel"}
       [:form.form-horizontal
        [:div.form-group
-        [:label.col-xs-4 {:for "select-theme"}
+        [:span._label.col-xs-4 {:for "select-theme"}
          (str (t :page/Selecttheme) ":")]
         [:div.col-xs-8
          [theme-selection (cursor state [:page :theme]) themes]]]
@@ -86,7 +91,7 @@
         [:div.col-xs-8
          [padding-selection (cursor state [:page :padding])]]]
        [:div.form-group
-        [:label.col-xs-4 {:for "select-border"}
+        [:span_.label.col-xs-4 {:for "select-border"}
          (str (t :page/Selectborder) ":")]
         [:div.col-xs-8
          [border-selection (cursor state [:page :border]) borders]]]

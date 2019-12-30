@@ -18,14 +18,14 @@
      [:div.row
       [:div {:class "col-md-12"}
        [:h2.sectionheading (t :admin/Users)]
-       [:div [:label (t :admin/Registeredusers)]  register-users]
-       [:div [:label (t :admin/Numberofmonthlyactiveuser)] last-month-active-users]
-       [:div [:label (t :admin/Numberofmonthlyregisteredusers)]  last-month-registered-users]
+       [:div [:span._label.stats (t :admin/Registeredusers)]  register-users]
+       [:div [:span._label.stats (t :admin/Numberofmonthlyactiveuser)] last-month-active-users]
+       [:div [:span._label.stats (t :admin/Numberofmonthlyregisteredusers)]  last-month-registered-users]
        [:h2.sectionheading (t :badge/Badges)]
-       [:div [:label (t :admin/Totalbadges)]  all-badges]
-       [:div [:label (t :admin/Numberofmonthlyaddedbadges) ]  last-month-added-badges]
+       [:div [:span._label.stats (t :admin/Totalbadges)]  all-badges]
+       [:div [:span._label.stats (t :admin/Numberofmonthlyaddedbadges) ]  last-month-added-badges]
        [:h2.sectionheading (t :page/Pages)]
-       [:div [:label (t :admin/Totalpages)]  pages]]]]))
+       [:div [:span._label.stats (t :admin/Totalpages)]  pages]]]]))
 
 (defn init-data [state]
   (ajax/GET

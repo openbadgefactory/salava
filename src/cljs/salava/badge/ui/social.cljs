@@ -159,18 +159,18 @@
          [:div.total-badges.info-block
           [:div.info
            [:div.text
-            [:p.num (get-in data [:views-stats :reg_count] 0)]
-            [:p.desc (t :badge/Loggedinusers)]]]]
+            [:span.num (get-in data [:views-stats :reg_count] 0)]
+            [:span.desc (t :badge/Loggedinusers)]]]]
          [:div.total-badges.info-block
           [:div.info
            [:div.text
-            [:p.num (get-in data [:views-stats :anon_count] 0)]
-            [:p.desc (t :badge/Anonymoususers)]]]]
+            [:span.num (get-in data [:views-stats :anon_count] 0)]
+            [:span.desc (t :badge/Anonymoususers)]]]]
          [:div.info-block
           [:div.info
            [:div.text
-            [:p.num (date-from-unix-time (* (get-in data [:views-stats :latest_view] 0) 1000))]
-            [:p.desc (t :badge/Latestview)]]]]]]]]]]])
+            [:span.num (date-from-unix-time (* (get-in data [:views-stats :latest_view] 0) 1000))]
+            [:span.desc (t :badge/Latestview)]]]]]]]]]]])
 
 (defn badge-recipients [recipients state]
   (let [panel-identity :recipients
@@ -210,7 +210,7 @@
       (if (and (= "public" @(cursor state [:badge-settings :visibility])) (pos? @average_rating))
        ^{:key @average_rating}
         [:div.rating
-         [r/rate-it+ "rateit2" @(cursor dataatom [:rating :average_rating])]
+         [r/rate-it "rateit2" @(cursor dataatom [:rating :average_rating])]
          [:div (if (= @rating_count 1)
                  (str (t :gallery/Ratedby) " " (t :gallery/oneearner))
                  (str (t :gallery/Ratedby) " " @rating_count " " (t :gallery/earners)))]]
@@ -237,7 +237,7 @@
                  :else "")]
           [:div.rating
            {:on-click #(do (.preventDefault %)(save-rating (:id @state) state dataatom @user-rating))}
-           [r/rate-it @user-rating user-rating]]]]]]])})))
+           [r/rate-it "rateit" @user-rating user-rating]]]]]]])})))
 
 (defn- message-link [state]
  (when-not (= "private" @(cursor state [:badge-settings :visibility]))
@@ -250,6 +250,7 @@
   [:div {:class "form-horizontal"}
    [:div
     [:fieldset {:class "form-group visibility"}
+     [:legend ""]
      [:div {:class (str "col-md-12 " (get-in @state [:badge-settings :visibility]))}
       (if-not (private?)
         [:div [:input {:id              "visibility-public"

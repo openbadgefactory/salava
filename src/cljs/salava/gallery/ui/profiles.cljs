@@ -120,7 +120,8 @@
   ([state]
    (let [order-atom (cursor state [:order_by])]
      [:div.form-group
-      [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
+      [:span._label.filter-opt {:class "control-label col-sm-2" :aria-label (str (t :core/Order))}
+       (str (t :core/Order) ":")]
       [:div.col-sm-10
        [:label.radio-inline {:for "radio-date"}
         [:input {:id "radio-date"
@@ -153,7 +154,7 @@
   ([state modal?]
    (let [order-atom (cursor state [:order_by])]
      [:div.form-group
-      [:label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
+      [:span._label {:class "control-label col-sm-2"} (str (t :core/Order) ":")]
       [:div.col-sm-10
        [:label.radio-inline {:for "radio-date_"}
         [:input {:id "radio-date_"
@@ -215,7 +216,7 @@
        [:div.media-content
         [:div.media-left
          [:img {:src (profile-picture profile_picture)
-                :alt (str first_name " " last_name)}]]
+                :alt "" #_(str first_name " " last_name)}]]
         [:div.media-body
          [:div {:class "media-heading profile-heading"}
           first_name " " last_name]

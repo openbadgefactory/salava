@@ -51,16 +51,18 @@
 (defn input-button [name id text]
   (let [status (atom "")]
     (fn []
-      [:div {:class "form-group" :key id}
+      [:div {:key id}
        [:fieldset
-        [:label {:class " sub-heading"} name]
+        [:legend ""]
+        (when-not (clojure.string/blank? name) [:label {:class " sub-heading" :for id} name])
         [:div.input-group
          [:input {:class       "form-control"
                   :id          id
                   :name        "email-text"
                   :type        "text"
                   :read-only true
-                  :value       text}]
+                  :value       text
+                  :aria-label (str "input-" (or name id))}]
          [:span {:class "input-group-btn"}
           [clipboard-button (str "#" id) status]]]]])))
 
@@ -68,7 +70,8 @@
 (defn input-date [datefrom dateto]
   [:div.form-group
        [:fieldset
-        [:label {:class " sub-heading"} (t :core/Timeperiod)]
+        [:legend ""]
+        [:span {:class " sub-heading"} (t :core/Timeperiod)]
         [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
                                                                               (str "present")))
          (if-not dateto
@@ -90,7 +93,7 @@
 (defn tutorial-video []
   (let [user-lng (session/get-in [:user :language])]
     [:div.col-md-6.image-view
-     [:label {:class " sub-heading"} (t :core/Tutorialvideo)]
+     [:span._label {:class " sub-heading"} (t :core/Tutorialvideo)]
      [:div.embed-responsive.embed-responsive-16by9
       {:dangerouslySetInnerHTML {:__html (md->html (if (= "fi" user-lng) video-link-fi video-link-en))}}]]))
 
@@ -127,14 +130,14 @@
         [:div.col-xs-12.certification
          [:div.row.flip
           [:div.guide-text.margin-bottom
-           [:h3 (t :core/Sharelinkedinaddcredit)]
+           [:h2 (t :core/Sharelinkedinaddcredit)]
            [:p (str (t :core/Sharelinkedincopytip) ".")]
            [:div [:a {:href "#" :on-click #(open-linkedin-popup)}
                   (add-to-profile-image)]
             [:a {:href "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME" :target "_blank"} (str " " (t :core/Sharelinkedinclickhere) ".")]]]]
          [:div.row.flip
           [:div.col-md-6.copy-boxes
-           [:form {:class "form-horizontal"}
+           [:form {:classltr "form-horizontal"}
             [input-button (t :badge/Name) #_(t :core/Certificationname)  "name" name]
             [input-button (t :core/IssuingOrganization) #_(t :core/Certificationauthority) "authory" authory]
             [input-button (t :core/CredentialID) #_(t :core/Licensenumber) "licence" licence]
@@ -150,7 +153,7 @@
        [:div.modal-body
         [:div.certification
          [:div.guide-text
-          [:h3  (t :core/Shareonlinkedin)]
+          [:h2  (t :core/Shareonlinkedin)]
           [:div (str (t :core/Sharelinkedintip) "! "
                      (t :core/Sharelinkedinprofile) ":")]]
          [:div
@@ -228,21 +231,24 @@
           [:i {:class "fa fa-wordpress"}]]])
 
       [:div.share-link
-       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]
+       [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (str (t :badge/Share) " " (clojure.string/lower-case (t :core/Link)))]]
       [:div.share-link
        [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
-     (if (and public? (= "wordpress" @link-or-embed-atom))
+     (when (and public? (= "wordpress" @link-or-embed-atom))
        [:div.copy-boxes
         [input-button nil "url" (wordpress-embed (:name certification) image-file url (:authory certification))]])
 
-     (if (and public? (= "link" @link-or-embed-atom))
-       [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value url}]])
+     (when (and public? (= "link" @link-or-embed-atom))
+       (if is-badge?
+        [:div.linkinput [input-button "" "sharelink" url]]
+        [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value url}]]))
      (if (and public? (= "embed" @link-or-embed-atom))
        (if is-badge?
          [:div.form-horizontal
-          [:div.form-group
-           [:label.col-xs-3 (t :core/Imageonly) ":"]
-           [:div.col-xs-9 [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/pic/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
+          [:div.row ;.form-group
+           [:span._label.col-xs-12 {:style {:margin-right "20px" :font-weight "normal" :display "inline-block"}} (t :core/Imageonly) ":"]
+           [:div.col-xs-12.copy-boxes
+            [input-button "" "embedbadge" (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/pic/embed\" width=\"200\" height=\"270\"></iframe>")]#_[:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/pic/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
 
          [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))]))
 

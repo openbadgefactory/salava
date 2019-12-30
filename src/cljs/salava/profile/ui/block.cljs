@@ -51,13 +51,13 @@
             [:input {:id "name" :type "checkbox" :value "name" :on-change #(process-field (.-target.value %) state) :checked (if (enabled-field? "name" (:fields @state)) true false)}]
 
             [:span {:style {:margin "0px 10px"}}
-             [:label (t :admin/Name)": "]
+             [:label {:for "name"} (t :admin/Name)": "]
              [:span {:style {:margin "0px 10px"}}  (str first_name " " last_name)]]]
            (when-not (blank? about)
             [:div
-             [:input {:type "checkbox" :value "about" :on-change #(process-field (.-target.value %) state) :checked (if (enabled-field? "about" @(cursor state [:fields])) true false)}]
+             [:input {:id "about" :type "checkbox" :value "about" :on-change #(process-field (.-target.value %) state) :checked (if (enabled-field? "about" @(cursor state [:fields])) true false)}]
              [:span {:style {:margin "0px 10px"}}
-              [:label (t :user/Aboutme) ": "]
+              [:label {:for "about"} (t :user/Aboutme) ": "]
               [:span {:style {:margin "0px 10px"}} about]]])
            (when (seq profile)
                [:div.row {:style {:margin-top "20px"}}
@@ -73,7 +73,7 @@
                                              :key)]]
                           (when-not (blank? value)
                             [:tr
-                             [:td {:style {:padding-left "0px"}} [:input {:type "checkbox" :value field :on-change #(process-field (.-target.value %) state) :checked (if (enabled-field? field (:fields @state)) true false)}]]
+                             [:td {:style {:padding-left "0px"}} [:input {:type "checkbox" :value field :on-change #(process-field (.-target.value %) state) :checked (if (enabled-field? field (:fields @state)) true false) :aria-label (str "select " field)}]]
                              [:td.profile-field (t key) ":"]
                              [:td.field-value (cond
                                                (or (re-find #"www." (str value)) (re-find #"^https?://" (str value)) (re-find #"^http?://" (str value))) (hyperlink value)
@@ -85,8 +85,6 @@
                                                (and  (empty? (re-find #" " (str value))) (= "instagram" field)) [:a {:href (str "https://www.instagram.com/" value) :target "_blank" } (t value)]
                                                (= "blog" field) (hyperlink value)
                                                :else (t value))]])))]]])]]]]]]]))))
-
-
 
 (defn ^:export userprofileinfo [id data]
    (let [state (if data data (atom {}))]

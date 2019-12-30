@@ -326,7 +326,7 @@
                                                  [:p.header (t :badge/Pendingbadges)]
                                                  (if (seq (:pending-badges @state))
                                                    (reduce (fn [r badge]
-                                                             (conj r [:a {:href (path-for "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (:name badge) :title (:name badge)}]]))
+                                                             (conj r [:a {:href "#" :on-click #(navigate-to "/badge")} [:img {:src (str "/" (:image_file badge)) :alt (str (t :badge/Badge) " "(:name badge)) :title (:name badge)}]]))
                                                            [:div] (take 5 (:pending-badges @state))))])
            (when welcome-tip
             [:div.pending {:style {:padding "10px 0"}} [:p.header (str (t :social/Youdonthaveanyanybadgesyet) ".")]])

@@ -26,39 +26,42 @@
         (t :page/Pagetags)]
        [tag/tags tags-atom]
        [tag/new-tag-input tags-atom new-tag-atom]]
-      [:div
-       [:label
-        (t :page/Pagevisibility)]
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @visibility-atom "private")
-                  :on-click #(reset! visibility-atom "private")}]
-         (t :page/Private)]]
-       (if-not (private?)
-         [:div.radio
-          [:label
-           [:input {:type     "radio"
-                    :name     "visibility"
-                    :checked  (= @visibility-atom "password")
-                    :on-click #(reset! visibility-atom "password")}]
-           (t :page/Passwordprotected)]])
-       [:div.radio
-        [:label
-         [:input {:type "radio"
-                  :name "visibility"
-                  :checked (= @visibility-atom "internal")
-                  :on-click #(reset! visibility-atom "internal")}]
-         (t :page/Forregistered)]]
-       (if-not (private?)
-         [:div.radio
-          [:label
-           [:input {:type     "radio"
-                    :name     "visibility"
-                    :checked  (= @visibility-atom "public")
-                    :on-click #(reset! visibility-atom "public")}]
-           (t :page/Public)]])]
+      [:fieldset
+       [:legend ""]
+       [:div
+        [:span._label
+         (t :page/Pagevisibility)]
+
+        [:div.radio
+         [:label
+          [:input {:type "radio"
+                   :name "visibility"
+                   :checked (= @visibility-atom "private")
+                   :on-click #(reset! visibility-atom "private")}]
+          (t :page/Private)]]
+        (if-not (private?)
+          [:div.radio
+           [:label
+            [:input {:type     "radio"
+                     :name     "visibility"
+                     :checked  (= @visibility-atom "password")
+                     :on-click #(reset! visibility-atom "password")}]
+            (t :page/Passwordprotected)]])
+        [:div.radio
+         [:label
+          [:input {:type "radio"
+                   :name "visibility"
+                   :checked (= @visibility-atom "internal")
+                   :on-click #(reset! visibility-atom "internal")}]
+          (t :page/Forregistered)]]
+        (if-not (private?)
+          [:div.radio
+           [:label
+            [:input {:type     "radio"
+                     :name     "visibility"
+                     :checked  (= @visibility-atom "public")
+                     :on-click #(reset! visibility-atom "public")}]
+            (t :page/Public)]])]]
       (if (some #(= @visibility-atom %) ["public" "password"])
         [:div.form-group
          [:input {:class     "form-control"

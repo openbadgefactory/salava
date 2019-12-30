@@ -73,9 +73,9 @@
             {:__html (t :badge/Uploadbadgesfrominfo3)}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)] " " (t :badge/page) ". "
     (t :badge/Uploadbagesfromresult2) "  "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)]
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
 (defn assertion-upload-info []
@@ -86,9 +86,9 @@
           {:__html (str (t :badge/Importbadgeswithassertioninfo2) " " (t :badge/Importbadgeswithassertioninfo3))}}]]
    [:p
     (t :badge/Uploadbagesfromresult1) " "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)] " " (t :badge/page) ". "
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)] " " (t :badge/page) ". "
     (t :badge/Uploadbagesfromresult2) "  "
-    [:a {:href (path-for "/badge/mybadges")} (t :badge/Mybadges)]
+    [:a {:href "#" :on-click #(do (.preventDefault %) (navigate-to "/badge/mybadges"))} (t :badge/Mybadges)]
     " " (t :badge/Uploadbagesfromresult3) "."]])
 
 (defn badge-file-upload-content [state]

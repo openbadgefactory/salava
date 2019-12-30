@@ -70,7 +70,7 @@
        [:div {:class "col-md-8"}
         [:div.row
          [:div.col-md-12
-          [:p.badge-name name]]]
+          [:h2.badge-name name]]]
         [:div.row
          [:div.col-md-12
           (bh/issued-on issued_on)]]
