@@ -285,6 +285,10 @@ message-item.media button.close {
   .form-control {
     border-radius: 10px;
   }
+
+  a {
+    color: #3C7084;
+  }
 }
 
 select.form-control {
@@ -506,7 +510,7 @@ select.form-control::-ms-expand {
    text-decoration: none;
   }
   > li.active a {
-    color: $button-color;
+    color: #9D6E04; //$button-color;
     border: 1px solid $titlebar-color;
     border-bottom-color: transparent;
   }
@@ -536,7 +540,7 @@ select.form-control::-ms-expand {
   background-color: #418545;
 }
 
-#dashboard .badge,.endorsement-notification {
+#dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
   color: $menu-color !important;
 }
 

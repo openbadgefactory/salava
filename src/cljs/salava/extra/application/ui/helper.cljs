@@ -27,7 +27,6 @@
    :id (get base :id nil)
    :followed (get base :followed false)})
 
-
 (defn application-plugin? []
   (some #(= "extra/application" %) (session/get :plugins)))
 
@@ -41,8 +40,8 @@
                                                                  (join (cons (str "&" (name (key %)) "[0]=" (first (val %)))
                                                                              (map (fn [e] (str "&" (name (key %)) "[" (.indexOf (val %) e) "]=" e)) (rest (val %)))))))))
                                (rest params))))]
-    (.replaceState js/history "" "Badge Gallery" (str "?" query))
-    (swap! state assoc :query-param (.-href js/window.location))))
+    #_(.replaceState js/history "" "Badge Gallery" (str "?" query))
+    (swap! state assoc :query-param (str (.-href js/window.location) "?" query))))
 
 (defn str-cat [a-seq]
   (if (empty? a-seq)
@@ -56,16 +55,16 @@
   (let [{:keys [user-id country-selected name issuer order tags show-followed-only]} @state
         params (->  (query-params (:params @state)) (assoc :followed show-followed-only))
         initial-params? (= (-> params (dissoc :followed)) (-> (:initial-query @state) (dissoc :followed)))]
-   (swap! state assoc :show-link-or-embed-code nil)
-   (if  (and initial-params? (false? show-followed-only) (blank? issuer))
-     (swap! state assoc :show-featured true)
-     (swap! state assoc :show-featured false))
-   (ajax/GET
-    (path-for (str "/obpv1/application/"))
-    {:params  params
-     :handler (fn [data]
-                (swap! state assoc :applications (:applications data))
-                (url-builder params state))})))
+    (swap! state assoc :show-link-or-embed-code nil)
+    (if  (and initial-params? (false? show-followed-only) (blank? issuer))
+      (swap! state assoc :show-featured true)
+      (swap! state assoc :show-featured false))
+    (ajax/GET
+     (path-for (str "/obpv1/application/"))
+     {:params  params
+      :handler (fn [data]
+                 (swap! state assoc :applications (:applications data))
+                 (url-builder params state))})))
 
 (defn taghandler
   "set tag with autocomplete value and accomplish searchs"
@@ -75,11 +74,10 @@
     (reset! tags (apply str (interpose "," (vals (select-keys @autocomplete-items value)))))
     (fetch-badge-adverts state)))
 
-
 (defn- match? [tag item]
- (when (and tag item)
-  (let [item (-> (split item #"#") last)]
-    (some #(= tag (str %)) [item (str "#" item) (lower-case item) (capitalize item) (upper-case item)]))))
+  (when (and tag item)
+    (let [item (-> (split item #"#") last)]
+      (some #(= tag (str %)) [item (str "#" item) (lower-case item) (capitalize item) (upper-case item)]))))
 
 (defn get-items-key [state tag]
   (let [autocomplete-items (cursor state [:autocomplete :tags :items])]
@@ -144,6 +142,7 @@
     (fn []
       [:div {:class "" :key id}
        [:fieldset
+        [:legend ""]
         (when-not (clojure.string/blank? name) [:label {:class " sub-heading"} name])
         [:div.input-group
          [:input {:class       "form-control"
@@ -151,39 +150,41 @@
                   :name        "email-text"
                   :type        "text"
                   :read-only true
-                  :value       text}]
+                  :value       text
+                  :aria-label  "copy text"}]
          [:span {:class "input-group-btn"}
           [clipboard-button (str "#" id) status]]]]])))
 
 (defn share-buttons-applications [link-url embed-url link-or-embed-atom]
- (let [site-name (session/get-in [:share :site-name])
-       hashtag   (session/get-in [:share :hashtag])]
+  (let [site-name (session/get-in [:share :site-name])
+        hashtag   (session/get-in [:share :hashtag])]
     (if (private?)
       [:div]
       (create-class {:reagent-render  (fn [link-url embed-url link-or-embed-atom]
 
-                                          [:div {:id "share"}
-                                           [:div#share-buttons
-                                            [:div.share-button
-                                             [:a {:class  "twitter"
-                                                           :href   (str "https://twitter.com/intent/tweet?size=medium&count=none&text="
-                                                                        (js/encodeURIComponent (str site-name ": "))
-                                                                        "&url=" (js/encodeURIComponent link-url) "&hashtags=" hashtag)
-                                                           :target "_blank"}
-                                                 [:i {:class "fa fa-twitter-square"}]]]
-                                            [:div.share-button
-                                             [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" link-url "&summary=" (js/encodeURIComponent (str site-name ": ")) "&source=" hashtag) :target "_blank"}
-                                              [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
-                                            [:div.share-link
-                                             [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (t :core/Link)]]
-                                            [:div.share-link
-                                             [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
-                                           (if (= "link" @link-or-embed-atom)
-                                            [:div.copy-boxes
-                                             [input-button nil "url" link-url]])
-                                           (if (= "embed" @link-or-embed-atom)
-                                            [:div.copy-boxes
-                                             [input-button nil "embed" (str "<iframe width=\"90%\" height=\"560\" src=\""embed-url"\" frameborder=\"0\"></iframe>")]])])
+                                        [:div {:id "share"}
+                                         [:div#share-buttons
+                                          [:div.share-button
+                                           [:a {:class  "twitter"
+                                                :href   (str "https://twitter.com/intent/tweet?size=medium&count=none&text="
+                                                             (js/encodeURIComponent (str site-name ": "))
+                                                             "&url=" (js/encodeURIComponent link-url) "&hashtags=" hashtag)
+                                                :target "_blank"
+                                                :aria-label "Twitter"}
+                                            [:i {:class "fa fa-twitter-square"}]]]
+                                          [:div.share-button
+                                           [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" link-url "&summary=" (js/encodeURIComponent (str site-name ": ")) "&source=" hashtag) :target "_blank" :aria-label "LinkedIn"}
+                                            [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]]
+                                          [:div.share-link
+                                           [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "link" @link-or-embed-atom) nil "link")))} (str (t :badge/Share) " " (clojure.string/lower-case (t :core/Link)))]]
+                                          [:div.share-link
+                                           [:a {:href "#" :on-click #(do (.preventDefault %) (reset! link-or-embed-atom (if (= "embed" @link-or-embed-atom) nil "embed")))} (t :core/Embedcode)]]]
+                                         (if (= "link" @link-or-embed-atom)
+                                           [:div.copy-boxes
+                                            [input-button nil "url" link-url]])
+                                         (if (= "embed" @link-or-embed-atom)
+                                           [:div.copy-boxes
+                                            [input-button nil "embed" (str "<iframe width=\"90%\" height=\"560\" src=\"" embed-url "\" frameborder=\"0\"></iframe>")]])])
                      :component-did-mount (fn []
                                             (do
                                               (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
@@ -193,5 +194,5 @@
                                               (.getScript (js* "$") "https://apis.google.com/js/platform.js")))}))))
 
 (defn share [link-or-embed-atom url]
-   (let [embed-url (replace (.-href js/window.location) #"/badge/application" (str "/badge/application/" (session/get-in [:user :id]) "/embed"))]
+  (let [embed-url (replace (.-href js/window.location) #"/badge/application" (str "/badge/application/" (session/get-in [:user :id]) "/embed"))]
     [:div.form-group {:style {:margin-bottom "unset"}} [:div.col-sm-8 [share-buttons-applications url embed-url link-or-embed-atom]]]))

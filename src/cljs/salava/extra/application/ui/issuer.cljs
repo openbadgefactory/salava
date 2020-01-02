@@ -112,13 +112,13 @@
                               applications-count (issuer-applications-count issuer_content_name state)]]
                     ^{:key app} [:a {:data-dismiss "modal"
                                      :on-click #(do
-                                                 (.preventDefault %)
-                                                 (when (session/get :user) (init-issuer-connection issuer_content_id state))
-                                                 (swap! state assoc-in [:issuer :show-issuer-info] true)
-                                                 (swap! state assoc-in [:issuer :issuer-content] {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner})
-                                                 (issuer-applications issuer_content_name state))} [:div {:style {:padding "5px"}} (if issuer_image
-                                                                                                                                     [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
-                                                                                                    (str issuer_content_name "  ("  applications-count ")")]])))))
+                                                  (.preventDefault %)
+                                                  (when (session/get :user) (init-issuer-connection issuer_content_id state))
+                                                  (swap! state assoc-in [:issuer :show-issuer-info] true)
+                                                  (swap! state assoc-in [:issuer :issuer-content] {:id issuer_content_id :name issuer_content_name :image issuer_image :url issuer_content_url :tier issuer_tier :banner issuer_banner})
+                                                  (issuer-applications issuer_content_name state))} [:div {:style {:padding "5px"}} (if issuer_image
+                                                                                                                                      [:img.badge-icon {:style {:width "30px" :padding-right "10px"} :src (str "/" issuer_image)}])
+                                                                                                     (str issuer_content_name "  ("  applications-count ")")]])))))
 
 (defn issuer-filter-grid [show-favourites-atom state]
   [:div#grid-filter {:class "form-horizontal" :style {:margin-bottom "10px"}}
@@ -175,7 +175,7 @@
         show-issuer-info-atom (cursor state [:issuer :show-issuer-info])
         display (if @show-issuer-info-atom "inline-block" "none")]
     [:div.form-group
-     [:label {:class "control-label col-sm-2" :for "select-issuer"} (str (t :extra-application/Selectissuer) ":")]
+     [:span._label.filter-opt  {:class "control-label col-sm-2" #_:for #_"select-issuer"} (str (t :extra-application/Selectissuer) ":")]
      [:div.col-sm-10.buttons
       [:button.btn.btn-default {:style {:display display}
                                 :on-click #(do
