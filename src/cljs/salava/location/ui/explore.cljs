@@ -9,7 +9,8 @@
             [salava.core.ui.helper :refer [js-navigate-to path-for private? plugin-fun]]
             [salava.core.ui.layout :as layout]
             [salava.core.i18n :refer [t translate-text]]
-            [salava.location.ui.util :as lu]))
+            [salava.location.ui.util :as lu]
+            [dommy.core :as dommy :refer-macros [sel1 sel]]))
 
 (defn icon [kind num]
   (get (if (= num 1)
@@ -58,22 +59,47 @@
                  (js/L.marker. (clj->js {:icon icon :title title}))
                  (.on "click" (click-cb item unique-count)))))))})))
 
+#_(defn filter-autocomplete [kind state]
+    (let [filter (cursor state [kind])
+          class-name (str (name kind) "-filter")
+          placeholder (keyword "location" (str (name kind) "FilterField"))]
+      (fn []
+        [autocomplete/autocomplete
+         {:value (:value @filter)
+          :on-change (fn [item]
+                       (swap! filter assoc :value (:key item))
+                       (.trigger (js/jQuery (str "div.badges-filter ." class-name " input")) "change"))
+          :search-fields   [:value]
+          :items           (:autocomplete @filter)
+          :no-results-text " "
+          :placeholder     (t placeholder)
+          :control-class   (str "form-control " class-name)
+          :max-results     100}])))
+
 (defn filter-autocomplete [kind state]
   (let [filter (cursor state [kind])
         class-name (str (name kind) "-filter")
         placeholder (keyword "location" (str (name kind) "FilterField"))]
-    (fn []
-      [autocomplete/autocomplete
-       {:value (:value @filter)
-        :on-change (fn [item]
-                     (swap! filter assoc :value (:key item))
-                     (.trigger (js/jQuery (str "div.badges-filter ." class-name " input")) "change"))
-        :search-fields   [:value]
-        :items           (:autocomplete @filter)
-        :no-results-text " "
-        :placeholder     (t placeholder)
-        :control-class   (str "form-control " class-name)
-        :max-results     100}])))
+    (create-class
+     {:reagent-render
+      (fn []
+        [autocomplete/autocomplete
+         {:value (:value @filter)
+          :on-change (fn [item]
+                       (swap! filter assoc :value (:key item))
+                       (.trigger (js/jQuery (str "div.badges-filter ." class-name " input")) "change"))
+          :search-fields   [:value]
+          :items           (:autocomplete @filter)
+          :no-results-text " "
+          :placeholder     (t placeholder)
+          :control-class   (str "form-control " class-name)
+          :max-results     100}])
+      :component-did-mount
+      (fn []
+        (-> (sel1 ".autocomplete__input")
+            (dommy/set-attr! :aria-label (t placeholder)))
+        (-> (sel1 ".autocomplete__clear-button")
+            (dommy/set-attr! :aria-hidden true)))})))
 
 (defn map-view [state]
   (create-class
