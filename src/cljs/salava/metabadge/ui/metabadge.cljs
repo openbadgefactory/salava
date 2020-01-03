@@ -59,15 +59,12 @@
        [:div.panel-heading [:span.metabadge_block_name (:name m)]
         [:div.pull-right (if milestone? [:i {:class "fa fa-sitemap"}] [:i {:class "fa fa-puzzle-piece"}])]]
        [:div.panel-body
-        [:table.table
-         [:thead
-          [:tr
-           [:td {:style {:display "none"}} (t :badge/Badges)]]]
-         [:tbody
-          [:tr
-           [:td.meta {:rowSpan "2"}
+        [:div.table ;:table.table
+         [:div ;:tbody
+          [:div ;:tr
+           [:div.meta ;:td.meta {:rowSpan "2"}
             [:div [:img.image {:src (if image_file (str "/" image_file) image) :title name :class milestone-image-class :alt (str (t :badge/Badge) " " name)}]]]
-           [:td.icon-container
+           [:div.icon-container ;:td.icon-container
             [:table
              [:thead
               [:tr
