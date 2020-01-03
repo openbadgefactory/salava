@@ -179,7 +179,7 @@ nav a#login-button{
 #page-gallery #grid .grid-container .media-content .media-body .media-heading,
 #my-files #grid .grid-container .media-content .media-body .media-heading,
 #profile-gallery #grid .grid-container .media-content .media-body .media-heading,
-#user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container,
+#user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container, #user-pages #pages-grid .media-content .media-body .media-heading,
 #badge-gallery #profile #user-pages #grid .grid-container{
   p.heading-link{
     color: $badge-title;
@@ -188,7 +188,13 @@ nav a#login-button{
     }
   }
   .page-owner {
-    color: $menu-color;
+    color: $text-color;
+  }
+}
+
+#page-gallery, #user-pages #grid .grid-container, #user-pages #pages-grid .media-content  {
+  .page-owner {
+    color: $text-color;
   }
 }
 
@@ -208,7 +214,7 @@ nav a#login-button{
 #user-badges #grid .grid-container .media-content .media-body .media-issuer,
 #export-badges #grid .grid-container .media-content .media-body .media-issuer,
 .import-badges #grid .grid-container .media-content .media-body .media-issuer,
-#user-pages #grid .grid-container .page-create-date, #badge-gallery #profile #user-pages #grid .grid-container .page-create-date{
+#user-pages #grid .grid-container .page-create-date, #badge-gallery #profile #user-pages #grid .grid-container .page-create-date, #user-pages #pages-grid .media-content .page-create-date{
   color: $title-color;
   font-weight: 400;
   a {
@@ -435,7 +441,7 @@ a.popup-info {
 
   }
 
-  #box_3 {
+  #box_3, #box_6 {
     .help p {
       color: $badge-title;
       font-weight: 400;
@@ -470,7 +476,10 @@ a.popup-info {
 
     .content {
       .badge-connection {
-        background-color: #26a0da !important;
+        background-color: #553147 !important; //#26a0da !important;
+        /*.info, .text {
+          color: #372C2C !important;
+        }*/
       }
 
       .endorsement {
@@ -478,11 +487,17 @@ a.popup-info {
       }
 
       .page {
-        background-color: #49E5AD;
+        background-color: #31553f;//#49E5AD;
+        /*.info, .text {
+          color: #505050 !important;
+        }*/
       }
 
         .map{
-          background-color: #aad3df;
+          background-color: #313555; //#aad3df;
+          /*.info, .text {
+            color: #505050 !important;
+          }*/
         }
 
 
@@ -642,8 +657,25 @@ html[dir="rtl"] .wizard {
    }
 }
 
+#dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
+  color: #1E1E1E !important;
+}
+
+.text-muted {
+  color: #816F6E;
+}
 
 /*
+.ticket-container.fakebadge u {
+  color: #A76905;
+}
+.ticket-container.mistranslation u {
+  color: #088488;
+}
+.ticket-container.bug u {
+  color: #EC130E;
+}
+
 a#login-button {
 height: 36px;
 width: 125px;

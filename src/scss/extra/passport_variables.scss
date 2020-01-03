@@ -4,14 +4,14 @@ $menu-color: #756A70;
 $menu-active: darken($menu-color, 18%);
 $title-color: $menu-color;//#7f7179;
 
-$orange-color: #dc5c10;
+$orange-color: #C3510E; //#dc5c10;
 $grid-link: $orange-color;
 $orange-hover:#bf4f0e;
 $badge-title: #2b759a; //$orange-color;
 $badge-title-hover:$orange-hover;
 $link-color: $badge-title; //#4a5aac;
 $button-color: #2b7aa1;
-$button-hover: #279ad1;
+$button-hover: #186C9E; //#1C7DB7;//#279ad1;
 $link-hover: $button-hover;
 $icon-color: $title-color; //#a28f9b;
 //error messages
@@ -21,4 +21,3 @@ $green: #5cb85c;
 
 $background-color: #f9f9f9;
 $grid-buttons: #2c6e90;
-

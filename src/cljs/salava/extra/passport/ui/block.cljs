@@ -1,26 +1,24 @@
 (ns salava.extra.passport.ui.block
   (:require [salava.core.i18n :refer [t]]))
 
-
 (defn ^:export footer []
-  [:footer.footer
+  [:div.footer ;:footer.footer
    [:div.footer-container
     [:p.text-muted
      "Copyright © 2015-2019 Open Badge Factory Oy | "
-     [:a {:class "bottom-link" :href "/terms" }
+     [:a {:class "bottom-link" :href "/terms"}
       "Terms of Use"]
      " | "
      [:a {:class "bottom-link" :href "/privacy"}
       "Privacy Policy"]
      " | "
-     [:a {:class "bottom-link" :href "mailto:contact@openbadgefactory.com?Subject=Contact%20request" }
+     [:a {:class "bottom-link" :href "mailto:contact@openbadgefactory.com?Subject=Contact%20request"}
       "contact@openbadgefactory.com"]]
     [:p.text-muted
      "Open Badge Factory ® and Open Badge Passport ® are registered trademarks"]]])
 
-
 (defn ^:export terms_fr []
-  [:div.terms-container #_{:style {:padding "30px" }}
+  [:div.terms-container #_{:style {:padding "30px"}}
    [:div
     [:h1 {:style {:text-align "center"}} (clojure.string/upper-case "Conditions d’utilisation")]]
    [:div {:style {:text-align "center"}}
@@ -34,8 +32,7 @@
      gérer et publier leurs badges.  Les conditions d’utilisation s’appliquent aux utilisateurs du service (ci-après dénommés ” l’utilisateur ” ou ” les utilisateurs ”). Le terme d’utilisateur correspond à deux niveaux d’utilisateur : 1) les utilisateurs qui utilisent le service à des fins personnelles ; 2) l’organisation du client, qui dispose de son propre environnement dans le service."]
     [:br]
     [:p "Dès lors qu’il utilise le service Open Badge Passport,
-     l’utilisateur est réputé accepter les présentes conditions d’utilisation."]
-    ]
+     l’utilisateur est réputé accepter les présentes conditions d’utilisation."]]
    [:div
     [:h2 "Accès au service et limitations"]
     [:p "En créant un compte d’utilisateur dans le service, l’utilisateur déclare au prestataire de services qu’il est âgé d’au moins 13 ans et, s’il est âgé de moins de 18 ans,
@@ -53,13 +50,12 @@
     [:p "Le prestataire de services détient tous les droits, titres et intérêts sur le service, ainsi que sur tout le matériel fourni à travers le service, notamment tous les droits d’auteur, brevets, marques, droits des dessins et modèles, secrets de fabrication et tous les autres droits de propriété intellectuelle (ci-après dénommés ” les droits de propriété intellectuelle ”). L’utilisateur ne saurait acquérir aucun droit de propriété à travers l’utilisation du service ou par exemple à travers le téléchargement de matériel depuis ou vers le service. À moins que cela ne soit expressément autorisé par une législation impérative, le service ne saurait être copié, reproduit ou diffusé d’une manière ou sur un support quelconques, en tout ou partie, sans le consentement préalable et écrit du prestataire de services. Tous les droits non expressément accordés à l’utilisateur dans les présentes sont réservés par le prestataire de services.
      Les matériels et informations, ainsi que tous les droits de propriété intellectuelle correspondants, que l’utilisateur intègre dans le service (ci-après dénommés ” matériel de l’utilisateur ”) demeurent la propriété de l’utilisateur ou d’un tiers."]
     [:h2 "Responsabilités du prestataire de services"]
-    [:p "Le prestataire de services est responsable de la mise en œuvre et de la maintenance techniques du service. Le prestataire de services peut suspendre le service lorsque nécessaire, par exemple pour des travaux d’installation, de modification ou de maintenance ou lorsque les lois ou règlements ou les autorités l’exigent ou s’il existe d’autres motifs justifiés de suspension. Le prestataire de services essaie de faire en sorte que la suspension soit aussi brève que possible. Le prestataire de services s’efforce d’informer les utilisateurs avec un préavis raisonnable des changements et des interruptions de service substantiels sur la page de connexion au service et dans le groupe de discussion Open Badge Passport. Cependant, le prestataire de services se réserve le droit de procéder à de petites mises à jour sans information préalable. Une sauvegarde du contenu du service est effectuée une fois par jour. La sauvegarde est effectuée au cas où le contenu du service devrait être restauré à la suite, par exemple, d’un problème technique. Cependant, le contenu d’un utilisateur donné n’est pas restauré s’il le supprime accidentellement. Le prestataire de services a le droit de mettre fin au service à son entière discrétion. Le prestataire de services s’efforce de notifier la cessation du service avec un préavis raisonnable." ]
+    [:p "Le prestataire de services est responsable de la mise en œuvre et de la maintenance techniques du service. Le prestataire de services peut suspendre le service lorsque nécessaire, par exemple pour des travaux d’installation, de modification ou de maintenance ou lorsque les lois ou règlements ou les autorités l’exigent ou s’il existe d’autres motifs justifiés de suspension. Le prestataire de services essaie de faire en sorte que la suspension soit aussi brève que possible. Le prestataire de services s’efforce d’informer les utilisateurs avec un préavis raisonnable des changements et des interruptions de service substantiels sur la page de connexion au service et dans le groupe de discussion Open Badge Passport. Cependant, le prestataire de services se réserve le droit de procéder à de petites mises à jour sans information préalable. Une sauvegarde du contenu du service est effectuée une fois par jour. La sauvegarde est effectuée au cas où le contenu du service devrait être restauré à la suite, par exemple, d’un problème technique. Cependant, le contenu d’un utilisateur donné n’est pas restauré s’il le supprime accidentellement. Le prestataire de services a le droit de mettre fin au service à son entière discrétion. Le prestataire de services s’efforce de notifier la cessation du service avec un préavis raisonnable."]
     [:p "Le prestataire de services s’engage à réparer les éventuels défauts de logiciel affectant la qualité du service selon le plan de développement du produit en vigueur."]
     [:h2 "Utilisation du service et liens"]
     [:p "Il est de la responsabilité de l’utilisateur du service de s’assurer qu’il a le droit d’utiliser les fichiers qu’il télécharge vers le service et qu’il utilise dans le service. L’utilisateur s’engage à ne pas utiliser le service d’une manière, ni, plus généralement, transmettre aucun matériel enfreignant des droits de propriété intellectuelle, le droit au respect de la vie privée, le droit à la protection de la personnalité ou tous autres droits de tiers ou constituant une violation de la loi ou une atteinte aux bonnes mœurs. Le prestataire de services n’est pas responsable des éventuelles infractions commises par les utilisateurs.
      L’utilisateur utilise le service d’une manière qui ne porte pas préjudice au prestataire de services, ni aux autres utilisateurs ou aux tiers. Si le prestataire de services est avisé que l’utilisateur a transmis un matériel constituant une infraction comme indiqué ci-dessus, le prestataire de services a le droit de supprimer ledit matériel, l’environnement de l’utilisateur ou de l’organisation de l’utilisateur ou d’en bloquer l’utilisation sans préavis.
-     Le service peut contenir des liens vers des sites appartenant à des tiers ou exploités par des tiers (ci-après dénommés ” sites de tiers ”). Le prestataire de services ne saurait être responsable du contenu, ni des produits ou services proposés par des tiers. En outre, le contenu figurant sur des sites de tiers peut être soumis à des conditions d’utilisation et/ou des règles de confidentialité distinctes. Le prestataire de services recommande donc à l’utilisateur d’en prendre connaissance."]
-    ]
+     Le service peut contenir des liens vers des sites appartenant à des tiers ou exploités par des tiers (ci-après dénommés ” sites de tiers ”). Le prestataire de services ne saurait être responsable du contenu, ni des produits ou services proposés par des tiers. En outre, le contenu figurant sur des sites de tiers peut être soumis à des conditions d’utilisation et/ou des règles de confidentialité distinctes. Le prestataire de services recommande donc à l’utilisateur d’en prendre connaissance."]]
    [:div
     [:h2 "Fourniture du service"]
     [:p " Le prestataire de services se réserve tous les droits d’apporter des changements aux conditions d’utilisation et fonctionnalités du service. Les changements substantiels des conditions d’utilisation font l’objet d’un avis sur la page de connexion à Open Badge Passport. Dès lors que l’utilisateur continue d’utiliser le service après un tel avis, il est réputé accepter les changements concernés.
@@ -79,25 +75,24 @@
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Responsable du traitement"]
         [:div
-         [:p "Open Badge Factory Oy" ]
+         [:p "Open Badge Factory Oy"]
          [:p ""]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
          [:p "FINLAND"]
          [:p [:a {:href "mailto:contact@openbadgefactory.com"} "contact@openbadgefactory.com"]]
-         [:p "(ci-après dénommé ” nous ” ou ” Open Badge Factory ”)"]]
-        ]
+         [:p "(ci-après dénommé ” nous ” ou ” Open Badge Factory ”)"]]]
        [:li [:h3 "Interlocuteur pour les questions liées au registre "]
         [:div
-         [:p "Eric Rouselle" ]
+         [:p "Eric Rouselle"]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
          [:p "Phone number: +358 400 587 373"]
          [:p [:a {:href "mailto:dataprotection@openbadgefactory.com"} "dataprotection@openbadgefactory.com"]]]]
        [:li  [:h3 "Nom du registre"]
         [:div
-         [:p "REGISTRE DES CLIENTS ET DE PROSPECTION DU SERVICE OPEN BADGE PASSPORT" ]]]
+         [:p "REGISTRE DES CLIENTS ET DE PROSPECTION DU SERVICE OPEN BADGE PASSPORT"]]]
        [:li [:h3 "Quelles sont la base juridique et la finalité du traitement des données à caractère personnel?"]
         [:div
-         [:p "La base du traitement de données à caractère personnel est l’intérêt légitime de Open Badge Factory reposant sur une relation avec le client ou la mise en œuvre d’un contrat avec la personne concernée, ainsi que l’obtention d’un consentement à la prospection." ]
+         [:p "La base du traitement de données à caractère personnel est l’intérêt légitime de Open Badge Factory reposant sur une relation avec le client ou la mise en œuvre d’un contrat avec la personne concernée, ainsi que l’obtention d’un consentement à la prospection."]
          [:p "La base du traitement de données à caractère personnel est la suivante : "]
          [:ul
           [:li "fournir et développer notre service Open Badge Passport (ci-après dénommé le ” service ”),"]
@@ -110,56 +105,42 @@
         [:div
          [:p "Nous traitons les données à caractère personnel suivantes vous concernant : "]
          [:ul
-          [:li [:b "informations de base sur la personne concernée, "] "telles que ses nom*, pays*, langue*, nom d’utilisateur*, mot de passe*;" ]
-          [:li [:b "coordonnées de la personne concernée, "] "adresse électronique*, numéro de téléphone, adresse, localité, État;" ]
-          [:li [:b "informations concernant la relation de service et le contrat, "] "telles que détails du ou des badges ouverts attribués à la personne concernée, détails du profil d’utilisateur, correspondance avec la personne concernée et autres références, cookies et données liés à l’utilisation des cookies; " ]
-          [:li [:b "autres informations facultatives fournies par la personne concernée dans le service, "] "telles que : présentation personnelle dans le service, liens vers des comptes de réseaux sociaux (tels que Facebook, Linkedin, Twitter, Pinterest, Instagram, des blogues, etc.)." ]
-
-          ]
-         [:p "Notre relation contractuelle avec la personne concernée est subordonnée à la fourniture des données à caractère personnel marquées d’un astérisque, ainsi qu’à l’autorisation de l’utilisation de cookies dans le navigateur de l’utilisateur du service. Sans ces informations indispensables, nous ne sommes pas en mesure de fournir le service."]
-         ]]
-       [:li [:h3 "D’où recevons-nous les données ?" ]
+          [:li [:b "informations de base sur la personne concernée, "] "telles que ses nom*, pays*, langue*, nom d’utilisateur*, mot de passe*;"]
+          [:li [:b "coordonnées de la personne concernée, "] "adresse électronique*, numéro de téléphone, adresse, localité, État;"]
+          [:li [:b "informations concernant la relation de service et le contrat, "] "telles que détails du ou des badges ouverts attribués à la personne concernée, détails du profil d’utilisateur, correspondance avec la personne concernée et autres références, cookies et données liés à l’utilisation des cookies; "]
+          [:li [:b "autres informations facultatives fournies par la personne concernée dans le service, "] "telles que : présentation personnelle dans le service, liens vers des comptes de réseaux sociaux (tels que Facebook, Linkedin, Twitter, Pinterest, Instagram, des blogues, etc.)."]]
+         [:p "Notre relation contractuelle avec la personne concernée est subordonnée à la fourniture des données à caractère personnel marquées d’un astérisque, ainsi qu’à l’autorisation de l’utilisation de cookies dans le navigateur de l’utilisateur du service. Sans ces informations indispensables, nous ne sommes pas en mesure de fournir le service."]]]
+       [:li [:h3 "D’où recevons-nous les données ?"]
         [:div
          [:p "Nous recevons les données à caractère personnel susmentionnées essentiellement de la part de personne concernée elle-même, car les données sont saisies dans le service par la personne concernée."]
          [:p "Nous recevons de notre client (en tant que responsable du traitement des données) l’adresse électronique de la personne concernée à laquelle nous envoyons le badge ouvert qui lui a été attribué. Nous opérons dans cette relation en tant que sous-traitant des données."]
-         [:p "Pour les finalités décrites dans la présente déclaration de protection des données, des données à caractère personnel peuvent en outre être collectées et mises à jour à partir de sources disponibles publiquement et d’après des informations reçues d’autorités ou d’autres tiers dans les limites des lois et règlements applicables. La mise à jour des données de ce type est réalisée manuellement ou à l’aide de procédés automatisés. "]
-
-         ]]
+         [:p "Pour les finalités décrites dans la présente déclaration de protection des données, des données à caractère personnel peuvent en outre être collectées et mises à jour à partir de sources disponibles publiquement et d’après des informations reçues d’autorités ou d’autres tiers dans les limites des lois et règlements applicables. La mise à jour des données de ce type est réalisée manuellement ou à l’aide de procédés automatisés. "]]]
        [:li [:h3 "À qui communiquons-nous les données et transférons-nous des données en dehors de l’UE ou de l’EEE?"]
         [:div
          [:p "Seul le nom d’utilisateur de la personne concernée, que chaque utilisateur peut définir lui-même, s’affiche pour les autres utilisateurs du service."]
          [:p "Nous traitons les informations nous-mêmes et utilisons des sous-traitants qui traitent les données à caractère personnel pour notre compte. Nous avons sous-traité la gestion informatique à un prestataire de services externe et les données sont conservées sur son serveur. Le serveur est protégé et géré par ledit prestataire de services externe."]
          [:p "Les données peuvent être communiquées aux autorités en application de dispositions impératives. Nous ne communiquons pas d’informations du registre à des acteurs extérieurs."]
          [:p "Nous pouvons communiquer des informations agrégées et anonymes vous concernant à des fins de prospection, publicité, recherche, respect de la réglementation ou à d’autres fins."]
-         [:p "Nous ne transférons pas de données à caractère personnel en dehors l’UE/EEE."]
-         ]]
+         [:p "Nous ne transférons pas de données à caractère personnel en dehors l’UE/EEE."]]]
        [:li [:h3 "Comment protégeons-nous les données et combien de temps les conservons-nous ?"]
         [:div
          [:p "Les données à caractère personnel sont collectées dans des bases de données qui sont protégées par des pare-feu, des mots de passe et d’autres mesures techniques. Les bases de données et leurs copies de sauvegarde sont placées dans des locaux fermés et seules peuvent y accéder certaines personnes désignées d’avance, c’est-à-dire uniquement ceux de nos employés qui ont le droit de traiter les données des clients dans le cadre de leur travail. Ces personnes sont, d’une part, le personnel du service à la clientèle du prestataire de services et, d’autre part, les administrateurs techniques du service. Chaque utilisateur a un nom d’utilisateur et un mot de passe personnels pour l’accès au système."]
          [:p "La personne concernée peut à tout moment ajouter, modifier et supprimer toutes ses données du service, voire supprimer son compte entièrement. La suppression du compte efface du service toutes les données de la personne concernée."]
-         [:p "Nous conservons les données autant qu’il est nécessaire pour la finalité du traitement des données. Nous évaluons régulièrement la nécessité de conservation des données en tenant compte de la législation applicable. En outre, nous prenons les mesures raisonnables en vue de nous assurer de ne pas conserver des données à caractère personnel incompatibles, périmées ou inexactes dans le registre compte tenu de la finalité du traitement."]
-         ]]
+         [:p "Nous conservons les données autant qu’il est nécessaire pour la finalité du traitement des données. Nous évaluons régulièrement la nécessité de conservation des données en tenant compte de la législation applicable. En outre, nous prenons les mesures raisonnables en vue de nous assurer de ne pas conserver des données à caractère personnel incompatibles, périmées ou inexactes dans le registre compte tenu de la finalité du traitement."]]]
        [:li [:h3 "Quels sont vos droits en tant que personne concernée ?"]
         [:div
-         [:p "En tant que personne concernée, vous avez un droit d’accès aux données à caractère personnel vous concernant qui sont conservées dans le registre et le droit d’exiger la rectification ou l’effacement des données. Cela peut être fait en accédant, modifiant et/ou supprimant vos données à caractère personnel conservées dans le service après vous être connecté au service. Si vous avez besoin d’assistance, veuillez contacter la personne indiquée à la section 2 ci-dessus. " ]
+         [:p "En tant que personne concernée, vous avez un droit d’accès aux données à caractère personnel vous concernant qui sont conservées dans le registre et le droit d’exiger la rectification ou l’effacement des données. Cela peut être fait en accédant, modifiant et/ou supprimant vos données à caractère personnel conservées dans le service après vous être connecté au service. Si vous avez besoin d’assistance, veuillez contacter la personne indiquée à la section 2 ci-dessus. "]
          [:p "Vous avez aussi le droit de retirer ou modifier votre consentement à la prospection."]
          [:p "En tant que personne concernée, vous avez le droit de vous opposer au traitement ou de demander la limitation du traitement et d’introduire une réclamation auprès d’une autorité de contrôle compétente en matière de traitement des données à caractère personnel."]
          [:p "Pour des raisons personnelles spécifiques, vous avez aussi le droit de vous opposer au profilage et à tout autre traitement vous concernant lorsque le traitement des données repose sur la relation avec le client. Dans le cadre de votre réclamation, vous devez indiquer le cas précis dans lequel vous vous opposez au traitement. Nous pouvons refuser de prendre en compte une telle demande en application de la loi."]
-         [:p "En tant que personne concernée, vous avez le droit de vous opposer au traitement à tout moment gratuitement, y compris au profilage dans la mesure où il est lié à une finalité de prospection."]
-         ]]
+         [:p "En tant que personne concernée, vous avez le droit de vous opposer au traitement à tout moment gratuitement, y compris au profilage dans la mesure où il est lié à une finalité de prospection."]]]
 
        [:li [:h3 "Qui pouvez-vous contacter ?"]
         [:div
-         [:p "Tous les contacts et toutes les demandes concernant la présente déclaration de protection des données doivent être adressés par écrit ou présentés en personne à l’interlocuteur indiqué à la section deux (2)."]
-         ]]
+         [:p "Tous les contacts et toutes les demandes concernant la présente déclaration de protection des données doivent être adressés par écrit ou présentés en personne à l’interlocuteur indiqué à la section deux (2)."]]]
        [:li [:h3 "Modifications de la déclaration de protection des données"]
         [:div
-         [:p "Si nous apportons des changements à la présente déclaration de protection des données, nous publierons la déclaration modifiée sur notre site Web, en mentionnant la date de la modification. Si les modifications sont importantes, nous pouvons aussi vous en informer par d’autres moyens, par exemple en vous envoyant un courriel ou en insérant un avis sur notre page d’accueil. Nous vous recommandons d’examiner ces principes de protection des données de temps à autre, afin de vous assurer que vous avez eu connaissance des modifications apportées."]]]
-       ]
-      ]
-     ]
-    ]])
-
+         [:p "Si nous apportons des changements à la présente déclaration de protection des données, nous publierons la déclaration modifiée sur notre site Web, en mentionnant la date de la modification. Si les modifications sont importantes, nous pouvons aussi vous en informer par d’autres moyens, par exemple en vous envoyant un courriel ou en insérant un avis sur notre page d’accueil. Nous vous recommandons d’examiner ces principes de protection des données de temps à autre, afin de vous assurer que vous avez eu connaissance des modifications apportées."]]]]]]]])
 
 (defn ^:export terms []
   [:div.terms-container #_{:style {:padding "30px"}}
@@ -175,8 +156,7 @@
      of the Service (later referred to as User(s)). User refers to 2 user levels: 1) Users, who use the service for personal
      purposes 2) customer organization, which has it’s own environment in the Service."]
     [:br]
-    [:p "By using the Open Badge Passport service the User accepts these Terms of Use."]
-    ]
+    [:p "By using the Open Badge Passport service the User accepts these Terms of Use."]]
    [:div
     [:h2 "Access to the Service and restrictions"]
     [:p "By creating a User account in the Service,
@@ -199,13 +179,12 @@
     [:h2 "Responsibilities of the Service Provider"]
     [:p "The Service Provider is responsible for technical implementation and maintenance of the Service. The Service Provider may suspend the Service when necessary for example for installation, amendment or maintenance work or if laws, regulations or authorities so require or if there are other justifiable reasons for suspension. The Service Provider aims to ensure that the suspension is as short as possible. The Service Provider will make an effort to inform Users a reasonable time in advance of substantial changes and breaks in service on the login page of the Service and in the Open Badge Passport discussion group. However, the Service Provider reserves the right to perform small updates without informing about it in advance. A back-up of the service content is made once a day. The back-up is made in case the service content needs to be restored due to, for example, a technical problem. However, individual User's content is not restored, if it accidentally deletes its content.
      The Service provider has the right to terminate the Service at its sole discretion.
-     The Service Provider aims to notify a reasonable time in advance about the termination of the Service." ]
+     The Service Provider aims to notify a reasonable time in advance about the termination of the Service."]
     [:p "The Service Provider is committed to repairing possible software faults affecting the quality of the Service according to the valid product development plan."]
     [:h2 "Use of Service and links"]
     [:p "It is the responsibility of the User of the Service to make sure that they have the right to use the files they upload and use in the Service. User agrees not to use the Service in a manner or otherwise submit any material that violate any Intellectual Property Rights, privacy, publicity or any other rights of others; or would be illegal or violate good manner. The Service Provider is not responsible for possible violations of the Users.
      User shall use the Service in a manner that does not cause harm to the Service Provider, other Users or third parties. If the Service Provider receives a notice claiming that the User has submitted afore described material, The Service Provider is entitled to remove such material, the User or User organization's environment or prevent their use without notice.
-     The Service may contain links to sites, which are owned or operated by third parties (“Third Party Sites”). The Service Provider shall not be responsible for the content or for products or services offered by third parties. Further, the content on Third Party Sites may be subject to separate terms of use and/or privacy policies, the contents of which Service Provider recommends the User to review."]
-    ]
+     The Service may contain links to sites, which are owned or operated by third parties (“Third Party Sites”). The Service Provider shall not be responsible for the content or for products or services offered by third parties. Further, the content on Third Party Sites may be subject to separate terms of use and/or privacy policies, the contents of which Service Provider recommends the User to review."]]
    [:div
     [:h2 "Provision of the Service"]
     [:p "The Service Provider reserves all rights to changes in the Service's Terms of Use and features. Substantial changes in the Terms of Use shall be informed about on the login page of the Open Badge Passport. User´s continued use of the Service after such notice shall be deemed an acceptance of any changes.
@@ -230,27 +209,26 @@
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Controller"]
         [:div
-         [:p "Open Badge Factory Oy" ]
+         [:p "Open Badge Factory Oy"]
          [:p ""]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
          [:p "FINLAND"]
          [:p [:a {:href "mailto:contact@openbadgefactory.com"} "contact@openbadgefactory.com"]]
-         [:p "(hereafter ”we” or  ”Open Badge Factory”)"]]
-        ]
+         [:p "(hereafter ”we” or  ”Open Badge Factory”)"]]]
        [:li [:h3 "Contact person for register matters "]
         [:div
-         [:p "Eric Rouselle" ]
+         [:p "Eric Rouselle"]
          [:p "Kiviharjunlenkki 1 E, 90220 Oulu"]
          [:p "Phone number: +358 400 587 373"]
          [:p [:a {:href "mailto:dataprotection@openbadgefactory.com"} "dataprotection@openbadgefactory.com"]]]]
 
        [:li  [:h3 "Name of register"]
         [:div
-         [:p "CUSTOMER AND MARKETING REGISTER FOR OPEN BADGE PASSPORT SERVICE" ]]]
+         [:p "CUSTOMER AND MARKETING REGISTER FOR OPEN BADGE PASSPORT SERVICE"]]]
        [:li [:h3 "What is the legal basis for and purpose of the processing of personal data?"]
         [:div
          [:p "The basis of processing personal data is Open Badge Factory's justified interest on the basis of a customer
-          relationship or implementing a contract with the data subject, as well as consent as regards direct marketing." ]
+          relationship or implementing a contract with the data subject, as well as consent as regards direct marketing."]
          [:p "The basis of processing personal data is: "]
          [:ul
           [:li "the delivery and development of our Open Badge Passport Service (“Service”),"]
@@ -263,32 +241,26 @@
         [:div
          [:p "We process the following personal data of you: "]
          [:ul
-          [:li [:b "Basic information of the data subject "] "such as name*, country*, language*, user name*, password*;" ]
-          [:li [:b "Contact information of the data subject "] "e-mail address*, phone number, address, city, state;" ]
+          [:li [:b "Basic information of the data subject "] "such as name*, country*, language*, user name*, password*;"]
+          [:li [:b "Contact information of the data subject "] "e-mail address*, phone number, address, city, state;"]
           [:li [:b "Information of  the service relationship and the contract "] "such as details of the open badge(s) granted to the data subject, details of the user profile,
-           correspondence with the data subject and other references, cookies and data related to use of them; " ]
+           correspondence with the data subject and other references, cookies and data related to use of them; "]
           [:li [:b "Other voluntary information provided by the data subject into the Service "] "such as personal introduction in the Service, links to social media accounts
-           (such as Facebook, Linkedin, Twitter, Pinterest, Instagram, blogs etc.)." ]
-
-          ]
-         [:p "Committing personal data marked with a star as well as allowing the use of cookies in the service user’s browser, is a requirement for our contractual relationship with the data subject. Without this necessary information we are not able to provide the Service."]
-         ]]
-       [:li [:h3 "From where do we receive data?" ]
+           (such as Facebook, Linkedin, Twitter, Pinterest, Instagram, blogs etc.)."]]
+         [:p "Committing personal data marked with a star as well as allowing the use of cookies in the service user’s browser, is a requirement for our contractual relationship with the data subject. Without this necessary information we are not able to provide the Service."]]]
+       [:li [:h3 "From where do we receive data?"]
         [:div
          [:p " We receive the above mentioned personal data primarily from the data subject him/herself, as the data is entered into the Service by the data subject."]
          [:p "We receive the data subject’s e-mail address to which we send the granted Open Badge from our customer (as the data controller). We act as the data processor in this relationship."]
          [:p "For the purposes described in this privacy notice, personal data may also be collected and updated from publicly available sources and based on information received from authorities or other third parties within the limits of the
-          applicable laws and regulations. Data updating of this kind is performed manually or by automated means."]
-
-         ]]
+          applicable laws and regulations. Data updating of this kind is performed manually or by automated means."]]]
        [:li [:h3 "To whom do we disclose data and do we transfer data outside of EU or EEA?"]
         [:div
          [:p "Only the data subject’s user name which each user can define him/herself, is displayed to other users in the Service. "]
          [:p "We process information ourselves and use subcontractors that process personal data on behalf of and for us. We have outsourced the IT-management to an external service provider, to whose server the data is stored. The server is protected and managed by the external service provider."]
          [:p "Data may be disclosed to authorities under compelling provisions. We don’t disclose information of the register to external quarters."]
          [:p "We may disclose aggregate, anonymous information about you for marketing, advertising, research, compliance, or other purposes."]
-         [:p "We do not transfer personal data outside of EU/EEA."]
-         ]]
+         [:p "We do not transfer personal data outside of EU/EEA."]]]
        [:li [:h3 "How do we protect the data and how long do we store them? "]
         [:div
          [:p "The personal data is collected into databases that are protected by firewalls, passwords and other technical measures. The databases and the backup copies of them are in locked premises and can be accessed only by certain pre-designated persons, i.e. only those of our employees,  who on behalf of their work are entitled to process customer data. These persons include the Service Provider's customer
@@ -296,26 +268,19 @@
          [:p "The data subject may at any time add, change and remove all his/her data from the Service as well as delete his/her account
           entirely. The deletion of the account will erase all the data subject’s data from Service."]
          [:p "We store the data as long as it is necessary for the purpose of processing the data. We estimate regularly the need for data storage taking into account the applicable legislation. In addition, we take care of such reasonable actions of which purpose is to ensure that no incompatible, outdated or inaccurate
-          personal data is stored in the register taking into account the purpose of the processing."]
-         ]]
+          personal data is stored in the register taking into account the purpose of the processing."]]]
        [:li [:h3 "What are your rights as a data subject?"]
         [:div
-         [:p "As a data subject you have a right to inspect the personal data conserning yourself, which is stored in the register, and a right to require rectification or erasure of the data. This may be done by accessing, modifying and/or deleting your personal data stored in the Service by logging into the Service. If you need assistance, please contact the person mentioned in Section 2 above. " ]
+         [:p "As a data subject you have a right to inspect the personal data conserning yourself, which is stored in the register, and a right to require rectification or erasure of the data. This may be done by accessing, modifying and/or deleting your personal data stored in the Service by logging into the Service. If you need assistance, please contact the person mentioned in Section 2 above. "]
          [:p "You also have a right to withdraw or change your consent for direct marketing."]
          [:p "As a data subject, you have a right to object processing or request restricting the processing and lodge a complaint with a supervisory authority responsible for processing personal data."]
          [:p "For specific personal reasons, you also have a right to object profiling and other processing concerning you, when processing the data is based on the customer relationship. In connection to your claim, you should identify the specific situation on which you object the processing.
           We can refuse to act on such request on the basis of the law."]
-         [:p "As a data subject you have the right to object processing at any time free of charge, including profiling in so far as it relates to direct marketing."]
-         ]]
+         [:p "As a data subject you have the right to object processing at any time free of charge, including profiling in so far as it relates to direct marketing."]]]
 
        [:li [:h3 "Who can you be in contact with?"]
         [:div
-         [:p "All contacts and requests concerning this privacy notice shall be submitted in writing or in person to the person mentioned in section two (2)."]
-         ]]
+         [:p "All contacts and requests concerning this privacy notice shall be submitted in writing or in person to the person mentioned in section two (2)."]]]
        [:li [:h3 "Changes in the Privacy Notice"]
         [:div
-         [:p "Should we make amendments to this privacy protection statement, we will place the amended statement on our website, with an indication of the amendment date. If the amendments are significant, we may also inform you about this by other means, for example by sending an email or placing a bulletin on our homepage. We recommend that you review these privacy protection principles from time to time to ensure you are aware of any amendments made."]]]
-       ]
-      ]
-     ]
-    ]])
+         [:p "Should we make amendments to this privacy protection statement, we will place the amended statement on our website, with an indication of the amendment date. If the amendments are significant, we may also inform you about this by other means, for example by sending an email or placing a bulletin on our homepage. We recommend that you review these privacy protection principles from time to time to ensure you are aware of any amendments made."]]]]]]]])
