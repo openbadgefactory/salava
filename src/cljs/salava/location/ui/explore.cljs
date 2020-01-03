@@ -96,10 +96,11 @@
           :max-results     100}])
       :component-did-mount
       (fn []
-        (-> (sel1 ".autocomplete__input")
-            (dommy/set-attr! :aria-label (t placeholder)))
-        (-> (sel1 ".autocomplete__clear-button")
-            (dommy/set-attr! :aria-hidden true)))})))
+        (do
+          (-> (sel1 ".autocomplete__input")
+              (dommy/set-attr! :aria-label (t placeholder)))
+          (-> (sel1 ".autocomplete__clear-button")
+              (dommy/set-attr! :aria-label (t :location/clearField)))))})))
 
 (defn map-view [state]
   (create-class
