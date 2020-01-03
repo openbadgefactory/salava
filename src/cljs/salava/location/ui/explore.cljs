@@ -59,48 +59,29 @@
                  (js/L.marker. (clj->js {:icon icon :title title}))
                  (.on "click" (click-cb item unique-count)))))))})))
 
-#_(defn filter-autocomplete [kind state]
-    (let [filter (cursor state [kind])
-          class-name (str (name kind) "-filter")
-          placeholder (keyword "location" (str (name kind) "FilterField"))]
-      (fn []
-        [autocomplete/autocomplete
-         {:value (:value @filter)
-          :on-change (fn [item]
-                       (swap! filter assoc :value (:key item))
-                       (.trigger (js/jQuery (str "div.badges-filter ." class-name " input")) "change"))
-          :search-fields   [:value]
-          :items           (:autocomplete @filter)
-          :no-results-text " "
-          :placeholder     (t placeholder)
-          :control-class   (str "form-control " class-name)
-          :max-results     100}])))
-
 (defn filter-autocomplete [kind state]
   (let [filter (cursor state [kind])
         class-name (str (name kind) "-filter")
         placeholder (keyword "location" (str (name kind) "FilterField"))]
-    (create-class
-     {:reagent-render
-      (fn []
-        [autocomplete/autocomplete
-         {:value (:value @filter)
-          :on-change (fn [item]
-                       (swap! filter assoc :value (:key item))
-                       (.trigger (js/jQuery (str "div.badges-filter ." class-name " input")) "change"))
-          :search-fields   [:value]
-          :items           (:autocomplete @filter)
-          :no-results-text " "
-          :placeholder     (t placeholder)
-          :control-class   (str "form-control " class-name)
-          :max-results     100}])
-      :component-did-mount
-      (fn []
-        (do
-          (-> (sel1 ".autocomplete__input")
-              (dommy/set-attr! :aria-label (t placeholder)))
-          (-> (sel1 ".autocomplete__clear-button")
-              (dommy/set-attr! :aria-label (t :location/clearField)))))})))
+    (fn []
+      [autocomplete/autocomplete
+       {:value (:value @filter)
+        :on-change (fn [item]
+                     (swap! filter assoc :value (:key item))
+                     (.trigger (js/jQuery (str "div.badges-filter ." class-name " input")) "change"))
+        :search-fields   [:value]
+        :items           (:autocomplete @filter)
+        :no-results-text " "
+        :placeholder     (t placeholder)
+        :control-class   (str "form-control " class-name)
+        :max-results     100}])))
+
+(defn autocomplete-accessibility-fix []
+  (doseq [input (sel :.autocomplete__input)
+          bt (sel :.autocomplete__clear-button)]
+    (do
+      (dommy/set-attr! input :aria-label (dommy/attr input :placeholder))
+      (dommy/set-attr! bt :aria-label (t :location/clearField)))))
 
 (defn map-view [state]
   (create-class
@@ -199,6 +180,8 @@
                                   (js/setTimeout
                                    #(get-markers (.val (js/jQuery "input[name=map-type]:checked")) my-map layer-group (query-opt))
                                    1000)))]
+
+        (autocomplete-accessibility-fix)
 
         (.addTo layer-group my-map)
 
