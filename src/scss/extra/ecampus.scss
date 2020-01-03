@@ -525,8 +525,14 @@ select.form-control::-ms-expand {
   }
 }
 
-#page-edit #step-button, #page-edit #step-button-previous {
+/*#page-edit #step-button, #page-edit #step-button-previous, #page-edit-theme #step-button-previous, #page-edit-theme #step-button, #step-button {
   color: #000;
+}*/
+
+#page-edit, #page-edit-theme, #page-settings {
+  #step-button, #step-button-previous {
+    color: $menu-color;
+  }
 }
 
 #registration-page .or span, #login-page .or span {
@@ -544,6 +550,10 @@ select.form-control::-ms-expand {
 
 #dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
   color: $menu-color !important;
+}
+
+.max-file-size {
+  color: #996B6A;
 }
 
 /*#my-badges #grid .grid-container .media-content .icons{
