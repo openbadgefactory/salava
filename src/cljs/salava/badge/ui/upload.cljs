@@ -38,29 +38,29 @@
                  .-files
                  (.item 0))
         form-data (doto
-                    (js/FormData.)
+                   (js/FormData.)
                     (.append "file" file (.-name file)))]
     (swap! state assoc :status "loading")
     (ajax/POST
-      (path-for "/obpv1/badge/upload")
-      {:body    form-data
-       :handler (fn [data]
-                  (do
-                    (swap! state assoc :status "form")
-                    (m/modal! (upload-modal data)
-                              (if (= (:status data) "success")
-                                {:hidden #(navigate-to "/badge")}))))})))
+     (path-for "/obpv1/badge/upload")
+     {:body    form-data
+      :handler (fn [data]
+                 (do
+                   (swap! state assoc :status "form")
+                   (m/modal! (upload-modal data)
+                             (if (= (:status data) "success")
+                               {:hidden #(navigate-to "/badge")}))))})))
 (defn import-badge [state]
   (let [assertion-url (:assertion-url @state)]
     (ajax/POST
-      (path-for "/obpv1/badge/import_badge_with_assertion")
-      {:params {:assertion (s/trim assertion-url)}
-       :handler (fn [data]
-                  (do
-                    (swap! state assoc :status "form")
-                    (m/modal! (upload-modal data)
-                              (if (= (:status data) "success")
-                                {:hidden #(navigate-to "/badge")}))))})))
+     (path-for "/obpv1/badge/import_badge_with_assertion")
+     {:params {:assertion (s/trim assertion-url)}
+      :handler (fn [data]
+                 (do
+                   (swap! state assoc :status "form")
+                   (m/modal! (upload-modal data)
+                             (if (= (:status data) "success")
+                               {:hidden #(navigate-to "/badge")}))))})))
 
 (defn upload-info []
   [:div
@@ -100,15 +100,11 @@
        (= "loading" status) [:div.ajax-message
                              [:i {:class "fa fa-cog fa-spin fa-2x "}]
                              [:span (str (t :core/Loading) "...")]]
-       :else                [:div {:class "btn btn-primary btn-file"}
-                              [file-input {:upload-fn (fn [] (send-file state)) :aria-label (t :badge/Uploadbadgefrom)}]
-                             #_[:input {:type       "file"
-                                        :name       "file"
-                                        :on-change  #(send-file state)
-                                        :accept     "image/png, image/svg+xml"
-                                        :aria-label "Upload badge file"}]
-
-                             (t :badge/Browse)])
+       :else                [:span {:class "btn btn-primary btn-file"}
+                             [:input {:type       "file"
+                                      :name       "file"
+                                      :on-change  #(send-file state)
+                                      :accept     "image/png, image/svg+xml, application/pdf"}] (t :badge/Browse)])
      [:br]]))
 
 (defn assertion-url-upload-content [state]
@@ -129,5 +125,5 @@
                                         :on-click #(do
                                                      (swap! state assoc :status "importing")
                                                      (import-badge state))}
-                                      (t :badge/ImportBadge)]]])
+                               (t :badge/ImportBadge)]]])
      [:br]]))
