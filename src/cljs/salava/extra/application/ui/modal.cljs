@@ -23,7 +23,7 @@
 
 (defn issuer-modal-link [issuer-id name]
   [:div {:class "issuer-data clearfix"}
-   [:label {:class "advert-issuer"}  (t :extra-application/Issuer) ":"]
+   [:span._label {:class "advert-issuer"}  (t :extra-application/Issuer) ":"]
    [:div {:class "issuer-links pull-label-left inline"}
     [:a {:href "#"
          :on-click #(do (.preventDefault %)
@@ -40,7 +40,7 @@
          [:div {:id "badge-contents"}
           [:div.row.flip
            [:div {:class "col-md-3 badge-image modal-left"}
-            [:img {:src (str "/" image_file)}]
+            [:img {:src (str "/" image_file) :alt ""}]
             [:div
              [:div.clip-text
               [:a  {:href (:application_url @data-atom) :target "_"} [:i.apply-now-icon {:class "fa fa-angle-double-right"}] (if (or (= "application" (:kind @data-atom)) (blank? (:application_url_label @data-atom))) (str " " (t :extra-application/Getthisbadge))  (str " " (:application_url_label @data-atom)))]]]]
@@ -52,7 +52,7 @@
 
               (if-not (blank? description)
                 [:div {:class "issuer-data clearfix" :style {:margin-bottom "10px"}}
-                 [:label {:class "advert-issuer"}  (t :admin/Description) ":"]
+                 [:span._label {:class "advert-issuer"}  (t :admin/Description) ":"]
                  [:div {:class "issuer-links pull-label-left inline"}
                   description]])
               (if-not (blank? criteria_url)

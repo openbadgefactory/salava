@@ -2,7 +2,7 @@
   (:require [reagent.core :refer [atom cursor]]
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.helper :refer [dump]]
-            [salava.core.ui.helper :refer [path-for]]
+            [salava.core.ui.helper :refer [path-for navigate-to]]
             [salava.core.ui.modal :as mo]
             [salava.user.ui.helper :refer [profile-picture]]
             [salava.core.i18n :refer [t]]
@@ -154,18 +154,20 @@
     (fn []
       [:div
        [:div.info-block
-        [:a {:href (path-for "/connections/user") :on-click #(do
-                                                               (.preventDefault %)
-                                                               (session/put! :visible-area :accepted))}
+        [:a {:href "#" #_(path-for "/connections/user") :on-click #(do
+                                                                     (.preventDefault %)
+                                                                     (navigate-to "/connections/user")
+                                                                     (session/put! :visible-area :accepted))}
          [:div.info
           [:div.text
            [:span.num (->> (:following-users @state) count)]
            [:span.desc (t :social/Followedusers)]]]]]
 
        [:div.info-block
-        [:a {:href (path-for "/connections/user")  :on-click #(do
-                                                                (.preventDefault %)
-                                                                (session/put! :visible-area :pending))}
+        [:a {:href "#" #_(path-for "/connections/user")  :on-click #(do
+                                                                      (.preventDefault %)
+                                                                      (navigate-to "/connections/user")
+                                                                      (session/put! :visible-area :pending))}
          [:div.info
           (when (pos? (count (:pending @state))) [:span.badge (count (:pending @state))])
           [:div.text
