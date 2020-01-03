@@ -20,19 +20,19 @@
       #(let [clipboard (new js/Clipboard (dom-node %))]
          (reset! clipboard-atom clipboard)
          #_(-> (js/$ (reagent.core/dom-node %))
-             (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
-             (.tooltip "toggle"))
+               (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
+               (.tooltip "toggle"))
          #_(.on @clipboard-atom "success"
-              (fn [] (do
-                       (-> (js/$ (reagent.core/dom-node %))
-                           (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
-                           (.tooltip "hide")
-                           (.attr "data-original-title" , (str (t :core/Copied) "!"))
-                           (.tooltip "show"))
-                       (js/setTimeout (fn []
-                                        (do
-                                          (-> (js/$ (reagent.core/dom-node %))
-                                              (.tooltip "destroy")))) 1000)))))
+                (fn [] (do
+                         (-> (js/$ (reagent.core/dom-node %))
+                             (.tooltip (clj->js  {:trigger "click" :placement "bottom"}))
+                             (.tooltip "hide")
+                             (.attr "data-original-title" , (str (t :core/Copied) "!"))
+                             (.tooltip "show"))
+                         (js/setTimeout (fn []
+                                          (do
+                                            (-> (js/$ (reagent.core/dom-node %))
+                                                (.tooltip "destroy")))) 1000)))))
       :component-will-unmount
       #(when-not (nil? @clipboard-atom)
          (.destroy @clipboard-atom)
@@ -45,8 +45,6 @@
                   :data-clipboard-target target
                   :on-click #(.preventDefault %)}
          [:i {:class "fa fa-clipboard" :aria-hidden "true"}] (str " " (t :core/Copy))])})))
-
-
 
 (defn input-button [name id text]
   (let [status (atom "")]
@@ -66,22 +64,20 @@
          [:span {:class "input-group-btn"}
           [clipboard-button (str "#" id) status]]]]])))
 
-
 (defn input-date [datefrom dateto]
   [:div.form-group
-       [:fieldset
-        [:legend ""]
-        [:span {:class " sub-heading"} (t :core/Timeperiod)]
-        [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
-                                                                              (str "present")))
-         (if-not dateto
-           [:div [:b (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")]])]]])
-
+   [:fieldset
+    [:legend ""]
+    [:span {:class " sub-heading"} (t :core/Timeperiod)]
+    [:div (str (date-from-unix-time (* 1000 datefrom) "months") " - " (if dateto (date-from-unix-time (* 1000 dateto) "months")
+                                                                          (str "present")))
+     (if-not dateto
+       [:div [:b (str "(" (t :core/Mark) ": " " \"This certification does not expire\")")]])]]])
 
 (defn open-linkedin-popup []
   (.open js/window
-         "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME",
-         "_blank",
+         "https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME"
+         "_blank"
          "toolbar=yes,scrollbars=yes,resizable=yes"))
 
 (defn add-to-profile-image []
@@ -96,7 +92,6 @@
      [:span._label {:class " sub-heading"} (t :core/Tutorialvideo)]
      [:div.embed-responsive.embed-responsive-16by9
       {:dangerouslySetInnerHTML {:__html (md->html (if (= "fi" user-lng) video-link-fi video-link-en))}}]]))
-
 
 (defn certificate-badge-helper [{:keys [name authory licence url datefrom dateto] :as certification} view-atom]
   (create-class {:reagent-render
@@ -172,16 +167,15 @@
 
 (defn google-plus [url]
   (create-class
-    {:reagent-render (fn [url]
-                       [:a {:href (str "https://plus.google.com/share?url=" url) :target "_blank" :data-action "share" :data-href url :data-annotation "none"}
-                        [:i {:class "fa fa-google-plus-square"}]])
+   {:reagent-render (fn [url]
+                      [:a {:href (str "https://plus.google.com/share?url=" url) :target "_blank" :data-action "share" :data-href url :data-annotation "none"}
+                       [:i {:class "fa fa-google-plus-square"}]])
 
-     :should-component-update (fn [] false)}))
+    :should-component-update (fn [] false)}))
 
 (defn wordpress-embed [badge_name image_file url issuer]
   (let [site-url (session/get :site-url)]
-    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><a href="url" target= \"_blank\" rel=\"noopener noreferrer\" style=\"display:inline-block;\" ><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src="(str site-url"/"image_file)"/></a></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">"badge_name"</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">"issuer"</div></div></div></div>")))
-
+    (str "<div style=\"border:1px solid #d2d2d2;max-width:200px;margin-top:0;line-height:1.4;height:270px;margin-bottom:20px;\"><div style=\"text-align: center; height: auto;\"><div style=\"float:none;display:block;padding:0px;min-height:130px;min-width:130px;\"><a href=" url " target= \"_blank\" rel=\"noopener noreferrer\" style=\"display:inline-block;\" ><img style=\"height:130px;width:130px;margin-top:0px;padding:4px;\" src=" (str site-url "/" image_file) "/></a></div><div><div style=\"font-family:Open Sans SemiBold;font-weight:600;line-height:1.2em;height: 2.4em;text-align: center;margin: 15px 0px 5px 0px;color: #dc5c10;font-size: 16px;overflow: hidden;\">" badge_name "</div><div style=\"color: #756A70;padding-top: 3px;line-height: 1.2em;height: 2.8em;overflow-y: hidden;font-size: 12px;\">" issuer "</div></div></div></div>")))
 
 (defn share-buttons-element [url title public? is-badge? link-or-embed-atom image-file certification]
   (let [site-name (session/get-in [:share :site-name])
@@ -206,11 +200,8 @@
             [:i {:title "LinkedIn Add to Profile" :class "inprofile fa fa-linkedin-square"}]]
          [:div.share-button
           [:a {:href (str "https://www.linkedin.com/shareArticle?mini=true&url=" url "&title=" (js/encodeURIComponent title) "&summary=" (js/encodeURIComponent (str site-name ": " title)) "&source=" hashtag) :target "_blank" :aria-label "Linkedin"}
-           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]])]
-
-
-      #_[:div.share-button
-         [google-plus url]]
+           [:i {:title "LinkedIn Share" :class "fa fa-linkedin-square"}]]])] #_[:div.share-button
+                                                                                [google-plus url]]
       [:div.share-button
        [:a {:href (str "https://www.facebook.com/sharer/sharer.php?u=" url) :target "_blank" :aria-label "Facebook"} [:i {:class "fa fa-facebook-square"}]]]
 
@@ -240,47 +231,43 @@
 
      (when (and public? (= "link" @link-or-embed-atom))
        (if is-badge?
-        [:div.linkinput [input-button "" "sharelink" url]]
-        [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value url}]]))
+         [:div.linkinput [input-button "" "sharelink" url]]
+         [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value url :aria-label (str (t :badge/Share) " " (clojure.string/lower-case (t :core/Link)))}]]))
      (if (and public? (= "embed" @link-or-embed-atom))
        (if is-badge?
          [:div.form-horizontal
           [:div.row ;.form-group
            [:span._label.col-xs-12 {:style {:margin-right "20px" :font-weight "normal" :display "inline-block"}} (t :core/Imageonly) ":"]
            [:div.col-xs-12.copy-boxes
-            [input-button "" "embedbadge" (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/pic/embed\" width=\"200\" height=\"270\"></iframe>")]#_[:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\""url"/pic/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
+            [input-button "" "embedbadge" (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\"" url "/pic/embed\" width=\"200\" height=\"270\"></iframe>")] #_[:input {:class "form-control" :read-only true :type "text" :value (str "<iframe  frameborder=\"0\"  scrolling=\"no\" src=\"" url "/pic/embed\" width=\"200\" height=\"270\"></iframe>")}]]]]
 
-         [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\""url"/embed\" frameborder=\"0\"></iframe>")}]]))]))
-
-
-
+         [:div.linkinput [:input {:class "form-control" :read-only true :type "text" :value (str "<iframe width=\"90%\" height=\"560\" src=\"" url "/embed\" frameborder=\"0\"></iframe>") :aria-label (t :core/Embedcode)}]]))]))
 
 (defn share-buttons [url title public? is-badge? link-or-embed-atom image-file]
-   (if (private?)
-     [:div]
-     (create-class {:reagent-render      (fn [url title public? is-badge?]
-                                           (share-buttons-element url title public? is-badge? link-or-embed-atom image-file nil))
-                    :component-did-mount (fn []
-                                           (do
-                                             (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
-                                             (.getScript (js* "$") "//platform.twitter.com/widgets.js")
-                                             (js* "delete IN")
+  (if (private?)
+    [:div]
+    (create-class {:reagent-render      (fn [url title public? is-badge?]
+                                          (share-buttons-element url title public? is-badge? link-or-embed-atom image-file nil))
+                   :component-did-mount (fn []
+                                          (do
+                                            (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
+                                            (.getScript (js* "$") "//platform.twitter.com/widgets.js")
+                                            (js* "delete IN")
                                         ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
-                                             (.getScript (js* "$") "https://apis.google.com/js/platform.js")))})))
-
+                                            (.getScript (js* "$") "https://apis.google.com/js/platform.js")))})))
 
 (defn share-buttons-badge [url title public? is-badge? link-or-embed-atom image-file certification]
-   (if (private?)
-     [:div]
-     (create-class {:reagent-render      (fn [url title public? is-badge?]
-                                           [share-buttons-element url title public? is-badge? link-or-embed-atom image-file certification])
-                    :component-did-mount (fn []
-                                           (do
-                                             (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
-                                             (.getScript (js* "$") "//platform.twitter.com/widgets.js")
-                                             (js* "delete IN")
+  (if (private?)
+    [:div]
+    (create-class {:reagent-render      (fn [url title public? is-badge?]
+                                          [share-buttons-element url title public? is-badge? link-or-embed-atom image-file certification])
+                   :component-did-mount (fn []
+                                          (do
+                                            (.getScript (js* "$") "//assets.pinterest.com/js/pinit.js")
+                                            (.getScript (js* "$") "//platform.twitter.com/widgets.js")
+                                            (js* "delete IN")
                                         ;(.getScript (js* "$") "//platform.linkedin.com/in.js")
-                                             (.getScript (js* "$") "https://apis.google.com/js/platform.js")))})))
+                                            (.getScript (js* "$") "https://apis.google.com/js/platform.js")))})))
 
 (defn ^:export modalroute []
   {:linkedin1 linkedin-modal1
