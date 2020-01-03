@@ -552,8 +552,23 @@ select.form-control::-ms-expand {
   color: $menu-color !important;
 }
 
-.max-file-size {
-  color: #996B6A;
+#my-files {
+  .file-icon-large {
+    color: $menu-color;
+  }
+  .max-file-size {
+    color: #996B6A;
+  }
+}
+
+.ticket-container.fakebadge u {
+  color: #A76905;
+}
+.ticket-container.mistranslation u {
+  color: #088488;
+}
+.ticket-container.bug u {
+  color: #EC130E;
 }
 
 /*#my-badges #grid .grid-container .media-content .icons{
