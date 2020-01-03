@@ -62,7 +62,7 @@
         [:table.table
          [:thead
           [:tr
-           [:th {:style {:display "none"} :rowSpan "2"} (t :badge/Badges)]]]
+           [:td {:style {:display "none"}} (t :badge/Badges)]]]
          [:tbody
           [:tr
            [:td.meta {:rowSpan "2"}
