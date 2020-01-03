@@ -2,12 +2,14 @@
   (:require [salava.core.i18n :refer [t]]
             [salava.core.ui.helper :refer [base-path]]
             [salava.oauth.ui.status :as oauth-status]
+            [salava.oauth.ui.authorize :as auth]
             [salava.oauth.ui.block]
             [reagent.session :as session]
             [clojure.string :refer [blank?]]))
 
 (defn ^:export routes [context]
-  {(str (base-path context) "/user") [[["/oauth/" :service] oauth-status/handler]]})
+  {(str (base-path context) "/user") [[["/oauth2/authorize"] auth/handler]
+                                      [["/oauth/" :service] oauth-status/handler]]})
 
 #_(defn ^:export navi [context]
     {(str (base-path context) "/user/oauth/facebook") {:weight 44 :title (t :oauth/Facebook) :site-navi true :breadcrumb (t :user/User " / " :oauth/Facebook)}

@@ -45,6 +45,7 @@
    :name                                 (s/maybe s/Str)
    :description                          (s/maybe s/Str)
    :image_file                           (s/maybe s/Str)
+   :png_image_file                       (s/maybe s/Str)
    :issued_on                            (s/maybe s/Int)
    :expires_on                           (s/maybe s/Int)
    :revoked                              (s/maybe s/Bool)

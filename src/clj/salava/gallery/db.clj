@@ -18,52 +18,50 @@
 
 (defqueries "sql/gallery/queries.sql")
 
-(defn- badge-count [search page_count]
+(defn- badge-count [remaining page_count]
   (let [limit 20
-        badges-left (- (count search) (* limit (+ page_count 1)))]
+        badges-left (- remaining (* limit (inc page_count)))]
     (if (pos? badges-left)
       badges-left
       0)))
 
-(defn- select-badges [ctx gallery_ids order page_count]
+(defn- select-badges [ctx country gallery_ids order page_count]
   (let [limit 20
         offset (* limit page_count)]
-    (if (not-empty gallery_ids)
+    (if (nil? gallery_ids)
       (case order
-        "recipients"          (select-gallery-badges-order-by-recipients {:gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
-        "issuer_content_name" (select-gallery-badges-order-by-ic-name {:gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
-        "name"                (select-gallery-badges-order-by-name {:gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
-        (select-gallery-badges-order-by-ctime {:gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))))))
+        "recipients"          (select-gallery-badges-order-by-recipients-all {:country country :limit limit :offset offset} (get-db ctx))
+        "issuer_content_name" (select-gallery-badges-order-by-ic-name-all {:country country :limit limit :offset offset} (get-db ctx))
+        "name"                (select-gallery-badges-order-by-name-all {:country country :limit limit :offset offset} (get-db ctx))
+        (select-gallery-badges-order-by-ctime-all {:country country :limit limit :offset offset} (get-db ctx)))
+      (case order
+        "recipients"          (select-gallery-badges-order-by-recipients-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
+        "issuer_content_name" (select-gallery-badges-order-by-ic-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
+        "name"                (select-gallery-badges-order-by-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
+        (select-gallery-badges-order-by-ctime-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))))))
 
 
 (defn get-gallery-ids
   "Get gallery-ids with search params"
-  [ctx country tags badge-name issuer-name recipient-name]
-  (let [;; Get all public gallery ids (optionally filtered by country)
-          gallery-ids (if (= country "all")
-                          (select-gallery-ids {} (get-db-col ctx :gallery_id))
-                          (select-gallery-ids-country {:country country} (get-db-col ctx :gallery_id)))
-          ;; Build a list of filter functions from query parameters
-          filters
-          (cond-> []
-            (not (string/blank? badge-name))
-            (conj (fn [id-set]
-                    (clojure.set/intersection id-set (set (select-gallery-ids-badge {:badge (str "%" badge-name "%")} (get-db-col ctx :gallery_id))))))
+  [ctx tags badge-name issuer-name recipient-name]
+  (let [filters ;; Build a list of filter sets from query parameters
+        (cond-> []
+          (not (string/blank? badge-name))
+          (conj (set (select-gallery-ids-badge {:badge (str "%" badge-name "%")} (get-db-col ctx :gallery_id))))
 
-            (not (string/blank? issuer-name))
-            (conj (fn [id-set]
-                    (clojure.set/intersection id-set (set (select-gallery-ids-issuer {:issuer (str "%" issuer-name "%")} (get-db-col ctx :gallery_id))))))
+          (not (string/blank? issuer-name))
+          (conj (set (select-gallery-ids-issuer {:issuer (str "%" issuer-name "%")} (get-db-col ctx :gallery_id))))
 
-            (not (string/blank? recipient-name))
-            (conj (fn [id-set]
-                    (clojure.set/intersection id-set (set (select-gallery-ids-recipient {:recipient (str "%" recipient-name "%")} (get-db-col ctx :gallery_id))))))
+          (not (string/blank? recipient-name))
+          (conj (set (select-gallery-ids-recipient {:recipient (str "%" recipient-name "%")} (get-db-col ctx :gallery_id))))
 
-            (not (string/blank? tags))
-            (conj (fn [id-set]
-                    (clojure.set/intersection id-set (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id)))))))]
-      ;; Get final filtered gallery_id list
-      (when (seq gallery-ids)
-        (into [] (reduce (fn [coll f] (if (seq coll) (f coll) #{})) (set gallery-ids) filters)))))
+          (not (string/blank? tags))
+          (conj (set (select-gallery-ids-tags {:tags (->> (string/split tags #",") (map string/trim))} (get-db-col ctx :gallery_id)))))]
+    ;; Get final filtered gallery_id list
+    (when (seq filters)
+      (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
+
+
 
 (defn badge-checker [badges]
   (map (fn [b]
@@ -78,10 +76,13 @@
   "Get badges for gallery grid"
   [ctx {:keys [country tags badge-name issuer-name order recipient-name tags-ids page_count]}]
   (let [offset (string->number page_count)
-        gallery-ids (get-gallery-ids ctx country tags badge-name issuer-name recipient-name)
-        badges (some->> (select-badges ctx gallery-ids order offset) (badge-checker) (remove nil?))]
+        gallery-ids (get-gallery-ids ctx tags badge-name issuer-name recipient-name)
+        badges (some->> (select-badges ctx country gallery-ids order offset) (badge-checker) (remove nil?))]
     {:badges badges
-     :badge_count (badge-count (if-not (= (count gallery-ids) (count badges)) gallery-ids badges) offset) }))
+     :badge_count (badge-count (if (nil? gallery-ids)
+                                 (get (select-gallery-badges-count {:country country} (get-db-1 ctx)) :total 0)
+                                 (count gallery-ids))
+                               offset)}))
 
 (defn public-badges-by-user
   "Return user's public badges"
@@ -239,7 +240,7 @@
                    (jdbc/query conn (into [query] params)))
         common-badge-counts (if-not (empty? profiles)
                               (->>
-                                (select-common-badge-counts {:user_id user-id :user_ids (map :id profiles)} (get-db ctx))
+                                (select-common-badge-counts {:user_id user-id} (get-db ctx))
                                 (reduce #(assoc %1 (:user_id %2) (:c %2)) {})))
         profiles-with-badges (map #(assoc % :common_badge_count (get common-badge-counts (:id %) 0)) profiles)
         visible-profiles (filter #(if common_badges

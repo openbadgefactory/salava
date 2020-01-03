@@ -101,9 +101,9 @@
         (or (url-match (get badge :assertion_url ""))
             (some-> (:assertion_url badge)
                     http/json-get
-                    (get-in [:related :id])
+                    (get-in [:related 0 :id])
                     http/json-get
-                    (get-in [:verify :url])
+                    (get :id)
                     url-match)))
       (catch Exception _))))
 
@@ -151,3 +151,27 @@
 (defn reject-badge! [ctx user-badge-id]
   (delete-pending-user-badge! {:id user-badge-id} (u/get-db ctx))
   {:success true})
+
+
+(defn get-pdf-cert-list [ctx current-user user-badge-id]
+  (let [obf-url (get-in ctx [:config :core :obf :url])
+        badge (select-badge-by-id {:id user-badge-id} (u/get-db-1 ctx))]
+    (if (and (string? obf-url) (issued-by-factory ctx badge))
+      (let [a (:assertion_url badge)
+            s (get-in ctx [:config :core :site-url])
+            t (u/hmac-sha256-hex (str a (:email badge)) (get-in ctx [:config :factory :secret]))]
+        (http/json-get (str obf-url "/c/badge/pdf_cert?a=" (u/url-encode a) "&s=" (u/url-encode s) "&t=" t)))
+      {:cert []})))
+
+(defn new-pdf-cert-request [ctx current-user user-badge-id message]
+  (let [obf-url (get-in ctx [:config :core :obf :url])
+        badge (select-badge-by-id {:id user-badge-id} (u/get-db-1 ctx))]
+    (if (and (string? obf-url) (issued-by-factory ctx badge) (= (:visibility badge) "public"))
+      (let [a (:assertion_url badge)
+            s (get-in ctx [:config :core :site-url])
+            t (u/hmac-sha256-hex (str a (:email badge)) (get-in ctx [:config :factory :secret]))
+            uri (str (b/badge-url ctx user-badge-id) "/full/embed")]
+
+        (http/http-post (str obf-url "/c/badge/pdf_cert_request") {:form-params {:message message :badge_uri uri :passport_url s :assertion_url a :token t}})
+        {:request-sent true})
+      {:request-sent false})))

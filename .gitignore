@@ -42,3 +42,4 @@ test/cljc/salava/extra/
 test/cljs/salava/extra/
 
 src/scss/.sass-cache/
+/.clj-kondo
