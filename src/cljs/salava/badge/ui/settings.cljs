@@ -239,7 +239,7 @@
 
 (defn cert-block [user-badge-id state]
   [:div
-   [:label.sub-heading (t :badge/Downloadpdf)]
+   [:span._label.sub-heading (t :badge/Downloadpdf)]
    (if-let [cert-uri (some-> @state :cert :uri)]
      [:div
       #_[:hr]
@@ -279,7 +279,7 @@
     (fn []
       [:div {:id "badge-settings" :class "row flip"}
        [:div {:class "col-md-3 badge-image modal-left"}
-        [:img {:src (str "/" image_file) :alt name}]]
+        [:img {:src (str "/" image_file) :alt ""}]]
        [:div {:class "col-md-9 settings-content download-tab"}
         [cert-block user-badge-id cert-state]
         [:hr]
