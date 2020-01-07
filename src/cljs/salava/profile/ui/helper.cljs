@@ -45,7 +45,7 @@
       [:div#page-edit
        [:div#block-modal
         [:div.modal-body
-         [:p.block-title (t :page/Addblock)]
+         [:h2.block-title (t :page/Addblock)]
          [:p (t :page/Choosecontent)]
          (reduce-kv
           (fn [r _ v]
