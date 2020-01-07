@@ -77,6 +77,7 @@
                                                                                                                            [:div
                                                                                                                             (:modal-content @state)]
                                                                                                                            [:fieldset {:class "col-md-12 checkbox"}
+                                                                                                                            [:legend {:style {:display "none"}} ""]
                                                                                                                             [:div.col-md-12 {:style {:text-align "center"}} [:label
                                                                                                                                                                              [:input {:type     "checkbox"
                                                                                                                                                                                       :on-change (fn [e]
