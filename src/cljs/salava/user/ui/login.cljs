@@ -21,19 +21,17 @@
   (if-let [match (re-find #"verification_key=([\w-]+)" url)]
     (second match)))
 
-
-
 (defn plugin-blocks [fn-name]
   (let [blocks (plugin-fun (session/get :plugins) "block" fn-name)]
     [:div (doall (map #(%) blocks))]))
 
 (defn follow-up-url []
   (let [verification-key (verification-token js/window.location.search)
-         manual-referrer (or (session/get :referrer)
-                             (some->> js/document.cookie js/decodeURIComponent (re-find #"login_redirect=(/[^; ]+)") last))
-         referrer js/document.referrer
-         site-url (str (session/get :site-url) (base-path))
-         path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url ""))]
+        manual-referrer (or (session/get :referrer)
+                            (some->> js/document.cookie js/decodeURIComponent (re-find #"login_redirect=(/[^; ]+)") last))
+        referrer js/document.referrer
+        site-url (str (session/get :site-url) (base-path))
+        path (if (and referrer site-url (string/starts-with? referrer site-url)) (string/replace referrer site-url ""))]
 
     (session/put! :referrer nil)
     (aset js/document "cookie" "login_redirect=")
@@ -44,16 +42,16 @@
       :else "/social")))
 
 (defn toggle-accept-terms [state]
-  (let [ user-id (:user-id @state)
-         accept-terms (:accept-terms @state)]
+  (let [user-id (:user-id @state)
+        accept-terms (:accept-terms @state)]
     (ajax/POST
-      (path-for (str "/obpv1/user/accept_terms"))
-      {:params {:accept_terms accept-terms :user_id user-id}
-       :handler (fn [data]
-                  (when (and (= "success" (:status data)) (= "accepted" (:input data)))
-                    (do
-                      (session/put! :user-has-accepted-terms true)
-                      (js-navigate-to (follow-up-url)))))})))
+     (path-for (str "/obpv1/user/accept_terms"))
+     {:params {:accept_terms accept-terms :user_id user-id}
+      :handler (fn [data]
+                 (when (and (= "success" (:status data)) (= "accepted" (:input data)))
+                   (do
+                     (session/put! :user-has-accepted-terms true)
+                     (js-navigate-to (follow-up-url)))))})))
 
 (defn terms-and-conditions-modal [state f name]
   (let [bname (keyword (str "user/" name))]
@@ -66,8 +64,8 @@
          [:button {:type  "button"
                    :class  "close pull-left"
                    :data-dismiss "modal"
-                   :aria-label   "OK"
-                   }
+                   :aria-label   "OK"}
+
           [:span {:aria-hidden  "true"
                   :dangerouslySetInnerHTML {:__html "&times;"}}]]]
 
@@ -75,21 +73,18 @@
          [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
           [:ul
            [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions))} "EN"]]
-           [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions-fr)) } "FR"]]]
-          ]
-         ]]
-       [:div
-        [:div
-         (:modal-content @state)]
-        [:fieldset {:class "col-md-12 checkbox"}
-         [:div.col-md-12 {:style {:text-align "center"}} [:label
-                                                          [:input {:type     "checkbox"
-                                                                   :on-change (fn [e]
-                                                                                (if (.. e -target -checked)
-                                                                                  (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")
-                                                                                  ))}]
-                                                          (t :user/Doyouaccept)]]]
-        ]]
+           [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions-fr))} "FR"]]]]]] [:div
+                                                                                                                           [:div
+                                                                                                                            (:modal-content @state)]
+                                                                                                                           [:fieldset {:class "col-md-12 checkbox"}
+                                                                                                                            [:div.col-md-12 {:style {:text-align "center"}} [:label
+                                                                                                                                                                             [:input {:type     "checkbox"
+                                                                                                                                                                                      :on-change (fn [e]
+                                                                                                                                                                                                   (if (.. e -target -checked)
+                                                                                                                                                                                                     (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")))}]
+
+                                                                                                                                                                             (t :user/Doyouaccept)]]]]]
+
       [:div.modal-footer {:style {:text-align "center"}}
        [:button {:type         "button"
                  :class        "btn btn-primary"
@@ -102,17 +97,16 @@
         f (fn [] (toggle-accept-terms state))
         terms-enabled? (session/get :terms-enabled?)]
     (ajax/POST
-      (path-for "/obpv1/user/login")
-      {:params  {:email    email
-                 :password password}
-       :handler (fn [data]
-                  (cond
-                    (and (= (:status data) "success")(or (= (:terms data) "accepted") (= false (:terms data)))) (js-navigate-to (or (:redirect-to data) (follow-up-url)))
+     (path-for "/obpv1/user/login")
+     {:params  {:email    email
+                :password password}
+      :handler (fn [data]
+                 (cond
+                   (and (= (:status data) "success") (or (= (:terms data) "accepted") (= false (:terms data)))) (js-navigate-to (or (:redirect-to data) (follow-up-url)))
                     ;(and (= (:status data) "success") (= (:terms data) "accepted")) (js-navigate-to (follow-up-url))
-                    (and (= (:status data) "success") (nil? (:terms data))) (do (swap! state assoc :user-id (:id data))  (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
-                    (and (= (:status data) "success") (= (:terms data) "declined")) (do (swap! state assoc :user-id (:id data)) (m/modal![terms-and-conditions-modal state f "Login"] {:size :lg}))
-                    :else (swap! state assoc :error-message (:message data))
-                    ))})))
+                   (and (= (:status data) "success") (nil? (:terms data))) (do (swap! state assoc :user-id (:id data))  (m/modal! [terms-and-conditions-modal state f "Login"] {:size :lg}))
+                   (and (= (:status data) "success") (= (:terms data) "declined")) (do (swap! state assoc :user-id (:id data)) (m/modal! [terms-and-conditions-modal state f "Login"] {:size :lg}))
+                   :else (swap! state assoc :error-message (:message data))))})))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])
@@ -136,9 +130,9 @@
          [input/text-field {:name "password" :atom password-atom :error-message-atom error-message-atom :placeholder (translate l :user/Password) :aria-label (translate l :user/Password) :password? true}]]
         [:button {:class    "btn btn-primary login-button"
                   :on-click #(do (.preventDefault %)
-                               (if-not (input-valid? schemas/LoginUser {:email @email-atom :password @password-atom})
-                                 (swap! state assoc :error-message "user/Loginfailed"))
-                               (login state))}
+                                 (if-not (input-valid? schemas/LoginUser {:email @email-atom :password @password-atom})
+                                   (swap! state assoc :error-message "user/Loginfailed"))
+                                 (login state))}
          (t :user/Login)]
         [:div {:class "row login-links"}
          [:div.management-links.col-md-12
@@ -148,8 +142,8 @@
           [:div {:class (if (private?) "col-xs-12" "col-sm-6 right-column")}
            [:a {:href (path-for "/user/reset")} (t :user/Requestnewpassword)]]]
          (into [:div]
-           (for [f (plugin-fun (session/get :plugins) "block" "oauth_login_form")]
-             [f]))
+               (for [f (plugin-fun (session/get :plugins) "block" "oauth_login_form")]
+                 [f]))
 
          #_[:div {:class "row oauth-buttons"}
             [:div.col-md-12
@@ -175,7 +169,7 @@
                      :error-message (if (not-empty flash-message) flash-message)
                      :accept-terms "declined"
                      :modal-content (layout/terms-and-conditions)})
-        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
+        lang (or (:lang params) (session/get-in [:user :language] (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first)))]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
       (-> (sel1 :html) (dommy/set-attr! :lang lang)))

@@ -14,10 +14,10 @@
   (swap! state assoc :reset-status "in-progress")
   (let [email (:email @state)]
     (ajax/POST
-      (path-for "/obpv1/user/reset/")
-      {:params  {:email email}
-       :handler (fn [data]
-                  (swap! state assoc :reset-status (:status data)))})))
+     (path-for "/obpv1/user/reset/")
+     {:params  {:email email}
+      :handler (fn [data]
+                 (swap! state assoc :reset-status (:status data)))})))
 
 (defn content [state]
   (let [email-atom (cursor state [:email])]
@@ -45,7 +45,7 @@
 (defn handler [site-navi params]
   (let [state (atom {:email ""
                      :reset-status nil})
-        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
+        lang (or (:lang params) (session/get-in [:user :language] (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first)))]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
       (-> (sel1 :html) (dommy/set-attr! :lang lang)))
