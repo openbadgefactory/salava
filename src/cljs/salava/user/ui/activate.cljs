@@ -19,27 +19,24 @@
 (defn activate-account [state]
   (let [{:keys [user-id code password password-verify]} @state]
     (ajax/POST
-      (path-for "/obpv1/user/activate/")
-      {:params  {:user_id         (js/parseInt user-id)
-                 :code            code
-                 :password        password
-                 :password_verify password-verify}
-       :handler (fn [data]
-                  (if (= (:status data) "error")
-                    (swap! state assoc :message (:message data)
-                                       :status "error")
-                    (swap! state assoc :account-activated true
-                                       :message (:message data))))})))
+     (path-for "/obpv1/user/activate/")
+     {:params  {:user_id         (js/parseInt user-id)
+                :code            code
+                :password        password
+                :password_verify password-verify}
+      :handler (fn [data]
+                 (if (= (:status data) "error")
+                   (swap! state assoc :message (:message data)
+                          :status "error")
+                   (swap! state assoc :account-activated true
+                          :message (:message data))))})))
 
 (defn activation-form [state]
   (let [password-atom (cursor state [:password])
         password-verify-atom (cursor state [:password-verify])]
-    [:div {:class "form-horizontal"}
-
-
-     (if (= "error" (:status @state))
-       [:div {:class "alert alert-danger" :role "alert"}
-        (translate-text (:message @state))])
+    [:div {:class "form-horizontal"} (if (= "error" (:status @state))
+                                       [:div {:class "alert alert-danger" :role "alert"}
+                                        (translate-text (:message @state))])
      [:div.form-group
       [:label {:class "col-xs-4"
                :for "input-password"}
@@ -93,7 +90,7 @@
                      :code (:code params)
                      :message nil
                      :account-activated false})
-        lang (or (:lang params) (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first))]
+        lang (or (:lang params) (session/get-in [:user :language] (-> (or js/window.navigator.userLanguage js/window.navigator.language) (string/split #"-") first)))]
     (when (and lang (some #(= lang %) (session/get :languages)))
       (session/assoc-in! [:user :language] lang)
       (-> (sel1 :html) (dommy/set-attr! :lang lang)))

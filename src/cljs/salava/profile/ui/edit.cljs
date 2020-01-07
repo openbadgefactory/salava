@@ -18,53 +18,53 @@
 
 (defn init-data [state]
   (ajax/GET
-    (path-for "/obpv1/profile/user/edit")
-    {:handler (fn [data]
-                (swap! state assoc :edit-profile data))}))
+   (path-for "/obpv1/profile/user/edit")
+   {:handler (fn [data]
+               (swap! state assoc :edit-profile data))}))
 
 (defn refresh-profile [state profile_picture]
- (ajax/GET
-  (path-for (str "/obpv1/profile/" (:user-id @state)) true)
-  {:handler (fn [data]
-              (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (random-key))
-                                                                  (get data :blocks))))]
-                (swap! state merge data-with-uuids))
-              (session/assoc-in! [:user :profile_picture] profile_picture)
-              (session/put! :edit-mode true))}))
+  (ajax/GET
+   (path-for (str "/obpv1/profile/" (:user-id @state)) true)
+   {:handler (fn [data]
+               (let [data-with-uuids (assoc data :blocks (vec (map #(assoc % :key (random-key))
+                                                                   (get data :blocks))))]
+                 (swap! state merge data-with-uuids))
+               (session/assoc-in! [:user :profile_picture] profile_picture)
+               (session/put! :edit-mode true))}))
 
 (defn prepare-blocks [blocks]
- (mapv (fn [b]
-         (case (:type b)
-           ("showcase") (-> b
-                          (dissoc :key)
-                          (select-keys [:id :type])
-                          (merge {:format (or (:format b) "short") :title (:title b) :badges (map #(select-keys % [:id :visibility]) (:badges b))}))
-           (-> b (dissoc :key)))) blocks))
+  (mapv (fn [b]
+          (case (:type b)
+            ("showcase") (-> b
+                             (dissoc :key)
+                             (select-keys [:id :type])
+                             (merge {:format (or (:format b) "short") :title (:title b) :badges (map #(select-keys % [:id :visibility]) (:badges b))}))
+            (-> b (dissoc :key)))) blocks))
 
 (defn save-profile [state f show-alert?]
- (let [{:keys [profile_visibility about profile_picture]} (get-in @state [:edit-profile :user])
-       profile-fields (->> (get-in @state [:edit-profile :profile])
-                           (filter #(not-empty (:field %)))
-                           (map #(select-keys % [:field :value])))
-       blocks (prepare-blocks (:blocks @state))
-       theme (or (:theme @state) 0)
-       tabs @(cursor state [:tabs])
-       alert-atom (cursor state [:alert])]
-  (ajax/POST
-    (path-for "/obpv1/profile/user/edit")
-    {:params  {:profile_visibility profile_visibility
-               :about              about
-               :profile_picture    profile_picture
-               :fields             profile-fields
-               :blocks blocks
-               :theme theme
-               :tabs tabs}
-     :handler (fn [data]
-                (init-data state)
-                (when show-alert? (reset! alert-atom data))
-                (refresh-profile state profile_picture)
-               (when (and f (= "success" (:status data)) (f))))
-     :finally (fn [] (js/setTimeout (fn [] (reset! alert-atom nil)) 3000))})))
+  (let [{:keys [profile_visibility about profile_picture]} (get-in @state [:edit-profile :user])
+        profile-fields (->> (get-in @state [:edit-profile :profile])
+                            (filter #(not-empty (:field %)))
+                            (map #(select-keys % [:field :value])))
+        blocks (prepare-blocks (:blocks @state))
+        theme (or (:theme @state) 0)
+        tabs @(cursor state [:tabs])
+        alert-atom (cursor state [:alert])]
+    (ajax/POST
+     (path-for "/obpv1/profile/user/edit")
+     {:params  {:profile_visibility profile_visibility
+                :about              about
+                :profile_picture    profile_picture
+                :fields             profile-fields
+                :blocks blocks
+                :theme theme
+                :tabs tabs}
+      :handler (fn [data]
+                 (init-data state)
+                 (when show-alert? (reset! alert-atom data))
+                 (refresh-profile state profile_picture)
+                 (when (and f (= "success" (:status data)) (f))))
+      :finally (fn [] (js/setTimeout (fn [] (reset! alert-atom nil)) 3000))})))
 
 (defn button-logic [state]
   {:content {:previous nil
@@ -76,12 +76,11 @@
            :save-and-next! (fn [] (save-profile state (fn [] (reset! (cursor state [:edit :active-tab]) :settings)) false))}
    :settings {:previous :theme
               :next :preview
-              :save-and-previous! (fn [] (save-profile state (fn [] (reset! (cursor state [:edit :active-tab]) :theme))false))
+              :save-and-previous! (fn [] (save-profile state (fn [] (reset! (cursor state [:edit :active-tab]) :theme)) false))
               :save-and-next! (fn [] (save-profile state (fn [] (reset! (cursor state [:edit :active-tab]) :preview)) false))}
    :preview {:previous :settings
              :next :nil
              :save-and-previous! (fn [] (save-profile state (fn [] (reset! (cursor state [:edit :active-tab]) :settings)) false))}})
-
 
 (defn action-buttons [state]
   (let [logic (button-logic state)
@@ -93,33 +92,33 @@
                                        [:div.row
                                         [:div.col-md-12
                                          (when previous? [:a {:href "#"
-                                                                    :on-click #(do
-                                                                                (.preventDefault %)
-                                                                                (as-> (get-in logic [@current :save-and-previous!]) f (f)))}
-                                                             [:div {:id "step-button-previous"}
-                                                                   (t :core/Previous)]])
+                                                              :on-click #(do
+                                                                           (.preventDefault %)
+                                                                           (as-> (get-in logic [@current :save-and-previous!]) f (f)))}
+                                                          [:div {:id "step-button-previous"}
+                                                           (t :core/Previous)]])
                                          [:div {:style {:display "inline-flex"}} [:button {:class    "btn btn-primary"
                                                                                            :on-click #(do
                                                                                                         (.preventDefault %)
                                                                                                         (swap! state assoc :spinner true :active-button "btn-1")
                                                                                                         (js/setTimeout (fn [] (save-profile state (fn [] (swap! state assoc :spinner false)) true)) 2000))}
-                                                                                  (when (and (:spinner @state) (= "btn-1" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}])(t :page/Save)]
+                                                                                  (when (and (:spinner @state) (= "btn-1" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :page/Save)]
                                           [:button.btn.btn-warning {:href "#"
                                                                     :on-click #(do
                                                                                  (.preventDefault %)
                                                                                  (swap! state assoc :spinner true :active-button "btn-2")
                                                                                  (save-profile state (fn [] (do
-                                                                                                             (swap! state assoc :spinner false)
-                                                                                                             (js-navigate-to (str "/profile/"(:user-id @state))))) true))}
+                                                                                                              (swap! state assoc :spinner false)
+                                                                                                              (js-navigate-to (str "/profile/" (:user-id @state))))) true))}
 
                                            (when (and (:spinner @state) (= "btn-2" (:active-button @state))) [:i.fa.fa-spinner.fa-spin.fa-lg {:style {:padding "0 3px"}}]) (t :profile/Saveandclose) #_(t :page/View)]]
                                          (when next?  [:a {:href "#"
                                                            :on-click #(do
-                                                                       (.preventDefault %)
-                                                                       (as-> (get-in logic [@current :save-and-next!]) f (f)))}
-                                                          [:div.pull-right {:id "step-button"}
+                                                                        (.preventDefault %)
+                                                                        (as-> (get-in logic [@current :save-and-next!]) f (f)))}
+                                                       [:div.pull-right {:id "step-button"}
 
-                                                                           (t :core/Next)]])]]
+                                                        (t :core/Next)]])]]
                                        (when (= "error" (get-in @state [:alert :status]))
                                          [:div.row
                                           [:div.col-md-12
@@ -129,34 +128,34 @@
                                                   :style {:display "block" :margin-bottom "20px"}}
                                             (get-in @state [:alert :message] nil)]]])])})))
 
-
 (defn send-file [files-atom profile-picture-atom]
   (let [file (-> (.querySelector js/document "#profile-picture-upload")
                  .-files
                  (.item 0))
         form-data (doto
-                    (js/FormData.)
-                    (.append "file" file (.-name file)))]
+                   (js/FormData.
+                    (.append "file" file (.-name file))))]
         ;upload-modal (first (plugin-fun (session/get :plugins) "my" "upload_modal"))]
 
 
     (m/modal! (my/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST
-      (path-for "/obpv1/file/upload_image")
-      {:body    form-data
-       :handler (fn [{:keys [status message reason data]} response]
-                  (when (= status "success")
-                    (reset! files-atom (conj @files-atom data))
-                    (reset! profile-picture-atom (:path data)))
-                  (m/modal! (my/upload-modal status message reason)))})))
+     (path-for "/obpv1/file/upload_image")
+     {:body    form-data
+      :handler (fn [{:keys [status message reason data]} response]
+                 (when (= status "success")
+                   (reset! files-atom (conj @files-atom data))
+                   (reset! profile-picture-atom (:path data)))
+                 (m/modal! (my/upload-modal status message reason)))})))
 
 (defn gallery-element [picture-data profile-picture-atom pictures-atom]
   (let [{:keys [path id name]} picture-data
-        current-profile-picture (session/get-in  [:user :profile_picture])]
+        current-profile-picture (session/get-in  [:user :profile_picture])
+        alt-name (-> name (clojure.string/split #"\.") first)]
     [:div {:key path
            :class (str "profile-picture-gallery-element " (if (= @profile-picture-atom path) "element-selected"))
            :on-click #(reset! profile-picture-atom path)}
-     [:img {:src (uh/profile-picture path) :alt (or name "default profile picture")}]
+     [:img {:src (uh/profile-picture path) :alt (if name alt-name "default profile picture") #_(or name "default profile picture")}]
      (if (and (not (nil? id)) (not (= path current-profile-picture)))
        [:a {:class    "delete-icon"
             :title    (t :file/Delete)
@@ -200,18 +199,18 @@
        [:div.field-list
         [:h2.block-title (t :user/Addfield)]
         (reduce-kv
-          (fn [r _ v]
-            (conj r [:a {:on-click #(do
-                                      (.preventDefault %)
-                                      (if index
-                                        (f/add-field profile-fields-atom {:field (:type v) :value ""} index)
-                                        (f/add-field profile-fields-atom {:field (:type v) :value ""})))
-                         :data-dismiss "modal"}
+         (fn [r _ v]
+           (conj r [:a {:on-click #(do
+                                     (.preventDefault %)
+                                     (if index
+                                       (f/add-field profile-fields-atom {:field (:type v) :value ""} index)
+                                       (f/add-field profile-fields-atom {:field (:type v) :value ""})))
+                        :data-dismiss "modal"}
 
-                     [:div {:style {:padding "5px"}}
-                      [:span (t (:key v))]]]))
-          [:div.block-types]
-          additional-fields)]]]]))
+                    [:div {:style {:padding "5px"}}
+                     [:span (t (:key v))]]]))
+         [:div.block-types]
+         additional-fields)]]]]))
 
 (defn field-modal [profile-fields-atom index]
   (create-class {:reagent-render (fn [] (add-content-modal profile-fields-atom index))
@@ -265,20 +264,20 @@
    [add-field-after profile-fields-atom]])
 
 (defn edit-profile [state]
-      (let [pictures-atom (cursor state [:edit-profile :picture_files])
-            profile-picture-atom (cursor state [:edit-profile :user :profile_picture])
-            about-me-atom (cursor state [:edit-profile :user :about])
-            profile-fields-atom (cursor state [:edit-profile :profile])]
-       (init-data state)
-       (fn []
-           [:div#edit-profile
-            [:form.form-horizontal
-             [profile-picture-gallery pictures-atom profile-picture-atom]
-             [:div {:id "about-me" :class "form-group"}
-              [:label.col-xs-12 (t :user/Aboutme)]
-              [:div.col-xs-12
-               [:textarea {:class "form-control" :rows 5 :cols 60 :value @about-me-atom :on-change #(reset! about-me-atom (.-target.value %)) :aria-label (t :profile/Aboutmetip)}]]]
-             [:div.row
-              [:label.col-xs-12 (t :profile/Additionalinformation)]
-              [:div.col-xs-12
-               (profile-fields profile-fields-atom)]]]])))
+  (let [pictures-atom (cursor state [:edit-profile :picture_files])
+        profile-picture-atom (cursor state [:edit-profile :user :profile_picture])
+        about-me-atom (cursor state [:edit-profile :user :about])
+        profile-fields-atom (cursor state [:edit-profile :profile])]
+    (init-data state)
+    (fn []
+      [:div#edit-profile
+       [:form.form-horizontal
+        [profile-picture-gallery pictures-atom profile-picture-atom]
+        [:div {:id "about-me" :class "form-group"}
+         [:label.col-xs-12 {:for "Aboutme-input"} (t :user/Aboutme)]
+         [:div.col-xs-12
+          [:textarea {:class "form-control" :rows 5 :cols 60 :value @about-me-atom :on-change #(reset! about-me-atom (.-target.value %)) :aria-label (t :profile/Aboutmetip) :id "Aboutme-input"}]]]
+        [:div.row
+         [:span._label.col-xs-12 (t :profile/Additionalinformation)]
+         [:div.col-xs-12
+          (profile-fields profile-fields-atom)]]]])))
