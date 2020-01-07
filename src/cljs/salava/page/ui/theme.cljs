@@ -9,11 +9,11 @@
             [salava.page.ui.helper :as ph]))
 
 #_(defn theme-selection [theme-atom themes]
-   [:select {:class     "form-control"
-             :on-change #(reset! theme-atom (js/parseInt (.-target.value %)))
-             :value     @theme-atom}
-    (for [theme themes]
-      [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
+    [:select {:class     "form-control"
+              :on-change #(reset! theme-atom (js/parseInt (.-target.value %)))
+              :value     @theme-atom}
+     (for [theme themes]
+       [:option {:key (:id theme) :value (:id theme)} (t (:name theme))])])
 
 (defn theme-selection [theme-atom themes]
   (reduce (fn [r theme]
@@ -54,13 +54,12 @@
                             :border-top-style style
                             :border-top-color color}}]]))))
 
-
 #_(defn save-theme [state next-url]
-   (let [page-id (get-in @state [:page :id])
-         theme-id (get-in @state [:page :theme])
-         border-id (get-in @state [:page :border :id])
-         padding-id (get-in @state [:page :padding])]
-     (ajax/POST
+    (let [page-id (get-in @state [:page :id])
+          theme-id (get-in @state [:page :theme])
+          border-id (get-in @state [:page :border :id])
+          padding-id (get-in @state [:page :padding])]
+      (ajax/POST
        (path-for (str "/obpv1/page/save_theme/" page-id))
        {:params {:theme theme-id
                  :border border-id
@@ -68,7 +67,7 @@
         :handler (fn [data]
                    (swap! state assoc :alert {:message (t (keyword (:message data))) :status (:status data)})
                    (js/setTimeout (fn [] (swap! state assoc :alert nil)) 3000))
-                 #_(navigate-to next-url)})))
+        #_(navigate-to next-url)})))
 
 (defn content [state]
   (let [page @(cursor state [:page]) ;(:page @state)
@@ -91,7 +90,7 @@
         [:div.col-xs-8
          [padding-selection (cursor state [:page :padding])]]]
        [:div.form-group
-        [:span_.label.col-xs-4 {:for "select-border"}
+        [:span._label.col-xs-4 {:for "select-border"}
          (str (t :page/Selectborder) ":")]
         [:div.col-xs-8
          [border-selection (cursor state [:page :border]) borders]]]
@@ -109,9 +108,9 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (path-for (str "/obpv1/page/" id) true)
-    {:handler (fn [data]
-                (swap! state assoc :page data))}))
+   (path-for (str "/obpv1/page/" id) true)
+   {:handler (fn [data]
+               (swap! state assoc :page data))}))
 
 (defn handler [site-navi params]
   (let [id (:page-id params)
