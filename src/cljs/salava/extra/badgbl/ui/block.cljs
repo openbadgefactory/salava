@@ -2,7 +2,7 @@
   (:require [salava.core.i18n :refer [t]]))
 
 (defn ^:export footer []
-  [:footer.footer
+  [:div.footer ;:footer.footer
    [:div.footer-container
     [:p.text-muted
      "Auteursrecht © 2019 Open Badge Fabriek | "

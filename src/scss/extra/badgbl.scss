@@ -75,7 +75,7 @@ body.anon {
       background-position: left 0px bottom 70px;
      }
 
-footer.footer {
+footer.footer, div.footer {
  .footer-container {
   border-top: 2px solid $main-color;
   }
@@ -84,10 +84,10 @@ footer.footer {
 
 .title-row {
   background-color: $main-color;
-  background-image: linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00e7f1, #00e2f5, #00dcf7, #00beff, #009bff, #0070ff, #0a26fe);
+  //background-image: linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00e7f1, #00e2f5, #00dcf7, #00beff, #009bff, #0070ff, #0a26fe);
   h1{
     font-weight: 600;
-    color: $dark-blue;
+    color: #172596; //$dark-blue;
   }
 }
 
@@ -100,14 +100,18 @@ body {
   }
 }
 
- header#navbar {
+ header#navbar, div#navbar {
   background: none;
   background-color: #fff;
   box-shadow: -1px 3px 5px -3px $main-color;
 
  }
 
-footer.footer {
+ ul.navbar-nav li a {
+   color: #7F5970;
+ }
+
+footer.footer, div.footer {
   background-color: $background-color;
 }
 
@@ -146,7 +150,7 @@ footer.footer {
 #my-files #grid .grid-container .media-content .media-body .media-heading,
 #profile-gallery #grid .grid-container .media-content .media-body .media-heading,
 #user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container,
-#badge-gallery #profile #user-pages #grid .grid-container{
+#badge-gallery #profile #user-pages #grid .grid-container {
   p.heading-link{
     color: $badge-title;
     &:hover, &:active, &:focus {
@@ -155,6 +159,20 @@ footer.footer {
   }
   .page-owner {
     color: $menu-color;
+  }
+}
+
+#user-pages #pages-grid .media-content .media-body {
+  .media-heading p.heading-link {
+    color: $badge-title;
+    &:hover, &:active, &:focus {
+      color: $button-hover;
+    }
+  }
+
+  .page-create-date {
+    color: #707B59;
+    font-size: 12px;
   }
 }
 
@@ -246,7 +264,7 @@ ul.side-links{
 ul#secondary-menu-links {
   border-left: 2px solid $main-color;
   li a i.fa {
-    color: $second-color;
+    color: $dark-green;//$second-color;
   }
 }
 
@@ -280,7 +298,7 @@ button.navbar-toggle {
 
 #badge-gallery #user-pages #grid .media-content .page-create-date, #my-files #grid .media-content .page-create-date, #page-gallery #grid .media-content .page-create-date, #profile-gallery #grid .media-content .page-create-date, #user-pages #grid .media-content .page-create-date, .pages #grid .media-content .page-create-date
 {
-  color: darken($second-color, 10%);
+  color: #707B59; //darken($second-color, 10%);
 }
 
 #badge-settings {
@@ -302,12 +320,12 @@ button.navbar-toggle {
 
 /*BUTTONS*/
 .btn-primary {
-  color: $background-color !important;
+  color: #272222 !important; //$background-color !important;
 }
 .btn-success {
   background-color: $button-hover;
   border-color: $button-color;
-  color: $background-color;
+  color: black; //$background-color;
   font-weight: 600;
   &:hover, &:active, &:focus, &:active:focus {
     background-color: $button-color;
@@ -337,7 +355,7 @@ a#login-button {
  background-color: $button-color;
  border-color: $button-hover;
  //text-transform: uppercase;
- color: #fff;
+ color: #272222 !important; //#fff !important;
  font-weight: bold !important;
  box-shadow: none;
 
@@ -354,8 +372,8 @@ nav a#login-button{
 }
 
 #grid-filter .btn, #buttons .col-xs-8 .btn {
-  background-color:  $dark-green;//darken($second-color, 10%); //lighten($title-color, 3%);
-  border: 1px solid $main-color;
+  background-color:  $main-color;//$dark-green;//darken($second-color, 10%); //lighten($title-color, 3%);
+  border: 1px solid $dark-blue; //$main-color;
   font-weight: 600;
   color: black;
 }
@@ -371,7 +389,7 @@ nav a#login-button{
   text-decoration: none;
  }
  > li.active a {
-   color: $main-color;
+   color: #1B7EB1; //$main-color;
    border: 1px solid $dark-green;
    border-bottom-color: transparent;
  }
@@ -405,8 +423,8 @@ nav a#login-button{
 }
 /*FILES*/
 #my-files {
-  #grid .media-content .media-body .media-description .file-create-date {
-  color: $dark-green;
+  #grid .media-content .media-body .media-description .file-create-date, .max-file-size {
+  color: #707B59;
   }
   .file-icon-large {
     color: $text-color;
@@ -417,7 +435,7 @@ nav a#login-button{
   .media.grid-container {
     .media-profile {
       .join-date {
-        color: $dark-green !important;
+        color: #707B59 !important;
       }
     }
   }
@@ -431,12 +449,12 @@ nav a#login-button{
  }
 }
 
-#page-edit, #page-edit-theme {
+#page-edit, #page-edit-theme, #page-settings {
   .action-bar {
     opacity: 0.85;
   }
   #step-button, #step-button-previous {
-    color: $background-color;
+    color: #272222; //$background-color;
     font-weight: 700;
   }
   .move span.move-block {
@@ -498,11 +516,19 @@ nav a#login-button{
     }
   }
 /*WIZARD*/
-.wizard .a {
-  color: $background-color;
+.wizard a, .wizard .badge{
+  color: #373030 !important; //$background-color;
+}
+
+.wizard .current, .wizard .current .badge {
+  color: #040401 !important;
+
 }
 
 /*DASHBOARD*/
+#dashboard .badge-block .connections-block .info-block .text p.num, #dashboard .badge-block .connections-block .info-block .text span.num, #dashboard .connections-block .info-block .text p.num, #dashboard .connections-block .info-block .text span.num {
+  color:  #038674;
+}
 #dashboard {
   .profile-block .profile-visibility a{
     color:$link-color;
@@ -525,8 +551,8 @@ nav a#login-button{
 
       background-color: $main-color;
       background: $main-color;  /* fallback for old browsers */
-      background: linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00e7f1, #00e2f5, #00dcf7, #00beff, #009bff, #0070ff, #0a26fe);
-      color: $dark-blue;
+      //background: linear-gradient(to right, #03a3fc, #00b8ff, #00cbff, #00dcf8, #00eced, #00e7f1, #00e2f5, #00dcf7, #00beff, #009bff, #0070ff, #0a26fe);
+      color: #172596; //$dark-blue;
       .welcome-message {
         font-weight: 600;
       }
@@ -534,7 +560,7 @@ nav a#login-button{
 
   }
 
-  #box_3 {
+  #box_3, #box_6 {
     .help p {
       color: $third-color;
       font-weight: 400;
@@ -567,15 +593,18 @@ nav a#login-button{
 
     .button {
       background-color: $button-color !important;
+      color: #272222 !important;
+      border: none;
 
       &:hover, &:active, &:focus {
         background-color: $button-hover !important;
+        color: #272222 !important;
       }
     }
 
     .content {
       .badge-connection {
-        background-color: $main-color !important;
+        background-color: #237BC0 !important;
       }
 
       .info-block {
@@ -584,15 +613,17 @@ nav a#login-button{
 
       .endorsement {
         background-color: #00D2CE;
+
       }
 
       .page {
-        background-color: $dark-green;
+        background-color: #038674; //#03FC5C;//#006F70;//$dark-green;
+
       }
 
 
         .map{
-          background-color: $dark-blue;//#aad3df;
+          background-color: #3E7798;//$dark-blue;//#aad3df;
         }
 
 
@@ -613,7 +644,7 @@ nav a#login-button{
       font-weight: 500;
       }
      .date{
-       color: $dark-green;
+       color: #D401A5;//$dark-green;
        font-weight: 500;
      }
     }
@@ -639,4 +670,18 @@ nav a#login-button{
 
 .grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
   background-color: $third-color !important;
+}
+
+.text-muted {
+  color: #5E5454;
+}
+
+p.help-block {
+  color: #746B6B;
+}
+
+.message-item.media{
+  p.media-heading a {
+    color: #076AB8;
+  }
 }

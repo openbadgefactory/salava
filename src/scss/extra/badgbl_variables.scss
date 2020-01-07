@@ -5,13 +5,13 @@ $background-color: #efefef;
 $text-color: #5a5257;
 
 $menu-color: $text-color;
-$menu-active: $main-color;
+$menu-active: #046FC2; //$main-color;
 $title-color: $text-color;
 $titlebar-color: $main-color;
 $button-color: $main-color;
 $dark-green: darken($second-color, 10%);
 $dark-blue: darken($main-color, 10%);
-$button-hover: $dark-blue;
+$button-hover: #0879D1; //$dark-blue;
 $link-color: $third-color;//$button-hover;
 $badge-title: $button-hover;
 $badge-title-hover: $main-color;
