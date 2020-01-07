@@ -91,21 +91,23 @@
       [:div.panel-body
        (if-not (private?)
          [:div.col-md-12
-          [:div.row [:label.col-xs-12 (t :user/Profilevisibility)]]
+          [:div.row [:span._label.col-xs-12 (t :user/Profilevisibility)]]
           [:div.radio {:id "visibility-radio-internal"}
-           [:label [:input {:name      "visibility"
-                            :value     "internal"
-                            :type      "radio"
-                            :checked   (= "internal" @visibility-atom)
-                            :on-change #(reset! visibility-atom (.-target.value %))}]
-            (t :user/Visibleonlytoregistered)]]
-          [:div.radio
-           [:label [:input {:name      "visibility"
-                            :value     "public"
-                            :type      "radio"
-                            :checked   (= "public" @visibility-atom)
-                            :on-change #(reset! visibility-atom (.-target.value %))}]
-            (t :core/Public)]]])]]
+           [:fieldset
+            [:legend {:style {:display "none"}} ""]
+            [:label [:input {:name      "visibility"
+                             :value     "internal"
+                             :type      "radio"
+                             :checked   (= "internal" @visibility-atom)
+                             :on-change #(reset! visibility-atom (.-target.value %))}]
+             (t :user/Visibleonlytoregistered)]]
+           [:div.radio
+            [:label [:input {:name      "visibility"
+                             :value     "public"
+                             :type      "radio"
+                             :checked   (= "public" @visibility-atom)
+                             :on-change #(reset! visibility-atom (.-target.value %))}]
+             (t :core/Public)]]]])]]
 
      [pe/action-buttons state]]))
 
