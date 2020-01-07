@@ -14,6 +14,7 @@
 (defn ^:export terms []
   [:div.terms-container #_{:style {:padding "15px"}}
    [:h1 {:style {:text-align "center"}} "Privacybeleid"]
+   [:h2 {:style {:display "none"}} "Privacybeleid"]
    [:div
     [:p {:style {:text-align "center"}} "Bijgewerkt 05.09.2019"]
     [:p ""]
@@ -64,16 +65,13 @@
       [:div
        [:p " Wij ontvangen de bovengenoemde persoonlijke gegevens voornamelijk van de betrokkene zelf, omdat de gegevens door de betrokkene in de Dienst worden ingevoerd."]
        [:p "Wij ontvangen het e-mailadres van de betrokkene waarnaar wij de toegekende Open Badge van onze klant (als verantwoordelijke voor de verwerking van de gegevens) sturen. In deze relatie treden wij op als verantwoordelijke voor de verwerking van de gegevens."]
-       [:p "Voor de in deze privacyverklaring beschreven doeleinden kunnen persoonlijke gegevens ook uit openbare bronnen en op basis van informatie van overheden of andere derden binnen de grenzen van de geldende wet- en regelgeving worden verzameld en geactualiseerd. Het bijwerken van deze gegevens wordt handmatig of automatisch uitgevoerd."]]]
-
-
-     [:li [:h3 "Aan wie geven we gegevens vrij en dragen we gegevens over buiten de EU of de EER?"]
-      [:div
-       [:p "Alleen de gebruikersnaam van de betrokkene, die elke gebruiker zelf kan definiëren, wordt aan andere gebruikers in de Dienst getoond "]
-       [:p "Wij verwerken de informatie zelf en maken gebruik van onderaannemers die voor en namens ons persoonsgegevens verwerken. Wij hebben het IT-beheer uitbesteed aan een externe dienstverlener, aan wiens server de gegevens worden opgeslagen. De server wordt beschermd en beheerd door de externe dienstverlener."]
-       [:p "Gegevens kunnen onder dwingende bepalingen aan autoriteiten worden verstrekt. Wij geven geen informatie van het register door aan externe partijen."]
-       [:p "Wij kunnen geaggregeerde, anonieme informatie over u vrijgeven voor marketing, reclame, onderzoek, naleving of andere doeleinden."]
-       [:p "Wij dragen geen persoonlijke gegevens over buiten de EU/EER."]]]
+       [:p "Voor de in deze privacyverklaring beschreven doeleinden kunnen persoonlijke gegevens ook uit openbare bronnen en op basis van informatie van overheden of andere derden binnen de grenzen van de geldende wet- en regelgeving worden verzameld en geactualiseerd. Het bijwerken van deze gegevens wordt handmatig of automatisch uitgevoerd."]]] [:li [:h3 "Aan wie geven we gegevens vrij en dragen we gegevens over buiten de EU of de EER?"]
+                                                                                                                                                                                                                                                                                                                                                              [:div
+                                                                                                                                                                                                                                                                                                                                                               [:p "Alleen de gebruikersnaam van de betrokkene, die elke gebruiker zelf kan definiëren, wordt aan andere gebruikers in de Dienst getoond "]
+                                                                                                                                                                                                                                                                                                                                                               [:p "Wij verwerken de informatie zelf en maken gebruik van onderaannemers die voor en namens ons persoonsgegevens verwerken. Wij hebben het IT-beheer uitbesteed aan een externe dienstverlener, aan wiens server de gegevens worden opgeslagen. De server wordt beschermd en beheerd door de externe dienstverlener."]
+                                                                                                                                                                                                                                                                                                                                                               [:p "Gegevens kunnen onder dwingende bepalingen aan autoriteiten worden verstrekt. Wij geven geen informatie van het register door aan externe partijen."]
+                                                                                                                                                                                                                                                                                                                                                               [:p "Wij kunnen geaggregeerde, anonieme informatie over u vrijgeven voor marketing, reclame, onderzoek, naleving of andere doeleinden."]
+                                                                                                                                                                                                                                                                                                                                                               [:p "Wij dragen geen persoonlijke gegevens over buiten de EU/EER."]]]
 
      [:li [:h3 "Hoe beschermen we de gegevens en hoe lang bewaren we ze? "]
       [:div
@@ -87,12 +85,9 @@
        [:p "U heeft ook het recht om uw toestemming voor direct marketing in te trekken of te wijzigen."]
        [:p "Als betrokkene heeft u het recht om bezwaar te maken tegen de verwerking of om een beperking van de verwerking te verzoeken en een klacht in te dienen bij een toezichthoudende instantie die verantwoordelijk is voor de verwerking van persoonsgegevens."]
        [:p "Om specifieke persoonlijke redenen heeft u ook het recht om bezwaar te maken tegen het opstellen van profielen en andere verwerkingen die op u betrekking hebben, wanneer de verwerking van de gegevens gebaseerd is op de klantenrelatie. In verband met uw claim dient u de specifieke situatie te identificeren waarin u bezwaar maakt tegen de verwerking. Wij kunnen een dergelijk verzoek op grond van de wet weigeren."]
-       [:p "Als betrokkene heeft u te allen tijde het recht om kosteloos bezwaar te maken tegen de verwerking, inclusief het opstellen van profielen, voor zover deze betrekking hebben op direct marketing."]]]
-
-
-     [:li [:h3 "Met wie kunt u in contact komen?"]
-      [:div
-       [:p "Alle contacten en verzoeken met betrekking tot deze privacyverklaring dienen schriftelijk of persoonlijk te worden ingediend bij de in lid 2 (2) genoemde persoon."]]]
+       [:p "Als betrokkene heeft u te allen tijde het recht om kosteloos bezwaar te maken tegen de verwerking, inclusief het opstellen van profielen, voor zover deze betrekking hebben op direct marketing."]]] [:li [:h3 "Met wie kunt u in contact komen?"]
+                                                                                                                                                                                                                  [:div
+                                                                                                                                                                                                                   [:p "Alle contacten en verzoeken met betrekking tot deze privacyverklaring dienen schriftelijk of persoonlijk te worden ingediend bij de in lid 2 (2) genoemde persoon."]]]
 
      [:li [:h3 "Wijzigingen in de Privacy Verklaring"]
       [:div

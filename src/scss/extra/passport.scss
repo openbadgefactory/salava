@@ -214,7 +214,7 @@ nav a#login-button{
 #user-badges #grid .grid-container .media-content .media-body .media-issuer,
 #export-badges #grid .grid-container .media-content .media-body .media-issuer,
 .import-badges #grid .grid-container .media-content .media-body .media-issuer,
-#user-pages #grid .grid-container .page-create-date, #badge-gallery #profile #user-pages #grid .grid-container .page-create-date, #user-pages #pages-grid .media-content .page-create-date{
+#user-pages #grid .grid-container .page-create-date, #badge-gallery #profile #user-pages #grid .grid-container .page-create-date{
   color: $title-color;
   font-weight: 400;
   a {
@@ -224,6 +224,12 @@ nav a#login-button{
   a:hover {
     color:$menu-active;
   }
+}
+
+#user-pages #pages-grid .media-content .page-create-date, #page-gallery #grid .media-content .page-create-date, .pages #grid .grid-container .page-create-date, .file-create-date {
+  color: #1e461f;
+  font-weight: normal;
+  font-size: 12px;
 }
 
 #export-badges, .import-badges {
@@ -663,6 +669,14 @@ html[dir="rtl"] .wizard {
 
 .text-muted {
   color: #816F6E;
+}
+
+.max-file-size {
+  color: #1e461f;
+}
+
+.btn-warning:disabled {
+  color: #373737;
 }
 
 /*
