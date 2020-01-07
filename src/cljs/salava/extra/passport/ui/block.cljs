@@ -69,6 +69,7 @@
     [:p "La déclaration de protection des données complète les conditions d’utilisation et y est intégrée par référence."]
     [:div {:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} "Déclaration de protection des données"]
+     [:h2 {:style {:display "none"}} "Déclaration de protection des données"]
      [:div
       [:p {:style {:text-align "center"}} "Mis à jour le 29.1.2019 "]
       [:p " "]
@@ -203,9 +204,11 @@
     [:p "The Privacy Notice document complements the Terms of Use and is incorporated into these Terms of Use by reference."]
     [:div #_{:style {:padding "15px"}}
      [:h1 {:style {:text-align "center"}} " Privacy Notice"]
+     [:h2 {:style {:display "none"}} "Privacy Notice"]
      [:div
       [:p {:style {:text-align "center"}} "Updated 29.01.2019"]
       [:p ""]
+
       [:ol {:style {:list-style-type "none"}}
        [:li [:h3 "Controller"]
         [:div
