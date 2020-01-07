@@ -23,7 +23,6 @@
       (assoc-in (vec navi-list) [0 :active] true)
       navi-list)))
 
-
 (defn top-navi-list [navi]
   (let [key-list (filter #(get-in navi [% :top-navi]) (keys navi))]
     (filtered-navi-list navi key-list "top")))
@@ -42,13 +41,13 @@
 
 (defn logout []
   (ajax/POST
-    (path-for "/obpv1/user/logout")
-    {:handler (fn [] (js-navigate-to "/user/login"))}))
+   (path-for "/obpv1/user/logout")
+   {:handler (fn [] (js-navigate-to "/user/login"))}))
 
 (defn return-to-admin []
   (ajax/POST
-    (path-for "/obpv1/admin/return_to_admin")
-    {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
+   (path-for "/obpv1/admin/return_to_admin")
+   {:handler (fn [] (js-navigate-to "/admin/userlist"))}))
 
 (defn navi-link [{:keys [target title active]}]
   [:li {:class (when active "active")
@@ -59,29 +58,29 @@
   (let [subitems (sub-navi-list (navi-parent (current-path)) items "sub-subnavi")
         subitemactive  (some :active subitems)]
     [:li {:key target}
-     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#"(hash target))}  title]
+     [:a {:class "dropdown collapsed" :data-toggle "collapse" :data-target (str "#" (hash target))}  title]
      [:ul {:id (hash target) :class (if subitemactive "collapse in side-dropdown-links" "collapse side-dropdown-links")}
       (doall (for [i subitems]
                (navi-link i)))]]))
 
 (defn logo []
- [:a {:class "logo pull-left"
-      :title (session/get :site-name)
-      :aria-label "to index"
-      :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
-      :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
-     [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
-            :title "OBP logo"
-            :aria-label "OBP logo"}]
-     [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
+  [:a {:class "logo pull-left"
+       :title (session/get :site-name)
+       :aria-label "to index"
+       :href  (if (session/get-in [:user :first_name]) (path-for (if (social-plugin?) "/social" "/badge")) "#")
+       :on-click #(if (not (session/get-in [:user :first_name])) (set! (.-location.href js/window) (session/get :site-url))  "")}
+   [:div {:class "logo-image logo-image-url hidden-xs hidden-sm hidden-md"
+          :title "OBP logo"
+          :aria-label "OBP logo"}]
+   [:div {:class "logo-image logo-image-icon-url visible-xs visible-sm  visible-md"}]])
 
 (defn top-navi-header []
   [:div {:class "navbar-header"}
    (logo)
    [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse" :title "Show menu" :aria-label "Show menu"}
-     [:span {:class "icon-bar"}]
-     [:span {:class "icon-bar"}]
-     [:span {:class "icon-bar"}]]])
+    [:span {:class "icon-bar"}]
+    [:span {:class "icon-bar"}]
+    [:span {:class "icon-bar"}]]])
 
 (defn top-navi-right []
   [:div {:id    "main-header-right"
@@ -92,14 +91,14 @@
           [:i {:class "fa fa-caret-right"}]
           (t :user/Myaccount)]]
     (if (session/get-in  [:user :real-id])
-     [:li [:a {:href     "#"
-               :on-click #(return-to-admin)}
-           [:i {:class "fa fa-caret-right"}]
-           (t :admin/Returntoadmin)]]
-     [:li [:a {:href     "#"
-               :on-click #(logout)}
-           [:i {:class "fa fa-caret-right"}]
-           (t :user/Logout)]])]
+      [:li [:a {:href     "#"
+                :on-click #(return-to-admin)}
+            [:i {:class "fa fa-caret-right"}]
+            (t :admin/Returntoadmin)]]
+      [:li [:a {:href     "#"
+                :on-click #(logout)}
+            [:i {:class "fa fa-caret-right"}]
+            (t :user/Logout)]])]
 
    [:div.userpic
     [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))}
@@ -115,13 +114,12 @@
       [:div {:id "navbar-collapse" :class "navbar-collapse collapse"}
        [:ul {:class "nav navbar-nav"}
         (doall (for [i items]
-                (navi-link i)))
+                 (navi-link i)))
         [:li.usermenu [:a {:href (path-for "/user/edit")}
                        (t :user/Myaccount)]]
         [:li.usermenu [:a {:href     "#"
                            :on-click #(logout)}
                        (t :user/Logout)]]]]]]))
-
 
 (defn top-navi-embed []
   [:nav {:class "navbar"}
@@ -141,13 +139,13 @@
       [:div {:class "navbar-header pull-left"}
        (logo)]
       [:div {:id "main-header"
-              :class "navbar-header pull-right"}
+             :class "navbar-header pull-right"}
        (when-not (:no-login site-navi)
          [:a {:id "login-button" :class "btn btn-primary" :href (path-for "/user/login") :on-click #(do (.preventDefault %)
                                                                                                         (enable-background-image))}
           (t :user/Login)])
        (when (not-empty items)
-         [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse"}
+         [:button {:type "button" :class "navbar-toggle collapsed" :data-toggle "collapse" :data-target "#navbar-collapse" :aria-label "Show menu"}
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]
           [:span {:class "icon-bar"}]])]
@@ -183,10 +181,9 @@
 (defn sidebar [site-navi]
   (let [items (sub-navi-list (navi-parent (current-path)) (:navi-items site-navi) "subnavi")]
     [:ul {:class "side-links"}
-     (doall (for [i items](if (:dropdown i)
-                            (navi-dropdown i)
-                            (navi-link i))))]))
-
+     (doall (for [i items] (if (:dropdown i)
+                             (navi-dropdown i)
+                             (navi-link i))))]))
 
 (defn get-dropdown-breadcrumb [site-navi]
   (let [dropdowns  (filter #(:dropdown %) (vals (:navi-items site-navi)))
@@ -212,8 +209,6 @@
     [:div {:class "row flip"}
      [:div {:class "col-md-3"} (sidebar sub-items)]
      [:div {:class "col-md-9"} content]]]])
-
-
 
 (defn default [site-navi content]
   [:div {:role "main"}
@@ -265,7 +260,6 @@
      [:div {:class "col-md-12" :id "content"} content]]]
    (footer site-navi)])
 
-
 (defn embed-page [content]
   [:div
    content])
@@ -276,4 +270,3 @@
    [:div {:class "container main-container" :style {:padding "10px" :margin "auto"}}
     [:div {:id "content"}
      content]]])
-
