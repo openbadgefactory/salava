@@ -138,7 +138,7 @@
 
 (defn page-info-block [owner owner_id]
   [:div {:class "issuer-data clearfix"}
-   [:label.pull-left  (t :admin/Owner) ":"]
+   [:span._label.pull-left  (t :admin/Owner) ":"]
    [:div {:class "issuer-links pull-left"}
     [:a {:target "_blank" :href (path-for (str "/profile/" owner_id))} owner]]])
 
