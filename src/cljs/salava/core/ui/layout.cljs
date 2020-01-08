@@ -115,7 +115,10 @@
        [:ul {:class "nav navbar-nav"}
         (doall (for [i items]
                  (navi-link i)))
-        [:li.usermenu [:a {:href (path-for "/user/edit")}
+        [:li.usermenu [:a {:href "#"
+                           :on-click #(do
+                                        (.preventDefault %)
+                                        (navigate-to "/user/edit"))}
                        (t :user/Myaccount)]]
         [:li.usermenu [:a {:href     "#"
                            :on-click #(logout)}
