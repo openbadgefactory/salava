@@ -7,7 +7,7 @@
             [salava.core.i18n :as i18n :refer [t translate-text]]
             [salava.core.time :refer [date-from-unix-time]]
             [reagent-modals.modals :as m]
-            [salava.core.ui.helper :refer [path-for plugin-fun not-activated? navigate-to]]
+            [salava.core.ui.helper :refer [path-for plugin-fun not-activated? navigate-to route-path]]
             [salava.badge.ui.my :as my]
             [reagent.session :as session]
             [salava.core.helper :refer [dump]]
@@ -522,7 +522,7 @@
         quicklinks  (mapcat #(%) blocks)]
     (reduce (fn [r link]
               (conj r [:a {:href "#" #_(:url link) :on-click #(do (.preventDefault %)
-                                                                  (navigate-to (:url link))
+                                                                  (navigate-to (route-path (:url link)))
                                                                   (when (:function link) ((:function link))))} (:title link)]))
             [:div.quicklinks]
             (some->> quicklinks (sort-by :weight <)))))
