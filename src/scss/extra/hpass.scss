@@ -1023,7 +1023,7 @@ html[dir="rtl"] #step-button, #step-button-previous{
 }
 
 #profile span.move-tab {
-  color: $pink;
+  color: darken($pink, 10%);
   &:hover {
     color: $pink;
   }
@@ -1068,4 +1068,10 @@ html[dir="rtl"] #step-button, #step-button-previous{
 
 .import-button-desc {
   font-weight: 100 !important;
+}
+
+.btn-danger {
+   .fa-trash {
+    color: white !important;
+  }
 }

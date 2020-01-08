@@ -561,6 +561,14 @@ select.form-control::-ms-expand {
   }
 }
 
+.move-tab {
+  color: #9D6E04 !important;
+  &:hover, &:focus {
+    color: $menu-color !important;
+  }
+}
+
+/*
 .ticket-container.fakebadge u {
   color: #A76905;
 }
@@ -571,7 +579,7 @@ select.form-control::-ms-expand {
   color: #EC130E;
 }
 
-/*#my-badges #grid .grid-container .media-content .icons{
+#my-badges #grid .grid-container .media-content .icons{
 text-align:left;
 .visibility-icon{
 width:30px;

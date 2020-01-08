@@ -37,7 +37,7 @@
              [pe/action-buttons state]
              [:div.panel.thumbnail
               [:div.panel-heading
-               [:h1 (t :profile/Personalinformation)]]
+               [:h3 (t :profile/Personalinformation)]]
               [:div.panel-body
                [pe/edit-profile state]]]
              [profile-blocks state]]
@@ -125,6 +125,7 @@
   [:div
    [m/modal-window]
    [:div#profile
+    [:h1 {:style {:display "hidden"}} "Edit profile"]
     [ph/profile-navi state]
     (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])
     (if @(cursor state [:edit-mode])
