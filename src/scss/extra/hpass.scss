@@ -84,7 +84,7 @@ body.anon {
  background-image: url("/img/extra/hpass/background.jpg");
  background-position: center bottom;
 
- header#navbar {
+ header#navbar, div#navbar {
   border-bottom: 5px solid $light-blue;
  }
  @media (max-width: 425px) {
@@ -137,7 +137,7 @@ body.anon {
   border-radius: 0;
  }
 
- footer.footer {
+ footer.footer, div.footer {
   margin-top: 20px;
   background-color: #e5e5e5;
   border-top: 1px solid $light-blue;
@@ -342,6 +342,11 @@ body {
   }
  }
 
+ #user-pages #pages-grid .media-content .page-create-date {
+   color: $text-color;
+   font-size: 12px;
+ }
+
  #badge-gallery #badges #grid .grid-container .media-content .media-body .media-heading,
  #export-badges #grid .grid-container .media-content .media-body .media-heading,
  #my-badges #grid .grid-container .media-content .media-body .media-heading,
@@ -444,7 +449,7 @@ ul.navbar-nav {
  width: 100%;
 }
 
-header#navbar {
+header#navbar, div#navbar {
  background-image: none;
  min-height: 110px;
  box-shadow: 0 0 9px $light-blue !important; //0 0 5px rgba(0, 0, 0, 0.4) !important;
@@ -756,6 +761,9 @@ a.popup-info, .thumbnail a.popup-info {
 }
  .info-block {
   background-color: #cdd455;//rgba(28, 103, 153, 1); //rgba(86, 142, 180, 1);
+  .info, .text{
+    color: #1E1E1E; //$dark-green;
+  }
  }
 
  .content,
@@ -764,14 +772,23 @@ a.popup-info, .thumbnail a.popup-info {
 
   .badge-connection {
    background-color: #b84681; //rgba(17, 113, 100, 1) !important; //rgba(17, 148, 139, 1) !important;
+   .info, .text{
+     color: white;
+   }
   }
 
   .map{
     background-color: #568EB4;
+    .info, .text {
+      color: #1E1E1E;
+    }
   }
 
   .page {
    background-color:  #1e679e; //rgba(181, 70, 129, 1); //rgba(199, 116, 160, 1);
+   .info, .text{
+     color: white;
+   }
   }
  }
 
@@ -845,10 +862,7 @@ a.popup-info, .thumbnail a.popup-info {
 
 .title-row {
  background: $titlebar-color;  /* fallback for old browsers */
- //background: linear-gradient(to right, $titlebar-color, #d1ea2f, #d6ed47, #dbef5a, #e0f16b, #e0f16b, #e0f16b, #e0f16b, #dbef5a, #d6ed47, #d1ea2f, #cce800);
- background-image: linear-gradient(to right top, #cdd455, #ced948, #cede3a, #cde327, #cce800);
-//background: -webkit-linear-gradient(to left, #c29f90, #073863);  /* Chrome 10-25, Safari 5.1-6 */
-//background-image: linear-gradient(to right bottom, #000000, #0d0d0d, #171617, #1e1d1e, #252526, #2a2a2b, #2f2f31, #343436, #38383a, #3c3c3e, #414143, #454547);
+ //background-image: linear-gradient(to right top, #cdd455, #ced948, #cede3a, #cde327, #cce800);
 }
 
 #endorsebadge .list-group a {
@@ -1015,7 +1029,7 @@ html[dir="rtl"] #step-button, #step-button-previous{
   }
 }
 
-#profiletips .tip{
+#profiletips .tip, #_profiletips .tip{
   .tipicon, a {
     color: #1c6799;
 
@@ -1042,4 +1056,16 @@ html[dir="rtl"] #step-button, #step-button-previous{
 
 .grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
   background-color: $pink !important;
+}
+
+.text-muted {
+  color: #8E6666;
+}
+
+.max-file-size {
+  color: $badge-title;
+}
+
+.import-button-desc {
+  font-weight: 100 !important;
 }

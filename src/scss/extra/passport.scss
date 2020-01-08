@@ -645,7 +645,7 @@ a.popup-info {
    }
 }
 
-#profiletips .tip{
+#profiletips .tip, #_profiletips .tip{
   .tipicon, a {
     color: $button-color;
     &:active, &:hover, &:focus {
