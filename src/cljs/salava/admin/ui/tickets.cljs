@@ -7,7 +7,7 @@
             [salava.core.ui.ajax-utils :as ajax]
             [salava.core.ui.layout :as layout]
             [salava.core.ui.grid :as g]
-            [salava.core.ui.helper :refer [path-for unique-values]]
+            [salava.core.ui.helper :refer [path-for unique-values route-path navigate-to]]
             [salava.core.i18n :refer [t]]
             [salava.core.helper :refer [dump]]
             [salava.admin.ui.helper :refer [message-form email-select status-handler]]
@@ -26,49 +26,38 @@
                                                    (reset! show-atom true)
                                                    (.preventDefault %))} (t :admin/Showless)]]))))
 
-
-
 (defn ticket-send-message [state name]
   (let [{:keys [user_id gallery-state init-data info]} @state
         mail (cursor state [:mail])
         status (cursor state [:status])
-        email-atom (cursor state [:selected-email])]
+        email-atom (cursor state [:selected-email])] [:div {:class "row flip"}
+                                                      [:div {:class "col-xs-12"}
+                                                       [:div.form-group
+                                                        [:label
+                                                         (str (t :user/Email) ":")]
+                                                        (email-select (:emails info) email-atom)]
+                                                       (message-form mail)
+                                                       [:button {:type         "button"
+                                                                 :class        "btn btn-primary pull-right"
+                                                                 :disabled (if-not (and
+                                                                                    (< 1 (count (:subject @mail)))
+                                                                                    (< 1 (count (:message @mail))))
+                                                                             "disabled")
+                                                                 :on-click     #(ajax/POST
+                                                                                 (path-for (str "/obpv1/admin/send_message/" user_id))
+                                                                                 {:response-format :json
+                                                                                  :keywords?       true
+                                                                                  :params        {:subject (:subject @mail)
+                                                                                                  :message (:message @mail)
+                                                                                                  :email  @email-atom}
+                                                                                  :handler         (fn [data]
+                                                                                                     (reset! status data)
+                                                                                                     (reset! mail {:subject ""
+                                                                                                                   :message ""}))
 
-
-    [:div {:class "row flip"}
-     [:div {:class "col-xs-12"}
-      [:div.form-group
-       [:label
-        (str (t :user/Email) ":")]
-       (email-select (:emails info) email-atom)]
-      (message-form mail)
-      [:button {:type         "button"
-                :class        "btn btn-primary pull-right"
-                :disabled (if-not (and
-                                    (< 1 (count (:subject @mail)))
-                                    (< 1 (count (:message @mail))))
-                            "disabled")
-                :on-click     #(ajax/POST
-                                 (path-for (str "/obpv1/admin/send_message/" user_id))
-                                 {:response-format :json
-                                  :keywords?       true
-                                  :params        {:subject (:subject @mail)
-                                                  :message (:message @mail)
-                                                  :email  @email-atom}
-                                  :handler         (fn [data]
-                                                     (reset! status data)
-                                                     (reset! mail {:subject ""
-                                                                   :message ""}))
-
-                                  :error-handler   (fn [{:keys [status status-text]}]
-                                                     (.log js/console (str status " " status-text)))})}
-
-
-       (t :admin/Sendmessage)]
-      (status-handler status "user")]]))
-
-
-
+                                                                                  :error-handler   (fn [{:keys [status status-text]}]
+                                                                                                     (.log js/console (str status " " status-text)))})} (t :admin/Sendmessage)]
+                                                       (status-handler status "user")]]))
 
 (defn ticket-modal-container [state]
   (let [{:keys [user user_id info email]} @state]
@@ -77,7 +66,6 @@
       [:div {:class "col-sm-12 badge-info"}
        [:div {:class "col-xs-12"}
         (ticket-send-message state user)]]]]))
-
 
 (defn ticket-modal [state]
   [:div
@@ -92,18 +80,17 @@
    [:div.modal-body
     (ticket-modal-container state)]])
 
-
 (defn get-closed-tickets [state]
   (ajax/GET
-    (path-for "/obpv1/admin/closed_tickets/")
-    {:handler (fn [tickets]
-                (swap! state assoc :tickets tickets))}))
+   (path-for "/obpv1/admin/closed_tickets/")
+   {:handler (fn [tickets]
+               (swap! state assoc :tickets tickets))}))
 
 (defn init-data [state]
   (ajax/GET
-    (path-for "/obpv1/admin/tickets/")
-    {:handler (fn [tickets]
-                (swap! state assoc :tickets tickets))}))
+   (path-for "/obpv1/admin/tickets/")
+   {:handler (fn [tickets]
+               (swap! state assoc :tickets tickets))}))
 
 (defn open-ticket-modal [user-id name gallery-state init-data]
   (let [state (atom {:mail          {:subject ""
@@ -116,26 +103,25 @@
                      :init-data init-data
                      :status ""})]
     (ajax/GET
-      (path-for (str "/obpv1/admin/user/" user-id))
-      {:handler (fn [data]
-                  (do
-                    (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]
-                      (swap! state assoc :name (:name data)
-                             :image_file (:image_file data)
-                             :user (:item_owner data)
-                             :user_id (:item_owner_id data)
-                             :selected-email (:email primary-email)
-                             :info (:info data))))
-                  (m/modal! [ticket-modal state init-data]))})))
+     (path-for (str "/obpv1/admin/user/" user-id))
+     {:handler (fn [data]
+                 (do
+                   (let [primary-email (first (filter #(:primary_address %) (get-in data [:info :emails])))]
+                     (swap! state assoc :name (:name data)
+                            :image_file (:image_file data)
+                            :user (:item_owner data)
+                            :user_id (:item_owner_id data)
+                            :selected-email (:email primary-email)
+                            :info (:info data))))
+                 (m/modal! [ticket-modal state init-data]))})))
 
 (defn badge-id [url]
   (second (split url #"/badgeview/")))
 
-
 (defn ticket [ticket-data state]
   (let [{:keys [item_type item_id item_name first_name last_name item_url reporter_id description ctime report_type id status mtime]} ticket-data
         open? (= "open" status)]
-    [:div {:id (str "ticket-container_" item_id)}
+    [:div {:id (str "ticket-container_" id)}
      [:div {:class (str "media ticket-container " report_type)}
       [:div.media-body
        [:div {:class (str (if open? "" "closed ") "title-bar title-bar-" report_type)} ;:id (if open? "" "closed")}
@@ -148,12 +134,17 @@
                                        (.preventDefault %)
                                        (open-admintool-modal "badges" (badge-id item_url) nil nil))}
             (str (t (keyword (str "admin/" item_type))) " - " item_name)]
-           [:a {:href item_url :target "_blank"}
+           [:a {:href item_url
+                :target "_blank"}
             (str (t (keyword (str "admin/" item_type))) " - " item_name)])]]
        [:div.media-description
         [:div {:class "col-xs-12 closed"}  ;:id (if open? "" "closed")}
          [:div [:span._label {:style {:margin-bottom "5px"}} (str (t :admin/Description) ": ")] " " (if (< 130 (count description)) [text-shorter description 130]   description)]
-         [:div [:span._label {:style {:margin-bottom "5px"}} (str (t :admin/Reporter) ": ")] " " [:a {:href (path-for (str "/profile/" reporter_id))}(str first_name " " last_name)]]]
+         [:div [:span._label {:style {:margin-bottom "5px"}} (str (t :admin/Reporter) ": ")] " " [:a {:href "#"
+                                                                                                      :on-click #(do
+                                                                                                                   (.preventDefault %)
+                                                                                                                   (navigate-to (str "/profile/" reporter_id)))}
+                                                                                                  (str first_name " " last_name)]]]
         [:button {:class    "btn btn-primary"
                   :disabled (not open?)
                   :on-click #(do
@@ -165,23 +156,23 @@
                   :on-click #(do
                                (.preventDefault %)
                                (ajax/POST
-                                 (path-for (str "/obpv1/admin/close_ticket/" id))
-                                 {:response-format :json
-                                  :keywords? true
-                                  :params {:new-status (if open? "closed" "open")}
-                                  :handler (fn [data]
-                                             (if open?
-                                               (init-data state)
-                                               (get-closed-tickets state)))
+                                (path-for (str "/obpv1/admin/close_ticket/" id))
+                                {:response-format :json
+                                 :keywords? true
+                                 :params {:new-status (if open? "closed" "open")}
+                                 :handler (fn [data]
+                                            (if open?
+                                              (init-data state)
+                                              (get-closed-tickets state)))
 
-                                  :error-handler (fn [{:keys [status status-text]}])}))}
+                                 :error-handler (fn [{:keys [status status-text]}])}))}
          (if open? (t :admin/Done) (t :admin/Restore))]]]]]))
 
 (defn ticket-visible? [element state]
   (if (or (> (count
-               (intersection
-                 (into #{} (:types-selected @state))
-                 #{(:report_type element)}))
+              (intersection
+               (into #{} (:types-selected @state))
+               #{(:report_type element)}))
              0)
           (= (:types-all @state)
              true))
@@ -201,22 +192,22 @@
                              (swap! state assoc (keyword all-key) true))}
         (t :core/All)]
        (doall
-         (for [button buttons]
-           (let [value button
-                 checked? (boolean (some #(= value %) buttons-checked))]
-             [:button {:class    (str "btn btn-default " value " " (if checked? "btn-active"))
-                       :key      value
-                       :on-click (fn []
-                                   (swap! state assoc (keyword all-key) false)
-                                   (if checked?
-                                     (do
-                                       (if (= (count buttons-checked) 1)
-                                         (swap! state assoc (keyword all-key) true))
-                                       (swap! state assoc (keyword key)
-                                              (remove (fn [x] (= x value)) buttons-checked)))
-                                     (swap! state assoc (keyword key)
-                                            (conj buttons-checked value))))}
-              (t (keyword (str "admin/" value)))])))])]])
+        (for [button buttons]
+          (let [value button
+                checked? (boolean (some #(= value %) buttons-checked))]
+            [:button {:class    (str "btn btn-default " value " " (if checked? "btn-active"))
+                      :key      value
+                      :on-click (fn []
+                                  (swap! state assoc (keyword all-key) false)
+                                  (if checked?
+                                    (do
+                                      (if (= (count buttons-checked) 1)
+                                        (swap! state assoc (keyword all-key) true))
+                                      (swap! state assoc (keyword key)
+                                             (remove (fn [x] (= x value)) buttons-checked)))
+                                    (swap! state assoc (keyword key)
+                                           (conj buttons-checked value))))}
+             (t (keyword (str "admin/" value)))])))])]])
 
 (defn grid-show-closed-tickets [state]
   (let [show-closed?  (cursor state [:show-closed?])]
@@ -225,15 +216,15 @@
       (str (t :admin/Archived) ": ")]
      [:div.col-sm-10.col-xs-9
       ;[:label
-       [:input {:name      "visibility"
-                :type      "checkbox"
-                :on-change #(do
-                              (reset! show-closed? (if @show-closed? false true))
-                              (if @show-closed?
-                                (get-closed-tickets state)
-                                (init-data state)))
-                :checked   @show-closed?
-                :id "show-closed-tickets"}]]]))
+      [:input {:name      "visibility"
+               :type      "checkbox"
+               :on-change #(do
+                             (reset! show-closed? (if @show-closed? false true))
+                             (if @show-closed?
+                               (get-closed-tickets state)
+                               (init-data state)))
+               :checked   @show-closed?
+               :id "show-closed-tickets"}]]]))
 
 (defn content [state]
   (let [tickets (:tickets @state)]
