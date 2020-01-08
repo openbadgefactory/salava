@@ -210,11 +210,11 @@
            (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))]]]
         [:div.content
          [:div.row.welcome-message
-          [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden" :on-click #(do
-                                                                                                                                  (.preventDefault %)
-                                                                                                                                  (if (= "true" (dommy/attr (sel1 :#hidden) :aria-expanded))
-                                                                                                                                    (reset! arrow-class "fa-angle-up")
-                                                                                                                                    (reset! arrow-class "fa-angle-down")))} [:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]]
+          [:a {:data-toggle "collapse" :href "#hidden" :role "button" :aria-expanded "false" :aria-controls "hidden" :aria-label "collapse" :on-click #(do
+                                                                                                                                                         (.preventDefault %)
+                                                                                                                                                         (if (= "true" (dommy/attr (sel1 :#hidden) :aria-expanded))
+                                                                                                                                                           (reset! arrow-class "fa-angle-up")
+                                                                                                                                                           (reset! arrow-class "fa-angle-down")))} [:i {:class (str "fa icon " @arrow-class) #_(if (dommy/attr (sel1 :#hidden) :aria-expanded) "fa-angle-up" "fa-angle-down")}]]
           (if welcome-tip  (str (t :core/Welcometo) " " site-name (t :core/Service)) (str (t :core/Welcometo) " " (session/get :site-name) " " (get-in @state [:user-profile :user :first_name] "") "!"))
           [:div.collapse {:id "hidden"}
            [:div.hidden-content
@@ -542,6 +542,7 @@
 (defn content [state]
   [:div#dashboard-container
    [m/modal-window]
+   [:h1 {:style {:display "none"}} "Dashboard"]
    (if (not-activated?)
      (not-activated-banner))
    [welcome-block state]
