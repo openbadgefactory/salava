@@ -13,6 +13,7 @@
 @import '../user';
 @import 'application';
 @import '../rtl';
+@import '../metabadge';
 @import '../profile';
 
 .logo-image-url{
@@ -83,6 +84,22 @@ nav a#login-button{
   height: 48px;
 }
 
+div#navbar {
+  background: none;
+  background-color: #FFFFFF;
+}
+
+ul.navbar-nav {
+  li a {
+    color: $icon-color;//$button-hover;
+  }
+
+  li.active a, li a:hover {
+    color: $button-color;
+  }
+}
+
+
 /*.title-row {
 border-bottom-color: #9DBE5F;
 }*/
@@ -133,7 +150,7 @@ ul#secondary-menu-links li a i.fa {
     color:$link-color;
   }
 
-  #box_3 {
+  #box_3, #box_6{
     p {
       font-weight: 400;
     }
@@ -182,11 +199,14 @@ ul#secondary-menu-links li a i.fa {
       }
 
       .page {
-        background-color: $button-hover;
+        background-color: #0C4F5A; //$button-color;
       }
 
       .map {
         background-color: #8984a8;
+        .info, .text {
+          color: #1E1E1E;
+        }
       }
 
 
@@ -208,7 +228,7 @@ ul#secondary-menu-links li a i.fa {
   background:linear-gradient(to left, $button-hover, $titlebar-color);
 }
 
-#profiletips .tip{
+#profiletips .tip, #_profiletips .tip{
   .tipicon, a {
     color: $link-color;
 
@@ -325,6 +345,33 @@ ul#secondary-menu-links li a i.fa {
 
 .grid-element-info, .modal-navi-info, #social-tab span.social-panel-info, span.endorsement-notification {
   background-color: $link-color !important;
+}
+
+div.footer {
+  a {
+    color: $link-color;
+  }
+}
+
+p.text-muted {
+  color: #816F6E;
+}
+
+.btn-warning {
+  color: #372C2C;
+}
+
+#grid-filter .btn {
+  background-color: $titlebar-color;
+  border-color: $titlebar-color;
+}
+
+#my-files .file-icon-large, .max-file-size {
+  color: $icon-color;
+}
+
+#login-page .btn-primary {
+  color: #1E1E1E;
 }
 
 /*#my-badges #grid .grid-container .media-content .icons{
