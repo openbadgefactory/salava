@@ -101,7 +101,7 @@
      (bh/creator-label-image-link creator_name creator_url creator_description creator_email creator_image)
      (if (and owner (not (blank? owner_id)))
        [:div {:class "issuer-data clearfix"}
-        [:label.pull-left  (t :admin/Owner) ":"]
+        [:span._label.pull-left  (t :admin/Owner) ":"]
         [:div {:class "issuer-links pull-left"}
          [:a {:target "_blank" :href (path-for (str "/profile/" owner_id))} owner]]])]))
 

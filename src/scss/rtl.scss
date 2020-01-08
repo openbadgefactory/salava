@@ -226,8 +226,8 @@ html[dir="rtl"] #badge-info {
  }
 }
 /* ADMIN MODALS */
-html[dir="rtl"] .admin-modal,
-#badge-info .admin-modal {
+html[dir="rtl"] .admin-modal{
+//#badge-info .admin-modal {
  .sub-heading {
   a {
    &:before {
@@ -670,9 +670,15 @@ html[dir="rtl"] #user-pages #grid {
  margin-left: -15px;
 }
 
-html[dir="rtl"] #user-pages #grid .grid-container {
+html[dir="rtl"] #user-pages #grid .grid-container,
+html[dir="rtl"] #user-pages #pages-grid .grid-container
+{
     margin-right: unset;
     float:right;
+    .media-heading {
+      margin-right: unset;
+      margin-left: 35px;
+    }
    .media-content {
     text-align: right;
   }
