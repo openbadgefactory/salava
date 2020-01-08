@@ -15,9 +15,37 @@
 @import '../metabadge';
 @import '../profile';
 
+/* Fonts */
+@font-face {
+ font-family: 'Comfortaa';
+ src: url("/css/extra/fonts/Comfortaa/Comfortaa-Bold.ttf");
+ font-weight: bold;
+ font-style: normal;
+}
+@font-face {
+ font-family: 'Comfortaa';
+ src: url("/css/extra/fonts/Comfortaa/Comfortaa-Light.ttf");
+ font-weight: normal;
+ font-style: normal;
+}
+
+@font-face {
+ font-family: 'Comfortaa';
+ src: url("/css/extra/fonts/Comfortaa/Comfortaa-Regular.ttf");
+ font-weight: normal;
+ font-style: normal;
+}
+
+body {
+  font-family: "Comfortaa", 'Open Sans';
+  //font-family: 'Open Sans', sans-serif;
+}
+
+
+
 /* LOGO */
 .logo-image-url {
-   width: 65px;
+   width: 200px;
    height: 55px;
    background-image: url("/img/extra/boat/logo.png")
 }
@@ -25,14 +53,14 @@
 .logo-image-icon-url {
    //width: 200px;
    //height: 55px;
-   background-image: url("/img/extra/boat/icon.png");
+   background-image: url("/img/extra/boat/favicon.png");
 }
 
 #registration-page #narrow-panel{
    .logo-image-icon-url {
      width: 50px;
      height: 57px;
-     background-image: url("/img/extra/boat/icon.png");
+     background-image: url("/img/extra/boat/favicon.png");
      background-repeat: no-repeat;
      background-size: contain;
   }
@@ -48,7 +76,7 @@
 .system-image-url {
    width: 90px;
    height: 90px;
-   background-image: url("/img/extra/boat/icon.png");
+   background-image: url("/img/extra/boat/favicon.png");
 }
 
 .issuedbyobf-image-url{
@@ -65,21 +93,20 @@
 
 
 body.anon {
-  background-color: $background-color !important;
-  background-size: cover;
-  background-position: right 0px bottom 70px;
-  background-repeat: repeat-y;
-  background-image: url("/img/extra/boat/background.png");
+  background-color: #CCE4F3 !important; //$background-color !important;
+  background-size: contain;
+  background-position: center 78px;
+  background-repeat: no-repeat;
+  background-image: url("/img/extra/boat/background.jpg");
 
   @media (max-width: 768px) {
-      background-position: left 0px bottom 70px;
+      //background-position: left 0px bottom 70px;
      }
 
 footer.footer, div.footer {
- .footer-container {
   border-top: 2px solid $main-color;
-  background-color: white;
-  }
+  //background-color: white;
+
 }
 }
 
@@ -117,7 +144,8 @@ ul.navbar-nav {
   }
 }
 footer.footer,div.footer {
-  background-color: #fff; //$background-color;
+  background-color: $background-color;
+  border-top: 2px solid $main-color;
 }
 
 #login-page, #registration-page, #reset-password {
@@ -155,7 +183,7 @@ footer.footer,div.footer {
 #my-files #grid .grid-container .media-content .media-body .media-heading,
 #profile-gallery #grid .grid-container .media-content .media-body .media-heading,
 #user-pages #grid .media-content .media-body .media-heading, #page-gallery, #user-pages #grid .grid-container,
-#badge-gallery #profile #user-pages #grid .grid-container{
+#badge-gallery #profile #user-pages #grid .grid-container,#user-pages #pages-grid .media-content .media-body .media-heading,{
   p.heading-link{
     color: $badge-title;
     &:hover, &:active, &:focus {
@@ -164,6 +192,14 @@ footer.footer,div.footer {
   }
   .page-owner {
     color: $menu-color;
+  }
+}
+
+#user-pages #pages-grid .media-content {
+  .page-create-date {
+    color: $third-color;
+    font-size: 12px;
+
   }
 }
 
@@ -272,11 +308,11 @@ ul#secondary-menu-links {
 button.navbar-toggle {
   border: 2px solid $main-color;
   .icon-bar {
-    background-color: $second-color;
+    background-color: $third-color;
 
   }
     &:hover {
-      border-color: $second-color;
+      border-color: $third-color;
       .icon-bar {
         background-color: $main-color;
       }
@@ -384,7 +420,7 @@ nav a#login-button{
   text-decoration: none;
  }
  > li.active a {
-   color: $main-color !important;
+   color: $third-color !important;
    border: 1px solid $light-blue;
    border-bottom-color: transparent;
  }
@@ -608,7 +644,7 @@ nav a#login-button{
       .page {
         background-color: $dark-yellow;
         .info {
-         color: #4c3f67 !important;
+         //color: #4c3f67 !important;
         }
 
       }
@@ -682,4 +718,31 @@ nav a#login-button{
 }
 .message-item.media h3.media-heading a, .message-item.media p.media-heading a, .message-item.media.tips i.fa {
  color: $link-color;
+}
+
+.message-item, table#userlist.table>tbody>tr>td{
+  border-color: #8395a0 !important;
+}
+
+table#userlist.table>thead>tr>th {
+  border: none;
+}
+#page-view .page-content {
+  font-family: inherit;
+}
+
+.max-file-size {
+  color: $third-color;
+}
+
+p.help-block {
+  color: $text-color;
+}
+
+#profile .profile-navi .nav-item {
+  border-color: #00000024;
+}
+
+#profile .profile-navi .nav-tabs > li a:hover {
+  background-color: white !important;
 }

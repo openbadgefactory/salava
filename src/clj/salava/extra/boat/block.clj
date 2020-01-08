@@ -2,4 +2,4 @@
 
 (defn favicon [ctx]
   {:icon ""
-   :png ""})
+   :png "/img/extra/boat/favicon.png"})
