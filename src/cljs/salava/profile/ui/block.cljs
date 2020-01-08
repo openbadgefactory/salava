@@ -106,12 +106,12 @@
            [:div.col-xs-12
             [:div.row
              (when (enabled-field? "name" (:fields @state)) [:div {:style {:margin "10px 0"}}
-                                                             [:label (t :admin/Name)]
+                                                             [:span._label (t :admin/Name)]
                                                              [:div (str first_name " " last_name)]])
 
              (and (when-not (blank? about) (enabled-field? "about" (:fields @state)))
                   [:div {:style {:margin "15px 0" :line-height "1.4"}}
-                   [:label (t :user/Aboutme)]
+                   [:span._label (t :user/Aboutme)]
                    [:div about]])
              (when-not (->> profile
                             (map :field)
