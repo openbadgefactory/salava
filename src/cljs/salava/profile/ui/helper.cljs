@@ -89,7 +89,7 @@
                                      (f/move-field-drop blocks (:toggled @state) index)
                                      (swap! state assoc :toggle-move-mode false :toggled nil))}
           [:div.placeholder.html-block-content.html-block-content-hover
-           (t :page/Clicktodrop)]]
+           [:span (t :page/Clicktodrop)]]]
          [:button {:class    "btn btn-success"
                    :on-click #(do
                                 (.preventDefault %)

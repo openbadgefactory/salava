@@ -362,7 +362,9 @@
        (if (and (:toggle-move-mode @state) (not (= index (:toggled @state))))
          [:a {:href "#" :on-click #(do
                                      (f/move-field-drop blocks (:toggled @state) index)
-                                     (swap! state assoc :toggle-move-mode false :toggled nil))}
+                                     (swap! state assoc :toggle-move-mode false :toggled nil))
+              :aria-label (t :page/Clicktodrop)}
+
           [:div.placeholder.html-block-content.html-block-content-hover
            (t :page/Clicktodrop)]]
          [:button {:class    "btn btn-success"
