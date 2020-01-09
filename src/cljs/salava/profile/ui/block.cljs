@@ -180,13 +180,19 @@
                                                                                                                 (.preventDefault %)
                                                                                                                 (navigate-to (str "/profile/" (session/get-in [:user :id])))
                                                                                                                 (session/put! :edit-mode true))} (t :profile/Aboutmetip)]
-                                                                        :location-tip         [:a {:href (path-for "/user/edit")} (t :profile/Locationtip)]
-                                                                        :tabs-tip             [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))
+                                                                        :location-tip         [:a {:href "#" #_(path-for "/user/edit")
                                                                                                    :on-click #(do
                                                                                                                 (.preventDefault %)
+                                                                                                                (navigate-to "/user/edit"))}
+                                                                                               (t :profile/Locationtip)]
+                                                                        :tabs-tip             [:a {:href "#" #_(path-for (str "/profile/" (session/get-in [:user :id])))
+                                                                                                   :on-click #(do
+                                                                                                                (.preventDefault %)
+                                                                                                                (navigate-to (str "/profile/" (session/get-in [:user :id])))
                                                                                                                 (session/put! :edit-mode true))} (t :profile/Tabstip)]
-                                                                        :showcase-tip         [:a {:href (path-for (str "/profile/" (session/get-in [:user :id])))
+                                                                        :showcase-tip         [:a {:href "#" #_(path-for (str "/profile/" (session/get-in [:user :id])))
                                                                                                    :on-click #(do
                                                                                                                 (.preventDefault %)
+                                                                                                                (navigate-to (str "/profile/" (session/get-in [:user :id])))
                                                                                                                 (session/put! :edit-mode true))} (t :profile/Showcasetip)])])))
                     [:div] tips)]))))

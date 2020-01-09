@@ -125,7 +125,7 @@
   [:div
    [m/modal-window]
    [:div#profile
-    [:h2 {:style {:display "none"}} "Edit profile"]
+    [:h2.sr-only (t :user/Editprofile)]
     [ph/profile-navi state]
     (when @(cursor state [:show-manage-buttons]) [ph/manage-buttons state])
     (if @(cursor state [:edit-mode])

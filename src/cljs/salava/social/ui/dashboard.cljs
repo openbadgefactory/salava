@@ -363,7 +363,7 @@
                 (when-not hidden? [:span.num (get-in @state [:gallery :badges :all] 0)])
                 [:span.desc (t :gallery/Sharedbadges)]]]]]
             (when (pos? (get-in @state [:gallery :badges :since-last-visited] 0))
-              [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
+              [:div.since-last-login [:span.new.no-flip (str "+" (get-in @state [:gallery :badges :since-last-visited] 0))]])]
            [:div.col-sm-4.button-block
             [:div.info-block.page
              [:a {:href (path-for "/gallery/pages")}
@@ -374,7 +374,7 @@
                  (when-not hidden? [:span.num (get-in @state [:gallery :pages :all] 0)])
                  [:span.desc (t :gallery/Sharedpages)]]]]]]
             (when (pos? (get-in @state [:gallery :pages :since-last-visited] 0))
-              [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
+              [:div.since-last-login [:span.new.no-flip (str "+" (get-in @state [:gallery :pages :since-last-visited] 0))]])]
            [:div.col-sm-4.button-block
             [:div.info-block
              [:a {:href (path-for "/gallery/profiles")}
@@ -385,7 +385,7 @@
                  (when-not hidden? [:span.num (get-in @state [:gallery :profiles :all] 0)])
                  [:span.desc (t :gallery/Sharedprofiles)]]]]]]
             (when (pos? (get-in @state [:gallery :profiles :since-last-visited] 0))
-              [:div.since-last-login [:p.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
+              [:div.since-last-login [:span.new.no-flip (str "+" (get-in @state [:gallery :profiles :since-last-visited] 0))]])]
            [:div.col-sm-4.button-block
             [:div.info-block.map
              [:a {:href (path-for "/gallery/map")}
