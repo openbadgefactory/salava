@@ -95,13 +95,25 @@ body {
 body.anon {
   background-color: #CCE4F3 !important; //$background-color !important;
   background-size: contain;
-  background-position: center 78px;
+  //background-position: center 78px;
   background-repeat: no-repeat;
   background-image: url("/img/extra/boat/background.jpg");
 
-  @media (max-width: 768px) {
+  @media (max-width: 1440px) {
       //background-position: left 0px bottom 70px;
+      //background-position: center right; //30px;
+      background-size: unset;
      }
+  @media (max-width: 768px) {
+         //background-position: left 0px bottom 70px;
+         //background-position: center left -35px;
+         //background-size: unset;
+        }
+
+  @media (max-width: 425px) {
+        //background-position: center left -50px;
+        }
+
 
 footer.footer, div.footer {
   border-top: 2px solid $main-color;
