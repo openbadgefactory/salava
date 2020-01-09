@@ -190,9 +190,9 @@
        [:div {:id "pull-right" :class "col-md-3 badge-image"}
         [:div.row
          [:div.col-xs-12
-          [:img {:src (str "/" image_file)}]]]
+          [:img {:src (str "/" image_file) :alt ""}]]]
         (when (and qr_code (= visibility "public"))
-          [:img#print-qr-code {:src (str "data:image/png;base64," qr_code)}])
+          [:img#print-qr-code {:src (str "data:image/png;base64," qr_code) :alt "qr code"}])
         (comment
           (if owner?
             [:div.row {:id "badge-rating"}
@@ -243,14 +243,14 @@
             [:div.expired [:label (translate lng :badge/Expiredon) ": "] (date-from-unix-time (* 1000 expires_on))])
           [:h1.uppercase-header name]
           (if (< 1 (count (:content @state)))
-            [:div.inline [:label (translate lng :core/Languages)": "](content-language-selector selected-language (:content @state))])
+            [:div.inline [:span._label (translate lng :core/Languages)": "](content-language-selector selected-language (:content @state))])
           (bm/issuer-modal-link issuer_content_id issuer_content_name lng)
           (bm/creator-modal-link creator_content_id creator_name lng)
 
           (if (and issued_on (> issued_on 0))
-            [:div [:label (translate lng :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+            [:div [:span._label (translate lng :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
           (if (and expires_on (not expired?))
-            [:div [:label (translate lng :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
+            [:div [:span._label (translate lng :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " ("(num-days-left expires_on) " " (t :badge/days)")")])
 
           (comment
             (if assertion
@@ -263,8 +263,8 @@
 
           (if (pos? @show-recipient-name-atom)
             (if (and user-logged-in? (not owner?))
-              [:div [:label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-              [:div [:label (translate lng :badge/Recipient) #_(t :badge/Recipient) ": "]  first_name " " last_name]))
+              [:div [:span._label (t :badge/Recipient) ": " ] [:a.link {:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+              [:div [:span._label (translate lng :badge/Recipient) #_(t :badge/Recipient) ": "]  first_name " " last_name]))
 
           #_[:div [metabadge (:assertion_url @state)]]
 

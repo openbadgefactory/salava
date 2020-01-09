@@ -1,6 +1,6 @@
 @import 'variables';
 /* TICKETS */
-#ticket-container{
+#ticket-container, .ticket-container{
     background-color: #ffffff;
     border: 1px solid #d2d2d2;
     box-shadow: 0px 4px 0px #dcdcdc;
@@ -9,11 +9,11 @@
     margin-bottom: 10px;
     margin-top: 0;
     line-height: 1.4;
-    #closed{
+    #closed, .closed{
 	opacity:.65;
     }
 }
-#ticket-container {
+#ticket-container, .ticket-container {
     border-left:3px solid;
     &.inappropriate {
         border-left-color: purple;
@@ -28,12 +28,12 @@
         border-left-color: DarkCyan;
     }
 
-    h4.media-heading a{
+    h4.media-heading a, h2.media-heading a{
         font-weight: 400;
         line-height: 30px;
         font-size: 16px;
     }
-    h3.media-heading {
+    h3.media-heading, h1.media-heading {
             font-size: 18px;
         u {
             text-decoration: none;
@@ -43,13 +43,13 @@
         color: purple;
     }
     &.bug u{
-        color: red;
+        color: #EC130E; //red;
     }
     &.fakebadge u{
-        color: orange;
+        color:  #A76905; //orange;
     }
     &.mistranslation u{
-        color: DarkCyan;
+        color: #088488;//DarkCyan;
     }
     .btn.btn-primary{
         margin-top:15px;
@@ -121,7 +121,7 @@
                 line-height: 25px;
             }
 }
-#ticket-container {
+#ticket-container, .ticket-container {
     border-left:3px solid;
     &.inappropriate {
         border-left-color: purple;
@@ -138,6 +138,10 @@
 }
 /* Admin stats */
 .admin-stats{
+    .sectionheading {
+      font-size: 24px;
+      font-weight: 300;
+    }
     h3 {
         font-weight: 300;
     }

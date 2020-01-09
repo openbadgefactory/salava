@@ -27,14 +27,14 @@
 (defn banner [obf-url]
   (if-let [[_ banner-file] (->> js/window .-location .-search (re-find #"banner=(\w+\.[a-z]{3})"))]
     [:div {:style {:width "640px" :margin "auto"}}
-     [:img {:src (str obf-url "/c/download/" banner-file)}]]))
+     [:img {:src (str obf-url "/c/download/" banner-file) :alt ""}]]))
 
 (defn reject-badge [user-badge-id]
   (ajax/DELETE
-    (path-for (str "/obpv1/factory/receive/" user-badge-id))
-    {:handler (fn [data]
-                (when (:success data)
-                  (js-navigate-to "/user/login")))}))
+   (path-for (str "/obpv1/factory/receive/" user-badge-id))
+   {:handler (fn [data]
+               (when (:success data)
+                 (js-navigate-to "/user/login")))}))
 
 (defn reject-badge-modal [user-badge-id]
   [:div
@@ -60,15 +60,15 @@
 
 (defn init-data [state id]
   (ajax/GET
-    (path-for (str "/obpv1/badge/pending/" id))
-    {:handler (fn [data]
-                (if (empty? (:content data))
-                  (swap! state assoc :result "error")
-                  (reset! state (assoc data :id id
-                                  :initializing false
-                                  :content-language (init-content-language (:content data))
-                                  :result "success"))))}
-    (fn [] (swap! state assoc :result "error"))))
+   (path-for (str "/obpv1/badge/pending/" id))
+   {:handler (fn [data]
+               (if (empty? (:content data))
+                 (swap! state assoc :result "error")
+                 (reset! state (assoc data :id id
+                                      :initializing false
+                                      :content-language (init-content-language (:content data))
+                                      :result "success"))))}
+   (fn [] (swap! state assoc :result "error"))))
 
 (defn num-days-left [timestamp]
   (int (/ (- timestamp (/ (.now js/Date) 1000)) 86400)))
@@ -97,7 +97,7 @@
          [:div.col-md-12
 
           [:div.pull-right
-           (doall (map (fn [lang] ^{:key lang}[:a {:href "#" :on-click #(session/assoc-in! [:user :language] lang)} (upper-case lang) " "]) (session/get :languages)))]
+           (doall (map (fn [lang] ^{:key lang} [:a {:href "#" :on-click #(session/assoc-in! [:user :language] lang)} (upper-case lang) " "]) (session/get :languages)))]
 
           [:h1.uppercase-header (t :badge/YouHaveGotaBadge)]
 
@@ -105,100 +105,91 @@
 
           [:p (t :badge/AnOpenBadgeIs) " " (t :badge/YouCanAddYourBadges) " " (t :badge/TheEasiestWayToManage)]
 
-          [:p (t :badge/IfYouSignUpUsingEmail)]
+          [:p (t :badge/IfYouSignUpUsingEmail)] [:div.text-center
+                                                 (if user_exists?
+                                                   [:div [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]]
 
+                                                   [:div
+                                                    [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
+                                                    [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]]) [:hr]
+                                                 [:div.col-md-12
+                                                  [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+                                                  [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]]]]]] [:div#badge-info
+                                                                                                                                                                                                            [m/modal-window]
+                                                                                                                                                                                                            [:div.panel
+                                                                                                                                                                                                             [:div.panel-body
+                                                                                                                                                                                                              (if (or verified_by_obf issued_by_obf)
+                                                                                                                                                                                                                [:div.row.flip (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
+                                                                                                                                                                                                              [:div {:class "row row_reverse"}
+                                                                                                                                                                                                               [:div {:class "col-md-3 badge-image"}
+                                                                                                                                                                                                                [:div.row
+                                                                                                                                                                                                                 [:div.col-xs-12
+                                                                                                                                                                                                                  [:img {:src (str "/" image_file) :alt ""}]]]
+                                                                                                                                                                                                                (bm/badge-endorsement-modal-link badge_id endorsement_count)]
 
-          [:div.text-center
-           (if user_exists?
-             [:div [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]]
+                                                                                                                                                                                                               [:div {:class "col-md-9 badge-info"}
+                                                                                                                                                                                                                [:div.row
+                                                                                                                                                                                                                 [:div {:class "col-md-12"}
+                                                                                                                                                                                                                  (content-language-selector selected-language (:content @state))
+                                                                                                                                                                                                                  [:h1.uppercase-header name]
+                                                                                                                                                                                                                  (bm/issuer-modal-link issuer_content_id issuer_content_name)
+                                                                                                                                                                                                                  (bm/creator-modal-link creator_content_id creator_name)
 
-             [:div
-              [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
-              [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]])
+                                                                                                                                                                                                                  (if (and issued_on (> issued_on 0))
+                                                                                                                                                                                                                    [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+                                                                                                                                                                                                                  (if (and expires_on (not expired?))
+                                                                                                                                                                                                                    [:div [:span._label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
 
+                                                                                                                                                                                                                  (into [:div]
+                                                                                                                                                                                                                        (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
+                                                                                                                                                                                                                          [f {:assertion_url assertion_url}]))
 
-           [:hr]
-           [:div.col-md-12
-            [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
-            [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal id] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]]]]]]
+                                                                                                                                                                                                                  (if assertion
+                                                                                                                                                                                                                    [:div {:id "assertion-link"}
+                                                                                                                                                                                                                     [:span._label (t :badge/Metadata) ": "]
+                                                                                                                                                                                                                     [:a.link {:href     "#"
+                                                                                                                                                                                                                               :on-click #(do (.preventDefault %)
+                                                                                                                                                                                                                                              (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
+                                                                                                                                                                                                                      (t :badge/Openassertion) "..."]])
+                                                                                                                                                                                                                  [:div.description description]]]
 
+                                                                                                                                                                                                                (when-not (empty? alignment)
+                                                                                                                                                                                                                  [:div.row
+                                                                                                                                                                                                                   [:div.col-md-12
+                                                                                                                                                                                                                    [:h2.uppercase-header (t :badge/Alignments)]
+                                                                                                                                                                                                                    (doall
+                                                                                                                                                                                                                     (map (fn [{:keys [name url description]}]
+                                                                                                                                                                                                                            [:p {:key url}
+                                                                                                                                                                                                                             [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                                                                                                                                                                                                                          alignment))]])
 
-      [:div#badge-info
-       [m/modal-window]
-       [:div.panel
-        [:div.panel-body
-         (if (or verified_by_obf issued_by_obf)
-           [:div.row.flip (bh/issued-by-obf obf_url verified_by_obf issued_by_obf)])
-         [:div {:class "row row_reverse"}
-          [:div {:class "col-md-3 badge-image"}
-           [:div.row
-            [:div.col-xs-12
-             [:img {:src (str "/" image_file)}]]]
-           (bm/badge-endorsement-modal-link badge_id endorsement_count)]
+                                                                                                                                                                                                                [:div {:class "row criteria-html"}
+                                                                                                                                                                                                                 [:div.col-md-12
+                                                                                                                                                                                                                  [:h2.uppercase-header (t :badge/Criteria)]
+                                                                                                                                                                                                                  [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
+                                                                                                                                                                                                                  [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
 
-          [:div {:class "col-md-9 badge-info"}
-           [:div.row
-            [:div {:class "col-md-12"}
-             (content-language-selector selected-language (:content @state))
-             [:h1.uppercase-header name]
-             (bm/issuer-modal-link issuer_content_id issuer_content_name)
-             (bm/creator-modal-link creator_content_id creator_name)
-
-             (if (and issued_on (> issued_on 0))
-               [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
-             (if (and expires_on (not expired?))
-               [:div [:label (t :badge/Expireson) ": "]  (date-from-unix-time (* 1000 expires_on))])
-
-             (into [:div]
-              (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
-                [f {:assertion_url assertion_url}]))
-
-             (if assertion
-               [:div {:id "assertion-link"}
-                [:label (t :badge/Metadata)": "]
-                [:a.link {:href     "#"
-                          :on-click #(do (.preventDefault %)
-                                       (m/modal! [a/assertion-modal (dissoc assertion :evidence)] {:size :lg}))}
-                 (t :badge/Openassertion) "..."]])
-             [:div.description description]]]
-
-           (when-not (empty? alignment)
-             [:div.row
-              [:div.col-md-12
-               [:h2.uppercase-header (t :badge/Alignments)]
-               (doall
-                 (map (fn [{:keys [name url description]}]
-                        [:p {:key url}
-                         [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
-                      alignment))]])
-
-           [:div {:class "row criteria-html"}
-            [:div.col-md-12
-             [:h2.uppercase-header (t :badge/Criteria)]
-             [:a.link {:href criteria_url :target "_blank"} (t :badge/Opencriteriapage) "..."]
-             [:div {:dangerouslySetInnerHTML {:__html criteria_content}}]]]
-
-           (when (seq evidences)
-             [:div.row {:id "badge-settings"}
-              [:div.col-md-12
-               [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")"))]
-               (reduce (fn [r evidence]
-                         (let [{:keys [narrative description name id url mtime ctime properties]} evidence
-                               added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
-                               desc (cond
-                                      (not (blank? narrative)) narrative
-                                      (not added-by-user?) description ;;todo use regex to match description
-                                      :else nil)]
-                           (conj r (when url? url
-                                    [:div.modal-evidence
-                                     (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
-                                     [:div.evidence-icon [:i.fa.fa-link]]
-                                     [:div.content
-                                      (when-not (blank? name) [:div.content-body.name name])
-                                      (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
-                                      [:div.content-body.url
-                                       (hyperlink url)]]]))))
-                       [:div ] evidences)]])]]]]]]]))
+                                                                                                                                                                                                                (when (seq evidences)
+                                                                                                                                                                                                                  [:div.row {:id "badge-settings"}
+                                                                                                                                                                                                                   [:div.col-md-12
+                                                                                                                                                                                                                    [:h2.uppercase-header (t :badge/Evidences) #_(if (= (count  evidences) 1)  (t :badge/Evidence) (str (t :badge/Evidence) " (" (count evidences) ")"))]
+                                                                                                                                                                                                                    (reduce (fn [r evidence]
+                                                                                                                                                                                                                              (let [{:keys [narrative description name id url mtime ctime properties]} evidence
+                                                                                                                                                                                                                                    added-by-user? (and (not (blank? description)) (starts-with? description "Added by badge recipient")) ;;use regex
+                                                                                                                                                                                                                                    desc (cond
+                                                                                                                                                                                                                                           (not (blank? narrative)) narrative
+                                                                                                                                                                                                                                           (not added-by-user?) description ;;todo use regex to match description
+                                                                                                                                                                                                                                           :else nil)]
+                                                                                                                                                                                                                                (conj r (when url? url
+                                                                                                                                                                                                                                              [:div.modal-evidence
+                                                                                                                                                                                                                                               (when-not added-by-user? [:span.label.label-success (t :badge/Verifiedevidence)])
+                                                                                                                                                                                                                                               [:div.evidence-icon [:i.fa.fa-link]]
+                                                                                                                                                                                                                                               [:div.content
+                                                                                                                                                                                                                                                (when-not (blank? name) [:div.content-body.name name])
+                                                                                                                                                                                                                                                (when-not (blank? desc) [:div.content-body.description {:dangerouslySetInnerHTML {:__html desc}}])
+                                                                                                                                                                                                                                                [:div.content-body.url
+                                                                                                                                                                                                                                                 (hyperlink url)]]]))))
+                                                                                                                                                                                                                            [:div] evidences)]])]]]]]]]))
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
@@ -206,7 +197,7 @@
         user (session/get :user)
         site-navi (assoc site-navi :navi-items [] :no-login true)
         languages (session/get :languages)
-        lang (-> (or js/window.navigator.userLanguage js/window.navigator.language) (split #"-") first)]
+        lang (session/get-in [:user :language] (-> (or js/window.navigator.userLanguage js/window.navigator.language) (split #"-") first))]
 
     (when (some #(= % lang) languages) (session/assoc-in! [:user :language] lang))
     (init-data state id)

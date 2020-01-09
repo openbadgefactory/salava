@@ -12,25 +12,20 @@
             [salava.core.countries :refer [all-countries-sorted]]
             [salava.user.ui.input :as input]))
 
-
 (defn save-user-info [state]
   (let [params (:user @state)]
     (ajax/POST
-      (path-for "/obpv1/user/edit")
-      {:params  (-> params
-                    (dissoc :private)
-                    (dissoc :password?)
-                    (dissoc :activated)
-                    (dissoc :role))
-       :handler (fn [data]
-                  (if (= (:status data) "success")
-                    (js-navigate-to "/user/edit")
-                    (do
-                      (swap! state assoc :message {:class "alert-danger" :content (:message data)})
-                      ))
-                  )})))
-
-
+     (path-for "/obpv1/user/edit")
+     {:params  (-> params
+                   (dissoc :private)
+                   (dissoc :password?)
+                   (dissoc :activated)
+                   (dissoc :role))
+      :handler (fn [data]
+                 (if (= (:status data) "success")
+                   (js-navigate-to "/user/edit")
+                   (do
+                     (swap! state assoc :message {:class "alert-danger" :content (:message data)}))))})))
 
 (defn user-connect-config []
   (let [connections (first (plugin-fun (session/get :plugins) "block" "userconnectionconfig"))]
@@ -49,23 +44,23 @@
     [:div {:class "panel" :id "edit-user"}
      (if message
        [:div {:class (str "alert " (:class message))}
-       (translate-text (:content message)) ])
+        (translate-text (:content message))])
      [:div {:class "panel-body"}
       [:form.form-horizontal
        [:div.form-group
-        [:label {:for "languages"
-                 :class "col-md-3"}
+        [:span._label {;:for "languages"
+                       :class "col-md-3"}
          (t :user/Language)]
         [:div.col-md-9
          [input/radio-button-selector "language" (:languages @state) language-atom]]]
 
        [:div.form-group
-        [:label {:for "input-first-name" :class "col-md-3"} (t :user/Firstname)]
+        [:label {:for "input-first_name" :class "col-md-3"} (t :user/Firstname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "first_name" :atom first-name-atom}]]]
 
        [:div.form-group
-        [:label {:for "input-last-name" :class "col-md-3"} (t :user/Lastname)]
+        [:label {:for "input-last_name" :class "col-md-3"} (t :user/Lastname)]
         [:div {:class "col-md-9"}
          [input/text-field {:name "last_name" :atom last-name-atom}]]]
 
@@ -77,37 +72,36 @@
          [input/country-selector country-atom]]]
        (if (:email-notifications @state)
          [:div.form-group
-          [:label {:for   "input-email-notifications"
-                   :class "col-md-3"}
+          [:span._label {;:for   "input-email-notifications"
+                         :class "col-md-3"}
            (t :user/Emailnotifications)]
           [:div.col-md-9
-           [:label
+           [:label {:for "input-email-notifications"}
             [:input {:name      "visibility"
                      :type      "checkbox"
                      :on-change #(reset! email-notifications-atom (if @email-notifications-atom false true)) ;#(toggle-visibility visibility-atom)
-                     :checked   @email-notifications-atom}] (str " ") (if @email-notifications-atom  (t :user/Active) (t :user/Deactive))]
+                     :checked   @email-notifications-atom
+                     :id "input-email-notifications"}]
+            (str " ") (if @email-notifications-atom  (t :user/Active) (t :user/Deactive))]
            (if @email-notifications-atom
              [:div (t :user/Emailnotificationsactivetip)]
-             [:div (t :user/Emailnotificationsdeactivetip)])
-           ]])
+             [:div (t :user/Emailnotificationsdeactivetip)])]])
+
        (user-connect-config)
 
        (into [:div]
-         (for [f (plugin-fun (session/get :plugins) "block" "user_edit")]
-           [f]))
+             (for [f (plugin-fun (session/get :plugins) "block" "user_edit")]
+               [f]))
 
        [:div.row
         [:div.col-xs-9.col-xs-offset-3
          [:button {:class "btn btn-primary"
                    :disabled (if-not (and (input/first-name-valid? @first-name-atom)
                                           (input/last-name-valid? @last-name-atom)
-                                          (input/country-valid? @country-atom)
-
-                                          )
-                               "disabled")
+                                          (input/country-valid? @country-atom)) "disabled")
                    :on-click #(do
-                               (.preventDefault %)
-                               (save-user-info state))}
+                                (.preventDefault %)
+                                (save-user-info state))}
           (t :core/Save)]]]]]]))
 
 (def initial-state
@@ -115,9 +109,9 @@
 
 (defn init-data [state]
   (ajax/GET
-    (path-for "/obpv1/user/edit" true)
-    {:handler (fn [data]
-                (reset! state (deep-merge initial-state (update-in data [:user] dissoc :id))))}))
+   (path-for "/obpv1/user/edit" true)
+   {:handler (fn [data]
+               (reset! state (deep-merge initial-state (update-in data [:user] dissoc :id))))}))
 
 (defn handler [site-navi]
   (let [state (atom {:user {:role ""

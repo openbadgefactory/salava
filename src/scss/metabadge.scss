@@ -76,6 +76,7 @@ body #metabadge, body.anon #metabadge {
           border: none;
           border-right: 1px dashed #DDD;
           border-color: #CCC5C8;
+          display: table-cell;
 
           div {
             .image {
@@ -108,6 +109,7 @@ body #metabadge, body.anon #metabadge {
           vertical-align: inherit;
           padding: 0px 5px;
           border: none;
+          display: table-cell;
 
           .img-circle {
             width: 40px;
@@ -246,7 +248,7 @@ body #metabadge, body.anon #metabadge {
   .badge-modal-navi .fa-puzzle-piece {
     color: $link-color;
   }
-  label {
+  label, ._label {
     margin-right: 5px;
   }
   .progress {

@@ -35,7 +35,7 @@
 (defn- init-more [state]
   (when (:owner? @state)
     (ajax/GET
-     (path-for (str "/obpv1/badge/endorsement/pending_count/" (:id @state)))
+     (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
      {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                  (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
 
@@ -61,7 +61,7 @@
                                          :selected-users []
                                          :request-mode false))
                     (init-more state)
-                    (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data)))))}
+                    (if (or (:user-logged-in @state) (:owner? @state))  (init-badge-connection state (:badge_id data)))))}
     (fn [] (swap! state assoc :permission "error"))))
 
   ([state id tab-no data]
@@ -75,7 +75,7 @@
                             :selected-users []
                             :request-mode false))
        (init-more state)
-       (if (:user-logged-in @state)  (init-badge-connection state (:badge_id data))))))
+       (if (or (:user-logged-in @state) (:owner? @state)) (init-badge-connection state (:badge_id data))))))
 
 (defn show-settings-dialog [badge-id state init-data context]
   (ajax/GET
@@ -134,14 +134,14 @@
 (defn issuer-modal-link
   ([issuer-id name]
    [:div {:class "issuer-data clearfix"}
-    [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+    [:span._label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
     [:div {:class "issuer-links pull-label-left inline"}
      [:a {:href "#"
           :on-click #(do (.preventDefault %)
                          (mo/open-modal [:badge :issuer] issuer-id {}))} name]]])
   ([issuer-id name lang]
    [:div {:class "issuer-data clearfix"}
-    [:label {:class "pull-label-left"}  (translate lang :badge/Issuedby) ":"]
+    [:span._label {:class "pull-label-left"}  (translate lang :badge/Issuedby) ":"]
     [:div {:class "issuer-links pull-label-left inline"}
      [:a {:href "#"
           :on-click #(do (.preventDefault %)
@@ -152,7 +152,7 @@
   ([creator-id name]
    (when (and creator-id name)
      [:div {:class "issuer-data clearfix"}
-      [:label.pull-left (t :badge/Createdby) ":"]
+      [:span._label.pull-left (t :badge/Createdby) ":"]
       [:div {:class "issuer-links pull-label-left inline"}
        [:a {:href "#"
             :on-click #(do (.preventDefault %)
@@ -160,7 +160,7 @@
   ([creator-id name lang]
    (when (and creator-id name)
      [:div {:class "issuer-data clearfix"}
-      [:label.pull-left (translate lang :badge/Createdby) ":"]
+      [:span._label.pull-left (translate lang :badge/Createdby) ":"]
       [:div {:class "issuer-links pull-label-left inline"}
        [:a {:href "#"
             :on-click #(do (.preventDefault %)
@@ -235,7 +235,7 @@
     [:div {:id "badge-info" :class "row flip"}
      [:div {:class "col-md-3"}
       [:div.badge-image
-       [:img {:src (str "/" image_file)}]]
+       [:img {:src (str "/" image_file) :alt name}]]
       [below-image-block state endorsement_count]]
      [:div {:class "col-md-9 badge-info view-tab" :style {:display "block"}}
       [:div.row
@@ -243,21 +243,21 @@
         (if revoked
           [:div.revoked (t :badge/Revoked)])
         (if expired?
-          [:div.expired [:label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
+          [:div.expired [:span._label (str (t :badge/Expiredon) ":")] (date-from-unix-time (* 1000 expires_on))])
         [:h1.uppercase-header name]
         (if (< 1 (count (:content @state)))
-          [:div.inline [:label (t :core/Languages) ": "] (content-language-selector selected-language (:content @state))])
+          [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language (:content @state))])
         (issuer-modal-link issuer_content_id issuer_content_name)
         (creator-modal-link creator_content_id creator_name)
         (if (and issued_on (> issued_on 0))
-          [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+          [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
         (if (and expires_on (not expired?))
-          [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " (" (num-days-left expires_on) " " (t :badge/days) ")")])
+          [:div [:span._label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " (" (num-days-left expires_on) " " (t :badge/days) ")")])
 
         (if (pos? @show-recipient-name-atom)
           (if (and user-logged-in? (not owner?))
-            [:div [:label (t :badge/Recipient) ": "]  [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
-            [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name]))
+            [:div [:span._label (t :badge/Recipient) ": "]  [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:profile :view] {:user-id owner}))} #_{:href (path-for (str "/profile/" owner))} first_name " " last_name]]
+            [:div [:span._label (t :badge/Recipient) ": "]  first_name " " last_name]))
 
         ;metabadges
         (when owner?

@@ -15,26 +15,27 @@
              :placeholder placeholder
              :on-change   #(do
                              (reset! atom (.-target.value %))
-                             (if error-message-atom(reset! error-message-atom (:message "")))
-                             )
+                             (if error-message-atom (reset! error-message-atom (:message ""))))
+
              :value       @atom}]))
 
-
-
 (defn radio-button-selector [name values atom]
-  (into [:div]
-        (map (fn [value]
-               [:label.radio-inline
-                [:input {:type      "radio"
-                         :name      name
-                         :value     value
-                         :default-checked (= @atom value)
-                         :on-change  #(reset! atom value)}]
-                (t (keyword (str "core/" value)))]) values)))
+  [:div
+   (into [:fieldset
+          [:legend {:style {:display "none"}} ""]]
+         (map (fn [value]
+                [:label.radio-inline {:for (str "language-" value)}
+                 [:input {:type      "radio"
+                          :name      name
+                          :value     value
+                          :default-checked (= @atom value)
+                          :on-change  #(reset! atom value)
+                          :id (str "language-" value)}]
 
+                 (t (keyword (str "core/" value)))]) values))])
 
 (defn select-selector [values atom init-text]
-  (into [:select {:id        "input-country"
+  (into [:select {:id        "input-language"
                   :class     "form-control"
                   :value     @atom
                   :on-change #(reset! atom (.-target.value %))}
@@ -59,23 +60,23 @@
 
 (defn email-whitelist [values email-atom]
   (let [current-value (atom (first values))
-        text-atom (atom "")
-        ]
+        text-atom (atom "")]
+
     (fn []
       [:div.input-group
        [:input {:class       "form-control"
                 :id          (str "input-emailwhitelist")
                 :name        "email-text"
                 :type        "text"
-             
+
                 :on-change   #(do
                                 (reset! text-atom (.-target.value %))
-                                (reset! email-atom (str @text-atom @current-value))
+                                (reset! email-atom (str @text-atom @current-value)))
                                ; (if error-message-atom(reset! error-message-atom (:message "")))
-                                )
+
                 :value       @text-atom}]
        (if (= 1 (count values))
-         [:span {:class "input-group-addon"}  @current-value]  
+         [:span {:class "input-group-addon"}  @current-value]
          [:div {:class "input-group-btn"}
           [:button {:type "button" :class "btn btn-default dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expended "false"} @current-value  [:span.caret]]
           [:ul {:class "dropdown-menu dropdown-menu-right"}

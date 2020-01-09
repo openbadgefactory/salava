@@ -92,7 +92,7 @@
                                                                                                :block_order s/Int
                                                                                                :badges [(-> Badge
                                                                                                             (select-keys [:id :name :criteria_content :criteria_url :description
-                                                                                                                          :image_file :issued_on :expires_on :visibility :mtime :status :badge_id])
+                                                                                                                          :image_file :issued_on :expires_on :visibility :mtime :status :badge_id :issuer_content_id :issuer_content_name :creator_content_id :creator_name])
                                                                                                             (assoc :tag (s/maybe s/Str)))])
                                                           #(= (:type %) "showcase") (assoc ShowcaseBlock :id s/Int
                                                                                                          :block_order s/Int

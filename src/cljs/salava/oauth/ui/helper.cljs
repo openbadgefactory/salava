@@ -68,10 +68,10 @@
        [:div.btn-google-logged-in
         [:div.content-wrapper
          [:div.icon
-          [:img {:src (str "/img/google_login.png")}]]
+          [:img {:src (str "/img/google_login.png") :alt "Google logo"}]]
          [:span.content (t :oauth/Unlink)]]]
        [:div.btn.btn-google
         [:span.icon
-         [:img {:src (str "/img/google_login.png")}]]
+         [:img {:src (str "/img/google_login.png") :alt "Google logo"}]]
         [:div.text
          (if register? (t :oauth/RegisterwithGoogle) (t :oauth/LoginwithGoogle))]])])))

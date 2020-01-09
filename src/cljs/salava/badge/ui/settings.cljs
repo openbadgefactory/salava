@@ -33,24 +33,24 @@
 
 (defn export-to-pdf [user-badge-id]
   (let [lang-option "all"
-        badge-url (str "/obpv1/badge/export-to-pdf?badges[0]=" user-badge-id "&lang-option=" lang-option)]
+        badge-url (str "/obpv1/badge/export-to-pdf?id=" user-badge-id "&lang-option=" lang-option)]
     (js-navigate-to badge-url)))
 
 (defn update-endorsement-count [id state]
   (ajax/GET
-   (path-for (str "/obpv1/badge/user_endorsement/count/" id))
-   {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:badge-settings :user_endorsement_count]) user_endorsement_count))}))
-
-(defn update-settings [id state]
-  (ajax/GET
    (path-for (str "/obpv1/badge/settings/" id) true)
    {:handler (fn [data]
-               (swap! state assoc :badge-settings (assoc data :new-tag "")))
-    :finally #(update-endorsement-count id state)}))
+               (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
+
+(defn update-settings [badge-id state]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/settings/" badge-id) true)
+   {:handler (fn [data]
+               (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
 
 #_(defn save-settings [state reload-fn]
     (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
-      (ajax/POST
+      (ajax/PUT
        (path-for (str "/obpv1/badge/save_settings/" id))
        {:params  {:visibility   visibility
                   :tags         tags
@@ -59,17 +59,13 @@
         :finally (fn [] (when reload-fn (reload-fn)))})))
 
 (defn save-settings [state reload-fn]
-  (let [{:keys [id visibility tags rating]} (:badge-settings @state)
-        {:keys [show_recipient_name]} @state]
+  (let [{:keys [id visibility tags rating show_recipient_name]} (:badge-settings @state)]
     (ajax/PUT
      (path-for (str "/obpv1/badge/settings/" id))
      {:params  {:settings {:visibility   visibility
                            :rating       (if (pos? rating) rating nil)
-                           :show_recipient_name (case show_recipient_name
-                                                  true 1
-                                                  false 0
-                                                  1)}
-                :tags         tags}
+                           :show_recipient_name show_recipient_name} ;@(cursor state [:badge-settings :show_recipient_name])}
+                :tags tags}
       :handler (fn [] (update-settings id state))
       :finally (fn [] (when reload-fn (reload-fn)))})))
 
@@ -82,20 +78,21 @@
 
 (defn toggle-recipient-name [state]
   (let [show-recipient-name-atom (cursor state [:show_recipient_name])
-        new-value (not @show-recipient-name-atom)]
-    (reset! show-recipient-name-atom new-value)
-    (save-settings state nil)))
+        _ (cursor state [:badge-settings :show_recipient_name])
+        new-value (if (pos? @show-recipient-name-atom) 0 1)]
+    (reset! _ new-value)
+    (save-settings state (fn [] (reset! show-recipient-name-atom new-value)))))
 
-#_(defn toggle-evidence [state]
-    (let [id (get-in @state [:badge-settings :id])
-          new-value (not (get-in @state [:badge-settings :show_evidence]))]
-      (ajax/POST
-       (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
-       {:params {:show_evidence new-value}
-        :handler (fn [] (do
+(defn toggle-evidence [state]
+  (let [id (get-in @state [:badge-settings :id])
+        new-value (not (get-in @state [:badge-settings :show_evidence]))]
+    (ajax/POST
+     (path-for (str "/obpv1/badge/toggle_evidences_all/" id))
+     {:params {:show_evidence new-value}
+      :handler (fn [] (do
 
-                          (swap! state assoc-in [:badge-settings :show_evidence] new-value)
-                          (swap! state assoc :show_evidence new-value)))})))
+                        (swap! state assoc-in [:badge-settings :show_evidence] new-value)
+                        (swap! state assoc :show_evidence new-value)))})))
 
 (defn toggle-receive-notifications [badge_id notifications-atom]
   (let [req-path (if @notifications-atom
@@ -148,7 +145,7 @@
           (t :badge/Private)]]]]]])
 
 (defn delete-tab-content [{:keys [name image_file]} state]
-  [:div {:id "badge-settings" :class "row flip"}
+  [:div.row.flip ;{#_:id #_"badge-settings" :class "row flip"}
    [:div {:class "col-md-3 badge-image modal-left"}
     [:img {:src (str "/" image_file) :alt name}]]
    [:div {:class "col-md-9 delete-confirm delete-tab"}
@@ -221,6 +218,7 @@
 
                                                   [:div.form-group
                                                    [:fieldset {:class "col-md-9 checkbox"}
+                                                    [:legend.md-9 ""]
                                                     [:div.col-md-12 [:label {:for "show-name"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "show-name"
@@ -228,6 +226,7 @@
                                                                               :checked   @show-recipient-name-atom}]
                                                                      (t :badge/Showyourname)]]]] [:div.form-group
                                                                                                   [:fieldset {:class "col-md-9 checkbox"}
+                                                                                                   [:legend.col-md-9 ""]
                                                                                                    [:div.col-md-12 [:label {:for "receive-notifications"}
                                                                                                                     [:input {:type      "checkbox"
                                                                                                                              :id        "receive-notifications"
@@ -264,7 +263,7 @@
 
 (defn cert-block [user-badge-id state]
   [:div
-   [:label.sub-heading (t :badge/Downloadpdf)]
+   [:span._label.sub-heading (t :badge/Downloadpdf)]
    (if-let [cert-uri (some-> @state :cert :uri)]
      [:div
       #_[:hr]
@@ -304,7 +303,7 @@
     (fn []
       [:div {:id "badge-settings" :class "row flip"}
        [:div {:class "col-md-3 badge-image modal-left"}
-        [:img {:src (str "/" image_file) :alt name}]]
+        [:img {:src (str "/" image_file) :alt ""}]]
        [:div {:class "col-md-9 settings-content download-tab"}
         [cert-block user-badge-id cert-state]
         [:hr]

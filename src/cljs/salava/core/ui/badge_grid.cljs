@@ -92,7 +92,7 @@
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
-                                                      :alt name}]])
+                                                      :alt ""}]])
                                   [:div.media-body
                                    [:div.media-heading
                                     [:p.heading-link name]]
@@ -113,7 +113,7 @@
                                   (if image_file
                                     [:div.media-left
                                      [:img.badge-img {:src (str "/" image_file)
-                                                      :alt name}]])
+                                                      :alt ""}]])
                                   [:div.media-body {:style {:position "relative"}}
                                    (when (pos? notification-count) [:span.badge.grid-element-info notification-count])
                                    [:div.media-heading
@@ -134,7 +134,7 @@
 
 
                                    [:div.media-left
-                                    (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                    (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                     [:div.media-body
                                      [:div.media-heading name]
                                      [:div.media-issuer [:p issuer_content_name]]]]]]]
@@ -147,7 +147,7 @@
                                    (if image_file
                                      [:div.media-left
                                       [:img {:src (str "/" image_file)
-                                             :alt name}]])
+                                             :alt (str (t :badge/Badge) " " name)}]])
                                    [:div.media-body
                                     [:div.media-heading
                                      [:p.heading-link name]]
@@ -187,7 +187,7 @@
                                    [:div.media-content
                                     [badge-icons {:endorsement-count endorsementscount :meta_badge meta_badge :meta_badge_req meta_badge_req :visibility visibility :expires_on expires_on}]
                                     [:div.media-left
-                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                     (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                      [:div.media-body
                                       [:div.media-heading name]
                                       [:div.media-issuer [:p issuer_content_name]]]]]]]
@@ -200,33 +200,38 @@
                                    [:div.media-content
 
                                     [:div.media-left
-                                     (if image_file  [:img {:src (str "/" image_file) :alt name}])
+                                     (if image_file  [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}])
                                      [:div.media-body
                                       [:div.media-heading name]]]]]
                                   [:div.swap-button {:title (t :page/Replacebadge)}
                                    [:a {:href "#" :on-click (fn []
                                                              (let [index (.indexOf (mapv :id (:badges @state)) id)
                                                                    new-field (atom {:type "swap" :index index :badges (:badges @state) :function (:swap! init-data)})]
-                                                              (mo/open-modal [:badge :my] {:type "pickable" :block-atom state :new-field-atom new-field})))}
+                                                              (mo/open-modal [:badge :my] {:type "pickable" :block-atom state :new-field-atom new-field})))
+                                        :aria-label (t :page/Replacebadge)}
                                     [:i.fa.fa-exchange]]]
                                   (when-not (= id (last (mapv :id (:badges @state))))
                                    [:div.move-right {:title (t :page/Moveright)}
                                                     [:a {:href "#" :on-click (fn []
                                                                               (let [index (.indexOf (mapv :id (:badges @state)) id)]
-                                                                               (f/move-field :down (cursor state [:badges]) index)))}
+                                                                               (f/move-field :down (cursor state [:badges]) index)))
+                                                         :aria-label (t :page/Moveright)}
                                                         [:i.fa.fa-chevron-right]]])
                                   (when-not (= id (first (mapv :id (:badges @state))))
                                    [:div.move-left {:title (t :page/Moveleft)}
                                                [:a {:href "#" :on-click (fn []
                                                                          (let [index (.indexOf (mapv :id (:badges @state)) id)]
-                                                                          (f/move-field :up (cursor state [:badges]) index)))}
+                                                                          (f/move-field :up (cursor state [:badges]) index)))
+                                                    :aria-label (t :page/Moveleft)}
                                                    [:i.fa.fa-chevron-left]]])
+
 
                                   [:div.delete-button {:title (t :badge/Delete)}
                                    [:a {:href "#" :on-click #(do
                                                                (.preventDefault %)
                                                                (let [block-atom @state]
-                                                                ((:delete! init-data) id (:badges block-atom))))}
+                                                                ((:delete! init-data) id (:badges block-atom))))
+                                        :aria-label (t :badge/Delete)}
 
 
                                     [:i.fa.fa-trash]]]]
@@ -235,7 +240,7 @@
                                     [:div.media-content
                                      (if image_file
                                       [:div.media-left
-                                       [:img {:src (str "/" image_file)}]])
+                                       [:img {:src (str "/" image_file) :alt (str (t :badge/Badge) " " name)}]])
                                      [:div.media-body
                                       [:div.media-heading
                                        [:p.heading-link

@@ -22,120 +22,120 @@
 
 (defn route-def [ctx]
   (routes
-    (context "/badge" []
-             (layout/main ctx "/")
-             (layout/main ctx "/mybadges")
-             (layout/main-meta ctx "/info/:id" :badge)
-             (layout/main-meta ctx "/info/:id/embed" :badge)
-             (layout/main-meta ctx "/info/:id/pic/embed" :badge)
-             (layout/main-meta ctx "/info/:id/full/embed" :badge)
-             (layout/main ctx "/import")
-             (layout/main ctx "/receive/:id")
-             (layout/main ctx "/application")
-             (layout/main ctx "/user/endorsements"))
+   (context "/badge" []
+            (layout/main ctx "/")
+            (layout/main ctx "/mybadges")
+            (layout/main-meta ctx "/info/:id" :badge)
+            (layout/main-meta ctx "/info/:id/embed" :badge)
+            (layout/main-meta ctx "/info/:id/pic/embed" :badge)
+            (layout/main-meta ctx "/info/:id/full/embed" :badge)
+            (layout/main ctx "/import")
+            (layout/main ctx "/receive/:id")
+            (layout/main ctx "/application")
+            (layout/main ctx "/user/endorsements"))
 
-    (context "/obpv1/p/badge" []
-             :tags ["badge"]
+   (context "/obpv1/p/badge" []
+            :tags ["badge"]
 
-             (GET "/" []
-                  :return schemas/user-badges-p
-                  :summary "Get the badges of a current user"
-                  :auth-rules access/signed
-                  :current-user current-user
-                  (ok (b/user-badges-all-p ctx (:id current-user))))
+            (GET "/" []
+                 :return schemas/user-badges-p
+                 :summary "Get the badges of a current user"
+                 :auth-rules access/signed
+                 :current-user current-user
+                 (ok (b/user-badges-all-p ctx (:id current-user))))
 
-             (GET "/info/:user-badge-id" []
-                  :return schemas/user-badge-content-p
-                  :path-params [user-badge-id :- Long]
-                  :summary "Get badge content"
-                  :current-user current-user
-                  (let [user-id (:id current-user)
-                        badge (b/get-badge-p ctx user-badge-id user-id)
-                        badge-owner-id (:owner badge)
-                        visibility (:visibility badge)
-                        owner? (= user-id badge-owner-id)]
-                    (if (or (and user-id badge-owner-id owner?)
-                            (= visibility "public")
-                            (and user-id
-                                 (= visibility "internal")))
-                      (do
-                        (if (and badge (not owner?))
-                          (b/badge-viewed ctx user-badge-id user-id))
-                        (ok badge))
-                      (if (and (not user-id) (= visibility "internal"))
-                        (unauthorized)
-                        (not-found))))))
+            (GET "/info/:user-badge-id" []
+                 :return schemas/user-badge-content-p
+                 :path-params [user-badge-id :- Long]
+                 :summary "Get badge content"
+                 :current-user current-user
+                 (let [user-id (:id current-user)
+                       badge (b/get-badge-p ctx user-badge-id user-id)
+                       badge-owner-id (:owner badge)
+                       visibility (:visibility badge)
+                       owner? (= user-id badge-owner-id)]
+                   (if (or (and user-id badge-owner-id owner?)
+                           (= visibility "public")
+                           (and user-id
+                                (= visibility "internal")))
+                     (do
+                       (if (and badge (not owner?))
+                         (b/badge-viewed ctx user-badge-id user-id))
+                       (ok badge))
+                     (if (and (not user-id) (= visibility "internal"))
+                       (unauthorized)
+                       (not-found))))))
 
-    (context "/obpv1/badge" []
-             :tags  ["badge"]
-             (GET "/" []
-                  :return schemas/user-badges
-                  :summary "Get the badges of a current user. Includes additional information used internally"
-                  :auth-rules access/signed
-                  :current-user current-user
-                  (ok (b/user-badges-all ctx (:id current-user))))
+   (context "/obpv1/badge" []
+            :tags  ["badge"]
+            (GET "/" []
+                 :return schemas/user-badges
+                 :summary "Get the badges of a current user. Includes additional information used internally"
+                 :auth-rules access/signed
+                 :current-user current-user
+                 (ok (b/user-badges-all ctx (:id current-user))))
 
-             (GET "/info/:user-badge-id" []
-                  :return schemas/user-badge-content
-                  :path-params [user-badge-id :- Long]
-                  :summary "Get badge content. Includes additional information used internally"
-                  :current-user current-user
-                  (let [user-id (:id current-user)
-                        badge (b/get-badge ctx user-badge-id user-id)
-                        badge-owner-id (:owner badge)
-                        visibility (:visibility badge)
-                        owner? (= user-id badge-owner-id)]
-                    (if (or (and user-id badge-owner-id owner?)
-                            (= visibility "public")
-                            (and user-id
-                                 (= visibility "internal")))
-                      (do
-                        (if (and badge (not owner?))
-                          (b/badge-viewed ctx user-badge-id user-id))
-                        (ok (assoc badge :owner? owner?
-                              :user-logged-in? (boolean user-id))))
-                      (if (and (not user-id) (= visibility "internal"))
-                        (unauthorized)
-                        (not-found)))))
+            (GET "/info/:user-badge-id" []
+                 :return schemas/user-badge-content
+                 :path-params [user-badge-id :- Long]
+                 :summary "Get badge content. Includes additional information used internally"
+                 :current-user current-user
+                 (let [user-id (:id current-user)
+                       badge (b/get-badge ctx user-badge-id user-id)
+                       badge-owner-id (:owner badge)
+                       visibility (:visibility badge)
+                       owner? (= user-id badge-owner-id)]
+                   (if (or (and user-id badge-owner-id owner?)
+                           (= visibility "public")
+                           (and user-id
+                                (= visibility "internal")))
+                     (do
+                       (if (and badge (not owner?))
+                         (b/badge-viewed ctx user-badge-id user-id))
+                       (ok (assoc badge :owner? owner?
+                                  :user-logged-in? (boolean user-id))))
+                     (if (and (not user-id) (= visibility "internal"))
+                       (unauthorized)
+                       (not-found)))))
 
-             (GET "/verify/:user-badge-id" []
-                  :return schemas/verify-badge
-                  :path-params [user-badge-id :- Long]
-                  :summary "verify badge"
-                  :current-user current-user
-                  (ok (v/verify-badge ctx user-badge-id)))
+            (GET "/verify/:user-badge-id" []
+                 :return schemas/verify-badge
+                 :path-params [user-badge-id :- Long]
+                 :summary "verify badge"
+                 :current-user current-user
+                 (ok (v/verify-badge ctx user-badge-id)))
 
-             (GET "/pending/:badgeid" req
-                  :no-doc true
-                  :path-params [badgeid :- Long]
-                  :summary "Get pending badge content"
-                  (if (= badgeid (get-in req [:session :pending :user-badge-id]))
-                    (ok (assoc (->> badgeid
-                                    (b/fetch-badge ctx)
-                                    (b/badge-issued-and-verified-by-obf ctx))
-                          :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))))
-                    (not-found)))
+            (GET "/pending/:badgeid" req
+                 :no-doc true
+                 :path-params [badgeid :- Long]
+                 :summary "Get pending badge content"
+                 (if (= badgeid (get-in req [:session :pending :user-badge-id]))
+                   (ok (assoc (->> badgeid
+                                   (b/fetch-badge ctx)
+                                   (b/badge-issued-and-verified-by-obf ctx))
+                              :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))))
+                   (not-found)))
 
-             (GET "/issuer/:issuerid" []
-                  :return schemas/IssuerContent
-                  :path-params [issuerid :- String]
-                  :summary "Get badge issuer details"
-                  :current-user current-user
-                  (ok (b/get-issuer-endorsements ctx issuerid)))
+            (GET "/issuer/:issuerid" []
+                 :return schemas/IssuerContent
+                 :path-params [issuerid :- String]
+                 :summary "Get badge issuer details"
+                 :current-user current-user
+                 (ok (b/get-issuer-endorsements ctx issuerid)))
 
-             (GET "/creator/:creatorid" []
-                  :return schemas/CreatorContent
-                  :path-params [creatorid :- String]
-                  :summary "Get badge creator details"
-                  :current-user current-user
-                  (ok (b/get-creator ctx creatorid)))
+            (GET "/creator/:creatorid" []
+                 :return schemas/CreatorContent
+                 :path-params [creatorid :- String]
+                 :summary "Get badge creator details"
+                 :current-user current-user
+                 (ok (b/get-creator ctx creatorid)))
 
-             (GET "/endorsement/:badgeid" []
-                  :return schemas/badge-endorsements
-                  :path-params [badgeid :- String]
-                  :summary "Get badge endorsements"
-                  :current-user current-user
-                  (ok {:endorsements (b/get-endorsements ctx badgeid)}))
+            (GET "/endorsement/:badgeid" []
+                 :return schemas/badge-endorsements
+                 :path-params [badgeid :- String]
+                 :summary "Get badge endorsements"
+                 :current-user current-user
+                 (ok {:endorsements (b/get-endorsements ctx badgeid)}))
 
             (GET "/export-to-pdf" [id lang-option]
                  :no-doc true
@@ -146,7 +146,7 @@
                        ;h (if-not (empty? (rest badge-ids)) (str "attachment; filename=\"badge-collection_"lang-option".pdf\"") (str "attachment; filename=\"badge_"(first badge-ids)"_" lang-option ".pdf\""))]
                    (-> (io/piped-input-stream (pdf/generatePDF ctx (:id current-user) id lang-option))
                        ok
-                       (header "Content-Disposition" (str "attachment; filename=\"badge_"id "_" lang-option ".pdf\""))
+                       (header "Content-Disposition" (str "attachment; filename=\"badge_" id "_" lang-option ".pdf\""))
                        (header "Content-Type" "application/pdf"))))
 
             (GET "/info-embed/:user-badge-id" []
@@ -164,7 +164,7 @@
                        (if badge
                          (b/badge-viewed ctx badgeid user-id))
                        (ok (select-keys badge [:content :id]) #_(assoc badge :owner? owner?
-                                                                  :user-logged-in? (boolean user-id))))
+                                                                       :user-logged-in? (boolean user-id))))
                      (not-found))))
 
             (GET "/settings/:user-badge-id" []
@@ -268,15 +268,15 @@
                      (forbidden)
                      (ok (i/badges-to-import ctx (:id current-user)))))
 
-             #_(POST "/import_selected" []
+            #_(POST "/import_selected" []
                      ;:return {:errors (s/maybe s/Str)
-                     :body-params [keys :- [s/Str]]
-                     :summary "Import selected badges from Mozilla Backpack"
-                     :auth-rules access/authenticated
-                     :current-user current-user
-                     (if (:private current-user)
-                       (forbidden)
-                       (ok (i/do-import ctx (:id current-user) keys))))
+                    :body-params [keys :- [s/Str]]
+                    :summary "Import selected badges from Mozilla Backpack"
+                    :auth-rules access/authenticated
+                    :current-user current-user
+                    (if (:private current-user)
+                      (forbidden)
+                      (ok (i/do-import ctx (:id current-user) keys))))
 
             (POST "/upload" []
                   :return schemas/Upload
@@ -310,14 +310,14 @@
                     :current-user current-user
                     (ok (b/save-badge-settings! ctx badgeid (:id current-user) visibility rating tags)))
 
-            #_(POST "/save_rating/:badgeid" []
-                    :return {:status (s/enum "success" "error")}
-                    :path-params [badgeid :- Long]
-                    :body-params [rating :- (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))]
-                    :summary "Save badge rating"
-                    :auth-rules access/authenticated
-                    :current-user current-user
-                    (ok (b/save-badge-rating! ctx badgeid (:id current-user) rating)))
+            (POST "/save_rating/:badgeid" []
+                  :return {:status (s/enum "success" "error")}
+                  :path-params [badgeid :- Long]
+                  :body-params [rating :- (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))]
+                  :summary "Save badge rating"
+                  :auth-rules access/authenticated
+                  :current-user current-user
+                  (ok (b/save-badge-rating! ctx badgeid (:id current-user) rating)))
 
             (DELETE "/:badgeid" []
                     :return {:status (s/enum "success" "error") :message (s/maybe s/Str)}
@@ -325,176 +325,170 @@
                     :summary "Delete badge"
                     :auth-rules access/authenticated
                     :current-user current-user
-                    (ok (b/delete-badge! ctx badgeid (:id current-user)))))
+                    (ok (b/delete-badge! ctx badgeid (:id current-user))))) (context "/obpv1/badge/evidence" []
+                                                                                     :tags  ["badge_evidence"]
 
+                                                                                     (GET "/:user-badge-id" []
+                                                                                          :return schemas/badge-evidence
+                                                                                          :path-params [user-badge-id :- Long]
+                                                                                          :summary "Get badge evidence"
+                                                                                          :current-user current-user
+                                                                                          (ok {:evidence (evidence/badge-evidence ctx user-badge-id (:id current-user))}))
 
-    (context "/obpv1/badge/evidence" []
-             :tags  ["badge_evidence"]
+                                                                                     (POST "/:user-badge-id" []
+                                                                                           :return {:status (s/enum "success" "error")}
+                                                                                           :path-params [user-badge-id :- Long]
+                                                                                           :body-params [evidence :- schemas/save-badge-evidence]
+                                                                                           :summary "Save badge evidence"
+                                                                                           :auth-rules access/authenticated
+                                                                                           :current-user current-user
+                                                                                           (ok (evidence/save-badge-evidence ctx (:id current-user) user-badge-id evidence)))
 
-            (GET "/:user-badge-id" []
-                 :return schemas/badge-evidence
-                 :path-params [user-badge-id :- Long]
-                 :summary "Get badge evidence"
-                 :current-user current-user
-                 (ok {:evidence (evidence/badge-evidence ctx user-badge-id (:id current-user))}))
+                                                                                     (POST "/toggle_evidence/:evidenceid" []
+                                                                                           :return {:status (s/enum "success" "error")}
+                                                                                           :path-params [evidenceid :- Long]
+                                                                                           :body-params [hide_evidence :- (s/enum false true)
+                                                                                                         user_badge_id :- Long]
+                                                                                           :summary "Set evidence visibility"
+                                                                                           :auth-rules access/authenticated
+                                                                                           :current-user current-user
+                                                                                           (ok (evidence/toggle-show-evidence! ctx user_badge_id evidenceid hide_evidence (:id current-user))))
 
-            (POST "/:user-badge-id" []
-                  :return {:status (s/enum "success" "error")}
-                  :path-params [user-badge-id :- Long]
-                  :body-params [evidence :- schemas/save-badge-evidence]
-                  :summary "Save badge evidence"
-                  :auth-rules access/authenticated
-                  :current-user current-user
-                  (ok (evidence/save-badge-evidence ctx (:id current-user) user-badge-id evidence)))
+                                                                                     (DELETE "/:user_badge_id/:evidenceid" [user_badge_id]
+                                                                                             :return {:status (s/enum "success" "error")}
+                                                                                             :path-params [evidenceid :- Long
+                                                                                                           user_badge_id :- Long]
+                                                                                             :summary "Delete evidence"
+                                                                                             :auth-rules access/authenticated
+                                                                                             :current-user current-user
+                                                                                             (ok (evidence/delete-evidence! ctx evidenceid user_badge_id (:id current-user))))) (context "/obpv1/badge/user_endorsement" []
+                                                                                                                                                                                         :tags ["badge_user_endorsements"]
 
-           (POST "/toggle_evidence/:evidenceid" []
-                 :return {:status (s/enum "success" "error")}
-                 :path-params [evidenceid :- Long]
-                 :body-params [hide_evidence :- (s/enum false true)
-                               user_badge_id :- Long]
-                 :summary "Set evidence visibility"
-                 :auth-rules access/authenticated
-                 :current-user current-user
-                 (ok (evidence/toggle-show-evidence! ctx user_badge_id evidenceid hide_evidence (:id current-user))))
+                                                                                                                                                                                         (GET "/:user-badge-id" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return endoschemas/user-badge-endorsement
+                                                                                                                                                                                              :path-params [user-badge-id :- Long]
+                                                                                                                                                                                              :summary "Get user badge endorsements"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok {:endorsements (e/user-badge-endorsements ctx user-badge-id true)}))
 
-           (DELETE "/:user_badge_id/:evidenceid" [user_badge_id]
-                   :return {:status (s/enum "success" "error")}
-                   :path-params [evidenceid :- Long
-                                 user_badge_id :- Long]
-                   :summary "Delete evidence"
-                   :auth-rules access/authenticated
-                   :current-user current-user
-                   (ok (evidence/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))))
+                                                                                                                                                                                         (GET "/p/:user-badge-id" []
+                                                                                                                                                                                              :return endoschemas/user-badge-endorsements-p
+                                                                                                                                                                                              :path-params [user-badge-id :- Long]
+                                                                                                                                                                                              :summary "Get user badge endorsements"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok {:endorsements (e/user-badge-endorsements-p ctx user-badge-id)}))
 
+                                                                                                                                                                                         (GET "/count/:user-badge-id" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return {:user_endorsement_count s/Int}
+                                                                                                                                                                                              :path-params [user-badge-id :- Long]
+                                                                                                                                                                                              :summary "Get accepted user badge endorsements count"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok (e/accepted-endorsement-count ctx user-badge-id (:id current-user))))
 
-   (context "/obpv1/badge/user_endorsement" []
-             :tags ["badge_user_endorsements"]
+                                                                                                                                                                                         (GET "/pending_count/:user-badge-id" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return s/Int
+                                                                                                                                                                                              :path-params [user-badge-id :- Long]
+                                                                                                                                                                                              :auth-rules access/authenticated
+                                                                                                                                                                                              :summary "Get user-badge pending endorsement count"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok (e/pending-endorsement-count ctx user-badge-id (:id current-user))))
 
-           (GET "/:user-badge-id" []
-                :no-doc true
-                :return endoschemas/user-badge-endorsement
-                :path-params [user-badge-id :- Long]
-                :summary "Get user badge endorsements"
-                :current-user current-user
-                (ok {:endorsements (e/user-badge-endorsements ctx user-badge-id true)}))
+                                                                                                                                                                                         (GET "/_/pending" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return endoschemas/pending-user-endorsements #_schemas/pending-user-endorsements
+                                                                                                                                                                                              :auth-rules access/authenticated
+                                                                                                                                                                                              :summary "Get pending badge endorsements"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok {:endorsements (e/received-pending-endorsements ctx (:id current-user))}))
 
-           (GET "/p/:user-badge-id" []
-                :return endoschemas/user-badge-endorsements-p
-                :path-params [user-badge-id :- Long]
-                :summary "Get user badge endorsements"
-                :current-user current-user
-                (ok {:endorsements (e/user-badge-endorsements-p ctx user-badge-id)}))
+                                                                                                                                                                                         (GET "/_/all" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return endoschemas/all-endorsements #_schemas/AllEndorsements
+                                                                                                                                                                                              :auth-rules access/signed
+                                                                                                                                                                                              :summary "Get all user's endorsements"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok (e/all-user-endorsements ctx (:id current-user))))
 
-           (GET "/count/:user-badge-id" []
-                :no-doc true
-                :return {:user_endorsement_count s/Int}
-                :path-params [user-badge-id :- Long]
-                :summary "Get accepted user badge endorsements count"
-                :current-user current-user
-                (ok (e/accepted-endorsement-count ctx user-badge-id (:id current-user))))
+                                                                                                                                                                                         (GET "/_p/all" []
+                                                                                                                                                                                              :return endoschemas/all-endorsements-p
+                                                                                                                                                                                              :auth-rules access/signed
+                                                                                                                                                                                              :summary "Get all user's endorsements and endorsement requests"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok (e/all-user-endorsements-p ctx (:id current-user))))
 
-           (GET "/pending_count/:user-badge-id" []
-                :no-doc true
-                :return s/Int
-                :path-params [user-badge-id :- Long]
-                :auth-rules access/authenticated
-                :summary "Get user-badge pending endorsement count"
-                :current-user current-user
-                (ok (e/pending-endorsement-count ctx user-badge-id (:id current-user))))
+                                                                                                                                                                                         (GET "/request/pending" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return endoschemas/pending-requests #_[schemas/EndorsementRequest]
+                                                                                                                                                                                              :auth-rules access/authenticated
+                                                                                                                                                                                              :summary "Get pending badge endorsement requests"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok (e/endorsement-requests-pending ctx (:id current-user))))
 
-           (GET "/_/pending" []
-                :no-doc true
-                :return endoschemas/pending-user-endorsements #_schemas/pending-user-endorsements
-                :auth-rules access/authenticated
-                :summary "Get pending badge endorsements"
-                :current-user current-user
-                (ok {:endorsements (e/received-pending-endorsements ctx (:id current-user))}))
+                                                                                                                                                                                         (GET "/request/pending/:user-badge-id" []
+                                                                                                                                                                                              :no-doc true
+                                                                                                                                                                                              :return endoschemas/pending-sent-requests #_[schemas/EndorsementRequest]
+                                                                                                                                                                                              :auth-rules access/authenticated
+                                                                                                                                                                                              :path-params [user-badge-id :- Long]
+                                                                                                                                                                                              :summary "Return user badge's sent pending requests"
+                                                                                                                                                                                              :current-user current-user
+                                                                                                                                                                                              (ok (e/user-badge-pending-requests ctx user-badge-id (:id current-user))))
 
-           (GET "/_/all" []
-                :no-doc true
-                :return endoschemas/all-endorsements #_schemas/AllEndorsements
-                :auth-rules access/signed
-                :summary "Get all user's endorsements"
-                :current-user current-user
-                (ok (e/all-user-endorsements ctx (:id current-user))))
+                                                                                                                                                                                         (POST "/edit/:endorsement-id" []
+                                                                                                                                                                                               :return {:status (s/enum "success" "error")}
+                                                                                                                                                                                               :path-params [endorsement-id :- Long]
+                                                                                                                                                                                               :body-params [content :- s/Str
+                                                                                                                                                                                                             user_badge_id :- s/Int]
+                                                                                                                                                                                               :summary "Edit endorsement"
+                                                                                                                                                                                               :auth-rules access/authenticated
+                                                                                                                                                                                               :current-user current-user
+                                                                                                                                                                                               (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
 
-          (GET "/_p/all" []
-                :return endoschemas/all-endorsements-p
-                :auth-rules access/signed
-                :summary "Get all user's endorsements and endorsement requests"
-                :current-user current-user
-                (ok (e/all-user-endorsements-p ctx (:id current-user))))
+                                                                                                                                                                                         (POST "/update_status/:endorsement-id" []
+                                                                                                                                                                                               :return {:status (s/enum "success" "error")}
+                                                                                                                                                                                               :path-params [endorsement-id :- Long]
+                                                                                                                                                                                               :body-params [status :- (s/enum "accepted" "declined")
+                                                                                                                                                                                                             user_badge_id :- s/Int]
+                                                                                                                                                                                               :summary "Update endorsement status"
+                                                                                                                                                                                               :auth-rules access/authenticated
+                                                                                                                                                                                               :current-user current-user
+                                                                                                                                                                                               (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
 
-          (GET "/request/pending" []
-               :no-doc true
-               :return endoschemas/pending-requests #_[schemas/EndorsementRequest]
-               :auth-rules access/authenticated
-               :summary "Get pending badge endorsement requests"
-               :current-user current-user
-               (ok (e/endorsement-requests-pending ctx (:id current-user))))
+                                                                                                                                                                                         (POST "/request/:user-badge-id" []
+                                                                                                                                                                                               :return {:status (s/enum "success" "error")}
+                                                                                                                                                                                               :path-params [user-badge-id :- Long]
+                                                                                                                                                                                               :body-params [content :- s/Str
+                                                                                                                                                                                                             user-ids :- [s/Int]]
+                                                                                                                                                                                               :auth-rules access/authenticated
+                                                                                                                                                                                               :summary "Send endorsement request"
+                                                                                                                                                                                               :current-user current-user
+                                                                                                                                                                                               (ok (e/request-endorsement! ctx user-badge-id (:id current-user) user-ids content)))
 
-          (GET "/request/pending/:user-badge-id" []
-               :no-doc true
-               :return endoschemas/pending-sent-requests #_[schemas/EndorsementRequest]
-               :auth-rules access/authenticated
-               :path-params [user-badge-id :- Long]
-               :summary "Return user badge's sent pending requests"
-               :current-user current-user
-               (ok (e/user-badge-pending-requests ctx user-badge-id (:id current-user))))
+                                                                                                                                                                                         (POST "/request/update_status/:request_id" []
+                                                                                                                                                                                               :return {:status (s/enum "success" "error")}
+                                                                                                                                                                                               :path-params [request_id :- Long]
+                                                                                                                                                                                               :body-params [status :- s/Str]
+                                                                                                                                                                                               :auth-rules access/authenticated
+                                                                                                                                                                                               :summary "Update endorsement request status"
+                                                                                                                                                                                               :current-user current-user
+                                                                                                                                                                                               (ok (e/update-request-status! ctx request_id status (:id current-user))))
 
-          (POST "/edit/:endorsement-id" []
-                :return {:status (s/enum "success" "error")}
-                :path-params [endorsement-id :- Long]
-                :body-params [content :- s/Str
-                              user_badge_id :- s/Int]
-                :summary "Edit endorsement"
-                :auth-rules access/authenticated
-                :current-user current-user
-                (ok (e/edit! ctx user_badge_id endorsement-id content (:id current-user))))
+                                                                                                                                                                                         (POST "/:user-badge-id" []
+                                                                                                                                                                                               :return {(s/optional-key :id) s/Int :status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
+                                                                                                                                                                                               :path-params [user-badge-id :- Long]
+                                                                                                                                                                                               :body-params [content :- endoschemas/content]
+                                                                                                                                                                                               :summary "Endorse user badge"
+                                                                                                                                                                                               :auth-rules access/authenticated
+                                                                                                                                                                                               :current-user current-user
+                                                                                                                                                                                               (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
 
-          (POST "/update_status/:endorsement-id" []
-                :return {:status (s/enum "success" "error")}
-                :path-params [endorsement-id :- Long]
-                :body-params [status :- (s/enum "accepted" "declined")
-                              user_badge_id :- s/Int]
-                :summary "Update endorsement status"
-                :auth-rules access/authenticated
-                :current-user current-user
-                (ok (e/update-status! ctx (:id current-user) user_badge_id endorsement-id status)))
-
-          (POST "/request/:user-badge-id" []
-               :return {:status (s/enum "success" "error")}
-               :path-params [user-badge-id :- Long]
-               :body-params [content :- s/Str
-                             user-ids :- [s/Int]]
-               :auth-rules access/authenticated
-               :summary "Send endorsement request"
-               :current-user current-user
-               (ok (e/request-endorsement! ctx user-badge-id (:id current-user) user-ids content)))
-
-          (POST "/request/update_status/:request_id" []
-                :return {:status (s/enum "success" "error")}
-                :path-params [request_id :- Long]
-                :body-params [status :- s/Str]
-                :auth-rules access/authenticated
-                :summary "Update endorsement request status"
-                :current-user current-user
-                (ok (e/update-request-status! ctx request_id status (:id current-user))))
-
-          (POST "/:user-badge-id" []
-                :return {(s/optional-key :id) s/Int :status (s/enum "success" "error") (s/optional-key :message) (s/maybe s/Str)}
-                :path-params [user-badge-id :- Long]
-                :body-params [content :- endoschemas/content]
-                :summary "Endorse user badge"
-                :auth-rules access/authenticated
-                :current-user current-user
-                (ok (e/endorse! ctx user-badge-id (:id current-user) content)))
-
-          (DELETE "/:user-badge-id/:endorsement-id" []
-                  :return {:status (s/enum "success" "error")}
-                  :path-params [user-badge-id :- Long
-                                endorsement-id :- Long]
-                  :summary "Delete endorsement"
-                  :auth-rules access/authenticated
-                  :current-user current-user
-                  (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user)))))))
+                                                                                                                                                                                         (DELETE "/:user-badge-id/:endorsement-id" []
+                                                                                                                                                                                                 :return {:status (s/enum "success" "error")}
+                                                                                                                                                                                                 :path-params [user-badge-id :- Long
+                                                                                                                                                                                                               endorsement-id :- Long]
+                                                                                                                                                                                                 :summary "Delete endorsement"
+                                                                                                                                                                                                 :auth-rules access/authenticated
+                                                                                                                                                                                                 :current-user current-user
+                                                                                                                                                                                                 (ok (e/delete! ctx user-badge-id endorsement-id (:id current-user)))))))
