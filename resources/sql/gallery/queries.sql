@@ -217,14 +217,13 @@ WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expir
     AND ub.gallery_id = :gallery_id
 
 -- name: select-common-badge-counts
-SELECT ub.user_id,
-       COUNT(DISTINCT ub.badge_id) AS c
-       FROM user_badge AS ub
-       WHERE status = 'accepted' AND deleted = 0
-       AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
-       AND badge_id IN (SELECT DISTINCT badge_id  FROM user_badge  WHERE user_id = :user_id  AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
-       AND user_id IN (:user_ids)
-       GROUP BY user_id
+SELECT ub.user_id, COUNT(DISTINCT ub.gallery_id) AS c
+FROM user_badge AS ub
+WHERE status = 'accepted' AND deleted = 0
+    AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP())
+    AND gallery_id IN
+      (SELECT gallery_id FROM user_badge WHERE user_id = :user_id AND status = 'accepted' AND deleted = 0 AND (expires_on IS NULL OR expires_on > UNIX_TIMESTAMP()))
+GROUP BY user_id
 
 -- name: select-badges-recipients-REMOVE
 SELECT badge_id, count(distinct user_id) as recipients FROM user_badge
@@ -304,46 +303,109 @@ GROUP BY ic.name, bc.name
 ORDER BY ctime DESC
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-recipients
+--name: select-gallery-badges-count
+SELECT COUNT(DISTINCT ub.gallery_id) AS total
+FROM user_badge ub
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND ub.visibility != 'private' AND ub.gallery_id IS NOT NULL AND (:country = 'all' OR u.country = :country);
+
+
+--name: select-gallery-badges-order-by-recipients-all
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
     MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-    AND g.id IN (:gallery_ids)
+    AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
 GROUP BY ub.gallery_id
 ORDER BY recipients DESC
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-ic-name
+--name: select-gallery-badges-order-by-recipients-filtered
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
     MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-    AND g.id IN (:gallery_ids)
+    AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
+ORDER BY recipients DESC
+LIMIT :limit OFFSET :offset
+
+
+--name: select-gallery-badges-order-by-ic-name-all
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
 GROUP BY ub.gallery_id
 ORDER BY issuer_content_name
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-name
+--name: select-gallery-badges-order-by-ic-name-filtered
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
     MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-    AND g.id IN (:gallery_ids)
+   AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
+ORDER BY issuer_content_name
+LIMIT :limit OFFSET :offset
+
+
+--name: select-gallery-badges-order-by-name-all
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+    AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
 GROUP BY ub.gallery_id
 ORDER BY badge_name
 LIMIT :limit OFFSET :offset
 
---name: select-gallery-badges-order-by-ctime
+--name: select-gallery-badges-order-by-name-filtered
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
     MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
 INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
 WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
-    AND g.id IN (:gallery_ids)
+     AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
+ORDER BY badge_name
+LIMIT :limit OFFSET :offset
+
+
+--name: select-gallery-badges-order-by-ctime-all
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+     AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
+GROUP BY ub.gallery_id
+ORDER BY ctime DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-ctime-filtered
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+    MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+     AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
 GROUP BY ub.gallery_id
 ORDER BY ctime DESC
 LIMIT :limit OFFSET :offset

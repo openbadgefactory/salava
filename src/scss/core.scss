@@ -737,6 +737,16 @@ body.anon-embed {
   background-color: inherit;
 }
 
+body.embed {
+  background: none;
+  background-color: inherit;
+  margin-bottom: 0;
+
+  #badge-info .panel {
+      margin-bottom: 0;
+  }
+}
+
 /*logos*/
 
 .logo-image-icon {

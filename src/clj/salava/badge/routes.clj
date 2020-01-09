@@ -28,6 +28,7 @@
              (layout/main-meta ctx "/info/:id" :badge)
              (layout/main-meta ctx "/info/:id/embed" :badge)
              (layout/main-meta ctx "/info/:id/pic/embed" :badge)
+             (layout/main-meta ctx "/info/:id/full/embed" :badge)
              (layout/main ctx "/import")
              (layout/main ctx "/receive/:id")
              (layout/main ctx "/application")

@@ -433,8 +433,11 @@
 
 (defn set-session [ctx ok-status user-id]
   (let [{:keys [role id private activated]} (user-information ctx user-id)
-        last-visited (last-visited ctx user-id)]
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited})))
+        last-visited (last-visited ctx user-id)
+        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))]
+    (-> ok-status
+        (assoc-in [:session :identity] {:id id :role role :private private :activated activated :last-visited last-visited :expires expires})
+        (assoc-in [:cookies "login_redirect"] {:value nil :max-age 600 :http-only true :path "/"}))))
 
 (defn finalize-login [ctx ok-res user-id pending-badge-id new-account]
   (save-pending-badge-and-email ctx user-id pending-badge-id new-account)
@@ -461,8 +464,8 @@
                                  (filter #(= "public" (:visibility %)))
                                  count)
         pending-badges (b/user-badges-pending ctx user-id)
-        stats (b/badge-stats ctx user-id)
-        events (so/get-all-events-add-viewed ctx user-id)
+        stats (-> (b/badge-stats ctx user-id) (dissoc :badge_congratulations :badge_issuers ))
+        ;events (so/get-all-events-add-viewed ctx user-id)
         user-info (user-information-with-registered-and-last-login ctx user-id)
         user-profile (-> (user-information-and-profile ctx user-id nil)
                          (dissoc :badges :pages :owner?))]
@@ -474,7 +477,7 @@
    :pending-endorsements-requests (->> (end/endorsement-requests ctx user-id) (filter #(= "pending" (:status %))) count)
    :pending-endorsements (->> (end/received-pending-endorsements ctx user-id) count)
    :connections {:badges (->> (so/get-connections-badge ctx user-id) count)}
-   :pages_count (->> (p/user-pages-all ctx user-id) count)
-   :files_count (->> (f/user-files-all ctx user-id) :files count)
+   ;:pages_count (->> (p/user-pages-all ctx user-id) count)
+   ;:files_count (->> (f/user-files-all ctx user-id) :files count)
    :user-profile user-profile
    :published_badges_count public-badges-count}))

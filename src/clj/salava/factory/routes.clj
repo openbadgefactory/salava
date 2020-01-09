@@ -5,6 +5,7 @@
             [ring.util.response :refer [redirect]]
             [schema.core :as s]
             [salava.core.layout :as layout]
+            [salava.core.access :as access]
             [salava.core.middleware :as mw]
             [salava.core.util :as u]
             [salava.factory.db :as f]))
@@ -63,4 +64,19 @@
              (GET "/get_updates" []
                   :query-params [user :- s/Int
                                  badge :- s/Int]
-                  (ok (f/get-badge-updates ctx user badge))))))
+                  (ok (f/get-badge-updates ctx user badge)))
+
+             (GET "/pdf_cert/:user-badge-id" []
+                  :no-doc true
+                  :path-params [user-badge-id :- s/Int]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (f/get-pdf-cert-list ctx current-user user-badge-id)))
+
+             (POST "/pdf_cert_request/:user-badge-id" []
+                  :no-doc true
+                  :path-params [user-badge-id :- s/Int]
+                  :body-params [message :- s/Str]
+                  :auth-rules access/signed
+                  :current-user current-user
+                  (ok (f/new-pdf-cert-request ctx current-user user-badge-id message))))))

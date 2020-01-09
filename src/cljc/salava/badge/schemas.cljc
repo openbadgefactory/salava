@@ -1,14 +1,14 @@
 (ns salava.badge.schemas
-   #?(:clj (:require [schema.core :as s]
+  #? (:clj (:require [schema.core :as s]
                      [schema.coerce :as c]
                      [compojure.api.sweet :refer [describe]])
-      :cljs (:require [schema.core :as s :include-macros true])))
+           :cljs (:require [schema.core :as s :include-macros true])))
 
-#?(:cljs (defn describe [v _] v))
+#? (:cljs (defn describe [v _] v))
 
 (defn either [s1 s2]
-  #?(:clj (s/either s1 s2)
-     :cljs (s/cond-pre s1 s2)))
+  #? (:clj (s/either s1 s2)
+           :cljs (s/cond-pre s1 s2)))
 
 (s/defschema user-badge-p {:id                                   (describe s/Int "internal user-badge id")
                            :name                                 s/Str
@@ -37,7 +37,6 @@
                                    (s/optional-key :new_message_count)          (s/maybe s/Int)
                                    (s/optional-key :gallery_id)                 (s/maybe s/Int)
                                    (s/optional-key :status)                     (describe (s/maybe (s/enum "pending" "accepted" "declined")) "internal user-badge acceptance status"))))
-
 
 (s/defschema user-badges {:badges [user-badge]})
 
@@ -151,8 +150,7 @@
                         :hashed                s/Bool
                         (s/optional-key :salt) (s/maybe s/Str)})
 
-
-(s/defschema assertion {(s/optional-key :id )                 (s/maybe s/Str)
+(s/defschema assertion {(s/optional-key :id)                 (s/maybe s/Str)
                         (s/optional-key :uid)                 (s/maybe s/Str)
                         :recipient                            recipient
                         :badge                                s/Str
@@ -167,7 +165,6 @@
                         (s/optional-key :revoked)             (s/maybe s/Bool)
                         (s/optional-key :revocationReason)    (s/maybe s/Str)
                         (s/optional-key (keyword "@context"))  s/Any})
-
 
 (s/defschema verify-success {:assertion-status      (describe (s/eq 200) "Fetched assertion status response")
                              :assertion             assertion
@@ -184,9 +181,8 @@
                              (s/optional-key :revoked?)   (s/maybe s/Bool)
                              (s/optional-key :message)    (s/maybe s/Str)})
 
-
-(s/defschema verify-badge #?(:clj (s/either verify-success verify-failure)
-                             :cljs (s/cond-pre verify-success verify-failure)))
+(s/defschema verify-badge #? (:clj (s/either verify-success verify-failure)
+                                   :cljs (s/cond-pre verify-success verify-failure)))
 
 (s/defschema endorsement {:id s/Str
                           :content s/Str
@@ -240,35 +236,36 @@
                     :tags (s/maybe [s/Str])})
 
 (s/defschema UserBadgeContent
-  {:id                                   (describe s/Int "internal user-badge id")
-   :name                                 (s/maybe s/Str)
-   :description                          (s/maybe s/Str)
-   :image_file                           (s/maybe s/Str)
-   :issued_on                            s/Int
-   :expires_on                           (s/maybe s/Int)
-   :revoked                              s/Bool
-   :mtime                                s/Int
-   (s/optional-key :visibility)          (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
-   (s/optional-key :status)              (describe (s/maybe (s/enum "pending" "accepted" "declined")) "internal user-badge acceptance status")
-   (s/optional-key :badge_id)            (describe (s/maybe s/Str) "used internally to group user badges with same content")
-   (s/optional-key :obf_url)             (describe (s/maybe s/Str) "OBF factory url badge was issued from")
-   :issued_by_obf                        (describe s/Bool "badge issued by OBF?")
-   :verified_by_obf                      (describe s/Bool "badge verified by OBF?")
-   :issuer_verified                      (describe (s/maybe s/Int) "issuer verified by OBF?")
-   (s/optional-key :issuer_content_name) (s/maybe s/Str)
-   (s/optional-key :issuer_content_url)  (s/maybe s/Str)
-   (s/optional-key :email)               (s/maybe s/Str)
-   (s/optional-key :assertion_url)       (s/maybe s/Str)
-   (s/optional-key :meta_badge)          (describe (s/maybe s/Str) "badge is a metabadge")
-   (s/optional-key :meta_badge_req)      (describe (s/maybe s/Str) "badge is a required part of a metabadge")
-   (s/optional-key :message_count)       (describe {:new-messages (s/maybe s/Int)
-                                                    :all-messages (s/maybe s/Int)} "internal badge comments")
-   (s/optional-key :tags)                (describe (s/maybe [s/Str]) "internal tags added by user")
-   (s/optional-key :user_endorsements_count) (s/maybe s/Int)
-   (s/optional-key :endorsement_count) (s/maybe s/Int)
-   (s/optional-key :pending_endorsements_count) (s/maybe s/Int)
-   (s/optional-key :new_message_count) (s/maybe s/Int)
-   (s/optional-key :gallery_id)        (s/maybe s/Int)})
+             {:id                                   (describe s/Int "internal user-badge id")
+              :name                                 (s/maybe s/Str)
+              :description                          (s/maybe s/Str)
+              :image_file                           (s/maybe s/Str)
+              :png_image_file                       (s/maybe s/Str)
+              :issued_on                            (s/maybe s/Int)
+              :expires_on                           (s/maybe s/Int)
+              :revoked                              s/Bool
+              :mtime                                s/Int
+              (s/optional-key :visibility)          (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
+              (s/optional-key :status)              (describe (s/maybe (s/enum "pending" "accepted" "declined")) "internal user-badge acceptance status")
+              (s/optional-key :badge_id)            (describe (s/maybe s/Str) "used internally to group user badges with same content")
+              (s/optional-key :obf_url)             (describe (s/maybe s/Str) "OBF factory url badge was issued from")
+              :issued_by_obf                        (describe s/Bool "badge issued by OBF?")
+              :verified_by_obf                      (describe s/Bool "badge verified by OBF?")
+              :issuer_verified                      (describe (s/maybe s/Int) "issuer verified by OBF?")
+              (s/optional-key :issuer_content_name) (s/maybe s/Str)
+              (s/optional-key :issuer_content_url)  (s/maybe s/Str)
+              (s/optional-key :email)               (s/maybe s/Str)
+              (s/optional-key :assertion_url)       (s/maybe s/Str)
+              (s/optional-key :meta_badge)          (describe (s/maybe s/Str) "badge is a metabadge")
+              (s/optional-key :meta_badge_req)      (describe (s/maybe s/Str) "badge is a required part of a metabadge")
+              (s/optional-key :message_count)       (describe {:new-messages (s/maybe s/Int)
+                                                               :all-messages (s/maybe s/Int)} "internal badge comments")
+              (s/optional-key :tags)                (describe (s/maybe [s/Str]) "internal tags added by user")
+              (s/optional-key :user_endorsements_count) (s/maybe s/Int)
+              (s/optional-key :endorsement_count) (s/maybe s/Int)
+              (s/optional-key :pending_endorsements_count) (s/maybe s/Int)
+              (s/optional-key :new_message_count) (s/maybe s/Int)
+              (s/optional-key :gallery_id)        (s/maybe s/Int)})
 
 (s/defschema BadgesToExport (select-keys Badge [:id :name :description :image_file
                                                 :issued_on :expires_on :visibility
@@ -320,7 +317,7 @@
                                             (s/optional-key :show_evidence) s/Int
                                             :rating (s/maybe s/Int))))
 
-(s/defschema badge-settings {(s/optional-key :visibility )         (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
+(s/defschema badge-settings {(s/optional-key :visibility)         (describe (s/maybe (s/enum "private" "internal" "public")) "internal user-badge visibility")
                              (s/optional-key :rating)              (s/maybe (s/enum 5 10 15 20 25 30 35 40 45 50))
                              (s/optional-key :show_recipient_name) (s/maybe (describe (s/enum 0 1) "used internally; when set, earner's name is shown in badge "))})
 
@@ -361,7 +358,6 @@
                             :revocation_list_url (s/maybe s/Str)
                             :endorsement [(s/maybe Endorsement)]})
 
-
 (s/defschema CreatorContent (-> IssuerContent
                                 (dissoc :revocation_list_url)
                                 (assoc  :json_url s/Str)))
@@ -383,22 +379,22 @@
                                   (s/optional-key  :resource_type) (s/maybe s/Str)})
 
 #_(s/defschema user-endorsement {:id s/Int
-                                  :user_badge_id s/Int
-                                  :content s/Str
-                                  (s/optional-key :status) (s/maybe s/Str)
-                                  (s/optional-key :ctime) (s/maybe s/Int)
-                                  (s/optional-key :mtime) (s/maybe s/Int)
-                                  (s/optional-key :issuer_id) (s/maybe s/Int)
-                                  (s/optional-key :endorsee_id) (s/maybe s/Int)
-                                  (s/optional-key :issuer_name) (s/maybe s/Str)
-                                  (s/optional-key :issuer_url) (s/maybe s/Str)
-                                  (s/optional-key :first_name) s/Str
-                                  (s/optional-key :last_name) s/Str
-                                  (s/optional-key :profile_picture) (s/maybe s/Str)
-                                  (s/optional-key :profile_visibility) (s/enum "internal" "public")
-                                  (s/optional-key :name) (s/maybe s/Str)
-                                  (s/optional-key :image_file) (s/maybe s/Str)
-                                  (s/optional-key :description) (s/maybe s/Str)})
+                                 :user_badge_id s/Int
+                                 :content s/Str
+                                 (s/optional-key :status) (s/maybe s/Str)
+                                 (s/optional-key :ctime) (s/maybe s/Int)
+                                 (s/optional-key :mtime) (s/maybe s/Int)
+                                 (s/optional-key :issuer_id) (s/maybe s/Int)
+                                 (s/optional-key :endorsee_id) (s/maybe s/Int)
+                                 (s/optional-key :issuer_name) (s/maybe s/Str)
+                                 (s/optional-key :issuer_url) (s/maybe s/Str)
+                                 (s/optional-key :first_name) s/Str
+                                 (s/optional-key :last_name) s/Str
+                                 (s/optional-key :profile_picture) (s/maybe s/Str)
+                                 (s/optional-key :profile_visibility) (s/enum "internal" "public")
+                                 (s/optional-key :name) (s/maybe s/Str)
+                                 (s/optional-key :image_file) (s/maybe s/Str)
+                                 (s/optional-key :description) (s/maybe s/Str)})
 
 #_(s/defschema endorsement-content {:content (describe (s/constrained s/Str #(and (>= (count %) 5)
                                                                                   (not (clojure.string/blank? %)))) "Content in markdown format")})

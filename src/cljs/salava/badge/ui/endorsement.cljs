@@ -745,7 +745,10 @@
           (t :badge/Editselectedusers)]])
       (reduce (fn [r u]
                 (let [{:keys [id first_name last_name profile_picture]} u]
-                  (conj r [profile-link-inline-modal id first_name last_name profile_picture]))) [:div {:style {:margin "20px auto"}}] @selected-users)
+                  (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
+                           [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
+                            [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
+              [:div.selected-users-container] @selected-users)
       [:div.confirmusers {:style {:margin "20px auto"}}
        (if-not (empty? @selected-users)
          [:button.btn.btn-primary {:on-click #(do
