@@ -6,6 +6,7 @@
             [salava.core.ui.helper :refer [navigate-to path-for not-activated?]]
             [salava.core.ui.notactivated :refer [not-activated-banner]]
             [salava.core.ui.error :as err]
+            [salava.core.ui.helper :refer [url?]]
             [salava.core.i18n :refer [t translate-text]]
             ;[salava.user.ui.input :as input]
             [salava.core.helper :refer [dump]]

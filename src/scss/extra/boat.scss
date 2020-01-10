@@ -390,6 +390,10 @@ button.navbar-toggle {
   }
 }
 
+.btn-warning:disabled, .btn-primary:disabled {
+  color: black !important;
+}
+
 #login-page .btn-primary,
 .btn-primary,
 .btn-primary:active:focus,
@@ -757,4 +761,12 @@ p.help-block {
 
 #profile .profile-navi .nav-tabs > li a:hover {
   background-color: white !important;
+}
+
+.form-control:focus {
+ color: inherit;
+}
+
+.progress-bar-success {
+  color: $text-color;
 }

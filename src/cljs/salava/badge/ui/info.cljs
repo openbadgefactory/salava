@@ -31,6 +31,10 @@
             [salava.translator.ui.helper :refer [translate]]))
 
 
+(defn init-endorsement-count [id state]
+  (ajax/GET
+    (path-for (str "/obpv1/badge/user_endorsement/count/" id))
+    {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
 (defn init-data [state id]
   (ajax/GET
@@ -40,7 +44,8 @@
                                 :show-link-or-embed-code nil
                                 :initializing false
                                 :content-language (init-content-language (:content data))
-                                :permission "success")))}
+                                :permission "success"))
+                (init-endorsement-count id state))}
     (fn [] (swap! state assoc :permission "error"))))
 
 (comment
@@ -107,10 +112,10 @@
            :on-click #(do (.preventDefault %)
                         (mo/open-modal [:badge :creator] creator-id))} name]]]))
 
-(defn save-raiting [id state init-data raiting]
+(defn save-rating [id state init-data rating]
   (ajax/POST
-    (path-for (str "/obpv1/badge/save_raiting/" id))
-    {:params   {:rating  (if (pos? raiting) raiting nil)}
+    (path-for (str "/obpv1/badge/save_rating/" id))
+    {:params   {:rating  (if (pos? rating) rating nil)}
      :handler (fn []
                 (init-data state id))}))
 
@@ -195,7 +200,7 @@
               [:div.rating
                [:div (t :badge/Rating)]
                [:div
-                {:on-click #(save-raiting id state init-data (get-in @state [:badge-settings :rating]))}
+                {:on-click #(save-rating id state init-data (get-in @state [:badge-settings :rating]))}
                 [r/rate-it rating (cursor state [:badge-settings :rating])]]]
               (if (and expires_on (not expired?))
                 [:div.expiresin [:i {:class "fa fa-hourglass-half"}] (str (t :badge/Expiresin) " " (num-days-left expires_on) " " (t :badge/days))])

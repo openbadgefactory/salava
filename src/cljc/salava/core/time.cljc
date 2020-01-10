@@ -12,10 +12,6 @@
            :cljs (.now js/Date))
         1000))
 
-#_(defn- no-of-days-passed [event-time]
- (let [current-time (t/now)]
-  (t/in-days (t/interval current-time event-time))))
-
 (defn no-of-days-passed [event-time]
  #?(:clj (t/in-days (t/interval (c/from-long (* event-time 1000)) (t/now)))))
 

@@ -15,6 +15,7 @@
   (routes
     (context "/obpv1/factory" []
              :tags ["factory"]
+             :no-doc true
 
              (HEAD "/receive" []
                   :no-doc true
@@ -31,6 +32,7 @@
                                  k :- String
                                  t :- String]
                   (let [badge-info (f/receive-badge-json ctx e k t)]
+                    (prn "called")
                     (if-let [user-badge-id (f/receive-badge ctx badge-info)]
                       (-> (str (u/get-base-path ctx) (str "/badge/receive/" user-badge-id "?banner=" (f/receive-banner (:banner badge-info))))
                           redirect

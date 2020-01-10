@@ -47,16 +47,17 @@
                   :auth-rules access/signed
                   (ok (g/badge-countries ctx)))
 
-
              (GET "/public_badge_content/:badge-id" []
-;;                   :return schemas/BadgeContent
+                  :no-doc true
+                  :return schemas/BadgeContent
                   :path-params [badge-id :- s/Str]
                   :summary "Get public badge data"
                   :current-user current-user
                   (ok (g/public-multilanguage-badge-content ctx badge-id (:id current-user))))
 
              (GET "/public_badge_content/:gallery-id/:badge-id" []
-                  ;;                   :return schemas/BadgeContent
+                  :no-doc true
+                  :return schemas/BadgeContent
                   :path-params [gallery-id :- s/Int
                                 badge-id :- s/Str]
                   :summary "Get public gallery badge data"
@@ -65,24 +66,51 @@
                     (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user) gallery-id))
                     (ok (g/public-multilanguage-badge-content ctx  badge-id (:id current-user)))))
 
+             (GET "/p/public_badge_content/:gallery-id/:badge-id" []
+                  :return schemas/badge-content-p
+                  :path-params [gallery-id :- schemas/gallery-id
+                                badge-id :- s/Str]
+                  :summary "Get public gallery badge data"
+                  :current-user current-user
+                  (if (pos? gallery-id)
+                    (ok (g/public-multilanguage-badge-content-p ctx  badge-id (:id current-user) gallery-id))
+                    (ok (g/public-multilanguage-badge-content-p ctx  badge-id (:id current-user)))))
+
              (GET "/badge_gallery_id/:badge-id" []
+                  :return (s/maybe s/Int)
                   :path-params [badge-id :- s/Str]
                   :summary "Get gallery id of a badge"
                   (ok (g/badge-gallery-id ctx badge-id)))
 
              (POST "/pages" []
-                   :body-params [country :- (s/maybe s/Str)
-                                 owner :- (s/maybe s/Str)]
+                   :no-doc true
+                   :return schemas/gallery-pages
+                   :body [params schemas/pages-search]
                    :summary "Get public pages"
                    :auth-rules access/signed
                    :current-user current-user
-                   (let [countries       (g/page-countries ctx (:id current-user))
+                   (let [{:keys [country owner]} params
+                         countries       (g/page-countries ctx (:id current-user))
                          current-country (if (empty? country)
                                            (:user-country countries)
                                            country)]
                      (ok (into {:pages (g/public-pages ctx current-country owner)} countries))))
 
+             (POST "/p/pages" []
+                   :return schemas/gallery-pages-p
+                   :body [params schemas/pages-search]
+                   :summary "Get public pages"
+                   :auth-rules access/signed
+                   :current-user current-user
+                   (let [{:keys [country owner]} params
+                         countries       (g/page-countries ctx (:id current-user))
+                         current-country (if (empty? country)
+                                           (:user-country countries)
+                                           country)]
+                     (ok (into {:pages (g/public-pages-p ctx current-country owner)} countries))))
+
              (POST "/pages/:userid" []
+                   :no-doc true
                    :path-params [userid :- s/Int]
                    :summary "Get user's public pages."
                    :current-user current-user
@@ -98,17 +126,20 @@
                    (ok {:users     (g/public-profiles ctx search-params (:id current-user))
                         :countries (g/profile-countries ctx (:id current-user))}))
              (GET "/stats" []
+                  :no-doc true
                   :summary "Get gallery stats"
                   :auth-rules access/signed
                   :current-user current-user
                   (ok (g/gallery-stats ctx (:last-visited current-user) (:id current-user))))
 
              (GET "/recent" [userid kind]
+                  :no-doc true
                   :summary "get user's recent badges or pages"
                   :current-user current-user
                   (ok (g/public-by-user ctx kind userid (:id current-user))))
 
              (GET "/recipients/:gallery_id" []
+                   :return schemas/recipients
                    :summary "Get user badge stats about recipients"
                    :path-params [gallery_id :- Long]
                    :auth-rules access/authenticated
@@ -124,6 +155,7 @@
                   (ok (g/badge-rating ctx (:id current-user) gallery_id)))
 
             (POST "/profiles/:user_badge_id/:context" []
+                  :no-doc true
                   :return {:users     [schemas/UserProfiles]
                            :countries [schemas/Countries]}
                   :path-params [user_badge_id :- s/Int

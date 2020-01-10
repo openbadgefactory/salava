@@ -33,8 +33,14 @@
 
 (defn export-to-pdf [user-badge-id]
   (let [lang-option "all"
-        badge-url (str "/obpv1/badge/export-to-pdf?badges[0]=" user-badge-id "&lang-option=" lang-option)]
+        badge-url (str "/obpv1/badge/export-to-pdf?id=" user-badge-id "&lang-option=" lang-option)]
     (js-navigate-to badge-url)))
+
+(defn update-endorsement-count [id state]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/settings/" id) true)
+   {:handler (fn [data]
+               (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
 
 (defn update-settings [badge-id state]
   (ajax/GET
@@ -42,22 +48,40 @@
    {:handler (fn [data]
                (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
 
+#_(defn save-settings [state reload-fn]
+    (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
+      (ajax/PUT
+       (path-for (str "/obpv1/badge/save_settings/" id))
+       {:params  {:visibility   visibility
+                  :tags         tags
+                  :rating       (if (pos? rating) rating nil)}
+        :handler (fn [] (update-settings id state))
+        :finally (fn [] (when reload-fn (reload-fn)))})))
+
 (defn save-settings [state reload-fn]
-  (let [{:keys [id visibility tags rating]} (:badge-settings @state)]
-    (ajax/POST
-     (path-for (str "/obpv1/badge/save_settings/" id))
-     {:params  {:visibility   visibility
-                :tags         tags
-                :rating       (if (pos? rating) rating nil)}
+  (let [{:keys [id visibility tags rating show_recipient_name]} (:badge-settings @state)]
+    (ajax/PUT
+     (path-for (str "/obpv1/badge/settings/" id))
+     {:params  {:settings {:visibility   visibility
+                           :rating       (if (pos? rating) rating nil)
+                           :show_recipient_name show_recipient_name} ;@(cursor state [:badge-settings :show_recipient_name])}
+                :tags tags}
       :handler (fn [] (update-settings id state))
       :finally (fn [] (when reload-fn (reload-fn)))})))
 
-(defn toggle-recipient-name [id show-recipient-name-atom]
-  (let [new-value (not @show-recipient-name-atom)]
-    (ajax/POST
-     (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
-     {:params {:show_recipient_name new-value}
-      :handler (fn [] (reset! show-recipient-name-atom new-value))})))
+#_(defn toggle-recipient-name [id show-recipient-name-atom]
+    (let [new-value (not @show-recipient-name-atom)]
+      (ajax/POST
+       (path-for (str "/obpv1/badge/toggle_recipient_name/" id))
+       {:params {:show_recipient_name new-value}
+        :handler (fn [] (reset! show-recipient-name-atom new-value))})))
+
+(defn toggle-recipient-name [state]
+  (let [show-recipient-name-atom (cursor state [:show_recipient_name])
+        _ (cursor state [:badge-settings :show_recipient_name])
+        new-value (if (pos? @show-recipient-name-atom) 0 1)]
+    (reset! _ new-value)
+    (save-settings state (fn [] (reset! show-recipient-name-atom new-value)))))
 
 (defn toggle-evidence [state]
   (let [id (get-in @state [:badge-settings :id])
@@ -121,7 +145,7 @@
           (t :badge/Private)]]]]]])
 
 (defn delete-tab-content [{:keys [name image_file]} state]
-  [:div {#_:id #_"badge-settings" :class "row flip"}
+  [:div.row.flip ;{#_:id #_"badge-settings" :class "row flip"}
    [:div {:class "col-md-3 badge-image modal-left"}
     [:img {:src (str "/" image_file) :alt name}]]
    [:div {:class "col-md-9 delete-confirm delete-tab"}
@@ -198,7 +222,7 @@
                                                     [:div.col-md-12 [:label {:for "show-name"}
                                                                      [:input {:type      "checkbox"
                                                                               :id        "show-name"
-                                                                              :on-change #(toggle-recipient-name id show-recipient-name-atom)
+                                                                              :on-change #(toggle-recipient-name state) #_(toggle-recipient-name id show-recipient-name-atom)
                                                                               :checked   @show-recipient-name-atom}]
                                                                      (t :badge/Showyourname)]]]] [:div.form-group
                                                                                                   [:fieldset {:class "col-md-9 checkbox"}

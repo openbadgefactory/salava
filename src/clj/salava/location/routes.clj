@@ -105,6 +105,7 @@
                   (ok (l/explore-filters ctx (some-> current-user :id pos?))))
 
              (GET "/explore/badges/embed" []
+                  :no-doc true
                   :summary "Get public badge locations for gallery for embed map. Requires bounding map box (South-West and North-East coordinates). Results can be filtered by badge or issuer name and tags."
                   :return ls/explore-badges-ex-em
                   :query [params ls/explore-badge-query]

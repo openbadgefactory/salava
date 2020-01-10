@@ -12,7 +12,7 @@
    {:handler (fn [data]
                (swap! state assoc :badge-settings data (assoc data :new-tag "")))}))
 
-(defn save-settings [state]
+#_(defn save-settings [state]
   (let [{:keys [id visibility tags rating]} @(cursor state [:badge-settings])]
     (ajax/POST
      (path-for (str "/obpv1/badge/save_settings/" id))
@@ -21,6 +21,21 @@
                 :rating       (if (pos? rating) rating nil)}
       :handler (fn []
                  (update-settings id state))})))
+
+(defn save-settings [state]
+  (let [{:keys [id visibility tags rating show_recipient_name]} @(cursor state [:badge-settings])]
+    (prn @(cursor state [:badge-settings]))
+    (ajax/PUT
+      (path-for (str "/obpv1/badge/settings/" id))
+      {:params  {;:visibility   visibility
+                 :tags         tags
+                 ;:rating       (if (pos? rating) rating nil)
+                 ;:show_recipient_name show_recipient_name
+                }
+
+       :handler (fn []
+                  (update-settings id state))})))
+
 
 (defn add-tag
   ([tags-atom new-tag-atom]

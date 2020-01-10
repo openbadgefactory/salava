@@ -26,8 +26,8 @@
    (ajax/GET
      (path-for "/obpv1/badge" true)
      {:handler (fn [data]
-                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                        :pending (filter #(= "pending" (:status %)) data)
+                 (swap! state assoc :badges (filter #(= "accepted" (:status %)) (:badges data))
+                        :pending (filter #(= "pending" (:status %)) (:badges data))
                         :initializing false))})
    #_(ajax/GET
        (path-for "/obpv1/social/pending_badges" true)
