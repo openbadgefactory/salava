@@ -4,11 +4,11 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [clojure.string :refer [blank?]]))
+            [clojure.string :refer [blank?]]
+            [cemerick.url :refer [url-encode]]))
 
 (defn init-metabadge-data [param state]
-
-  (let [link (if (:assertion_url param) (str "/obpv1/metabadge/assertion/info/" (:assertion_url param)) (str "/obpv1/metabadge/info/" (:user_badge_id param)))]
+  (let [link (if (:assertion_url param) (str "/obpv1/metabadge/assertion/info/" (url-encode (:assertion_url param))) (str "/obpv1/metabadge/info/" (:user_badge_id param)))]
     (ajax/GET
      (path-for link)
      {;:params param
