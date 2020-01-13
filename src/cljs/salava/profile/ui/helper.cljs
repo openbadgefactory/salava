@@ -336,7 +336,7 @@
       [:div.profile-navi
        [:ul.nav.nav-tabs
         ^{:key 0} [:li.nav-item {:class (if (= 0 (:active-index @state)) "active")}
-                   [:a.nav-link.page-tab {:on-click #(swap! state assoc :active-index 0 :show-manage-buttons true)}
+                   [:a.nav-link.page-tab {:on-click #(swap! state assoc :active-index 0 :show-manage-buttons true) :tabIndex 0}
                     (t :user/Myprofile)]]
         (doall (for [tab @tabs
                      :let [index (.indexOf (mapv :id @tabs) (:id tab))

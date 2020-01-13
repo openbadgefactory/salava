@@ -158,12 +158,15 @@
       (let [{:keys [tips completion_percentage]} @state]
         [:div#profiletips
          [:div.progress.col-xs-12 {:style {:margin-bottom "10px"}}
+          [:span.sr-only {:id "profile-progress"} (str "% " (t :profile/Complete))] ;(str completion_percentage "% " (t :profile/Complete))]
           [:div.progress-bar.progress-bar-success
            {:role "progressbar"
             :aria-valuenow (str completion_percentage)
             :style {:width (str completion_percentage "%")}
             :aria-valuemin "0"
-            :aria-valuemax "100"}
+            :aria-valuemax "100"
+            :aria-labelledby "profile-progress"
+            :aria-label (str completion_percentage "% " (t :profile/Complete))}
            (str completion_percentage "% " (t :profile/Complete))]]
          (when (some #(true? %) (vals tips)) [:div.col-xs-12 {:style {:margin "5px 2px" :font-size "14px" :font-weight "bold"}} (t :profile/Tipstoimproveprofile)])
          (reduce-kv (fn [r k v]

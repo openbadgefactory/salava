@@ -187,8 +187,8 @@
        [:div
         (layout/terms-and-conditions)])
 
-     [:fieldset {:class "col-md-12 checkbox accept-terms-checkbox"}
-      [:legend {:style {:display "none"}} ""]
+     [:div {:class "col-md-12 checkbox accept-terms-checkbox"}
+      ;[:legend.sr-only ""]
       [:div.col-md-12 {:style {:text-align "center"}} [:label
                                                        [:input {:type     "checkbox"
                                                                 :on-change (fn [e]

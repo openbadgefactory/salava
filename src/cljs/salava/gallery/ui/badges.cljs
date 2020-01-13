@@ -131,6 +131,10 @@
             :no-results-text (t :gallery/Notfound)
             :control-class   "form-control"}]]])))
 
+(defn autocomplete-accessibility-fix []
+  (-> (sel1 ".autocomplete__input")
+      (dommy/set-attr! :id "autocomplete" :tabIndex 0)))
+
 (defn autocomplete [state]
   (let [value  (cursor state [:autocomplete :tags :value])
         autocomplete-items (cursor state [:autocomplete :tags :items])]
@@ -153,8 +157,7 @@
             :no-results-text (t :gallery/Notfound)
             :control-class   "form-control"}]]])
       :component-did-mount
-      (fn [] (-> (sel1 ".autocomplete__input")
-                 (dommy/set-attr! :id "autocomplete")))})))
+      (fn [] (autocomplete-accessibility-fix))})))
 
 (defn search-timer [state]
   (let [timer-atom (cursor state [:timer])]
