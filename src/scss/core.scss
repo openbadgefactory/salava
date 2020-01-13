@@ -73,7 +73,7 @@ button {
   background-color: $icon-color;
   border-color:darken($icon-color, 2%);
   margin: 0 3px 6px 0;
-  &.btn-active, &.btn:hover{
+  &.btn-active, &.btn:hover, &.btn:focus{
     color: #ffffff;
     background-color: darken($text-color,20% );//#463c44;
     border-color: darken($text-color,25% );
@@ -215,6 +215,11 @@ a#login-button {
     box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);
   }
 }
+
+.form-control:focus{
+  color: $text-color;
+}
+
 select.form-control  {
   -webkit-appearance:none;
   background: #FFF url(/img/down_arrow.png) no-repeat top right;

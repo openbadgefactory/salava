@@ -126,8 +126,10 @@
           (translate-text @error-message-atom)])
        [:form
         [:div.form-group
+         [:label.sr-only {:for "input-email"} (translate l :user/Email)]
          [input/text-field {:name "email" :atom email-atom :error-message-atom error-message-atom :placeholder (translate l :user/Email) :aria-label (translate l :user/Email)}]]
         [:div.form-group
+         [:label.sr-only {:for "input-password"}]
          [input/text-field {:name "password" :atom password-atom :error-message-atom error-message-atom :placeholder (translate l :user/Password) :aria-label (translate l :user/Password) :password? true}]]
         [:button {:class    "btn btn-primary login-button"
                   :on-click #(do (.preventDefault %)

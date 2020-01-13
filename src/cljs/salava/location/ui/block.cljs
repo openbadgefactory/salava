@@ -215,7 +215,9 @@
             [:p.help-block (t :location/LocationPublicInfo)]]]
 
           [:span._label {:style {:display (if (:enabled @state) "block" "none")}} (t :location/setLocationHere)]
-          [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]]]]]) :component-did-mount
+          [:div {:id "map-view-user" :style {:display (if (:enabled @state) "block" "none") :height "600px" :margin "20px 0"}}]]]]])
+
+    :component-did-mount
     (fn []
       (ajax/GET
        (path-for "/obpv1/location/self" true)

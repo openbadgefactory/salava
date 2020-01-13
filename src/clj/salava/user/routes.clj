@@ -83,7 +83,9 @@
                        (assoc :session (assoc (get req :session {}) :seen-terms true)))))
 
             (POST "/register" req
-                  :return {:status (s/enum "error" "success") :message s/Str}
+                  :return {:status (s/enum "error" "success")
+                           (s/optional-key :message) (s/maybe s/Str)
+                           (s/optional-key :id) s/Int}
                   :body [form-content schemas/RegisterUser]
                   :summary "Create new user account"
                   (let [{:keys [email first_name last_name country language password password_verify accept_terms]} form-content

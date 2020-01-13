@@ -22,7 +22,7 @@
 (defn radio-button-selector [name values atom]
   [:div
    (into [:fieldset
-          [:legend {:style {:display "none"}} ""]]
+          [:legend.sr-only  (t :core/Languages)]]
          (map (fn [value]
                 [:label.radio-inline {:for (str "language-" value)}
                  [:input {:type      "radio"

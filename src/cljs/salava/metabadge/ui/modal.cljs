@@ -104,6 +104,7 @@
          :aria-valuemax "100"
          :alt (str completion_status "%")
          :title (str "Progress: " completion_status "%")}
+         ;:aria-labelledby (str "Progress: " completion_status "%")}
         (str completion_status "%")]]]
      [:div.col-md-9
       [:div.col-md-12
