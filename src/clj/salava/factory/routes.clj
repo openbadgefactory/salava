@@ -30,11 +30,12 @@
                   :query-params [e :- String
                                  k :- String
                                  t :- String]
+                  :current-user current-user
                   (let [badge-info (f/receive-badge-json ctx e k t)]
                     (if-let [user-badge-id (f/receive-badge ctx badge-info)]
                       (-> (str (u/get-base-path ctx) (str "/badge/receive/" user-badge-id "?banner=" (f/receive-banner (:banner badge-info))))
                           redirect
-                          (assoc-in [:session :pending] {:user-badge-id user-badge-id :email e}))
+                          (assoc-in [:session] {:pending {:user-badge-id user-badge-id :email e} :identity current-user}))
                       (not-found "404 Not Found"))))
 
              (DELETE "/receive/:id" req
