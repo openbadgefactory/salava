@@ -16,6 +16,7 @@
             [salava.user.db :as u]
             [salava.badge.verify :as v]
             [salava.badge.endorsement :as e]
+            [salava.badge.pending :as p]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -71,15 +72,22 @@
                   :current-user current-user
                   (ok (v/verify-badge ctx badgeid)))
 
+             #_(GET "/pending/:badgeid" req
+                      :path-params [badgeid :- Long]
+                      :summary "Get pending badge content"
+                      (if (= badgeid (get-in req [:session :pending :user-badge-id]))
+                        (ok (assoc (->> badgeid
+                                        (b/fetch-badge ctx)
+                                        (b/badge-issued-and-verified-by-obf ctx))
+                              :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))))
+
+                        (not-found)))
+
              (GET "/pending/:badgeid" req
                   :path-params [badgeid :- Long]
                   :summary "Get pending badge content"
                   (if (= badgeid (get-in req [:session :pending :user-badge-id]))
-                    (ok (assoc (->> badgeid
-                                    (b/fetch-badge ctx)
-                                    (b/badge-issued-and-verified-by-obf ctx))
-                          :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))))
-
+                    (ok (p/pending-badge-content ctx req))
                     (not-found)))
 
              (GET "/issuer/:issuerid" []
