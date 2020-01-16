@@ -14,7 +14,7 @@
 
 (defn init-data [state]
   (ajax/GET
-   (path-for "/obpv1/social/pending_badges" true)
+   (path-for "/obpv1/badge/pending_badges" true)
    {:handler (fn [data]
                (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
 
@@ -121,10 +121,6 @@
            (into [:div {:style {:margin "10px -10px"}}]
                  (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
                    [f {:user_badge_id id}]))
-           #_(when metabadge-fn
-               (into [:div]
-                     (for [f (plugin-fun (session/get :plugins) "metabadge" "metabadge")]
-                       [:div {:style {:margin "10px -10px"}} [f {:user_badge_id id}]])))
            [show-more state]]]]))))
 
 (defn badge-alert [state]

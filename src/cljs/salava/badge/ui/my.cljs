@@ -18,20 +18,16 @@
    [clojure.walk :refer [keywordize-keys]]
    [cemerick.url :as url]
    [salava.core.ui.modal :as mo]
-   [salava.badge.ui.pending :refer [badge-pending badges-pending badge-alert]]))
+   [salava.badge.ui.pending :as pb :refer [badge-pending badges-pending badge-alert]]))
 
-(defn init-data
-  ([state]
-   (ajax/GET
-    (path-for "/obpv1/badge" true)
-    {:handler (fn [data]
-                (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
-                       :pending (filter #(= "pending" (:status %)) data)
-                       :initializing false))})
-   #_(ajax/GET
-      (path-for "/obpv1/social/pending_badges" true)
-      {:handler (fn [data]
-                  (swap! state assoc :spinner false :pending-badges (:pending-badges data)))})))
+(defn init-data [state]
+  (pb/init-data state)
+  (ajax/GET
+   (path-for "/obpv1/badge" true)
+   {:handler (fn [data]
+               (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+                      :pending (filter #(= "pending" (:status %)) data)
+                      :initializing false))}))
 
 (defn visibility-select-values []
   [{:value "all" :title (t :core/All)}

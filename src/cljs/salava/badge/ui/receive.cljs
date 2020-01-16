@@ -10,7 +10,7 @@
             [salava.badge.ui.modal :as bm]
             [salava.badge.ui.assertion :as a]
             [salava.badge.ui.endorsement :as end]
-            [salava.badge.ui.pending :refer [visibility-modal update-status badge-alert]]
+            [salava.badge.ui.pending :as pb :refer [visibility-modal update-status badge-alert]]
             [salava.badge.ui.settings :as se]
             [salava.core.ui.rate-it :as r]
             [salava.core.ui.share :as s]
@@ -60,6 +60,17 @@
               :class "btn btn-warning"
               :on-click #(reject-badge state)}
      (t :core/Delete)]]])
+
+(defn cert-block [user-badge-id state]
+  (when-let [cert-uri (some-> @state :cert :uri)]
+    [:div
+     (doall
+      (map (fn [[badge lang]]
+             (let [uri (str cert-uri "&lang=" lang)]
+               [:p {:key uri}
+                [:i.fa.fa-file-pdf-o.fa-2x.fa-fw] " "
+                [:a {:href uri} (if-not (blank? lang) (str badge " (" lang ")") badge)]]))
+           (:badge @state)))]))
 
 (defn init-data [state id]
   (ajax/GET
@@ -167,39 +178,54 @@
                      [:div] evidences)]])]]]]]))
 
 (defn user-options [state]
-  (let [{:keys [assertion_url id obf_url user_exists? user_in_session?]} @state
+  (let [{:keys [assertion_url id obf_url user_exists? user_in_session? content]} @state
         badge (select-keys @state [:id :visibility])
-        reload-fn #(do
-                     (m/close-modal!)
-                     (js-navigate-to "/badge"))]
+        reload-fn #(js-navigate-to "/badge")
+        selected-language   (cursor state [:content-language])
+        {:keys [image_file name]} (content-setter @selected-language content)
+        b_ (map (fn [v] [(:name v) (:language_code v)]) (:content @state))
+        cert-state (cursor state [:cert-state])]
+    (reset! cert-state {:cert [] :badge b_})
+    (se/init-cert id cert-state)
+    (fn []
+      [:div.text-center
+       (if user_exists?
+         (if user_in_session?
+           [:div.row.button-row
+            (if (:badge-alert @state)
+              [:div.ajax-message
+               [:i.fa.fa-cog.fa-spin.fa-2x]]
+              [:div.col-md-12
+               [:button {:class "btn btn-primary"
+                         :on-click #(do
+                                      (m/modal! [visibility-modal badge state reload-fn] {:size :md}) ;:hidden (fn [] 0(reload-fn state))})
+                                      (.preventDefault %))
 
-    [:div.text-center
-     (if user_exists?
-       (if user_in_session?
-         [:div.row.button-row
+                         :data-dismiss "modal"}
+                (t :badge/Acceptbadge)]
+               [:button {:class "btn btn-warning"
+                         :on-click #(do
+                                      (update-status (:id badge) "declined" state reload-fn)
+                                      (.preventDefault %)
+                                      (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
+                (t :badge/Declinebadge)]])]
+           [:div [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]])
+         [:div
+          [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
+          [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]])
+       [:hr.border]
+       (if (some-> @cert-state :cert :uri)
+         [:div
           [:div.col-md-12
-           [:button {:class "btn btn-primary"
-                     :on-click #(do
-                                  (m/modal! [visibility-modal badge state reload-fn] {:size :md}) ;:hidden (fn [] (reload-fn state))})
-                                  (.preventDefault %))
-
-                     :data-dismiss "modal"}
-            (t :badge/Acceptbadge)]
-           [:button {:class "btn btn-warning"
-                     :on-click #(do
-                                  (update-status (:id badge) "declined" state reload-fn)
-                                  (.preventDefault %)
-                                  (swap! state assoc :badge-alert "declined" :badge-name (:name badge)))}
-            (t :badge/Declinebadge)]]]
-         #_[:div [:p  [:a.btn.btn-primary {:href (path-for "/social")} [:i.fa.fa-home.fa-fw] (t :user/Gotomydashboard)]]]
-         [:div [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]])
-       [:div
-        [:p [:a#login-button.btn.btn-primary {:href (path-for "/user/login")} (t :user/Login)]]
-        [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]])
-     [:hr.border]
-     [:div.col-md-12
-      [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
-      [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]]))
+           [:p.pull-left [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]
+           [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]
+          [:div.col-md-12
+           [:div {:style {:text-align "start"}}
+            [:p [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:img {:style {:vertical-align "bottom" :width "35px" :height "auto"} :src (str "/" image_file) :alt ""}] name]]
+            [cert-block id cert-state]]]]
+         [:div.col-md-12
+          [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+          [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]])])))
 
 (defn language-switcher []
   (let [current-lang (session/get-in [:user :language] "en")
@@ -217,8 +243,8 @@
   (let [{:keys [user_exists? user_in_session? assertion_url obf_url email]} @state
         current-lang (session/get-in [:user :language])]
 
-    [:div {:style {:width "640px" :margin "15px auto"}}
-     [badge-alert state]
+    [:div.existing {:style {:width "640px" :margin "15px auto"}}
+     ;[badge-alert state]
      [:div.panel
       [:div.panel-heading
        [:div.row
@@ -236,7 +262,7 @@
                 obf_url user_exists? user_in_session? evidences]} @state]
 
     (session/assoc-in! [:user :pending :email] email)
-    [:div
+    [:div#badge-receive
      [m/modal-window]
      (banner obf_url)
      (if user_exists?
@@ -258,7 +284,7 @@
 
 (defn handler [site-navi params]
   (let [id (:badge-id params)
-        state (atom {:initializing true :result "initial"})
+        state (atom {:initializing true :result "initial" :cert-state nil})
         user (session/get :user)
         site-navi (assoc site-navi :navi-items [] :no-login true)
         languages (session/get :languages)
