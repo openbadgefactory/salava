@@ -2245,3 +2245,19 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
     }
   }
 }
+
+#badge-receive .existing #badge-info .panel {
+  border: none;
+  box-shadow: none;
+}
+
+#badge-receive .panel-heading {
+  background: linear-gradient(45deg, $titlebar-color, #b1a1ab);
+  .uppercase-header {
+    color: #1e1e1e !important;
+  }
+}
+
+#badge-receive .fa-ban {
+  color: $dark-red;
+}
