@@ -642,6 +642,13 @@ html[dir="rtl"] .wizard {
    }
 }
 
+#badge-receive .panel-heading {
+  background: linear-gradient(75deg, $button-color, $background-color);
+  .uppercase-header {
+    color: #1E1E1E !important;
+  }
+}
+
 
 /*
 a#login-button {
