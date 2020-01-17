@@ -64,12 +64,13 @@
 (defn cert-block [user-badge-id state]
   (when-let [cert-uri (some-> @state :cert :uri)]
     [:div
+     [:p [:i.fa.fa-file-pdf-o.fa-lg] " " [:b {:style {:font-size "12px"}} (t :badge/Downloadpdf)]]
      (doall
       (map (fn [[badge lang]]
              (let [uri (str cert-uri "&lang=" lang)]
-               [:p {:key uri}
-                [:i.fa.fa-file-pdf-o.fa-2x.fa-fw] " "
-                [:a {:href uri} (if-not (blank? lang) (str badge " (" lang ")") badge)]]))
+               [:p {:key uri :style {:padding "0 1px"}}
+                [:i.fa.fa-file-pdf-o.fa-fw] " "
+                [:a {:href uri :style {:font-size "12px"}} (if-not (blank? lang) (str badge " (" lang ")") badge)]]))
            (:badge @state)))]))
 
 (defn init-data [state id]
@@ -215,16 +216,19 @@
           [:p [:a {:href (path-for "/user/register")} [:i.fa.fa-user-plus] " " (t :user/Createnewaccount)]]])
        [:hr.border]
        (if (some-> @cert-state :cert :uri)
-         [:div
-          [:div.col-md-12
-           [:p.pull-left [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]
-           [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]
-          [:div.col-md-12
-           [:div {:style {:text-align "start"}}
-            [:p [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:img {:style {:vertical-align "bottom" :width "35px" :height "auto"} :src (str "/" image_file) :alt ""}] " " name]]
-            [cert-block id cert-state]]]]
+         ;[:div
          [:div.col-md-12
-          [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]
+          [:div.pull-left.text-left
+           [:p [:i.fa.fa-download.fa-lg.fa-fw] (t :badge/DownloadThisBadge)]
+           [:div {:style {:padding "2px 5px"}}
+            [:p [:i.fa.fa-file-image-o.fa-lg] " " [:b {:style {:font-size "12px"}} [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} (t :badge/Downloadbadgeimage)]]]
+           ;[:p {:style {:display "block"}} [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} #_[:img {:style {:vertical-align "bottom" :width "25px" :height "auto"} :src (str "/" image_file) :alt ""}] " " name]]
+            [cert-block id cert-state]]]
+           ;[:p [:i.fa.fa-file-image-o.fa-lg] " " [:b {:style {:font-size "12px"}} (t :badge/Downloadbadgeimage)]]]
+           ;[:p {:style {:display "block"}} [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:img {:style {:vertical-align "bottom" :width "25px" :height "auto"} :src (str "/" image_file) :alt ""}] " " name]]]
+          [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban.fa-lg] " " (t :badge/IDontWantThisBadge)]]]
+         [:div.col-md-12
+          [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download.fa] " " (t :badge/DownloadThisBadge)]]
           [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]])])))
 
 (defn language-switcher []
