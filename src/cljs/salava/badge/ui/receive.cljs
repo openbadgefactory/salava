@@ -221,7 +221,7 @@
            [:p.pull-right [:a {:href "#" :on-click (fn [] (m/modal! [reject-badge-modal state] {:size :lg}))} [:i.fa.fa-ban] " " (t :badge/IDontWantThisBadge)]]]
           [:div.col-md-12
            [:div {:style {:text-align "start"}}
-            [:p [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:img {:style {:vertical-align "bottom" :width "35px" :height "auto"} :src (str "/" image_file) :alt ""}] name]]
+            [:p [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:img {:style {:vertical-align "bottom" :width "35px" :height "auto"} :src (str "/" image_file) :alt ""}] " " name]]
             [cert-block id cert-state]]]]
          [:div.col-md-12
           [:p.pull-left [:a {:href (str obf_url "/c/receive/download?url=" assertion_url)} [:i.fa.fa-download] " " (t :badge/DownloadThisBadge)]]

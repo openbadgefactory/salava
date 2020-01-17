@@ -69,7 +69,7 @@
             (GET "/pdf_cert/:user-badge-id" []
                  :no-doc true
                  :path-params [user-badge-id :- s/Int]
-                 :auth-rules access/signed
+                 ;:auth-rules access/signed
                  :current-user current-user
                  (ok (f/get-pdf-cert-list ctx current-user user-badge-id)))
 
