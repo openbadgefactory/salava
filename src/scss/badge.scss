@@ -2271,3 +2271,12 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
     }
   }
 }
+
+#badge-receive .existing #badge-info .panel {
+  border: none;
+  box-shadow: none;
+}
+
+#badge-receive .fa-ban {
+  color: $dark-red;
+}

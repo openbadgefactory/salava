@@ -15,7 +15,7 @@
 
 (defn init-data [state]
   (ajax/GET
-   (path-for "/obpv1/social/pending_badges" true)
+   (path-for "/obpv1/badge/pending_badges" true)
    {:handler (fn [data]
                (swap! state assoc :spinner false :pending-badges (:pending-badges data)))}))
 
@@ -35,17 +35,17 @@
     :params {:status new-status}
     :handler (fn []
                (js/setTimeout (fn [] (swap! state assoc :badge-alert nil)) 2000)
-               (if reload-fn (reload-fn state)))
+               (if reload-fn (reload-fn) #_(reload-fn state)))
     :error-handler (fn [{:keys [status status-text]}])}))
 
-(defn update-visibility [visibility badge state]
+(defn update-visibility [visibility badge state reload-fn]
   (swap! state assoc :badge-alert nil)
   (ajax/POST
    (path-for (str "/obpv1/badge/set_visibility/" (:id badge)))
    {:params {:visibility visibility}
     :handler (fn [data]
                (when (= (:status data) "success")
-                 (update-status (:id badge) "accepted" state nil)
+                 (update-status (:id badge) "accepted" state reload-fn)
                  (swap! state assoc :badge-alert "accepted" :badge-name (:name badge))))}))
 
 (defn num-days-left [timestamp]
@@ -59,11 +59,11 @@
           expired?                                                                 (bh/badge-expired? expires_on)
           show-recipient-name-atom                                                 (cursor state [:result :show_recipient_name])
           {:keys [name description tags alignment criteria_content image_file issuer_content_id issuer_content_name issuer_content_url issuer_contact issuer_image issuer_description criteria_url creator_content_id creator_name creator_url creator_email creator_image creator_description message_count endorsement_count]} (content-setter @selected-language content)]
-      [:div {:class "preview-badge" :style {:display (:show-result @state)}}
+      [:div#badge-info {:class "preview-badge" :style {:display (:show-result @state)}}
        [:div.row.flip
         [:div.col-md-9.badge-info
          (if (< 1 (count content))
-           [:div.inline [:span._label (t :core/Languages) ": "] (content-language-selector selected-language content)])
+           [:div.inline [:label (t :core/Languages) ": "] (content-language-selector selected-language content)])
          (bm/issuer-modal-link issuer_content_id issuer_content_name)
          (bm/creator-modal-link creator_content_id creator_name)
          (if (and issued_on (> issued_on 0))
@@ -87,8 +87,7 @@
           :on-click #(do
                        (swap! state assoc :show-result "block"
                               :show-link "none")
-                       (init-badge-preview state))}
-      (t :admin/Showmore)]
+                       (init-badge-preview state))} (t :admin/Showmore)]
      [show-more-content state]]))
 
 (defn pending-badge-content [{:keys [id image_file name description visibility assertion_url meta_badge meta_badge_req issuer_content_name issuer_content_url issued_on issued_by_obf verified_by_obf obf_url]}]
@@ -124,7 +123,6 @@
            (into [:div {:style {:margin "10px -10px"}}]
                  (for [f (plugin-fun (session/get :plugins) "block" "meta_link")]
                    [f {:user_badge_id id}]))
-
            [show-more state]]]]))))
 
 (defn badge-alert [state]
@@ -194,7 +192,7 @@
                            [:hr.border]
                            [:button.btn.btn-primary {:on-click #(do
                                                                   (.preventDefault %)
-                                                                  (update-visibility @visibility badge state))
+                                                                  (update-visibility @visibility badge state reload-fn))
 
                                                      :data-dismiss "modal"} (t :core/Save)]])
 
@@ -212,7 +210,6 @@
                  :on-click #(do
                               (m/modal! [visibility-modal badge state reload-fn] {:size :md :hidden (fn [] (reload-fn state))})
                               (.preventDefault %))
-
                  :data-dismiss "modal"}
         (t :badge/Acceptbadge)]
        [:button {:class "btn btn-warning"
@@ -229,5 +226,5 @@
      [:span (str (t :core/Loading) "...")]
      [:hr]]
     (into [:div {:id "pending-badges"}]
-          (for [badge (:pending @state)]
+          (for [badge (:pending-badges @state)]
             (badge-pending badge state reload-fn)))))

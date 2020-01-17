@@ -125,7 +125,7 @@
                       (merge (dissoc (lookup-badge ctx (:id m) "milestone" (:badge m)) :name))
                       (assoc :required_badges required-badges
                              :completion_status (%completed min_required (count received-required-badges))
-                             :milestone? (= assertion-url (get-in m [:badge :url])))
+                             :milestone? (or (= assertion-url (get-in m [:badge :url])) (string/ends-with? assertion-url (->> (string/split (get-in m [:badge :url]) #"/v1") last))))
                       (dissoc :badge :remote_issuer_id :alignment)))))
        (r/foldcat)))
 

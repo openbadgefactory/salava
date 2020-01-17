@@ -32,8 +32,15 @@
    {:handler (fn [data]
                (swap! state assoc :receive-notifications data))}))
 
+(defn init-new-message-count [state]
+  (ajax/GET
+   (path-for (str "/obpv1/social/messages_count/" (:badge_id @state)))
+   {:handler (fn [data]
+               (reset! (cursor state [:message_count]) data))}))
+
 (defn- init-more [state]
   (when (:owner? @state)
+    (init-new-message-count state)
     (ajax/GET
      (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
      {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)

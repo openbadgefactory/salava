@@ -55,7 +55,7 @@
   (select-user-primary-email-addresses {:userid user-id} (into {:result-set-fn first :row-fn :email} (get-db ctx))))
 
 (defn email-exists?
-  "Check if provided email address exsits"
+  "Check if provided email address exists"
   [ctx email]
   (select-email-address {:email email} (into {:result-set-fn first :row-fn :user_id} (get-db ctx))))
 

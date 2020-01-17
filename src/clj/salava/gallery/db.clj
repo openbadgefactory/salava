@@ -25,21 +25,29 @@
       badges-left
       0)))
 
+#_(defn- select-badges [ctx country gallery_ids order page_count]
+    (let [limit 20
+          offset (* limit page_count)]
+      (if (nil? gallery_ids)
+        (case order
+          "recipients"          (select-gallery-badges-order-by-recipients-all {:country country :limit limit :offset offset} (get-db ctx))
+          "issuer_content_name" (select-gallery-badges-order-by-ic-name-all {:country country :limit limit :offset offset} (get-db ctx))
+          "name"                (select-gallery-badges-order-by-name-all {:country country :limit limit :offset offset} (get-db ctx))
+          (select-gallery-badges-order-by-ctime-all {:country country :limit limit :offset offset} (get-db ctx)))
+        (case order
+          "recipients"          (select-gallery-badges-order-by-recipients-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
+          "issuer_content_name" (select-gallery-badges-order-by-ic-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
+          "name"                (select-gallery-badges-order-by-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
+          (select-gallery-badges-order-by-ctime-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))))))
+
 (defn- select-badges [ctx country gallery_ids order page_count]
   (let [limit 20
         offset (* limit page_count)]
     (if (nil? gallery_ids)
-      (case order
-        "recipients"          (select-gallery-badges-order-by-recipients-all {:country country :limit limit :offset offset} (get-db ctx))
-        "issuer_content_name" (select-gallery-badges-order-by-ic-name-all {:country country :limit limit :offset offset} (get-db ctx))
-        "name"                (select-gallery-badges-order-by-name-all {:country country :limit limit :offset offset} (get-db ctx))
-        (select-gallery-badges-order-by-ctime-all {:country country :limit limit :offset offset} (get-db ctx)))
-      (case order
-        "recipients"          (select-gallery-badges-order-by-recipients-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
-        "issuer_content_name" (select-gallery-badges-order-by-ic-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
-        "name"                (select-gallery-badges-order-by-name-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))
-        (select-gallery-badges-order-by-ctime-filtered {:country country :gallery_ids gallery_ids :limit limit :offset offset} (get-db ctx))))))
-
+      (select-gallery-badges-all {:country country :limit limit :offset offset :order order} (get-db ctx))
+      (if (empty? gallery_ids)
+        []
+        (select-gallery-badges-filtered {:country country :limit limit :offset offset :order order :gallery_ids gallery_ids} (get-db ctx))))))
 
 (defn get-gallery-ids
   "Get gallery-ids with search params"
@@ -61,16 +69,14 @@
     (when (seq filters)
       (into [] (reduce clojure.set/intersection (first filters) (rest filters))))))
 
-
-
 (defn badge-checker [badges]
   (map (fn [b]
          (if (nil? (schema/check g/GalleryBadges b))
            b
            (do
              (log/error (str "Gallery Badge Error: ") (into (sorted-map) (assoc (schema/check g/GalleryBadges b) :badge_id (:badge_id b))))
-             nil)
-           )) badges))
+             nil)))
+       badges))
 
 (defn gallery-badges
   "Get badges for gallery grid"
@@ -90,7 +96,6 @@
   ([ctx user-id visibility]
    (select-users-public-badges {:user_id user-id :visibility visibility} (get-db ctx))))
 
-
 (defn user-country
   "Return user's country id"
   [ctx user-id]
@@ -109,9 +114,9 @@
     (hash-map :countries (-> all-countries
                              (select-keys countries)
                              (sort-countries)
-                             (seq))
+                             (seq)))))
               ;:user-country current-country
-              )))
+
 
 (defn page-countries
   "Return user's country id and list of all countries which users have public pages"
@@ -138,24 +143,23 @@
   (->> coll
        (group-by :id)
        (reduce-kv
-         (fn [r k v]
-           (conj r (if (empty? (rest v))
-                     (first v)
-                     (if (some #(= (:visibility %) "public") v)
-                       (->> v (filter #(= "public" (:visibility %))) first)
-                       (first v))) )) [])))
-
+        (fn [r k v]
+          (conj r (if (empty? (rest v))
+                    (first v)
+                    (if (some #(= (:visibility %) "public") v)
+                      (->> v (filter #(= "public" (:visibility %))) first)
+                      (first v))))) [])))
 
 (defn badge-gallery-id [ctx badge_id]
   (some-> (select-gallery-id {:badge_id badge_id} (get-db ctx)) first :gallery_id))
 
 (defn user-owns-badge? [ctx user-id badge_id]
- (let [gallery-id (badge-gallery-id ctx badge_id)
-       id  (select-user-owns-badge-id {:user_id user-id :gallery_id gallery-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
-  (= user-id id)))
+  (let [gallery-id (badge-gallery-id ctx badge_id)
+        id  (select-user-owns-badge-id {:user_id user-id :gallery_id gallery-id} (into {:result-set-fn first :row-fn :user_id} (get-db ctx)))]
+    (= user-id id)))
 
 (defn public-multilanguage-badge-content
-    "Return data of the public badge by gallery and badge ids. Fetch badge criteria and issuer, uses most recent data.
+  "Return data of the public badge by gallery and badge ids. Fetch badge criteria and issuer, uses most recent data.
     Fetch also average rating of the badge, rating count and recipient count"
   ([ctx badge-id]
    (map (fn [content]
@@ -224,8 +228,8 @@
                    ORDER BY p.mtime DESC
                    LIMIT 75")
         pages (jdbc/with-db-connection
-                [conn (:connection (get-db ctx))]
-                (jdbc/query conn (into [query] params)))]
+               [conn (:connection (get-db ctx))]
+               (jdbc/query conn (into [query] params)))]
     (p/page-badges ctx pages)))
 
 (defn public-pages-p [ctx country owner]
@@ -255,12 +259,12 @@
                    where
                    order)
         profiles (jdbc/with-db-connection
-                   [conn (:connection (get-db ctx))]
-                   (jdbc/query conn (into [query] params)))
+                  [conn (:connection (get-db ctx))]
+                  (jdbc/query conn (into [query] params)))
         common-badge-counts (if-not (empty? profiles)
                               (->>
-                                (select-common-badge-counts {:user_id user-id} (get-db ctx))
-                                (reduce #(assoc %1 (:user_id %2) (:c %2)) {})))
+                               (select-common-badge-counts {:user_id user-id} (get-db ctx))
+                               (reduce #(assoc %1 (:user_id %2) (:c %2)) {})))
         profiles-with-badges (map #(assoc % :common_badge_count (get common-badge-counts (:id %) 0)) profiles)
         visible-profiles (filter #(if common_badges
                                     (pos? (:common_badge_count %))
@@ -286,15 +290,14 @@
     (rename-keys badge-content {:image_file :image :name :title})))
 
 (defn gallery-stats [ctx last-login user-id]
-  {:profiles {:all (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))
-              :since-last-visited (gallery-profiles-count-since-last-login {:last_login last-login} (into {:result-set-fn first :row-fn :profiles_count}(get-db ctx)))}
-   :pages {:all (gallery-pages-count {} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
-           :since-last-visited (gallery-pages-count-since-last-login {:user_id user-id :last_login last-login} (into {:result-set-fn first :row-fn :pages_count}(get-db ctx)))
-           }
-   :badges {:all (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count}(get-db ctx)))
+  {:profiles {:all (gallery-profiles-count {} (into {:result-set-fn first :row-fn :profiles_count} (get-db ctx)))
+              :since-last-visited (gallery-profiles-count-since-last-login {:last_login last-login} (into {:result-set-fn first :row-fn :profiles_count} (get-db ctx)))}
+   :pages {:all (gallery-pages-count {} (into {:result-set-fn first :row-fn :pages_count} (get-db ctx)))
+           :since-last-visited (gallery-pages-count-since-last-login {:user_id user-id :last_login last-login} (into {:result-set-fn first :row-fn :pages_count} (get-db ctx)))}
+
+   :badges {:all (gallery-badges-count {} (into {:result-set-fn first :row-fn :badges_count} (get-db ctx)))
             :since-last-visited (gallery-badges-count-since-last-login {:user_id user-id :last_login last-login} (into {:result-set-fn first :row-fn :badges_count} (get-db ctx)))}
-   :map {:all (all-users-on-map-count {} (into {:result-set-fn first :row-fn :users_count} (get-db ctx)))}
-   })
+   :map {:all (all-users-on-map-count {} (into {:result-set-fn first :row-fn :users_count} (get-db ctx)))}})
 
 (defn public-by-user [ctx kind user-id current-user-id]
   (let [visibility (if current-user-id "internal" "public")]
@@ -305,14 +308,14 @@
 
 (defn badge-recipients "Return badge recipients" [ctx user-id gallery-id]
   (let [recipients (when user-id (some->> (select-badge-recipients-g {:gallery_id gallery-id} (get-db ctx)) process-recipients))]
-   (hash-map :public_users (->> recipients
-                                (filter #(not= (:visibility %) "private"))
-                                (map #(dissoc % :visibility))
-                                distinct)
-             :private_user_count (->> recipients
-                                      (filter #(= (:visibility %) "private"))
-                                      count)
-             :all_recipients_count (count recipients))))
+    (hash-map :public_users (->> recipients
+                                 (filter #(not= (:visibility %) "private"))
+                                 (map #(dissoc % :visibility))
+                                 distinct)
+              :private_user_count (->> recipients
+                                       (filter #(= (:visibility %) "private"))
+                                       count)
+              :all_recipients_count (count recipients))))
 
 (defn badge-rating [ctx user-id gallery-id]
- (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx)))
+  (select-common-badge-rating-g {:gallery_id gallery-id} (get-db-1 ctx)))

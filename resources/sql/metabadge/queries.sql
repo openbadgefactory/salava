@@ -3,7 +3,7 @@ SELECT ub.id AS user_badge_id, bc.name, bc.image_file, ub.issued_on, ub.status, 
 JOIN badge AS badge ON (badge.id = ub.badge_id)
 JOIN badge_badge_content AS bbc ON (bbc.badge_id = badge.id)
 JOIN badge_content AS bc ON (bc.id = bbc.badge_content_id AND bc.language_code = badge.default_language_code)
-WHERE ub.assertion_url = :assertion_url AND ub.revoked = 0
+WHERE (ub.assertion_url = :assertion_url OR ub.assertion_url LIKE :p) AND ub.revoked = 0
 ORDER BY ctime DESC
 
 --name: select-user-badge-by-id
