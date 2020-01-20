@@ -4,7 +4,7 @@
             [salava.core.ui.helper :refer [path-for]]
             [salava.core.i18n :refer [t]]
             [salava.core.ui.modal :as mo]
-            [clojure.string :refer [blank?]]
+            [clojure.string :refer [blank? ends-with? split]]
             [cemerick.url :refer [url-encode]]))
 
 (defn init-metabadge-data [param state]
@@ -40,11 +40,17 @@
     (<= 90 completion_status 99) "_10"))
 
 (defn current-badge [required_badges current-badge-id]
-  (->> required_badges (filter #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id))) first))
+  (->> required_badges (filter #(or (= (:user_badge_id %) current-badge-id)
+                                    (= (:url %) current-badge-id)
+                                    (ends-with? current-badge-id (last (split (:url %) #"/v1")))))
+       first))
 
 (defn required-block-badges [m current-badge-id milestone?]
   (let [current-badge (current-badge (:required_badges m) current-badge-id)]
-    (if milestone? (take 20 (:required_badges m)) (into [current-badge] (->> (take 19 (remove #(or (= (:user_badge_id %) current-badge-id) (= (:url %) current-badge-id)) (:required_badges m)))
+    (if milestone? (take 20 (:required_badges m)) (into [current-badge] (->> (take 19 (remove #(or (= (:user_badge_id %) current-badge-id)
+                                                                                                   (= (:url %) current-badge-id)
+                                                                                                   (ends-with? current-badge-id (last (split (:url %) #"/v1"))))
+                                                                                              (:required_badges m)))
                                                                              (sort-by :issued_on >))))))
 (defn partition-count [m current-badge-id milestone?]
   (let [no (count (required-block-badges m current-badge-id milestone?))]
@@ -53,7 +59,7 @@
 (defn badge-block [m current-badge-id milestone?]
   (let [{:keys [user_badge_id name image_file image criteria criteria_content required_badges received]} m
         milestone-image-class (if (and user_badge_id (pos? user_badge_id)) "" " not-received")]
-    [:a {:href "#" :on-click #(mo/open-modal [:metabadge :metadata] m)}
+    [:a {:href "#" :on-click #(do (.preventDefault %) (mo/open-modal [:metabadge :metadata] m))}
      [:div.metabadge {:class (if (> (count required_badges) 8) " metabadge-large")}
       [:div.panel
        [:div.panel-heading [:span.metabadge_block_name (:name m)]
@@ -74,7 +80,9 @@
                                               (let [;{:keys [badge-info received current]} badge
                                                     {:keys [user_badge_id name image_file image criteria criteria_content url]} badge
                                                     image (if image_file (str "/" image_file) image)
-                                                    current (if (string? current-badge-id) (= url current-badge-id) (= user_badge_id current-badge-id))]
+                                                    current (if (string? current-badge-id)
+                                                              (or (= url current-badge-id) (ends-with? current-badge-id (last (split url #"/v1"))))
+                                                              (= user_badge_id current-badge-id))]
 
                                                 (conj r (if (and user_badge_id (pos? user_badge_id))
                                                           [:td [:div [:img.img-circle {:src image :alt (str (t :badge/Badge) " " name) :title name :class (if current "img-thumbnail" "")}]]]

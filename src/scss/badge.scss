@@ -2277,6 +2277,13 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   box-shadow: none;
 }
 
-#badge-receive .fa-ban {
+#badge-receive {
+  .fa-ban {
   color: $dark-red;
+  }
+  .pdf-list{
+    a:hover, a:focus{
+    font-weight: bold;
+  }
+}
 }

@@ -13,7 +13,11 @@
             [reagent.session :as session]))
 
 (defn current-badge [metabadge milestone? current-badge-id]
-  (if milestone? (->> metabadge first) (->> metabadge first :required_badges (filter #(or (= current-badge-id (:user_badge_id %)) (= current-badge-id (:url %)))) first)))
+  (if milestone? (->> metabadge first) (->> metabadge first :required_badges (filter #(or
+                                                                                       (= current-badge-id (:user_badge_id %))
+                                                                                       (= current-badge-id (:url %))
+                                                                                       (clojure.string/ends-with? current-badge-id (last (clojure.string/split (:url %) #"/v1")))))
+                                            first)))
 
 (defn %completed [req gotten]
   (Math/round (double (* (/ gotten req) 100))))

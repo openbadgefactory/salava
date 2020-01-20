@@ -7,51 +7,45 @@
             [reagent.session :as session]
             [salava.translator.ui.helper :refer [translate]]))
 
-
-
-
 (defn init-issuer-connection [issuer-id state]
   (ajax/GET
-    (path-for (str "/obpv1/social/issuer_connected/" issuer-id))
-    {:handler (fn [data]
-                (swap! state assoc :connected data)
-                )}))
+   (path-for (str "/obpv1/social/issuer_connected/" issuer-id))
+   {:handler (fn [data]
+               (swap! state assoc :connected data))}))
 
 (defn init-issuer-content [state issuer-id]
   (ajax/GET
-    (path-for (str "/obpv1/badge/issuer/" issuer-id))
-    {:handler (fn [data]
-                (reset! state data)
-                (if (session/get :user) (init-issuer-connection issuer-id state)))
-     }))
+   (path-for (str "/obpv1/badge/issuer/" issuer-id))
+   {:handler (fn [data]
+               (reset! state data)
+               (if (session/get :user) (init-issuer-connection issuer-id state)))}))
 
 (defn init-creator-content [state creator-id]
   (ajax/GET
-    (path-for (str "/obpv1/badge/creator/" creator-id))
-    {:handler (fn [data]
-                (reset! state data))}))
+   (path-for (str "/obpv1/badge/creator/" creator-id))
+   {:handler (fn [data]
+               (reset! state data))}))
 
 (defn add-issuer-to-favourites [issuer-id state]
   (ajax/POST
-    (path-for (str "/obpv1/social/create_connection_issuer/" issuer-id))
-    {:handler (fn []
-                (init-issuer-connection issuer-id state))}))
-
+   (path-for (str "/obpv1/social/create_connection_issuer/" issuer-id))
+   {:handler (fn []
+               (init-issuer-connection issuer-id state))}))
 
 (defn remove-issuer-from-favourites [issuer-id state init-fn]
   (ajax/POST
-    (path-for (str "/obpv1/social/delete_connection_issuer/" issuer-id))
-    {:handler (fn []
-                (if init-fn
-                  init-fn
-                  (init-issuer-connection issuer-id state)))}))
+   (path-for (str "/obpv1/social/delete_connection_issuer/" issuer-id))
+   {:handler (fn []
+               (if init-fn
+                 init-fn
+                 (init-issuer-connection issuer-id state)))}))
 
 (defn- issuer-image [path name]
   (when (not-empty path)
     [:img.profile-picture
      {:src (if (re-find #"^file/" path) (str "/" path) path)
       :style {:width "50px"}
-      :alt name }]))
+      :alt name}]))
 
 (defn content [param]
   (let [issuer-id (if (map? param) (:id param) param)
@@ -64,13 +58,11 @@
         [:div.row {:id "badge-contents"}
          [:div.col-xs-12
           [:div.row
-           (if (session/get :user)
+           (when (session/get-in [:user :id])
              [:div.pull-right
               (if-not @connected?
                 [:a {:href "#" :on-click #(add-issuer-to-favourites issuer-id state)} [:i {:class "fa fa-bookmark-o"}] (str " " (t :badge/Addtofavourites))]
-                [:a {:href "#" :on-click #(remove-issuer-from-favourites issuer-id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :badge/Removefromfavourites))]
-                )])
-           ]
+                [:a {:href "#" :on-click #(remove-issuer-from-favourites issuer-id state nil)} [:i {:class "fa fa-bookmark"}] (str " " (t :badge/Removefromfavourites))])])]
           [:h2.uppercase-header
            (issuer-image image_file name)
            " "

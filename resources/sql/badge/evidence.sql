@@ -25,7 +25,7 @@ REPLACE INTO user_properties (user_id, name, value)
 DELETE FROM user_properties WHERE name = :name AND user_id = :user_id
 
 --name: select-user-evidence-property
-SELECT value FROM user_properties WHERE name = :name AND user_id = :user_id
+SELECT value FROM user_properties WHERE name = :name AND (user_id = :user_id OR (SELECT ub.user_id FROM user_badge ub WHERE ub.id = :id)) 
 
 --name: select-user-evidence-by-url
 SELECT DISTINCT ube.url FROM user_badge_evidence AS ube

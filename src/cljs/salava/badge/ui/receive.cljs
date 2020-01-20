@@ -61,17 +61,23 @@
               :on-click #(reject-badge state)}
      (t :core/Delete)]]])
 
+(defn toggle-pdf [state]
+  (let [p (cursor state [:pdf-atom])]
+    (if @p (reset! p false) (reset! p true))))
+
 (defn cert-block [user-badge-id state]
-  (when-let [cert-uri (some-> @state :cert :uri)]
-    [:div
-     [:p [:i.fa.fa-file-pdf-o.fa-lg] " " [:b {:style {:font-size "12px"}} (t :badge/Downloadpdf)]]
-     (doall
-      (map (fn [[badge lang]]
-             (let [uri (str cert-uri "&lang=" lang)]
-               [:p {:key uri :style {:padding "0 1px"}}
-                [:i.fa.fa-file-pdf-o.fa-fw] " "
-                [:a {:href uri :style {:font-size "12px"}} (if-not (blank? lang) (str badge " (" lang ")") badge)]]))
-           (:badge @state)))]))
+  (let [pdf-atom (cursor state [:pdf-atom])]
+    (when-let [cert-uri (some-> @state :cert :uri)]
+      [:div.pdf-list
+       [:p [:i.fa.fa-file-pdf-o.fa-lg] " " [:a {:href "#" :on-click #(toggle-pdf state)} [:span [:b {:style {:font-size "12px"}} (t :badge/Downloadpdf)] [:i.fa.fa-fw {:class (if @pdf-atom " fa-caret-down" " fa-caret-right")}]]]]
+       (when @pdf-atom
+         (doall
+          (map (fn [[badge lang]]
+                 (let [uri (str cert-uri "&lang=" lang)]
+                   [:p {:key uri :style {:padding "0 1px"}}
+                    [:i.fa.fa-file-pdf-o.fa-fw] " "
+                    [:a {:href uri :style {:font-size "12px"}} (if-not (blank? lang) (str badge " (" lang ")") badge)]]))
+               (:badge @state))))])))
 
 (defn init-data [state id]
   (ajax/GET
