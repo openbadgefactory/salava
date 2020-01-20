@@ -1,7 +1,7 @@
 (ns salava.admin.schemas
   (:require [schema.core :as s
-             :include-macros true ;; cljs only
-             ]
+             :include-macros true] ;; cljs only
+
             [salava.core.countries :refer [all-countries]]
             [salava.user.schemas :as u]))
 
@@ -25,7 +25,7 @@
                                     :backpack_id      (s/maybe s/Int)
                                     :ctime            s/Int
                                     :mtime            s/Int}]
-                          
+
                           :role        (s/enum "user" "admin")
                           :ctime s/Int
                           :last_login (s/maybe s/Int)
@@ -59,11 +59,11 @@
                            :creator_email       (s/maybe s/Str)
                            :creator_image       (s/maybe s/Str)
                            :emails [{:email            s/Str
-                                    :verified         s/Bool
-                                    :primary_address  s/Bool
-                                    :backpack_id      (s/maybe s/Int)
-                                    :ctime            s/Int
-                                    :mtime            s/Int}]}})
+                                     :verified         s/Bool
+                                     :primary_address  s/Bool
+                                     :backpack_id      (s/maybe s/Int)
+                                     :ctime            s/Int
+                                     :mtime            s/Int}]}})
 
 (s/defschema Badges {:name s/Str
                      :image_file (s/maybe s/Str)
@@ -76,8 +76,8 @@
                             :creator_name        (s/maybe s/Str)
                             :creator_url         (s/maybe s/Str)
                             :creator_email       (s/maybe s/Str)
-                            :creator_image       (s/maybe s/Str)
-                            }})
+                            :creator_image       (s/maybe s/Str)}})
+
 
 (s/defschema Report {:description (s/maybe s/Str)
                      :report_type (s/enum "inappropriate" "bug" "mistranslation" "other" "fakebadge")
@@ -113,16 +113,16 @@
 (s/defschema UserSearch {:name          (s/constrained s/Str #(and (>= (count %) 0)
                                                                    (<= (count %) 255)))
                          :country       (apply s/enum (conj (keys all-countries) "all"))
-                         
+
                          :order_by      (s/enum "name" "ctime" "common_badge_count")
                          :filter   (s/enum  "all" "deleted")})
 
 (s/defschema UserProfiles {:first_name (s/constrained s/Str #(and (>= (count %) 1)
                                                                   (<= (count %) 255)))
                            :last_name  (s/constrained s/Str #(and (>= (count %) 1)
-                                                          (<= (count %) 255)))
+                                                              (<= (count %) 255)))
                            :country    (apply s/enum (keys all-countries))
-                              
+
                            :ctime s/Int
                            :id s/Int
                            :deleted (s/enum true false)

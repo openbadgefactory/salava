@@ -27,20 +27,22 @@
     (context "/obpv1/page" []
              :tags ["page"]
              (GET "/" []
-                  :return [schemas/Page]
+                  :return schemas/Pages
                   :summary "Get user pages"
                   :auth-rules access/signed
                   :current-user current-user
-                  (ok (p/user-pages-all ctx (:id current-user))))
+                  (ok {:pages (p/user-pages-all ctx (:id current-user))}))
 
              (POST "/create" []
+                   :no-doc true
                    :return s/Str
-                   :summary "Create a new empty page"
+                   :summary "Create a new empty page. Returns page id"
                    :auth-rules access/signed
                    :current-user current-user
                    (ok (str (p/create-empty-page! ctx (:id current-user)))))
 
              (GET "/:pageid" []
+                  :no-doc true
                   :return schemas/ViewPage
                   :path-params [pageid :- s/Int]
                   :summary "Edit page theme"
@@ -75,6 +77,7 @@
                         (not-found)))))
 
              (GET "/export-to-pdf/:pageid/:page-name/:opt-header" []
+                  :no-doc true
                   :path-params [pageid :- s/Int
                                 opt-header :- s/Str
                                 page-name :- s/Str]
@@ -84,7 +87,6 @@
                       ok
                       (header  "Content-Disposition" (str "attachment; filename=\""page-name".pdf\""))
                       (header "Content-Type" "application/pdf")))
-
 
              (POST "/password/:pageid" []
                    :return schemas/ViewPage
@@ -100,6 +102,7 @@
                        (unauthorized))))
 
              (GET "/edit/:pageid" []
+                  :no-doc true
                   :return schemas/EditPageContent
                   :path-params [pageid :- s/Int]
                   :summary "Edit page"
@@ -108,6 +111,7 @@
                   (ok (p/page-for-edit ctx pageid (:id current-user))))
 
              (POST "/save_content/:pageid" []
+                   :no-doc true
                    :return {:status (s/enum "error" "success")
                             :message (s/maybe s/Str)}
                    :path-params [pageid :- s/Int]
@@ -117,6 +121,7 @@
                    (ok (p/save-page-content! ctx pageid page-content (:id current-user))))
 
              (POST "/save_theme/:pageid" []
+                   :no-doc true
                    :return {:status (s/enum "error" "success")
                             :message (s/maybe s/Str)}
                    :path-params [pageid :- s/Int]
@@ -129,6 +134,7 @@
                    (ok (p/set-theme! ctx pageid theme border padding (:id current-user))))
 
              (GET "/settings/:pageid" []
+                  :no-doc true
                   :return schemas/PageSettings
                   :path-params [pageid :- s/Int]
                   :summary "Edit page settings"
@@ -137,6 +143,7 @@
                   (ok (p/page-settings ctx pageid (:id current-user))))
 
              (POST "/save_settings/:pageid" []
+                   :no-doc true
                    :return {:status (s/enum "error" "success")
                             :message (s/maybe s/Str)}
                    :path-params [pageid :- s/Int]

@@ -1,16 +1,17 @@
 (ns salava.profile.db
   (:require [yesql.core :refer [defqueries]]
-            [salava.core.util :refer [get-db get-plugins plugin-fun md->html]]
+            [salava.core.util :refer [get-db get-plugins plugin-fun md->html file-from-url-fix url?]]
             [salava.core.helper :refer [dump private?]]
             [slingshot.slingshot :refer :all]
             [clojure.tools.logging :as log]
             [clojure.data.json :as json]
-            [clojure.string :refer [blank?]]))
+            [clojure.string :refer [blank?]]
+            [salava.file.upload :refer [upload-file-from-http-url upload-file-from-data-url]]))
 
 (defqueries "sql/profile/main.sql")
 
 (defn user-badges [ctx user-id]
- (as-> (first (plugin-fun (get-plugins ctx) "main" "user-badges-all")) f (if f (f ctx user-id) [])))
+ (as-> (first (plugin-fun (get-plugins ctx) "main" "user-badges-all")) f (if f (-> (f ctx user-id) :badges) [])))
 
 (defn user-published-badges [ctx user-id]
  (as-> (first (plugin-fun (get-plugins ctx) "db" "public-by-user")) f (if f (-> (f ctx "badges" user-id user-id) :badges) [])))
@@ -41,6 +42,16 @@
  (some-> (select-user-profile-properties {:user_id user-id} (into {:result-set-fn first :row-fn :value} (get-db ctx)))
      (json/read-str :key-fn keyword)))
 
+(defn- update-profile-properties [ctx user-id data]
+  "data is a map of property key(s) you want to update and value(s)"
+  (let [profile-properties (profile-properties ctx user-id)]
+    (insert-user-profile-properties! {:value (json/write-str (merge profile-properties data))
+                                      :user_id user-id} (get-db ctx))))
+
+(defn is-profile-tab?
+ "Check if page is a profile tab"
+ [ctx user-id page-id]
+ (if-let [check (some #(= % page-id) (some-> (profile-properties ctx user-id) :tabs))] true false))
 
 (defn showcase-blocks [ctx user-id]
   (let [blocks (select-badge-showcase-blocks {:user_id user-id} (get-db ctx))]
@@ -74,7 +85,7 @@
      :visibility visibility
      :blocks blocks
      :owner?  (= user-id current-user-id)
-     :theme (-> profile-properties :theme)
+     :theme (or (-> profile-properties :theme) 0)
      :tabs tabs}))
 
 (defn user-profile-for-edit
@@ -87,12 +98,6 @@
      :profile user-profile
      :user_id user-id
      :picture_files picture-files}))
-
-(defn is-profile-tab?
- "Check if page is a profile tab"
- [ctx user-id page-id]
- (if-let [check (some #(= % page-id) (some-> (profile-properties ctx user-id) :tabs))] true false))
-
 
 (defn save-showcase-badges [ctx block]
   (let [badges (:badges block)
@@ -118,6 +123,10 @@
                  (delete-showcase-block! {:id (:id block)} (get-db ctx))
                  (delete-showcase-badges! {:block_id (:id block)} (get-db ctx)))))
 
+(defn delete-block-multi! [ctx block-ids user-id]
+  (delete-showcase-block-multi! {:block_ids block-ids :user_id user-id} (get-db ctx))
+   #_(delete-showcase-badges-multi! {:block_ids block-ids :user_id user-id} (get-db ctx)))
+
 (defn publish-profile-tabs
  "Set profile tab page's visibility to public"
  [ctx user-id tabs]
@@ -126,34 +135,70 @@
   (when-not (= "public" visibility)
    (as-> (first (plugin-fun (get-plugins ctx) "main" "toggle-visibility!")) f (f ctx id "public" user-id)))))
 
-(defn save-profile-blocks [ctx blocks theme tabs user-id]
+(defn save-blocks! [ctx blocks user-id]
   (let [profile-blocks (profile-blocks ctx user-id)
-        badge-ids (map :id (user-badges ctx user-id))
+        badge-ids (pmap :id (user-badges ctx user-id))
+        profile-properties (profile-properties ctx user-id)
         properties (atom [])]
-   (doseq [block-index (range (count blocks))]
-      (let [block (-> (nth blocks block-index)
-                      (assoc :block_order block-index))
-            id (and (:id block)
-                    (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) profile-blocks))]
+     (doseq [block-index (range (count blocks))]
+        (let [block (-> (nth blocks block-index)
+                        (assoc :block_order block-index))
+              id (and (:id block)
+                      (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) profile-blocks))]
 
-       (case (:type block)
-        ("showcase") (when (= (->> (:badges block)
-                                   (filter (fn [x] (some #(= (:id x) %) badge-ids)))
-                                   count)
-                              (count (:badges block)))
-                           (if id
-                             (update-showcase-block! ctx (assoc block :user_id user-id))
-                             (create-showcase-block! ctx (assoc block :user_id user-id))))
-        ("badges" "pages" "location")  (swap! properties conj block)
-        nil)))
-   (publish-profile-tabs ctx user-id tabs)
-   (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties
-                                                             :theme theme
-                                                             :tabs (mapv :id tabs)))
-                                     :user_id user-id} (get-db ctx))
+         (case (:type block)
+          ("showcase") (when (= (->> (:badges block)
+                                     (filter (fn [x] (some #(= (:id x) %) badge-ids)))
+                                     count)
+                                (count (:badges block)))
+                             (if id
+                               (update-showcase-block! ctx (assoc block :user_id user-id))
+                               (create-showcase-block! ctx (assoc block :user_id user-id))))
+          ("badges" "pages" "location")  (swap! properties conj block)
+          nil)))
+   (update-profile-properties ctx user-id {:blocks @properties})
    (doseq [old-block profile-blocks]
      (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
        (delete-block! ctx old-block)))))
+
+#_(defn save-profile-blocks [ctx blocks theme tabs user-id]
+    (let [profile-blocks (profile-blocks ctx user-id)
+          badge-ids (map :id (user-badges ctx user-id))]
+     (doseq [block-index (range (count blocks))]
+        (let [block (-> (nth blocks block-index)
+                        (assoc :block_order block-index))
+              id (and (:id block)
+                      (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) profile-blocks))]
+
+         (case (:type block)
+          ("showcase") (when (= (->> (:badges block)
+                                     (filter (fn [x] (some #(= (:id x) %) badge-ids)))
+                                     count)
+                                (count (:badges block)))
+                             (if id
+                               (update-showcase-block! ctx (assoc block :user_id user-id))
+                               (create-showcase-block! ctx (assoc block :user_id user-id))))
+          ("badges" "pages" "location")  (swap! properties conj block)
+          nil)))
+     (publish-profile-tabs ctx user-id tabs)
+     (insert-user-profile-properties! {:value (json/write-str (hash-map :blocks @properties
+                                                               :theme theme
+                                                               :tabs (mapv :id tabs)))
+                                       :user_id user-id} (get-db ctx))
+     (doseq [old-block profile-blocks]
+       (if-not (some #(and (= (:type old-block) (:type %)) (= (:id old-block) (:id %))) blocks)
+         (delete-block! ctx old-block)))))
+
+(defn reorder-blocks! [ctx input user-id]
+  (when (seq input)
+    (let [profile-blocks (profile-blocks ctx user-id)
+          order (filter (fn [f] (some #(= f (:block_order %)) profile-blocks)) input) ;;clean out non existent block order
+          reordered-blocks (->> (reduce (fn [r b]
+                                            (conj r (if (some #(= (:block_order b) %) order) (assoc b :block_order (.indexOf order (:block_order b))) b)))
+                                       []
+                                       profile-blocks)
+                                (sort-by :block_order <))]
+      (save-blocks! ctx reordered-blocks user-id))))
 
 (defn save-user-profile
   "Save user's profile"
@@ -167,11 +212,163 @@
              :let [{:keys [field value]} (get fields index)]]
        (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
      (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile_picture :about about :id user-id} (get-db ctx))
-     (save-profile-blocks ctx blocks theme tabs user-id)
+     (when (seq blocks) (save-blocks! ctx blocks user-id))
+     (when (seq tabs) (publish-profile-tabs ctx user-id tabs))
+     (update-profile-properties ctx user-id {:theme theme :tabs (mapv :id tabs)})
+     #_(save-profile-blocks ctx blocks theme tabs user-id)
      {:status "success" :message "profile/Profilesuccesfullyupdated"}
      (catch Object _
        (log/error _)
        {:status "error" :message ""}))))
+
+(defn save-user-profile-p [ctx profile user-id]
+ (let [{:keys [profile_visibility profile_picture about theme]} profile
+       existing-user-info (user-information ctx user-id)
+       about (if about about (-> existing-user-info :about))
+       profile_visibility (if (clojure.string/blank? profile_visibility) (-> existing-user-info :profile_visibility) profile_visibility)
+       profile-picture (cond
+                         (url? profile_picture) (upload-file-from-http-url ctx user-id profile_picture) #_(file-from-url-fix ctx profile_picture)
+                         (and (not (clojure.string/blank? profile_picture))(re-find #"^data" profile_picture)) (upload-file-from-data-url ctx user-id profile_picture (.lastIndexOf profile_picture ","))
+                         :else (-> existing-user-info :profile_picture))
+       profile-properties (profile-properties ctx user-id)]
+
+   (try+
+     (if (and (private? ctx) (= "public" profile_visibility))
+       (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
+     (update-user-visibility-picture-about! {:profile_visibility profile_visibility :profile_picture profile-picture :about about :id user-id} (get-db ctx))
+     (when theme (update-profile-properties ctx user-id {:theme theme}))
+     {:status "success" :message "profile/Profilesuccesfullyupdated"}
+     (catch Object _
+       (log/error _)
+       {:status "error" :message ""}))))
+
+(defn add-profile-block! [ctx new-block user-id]
+  (try+
+    (let [profile-properties (profile-properties ctx user-id)
+          existing-blocks (profile-blocks ctx user-id)
+          badge-ids (map :id (user-badges ctx user-id))
+          blocks (conj (vec existing-blocks) new-block)]
+     (doseq [block-index (range (count blocks))]
+      (let [block (-> (nth blocks block-index)
+                      (assoc :block_order block-index))
+            id (and (:id block)
+                    (some #(and (= (:type %) (:type block)) (= (:id %) (:id block))) blocks))]
+         (case (:type block)
+          ("showcase") (when (= (->> (:badges block)
+                                     (filter (fn [x] (some #(= x %) badge-ids)))
+                                     count)
+                                (count (:badges block)))
+                         (let [badges (if (map? (last (:badges block)))
+                                          (:badges block)
+                                          (when (seq (:badges block)) (->> (select-badge-multi {:ids (:badges block)} (get-db ctx)))))]
+                           (if (empty? badges)
+                             (throw+ "Trying to create showcase without badges or with badges user does not own")
+                             (if id
+                               (update-showcase-block! ctx (assoc block :badges badges :user_id user-id :format "short"))
+                               (create-showcase-block! ctx (assoc block :badges badges :user_id user-id :format "short"))))))
+
+            nil)))
+     {:status "success"})
+    (catch Object _
+      (log/error _)
+      {:status "error" :message _})))
+
+(defn add-profile-fields! "add profile fields to user profile" [ctx fields user-id]
+ (let [existing-fields (vec (user-profile ctx user-id))]
+   (try+
+    (doseq [index (range (count existing-fields) (+ (count existing-fields)(count fields)))
+              :let [{:keys [field value]} (get (into existing-fields fields) index)]]
+        (insert-user-profile-field! {:user_id user-id :field field :value value :field_order index} (get-db ctx)))
+    {:status "success"}
+    (catch Object _
+     (log/error _)
+     {:status "error" :message _}))))
+
+(defn reorder-fields! [ctx input user-id]
+ (try+
+   (let [fields (select-user-profile-fields-multi {:field_ids input :user_id user-id} (get-db ctx))
+         field_ids (filter (fn [f] (some #(= f (:id %)) fields)) input)
+         reordered-fields (reduce (fn [r f]
+                                    (conj r (if (some #(= (:id f) %) field_ids) (assoc f :field_order (.indexOf field_ids (:id f))) f)))
+                            []
+                            fields)]
+       (when (seq fields)
+         (do
+           (delete-user-profile-fields! {:user_id user-id} (get-db ctx))
+           (doseq [f reordered-fields
+                   :let [{:keys [field value field_order]} f]]
+             (insert-user-profile-field! {:user_id user-id :field field :value value :field_order field_order} (get-db ctx))))))
+   (catch Object _
+     {:status "error" :message _})))
+
+
+(defn add-profile-tabs! "add pages as tabs to profile" [ctx input user-id]
+ (let [input (distinct input)
+       profile-properties (profile-properties ctx user-id)
+       existing-tabs (->> (:tabs profile-properties) (remove (fn [t] (some #(= t %) input))) vec)
+       tabs (if (seq input)(select-page-multi {:tabs input :user_id user-id} (get-db ctx)) [])
+       reordered-tabs (reduce (fn [r t]
+                                  (conj r (if (some #(= (:id t) %) input) (assoc t :order (.indexOf input (:id t))) t)))
+                          []
+                          tabs)
+       tabs-to-add (->> reordered-tabs (sort-by :order <))]
+   (try+
+    (when-not (every? true? (map #(= user-id (:user_id %)) tabs-to-add))
+      (throw+ {:status "error" :message "user trying to add page they do not own"}))
+    (when (seq tabs-to-add)
+     (publish-profile-tabs ctx user-id tabs-to-add)
+     (update-profile-properties ctx user-id {:tabs (into existing-tabs (mapv :id tabs-to-add))})
+     #_(insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :tabs (into existing-tabs (mapv :id tabs-to-add))))
+                                         :user_id user-id} (get-db ctx)))
+    {:status "success"}
+    (catch Object _
+      (log/error _)
+      {:status "error" :message _}))))
+
+(defn reorder! [ctx data user-id]
+ (let [{:keys [type input]} data]
+   (when (seq input)
+     (try+
+       (let [profile-properties (profile-properties ctx user-id)
+             input (distinct input)]
+         (case type
+           "tabs" (add-profile-tabs! ctx input user-id)
+           "fields" (reorder-fields! ctx input user-id)
+           "blocks" (reorder-blocks! ctx input user-id)
+           nil)
+        {:status "success"})
+      (catch Object _
+       {:status "error" :message _})))))
+
+(defn delete-profile-blocks! [ctx block-ids user-id]
+ (try+
+  (delete-block-multi! ctx block-ids user-id)
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
+
+(defn delete-profile-fields! [ctx field_ids user-id]
+ (try+
+  (when (seq field_ids)
+    (delete-user-profile-fields-multi! {:user_id user-id :field_ids field_ids} (get-db ctx)))
+  {:status "success"}
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
+
+(defn delete-profile-tabs! [ctx tabs user-id]
+ (try+
+  (let [profile-properties (profile-properties ctx user-id)
+        existing-tabs (-> profile-properties :tabs)
+        tabs (if (seq tabs)(select-page-multi {:tabs tabs :user_id user-id} (get-db ctx)) [])
+        filtered-tabs (remove (fn [t] (some #(= t  (:id %)) tabs)) existing-tabs)]
+    (insert-user-profile-properties! {:value (json/write-str (assoc profile-properties :tabs filtered-tabs))
+                                      :user_id user-id} (get-db ctx))
+    {:status "success"})
+  (catch Object _
+    (log/error _)
+    {:status "error" :message _})))
 
 (defn profile-metrics [ctx user-id]
  (let [user-profile (user-information-and-profile ctx user-id nil)

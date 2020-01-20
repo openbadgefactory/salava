@@ -68,12 +68,12 @@ button {
     outline: none;
 }
 
-#grid-filter .btn, #buttons .col-xs-8 .btn {
+#grid-filter .btn, #buttons .col-xs-8 .btn, #grid-filter-modal .btn {
   color: #ffffff;
   background-color: $icon-color;
   border-color:darken($icon-color, 2%);
   margin: 0 3px 6px 0;
-  &.btn-active, &.btn:hover{
+  &.btn-active, &.btn:hover, &.btn:focus{
     color: #ffffff;
     background-color: darken($text-color,20% );//#463c44;
     border-color: darken($text-color,25% );
@@ -215,6 +215,11 @@ a#login-button {
     box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);
   }
 }
+
+.form-control:focus{
+  color: $text-color;
+}
+
 select.form-control  {
   -webkit-appearance:none;
   background: #FFF url(/img/down_arrow.png) no-repeat top right;
@@ -281,7 +286,7 @@ fieldset.checkbox {
   border-color: #d9534f;
 }
 /* NAVI */
-header#navbar {
+header#navbar, div#navbar {
   background: url(/img/header_pic.png) no-repeat #ffffff;
   background-position: top center;
   padding: 0px 30px;
@@ -519,19 +524,19 @@ ul.side-dropdown-links {
 }
 
 /* GRID */
-#grid-filter {
+#grid-filter, #grid-filter-modal {
   padding-right: 15px;
   label {
     text-align: left;
   }
 
 }
-#grid.row {
+#grid.row, #pages-grid.row, #badges-grid.row {
   margin:0px;
   margin-top:15px;
 }
 @media (min-width: 992px){
-  #grid .col-md-4 {
+  #grid .col-md-4, #pages-grid .col-md-4, #badges-grid .col-md-4 {
     width: auto;
     padding-left: 0px;
     padding-right: 20px;
@@ -665,7 +670,7 @@ ol.welcome-text li {
   margin-bottom:10px;
 }
 
-footer.footer {
+div.footer {
   position: absolute;
   bottom: 0;
   height: 100px;
@@ -718,7 +723,7 @@ body.anon {
     .container-fluid{
       //padding:0px;
     }
-    header#navbar {
+    header#navbar, div#navbar {
       padding:0px 10px 0px 25px;
     }
   }
@@ -875,4 +880,20 @@ body.embed {
   @media (max-width: 420px) {
     height: 360px;
   }
+}
+
+.label {
+  font-size: 11px;
+}
+
+.label-danger {
+  background-color: #CD4A47;
+}
+
+.label-success {
+  background-color: #2C882D;
+}
+
+.label-info {
+  color: #000;
 }

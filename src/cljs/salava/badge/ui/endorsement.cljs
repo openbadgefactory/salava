@@ -15,7 +15,8 @@
             [salava.core.ui.grid :as g]
             [cljsjs.simplemde]
             [salava.translator.ui.helper :refer [translate]]
-            [salava.core.ui.popover :refer [info]]))
+            [salava.core.ui.popover :refer [info]]
+            [dommy.core :as dommy :refer-macros [sel1 sel]]))
 
 (defn endorsement-row [endorsement & lang]
   (let [{:keys [issuer content issued_on]} endorsement]
@@ -24,32 +25,32 @@
       (when (:image_file issuer) [:img {:src (str "/" (:image_file issuer)) :style {:width "55px" :height "auto" :padding "7px"}}])
       [:a {:href "#"
            :on-click #(do (.preventDefault %) (mo/set-new-view [:badge :issuer] {:id (:id issuer) :lang (first lang)} #_(:id issuer)))}
-          (:name issuer)]
+       (:name issuer)]
       " "
       [:small (date-from-unix-time (* 1000 issued_on))]]
      [:div {:dangerouslySetInnerHTML {:__html content}}]]))
 
 (defn init-badge-endorsements [state badge-id]
   (ajax/GET
-    (path-for (str "/obpv1/badge/endorsement/" badge-id))
-    {:handler (fn [data] (reset! state data))}))
+   (path-for (str "/obpv1/badge/endorsement/" badge-id))
+   {:handler (fn [data] (reset! state (:endorsements data)))}))
 
 (defn init-user-badge-endorsement [state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsement/" (:id @state)))
-    {:handler (fn [data]
-               (let [pending-endorsements-count (->> data (filter #(= "pending" (:status %))) count)]
-                (swap! state assoc :user-badge-endorsements data
-                                   :pending_endorsements_count pending-endorsements-count)
-                (when (some #(= (:issuer_id %) (:endorser-id @state)) data)
-                  (swap! state assoc :show-link "none"
-                         :show-content "none"
-                         :show-endorsement-status "block"))))
-     :finally (fn []
-                (when (and @(cursor state [:pending-info-atom]) @(cursor state [:pending-endorsements-atom]))
-                    (reset! @(cursor state [:pending-info-atom]) (dec @@(cursor state [:pending-info-atom])))
-                    (reset! @(cursor state [:pending-endorsements-atom]) (:pending_endorsements_count @state))
-                    (when @(cursor state [:reload-fn]) ((:reload-fn @state)))))}))
+   (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
+   {:handler (fn [data]
+               (let [pending-endorsements-count (->> data :endorsements (filter #(= "pending" (:status %))) count)]
+                 (swap! state assoc :user-badge-endorsements (:endorsements data)
+                        :pending_endorsements_count pending-endorsements-count)
+                 (when (some #(= (:issuer_id %) (:endorser-id @state)) (:endorsements data))
+                   (swap! state assoc :show-link "none"
+                          :show-content "none"
+                          :show-endorsement-status "block"))))
+    :finally (fn []
+               (when (and @(cursor state [:pending-info-atom]) @(cursor state [:pending-endorsements-atom]))
+                 (reset! @(cursor state [:pending-info-atom]) (dec @@(cursor state [:pending-info-atom])))
+                 (reset! @(cursor state [:pending-endorsements-atom]) (:pending_endorsements_count @state))
+                 (when @(cursor state [:reload-fn]) ((:reload-fn @state)))))}))
 
 (defn user-badge-endorsement-content [badge-id badge-endorsements & lang]
   (let [state (atom {:id badge-id})]
@@ -70,7 +71,7 @@
                                  [:img {:src (profile-picture profile_picture) :style {:width "55px" :height "auto" :padding "7px"}}]
                                  (if (and issuer_id (not disabled)) [:a {:href "#"
                                                                          :on-click #(do (.preventDefault %) (mo/set-new-view [:profile :view] {:user-id issuer_id}))}
-                                                                      issuer_name] issuer_name)
+                                                                     issuer_name] issuer_name)
                                  " "
                                  [:small (date-from-unix-time (* 1000 mtime))]]
                                 [:div {:dangerouslySetInnerHTML {:__html content}}]])))
@@ -98,71 +99,71 @@
 ;; User Badge Endorsements
 (defn init-user-endorsements [state]
   (ajax/GET
-    (path-for (str "/obpv1/badge/user/endorsements"))
-    {:handler (fn [data]
-                (reset! state (assoc data
-                                :initializing false
-                                :permission "success"
-                                :show (session/get! :visible-area (if (pos? (->> (:requests data) (filter #(= "pending" (:status %))) count)) "requests" "all"))
-                                :search ""
-                                :show-delete-dialogue false
-                                :order "mtime")))}
+   (path-for (str "/obpv1/badge/user_endorsement/_/all"))
+   {:handler (fn [data]
+               (reset! state (assoc data
+                                    :initializing false
+                                    :permission "success"
+                                    :show (session/get! :visible-area (if (pos? (->> (:requests data) (filter #(= "pending" (:status %))) count)) "requests" "all"))
+                                    :search ""
+                                    :show-delete-dialogue false
+                                    :order "mtime")))}
 
-    (fn [] (swap! state assoc :permission "error"))))
+   (fn [] (swap! state assoc :permission "error"))))
 
 (defn init-pending-endorsements [state]
   (ajax/GET
-    (path-for "/obpv1/badge/user/pending_endorsement/")
-    {:handler (fn [data]
-                (swap! state assoc :pending data))}))
+   (path-for "/obpv1/badge/user_endorsement/_/pending")
+   {:handler (fn [data]
+               (swap! state assoc :pending (:endorsements data)))}))
 
 (defn edit-endorsement [id badge-id content]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/edit/" id))
-    {:params {:content content
-              :user_badge_id badge-id}
-     :handler (fn [data]
-                (when (= "success" (:status data))))}))
+   (path-for (str "/obpv1/badge/user_endorsement/edit/" id))
+   {:params {:content content
+             :user_badge_id badge-id}
+    :handler (fn [data]
+               (when (= "success" (:status data))))}))
 
 (defn- init-pending-requests [state]
- (ajax/GET
-  (path-for (str "/obpv1/badge/user/pending_endorsement_request"))
-  {:handler (fn [data] (reset! state data))}))
+  (ajax/GET
+   (path-for (str "/obpv1/badge/user_endorsement/request/pending"))
+   {:handler (fn [data] (reset! state data))}))
 
 (defn update-request-status! [id status state reload-fn]
- (when id
-   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/request/update_status/" id))
-    {:params {:status status}
-     :handler (fn [data] (when (and reload-fn (= "success" (:status data)) (reload-fn))))})))
+  (when id
+    (ajax/POST
+     (path-for (str "/obpv1/badge/user_endorsement/request/update_status/" id))
+     {:params {:status status}
+      :handler (fn [data] (when (and reload-fn (= "success" (:status data)) (reload-fn))))})))
 
 (defn save-endorsement [state]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/" (:id @state)))
-    {:params {:content @(cursor state [:endorsement-comment])}
-     :handler (fn [data]
-                (when (= (:status data) "success")
-                  (swap! state assoc :show-link "none"
-                         :show-content "none"
-                         :show-endorsement-status "block")
-                  (when @(cursor state [:request_id])
-                    (update-request-status! @(cursor state [:request_id]) "endorsed" state nil))))}))
+   (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
+   {:params {:content @(cursor state [:endorsement-comment])}
+    :handler (fn [data]
+               (when (= (:status data) "success")
+                 (swap! state assoc :show-link "none"
+                        :show-content "none"
+                        :show-endorsement-status "block")
+                 (when @(cursor state [:request_id])
+                   (update-request-status! @(cursor state [:request_id]) "endorsed" state nil))))}))
 
 (defn update-status [id status user_badge_id state reload-fn]
   (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/update_status/" id))
-    {:params {:user_badge_id user_badge_id
-              :status status}
-     :handler (fn [data]
-                (when (= "success" (:status data))
-                  (when reload-fn (reload-fn state))))}))
+   (path-for (str "/obpv1/badge/user_endorsement/update_status/" id))
+   {:params {:user_badge_id user_badge_id
+             :status status}
+    :handler (fn [data]
+               (when (= "success" (:status data))
+                 (when reload-fn (reload-fn state))))}))
 
 (defn delete-endorsement [id user_badge_id state reload-fn]
   (ajax/DELETE
-    (path-for (str "/obpv1/badge/endorsement/" user_badge_id "/" id))
-    {:handler (fn [data]
-                (when (= "success" (:status data))
-                  (when reload-fn (reload-fn state))))}))
+   (path-for (str "/obpv1/badge/user_endorsement/" user_badge_id "/" id))
+   {:handler (fn [data]
+               (when (= "success" (:status data))
+                 (when reload-fn (reload-fn state))))}))
 
 (def simplemde-toolbar (array "bold" "italic" "heading-3"
                               "quote" "unordered-list" "ordered-list"
@@ -171,14 +172,46 @@
 
 (def editor (atom nil))
 
+;(def md-editor (atom {:editor nil :enabled? true}))
+
+#_(defn init-editor [element-id value]
+    (let [editor (cursor md-editor [:editor])
+          md? (cursor md-editor [:enabled?])]
+      (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
+                                              :toolbar simplemde-toolbar
+                                              :spellChecker false
+                                              :forceSync true})))
+      (reset! md? @md?)
+      (when-not @md? (.toTextArea @editor))
+      (.value @editor @value)
+      (js/setTimeout (fn [] (.value @editor @value)) 200)
+      (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor))))))
+
 (defn init-editor [element-id value]
   (reset! editor (js/SimpleMDE. (clj->js {:element (.getElementById js/document element-id)
                                           :toolbar simplemde-toolbar
-                                          :spellChecker false})))
+                                          :spellChecker false
+                                          :forceSync true})))
+  (-> (sel1 [".CodeMirror" :textarea])
+      (dommy/set-attr! :aria-label "CodeMirror textarea"))
   (.value @editor @value)
   (js/setTimeout (fn [] (.value @editor @value)) 200)
   (.codemirror.on @editor "change" (fn [] (reset! value (.value @editor)))))
 
+#_(defn markdown-editor [value]
+    (create-class {:component-did-mount (fn []
+                                          (init-editor (str "editor" (-> (session/get :user) :id)) value))
+                   :reagent-render (fn []
+                                     [:div.form-group {:style {:display "block"}}
+                                      [:textarea {:class "form-control"
+                                                  :id (str "editor" (-> (session/get :user) :id))
+                                                  :defaultValue @value
+                                                  :name "content"
+                                                  :on-change #(reset! value (.-target.value %))
+                                                  :cols 12
+                                                  :rows 12
+                                                  :aria-label "Compose text"}]])
+                   :component-did-update (fn [] #(reset! value (.-target.value %)))}))
 
 (defn markdown-editor [value]
   (create-class {:component-did-mount (fn []
@@ -189,6 +222,33 @@
                                                 :id (str "editor" (-> (session/get :user) :id))
                                                 :defaultValue @value
                                                 :on-change #(reset! value (.-target.value %))}]])}))
+
+#_(defn toggle-markdown-editor [element-id value]
+    (let [md? (cursor md-editor [:enabled?])
+          editor (cursor md-editor [:editor])]
+      (if @md?
+        (do (reset! md? false) (.toTextArea @editor) (reset! editor nil))
+        (do (reset! md? true) (init-editor element-id value)))))
+
+#_(defn toggle-md-button [value]
+    (let [md? (cursor md-editor [:enabled?])]
+      [:div.pull-right [:span (str (if @md? (t :core/Disablemarkdowneditor) (t :core/Enablemarkdowneditor)) " ")]
+       [:button {:type "button"
+                 :aria-label "toggle markdown-editor"
+                 :class "close evidence-toggle"
+                 :on-click #(do (toggle-markdown-editor (str "editor" (-> (session/get :user) :id)) value))}
+
+        [:i.fa.show-more.fa-fw {:class (if @md? (str " fa-toggle-on") (str " fa-toggle-off"))}]]]))
+
+#_(defn process-text [s state]
+    (let [element (-> js/document (.getElementById (str "editor" (-> (session/get :user) :id))))
+          text (.-innerHTML element)
+          endorsement-claim (str text (if (blank? text) "" "\n\n") "* " s)
+          editor (cursor md-editor [:editor])
+          md? (cursor md-editor [:enabled?])]
+      (reset! (cursor state [:endorsement-comment]) endorsement-claim)
+      (when @md? (.value @editor  @(cursor state [:endorsement-comment])))
+      (when-not @md? (set! (.-value element)  @(cursor state [:endorsement-comment])))))
 
 (defn process-text [s state]
   (let [text (-> js/document
@@ -203,10 +263,10 @@
     [:div {:style {:display @(cursor state [:show-content])}}
      [:hr.border]
      [:div.row
-      [:div.col-xs-12 {:style {:margin-bottom "10px"}} [:a.close {:href "#" :on-click #(do
-                                                                                         (.preventDefault %)
-                                                                                         (swap! state assoc :show-link "block"
-                                                                                                :show-content "none"))} [:i.fa.fa-remove {:title (t :core/Cancel)}]]]]
+      [:div.col-xs-12 {:style {:margin-bottom "10px"}} [:a.close {:aria-label "Cancel" :href "#" :on-click #(do
+                                                                                                              (.preventDefault %)
+                                                                                                              (swap! state assoc :show-link "block"
+                                                                                                                     :show-content "none"))} [:i.fa.fa-remove {:title (t :core/Cancel)}]]]]
 
      [:div.endorse {:style {:margin "5px"}} (t :badge/Endorsehelptext)]
 
@@ -216,31 +276,34 @@
         [:a.list-group-item {:id "phrase1" :href "#" :on-click #(do
                                                                   (.preventDefault %)
                                                                   (process-text (t :badge/Endorsephrase1) state))}
-                            [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase1)]]
+         [:i.fa.fa-plus-circle] [:span (t :badge/Endorsephrase1)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase2) state))}
-                            [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase2)]]
+         [:i.fa.fa-plus-circle] [:span (t :badge/Endorsephrase2)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase3) state))}
-                            [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase3)]]
+         [:i.fa.fa-plus-circle] [:span (t :badge/Endorsephrase3)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase4) state))}
-                            [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase4)]]
+         [:i.fa.fa-plus-circle] [:span (t :badge/Endorsephrase4)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase5) state))}
-                            [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase5)]]
+         [:i.fa.fa-plus-circle] [:span (t :badge/Endorsephrase5)]]
         [:a.list-group-item {:href "#" :on-click #(do
                                                     (.preventDefault %)
                                                     (process-text (t :badge/Endorsephrase6) state))}
-                            [:i.fa.fa-plus-circle][:span (t :badge/Endorsephrase6)]]]]]
+         [:i.fa.fa-plus-circle] [:span (t :badge/Endorsephrase6)]]]]]
 
      [:div.editor
       [:div.form-group
-       [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
+       [:label {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
+       #_[:div.row.flip {:style {:margin-bottom "5px"}}
+          [:label.col-md-6 {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
+          [:div.col-md-6 [toggle-md-button (cursor state [:endorsement-comment])]]]
        [:div [markdown-editor (cursor state [:endorsement-comment]) (str "editor" (-> (session/get :user) :id))]]]
       [:div
        [:button.btn.btn-primary {:on-click #(do
@@ -248,7 +311,7 @@
                                               (save-endorsement state))
                                  :disabled (blank? @(cursor state [:endorsement-comment]))}
 
-                                (t :badge/Endorsebadge)]]
+        (t :badge/Endorsebadge)]]
       [:hr.border]]]))
 
 (defn endorsement-text [state]
@@ -271,13 +334,13 @@
                        (.preventDefault %)
                        (swap! state assoc :show-link "none"
                               :show-content "block"))}
-         [:i.fa.fa-thumbs-o-up {:style {:vertical-align "unset"}}] (t :badge/Endorsethisbadge)]
+      [:i.fa.fa-thumbs-o-up {:style {:vertical-align "unset"}}] (t :badge/Endorsethisbadge)]
      [:div {:style {:display @(cursor state [:show-endorsement-status])}} [:i.fa.fa-thumbs-up] (endorsement-text state)]]))
 
 (defn profile-link-inline [id issuer_name picture name type]
   [:div [:a {:href "#"
              :on-click #(mo/open-modal [:profile :view] {:user-id id})}
-         [:img {:src (profile-picture picture)}]
+         [:img {:src (profile-picture picture) :alt (str issuer_name " " (t :user/Profilepicture))}]
          (str issuer_name " ")]  (case type
                                    "endorse" (t :badge/Hasendorsedyou)
                                    "request" (str (t :badge/requestsendorsement) " " name)
@@ -287,7 +350,7 @@
   (let [state (atom {:user-id (-> (session/get :user) :id) :pending []})]
     (init-pending-endorsements state)
     (fn []
-      [:div#endorsebadge
+      [:div.endorsebadge
        (reduce (fn [r endorsement]
                  (let [{:keys [id user_badge_id image_file name content profile_picture issuer_id description issuer_name]} endorsement]
                    (conj r
@@ -300,25 +363,22 @@
 
                             [:div.caption.row.flip
                              [:div.position-relative.badge-image.col-md-3
-                              [:img {:src (str "/" image_file) :style {:padding "15px"}}]]
+                              [:img {:src (str "/" image_file) :style {:padding "15px"} :alt ""}]]
 
-                             [:div.col-md-9 [:h4.media-heading name]
-                              [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]]
-
-
-                            [:div.caption.card-footer.text-center
-                             [:hr.line]
-                             [:button.btn.btn-primary {:href "#"
-                                                       :on-click #(do
-                                                                    (.preventDefault %)
-                                                                    (update-status id "accepted" user_badge_id state init-pending-endorsements))}
-                                                      (t :badge/Acceptendorsement)]
-                             [:button.btn.btn-warning.cancel {:href "#"
-                                                              :on-click #(do
-                                                                           (.preventDefault %)
-                                                                           (update-status id "declined" user_badge_id state init-pending-endorsements))} (t :badge/Declineendorsement)]]]]])))
-        [:div.row]
-        @(cursor state [:pending]))])))
+                             [:div.col-md-9 [:h1.media-heading name]
+                              [:div.thumbnail-description.smaller {:dangerouslySetInnerHTML {:__html content}}]]] [:div.caption.card-footer.text-center
+                                                                                                                   [:hr.line]
+                                                                                                                   [:button.btn.btn-primary {:href "#"
+                                                                                                                                             :on-click #(do
+                                                                                                                                                          (.preventDefault %)
+                                                                                                                                                          (update-status id "accepted" user_badge_id state init-pending-endorsements))}
+                                                                                                                    (t :badge/Acceptendorsement)]
+                                                                                                                   [:button.btn.btn-warning.cancel {:href "#"
+                                                                                                                                                    :on-click #(do
+                                                                                                                                                                 (.preventDefault %)
+                                                                                                                                                                 (update-status id "declined" user_badge_id state init-pending-endorsements))} (t :badge/Declineendorsement)]]]]])))
+               [:div.row]
+               @(cursor state [:pending]))])))
 
 (defn endorse-badge [badge-id & params]
   (let [{:keys [request_id]} (first params)
@@ -354,8 +414,9 @@
                                    (if issuer_id
                                      [:a {:href "#"
                                           :on-click #(mo/open-modal [:profile :view] {:user-id issuer_id})}
-                                      [:img.small-image {:src (profile-picture profile_picture)}]
-                                      issuer_name] [:div [:img.small-image {:src (profile-picture profile_picture)}] issuer_name (if (= "pending" status) (t :badge/Hasendorsedyou))])]]]
+                                      [:img.small-image {:src (profile-picture profile_picture) :alt ""}]
+                                      issuer_name]
+                                     [:div [:img.small-image {:src (profile-picture profile_picture) :alt ""}] issuer_name (if (= "pending" status) (t :badge/Hasendorsedyou))])]]]
 
                                 [:div [:button {:type "button"
                                                 :aria-label "OK"
@@ -377,13 +438,13 @@
                                                                             (.preventDefault %)
                                                                             (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom :reload-fn reload-fn)
                                                                             (update-status id "accepted" user_badge_id state init-user-badge-endorsement))}
-                                                              (t :badge/Acceptendorsement)]
+                                      (t :badge/Acceptendorsement)]
                                      [:button.btn.btn-warning.cancel {:href "#"
                                                                       :on-click #(do
                                                                                    (.preventDefault %)
                                                                                    (swap! state assoc :pending-endorsements-atom pending-endorsements-atom :pending-info-atom pending-info-atom :reload-fn reload-fn)
                                                                                    (update-status id "declined" user_badge_id state init-user-badge-endorsement))}
-                                                                   (t :badge/Declineendorsement)]]]])]])))
+                                      (t :badge/Declineendorsement)]]]])]])))
                   [:div] @(cursor state [:user-badge-endorsements]))]]))))
 
 #_(defn profile [element-data]
@@ -417,15 +478,15 @@
     [:div.endorsement-profile.panel-default
      (if id
        [:a {:href "#" :on-click #(mo/open-modal [:profile :view] {:user-id id})}
-        [:div.panel-body.flip
+        [:div.panel-body.fliprequest
          [:div.col-md-4
           [:div.profile-image
            [:img.img-responsive.img-thumbnail
             {:src (profile-picture profile_picture)
-             :alt name
+             :alt (str (t :user/Profilepicture) " " name)
              :title name}]]]
          [:div.col-md-8
-          [:h4 name]
+          [:span.profileowner name]
           (when (= status "pending") [:p [:span.label.label-info label]])]]]
        [:div.panel-body.flip
         [:div.col-md-4
@@ -435,63 +496,63 @@
             :alt name
             :title name}]]]
         [:div.col-md-8
-         [:h4 name]
+         [:span.profileowner name]
          (when (= status "pending") [:p [:span.label.label-info label]])]])]))
 
 (defn- toggle-delete-dialogue [state]
- (let [show-delete-dialogue (cursor state [:show-delete-dialogue])]
-   (if @show-delete-dialogue
-     (reset! show-delete-dialogue false)
-     (reset! show-delete-dialogue true))))
+  (let [show-delete-dialogue (cursor state [:show-delete-dialogue])]
+    (if @show-delete-dialogue
+      (reset! show-delete-dialogue false)
+      (reset! show-delete-dialogue true))))
 
 (defn- confirm-delete [state delete-fn]
   (when (and state @(cursor state [:show-delete-dialogue]))
-   [:div.confirm-delete-block
-    [:div {:class "alert alert-warning"}
-     (t :badge/Confirmdelete)]
-    [:div
-     [:button {:type         "button"
-               :class        "btn btn-warning"
-               :data-dismiss "modal"
-               :on-click     #(do
-                               (.preventDefault %)
-                               (delete-fn))}
+    [:div.confirm-delete-block
+     [:div {:class "alert alert-warning"}
+      (t :badge/Confirmdelete)]
+     [:div
+      [:button {:type         "button"
+                :class        "btn btn-warning"
+                :data-dismiss "modal"
+                :on-click     #(do
+                                 (.preventDefault %)
+                                 (delete-fn))}
        (t :badge/Delete)]
-     [:button {:type     "button"
-               :class    "btn btn-primary"
-               :on-click #(do
-                           (.preventDefault %)
-                           (swap! state assoc :show-delete-dialogue false))}
-      (t :badge/Cancel)]]]))
+      [:button {:type     "button"
+                :class    "btn btn-primary"
+                :on-click #(do
+                             (.preventDefault %)
+                             (swap! state assoc :show-delete-dialogue false))}
+       (t :badge/Cancel)]]]))
 
 (defn user-endorsement-content [params]
   (fn []
     (let [{:keys [endorsement state]} @params
           {:keys [id profile_picture name first_name last_name image_file content user_badge_id issuer_id issuer_name endorsee_id status type requester_id description issued_on issuer_content_id requestee_id]} endorsement
           profile-name (cond
-                        requester_id (str first_name " " last_name)
-                        requestee_id issuer_name
-                        endorsee_id (str first_name " " last_name)
-                        issuer_id issuer_name
-                        :else "")]
+                         requester_id (str first_name " " last_name)
+                         requestee_id issuer_name
+                         endorsee_id (str first_name " " last_name)
+                         issuer_id issuer_name
+                         :else "")]
 
       [:div.row.flip {:id "badge-info"}
        [:div.col-md-3
-        [:div.badge-image [:img.badge-image {:src (str "/" image_file)}]]]
+        [:div.badge-image [:img.badge-image {:src (str "/" image_file) :alt name}]]]
        [:div.col-md-9
         [:div
          [:h1.uppercase-header name]
-         (when (and description issuer_content_id issuer_name)[:div#badge-info
-                                                               [:div.badge-info
-                                                                [:div {:class "issuer-data clearfix"}
-                                                                 [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
-                                                                 [:div {:class "issuer-links pull-label-left inline"}
-                                                                  [:a {:href "#"
-                                                                       :on-click #(do (.preventDefault %)
-                                                                                    (mo/open-modal [:badge :issuer] issuer_content_id {}))} issuer_name]]]
-                                                                (when (and issued_on (pos? issued_on))
-                                                                  [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
-                                                                [:div.description description]]])
+         (when (and description issuer_content_id issuer_name) [:div;#badge-info
+                                                                [:div.badge-info
+                                                                 [:div {:class "issuer-data clearfix"}
+                                                                  [:span._label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+                                                                  [:div {:class "issuer-links pull-label-left inline"}
+                                                                   [:a {:href "#"
+                                                                        :on-click #(do (.preventDefault %)
+                                                                                       (mo/open-modal [:badge :issuer] issuer_content_id {}))} issuer_name]]]
+                                                                 (when (and issued_on (pos? issued_on))
+                                                                   [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+                                                                 [:div.description description]]])
          [:div (cond
                  requester_id ""
                  requestee_id (t :badge/Managesentendorsementrequest)
@@ -511,7 +572,10 @@
          (cond
            endorsee_id  [:div {:style {:margin-top "15px"}}
                          [:div
-                          [:label {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
+                          [:label {:for (str "editor" (-> (session/get :user) :id))} (str (t :badge/Composeyourendorsement) ":")]
+                          #_[:div.row.flip {:style {:margin-bottom "5px"}}
+                             [:span._label.col-md-6 {:for "claim"} (str (t :badge/Composeyourendorsement) ":")]
+                             [:div.col-md-6 [toggle-md-button (cursor params [:endorsement :content])]]]
                           [:div.editor [markdown-editor (cursor params [:endorsement :content])]]]
                          [:div.row.flip.control-buttons
                           (if-not @(cursor state [:show-delete-dialogue])
@@ -521,14 +585,14 @@
                                                                                                     :disabled (blank? @(cursor params [:endorsement :content]))
                                                                                                     :data-dismiss "modal"}
 
-                                                                                                   (t :core/Save)]
+                                                                           (t :core/Save)]
                              [:button.btn.btn-warning.cancel {:data-dismiss "modal"} (t :core/Cancel)]])
                           [:div.col-md-6.col-sm-6.col-xs-6.left-buttons ""]
                           [:div.col-md-6.col-sm-6.col-xs-6.left-buttons [:a.delete-btn {:style {:line-height "4" :cursor "pointer"}
                                                                                         :on-click #(do
                                                                                                      (.preventDefault %)
                                                                                                      (toggle-delete-dialogue state))}
-                                                                               [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]
+                                                                         [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]]
                          [confirm-delete state #(delete-endorsement id user_badge_id nil nil)]]
 
            requester_id [:div {:style {:margin-top "15px"}}
@@ -536,13 +600,13 @@
                          [:div.caption
                           [:hr.line]
                           [endorse-badge user_badge_id {:request_id id}]
-                          (when (= status "pending")[:div#endorsebadge {:style {:margin "25px 0"}} [:a {:href "#"
-                                                                                                        :on-click #(do
-                                                                                                                     (.preventDefault %)
-                                                                                                                     (toggle-delete-dialogue state)
-                                                                                                                     #_(update-request-status! id "declined" state nil))}
-                                                                                                    [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
-                                                     [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]])
+                          (when (= status "pending") [:div.endorsebadge {:style {:margin "25px 0"}} [:a {:href "#"
+                                                                                                         :on-click #(do
+                                                                                                                      (.preventDefault %)
+                                                                                                                      (toggle-delete-dialogue state)
+                                                                                                                      #_(update-request-status! id "declined" state nil))}
+                                                                                                     [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
+                                                      [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]])
                           [confirm-delete state #(update-request-status! id "declined" state nil)]]]
            requestee_id [:div {:style {:margin-top "15px"}}
                          [:div {:dangerouslySetInnerHTML {:__html content}}]
@@ -552,7 +616,7 @@
                                :on-click #(do
                                             (.preventDefault %)
                                             (toggle-delete-dialogue state))}
-                            [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
+                           [:span [:i.fa.fa-trash] (t :badge/Deleteendorsementrequest)]]
                           [confirm-delete state #(update-request-status! id "declined" state nil)]]]
 
            issuer_id  [:div {:style {:margin-top "15px"}}
@@ -584,7 +648,7 @@
                                                                                          (toggle-delete-dialogue state)
                                                                                          #_(delete-endorsement id user_badge_id nil nil))
                                                                             :href "#"}
-                                                                 [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]])
+                                                             [:i.fa.fa-trash] (t :badge/Deleteendorsement)]]])
                         [confirm-delete state #(delete-endorsement id user_badge_id nil nil)]]]
 
            :else [:div])]]])))
@@ -614,7 +678,7 @@
                        processed-endorsements)]
     [:div.panel
      [:div.panel-heading
-      [:h3
+      [:h2
        (str (t :badge/endorsements))]
       [:br]
       [:div (case @(cursor state [:show])
@@ -647,17 +711,17 @@
                                    issuer_id [:span.label.label-success (t :badge/Endorsedyou)]
                                    endorsee_id [:span.label.label-primary (t :badge/Youendorsed)]
                                    :else [:span.label.label-success (t :badge/Endorsedyou)])
-                                 (if (and (not= "sent_request" type)(= "pending" status))
+                                 (if (and (not= "sent_request" type) (= "pending" status))
                                    [:span.label.label-info
                                     (t :social/pending)])]]
                                [:div.media-left.media-top.list-item-bodyv
-                                [:img.main-img.media-object {:src (str "/" image_file)}]]
+                                [:img.main-img.media-object {:src (str "/" image_file) :alt ""}]]
 
                                [:div.media-body
-                                [:h4.media-heading.badge-name  name]
+                                [:h3.media-heading.badge-name  name]
                                 [:div.media
                                  [:div.child-profile [:div.media-left.media-top
-                                                      [:img.media-object.small-img {:src (profile-picture profile_picture)}]]
+                                                      [:img.media-object.small-img {:src (profile-picture profile_picture) :alt ""}]]
                                   [:div.media-body
                                    [:p endorser]]]]]]]]])))
                [:div] endorsements)]]]))
@@ -669,154 +733,151 @@
    {:value "pending" :id "pending" :label (t :social/pending)}])
 
 (defn user-endorsements-content [state]
- (let [pending-requests-count (count (filter #(= "pending" (:status %)) @(cursor state [:requests])))
-       pending-received-count (count (filter #(= "pending" (:status %)) @(cursor state [:received])))
-       sent-requests-count (count @(cursor state [:sent-requests]))]
-  [:div
-   [m/modal-window]
-   [:div#badge-stats
-    (if (or (seq @(cursor state [:received]) ) (seq @(cursor state [:given])) (pos? pending-requests-count) (pos? sent-requests-count))
-      [:div
-       [:div.form-horizontal {:id "grid-filter"}
-        [g/grid-search-field (t :core/Search ":")  "endorsementsearch" (t :badge/Filterbybadgenameoruser) :search state]
-        [:div.form-group.wishlist-buttons
-         [:legend {:class "control-label col-sm-2"} (str (t :core/Show) ":")]
-         [:div.col-md-10
-          [:div.buttons
-           [:button {:class (str "btn btn-default " (when (= "all" @(cursor state [:show])) "btn-active"))
-                     :id "btn-all"
-                     :on-click #(do (swap! state assoc :show "all"))}
-            (t :core/All) #_(when (or (pos? pending-received-count) (pos? pending-requests-count)) [:span.badge.endorsement-notification (+ pending-requests-count pending-received-count)])]
-           [:button {:class (str "btn btn-default " (when (= "received" @(cursor state [:show])) "btn-active"))
-                     :id "btn-all"
-                     :on-click #(do (swap! state assoc :show "received"))}
-            (t :badge/Endorsedme) (when (pos? pending-received-count) [:span.badge.endorsement-notification pending-received-count])]
-           [:button {:class (str "btn btn-default " (when (= "given" @(cursor state [:show])) "btn-active"))
-                     :id "btn-all"
-                     :on-click #(do (swap! state assoc :show "given"))}
-            (t :badge/Iendorsed)]
-           (when (pos? pending-requests-count)  [:button {:class (str "btn btn-default " (when (= "requests" @(cursor state [:show])) "btn-active"))
-                                                          :id "btn-all"
-                                                          :on-click #(do (swap! state assoc :show "requests"))}
-                                                 [:span (t :badge/Endorsementrequests) [:span.badge.endorsement-notification pending-requests-count]]])
+  (let [pending-requests-count (count (filter #(= "pending" (:status %)) @(cursor state [:requests])))
+        pending-received-count (count (filter #(= "pending" (:status %)) @(cursor state [:received])))
+        sent-requests-count (count @(cursor state [:sent-requests]))]
+    [:div
+     [m/modal-window]
+     [:div#badge-stats
+      (if (or (seq @(cursor state [:received])) (seq @(cursor state [:given])) (pos? pending-requests-count) (pos? sent-requests-count))
+        [:div
+         [:div.form-horizontal {:id "grid-filter"}
+          [g/grid-search-field (t :core/Search ":")  "endorsementsearch" (t :badge/Filterbybadgenameoruser) :search state]
+          [:div.form-group.wishlist-buttons
+           [:legend {:class "control-label col-sm-2"} (str (t :core/Show) ":")]
+           [:div.col-md-10
+            [:div.buttons
+             [:button {:class (str "btn btn-default " (when (= "all" @(cursor state [:show])) "btn-active"))
+                       :id "btn-all"
+                       :on-click #(do (swap! state assoc :show "all"))}
+              (t :core/All) #_(when (or (pos? pending-received-count) (pos? pending-requests-count)) [:span.badge.endorsement-notification (+ pending-requests-count pending-received-count)])]
+             [:button {:class (str "btn btn-default " (when (= "received" @(cursor state [:show])) "btn-active"))
+                       :id "btn-endorsedme"
+                       :on-click #(do (swap! state assoc :show "received"))}
+              (t :badge/Endorsedme) (when (pos? pending-received-count) [:span.badge.endorsement-notification pending-received-count])]
+             [:button {:class (str "btn btn-default " (when (= "given" @(cursor state [:show])) "btn-active"))
+                       :id "btn-iendorsed"
+                       :on-click #(do (swap! state assoc :show "given"))}
+              (t :badge/Iendorsed)]
+             (when (pos? pending-requests-count)  [:button {:class (str "btn btn-default " (when (= "requests" @(cursor state [:show])) "btn-active"))
+                                                            :id "btn-pendingrequests"
+                                                            :on-click #(do (swap! state assoc :show "requests"))}
+                                                   [:span (t :badge/Endorsementrequests) [:span.badge.endorsement-notification pending-requests-count]]])
 
-           (when (pos? sent-requests-count) [:button {:class (str "btn btn-default " (when (= "sent-requests" @(cursor state [:show])) "btn-active"))
-                                                      :id "btn-all"
-                                                      :on-click #(do (swap! state assoc :show "sent-requests"))}
-                                              [:span (t :badge/Sentendorsementrequests) [:span.badge.endorsement-notification sent-requests-count]]])]]]
+             (when (pos? sent-requests-count) [:button {:class (str "btn btn-default " (when (= "sent-requests" @(cursor state [:show])) "btn-active"))
+                                                        :id "btn-sentrequests"
+                                                        :on-click #(do (swap! state assoc :show "sent-requests"))}
+                                               [:span (t :badge/Sentendorsementrequests) [:span.badge.endorsement-notification sent-requests-count]]])]]]
 
-        [g/grid-radio-buttons (t :core/Order ":") "order" (order-opts) :order state]]
+          [g/grid-radio-buttons (t :core/Order ":") "order" (order-opts) :order state]]
 
-       (endorsements state)]
-      [:div (t :badge/Youhavenoendorsements)])]]))
+         (endorsements state)]
+        [:div (t :badge/Youhavenoendorsements)])]]))
 
 (defn- reset-request! [state]
   (swap! state assoc :request-mode false :selected-users [] :request-comment " " :resp-message false))
 
 (defn send-endorsement-request [state reload-fn]
- (let [request-comment (cursor state [:request-comment])
-       selected-users (cursor state [:selected-users])]
-  (ajax/POST
-    (path-for (str "/obpv1/badge/endorsement/request/" (:id @state)) true)
-    {:params {:user-ids (mapv :id @selected-users)
-              :content @request-comment}
-     :handler (fn [data]
-                (when (= "success" (:status data))
-                  (reload-fn)
-                  (swap! state assoc :resp-message true)
-                  (js/setTimeout #(reset-request! state) 2000)))
-     :finally (fn [] (mo/previous-view))})))
+  (let [request-comment (cursor state [:request-comment])
+        selected-users (cursor state [:selected-users])]
+    (ajax/POST
+     (path-for (str "/obpv1/badge/user_endorsement/request/" (:id @state)) true)
+     {:params {:user-ids (mapv :id @selected-users)
+               :content @request-comment}
+      :handler (fn [data]
+                 (when (= "success" (:status data))
+                   (reload-fn)
+                   (swap! state assoc :resp-message true)
+                   (js/setTimeout #(reset-request! state) 2000)))
+      :finally (fn [] (mo/previous-view))})))
 
 (defn request-endorsement [params]
- (let [{:keys [state reload-fn]} params
-       request-comment (cursor state [:request-comment])
-       selected-users (cursor state [:selected-users])]
-  (reset! request-comment (t :badge/Defaultrequestbadge))
-  (fn []
-    [:div.col-md-12 {:id "social-tab"}
-     [:div.editor
-      [:div.form-group {:style {:display "block"}}
-       [:label {:for "claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
-       [:div.editor [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
-      (when (seq @selected-users) ;(and (complement (blank? @request-comment)) (> (count @request-comment) 15))
-        [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
-         [:a {:href "#"
-              :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})}
-          (t :badge/Editselectedusers)]])
-      (reduce (fn [r u]
-                (let [{:keys [id first_name last_name profile_picture]} u]
-                  (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
-                           [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
-                            [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
-              [:div.selected-users-container] @selected-users)
-      [:div.confirmusers {:style {:margin "20px auto"}}
-       (if-not (empty? @selected-users)
-         [:button.btn.btn-primary {:on-click #(do
-                                                (.preventDefault %)
-                                                (send-endorsement-request state reload-fn))
+  (let [{:keys [state reload-fn]} params
+        request-comment (cursor state [:request-comment])
+        selected-users (cursor state [:selected-users])]
+    (reset! request-comment (t :badge/Defaultrequestbadge))
+    (fn []
+      [:div.col-md-12 {:id "social-tab"}
+       [:div.editor
+        [:div.form-group {:style {:display "block"}}
+         [:label {:for (str "editor" (-> (session/get :user) :id)) #_"claim"} [:b (str (t :badge/Composeyourendorsementrequest) ":")]]
+         [:div.editor  [markdown-editor request-comment (str "editor" (-> (session/get :user) :id))]]]
+        (when (seq @selected-users)
+          [:div {:style {:margin "20px 0"}} [:i.fa.fa-users.fa-fw.fa-3x]
+           [:a {:href "#"
+                :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})}
+            (t :badge/Editselectedusers)]])
+        (reduce (fn [r u]
+                  (let [{:keys [id first_name last_name profile_picture]} u]
+                    (conj r [:div.user-item [profile-link-inline-modal id first_name last_name profile_picture]
+                             [:a {:href "#" :on-click (fn [] (reset! selected-users (->> @selected-users (remove #(= id (:id %))) vec)))}
+                              [:span.close {:aria-hidden "true" :dangerouslySetInnerHTML {:__html "&times;"}}]]])))
+                [:div.selected-users-container] @selected-users)
+        [:div.confirmusers {:style {:margin "20px auto"}}
+         (if-not (empty? @selected-users)
+           [:button.btn.btn-primary {:on-click #(do
+                                                  (.preventDefault %)
+                                                  (send-endorsement-request state reload-fn))
 
-                                   :disabled (empty? @selected-users)}
-                                  (t :badge/Sendrequest)]
-         [:button.btn.btn-primary.select-users-link {:href "#"
-                                                     :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})
-                                                     :disabled (< (count @request-comment) 15)}
-          [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])]]])))
+                                     :disabled (empty? @selected-users)}
+            (t :badge/Sendrequest)]
+           [:button.btn.btn-primary.select-users-link {:href "#"
+                                                       :on-click #(mo/open-modal [:gallery :profiles] {:type "pickable" :selected-users-atom selected-users :context "endorsement" :user_badge_id (:id @state)})
+                                                       :disabled (< (count @request-comment) 15)}
+            [:i.fa.fa-users.fa-fw.fa-3x] (t :badge/Selectusers)])]]])))
 
 (defn pending-endorsement-requests []
- (when (session/get-in [:user :id])
-  (let [state (atom {:user-id (session/get-in [:user :id])})]
-   (init-pending-requests state)
-   (fn []
-    (when (seq @state)
-     ^{:key @state}[:div#endorsebadge
-                    (reduce
-                     (fn [r request]
-                      (let [{:keys [id user_badge_id content status mtime requester_id profile_picture first_name last_name name image_file description issuer_id issuer_name issued_on]} request]
-                        (conj r
-                          [:div
-                           [:div.col-md-12
-                            [:div.thumbnail
-                              [:div.endorser.col-md-12
-                               [profile-link-inline requester_id (str first_name " " last_name) profile_picture name "request"]
-                               [:hr.line]]
-                              [:div.caption.row.flip
-                               [:div.position-relative.badge-image.col-md-3
-                                [:img {:src (str "/" image_file) :style {:padding "15px"}}]]
+  (when (session/get-in [:user :id])
+    (let [state (atom {:user-id (session/get-in [:user :id])})]
+      (init-pending-requests state)
+      (fn []
+        (when (seq @state)
+          ^{:key @state} [:div.endorsebadge
+                          (reduce
+                           (fn [r request]
+                             (let [{:keys [id user_badge_id content status mtime requester_id profile_picture first_name last_name name image_file description issuer_id issuer_name issued_on]} request]
+                               (conj r
+                                     [:div
+                                      [:div.col-md-12
+                                       [:div.thumbnail
+                                        [:div.endorser.col-md-12
+                                         [profile-link-inline requester_id (str first_name " " last_name) profile_picture name "request"]
+                                         [:hr.line]]
+                                        [:div.caption.row.flip
+                                         [:div.position-relative.badge-image.col-md-3
+                                          [:img {:src (str "/" image_file) :style {:padding "15px"} :alt (str (t :badge/Badge) " " name)}]]
 
-                               [:div.col-md-9
-                                [:h4.media-heading name]
-                                [:div#badge-info
-                                 [:div.badge-info
-                                  [:div {:class "issuer-data clearfix"}
-                                   [:label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
-                                   [:div {:class "issuer-links pull-label-left inline"}
-                                    [:a {:href "#"
-                                         :on-click #(do (.preventDefault %)
-                                                      (mo/open-modal [:badge :issuer] issuer_id {}))} issuer_name]]]
-                                  (when (and issued_on (pos? issued_on))
-                                    [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
-                                  [:div.description description]]
-                                 [:div {:style {:margin "15px auto"}} [:i.fa.fa-hand-o-down {:style {:margin-bottom "10px"}}]
-                                  [:div.thumbnail-description.smaller {:display "inline-block" :dangerouslySetInnerHTML {:__html content}}]]]]]
-                             [:div.caption.card-footer.text-center
-                              [:hr.line]
-                              [:button.btn-primary.btn {:href "#" :on-click #(do
-                                                                              (.preventDefault %)
-                                                                              (mo/open-modal [:badge :userendorsement] (atom {:endorsement request :state state}) {:hidden (fn [] (init-pending-requests state))}))}
-                                (t :badge/Endorsebadge)]
-                              [:span [:button.btn.btn-warning.cancel {:href "#"
-                                                                      :on-click #(do
-                                                                                   (.preventDefault %)
-                                                                                   (update-request-status! id "declined" state (fn [] (init-pending-requests state))))
+                                         [:div.col-md-9
+                                          [:h1.media-heading name]
+                                          [:div#badge-info
+                                           [:div.badge-info
+                                            [:div {:class "issuer-data clearfix"}
+                                             [:span._label {:class "pull-label-left"}  (t :badge/Issuedby) ":"]
+                                             [:div {:id "issuer_name" :class "issuer-links pull-label-left inline"}
+                                              [:a {:href "#"
+                                                   :on-click #(do (.preventDefault %)
+                                                                  (mo/open-modal [:badge :issuer] issuer_id {}))} issuer_name]]]
+                                            (when (and issued_on (pos? issued_on))
+                                              [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+                                            [:div.description description]]
+                                           [:div {:style {:margin "15px auto"}} [:i.fa.fa-hand-o-down {:style {:margin-bottom "10px"}}]
+                                            [:div.thumbnail-description.smaller {:display "inline-block" :dangerouslySetInnerHTML {:__html content}}]]]]]
+                                        [:div.caption.card-footer.text-center
+                                         [:hr.line]
+                                         [:button.btn-primary.btn {:href "#" :on-click #(do
+                                                                                          (.preventDefault %)
+                                                                                          (mo/open-modal [:badge :userendorsement] (atom {:endorsement request :state state}) {:hidden (fn [] (init-pending-requests state))}))}
+                                          (t :badge/Endorsebadge)]
+                                         [:span [:button.btn.btn-warning.cancel {:href "#"
+                                                                                 :on-click #(do
+                                                                                              (.preventDefault %)
+                                                                                              (update-request-status! id "declined" state (fn [] (init-pending-requests state))))
                                                                                    ;(init-pending-requests state))
 
-                                                                      :data-dismiss "modal"}
-                                      (t :badge/Deleteendorsementrequest)]
-                                     [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]]]]]])))
-
-
-                     [:div.row]
-                     @state)])))))
+                                                                                 :data-dismiss "modal"}
+                                                 (t :badge/Deleteendorsementrequest)]
+                                          [info {:content (t :badge/Declinerequestinfo) :placement "right" :style {:margin "0 10px"}}]]]]]]))) [:div.row]
+                           @state)])))))
 
 (defn handler [site-navi]
   (let [state (atom {:initializing true

@@ -226,8 +226,8 @@ html[dir="rtl"] #badge-info {
  }
 }
 /* ADMIN MODALS */
-html[dir="rtl"] .admin-modal,
-#badge-info .admin-modal {
+html[dir="rtl"] .admin-modal{
+//#badge-info .admin-modal {
  .sub-heading {
   a {
    &:before {
@@ -663,16 +663,22 @@ html[dir="rtl"] #badge-gallery {
 /*PAGE GALLERY*/
 html[dir="rtl"] #page-gallery,
 html[dir="rtl"] #user-pages #grid {
- #grid.row #admin-link {
+ #grid.row .admin-link {
   float: left;
  }
  margin-right: -15px;
  margin-left: -15px;
 }
 
-html[dir="rtl"] #user-pages #grid .grid-container {
+html[dir="rtl"] #user-pages #grid .grid-container,
+html[dir="rtl"] #user-pages #pages-grid .grid-container
+{
     margin-right: unset;
     float:right;
+    .media-heading {
+      margin-right: unset;
+      margin-left: 35px;
+    }
    .media-content {
     text-align: right;
   }
@@ -1374,7 +1380,7 @@ html[dir="rtl"] #metabadgegrid {
   margin-left: 10px;
  }
 
- label {
+ label, ._label {
   margin-right: unset;
   margin-left: 10px;
  }
@@ -1472,6 +1478,8 @@ html[dir="rtl"] #endorsebadge,
 html [dir="rtl"] .editor .form-group {
  display: block;
 }
+
+
 
 html[dir="rtl"] #pending-badges {
  .fa-chevron-down {
@@ -1926,4 +1934,8 @@ html[dir="rtl"] #endorsebadge{
     .fa-hand-o-right:before {
       content: "\f0a5"
     }
+}
+
+html[dir= "rtl"] .editor .pull-right {
+  float: left !important;
 }

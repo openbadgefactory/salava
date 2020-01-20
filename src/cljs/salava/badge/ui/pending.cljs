@@ -10,6 +10,7 @@
             [reagent.session :as session]
             [salava.core.ui.popover :refer [info]]
             [reagent-modals.modals :as m]
+            [salava.core.ui.modal :refer [accessibility-fix]]
             #_[salava.metabadge.ui.metabadge :as mb]))
 
 (defn init-data [state]
@@ -66,11 +67,11 @@
          (bm/issuer-modal-link issuer_content_id issuer_content_name)
          (bm/creator-modal-link creator_content_id creator_name)
          (if (and issued_on (> issued_on 0))
-           [:div [:label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
+           [:div [:span._label (t :badge/Issuedon) ": "]  (date-from-unix-time (* 1000 issued_on))])
          (if (and expires_on (not expired?))
-           [:div [:label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " (" (num-days-left expires_on) " " (t :badge/days) ")")])
+           [:div [:span._label (t :badge/Expireson) ": "] (str (date-from-unix-time (* 1000 expires_on)) " (" (num-days-left expires_on) " " (t :badge/days) ")")])
          (if (pos? @show-recipient-name-atom)
-           [:div [:label (t :badge/Recipient) ": "]  first_name " " last_name])
+           [:div [:span._label (t :badge/Recipient) ": "]  first_name " " last_name])
          ;[:div [mb/metabadge (:assertion_url @state)]]
          [:div {:class "criteria-html"}
           [:h2.uppercase-header (t :badge/Criteria)]
@@ -110,10 +111,11 @@
 
          [:div.row.flip
           [:div.col-md-3.badge-image
-           [:img.badge-image {:src (str "/" image_file)}]
+           [:img.badge-image {:src (str "/" image_file) :alt ""}]
            (bm/badge-endorsement-modal-link badge_id endorsement_count)]
+
           [:div.col-md-9
-           [:h4.media-heading name]
+           [:h1.media-heading {:style {:font-size "45px"}} name]
 
            [:div.description description]
 
@@ -146,9 +148,12 @@
                                                 :name            "visibility"
                                                 :value           "public"
                                                 :type            "radio"
-                                                :on-change       #(do
-                                                                    (.preventDefault %)
-                                                                    (reset! visibility "public"))}]
+                                                :on-change     #(do
+                                                                  (.preventDefault %)
+                                                                  (reset! visibility "public"))
+                                                :tabIndex 0
+                                                :aria-checked (= "public" (:visibility badge))
+                                                :role "radio"}]
                                   [:i {:class "fa fa-globe"}]
                                   [:label {:for "visibility-public"}
                                    (t :badge/Public)]])
@@ -158,7 +163,10 @@
                                               :type            "radio"
                                               :on-change       #(do
                                                                   (.preventDefault %)
-                                                                  (reset! visibility "internal"))}]
+                                                                  (reset! visibility "internal"))
+                                              :tabIndex 0
+                                              :aria-checked (= "internal" (:visibility badge))
+                                              :role "radio"}]
                                 [:i {:class "fa fa-group"}]
                                 [:label {:for "visibility-internal"}
                                  (t :badge/Shared)]]
@@ -169,7 +177,10 @@
                                               :on-change       #(do
                                                                   (.preventDefault %)
                                                                   (reset! visibility "private"))
-                                              :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))}]
+                                              :default-checked (= "private" (:visibility badge)) #_(= "private" (:visibility badge) #_(get-in @state [:badge-settings :visibility]))
+                                              :tabIndex 0
+                                              :aria-checked (= "private" (:visibility badge))
+                                              :role "radio"}]
                                 [:i {:class "fa fa-lock"}]
                                 [:label {:for "visibility-private"}
                                  (t :badge/Private)]]]]]]
@@ -182,8 +193,11 @@
                            [:button.btn.btn-primary {:on-click #(do
                                                                   (.preventDefault %)
                                                                   (update-visibility @visibility badge state reload-fn))
+
                                                      :data-dismiss "modal"} (t :core/Save)]])
-                   :component-will-unmount (fn [] (m/close-modal!))})))
+
+                   :component-will-unmount (fn [] (m/close-modal!))
+                   :component-will-mount (fn [] (accessibility-fix))})))
 
 (defn badge-pending [badge state reload-fn]
   [:div.row {:key (:id badge)}
@@ -212,5 +226,5 @@
      [:span (str (t :core/Loading) "...")]
      [:hr]]
     (into [:div {:id "pending-badges"}]
-          (for [badge (:pending @state)]
+          (for [badge (:pending-badges @state)]
             (badge-pending badge state reload-fn)))))

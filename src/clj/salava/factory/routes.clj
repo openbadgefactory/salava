@@ -15,6 +15,7 @@
   (routes
    (context "/obpv1/factory" []
             :tags ["factory"]
+            :no-doc true
 
             (HEAD "/receive" []
                   :no-doc true

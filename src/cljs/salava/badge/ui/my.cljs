@@ -25,7 +25,7 @@
   (ajax/GET
    (path-for "/obpv1/badge" true)
    {:handler (fn [data]
-               (swap! state assoc :badges (filter #(= "accepted" (:status %)) data)
+               (swap! state assoc :badges (filter #(= "accepted" (:status %)) (:badges data))
                       :pending (filter #(= "pending" (:status %)) data)
                       :initializing false))}))
 
@@ -125,7 +125,7 @@
                                       [:div
                                        [badge-alert state]
 
-                                       (if (seq (:pending @state)) [badges-pending state (fn [] (init-data state))]
+                                       (if (seq (:pending-badges @state)) [badges-pending state (fn [] (init-data state))]
                                            [badge-grid-form state])
                                        (cond
                                          (not-activated?) (not-activated-banner)

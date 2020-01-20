@@ -75,10 +75,10 @@
     (map #(assoc % :badges (if for-edit?
                              (select-showcase-block-content-for-edit {:block_id (:id %)} (get-db ctx))
                              (map (fn [b]
-                                    (let [evidence-fn (first (plugin-fun (get-plugins ctx) "main" "badge-evidences"))]
+                                    (let [evidence (as-> (first (plugin-fun (get-plugins ctx) "evidence" "badge-evidence")) f (if f (f ctx (:id b) (:user_id b) true) []))]
                                        (-> b
                                            (update :criteria_content md->html)
-                                           (assoc :evidences (evidence-fn ctx (:id b) (:user_id b) true))
+                                           (assoc :evidence evidence)
                                            (dissoc :user_id)))) (select-showcase-block-content {:block_id (:id %)} (get-db ctx))))) blocks)))
 (defn enabled-profile-blocks [ctx page-id]
  (let [profile-block (some->> (select-profile-block {:page_id page-id} (get-db ctx)) first)
@@ -143,11 +143,12 @@
     (let [page (select-keys (select-page {:id page-id} (into {:result-set-fn first} (get-db ctx))) [:id :user_id :name :description])
           blocks (page-blocks-for-edit ctx page-id)
           owner (:user_id page)
-          badges (map #(select-keys % [:id :name :image_file :tags :description]) (b/user-badges-all ctx owner))
+          badges (map #(select-keys % [:id :name :image_file :tags :description]) (:badges (b/user-badges-all ctx owner)))
           files (map #(select-keys % [:id :name :path :mime_type :size]) (:files (f/user-files-all ctx owner)))
-          tags (distinct (flatten (map :tags badges)))
+          tags (-> (mapcat :tags badges) distinct) #_(distinct (flatten (map :tags badges)))
           is-profile-tab? (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx (:user_id page) page-id))]
       {:page (assoc page :blocks blocks) :badges badges :tags tags :files files :profile-tab? is-profile-tab?})))
+
 
 (defn delete-block! [ctx block]
   (case (:type block)
@@ -266,7 +267,7 @@
                        (:files (f/user-files-all ctx page-owner-id)))
           file-ids (map :id user-files)
           user-badges (if (some #(or (= "badge" (:type %)) (= "showcase" (:type %))) blocks)
-                        (b/user-badges-all ctx page-owner-id))
+                        (:badges (b/user-badges-all ctx page-owner-id)))
           badge-ids (map :id user-badges)
           page-blocks (page-blocks ctx page-id)]
       (update-page-name-description! {:id page-id :name name :description description} (get-db ctx))
@@ -350,20 +351,19 @@
 
 
 (defn save-page-settings! [ctx page-id tags visibility pword user-id]
+ (let [evidence-check-fn (first (plugin-fun (get-plugins ctx) "evidence" "is-evidence?"))]
   (try+
     (if-not (page-owner? ctx page-id user-id)
       (throw+ "Page is not owned by current user"))
     (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
      {:status "error" :message "profile/Profiletaberror"}
-     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+     (if (and (not= "public" visibility) (evidence-check-fn ctx user-id {:id page-id :resource-type "page"}))
        {:status "error" :message "page/Evidenceerror"}
        (let [password (if (= visibility "password") (trim pword) "")
              page-visibility (if (and (= visibility "password")
                                       (empty? password))
                                "private"
-                               visibility)
-             evidence-check-fn (first (plugin-fun (get-plugins ctx) "main" "is-evidence?"))
-             page-is-evidence? (evidence-check-fn ctx user-id {:id page-id :type ::page})]
+                               visibility)]
          (if (and (private? ctx) (= "public" visibility))
            (throw+ {:status "error" :user-id user-id :message "trying save page visibilty as public in private mode"}))
          (update-page-visibility-and-password! {:id page-id :visibility page-visibility :password password} (get-db ctx))
@@ -374,7 +374,7 @@
          {:status "success" :message "page/Pagesavedsuccessfully"})))
     (catch Object ex
       (log/error "trying save badge visibilty as public in private mode: " ex)
-      {:status "error" :message "page/Errorwhilesavingpage"})))
+      {:status "error" :message "page/Errorwhilesavingpage"}))))
 
 (defn remove-files-blocks-and-content! [db page-id]
   (let [file-blocks (select-pages-files-blocks {:page_id page-id} db)]
@@ -417,7 +417,7 @@
   (if (page-owner? ctx page-id user-id)
     (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "db" "is-profile-tab?")) f (f ctx user-id page-id)))
      {:status "error" :message "profile/Profiletaberror"}
-     (if (and (not= "public" visibility) (b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
+     (if (and (not= "public" visibility) (as-> (first (plugin-fun (get-plugins ctx) "evidence" "is-evidence?")) f (f ctx user-id {:id page-id :resource-type "page"})) #_(b/is-evidence? ctx user-id {:id page-id :resource-type "page"}))
          {:status "error" :message "page/Evidenceerror"}
          (do
            (update-page-visibility! {:id page-id :visibility visibility} (get-db ctx))

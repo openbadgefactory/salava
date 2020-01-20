@@ -151,7 +151,7 @@ button {
   margin-top: 20px;
 }
 /* BADGE SETTINGS */
-#badge-settings {
+#badge-settings, #badge-evidence {
 
 
   .modal-evidence {
@@ -476,7 +476,7 @@ button {
   }
 
 }
-#badge-settings  {
+#badge-settings, #badge-evidence  {
   h1.uppercase-header {
     font-size: 16px;
     font-weight: 400;
@@ -565,7 +565,7 @@ button {
 }
 /* BADGE STATS */
 #badge-stats {
-  h3 {
+  h2 {
     font-weight: 300;
     padding-bottom: 10px;
     font: 400 20px "Open Sans",sans-serif;
@@ -582,7 +582,7 @@ button {
     }
     .panel-heading {
       border-bottom: 1px solid #dddddd;
-      h3 {
+      h2 {
         line-height: 30px;
         font: 300 24px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
@@ -635,9 +635,10 @@ button {
           }
         }
       }
-      label.hidden-label {
+      label.hidden-label, span.hidden-label {
         display: none;
       }
+
       .row.header {
         font-weight: 600;
         text-align: center;
@@ -655,11 +656,12 @@ button {
         .row.body{
           text-align: left;
           padding:10px 0px;
-          label {
+          label, span.hidden-label {
             display: inline-block;
             width:68%;
             font-weight: 600;
           }
+
           .col-md-1, .col-md-5 {
             display: inline-block;
             width: auto;
@@ -717,7 +719,7 @@ button {
     text-transform: uppercase;
   }
   .badge-info {
-    label {
+    label, ._label {
       color: $green;
       margin-bottom: 5px;
     }
@@ -762,9 +764,11 @@ button {
   }
 }
 #badge-info, #badge-content {
-  .badge-info label{
+  .badge-info label, .badge-info ._label{
     color: $text-color;
     min-width: 100px;
+    font-weight: 700;
+    display: inline-block;
   }
   .checkbox {
     margin-right: 15px;
@@ -926,8 +930,8 @@ button {
 }
 
 /* BADGE GRID */
-#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges {
-  #grid .grid-container {
+#badge-gallery #badges, #my-badges, #export-badges, .import-badges, #user-badges, #profile-user-badges, .showcase_badges {
+  #grid .grid-container, #badges-grid .grid-container {
     background-color: #ffffff;
     border: 1px solid #d2d2d2;
     box-shadow: 0px 4px 0px #dcdcdc;
@@ -1484,7 +1488,7 @@ button {
     line-height: 24px;
   }
 }
-#info-page-block .badge-message-link-info {
+#info-page-block .badge-message-link-info, #badge-settings .badge-message-link-info {
   i {
     color: $link-color;
     font-size: 20px;
@@ -1492,7 +1496,7 @@ button {
   }
 }
 
-#endorsebadge {
+#endorsebadge, .endorsebadge {
 
   .list-group {
     a {
@@ -1592,7 +1596,7 @@ button {
     .settings-endorsement {
       margin-top: 5px;
       img {
-        margin-right: 10px;
+        margin-right: 10px !important;
       }
     }
 
@@ -1674,6 +1678,7 @@ button {
 
   .badge-name {
     color: $badge-title;
+    font-size: 18px;
   }
 
   .profile-container {
@@ -1726,7 +1731,7 @@ button {
           margin: 10px;
         }
 
-        h4 {
+        h4, span.profileowner {
           margin-top: 0px;
           margin-bottom: 5px;
           color: $link-color;
@@ -1736,6 +1741,7 @@ button {
           height: 2.2em;
           word-wrap: break-word;
           padding: 4px;
+          font-size: 20px;
         }
 
       }
@@ -1843,6 +1849,9 @@ button {
       font-size: 16px;
     }
 
+    .fa-toggle-on, .fa-toggle-off {
+      color: $button-color;
+    }
 
     .fa-eye {
       //float: right;
@@ -1900,7 +1909,8 @@ a.popup-info {
   text-transform: none;
 }
 
-.expandable-block {
+.expandable-block, div.expandable-block, .panel.expandable-block {
+  //border: unset !important;
   .panel-heading {
     position: relative;
 
@@ -1942,7 +1952,7 @@ a.popup-info {
 
   }
 }
-#social-tab {
+#social-tab { //, #badge-settings #social-tab {
   .confirmusers {
     padding: 10px;
     background-color: $background-color;
@@ -2018,7 +2028,7 @@ a.popup-info {
       color: #FFFFFF;
       text-align: center;
       line-height: 20px;
-      background-color: $titlebar-color;
+      //background-color: $titlebar-color;
       border-radius: 4px;
       margin-right: 5px;
       margin-bottom: 10px;
@@ -2059,11 +2069,11 @@ a.popup-info {
           p {
             margin: 0;
           }
-          p.num {
+          .num{
             font-size: 22px !important;
             font-weight: 600 !important;
           }
-          p.desc {
+          .desc{
             margin-top: 10px;
             margin-bottom: 10px;
           }
@@ -2088,7 +2098,7 @@ a.popup-info {
             margin: unset;
             display: flex;
             margin-top: -2px;
-            p.desc, p.num {
+            .desc, .num{
               margin-top: 0px;
               float: left;
               font-size: 16px !important;
@@ -2120,7 +2130,7 @@ a.popup-info {
   .panel-heading {
       border-bottom: 1px solid #dddddd !important;
 
-      h3 {
+      h1 {
         line-height: 30px;
         font: 300 24px "Open Sans Condensed",sans-serif;
         text-transform: uppercase;
@@ -2170,7 +2180,7 @@ a.popup-info {
 span.endorsement-notification{
   margin-left:5px;
   background-color: #FF3333 !important;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
@@ -2218,6 +2228,22 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   margin: 30px 0 5px 0;
 }
 
+._label{
+  color: $text-color;
+  min-width: 100px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+._label.filter-opt {
+    text-align: unset;
+  }
+
+._label.stats {
+  width: 60%;
+  font-size: 14px;
+}
+
 .selected-users-container {
   margin: 20px auto;
   a {
@@ -2251,13 +2277,13 @@ span.endorsement-info-label, #endorsebadge span.endorsement-info-label{
   box-shadow: none;
 }
 
-#badge-receive .panel-heading {
-  background: linear-gradient(45deg, $titlebar-color, #b1a1ab);
-  .uppercase-header {
-    color: #1e1e1e !important;
+#badge-receive {
+  .fa-ban {
+  color: $dark-red;
+  }
+  .pdf-list{
+    a:hover, a:focus{
+    font-weight: bold;
   }
 }
-
-#badge-receive .fa-ban {
-  color: $dark-red;
 }
