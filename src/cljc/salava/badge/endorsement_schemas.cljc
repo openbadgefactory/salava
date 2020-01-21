@@ -96,7 +96,7 @@
 (s/defschema user-badge-endorsements-p {:endorsements [(s/maybe received-user-endorsement-p)]})
 
 (s/defschema user-badge-endorsement {:endorsements [(s/maybe (-> received-user-endorsement
-                                                                 (assoc :profile_visibility (s/enum "internal" "public"))
+                                                                 (assoc :profile_visibility (s/maybe (s/enum "internal" "public")))
                                                                  (dissoc :name :image_file :description)))]})
 
 (s/defschema pending-user-endorsements {:endorsements [(-> received-user-endorsement (assoc :ctime s/Int) (dissoc :status :mtime))]})

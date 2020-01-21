@@ -133,10 +133,10 @@
                  .-files
                  (.item 0))
         form-data (doto
-                   (js/FormData.
-                    (.append "file" file (.-name file))))]
+                   (js/FormData.)
+                   (.append "file" file (.-name file)))]
+       
         ;upload-modal (first (plugin-fun (session/get :plugins) "my" "upload_modal"))]
-
 
     (m/modal! (my/upload-modal nil (t :file/Uploadingfile) (t :file/Uploadinprogress)))
     (ajax/POST

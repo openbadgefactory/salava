@@ -139,10 +139,10 @@
           :handler (fn [data] (when evidence-atom (init-badge-evidence badge-id evidence-atom)))})))))
 
 (defn input [input-data textarea?]
-  (let [{:keys [name atom placeholder type error-message-atom rows cols preview?]} input-data]
+  (let [{:keys [name atom placeholder type error-message-atom rows cols preview? id]} input-data]
     [(if textarea? :textarea :input)
      {:class       "form-control"
-      :id          (str "input-" name)
+      :id          (or id (str "input-" name))
       :name        name
       :type         type
       :placeholder placeholder
@@ -286,116 +286,118 @@
         message (cursor state [:evidence :message])
         input-mode (cursor state [:input_mode])
         {:keys [image_file name]} data
-        evidence-atom (cursor state [:badge-settings :evidence])] [:div {:id "badge-settings" :class "row flip"}
-                                                                   [:div {:class "col-md-3 badge-image modal-left"}
-                                                                    [:img {:src (str "/" image_file) :alt name}]]
+        evidence-atom (cursor state [:badge-settings :evidence])]
+    [:div {:id "badge-settings" :class "row flip"}
+     [:div {:class "col-md-3 badge-image modal-left"}
+      [:img {:src (str "/" image_file) :alt name}]]
 
-                                                                   [:div {:class "col-md-9 settings-content settings-tab"}
-                                                                    (if @message [:div @message])
-                                                                    [:div
-                                                                     [:div.row {:style {:margin-bottom "10px"}} [:span._label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
-                                                                     [:div.evidence-info (t :badge/Evidenceinfo)]
+     [:div {:class "col-md-9 settings-content settings-tab"}
+      (if @message [:div @message])
+      [:div
+       [:div.row {:style {:margin-bottom "10px"}} [:span._label.col-md-9.sub-heading (t :badge/Addnewevidence)]]
+       [:div.evidence-info (t :badge/Evidenceinfo)]
 
-                                                                     [:div.row.form-horizontal
-                                                                      [:div
-                                                                       [:div.col-md-12.resource-options
-                                                                        [:div
-                                                                         [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
-                                                                                    :href "#"
-                                                                                    :on-click #(do
-                                                                                                 (.preventDefault %)
-                                                                                                 (toggle-input-mode :url_input state))}
-                                                                                [:i.fa.fa-link] (t :admin/Url)]]
-                                                                         [:div  [:a {:class (if (= :page_input @input-mode) "active-resource" "")
-                                                                                     :href "#"
-                                                                                     :on-click #(do
-                                                                                                  (.preventDefault %)
-                                                                                                  (toggle-input-mode :page_input state))}
+       [:div.row.form-horizontal
+        [:div
+         [:div.col-md-12.resource-options
+          [:div
+           [:div [:a {:class (if (= :url_input @input-mode) "active-resource" "")
+                      :href "#"
+                      :on-click #(do
+                                   (.preventDefault %)
+                                   (toggle-input-mode :url_input state))}
+                  [:i.fa.fa-link] (t :admin/Url)]]
+           [:div  [:a {:class (if (= :page_input @input-mode) "active-resource" "")
+                       :href "#"
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (toggle-input-mode :page_input state))}
 
-                                                                                 [:i.fa.fa-file-text] (t :page/Pages)]]
-                                                                         [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
-                                                                                     :href "#" :on-click #(do
-                                                                                                            (.preventDefault %)
-                                                                                                            (toggle-input-mode :file_input state))}
-                                                                                 [:i.fa.fa-files-o] (t :page/Files)]]
-                                                                         [:div.cancel [:a {:href "#" :on-click #(do
-                                                                                                                  (.preventDefault %)
-                                                                                                                  (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
-                                                                                                                         :tab-no 2))}
+                   [:i.fa.fa-file-text] (t :page/Pages)]]
+           [:div  [:a {:class (if (= :file_input @input-mode) "active-resource" "")
+                       :href "#" :on-click #(do
+                                              (.preventDefault %)
+                                              (toggle-input-mode :file_input state))}
+                   [:i.fa.fa-files-o] (t :page/Files)]]
+           [:div.cancel [:a {:href "#" :on-click #(do
+                                                    (.preventDefault %)
+                                                    (swap! state assoc :tab [settings-tab-content (dissoc data :evidence) state init-data]
+                                                           :tab-no 2))}
 
-                                                                                       [:i.fa.fa-remove] (t :core/Cancel)]]]]]
+                         [:i.fa.fa-remove] (t :core/Cancel)]]]]]
 
         ;;Preview
-                                                                      (when @(cursor state [:show-preview])
-                                                                        [:div.preview.evidence-list.col-md-9
-                                                                         [:div.panel.panel-default
-                                                                          [:div.panel-heading
-                                                                           [:div.panel-title
-                                                                            [:div.url  [evidence-icon @evidence-url-atom (cursor state [:evidence :properties :mime_type])]] (hyperlink @evidence-url-atom)]
-                                                                           [:div [:button {:type "button"
-                                                                                           :aria-label "OK"
-                                                                                           :class "close panel-close"
-                                                                                           :on-click #(do (.preventDefault %) (swap! state assoc :show-preview false
-                                                                                                                                     :evidence nil
-                                                                                                                                     :show-form false))}
-                                                                                  [:i.fa.fa-trash.trash]]]]
-                                                                          [:div.panel-body.evidence-panel-body
-                                                                           (if (and (not @(cursor state [:show-form])) (every? #(blank? %) (vector @evidence-name-atom @evidence-narrative-atom)))
-                                                                             [:div [:a {:href "#" :on-click #(do
-                                                                                                               (.preventDefault %)
-                                                                                                               (reset! (cursor state [:show-form]) true))} [:div [:i.fa.fa-plus] (t :badge/Addmoreinfoaboutevidence)]]])
-                                                                           (when (or  @(cursor state [:show-form]) (not (every? #(blank? %) (vector @evidence-name-atom @evidence-narrative-atom))))
+        (when @(cursor state [:show-preview])
+          [:div.preview.evidence-list.col-md-9
+           [:div.panel.panel-default
+            [:div.panel-heading
+             [:div.panel-title
+              [:div.url  [evidence-icon @evidence-url-atom (cursor state [:evidence :properties :mime_type])]] (hyperlink @evidence-url-atom)]
+             [:div [:button {:type "button"
+                             :aria-label "OK"
+                             :class "close panel-close"
+                             :on-click #(do (.preventDefault %) (swap! state assoc :show-preview false
+                                                                       :evidence nil
+                                                                       :show-form false))}
+                    [:i.fa.fa-trash.trash]]]]
+            [:div.panel-body.evidence-panel-body
+             (if (and (not @(cursor state [:show-form])) (every? #(blank? %) (vector @evidence-name-atom @evidence-narrative-atom)))
+               [:div [:a {:href "#" :on-click #(do
+                                                 (.preventDefault %)
+                                                 (reset! (cursor state [:show-form]) true))} [:div [:i.fa.fa-plus] (t :badge/Addmoreinfoaboutevidence)]]])
+             (when (or  @(cursor state [:show-form]) (not (every? #(blank? %) (vector @evidence-name-atom @evidence-narrative-atom))))
 
-                                                                             [:div [:div.form-group
-                                                                                    [:label.col-md-3 {:for "input-name"} (t :badge/Name)]
-                                                                                    [:div.col-md-9
-                                                                                     [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
-                                                                              [:div.form-group
-                                                                               [:label.col-md-3 {:for "input-narrative"} (t :page/Description)]
-                                                                               [:div.col-md-9
-                                                                                [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom} true]]]])] [:div.add
-                                                                                                                                                                      [:button {:type "button"
-                                                                                                                                                                                :class "btn btn-primary"
-                                                                                                                                                                                :disabled (not (url? @evidence-url-atom))
-                                                                                                                                                                                :on-click #(do
-                                                                                                                                                                                             (.preventDefault %)
-                                                                                                                                                                                             (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type]) "url"))
-                                                                                                                                                                                             (save-badge-evidence state evidence-atom)
-                                                                                                                                                                                             (when-not @(cursor state [:evidence :message]) (swap! state assoc :tab [settings-tab-content data state init-data]
-                                                                                                                                                                                                                                                   :tab-no 2)))}
-                                                                                                                                                                       (t :core/Add)]]]])
+               [:div [:div.form-group
+                      [:label.col-md-3 {:for "input-name"} (t :badge/Name)]
+                      [:div.col-md-9
+                       [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+                [:div.form-group
+                 [:label.col-md-3 {:for "input-narrative"} (t :page/Description)]
+                 [:div.col-md-9
+                  [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom} true]]]])]
+            [:div.add
+             [:button {:type "button"
+                       :class "btn btn-primary"
+                       :disabled (not (url? @evidence-url-atom))
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (if (= @input-mode :url_input) (reset! (cursor state [:evidence :properties :resource_type]) "url"))
+                                    (save-badge-evidence state evidence-atom)
+                                    (when-not @(cursor state [:evidence :message]) (swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                          :tab-no 2)))}
+              (t :core/Add)]]]])
 
         ;;url input
-                                                                      (when (= @input-mode :url_input)
-                                                                        [:div.preview.evidence-list.col-md-9
-                                                                         [:div.panel.panel-default
-                                                                          [:div.panel-heading
-                                                                           [:div.panel-title
-                                                                            [:div.url [:i.fa.fa-link]]
-                                                                            [:label.sr-only {:for "input-evidence-url"} (t :badge/EnterevidenceURLstartingwith)]
-                                                                            [input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith)}]]]
-                                                                          [:div.panel-body.evidence-panel-body
-                                                                           [:div [:div.form-group
-                                                                                  [:label.col-md-3 {:for "input-name"} (t :badge/Name)]
-                                                                                  [:div.col-md-9
-                                                                                   [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
-                                                                            [:div.form-group
-                                                                             [:label.col-md-3 {:for "input-narrative"} (t :page/Description)]
-                                                                             [:div.col-md-9
-                                                                              [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom} true]]]]]
-                                                                          [:div.add
-                                                                           [:button {:type "button"
-                                                                                     :class "btn btn-primary"
-                                                                                     :disabled (not (url? @evidence-url-atom))
-                                                                                     :on-click #(do
-                                                                                                  (.preventDefault %)
-                                                                                                  (reset! (cursor state [:evidence :properties :resource_type]) "url")
-                                                                                                  (save-badge-evidence state evidence-atom)
-                                                                                                  (when-not @(cursor state [:evidence :message]) (swap! state assoc :tab [settings-tab-content data state init-data]
-                                                                                                                                                        :tab-no 2)))}
-                                                                            (t :core/Add)]]]])
+        (when (= @input-mode :url_input)
+          [:div.preview.evidence-list.col-md-9
+           [:div.panel.panel-default
+            [:div.panel-heading
+             [:div.panel-title
+              [:div.url [:i.fa.fa-link]]
+              [:label.sr-only {:for "input-evidence-url"} (t :badge/EnterevidenceURLstartingwith)]
+              [input {:name "evidence-url" :atom evidence-url-atom :type "url" :placeholder (t :badge/EnterevidenceURLstartingwith)}]]]
+            [:div.panel-body.evidence-panel-body
+             [:div [:div.form-group
+                    [:label.col-md-3 {:for "input-name"} (t :badge/Name)]
+                    [:div.col-md-9
+                     [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+              [:div.form-group
+               [:label.col-md-3 {:for "input-narrative"} (t :page/Description)]
+               [:div.col-md-9
+                [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom} true]]]]]
+            [:div.add
+             [:button {:type "button"
+                       :class "btn btn-primary"
+                       :disabled (not (url? @evidence-url-atom))
+                       :on-click #(do
+                                    (.preventDefault %)
+                                    (reset! (cursor state [:evidence :properties :resource_type]) "url")
+                                    (save-badge-evidence state evidence-atom)
+                                    (when-not @(cursor state [:evidence :message]) (swap! state assoc :tab [settings-tab-content data state init-data]
+                                                                                          :tab-no 2)))}
+              (t :core/Add)]]]])
         ;;Resource grid
-                                                                      (when-not @(cursor state [:show-preview]) [resource-input data state init-data])]]]]))
+        (when-not @(cursor state [:show-preview]) [resource-input data state init-data])]]]]))
 
 (defn evidence-list [data state init-data]
   (let [evidence-name-atom (cursor state [:evidence :name])
@@ -492,11 +494,11 @@
                                 [:div.form-group
                                  [:label.col-md-3 {:for "input-name"} (t :badge/Name)]
                                  [:div.col-md-9
-                                  [input {:name "name" :atom evidence-name-atom :type "text"} nil]]]
+                                  [input {:id (str "name#" id) :name "name" :atom evidence-name-atom :type "text"} nil]]]
                                 [:div.form-group
                                  [:label.col-md-3 {:for "input-narrative"} (t :page/Description)]
                                  [:div.col-md-9
-                                  [input {:name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom} true]]]
+                                  [input {:id (str "description#" id) :name "narrative" :rows 5 :cols 40 :atom evidence-narrative-atom} true]]]
                               ;[:hr]
                                 [:div
                                  [:button {:type         "button"
