@@ -28,7 +28,7 @@
 
 (s/defschema received-user-endorsement (-> received-user-endorsement-p
                                            (assoc
-                                            (s/optional-key :issuer_name) _name
+                                            (s/optional-key :issuer_name) (s/maybe _name)
                                             :issuer_url (s/maybe s/Str)
                                             :profile_picture (describe (s/maybe s/Str) "Issuer's image")
                                             :description (s/maybe s/Str)
@@ -56,7 +56,7 @@
                                 :profile_picture (s/maybe s/Str)
                                 :name (s/maybe s/Str)
                                 :image_file (s/maybe s/Str)
-                                (s/optional-key :issuer_name) _name)))
+                                (s/optional-key :issuer_name) (s/maybe _name))))
 
 (s/defschema received-request-p (-> request
                                     (assoc :requester_id (s/maybe s/Int))))
@@ -64,7 +64,7 @@
 (s/defschema received-request (-> received-request-p
                                   (assoc
                                    :description (s/maybe s/Str)
-                                   (s/optional-key :issuer_name) s/Str
+                                   (s/optional-key :issuer_name) (s/maybe s/Str)
                                    :issued_on s/Int
                                    :issuer_content_id (s/maybe s/Str)
                                    :first_name _name
