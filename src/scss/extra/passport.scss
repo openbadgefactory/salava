@@ -662,13 +662,13 @@ html[dir="rtl"] .wizard {
     }
    }
 }
-/*
-#badge-receive .panel-heading {
+
+/*#badge-receive .panel-heading {
   background: linear-gradient(75deg, $button-color, $background-color);
   .uppercase-header {
     color: #1E1E1E !important;
   }
-}
+}*/
 
 
 #dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
@@ -686,7 +686,10 @@ html[dir="rtl"] .wizard {
 .btn-warning:disabled {
   color: #373737;
 }
-
+.footer .footer-container a {
+  color: $link-color;
+}
+/*
 a#login-button {
 height: 36px;
 width: 125px;

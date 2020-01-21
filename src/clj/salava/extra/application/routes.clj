@@ -17,6 +17,7 @@
 
  (context "/obpv1/application" []
              :tags ["application"]
+             :no-doc true
              (GET "/" [country tags name issuer order id followed]
                   :return schemas/BadgeAdverts
                   :summary "Get badge adverts"
@@ -76,7 +77,7 @@
 
     (context "/obpv1/factory" []
              :tags ["factory"]
-
+             :no-doc true
             (PUT "/publish_badge/:apikey/:remoteid" []
                  :return {:success s/Bool}
                  :body  [data schemas/BadgeAdvertPublish]
