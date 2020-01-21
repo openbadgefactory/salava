@@ -4,7 +4,7 @@
    [reagent.core :refer [cursor atom create-class force-update]]
    [reagent.session :as session]
    [salava.badge.ui.helper :refer [badge-expired?]]
-   [salava.badge.ui.settings :refer [update-settings set-visibility save-settings update-endorsement-count]]
+   [salava.badge.ui.settings :refer [update-settings set-visibility save-settings]]
    [salava.core.ui.ajax-utils :as ajax]
    [salava.core.i18n :refer [t]]
    [salava.core.ui.modal :as mo]
@@ -19,12 +19,18 @@
 (defn toggle-panel [key x]
   (if (= key @x) (reset! x nil) (reset! x key)))
 
+(defn- init-endorsement-count [id state]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/user_endorsement/count/" id))
+   {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
+
 (defn- init-pending-endorsements [state]
   (when (:owner? @state)
     (ajax/GET
      (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
      {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
-                 (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
+                 (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})
+    (init-endorsement-count (:id @state) state)))
 
 (defn- get-rating [dataatom state]
   (ajax/GET
@@ -53,8 +59,8 @@
      (path-for (str "/obpv1/badge/user_endorsement/" (:id @state)))
      {:handler (fn [data]
                  (let [pending-endorsements-count (->> data (filter #(= "pending" (:status %))) count)]
-                   (reset! endorsements data)
-                   (swap! state assoc :pending_endorsements_count pending-endorsements-count)))})
+                   (reset! endorsements data)))})
+                   ;(swap! state assoc :pending_endorsements_count pending-endorsements-count)))})
 
     (ajax/GET
      (path-for (str "/obpv1/badge/stats/" (:id @state)))
@@ -118,7 +124,7 @@
           [:div.panel.expandable-block ;{:id "social-tab"}
            [:div.panel-heading
             [:a {:id (str "#" panel-identity) :href "#" :on-click #(do (.preventDefault %) (toggle-panel :endo visible-area-atom))}
-             [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:badge-settings :user_endorsement_count]))
+             [:h1 (str (t :badge/Userendorsements) " : "  @(cursor state [:user_endorsement_count]))
               [:i.fa.fa-lg.panel-status-icon {:class icon-class}]]
              (when (and (pos? @(cursor state [:notification])) (pos? pending-endorsements-count)) [:span.badge.social-panel-info  pending-endorsements-count])]]
            (when (= @(cursor state [:visible-area]) panel-identity)
@@ -139,7 +145,7 @@
                          @sent-requests)
                  [:hr.border]]) (into [:div.col-md-12 {:style {:margin-top "20px"}}]
                                       (for [f (plugin-fun (session/get :plugins) "block" "badge_endorsements")]
-                                        [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification]) :reload-fn (fn [] (update-settings (:id @state) state))}]))])]]])})))
+                                        [f (:id @state) {:pending-endorsements-atom (cursor state [:pending_endorsements_count]) :pending-info-atom (cursor state [:notification]) :reload-fn (fn [] (init-pending-endorsements state))}]))])]]])})))
 
 (defn badge-views [data]
   [:div.row ;{:id "social-tab"}

@@ -167,7 +167,7 @@
                         (s/optional-key (keyword "@context"))  s/Any})
 
 (s/defschema verify-success {:assertion-status      (describe (s/eq 200) "Fetched assertion status response")
-                             :assertion             assertion
+                             :assertion             s/Any #_assertion
                              :asr                   (describe s/Str "Assertion url")
                              :badge-image-status    (s/eq 200)
                              :badge-criteria-status (s/eq 200)

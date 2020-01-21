@@ -662,6 +662,14 @@ html[dir="rtl"] .wizard {
     }
    }
 }
+/*
+#badge-receive .panel-heading {
+  background: linear-gradient(75deg, $button-color, $background-color);
+  .uppercase-header {
+    color: #1E1E1E !important;
+  }
+}
+
 
 #dashboard .badge,.endorsement-notification, .grid-element-info, .modal-navi-info, .social-panel-info {
   color: #1E1E1E !important;
@@ -677,17 +685,6 @@ html[dir="rtl"] .wizard {
 
 .btn-warning:disabled {
   color: #373737;
-}
-
-/*
-.ticket-container.fakebadge u {
-  color: #A76905;
-}
-.ticket-container.mistranslation u {
-  color: #088488;
-}
-.ticket-container.bug u {
-  color: #EC130E;
 }
 
 a#login-button {

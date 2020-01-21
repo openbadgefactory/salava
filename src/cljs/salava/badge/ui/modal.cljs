@@ -26,23 +26,31 @@
    [salava.social.ui.badge-message-modal :refer [badge-message-link]]
    [salava.translator.ui.helper :refer [translate]]))
 
-(defn init-badge-connection [state badge-id]
+(defn- init-badge-connection [state badge-id]
   (ajax/GET
    (path-for (str "/obpv1/social/connected/" badge-id))
    {:handler (fn [data]
                (swap! state assoc :receive-notifications data))}))
 
+(defn- init-new-message-count [state]
+  (ajax/GET
+   (path-for (str "/obpv1/social/messages_count/" (:badge_id @state)))
+   {:handler (fn [data]
+               (reset! (cursor state [:message_count]) data))}))
+
+(defn- init-endorsement-count [id state]
+  (ajax/GET
+   (path-for (str "/obpv1/badge/user_endorsement/count/" id))
+   {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
+
 (defn- init-more [state]
   (when (:owner? @state)
+    (init-new-message-count state)
+    (init-endorsement-count (:id @state) state)
     (ajax/GET
      (path-for (str "/obpv1/badge/user_endorsement/pending_count/" (:id @state)))
      {:handler (fn [data] (reset! (cursor state [:pending_endorsements_count]) data)
                  (swap! state assoc :notification (+ data @(cursor state [:message_count :new-messages]))))})))
-
-(defn init-endorsement-count [id state]
-  (ajax/GET
-   (path-for (str "/obpv1/badge/user_endorsement/count/" id))
-   {:handler (fn [{:keys [user_endorsement_count]}] (reset! (cursor state [:user_endorsement_count]) user_endorsement_count))}))
 
 (defn init-data
   ([state id tab-no]
@@ -271,15 +279,16 @@
         (check-badge id)
 
         ;;Endorse-badge
-        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])]] (when-not (empty? alignment)
-                                                                                  [:div.row
-                                                                                   [:div.col-md-12
-                                                                                    [:h2.uppercase-header (t :badge/Alignments)]
-                                                                                    (doall
-                                                                                     (map (fn [{:keys [name url description]}]
-                                                                                            [:p {:key url}
-                                                                                             [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
-                                                                                          alignment))]])
+        (when (and (session/get :user) (not owner?)) [endr/endorse-badge id])]]
+      (when-not (empty? alignment)
+        [:div.row
+         [:div.col-md-12
+          [:h2.uppercase-header (t :badge/Alignments)]
+          (doall
+           (map (fn [{:keys [name url description]}]
+                  [:p {:key url}
+                   [:a {:target "_blank" :rel "noopener noreferrer" :href url} name] [:br] description])
+                alignment))]])
 
       [:div {:class "row criteria-html"}
        [:div.col-md-12

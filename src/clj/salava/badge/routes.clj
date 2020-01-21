@@ -18,6 +18,7 @@
             [salava.badge.endorsement :as e]
             [salava.badge.evidence :as evidence]
             [salava.badge.endorsement-schemas :as endoschemas]
+            [salava.badge.pending :as p]
             salava.core.restructure))
 
 (defn route-def [ctx]
@@ -30,6 +31,7 @@
             (layout/main-meta ctx "/info/:id/pic/embed" :badge)
             (layout/main-meta ctx "/info/:id/full/embed" :badge)
             (layout/main ctx "/import")
+            #_(layout/main ctx "/export")
             (layout/main ctx "/receive/:id")
             (layout/main ctx "/application")
             (layout/main ctx "/user/endorsements"))
@@ -110,16 +112,20 @@
                  :path-params [badgeid :- Long]
                  :summary "Get pending badge content"
                  (if (= badgeid (get-in req [:session :pending :user-badge-id]))
-                   (ok (assoc (->> badgeid
-                                   (b/fetch-badge ctx)
-                                   (b/badge-issued-and-verified-by-obf ctx))
-                              :user_exists? (u/email-exists? ctx (get-in req [:session :pending :email]))))
+                   (ok (p/pending-badge-content ctx req))
                    (not-found)))
+
+            (GET "/pending_badges" []
+                 :no-doc true
+                 :summary "Check and return user's pending badges"
+                 :auth-rules access/signed
+                 :current-user current-user
+                 (ok (p/pending-badges ctx (:id current-user))))
 
             (GET "/issuer/:issuerid" []
                  :return schemas/IssuerContent
                  :path-params [issuerid :- String]
-                 :summary "Get badge issuer details"
+                 :summary "Get issuer details"
                  :current-user current-user
                  (ok (b/get-issuer-endorsements ctx issuerid)))
 
@@ -364,6 +370,7 @@
                     :auth-rules access/authenticated
                     :current-user current-user
                     (ok (evidence/delete-evidence! ctx evidenceid user_badge_id (:id current-user)))))
+
    (context "/obpv1/badge/user_endorsement" []
             :tags ["badge_user_endorsements"]
 

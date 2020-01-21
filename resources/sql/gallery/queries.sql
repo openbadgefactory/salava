@@ -311,7 +311,7 @@ WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expir
     AND ub.visibility != 'private' AND ub.gallery_id IS NOT NULL AND (:country = 'all' OR u.country = :country);
 
 
---name: select-gallery-badges-order-by-recipients-all
+--name: select-gallery-badges-order-by-recipients-all-REMOVE
 SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
     MAX(ub.ctime) AS ctime, CAST(COUNT(DISTINCT ub.user_id) AS UNSIGNED) AS recipients
 FROM gallery g
@@ -321,6 +321,66 @@ WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expir
     AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
 GROUP BY ub.gallery_id
 ORDER BY recipients DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-order-by-recipients-all
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+       MAX(ub.ctime) AS ctime,
+       (SELECT CAST(COUNT(DISTINCT ub2.user_id) AS UNSIGNED)
+        FROM user_badge ub2
+        WHERE ub2.gallery_id = g.id AND ub2.status = 'accepted' AND ub2.deleted = 0 AND ub2.revoked = 0
+        AND (ub2.expires_on IS NULL OR ub2.expires_on > UNIX_TIMESTAMP())) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+      AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
+GROUP BY ub.gallery_id
+ORDER BY
+ CASE WHEN :order='name'  THEN badge_name END,
+ CASE WHEN :order='issuer_content_name' THEN issuer_content_name END,
+ CASE WHEN :order='recipients' THEN recipients END DESC,
+ CASE WHEN :order='mtime' THEN MAX(ub.ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-all
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+       MAX(ub.ctime) AS ctime,
+       (SELECT CAST(COUNT(DISTINCT ub2.user_id) AS UNSIGNED)
+        FROM user_badge ub2
+        WHERE ub2.gallery_id = g.id AND ub2.status = 'accepted' AND ub2.deleted = 0 AND ub2.revoked = 0
+        AND (ub2.expires_on IS NULL OR ub2.expires_on > UNIX_TIMESTAMP())) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+      AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country)
+GROUP BY ub.gallery_id
+ORDER BY
+ CASE WHEN :order='name'  THEN badge_name END,
+ CASE WHEN :order='issuer_content_name' THEN issuer_content_name END,
+ CASE WHEN :order='recipients' THEN recipients END DESC,
+ CASE WHEN :order='mtime' THEN MAX(ub.ctime) END DESC
+LIMIT :limit OFFSET :offset
+
+--name: select-gallery-badges-filtered
+SELECT ub.gallery_id, g.badge_id, g.badge_name AS name, g.badge_image AS image_file, g.issuer_name AS issuer_content_name,
+       MAX(ub.ctime) AS ctime,
+       (SELECT CAST(COUNT(DISTINCT ub2.user_id) AS UNSIGNED)
+        FROM user_badge ub2
+        WHERE ub2.gallery_id = g.id AND ub2.status = 'accepted' AND ub2.deleted = 0 AND ub2.revoked = 0
+        AND (ub2.expires_on IS NULL OR ub2.expires_on > UNIX_TIMESTAMP())) AS recipients
+FROM gallery g
+INNER JOIN user_badge ub ON g.id = ub.gallery_id
+INNER JOIN user u ON ub.user_id = u.id
+WHERE ub.status = 'accepted' AND ub.deleted = 0 AND ub.revoked = 0 AND (ub.expires_on IS NULL OR ub.expires_on > UNIX_TIMESTAMP())
+      AND ub.visibility != 'private' AND (:country = 'all' OR u.country = :country) AND g.id IN (:gallery_ids)
+GROUP BY ub.gallery_id
+ORDER BY
+  CASE WHEN :order='name'  THEN badge_name END,
+  CASE WHEN :order='issuer_content_name' THEN issuer_content_name END,
+  CASE WHEN :order='recipients' THEN recipients END DESC,
+  CASE WHEN :order='mtime' THEN MAX(ub.ctime) END DESC
 LIMIT :limit OFFSET :offset
 
 --name: select-gallery-badges-order-by-recipients-filtered

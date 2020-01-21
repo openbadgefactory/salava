@@ -36,12 +36,6 @@
         badge-url (str "/obpv1/badge/export-to-pdf?id=" user-badge-id "&lang-option=" lang-option)]
     (js-navigate-to badge-url)))
 
-(defn update-endorsement-count [id state]
-  (ajax/GET
-   (path-for (str "/obpv1/badge/settings/" id) true)
-   {:handler (fn [data]
-               (swap! state assoc :badge-settings (assoc data :new-tag "")))}))
-
 (defn update-settings [badge-id state]
   (ajax/GET
    (path-for (str "/obpv1/badge/settings/" badge-id) true)

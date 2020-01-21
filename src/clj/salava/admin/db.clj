@@ -361,14 +361,16 @@ WHERE (u.profile_visibility = 'public' OR u.profile_visibility = 'internal') AND
     user))
 
 (defn set-fake-session [ctx ok-status user-id real-user-id]
-  (let [{:keys [role id private activated]} (user-information ctx user-id)]
+  (let [{:keys [role id private activated]} (user-information ctx user-id)
+        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))]
     (log/info "admin-id: " real-user-id " is login as user-id: " user-id)
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :real-id real-user-id})))
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :real-id real-user-id :expires expires})))
 
 (defn set-session [ctx ok-status user-id]
-  (let [{:keys [role id private activated]} (user-information ctx user-id)]
+  (let [{:keys [role id private activated]} (user-information ctx user-id)
+        expires (+ (long (/ (System/currentTimeMillis) 1000)) (get-in ctx [:config :core :session :max-age]))]
     (log/info "admin-id: " user-id " logged out from user")
-    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated})))
+    (assoc-in ok-status [:session :identity] {:id id :role role :private private :activated activated :expires expires})))
 
 (defn update-user-to-admin [ctx user-id]
   (log/info "admin set user-id: " user-id "to admin.")

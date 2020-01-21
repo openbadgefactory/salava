@@ -65,7 +65,6 @@
                    :class  "close pull-left"
                    :data-dismiss "modal"
                    :aria-label   "OK"}
-
           [:span {:aria-hidden  "true"
                   :dangerouslySetInnerHTML {:__html "&times;"}}]]]
 
@@ -73,18 +72,19 @@
          [:div {:id "lang-buttons" :style {:text-align "center" :margin-top "50px"}}
           [:ul
            [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions))} "EN"]]
-           [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions-fr))} "FR"]]]]]] [:div
-                                                                                                                           [:div
-                                                                                                                            (:modal-content @state)]
-                                                                                                                           [:fieldset {:class "col-md-12 checkbox"}
-                                                                                                                            [:legend {:style {:display "none"}} ""]
-                                                                                                                            [:div.col-md-12 {:style {:text-align "center"}} [:label
-                                                                                                                                                                             [:input {:type     "checkbox"
-                                                                                                                                                                                      :on-change (fn [e]
-                                                                                                                                                                                                   (if (.. e -target -checked)
-                                                                                                                                                                                                     (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")))}]
+           [:li [:a {:href "#" :on-click #(swap! state assoc :modal-content (layout/terms-and-conditions-fr))} "FR"]]]]]]
+       [:div
+        [:div
+         (:modal-content @state)]
+        [:fieldset {:class "col-md-12 checkbox"}
+         [:legend {:style {:display "none"}} ""]
+         [:div.col-md-12 {:style {:text-align "center"}} [:label
+                                                          [:input {:type     "checkbox"
+                                                                   :on-change (fn [e]
+                                                                                (if (.. e -target -checked)
+                                                                                  (swap! state assoc :accept-terms "accepted") (swap! state assoc :accept-terms "declined")))}]
 
-                                                                                                                                                                             (t :user/Doyouaccept)]]]]]
+                                                          (t :user/Doyouaccept)]]]]]
 
       [:div.modal-footer {:style {:text-align "center"}}
        [:button {:type         "button"
