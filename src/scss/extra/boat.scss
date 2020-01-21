@@ -95,7 +95,7 @@ body {
 body.anon {
   background-color: #CCE4F3 !important; //$background-color !important;
   background-size: contain;
-  //background-position: center 78px;
+  background-position: center -10px;
   background-repeat: no-repeat;
   background-image: url("/img/extra/boat/background.jpg");
 
@@ -117,7 +117,7 @@ body.anon {
 
 footer.footer, div.footer {
   border-top: 2px solid $main-color;
-  //background-color: white;
+  background-color: $background-color;
 
 }
 }
@@ -155,14 +155,15 @@ ul.navbar-nav {
       color: $menu-active;
   }
 }
-footer.footer,div.footer {
+footer.footer,div.footer .footer-container {
   background-color: $background-color;
-  border-top: 2px solid $main-color;
+  border-top: 1px solid $background-color; //2px solid $main-color;
 }
 
 #login-page, #registration-page, #reset-password {
   #narrow-panel {
     border: 1px solid $light-blue;
+    margin: 8px auto 0 auto;
   }
 }
 
@@ -765,6 +766,10 @@ p.help-block {
 
 .form-control:focus {
  color: inherit;
+}
+
+.form-control {
+  font-family: 'Open Sans';
 }
 
 .progress-bar-success {
