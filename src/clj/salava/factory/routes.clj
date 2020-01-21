@@ -44,8 +44,9 @@
                     :no-doc true
                     :summary "Receive new badges from OBF"
                     :path-params [id :- s/Int]
+                    :current-user current-user
                     (when (= id (get-in req [:session :pending :user-badge-id]))
-                      (ok (f/reject-badge! ctx id))))
+                      (ok (f/reject-badge! ctx id (:id current-user)))))
 
             (POST "/backpack_email_list" []
                   :header-params [authorization :- s/Str]

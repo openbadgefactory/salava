@@ -146,11 +146,11 @@
         (log/error "receive-badge: failed to fetch pending badge")
         (log/error (.toString ex))))))
 
-(defn reject-badge! [ctx user-badge-id]
+(defn reject-badge! [ctx user-badge-id user-id]
   (log/info "Rejected badge id: " user-badge-id)
   (let [assertion-info (select-pending-assertion-by-badge-id {:id user-badge-id} (u/get-db-1 ctx))
         {:keys [email assertion_url]} assertion-info]
-    (delete-pending-user-badge! {:id user-badge-id} (u/get-db ctx))
+    (delete-pending-user-badge! {:id user-badge-id :user_id (or user-id 0)} (u/get-db ctx))
     (delete-pending-factory-assertion! {:e email :url assertion_url} (u/get-db ctx))
     (log/info (str "Deleted user-badge id:" user-badge-id ", and pending-factory-badge " assertion-info))
     {:success true}))
